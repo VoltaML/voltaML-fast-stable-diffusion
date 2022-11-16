@@ -1,0 +1,12 @@
+transformers
+diffusers
+torch==1.12.1+cu116
+scipy
+uvicorn
+pydantic
+fastapi
+pycuda
+huggingface_hub
+onnxsim
+onnxruntime
+nvidia-tensorrt==8.4.2.4
