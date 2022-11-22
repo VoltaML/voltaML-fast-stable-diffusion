@@ -44,6 +44,7 @@ python3 volta_infer.py --backend='PT' --prompt='a gigantic robotic bipedal dinos
 ```
 python3 volta_infer.py --backend='TRT' --benchmark
 ```
+The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
 | Model          | T4 (ms)      | A100 (ms)      | A10 (ms)       |
 |----------------|--------------|----------------|----------------|
