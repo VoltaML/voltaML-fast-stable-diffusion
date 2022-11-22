@@ -19,24 +19,9 @@ pip3 install -r requirements.txt
 
 ### Own setup:
 
-Requirements:
-* transformers <br/>
-* diffusers <br/>
-* torch==1.12.1+cu116 <br/>
-* scipy <br/>
-* uvicorn <br/>
-* pydantic <br/>
-* fastapi <br/>
-* pycuda <br/>
-* huggingface_hub <br/>
-* onnxsim <br/>
-* onnxruntime <br/>
-* nvidia-tensorrt==8.4.2.4 <br/>
-* onnxconverter_common <br/>
-* ftfy <br/>
-* spacy <br/>
-* accelerate <br/>
+Requirements: Please refer to the requirements.txt file to set it up on your own environment.
 
+It is recommended to use our voltaml/volta_diffusion container or NVIDIA TensorRT 22.08-py3 container
 
 ## Usage
 
