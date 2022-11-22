@@ -60,4 +60,5 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 ## References
 * https://www.photoroom.com/tech/stable-diffusion-25-percent-faster-and-save-seconds/ </br>
 * https://github.com/kamalkraj/stable-diffusion-tritonserver </br>
+* https://github.com/luohao123/gaintmodels </br>
 * https://github.com/stochasticai/x-stable-diffusion
