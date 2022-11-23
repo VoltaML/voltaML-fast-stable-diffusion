@@ -9,7 +9,7 @@ def load_model(
 ) -> StableDiffusionPipeline:
     """Load model
 
-    :param model_name_or_path: model name (downloaded from HF Hub) or model path (local), defaults to "CompVis/stable-diffusion-v1-4"
+    :param model_name_or_path: model name (downloaded from HF Hub) or model path (local), defaults to "runwayml/stable-diffusion-v1-5"
     :return: the Stable Diffusion pipeline
     """
     pipe = StableDiffusionPipeline.from_pretrained(
