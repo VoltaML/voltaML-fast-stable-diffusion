@@ -32,6 +32,12 @@ It is recommended to use our voltaml/volta_diffusion container or NVIDIA TensorR
 
 ## Usage
 
+### Huggingface Login
+Login into your huggingface account through the terminal
+```
+huggingface-cli login
+Token: #enter your huggingface token
+```
 ### Accelerate
 ```
 python3 volta_accelerate.py --model='runwayml/stable-diffusion-v1-5' # your model path/ hugging face name
