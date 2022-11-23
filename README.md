@@ -63,6 +63,11 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 ![Screenshot from 2022-11-22 09-37-25](https://user-images.githubusercontent.com/107309002/203323904-9bfe698b-0469-4da5-bac0-7d437c805607.png)
 ![Screenshot from 2022-11-22 09-37-45](https://user-images.githubusercontent.com/107309002/203323906-11262ba3-d5f8-47f3-80e8-e970c3af93a1.png)
 
+## To-Do:
+* Integrate Flash-attention
+* Integrate AITemplate
+* Try Flash-attention with TensorRT
+
 ## References
 * https://www.photoroom.com/tech/stable-diffusion-25-percent-faster-and-save-seconds/ </br>
 * https://github.com/kamalkraj/stable-diffusion-tritonserver </br>
