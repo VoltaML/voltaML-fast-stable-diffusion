@@ -5,7 +5,7 @@ import time
 
 
 def load_model(
-    model_name_or_path="CompVis/stable-diffusion-v1-4"
+    model_name_or_path="runwayml/stable-diffusion-v1-5"
 ) -> StableDiffusionPipeline:
     """Load model
 
