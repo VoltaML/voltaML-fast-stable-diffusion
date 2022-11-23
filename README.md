@@ -68,6 +68,9 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 * Integrate AITemplate
 * Try Flash-attention with TensorRT
 
+## Contribution:
+We invite the open source community to contribute and help us better voltaML. Please check out our [contribution guide](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/main/CONTRIBUTION.md)
+
 ## References
 * https://www.photoroom.com/tech/stable-diffusion-25-percent-faster-and-save-seconds/ </br>
 * https://github.com/kamalkraj/stable-diffusion-tritonserver </br>
