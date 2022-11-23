@@ -5,10 +5,11 @@
 
 Lightweight library to accelerate Stable-Diffusion, Dreambooth into fastest inference models with **one single line of code**.
 
-
 <div align="center">
 <a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
 </div>
+
+### **🔥[Accelerate Computer vision, NLP models etc.](https://github.com/VoltaML/voltaML) with voltaML. Upto 10X speed up in inference🔥**
 
 ## Installation
 
