@@ -78,8 +78,11 @@ class TrtDiffusionModel():
         uncond_embeddings = self.text_encoder(uncond_input.input_ids.to(self.device))[0]
         text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
         
+        latents_shape = (1, 4, height // 8, width // 8)
+        generator = torch.Generator(device=self.device).manual_seed(seed)
         latents = torch.randn(
-            (batch_size, 4, height // 8, width // 8)).to(self.device)
+                latents_shape, generator=generator, device=self.device
+            )
         self.scheduler.set_timesteps(num_inference_steps)
 
         torch.backends.cudnn.benchmark = True
