@@ -57,7 +57,7 @@ class TrtDiffusionModel():
     def predict(
         self, 
         prompts,
-        # seed = 1948952866,
+        seed = 1948952866,
         num_inference_steps = 50,
         height = 512,
         width = 512,
@@ -178,6 +178,7 @@ if __name__ == "__main__":
                 num_inference_steps = 50,
                 height = args.img_height,
                 width = args.img_width,
+                seed = 1948952866,
                 max_seq_length = args.max_seq_length
             )
         end = time.time()
