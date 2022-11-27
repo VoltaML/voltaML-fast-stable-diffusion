@@ -94,7 +94,11 @@ class TrtDiffusionModel:
             subfolder="text_encoder",
             use_auth_token=True,
         ).to(self.device)
-        self.scheduler = PNDMScheduler.from_config("scheduler")
+        self.scheduler = PNDMScheduler.from_pretrained(
+            "runwayml/stable-diffusion-v1-5",
+            subfolder="scheduler",
+            use_auth_token=True,
+        )
 
     def predict(
         self,
