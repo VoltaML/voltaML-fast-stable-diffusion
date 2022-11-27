@@ -1,5 +1,4 @@
 import argparse
-import functools
 import gc
 import os
 import sys
@@ -29,14 +28,24 @@ def get_args():
     parser.add_argument(
         "--max_seq_length", default=77, help="Maximum sequence length of input text"
     )
+    parser.add_argument(
+        "--max_gpu_memory",
+        default=15,
+        type=int,
+        help="Maximum memory available for TRT optimizer, default to T4 memory, 15GB",
+    )
     return parser.parse_args()
 
 
 def convert_to_onnx(args):
 
+    device = "cpu"
+    if torch.cuda.is_available():
+        device = "cuda"
+
     unet = UNet2DConditionModel.from_pretrained(
         args.model_path, subfolder="unet", use_auth_token=True
-    )
+    ).to(device)
 
     if not os.path.exists("unet"):
         os.makedirs("unet")
@@ -46,18 +55,18 @@ def convert_to_onnx(args):
     h, w = height // 8, width // 8
     check_inputs = [
         (
-            torch.rand(2, 4, h, w),
-            torch.tensor([980], dtype=torch.long),
-            torch.rand(2, args.max_seq_length, 768),
-            torch.tensor(False, dtype=torch.bool),
-            torch.tensor(False, dtype=torch.bool)
+            torch.rand(2, 4, h, w, device=device),
+            torch.tensor([980], dtype=torch.long, device=device),
+            torch.rand(2, args.max_seq_length, 768, device=device),
+            torch.tensor(False, dtype=torch.bool, device=device),
+            torch.tensor(False, dtype=torch.bool, device=device),
         ),
         (
-            torch.rand(2, 4, h, w),
-            torch.tensor([910], dtype=torch.long),
-            torch.rand(2, 12, 768),
-            torch.tensor(False, dtype=torch.bool),
-            torch.tensor(False, dtype=torch.bool)
+            torch.rand(2, 4, h, w, device=device),
+            torch.tensor([910], dtype=torch.long, device=device),
+            torch.rand(2, 12, 768, device=device),
+            torch.tensor(False, dtype=torch.bool, device=device),
+            torch.tensor(False, dtype=torch.bool, device=device),
         ),  # batch change, text embed with no trunc
     ]
     traced_model = torch.jit.trace(
@@ -119,7 +128,7 @@ def convert_to_trt(args):
     profile.set_shape("t", timestep_shape, timestep_shape, timestep_shape)
     config.add_optimization_profile(profile)
 
-    # config.max_workspace_size = 4096 * (1 << 20)
+    config.max_workspace_size = args.max_gpu_memory * 1 << 30
     config.set_flag(trt.BuilderFlag.FP16)
     serialized_engine = TRT_BUILDER.build_serialized_network(network, config)
 
