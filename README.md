@@ -14,14 +14,13 @@ Lightweight library to accelerate Stable-Diffusion, Dreambooth into fastest infe
 ## Installation
 
 ### voltaML Docker Container 🐳
-````
-docker pull voltaml/volta_diffusion:v0.1
-docker run -it --gpus=all -p "8888:8888" voltaml/volta_diffusion:v0.1 \ 
-        jupyter lab --port=8888 --no-browser --ip 0.0.0.0 --allow-root
-        
+````        
 git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git
 cd voltaML-fast-stable-diffusion
-pip3 install -r requirements.txt
+
+docker build -t voltaml/volta_diffusion:v0.1 .
+
+docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(pwd):/code --rm voltaml/volta_diffusion:v0.1
 ````
 
 ### Own setup:
