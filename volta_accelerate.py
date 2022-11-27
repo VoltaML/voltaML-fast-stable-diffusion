@@ -134,7 +134,9 @@ def convert_to_trt(args):
     profile.set_shape("t", timestep_shape, timestep_shape, timestep_shape)
     config.add_optimization_profile(profile)
 
-    config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, args.max_gpu_memory * 1 << 30)
+    config.set_memory_pool_limit(
+        trt.MemoryPoolType.WORKSPACE, args.max_gpu_memory * 1 << 30
+    )
     config.set_flag(trt.BuilderFlag.FP16)
     serialized_engine = TRT_BUILDER.build_serialized_network(network, config)
 
