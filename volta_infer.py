@@ -74,7 +74,7 @@ def get_args():
         help="Running benchmark by average num iteration",
     )
     parser.add_argument(
-        "--max_seq_length", default=64, help="Maximum sequence length of input text"
+        "--max_seq_length", default=77, help="Maximum sequence length of input text"
     )
     return parser.parse_args()
 

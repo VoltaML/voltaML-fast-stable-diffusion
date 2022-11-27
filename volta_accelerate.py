@@ -34,6 +34,12 @@ def get_args():
         type=int,
         help="Maximum memory available for TRT optimizer, default to T4 memory, 15GB",
     )
+    parser.add_argument(
+        "--onnx_trt",
+        default="onnx",
+        type=str,
+        help="onnx or trt",
+    )
     return parser.parse_args()
 
 
@@ -128,7 +134,7 @@ def convert_to_trt(args):
     profile.set_shape("t", timestep_shape, timestep_shape, timestep_shape)
     config.add_optimization_profile(profile)
 
-    config.max_workspace_size = args.max_gpu_memory * 1 << 30
+    config.set_memory_pool_limit(trt.MemoryPoolType.WORKSPACE, args.max_gpu_memory * 1 << 30)
     config.set_flag(trt.BuilderFlag.FP16)
     serialized_engine = TRT_BUILDER.build_serialized_network(network, config)
 
@@ -140,7 +146,9 @@ def convert_to_trt(args):
 
 if __name__ == "__main__":
     args = get_args()
-    convert_to_onnx(args)
+    if args.onnx_trt == "onnx":
+        convert_to_onnx(args)
     sys.stdout.flush()
     ## Command to convert onnx to tensorrt
-    convert_to_trt(args)
+    if args.onnx_trt == "trt":
+        convert_to_trt(args)

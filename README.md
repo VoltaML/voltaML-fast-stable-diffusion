@@ -39,7 +39,7 @@ Token: #enter your huggingface token
 ```
 ### Accelerate
 ```
-python3 volta_accelerate.py --model='runwayml/stable-diffusion-v1-5' # your model path/ hugging face name
+bash optimize.sh --model='runwayml/stable-diffusion-v1-5' # your model path/ hugging face name
 ```
 
 ### Inference
