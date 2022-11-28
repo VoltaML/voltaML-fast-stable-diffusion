@@ -58,10 +58,10 @@ python3 volta_infer.py --backend='TRT' --benchmark
 ```
 The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
-| Model          | T4 (ms)      | A100 (ms)      | A10 (ms)       |
+| Model          | T4 (it/s)      | A10 (it/s)      | A10 (it/s)       |
 |----------------|--------------|----------------|----------------|
-| PyTorch        |     14.1      | 4.4            | 6.6           |
-| VoltaML(TRT)   |     8.9      | 1.8            | 4.2           |
+| PyTorch        |     4.3      | 8.8            | 15.1           |
+| VoltaML(TRT)   |     7.7      | 17.2            | 36.1           |
 
 
 ![diffusion posts](https://user-images.githubusercontent.com/107309002/203910224-e4e89fe5-5929-4e5e-ac8d-4f126fc5c273.jpg)
