@@ -27,7 +27,7 @@ docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864
 
 Requirements: Please refer to the requirements.txt file to set it up on your own environment.
 
-It is recommended to use our voltaml/volta_diffusion container or NVIDIA TensorRT 22.08-py3 container
+It is recommended to use our voltaml/volta_diffusion container or NVIDIA TensorRT container
 
 ## Usage
 
