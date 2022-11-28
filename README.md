@@ -61,7 +61,7 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 | Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       |
 |----------------|--------------|----------------|----------------|
 | PyTorch        |     4.3      | 8.8            | 15.1           |
-| Flash attention xformers| 5.5 | 15.6            |27.5
+| Flash attention xformers| 5.5 | 15.6            |27.5            |
 | VoltaML(TRT)   |     7.7      | 17.2            | 36.1           |
 
 
