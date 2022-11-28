@@ -18,9 +18,9 @@ Lightweight library to accelerate Stable-Diffusion, Dreambooth into fastest infe
 git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git
 cd voltaML-fast-stable-diffusion
 
-docker build -t voltaml/volta_diffusion:v0.1 .
+sudo docker pull voltaml/volta_diffusion:v0.2 
 
-docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(pwd):/code --rm voltaml/volta_diffusion:v0.1
+sudo docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(pwd):/code --rm voltaml/volta_diffusion:v0.2 
 ````
 
 ### Own setup:
