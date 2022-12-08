@@ -64,7 +64,7 @@ class Optimizer():
             onnx_graph = shape_inference.infer_shapes(onnx_graph)
 
         self.graph = gs.import_onnx(onnx_graph)
-        if return_onnx:f
+        if return_onnx:
             return onnx_graph
 
     def remove_casts(self):
