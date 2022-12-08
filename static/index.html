@@ -1,0 +1,226 @@
+<!doctype html>
+<html class="no-js" lang="">
+
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <meta property="og:title" content="">
+    <meta property="og:type" content="">
+    <meta property="og:url" content="">
+    <meta property="og:image" content="">
+
+    <link rel="apple-touch-icon" href="/static/voltaml.svg">
+    <!-- Place favicon.ico in the root directory -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
+          integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
+    <link href="/static/main.css" rel="stylesheet">
+
+    <meta name="theme-color" content="#fafafa">
+</head>
+
+<body>
+
+<!-- Add your site or application content here -->
+<div class="root">
+    <!--    <img class="background" src="img/background.png"/>-->
+    <div style="padding-inline: 2rem;">
+        <div class="header">
+            <img src="/static/heading_logo.png" style="width: auto; height: 35px">
+            <img src="/static/heading_text.png" style="width: auto; height: 25px;">
+        </div>
+        <div class="app">
+            <div class="toolbar">
+                <div class="demo-button active">
+                    <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1.375 1.71078C1.375 0.997445 2.13917 0.545778 2.76417 0.889111L12.3808 6.17911C12.5278 6.26004 12.6504 6.37894 12.7358 6.52339C12.8211 6.66785 12.8662 6.83257 12.8662 7.00036C12.8662 7.16816 12.8211 7.33288 12.7358 7.47733C12.6504 7.62179 12.5278 7.74068 12.3808 7.82161L2.76417 13.1108C2.62147 13.1892 2.46079 13.2292 2.29797 13.2266C2.13514 13.2241 1.97578 13.1792 1.83558 13.0964C1.69538 13.0135 1.57918 12.8956 1.49842 12.7542C1.41766 12.6128 1.37512 12.4528 1.375 12.2899V1.71078V1.71078Z"
+                              stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" color="green"/>
+                    </svg>
+                    &nbsp;&nbsp;
+                    <span style="color: white">Text to Image</span>
+                </div>
+
+
+                <div class="demo-button">
+                    <svg width="15" height="18" viewBox="0 0 15 18" fill="none" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<rect width="15" height="18" fill="url(#pattern0)"/>
+<defs>
+<pattern id="pattern0" patternContentUnits="objectBoundingBox" width="1" height="1">
+<use xlink:href="#image0_108_19" transform="translate(-0.0217391) scale(0.00695652 0.00666667)"/>
+</pattern>
+<image id="image0_108_19" width="150" height="150" xlink:href="data:image/png;base64,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"/>
+</defs>
+</svg>
+
+                    &nbsp;&nbsp;
+                    <span style="color: white">Accelerate</span>
+                </div>
+
+            </div>
+            <div class="demo">
+                <div style="display: flex; gap: 1rem">
+                    <textarea id="prompt" placeholder="Positive Prompt"
+                            style="resize: none; padding: 1rem; width: 100%; background: #0D0D0D; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: white"></textarea>
+                    <textarea id="prompt-ve" placeholder="Negative Prompt"
+                            style="resize: none; padding: 1rem; width: 100%; background: #0D0D0D; border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 4px; color: white"></textarea>
+                </div>
+
+                </label>
+                <div class="main-demo">
+                    <div class="sidebar">
+                        <label for="model" class="form-label"
+                               style="margin-top: 1.5rem; padding-left: 0.5rem">Model</label>
+                        <select class="form-select images-number" aria-label="Default select example" id="model">
+                            <option value="runwayml/stable-diffusion-v1-4">runwayml/stable-diffusion-v1-4</option>
+                            <option value="runwayml/stable-diffusion-v1-5">runwayml/stable-diffusion-v1-5</option>
+                        </select>
+                        <div style="display: flex; gap: 0.5rem; padding-top: 1rem;">
+                            <div>
+                                <label for="images_number" class="form-label" > Images</label>
+                        <select class="form-select images-number" aria-label="Default select example"
+                                id="images_number" style="width: 80px">
+                            <option value="1">1</option>
+                            <option value="4">4</option>
+                        </select>
+                            </div>
+                             <div>
+                                <label for="inference" class="form-label">
+                            Steps</label>
+                        <input type="number" class="form-control text-field" id="inference" placeholder="Steps">
+                            </div>
+                             <div>
+                                <label for="guidance" class="form-label" >Guidance</label>
+                        <input type="number" class="form-control text-field" id="guidance" placeholder="Guidance">
+                            </div>
+                        </div>
+
+
+
+
+                        <label for="height" class="form-label" style="margin-top: 1.5rem; padding-left: 0.5rem">Height</label>
+                        <input type="range" class="form-range" min="256" max="1024" step="256" id="height">
+                        <div style="display: flex; justify-content: space-between">
+                             <div class="form-text" style="padding-left: 0.5rem; color: white">256</div>
+                             <div class="form-text" style="padding-left: 0.5rem; color: white">512</div>
+                            <div class="form-text" style="padding-left: 0.5rem; color: white">768</div>
+                             <div class="form-text" style="padding-left: 0.5rem; color: white">1024</div>
+                        </div>
+
+                        <label for="width" class="form-label" style="margin-top: 1.5rem; padding-left: 0.5rem">Width</label>
+                        <input type="range" class="form-range" min="256" max="1024" step="256" id="width">
+                        <div style="display: flex; justify-content: space-between">
+                             <div class="form-text" style="padding-left: 0.5rem; color: white">256</div>
+                             <div class="form-text" style="padding-left: 0.5rem; color: white">512</div>
+                            <div class="form-text" style="padding-left: 0.5rem; color: white">768</div>
+                             <div class="form-text" style="padding-left: 0.5rem; color: white">1024</div>
+                        </div>
+
+ <label for="seed" class="form-label"
+                               style="margin-top: 1.5rem; padding-left: 0.5rem">Seed</label>
+                        <input type="number" class="form-control text-field" id="seed" placeholder="Seed">
+
+                        <button class="submit-btn" id="submit_btn">
+                            Submit
+                            <svg width="18" height="14" viewBox="0 0 18 14" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10.25 0.75L16.5 7M16.5 7L10.25 13.25M16.5 7H1.5" stroke="white"
+                                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+
+                        </button>
+
+                        <button class="submit-btn" style="color: #6349DB; background: white" id="reset_btn">
+                            Reset
+                            <svg width="18" height="16" viewBox="0 0 18 16" fill="none"
+                                 xmlns="http://www.w3.org/2000/svg">
+                                <path d="M12.3524 5.78995H16.5124V5.78912M1.48741 14.3699V10.21M1.48741 10.21H5.64741M1.48657 10.21L4.13741 12.8624C4.99084 13.7159 6.0539 14.3296 7.21973 14.6419C8.38556 14.9543 9.61306 14.9542 10.7788 14.6417C11.9446 14.3292 13.0076 13.7153 13.8609 12.8617C14.7142 12.0082 15.3278 10.945 15.6399 9.77912M2.35907 6.22078C2.67121 5.0549 3.28477 3.99174 4.13807 3.13817C4.99137 2.28461 6.05435 1.67072 7.22013 1.35822C8.38591 1.04572 9.61342 1.04563 10.7792 1.35795C11.9451 1.67028 13.0081 2.28401 13.8616 3.13745L16.5124 5.78912M16.5124 1.62995V5.78828"
+                                      stroke="#6349DB" stroke-width="1.5" stroke-linecap="round"
+                                      stroke-linejoin="round"/>
+                            </svg>
+                        </button>
+                    </div>
+                    <div class="output-images">
+                        <h3> Image Output </h3>
+                        <div id="image_output">
+                            <img src="/static/unknown.png">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        <div class="footer"> by &nbsp; &nbsp; <img src="/static/segmind.svg" style="width: 100px"> </div>
+        </div>
+
+    </div>
+
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"
+        integrity="sha384-oBqDVmMz9ATKxIep9tiCxS/Z9fNfEXiDAYTujMAeBAsjFuCZSmKbSSUnQlmh/jp3"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js"
+        integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V"
+        crossorigin="anonymous"></script>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script lang="js">
+    let loading = false;
+    let jobId = null;
+    let interval = null;
+
+    const pollForImages = () => {
+        interval = setInterval(() => {
+            axios.get(`/voltaml/results?jobId=${jobId}`).then(({data}) => {
+                if(data.status === "SUCCESS"){
+                    loading = false;
+                    clearInterval(interval);
+                    document.getElementById('image_output').innerHTML = data.out_path.map((path) => `<img src="/${path}" />`).join(" ");
+                }
+            });
+        }, 1000)
+    }
+
+    document.getElementById('reset_btn').onclick = () => {
+        document.getElementById("prompt").value = '';
+        document.getElementById("inference").value = '';
+        document.getElementById("guidance").value = '';
+        document.getElementById("seed").value = '';
+        document.getElementById("images_number").value = ''
+        clearInterval(interval);
+        document.getElementById('image_output').innerHTML = "";
+        document.getElementById("model").value = '';
+        loading = false;
+        jobId = false;
+    }
+
+    document.getElementById('submit_btn').onclick = () => {
+        loading=true;
+        document.getElementById('image_output').innerHTML=`<span class="loader"></span>`
+
+        axios.post('/voltaml/job', {
+        "prompt": document.getElementById("prompt").value,
+        "img_height": Number(document.getElementById("height").value),
+        "img_width": Number(document.getElementById("width").value),
+        "num_inference_steps": Number(document.getElementById("inference").value),
+        "guidance_scale": Number(document.getElementById("guidance").value),
+        "seed": Number(document.getElementById("seed").value),
+        "num_images_per_prompt": Number(document.getElementById("images_number").value),
+        "model": document.getElementById("model").value,
+            "backend": "PT"
+    }).then(({data}) => {
+        console.log(data);
+        jobId = data.jobId;
+        pollForImages();
+    }).catch(() => {
+        loading = false;
+        document.getElementById('image_output').innerHTML = "";
+        })
+
+    };
+
+
+</script>
+
+
+</body>
+
+</html>
