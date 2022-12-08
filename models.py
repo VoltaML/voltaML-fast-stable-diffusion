@@ -265,7 +265,7 @@ class Optimizer():
 
                 splitGeLUV = gs.Variable("splitGeLUV-" + str(nSplitGeLUPlugin), np.dtype(np.float32), outputShape)
                 splitGeLUN = gs.Node("SplitGeLU", "splitGeLUN-" + str(nSplitGeLUPlugin), inputs=[inputTensor], outputs=[splitGeLUV])
-                self.graph.nodargses.append(splitGeLUN)
+                self.graph.nodes.append(splitGeLUN)
 
                 for subNode in self.graph.nodes:
                     if lastNode.outputs[0] in subNode.inputs:
