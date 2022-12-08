@@ -64,7 +64,7 @@ class Optimizer():
             onnx_graph = shape_inference.infer_shapes(onnx_graph)
 
         self.graph = gs.import_onnx(onnx_graph)
-        if return_onnx:
+        if return_onnx:f
             return onnx_graph
 
     def remove_casts(self):
@@ -173,7 +173,7 @@ class Optimizer():
                 betaNode = gammaNode.o()
                 index = [type(i) == gs.ir.tensor.Constant for i in betaNode.inputs].index(True)
                 beta = np.array(deepcopy(betaNode.inputs[index].values.tolist()), dtype=np.float32)
-                constantBetargsa = gs.Constant("groupNormBeta-" + str(nGroupNormPlugin), np.ascontiguousarray(beta.reshape(-1)))
+                constantBeta = gs.Constant("groupNormBeta-" + str(nGroupNormPlugin), np.ascontiguousarray(beta.reshape(-1)))
 
                 epsilon = node.o().o().o().o().o().inputs[1].values.tolist()[0]
 
