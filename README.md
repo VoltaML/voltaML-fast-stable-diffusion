@@ -31,8 +31,8 @@ It is recommended to use our voltaml/volta_diffusion container or NVIDIA TensorR
 
 ## Usage
 
-### Huggingface Login
-Login into your huggingface account through the terminal
+### Hugging Face Login
+Login into your Hugging Face account through the terminal
 ```
 huggingface-cli login
 Token: #enter your huggingface token
