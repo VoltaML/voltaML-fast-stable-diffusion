@@ -15,7 +15,7 @@
 # limitations under the License.
 #
 
-import argparse 
+import argparse
 from cuda import cudart
 from models import CLIP, UNet, VAE
 import numpy as np
@@ -24,24 +24,20 @@ import os
 import onnx
 from polygraphy import cuda
 import time
-import tqdm
 import torch
 from transformers import CLIPTokenizer
-import uuid
 import tensorrt as trt
 from utilities import Engine, DPMScheduler, LMSDiscreteScheduler, save_image, TRT_LOGGER
-from pytorch_model import inference, load_model
-
 
 def parseArgs():
     parser = argparse.ArgumentParser(description="Options for Stable Diffusion Demo")
     # Stable Diffusion configuration
-    parser.add_argument('--prompt', nargs = '*', help="Text prompt(s) to guide image generation")
+    parser.add_argument('prompt', nargs = '*', help="Text prompt(s) to guide image generation")
     parser.add_argument('--negative-prompt', nargs = '*', default=[''], help="The negative prompt(s) to guide the image generation.")
     parser.add_argument('--repeat-prompt', type=int, default=1, choices=[1, 2, 4, 8, 16], help="Number of times to repeat the prompt (batch size multiplier)")
     parser.add_argument('--height', type=int, default=512, help="Height of image to generate (must be multiple of 8)")
     parser.add_argument('--width', type=int, default=512, help="Height of image to generate (must be multiple of 8)")
-    # parser.add_argument('--num-images', type=int, default=1, help="Number of images to generate per prompt")
+    parser.add_argument('--num-images', type=int, default=1, help="Number of images to generate per prompt")
     parser.add_argument('--denoising-steps', type=int, default=50, help="Number of denoising steps")
     parser.add_argument('--denoising-prec', type=str, default='fp16', choices=['fp32', 'fp16'], help="Denoiser model precision")
     parser.add_argument('--scheduler', type=str, default="LMSD", choices=["LMSD", "DPM"], help="Scheduler for diffusion process")
@@ -54,7 +50,6 @@ def parseArgs():
     parser.add_argument('--onnx-minimal-optimization', action='store_true', help="Restrict ONNX optimization to const folding and shape inference.")
 
     # TensorRT engine build
-    parser.add_argument('--model-path', default="CompVis/stable-diffusion-v1-4", help="HuggingFace Model path")
     parser.add_argument('--engine-dir', default='engine', help="Output directory for TensorRT engines")
     parser.add_argument('--force-engine-build', action='store_true', help="Force rebuilding the TensorRT engine")
     parser.add_argument('--build-static-batch', action='store_true', help="Build TensorRT engines with fixed batch size.")
@@ -77,7 +72,6 @@ class DemoDiffusion:
     """
     def __init__(
         self,
-
         denoising_steps,
         denoising_fp16=True,
         scheduler="LMSD",
@@ -87,8 +81,7 @@ class DemoDiffusion:
         hf_token=None,
         verbose=False,
         nvtx_profile=False,
-        max_batch_size=16,
-        model_path="CompVis/stable-diffusion-v1-4"
+        max_batch_size=16
     ):
         """
         Initializes the Diffusion pipeline.
@@ -123,7 +116,7 @@ class DemoDiffusion:
         self.denoising_fp16 = denoising_fp16
         assert guidance_scale > 1.0
         self.guidance_scale = guidance_scale
-        self.model_path = model_path
+
         self.output_dir = output_dir
         self.hf_token = hf_token
         self.device = device
@@ -145,7 +138,7 @@ class DemoDiffusion:
         self.unet_model_key = 'unet_fp16' if denoising_fp16 else 'unet'
         self.models = {
             'clip': CLIP(hf_token=hf_token, device=device, verbose=verbose, max_batch_size=max_batch_size),
-            self.unet_model_key: UNet(model_path=model_path, hf_token=hf_token, fp16=denoising_fp16, device=device, verbose=verbose, max_batch_size=max_batch_size),
+            self.unet_model_key: UNet(hf_token=hf_token, fp16=denoising_fp16, device=device, verbose=verbose, max_batch_size=max_batch_size),
             'vae': VAE(hf_token=hf_token, device=device, verbose=verbose, max_batch_size=max_batch_size)
         }
 
@@ -275,7 +268,6 @@ class DemoDiffusion:
         image_width,
         warmup = False,
         verbose = False,
-        seed=None
     ):
         """
         Run the diffusion pipeline.
@@ -313,8 +305,8 @@ class DemoDiffusion:
             self.engine[model_name].allocate_buffers(shape_dict=obj.get_shape_dict(batch_size, image_height, image_width), device=self.device)
 
         generator = None
-        if seed is not None:
-            generator = torch.Generator(device="cuda").manual_seed(seed) 
+        if args.seed is not None:
+            generator = torch.Generator(device="cuda").manual_seed(args.seed) 
 
         # Run Stable Diffusion pipeline
         with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER) as runtime:
@@ -377,7 +369,7 @@ class DemoDiffusion:
                 nvtx.end_range(nvtx_clip)
 
             cudart.cudaEventRecord(events['denoise-start'], 0)
-            for step_index, timestep in enumerate(tqdm.tqdm(self.scheduler.timesteps)):
+            for step_index, timestep in enumerate(self.scheduler.timesteps):
                 if self.nvtx_profile:
                     nvtx_latent_scale = nvtx.start_range(message='latent_scale', color='pink')
                 # expand the latents if we are doing classifier free guidance
@@ -442,166 +434,10 @@ class DemoDiffusion:
                 image_name_prefix = 'sd-'+('fp16' if self.denoising_fp16 else 'fp32')+''.join(set(['-'+prompt[i].replace(' ','_')[:10] for i in range(batch_size)]))+'-'
                 save_image(images, self.output_dir, image_name_prefix)
 
-                
-def infer_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
-    
-    print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
-    args = parseArgs()
-
-    args.output_dir=saving_path
-    args.prompt=[prompt]
-    args.model_path=model
-    args.height=img_height
-    args.width=img_width
-    args.repeat_prompt=num_images_per_prompt
-    args.denoising_steps=num_inference_steps
-    args.seed=seed
-    args.guidance_scale=guidance_scale
-    
-    print('Seed :', args.seed)
-    
-    args.engine_dir = os.path.join(args.engine_dir, args.model_path)
-
-    isExist = os.path.exists(args.engine_dir.split('/')[0])
-    if not isExist:
-        os.makedirs(args.engine_dir.split('/')[0])
-    isExist = os.path.exists(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    if not isExist:
-        os.makedirs(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    isExist = os.path.exists(args.engine_dir)
-    if not isExist:
-        os.makedirs(args.engine_dir)
-    isExist = os.path.exists(args.onnx_dir)
-    if not isExist:
-        os.makedirs(args.onnx_dir)
-    isExist = os.path.exists(args.output_dir)
-    if not isExist:
-        os.makedirs(args.output_dir)
-    
-    
-    # Process prompt
-    # if not isinstance(args.prompt, list):
-    #     raise ValueError(f"`prompt` must be of type `str` or `str` list, but is {type(args.prompt)}")
-    print('String :', args.prompt, type(args.prompt))
-    prompt = args.prompt * args.repeat_prompt
-
-    if not isinstance(args.negative_prompt, list):
-        raise ValueError(f"`--negative-prompt` must be of type `str` or `str` list, but is {type(args.negative_prompt)}")
-    if len(args.negative_prompt) == 1:
-        negative_prompt = args.negative_prompt * len(prompt)
-    else:
-        negative_prompt = args.negative_prompt
-
-    max_batch_size = 16
-    if args.build_dynamic_shape:
-        max_batch_size = 4
-
-    if len(prompt) > max_batch_size:
-        raise ValueError(f"Batch size {len(prompt)} is larger than allowed {max_batch_size}. If dynamic shape is used, then maximum batch size is 4")
-
-    # Validate image dimensions
-    image_height = args.height
-    image_width = args.width
-    if image_height % 8 != 0 or image_width % 8 != 0:
-        raise ValueError(f"Image height and width have to be divisible by 8 but specified as: {image_height} and {image_width}.")
-
-    # Register TensorRT plugins
-    trt.init_libnvinfer_plugins(TRT_LOGGER, '')
-
-    # Initialize demo
-    demo = DemoDiffusion(
-        model_path=args.model_path,
-        denoising_steps=args.denoising_steps,
-        denoising_fp16=(args.denoising_prec == 'fp16'),
-        output_dir=args.output_dir,
-        scheduler=args.scheduler,
-        hf_token=args.hf_token,
-        verbose=args.verbose,
-        nvtx_profile=args.nvtx_profile,
-        max_batch_size=max_batch_size,
-    )
-
-    # Load TensorRT engines and pytorch modules
-    demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
-        opt_batch_size=len(prompt), opt_image_height=image_height, opt_image_width=image_width, \
-        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
-        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
-        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
-    demo.loadModules()
-
-    print("[I] Warming up ..")
-    for _ in range(args.num_warmup_runs):
-        images = demo.infer(prompt, negative_prompt, args.height, args.width, warmup=True, verbose=False, seed=args.seed)
-
-    print("[I] Running StableDiffusion pipeline")
-    if args.nvtx_profile:
-        cudart.cudaProfilerStart()
-    images = demo.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
-    if args.nvtx_profile:
-        cudart.cudaProfilerStop()
-
-    demo.teardown()
-
-
-    
-def infer_pt(saving_path, model, prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed):
-    
-    print("[+] Loading the model")
-    model = load_model()
-    print("[+] Model loaded")
-
-    print("[+] Generating images...")
-    # PIL images
-    images, time = inference(
-        model=model,
-        prompt=prompt,
-        img_height=img_height,
-        img_width=img_width,
-        num_inference_steps=num_inference_steps,
-        guidance_scale=guidance_scale,
-        num_images_per_prompt=num_images_per_prompt,
-        seed=seed,
-        return_time=True,
-    )
-    
-    print("[+] Time needed to generate the images: {} seconds".format(time))
-
-    # Save PIL images with a random name
-    for img in images:
-        img.save("{}/{}.png".format(saving_path, uuid.uuid4()))
-
-    print(
-        "[+] Images saved in the following path: {}".format(saving_path)
-    )
-    
-    return "Success."
-
-                
 if __name__ == "__main__":
 
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
     args = parseArgs()
-
-    args.engine_dir = os.path.join(args.engine_dir, args.model_path)
-
-    isExist = os.path.exists(args.engine_dir.split('/')[0])
-    if not isExist:
-        os.makedirs(args.engine_dir.split('/')[0])
-    isExist = os.path.exists(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    if not isExist:
-        os.makedirs(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    isExist = os.path.exists(args.engine_dir)
-    if not isExist:
-        os.makedirs(args.engine_dir)
-    isExist = os.path.exists(args.onnx_dir)
-    if not isExist:
-        os.makedirs(args.onnx_dir)
-    isExist = os.path.exists(args.output_dir)
-    if not isExist:
-        os.makedirs(args.output_dir)
-    
-    print('String', args.prompt)
 
     # Process prompt
     if not isinstance(args.prompt, list):
@@ -618,6 +454,7 @@ if __name__ == "__main__":
     max_batch_size = 16
     if args.build_dynamic_shape:
         max_batch_size = 4
+
     if len(prompt) > max_batch_size:
         raise ValueError(f"Batch size {len(prompt)} is larger than allowed {max_batch_size}. If dynamic shape is used, then maximum batch size is 4")
 
@@ -632,7 +469,6 @@ if __name__ == "__main__":
 
     # Initialize demo
     demo = DemoDiffusion(
-        model_path=args.model_path,
         denoising_steps=args.denoising_steps,
         denoising_fp16=(args.denoising_prec == 'fp16'),
         output_dir=args.output_dir,

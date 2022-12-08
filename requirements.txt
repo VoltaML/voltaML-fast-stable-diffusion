@@ -1,6 +1,15 @@
-transformers==4.24.0
-diffusers==0.9.0
-pycuda==2022.2
-onnxsim==0.4.10
+colored
+cuda-python
+diffusers==0.7.2
+ftfy
+matplotlib
+nvtx
+onnx==1.12.0
+--extra-index-url https://pypi.ngc.nvidia.com
+onnx-graphsurgeon==0.3.25
 onnxruntime==1.13.1
-onnxconverter-common==1.13.0
+polygraphy==0.43.1
+scipy
+--extra-index-url https://download.pytorch.org/whl/cu116
+torch==1.12.0+cu116
+transformers==4.24.0

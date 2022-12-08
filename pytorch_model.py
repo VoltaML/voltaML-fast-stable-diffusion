@@ -1,5 +1,6 @@
 import time
 from typing import List, Union
+import uuid
 
 import torch
 from diffusers import StableDiffusionPipeline

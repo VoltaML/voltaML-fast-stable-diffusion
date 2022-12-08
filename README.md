@@ -1,85 +1,99 @@
-![Screenshot from 2022-11-22 15-29-39](https://user-images.githubusercontent.com/107309002/203284627-fa180962-75b1-41dd-83a7-124b74a1fcdf.png)
+# Introduction
 
-## ⚡voltaML-fast-stable-diffusion 🔥 🔥 
+This demo application ("demoDiffusion") showcases the acceleration of [Stable Diffusion](https://huggingface.co/CompVis/stable-diffusion-v1-4) pipeline using TensorRT plugins.
 
+# Setup
 
-Lightweight library to accelerate Stable-Diffusion, Dreambooth into fastest inference models with **one single line of code**.
+### Clone the TensorRT OSS repository
 
-<div align="center">
-<a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
-</div>
-
-### **🔥[Accelerate Computer vision, NLP models etc.](https://github.com/VoltaML/voltaML) with voltaML. Upto 10X speed up in inference🔥**
-
-## Installation
-
-### voltaML Docker Container 🐳
-````        
-git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git
-cd voltaML-fast-stable-diffusion
-
-sudo docker pull voltaml/volta_diffusion:v0.2 
-
-sudo docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(pwd):/code --rm voltaml/volta_diffusion:v0.2 
-````
-
-### Own setup:
-
-Requirements: Please refer to the requirements.txt file to set it up on your own environment.
-
-It is recommended to use our voltaml/volta_diffusion container or NVIDIA TensorRT container
-
-## Usage
-
-### Hugging Face Login
-Login into your Hugging Face account through the terminal
-```
-huggingface-cli login
-Token: #enter your huggingface token
-```
-### Accelerate
-```
-bash optimize.sh --model='runwayml/stable-diffusion-v1-5' # your model path/ hugging face name
+```bash
+git clone git@github.com:NVIDIA/TensorRT.git -b release/8.5 --single-branch
+cd TensorRT
+git submodule update --init --recursive
 ```
 
-### Inference
+### Launch TensorRT NGC container
 
-**For TensorRT**
+Install nvidia-docker using [these intructions](https://docs.nvidia.com/datacenter/cloud-native/container-toolkit/install-guide.html#docker).
+
+```bash
+docker run --rm -it --gpus all -v $PWD:/workspace nvcr.io/nvidia/tensorrt:22.10-py3 /bin/bash
 ```
-python3 volta_infer.py --backend='TRT' --prompt='a gigantic robotic bipedal dinosaur, highly detailed, photorealistic, digital painting, artstation, concept art, sharp focus, illustration, art by greg rutkowski and alphonse mucha'
+
+### (Optional) Install latest TensorRT release
+
+```bash
+python3 -m pip install --upgrade pip
+python3 -m pip install --upgrade tensorrt
 ```
-**For PyTorch**
+> NOTE: Alternatively, you can download and install TensorRT packages from [NVIDIA TensorRT Developer Zone](https://developer.nvidia.com/tensorrt).
+
+### Build TensorRT plugins library
+
+Build TensorRT Plugins library using the [TensorRT OSS build instructions](https://github.com/NVIDIA/TensorRT/blob/main/README.md#building-tensorrt-oss).
+
+```bash
+export TRT_OSSPATH=/workspace
+
+cd $TRT_OSSPATH
+mkdir -p build && cd build
+cmake .. -DTRT_OUT_DIR=$PWD/out
+cd plugin
+make -j$(nproc)
+
+export PLUGIN_LIBS="$TRT_OSSPATH/build/out/libnvinfer_plugin.so"
 ```
-python3 volta_infer.py --backend='PT' --prompt='a gigantic robotic bipedal dinosaur, highly detailed, photorealistic, digital painting, artstation, concept art, sharp focus, illustration, art by greg rutkowski and alphonse mucha'
+
+### Install required packages
+
+```bash
+cd $TRT_OSSPATH/demo/Diffusion
+pip3 install -r requirements.txt
+
+# Create output directories
+mkdir -p onnx engine output
 ```
-## Benchmark
+
+> NOTE: demoDiffusion has been tested on systems with NVIDIA A100, RTX3090, and RTX4090 GPUs, and the following software configuration.
 ```
-python3 volta_infer.py --backend='TRT' --benchmark
+cuda-python         11.8.1
+diffusers           0.7.2
+onnx                1.12.0
+onnx-graphsurgeon   0.3.25
+onnxruntime         1.13.1
+polygraphy          0.43.1
+tensorrt            8.5.1.7
+tokenizers          0.13.2
+torch               1.12.0+cu116
+transformers        4.24.0
 ```
-The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
-| Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       |
-|----------------|--------------|----------------|----------------|
-| PyTorch        |     4.3      | 8.8            | 15.1           |
-| Flash attention xformers| 5.5 | 15.6            |27.5            |
-| VoltaML(TRT)   |     7.7      | 17.2            | 36.1           |
+> NOTE: optionally install HuggingFace [accelerate](https://pypi.org/project/accelerate/) package for faster and less memory-intense model loading.
 
 
-![diffusion posts](https://user-images.githubusercontent.com/107309002/203910224-e4e89fe5-5929-4e5e-ac8d-4f126fc5c273.jpg)
-![diffusion posts 1](https://user-images.githubusercontent.com/107309002/203910230-f83eda45-eb85-48a2-b5c8-e4f3ec8c21dd.jpg)
-![diffusion posts 3](https://user-images.githubusercontent.com/107309002/203910233-79991ee4-24e1-4ac0-b0b2-d41543f75cef.jpg)
-![diffusion posts 4](https://user-images.githubusercontent.com/107309002/203910349-1168695b-816f-4d35-9fa7-7e0331816eeb.jpg)
+# Running demoDiffusion
 
-## To-Do:
-* Integrate Flash-attention
-* Integrate AITemplate
-* Try Flash-attention with TensorRT
+### Review usage instructions
 
-## Contribution:
-We invite the open source community to contribute and help us better voltaML. Please check out our [contribution guide](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/main/CONTRIBUTION.md)
+```bash
+python3 demo-diffusion.py --help
+```
 
-## References
-* https://www.photoroom.com/tech/stable-diffusion-25-percent-faster-and-save-seconds/ </br>
-* https://github.com/kamalkraj/stable-diffusion-tritonserver </br>
-* https://github.com/luohao123/gaintmodels </br>
-* https://github.com/stochasticai/x-stable-diffusion
+### HuggingFace user access token
+
+To download the model checkpoints for the Stable Diffusion pipeline, you will need a `read` access token. See [instructions](https://huggingface.co/docs/hub/security-tokens).
+
+```bash
+export HF_TOKEN=<your access token>
+```
+
+### Generate an image guided by a single text prompt
+
+```bash
+LD_PRELOAD=${PLUGIN_LIBS} python3 demo-diffusion.py "a beautiful photograph of Mt. Fuji during cherry blossom" --hf-token=$HF_TOKEN -v
+```
+
+# Restrictions
+- Upto 16 simultaneous prompts (maximum batch size) per inference.
+- For generating images of dynamic shapes without rebuilding the engines, use `--force-dynamic-shape`.
+- Supports images sizes between 256x256 and 1024x1024.
