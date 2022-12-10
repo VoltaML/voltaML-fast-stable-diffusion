@@ -143,6 +143,31 @@ def accelerate_trt():
     convert_to_trt(args)
     return "Success"
 
+@app.route('/voltaml/scan_dir')
+def scan_directory():
+    pt_model_path = '/root/.cache/huggingface/hub'
+    pt_models = []
+    if os.path.exists(pt_model_path):
+        tmp = os.listdir(pt_model_path)
+        for i in tmp:
+            if 'model' in i.split('--')[0]:
+                pt_models.append(os.path.join(i.split('--')[1], i.split('--')[2]))
+    
+    trt_model_path = 'engine'
+    trt_models = []
+    if os.path.exists(trt_model_path):
+        tmp = os.listdir(trt_model_path)
+        for i in tmp:
+            tmp2 = os.listdir(os.path.join(trt_model_path,i))
+            for j in tmp2:
+                tmp3 = os.listdir(os.path.join(trt_model_path,i,j))
+                if len(tmp3)>=2:
+                    trt_models.append(os.path.join(i, j))
+    print(pt_models, trt_models)
+    
+    return json.dumps({'pt_models':pt_models,
+                        'trt_models':trt_models})
+
 
 @app.route('/voltaml/results')
 def get_result():
