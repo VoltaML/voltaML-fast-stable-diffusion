@@ -18,8 +18,6 @@ body {
 .root {
     width: 100vw;
     height: 100vh;
-    background: url("/static/background.svg") no-repeat top center;
-    background-size: cover;
     color: white;
 }
 
@@ -47,7 +45,8 @@ body {
 }
 
 .demo-button.active {
-    border-bottom: 1px solid white;
+    border-bottom: 2px solid lawngreen;
+    border-radius: 1rem;
 }
 
 .toolbar {
@@ -58,7 +57,6 @@ body {
 }
 
 .demo {
-    margin-top: 0.5rem;
     border: 1px solid rgba(255, 255, 255, 0.2);
     border-radius: 12px;
     padding: 0.5rem 1rem 1rem;
@@ -191,4 +189,51 @@ body {
 .card {
     background: #0D0D0D;
     text-align: center;
+    border: 1px solid grey;
+    width: 18rem;
+    margin: 25px;
+}
+
+
+.glow-on-hover{
+    will-change: opacity, transform, visibility;
+    width: 100%;
+    color: white;
+    margin-top: 1rem;
+}
+
+
+.glow-on-hover:before {
+    content: '';
+    background: linear-gradient(45deg, #ff0000, #ff7300, #fffb00, #48ff00, #00ffd5, #002bff, #7a00ff, #ff00c8, #ff0000);
+    position: absolute;
+    top: -2px;
+    left:-2px;
+    background-size: 400%;
+    z-index: -1;
+    filter: blur(5px);
+    width: calc(100% + 4px);
+    height: calc(100% + 4px);
+    animation: glowing 20s linear infinite;
+    opacity: 1;
+    transition: opacity .3s ease-in-out;
+    border-radius: 10px;
+}
+
+.glow-on-hover:after {
+    z-index: -1;
+    content: '';
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    background: #111;
+    left: 0;
+    top: 0;
+    border-radius: 10px;
+}
+
+@keyframes glowing {
+    0% { background-position: 0 0; }
+    50% { background-position: 400% 0; }
+    100% { background-position: 0 0; }
 }
