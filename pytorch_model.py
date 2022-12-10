@@ -14,12 +14,19 @@ def load_model(
     :param model_name_or_path: model name (downloaded from HF Hub) or model path (local), defaults to "runwayml/stable-diffusion-v1-5"
     :return: the Stable Diffusion pipeline
     """
-    pipe = StableDiffusionPipeline.from_pretrained(
-        model_name_or_path,
-        revision="fp16",
-        torch_dtype=torch.float16,
-        use_auth_token=True,
-    )
+    try:
+	    pipe = StableDiffusionPipeline.from_pretrained(
+	        model_name_or_path,
+	        revision="fp16",
+	        torch_dtype=torch.float16,
+	        use_auth_token=True,
+	    )
+    except:
+	    pipe = StableDiffusionPipeline.from_pretrained(
+                model_name_or_path,
+                use_auth_token=True,
+            )
+
     pipe = pipe.to("cuda")
 
     return pipe

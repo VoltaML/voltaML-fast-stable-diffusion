@@ -239,6 +239,7 @@
                 if (data.status === "SUCCESS") {
                     loading = false;
                     clearInterval(interval);
+                    console.log(interval);
                     document.getElementById('image_output').innerHTML = data.out_path.map((path) => `<img src="/${path}" />`).join(" ");
                 }
             });
