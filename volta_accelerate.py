@@ -446,7 +446,7 @@ class DemoDiffusion:
                 save_image(images, self.output_dir, image_name_prefix)
 
                 
-def infer_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
+def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
     
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
     args = parseArgs()
@@ -460,6 +460,7 @@ def infer_trt(saving_path, model, prompt, img_height, img_width, num_inference_s
     args.denoising_steps=num_inference_steps
     args.seed=seed
     args.guidance_scale=guidance_scale
+    args.negative_prompt=[neg_prompt]
     
     print('Seed :', args.seed)
     

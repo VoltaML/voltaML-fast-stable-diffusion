@@ -36,6 +36,7 @@ def load_model(
 def inference(
     model: StableDiffusionPipeline,
     prompt: Union[str, List[str]],
+    negative_prompt: Union[str, List[str]],
     img_height: int = 512,
     img_width: int = 512,
     num_inference_steps: int = 50,
@@ -66,6 +67,7 @@ def inference(
     with torch.autocast("cuda"):
         output = model(
             prompt=prompt,
+            negative_prompt=negative_prompt,
             height=img_height,
             width=img_width,
             num_inference_steps=num_inference_steps,

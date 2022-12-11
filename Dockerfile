@@ -16,14 +16,15 @@ RUN mkdir -p build \
     && make -j$(nproc)
 
 ENV PLUGIN_LIBS="${TRT_OSSPATH}/build/out/libnvinfer_plugin.so"
-ENV LD_PRELOAD=${PLUGIN_LIBS}
 
 WORKDIR /workspace
 
 
 RUN git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git -b volta_trt_flash --single-branch
 
+RUN pip3 install -r /workspace/voltaML-fast-stable-diffusion/requirements.txt
 WORKDIR /workspace/voltaML-fast-stable-diffusion
 
+RUN chmod +x start.sh
 
-RUN pip3 install -r requirements.txt
+ENTRYPOINT ["./start.sh"]

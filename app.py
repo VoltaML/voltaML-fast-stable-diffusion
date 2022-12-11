@@ -56,6 +56,7 @@ def upload_file():
             job_id = random.randint(10000000, 99999999)
 
             prompt = body["prompt"]
+            negative_prompt = body["prompt-ve"]
             img_height = body["img_height"]
             img_width = body["img_width"]
             num_inference_steps = body["num_inference_steps"]
@@ -64,6 +65,7 @@ def upload_file():
             num_images_per_prompt = body["num_images_per_prompt"]
             model = body["model"]
             backend = body["backend"]
+            
             # Create directory to save images if it does not exist
             saving_path = 'static/output/' + str(job_id)
             if not os.path.exists(saving_path):
@@ -87,6 +89,7 @@ def upload_file():
                     'saving_path': saving_path,
                     'model': model,
                     'prompt': prompt,
+                    'neg_prompt':negative_prompt,
                     'img_height': img_height,
                     'img_width': img_width,
                     'num_inference_steps': num_inference_steps,
