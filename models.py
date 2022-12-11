@@ -662,7 +662,7 @@ class CLIP(BaseModel):
         return ['input_ids']
 
     def get_output_names(self):
-       return ['text_embeddings', 'pooler_output'] 
+        return ['text_embeddings', 'pooler_output'] 
 
     def get_dynamic_axes(self):
         return {
@@ -721,17 +721,25 @@ class CLIP(BaseModel):
 
 class UNet(BaseModel):
     def get_model(self):
-        model_opts = {'revision': 'fp16', 'torch_dtype': torch.float16} if self.fp16 else {}
-        return UNet2DConditionModel.from_pretrained(self.model_path,
-            subfolder="unet",
-            use_auth_token=self.hf_token,
-            **model_opts).to(self.device)
+        try:
+            model_opts = {'revision': 'fp16', 'torch_dtype': torch.float16} if self.fp16 else {}
+            return UNet2DConditionModel.from_pretrained(self.model_path,
+                subfolder="unet",
+                use_auth_token=self.hf_token,
+                **model_opts).to(self.device)
+
+        except:
+            model_opts={}
+            return UNet2DConditionModel.from_pretrained(self.model_path,
+                subfolder="unet",
+                use_auth_token=self.hf_token,
+                **model_opts).to(self.device)
 
     def get_input_names(self):
         return ['sample', 'timestep', 'encoder_hidden_states']
 
     def get_output_names(self):
-       return ['latent'] 
+        return ['latent'] 
 
     def get_dynamic_axes(self):
         return {

@@ -15,14 +15,14 @@ def load_model(
     :return: the Stable Diffusion pipeline
     """
     try:
-	    pipe = StableDiffusionPipeline.from_pretrained(
-	        model_name_or_path,
-	        revision="fp16",
-	        torch_dtype=torch.float16,
-	        use_auth_token=True,
-	    )
+        pipe = StableDiffusionPipeline.from_pretrained(
+            model_name_or_path,
+            revision="fp16",
+            torch_dtype=torch.float16,
+            use_auth_token=True,
+        )
     except:
-	    pipe = StableDiffusionPipeline.from_pretrained(
+        pipe = StableDiffusionPipeline.from_pretrained(
                 model_name_or_path,
                 use_auth_token=True,
             )

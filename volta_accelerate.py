@@ -31,7 +31,7 @@ import uuid
 import tensorrt as trt
 from utilities import Engine, DPMScheduler, LMSDiscreteScheduler, save_image, TRT_LOGGER
 from pytorch_model import inference, load_model
-
+import gc
 
 def parseArgs():
     parser = argparse.ArgumentParser(description="Options for Stable Diffusion Demo")
@@ -62,7 +62,7 @@ def parseArgs():
     parser.add_argument('--build-preview-features', action='store_true', help="Build TensorRT engines with preview features.")
 
     # TensorRT inference
-    parser.add_argument('--num-warmup-runs', type=int, default=5, help="Number of warmup runs before benchmarking performance")
+    parser.add_argument('--num-warmup-runs', type=int, default=0, help="Number of warmup runs before benchmarking performance")
     parser.add_argument('--nvtx-profile', action='store_true', help="Enable NVTX markers for performance profiling")
     parser.add_argument('--seed', type=int, default=None, help="Seed for random generator to get consistent results")
 
@@ -233,6 +233,8 @@ class DemoDiffusion:
                                     output_names = obj.get_output_names(),
                                     dynamic_axes=obj.get_dynamic_axes(),
                             )
+                        del model
+                        gc.collect()
                     else:
                         print(f"Found cached model: {onnx_path}")
 
@@ -254,6 +256,7 @@ class DemoDiffusion:
         # Separate iteration to activate engines
         for model_name, obj in self.models.items():
             self.engine[model_name].activate()
+        gc.collect()
 
     def loadModules(
         self,
