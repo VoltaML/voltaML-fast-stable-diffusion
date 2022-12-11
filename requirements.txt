@@ -16,3 +16,4 @@ transformers==4.24.0
 accelerate
 flask
 pandas
+jupyterlab
