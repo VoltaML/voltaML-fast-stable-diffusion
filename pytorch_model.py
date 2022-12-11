@@ -6,8 +6,9 @@ import torch
 from diffusers import StableDiffusionPipeline
 
 
+
 def load_model(
-    model_name_or_path="runwayml/stable-diffusion-v1-5",
+    model_name_or_path="runwayml/stable-diffusion-v1-5", hf_token='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'
 ) -> StableDiffusionPipeline:
     """Load model
 
@@ -19,12 +20,12 @@ def load_model(
             model_name_or_path,
             revision="fp16",
             torch_dtype=torch.float16,
-            use_auth_token=True,
+            use_auth_token=hf_token,
         )
     except:
         pipe = StableDiffusionPipeline.from_pretrained(
                 model_name_or_path,
-                use_auth_token=True,
+                use_auth_token=hf_token,
             )
 
     pipe = pipe.to("cuda")

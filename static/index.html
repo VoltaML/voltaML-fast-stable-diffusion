@@ -162,11 +162,11 @@
                             <div>
                                 <label for="inference" class="form-label">
                                     Steps</label>
-                                <input type="number" class="form-control text-field" id="inference" placeholder="Steps">
+                                <input type="number" class="form-control text-field" id="inference" value="50" placeholder="Steps">
                             </div>
                             <div>
                                 <label for="guidance" class="form-label">Guidance</label>
-                                <input type="number" class="form-control text-field" id="guidance"
+                                <input type="number" class="form-control text-field" id="guidance" value="12"
                                        placeholder="Guidance">
                             </div>
                         </div>
@@ -194,7 +194,7 @@
 
                         <label for="seed" class="form-label"
                                style="margin-top: 1.5rem; padding-left: 0.5rem">Seed</label>
-                        <input type="number" class="form-control text-field" id="seed" placeholder="Seed">
+                        <input type="number" class="form-control text-field" id="seed" value="100000" placeholder="Seed">
 
                         <button class="submit-btn" id="submit_btn">
                             Submit
@@ -269,19 +269,22 @@
         let type;
         if ( document.querySelector('input[name="backend"]:checked').value === 'trt' ){
             type = trt_models;
-text1 = "Accelerated Models";
+            text1 = "Accelerated Models";
             text2 = "Need to Accelerate";
+            document.getElementById('model').innerHTML = '';
+            document.getElementById('model').innerHTML += `<option disabled> ${text1} </option>`;
+            document.getElementById('model').innerHTML += type.map(m => `<option value="${m}"> ${m} </option>`).join(' ');
         } else {
-
             type = pt_models;
             text1 = "Downloaded Models";
             text2 = "Need to download";
+            document.getElementById('model').innerHTML = '';
+            document.getElementById('model').innerHTML += `<option disabled> ${text1} </option>`;
+            document.getElementById('model').innerHTML += type.map(m => `<option value="${m}"> ${m} </option>`).join(' ');
+            document.getElementById('model').innerHTML += `<option disabled> ${text2} </option>`;
+            document.getElementById('model').innerHTML += all_models.map(m =>(type.includes(m)) ? undefined : `<option value="${m}"> ${m} ↓ </option>`).join(' ');
         }
-        document.getElementById('model').innerHTML = '';
-        document.getElementById('model').innerHTML += `<option disabled> ${text1} </option>`;
-        document.getElementById('model').innerHTML += type.map(m => `<option value="${m}"> ${m} </option>`).join(' ');
-        document.getElementById('model').innerHTML += `<option disabled> ${text2} </option>`;
-        document.getElementById('model').innerHTML += all_models.map(m =>(type.includes(m)) ? undefined : `<option value="${m}"> ${m} </option>`).join(' ');
+        
     }
 
     // {"pt_models": ["openai/clip-vit-large-patch14"], "trt_models": []}
@@ -339,13 +342,13 @@ text1 = "Accelerated Models";
             type = trt_models;
         } else {
             type = pt_models;
-        }
-
-
-console.log(type.includes(document.getElementById("model").value))
-        if(!type.includes(document.getElementById("model").value)) {
+            if(!type.includes(document.getElementById("model").value)) {
             document.getElementById('need_to_download').innerHTML = '( This model is downloading. Please wait a couple mins. )'
         }
+        }
+
+
+        
 
         axios.post('/voltaml/job', {
             "prompt": document.getElementById("prompt").value,

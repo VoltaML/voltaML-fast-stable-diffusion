@@ -161,7 +161,7 @@ def scan_directory():
             tmp2 = os.listdir(os.path.join(trt_model_path,i))
             for j in tmp2:
                 tmp3 = os.listdir(os.path.join(trt_model_path,i,j))
-                if len(tmp3)>=2:
+                if len(tmp3)>=3:
                     trt_models.append(os.path.join(i, j))
     print(pt_models, trt_models)
     

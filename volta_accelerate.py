@@ -577,7 +577,8 @@ def infer_pt(saving_path, model_path, prompt, img_height, img_width, num_inferen
     print(
         "[+] Images saved in the following path: {}".format(saving_path)
     )
-    
+    del model
+    gc.collect()
     return "Success."
 
                 
