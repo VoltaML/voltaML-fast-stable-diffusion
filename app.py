@@ -145,7 +145,7 @@ def accelerate_trt():
 
 @app.route('/voltaml/scan_dir')
 def scan_directory():
-    pt_model_path = '/root/.cache/huggingface/hub'
+    pt_model_path = '/root/.cache/huggingface/diffusers'
     pt_models = []
     if os.path.exists(pt_model_path):
         tmp = os.listdir(pt_model_path)

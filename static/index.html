@@ -1,3 +1,4 @@
+
 <!doctype html>
 <html class="no-js" lang="">
 
@@ -57,8 +58,7 @@
                     </svg>&nbsp;&nbsp;
                     <a href="/acc" style="text-decoration: none"><span style="color: white">Accelerate</span></a>
                 </div>
-                <button class="btn btn-secondary" style="margin-left: auto; color: white"> Refresh </button>
-
+                <button class="btn btn-outline-secondary btn-sm" style="margin-left: auto; color: white" onclick="getList()"> ↻  </button>
             </div>
             <div class="demo">
                 <div style="display: flex; gap: 1rem">
@@ -73,13 +73,13 @@
                         <label class="form-label"
                                style="margin-top: 1.5rem; padding-left: 0.5rem">Backend&nbsp;:</label> &nbsp;&nbsp;&nbsp;&nbsp;
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="backend" id="trt" onclick="setModels()">
+                            <input class="form-check-input" type="radio" name="backend" id="trt" onclick="setModels()" value="trt">
                             <label class="form-check-label" for="trt">
                                 TensorRT
                             </label>
                         </div>
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" name="backend" id="pt" onclick="setModels()"
+                            <input class="form-check-input" type="radio" name="backend" id="pt" onclick="setModels()" value="pt"
                                    checked>
                             <label class="form-check-label" for="pt">
                                 PyTorch
@@ -201,7 +201,7 @@
                             <svg width="18" height="14" viewBox="0 0 18 14" fill="none"
                                  xmlns="http://www.w3.org/2000/svg">
                                 <path d="M10.25 0.75L16.5 7M16.5 7L10.25 13.25M16.5 7H1.5" stroke="white"
-                                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                                      stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"></path>
                             </svg>
 
                         </button>
@@ -212,12 +212,13 @@
                                  xmlns="http://www.w3.org/2000/svg">
                                 <path d="M12.3524 5.78995H16.5124V5.78912M1.48741 14.3699V10.21M1.48741 10.21H5.64741M1.48657 10.21L4.13741 12.8624C4.99084 13.7159 6.0539 14.3296 7.21973 14.6419C8.38556 14.9543 9.61306 14.9542 10.7788 14.6417C11.9446 14.3292 13.0076 13.7153 13.8609 12.8617C14.7142 12.0082 15.3278 10.945 15.6399 9.77912M2.35907 6.22078C2.67121 5.0549 3.28477 3.99174 4.13807 3.13817C4.99137 2.28461 6.05435 1.67072 7.22013 1.35822C8.38591 1.04572 9.61342 1.04563 10.7792 1.35795C11.9451 1.67028 13.0081 2.28401 13.8616 3.13745L16.5124 5.78912M16.5124 1.62995V5.78828"
                                       stroke="#6349DB" stroke-width="1.5" stroke-linecap="round"
-                                      stroke-linejoin="round"/>
+                                      stroke-linejoin="round"></path>
                             </svg>
                         </button>
                     </div>
                     <div class="output-images">
                         <h3> Image Output </h3>
+                        <div id="need_to_download"></div>
                         <div id="image_output">
                         </div>
                     </div>
@@ -260,20 +261,27 @@
 'nitrosocke/Arcane-Diffusion']
     let pt_models = [];
     let trt_models = [];
+    let text1 = "Accelerated Models";
+    let text2 = "Need to Accelerate";
 
 
     const setModels = () => {
         let type;
         if ( document.querySelector('input[name="backend"]:checked').value === 'trt' ){
             type = trt_models;
+text1 = "Accelerated Models";
+            text2 = "Need to Accelerate";
         } else {
+
             type = pt_models;
+            text1 = "Downloaded Models";
+            text2 = "Need to download";
         }
         document.getElementById('model').innerHTML = '';
-        document.getElementById('model').innerHTML += `<option disabled> Downloaded Models </option>`;
+        document.getElementById('model').innerHTML += `<option disabled> ${text1} </option>`;
         document.getElementById('model').innerHTML += type.map(m => `<option value="${m}"> ${m} </option>`).join(' ');
-        document.getElementById('model').innerHTML += `<option disabled> Need to download </option>`;
-        document.getElementById('model').innerHTML += all_models.map(m => (m in type) ? undefined : `<option value="${m}"> ${m} </option>`).join(' ');
+        document.getElementById('model').innerHTML += `<option disabled> ${text2} </option>`;
+        document.getElementById('model').innerHTML += all_models.map(m =>(type.includes(m)) ? undefined : `<option value="${m}"> ${m} </option>`).join(' ');
     }
 
     // {"pt_models": ["openai/clip-vit-large-patch14"], "trt_models": []}
@@ -293,13 +301,17 @@
                 if (data.status === "SUCCESS") {
                     loading = false;
                     console.log(interval);
-                    clearInterval(interval);
+                    document.getElementById('need_to_download').innerHTML = '';
+		    clearInterval(interval);
                     document.getElementById('submit_btn').removeAttribute('disabled');
                     document.getElementById('image_output').innerHTML = data.out_path.map((path) => `<img src="/${path}" />`).join(" ");
                 }
             }).catch(() => {
+                document.getElementById('need_to_download').innerHTML = '';
                 loading = false;
                 clearInterval(interval);
+                document.getElementById('submit_btn').removeAttribute('disabled');
+                document.getElementById('image_output').innerHTML = '';
             });
         }, 1000)
     }
@@ -320,7 +332,21 @@
     document.getElementById('submit_btn').onclick = () => {
         loading = true;
         document.getElementById('image_output').innerHTML = '<img style="width: 100px; margin-bottom: 8rem" src="/static/animation_300_lbge2ca6.gif">'
-        document.getElementById('submit_btn').setAttribute('disabled', 'true')
+        document.getElementById('submit_btn').setAttribute('disabled', 'true');
+
+        let type;
+        if ( document.querySelector('input[name="backend"]:checked').value === 'trt' ){
+            type = trt_models;
+        } else {
+            type = pt_models;
+        }
+
+
+console.log(type.includes(document.getElementById("model").value))
+        if(!type.includes(document.getElementById("model").value)) {
+            document.getElementById('need_to_download').innerHTML = '( This model is downloading. Please wait a couple mins. )'
+        }
+
         axios.post('/voltaml/job', {
             "prompt": document.getElementById("prompt").value,
             "img_height": Number(document.getElementById("height").value),
@@ -336,6 +362,8 @@
             jobId = data.jobId;
             pollForImages();
         }).catch(() => {
+            document.getElementById('need_to_download').innerHTML = ''
+            document.getElementById('submit_btn').removeAttribute('disabled');
             loading = false;
             document.getElementById('image_output').innerHTML = "";
         })
