@@ -74,6 +74,7 @@ def upload_file():
             if "pt" in backend.lower():
                 thread = threading.Thread(target=infer_pt, kwargs={
                     'saving_path': saving_path,
+                    'negative_prompt':negative_prompt,
                     'model_path': model,
                     'prompt': prompt,
                     'img_height': img_height,

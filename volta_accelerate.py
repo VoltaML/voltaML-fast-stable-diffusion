@@ -549,7 +549,7 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
 
 
     
-def infer_pt(saving_path, model_path, prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed):
+def infer_pt(saving_path, model_path, prompt, negative_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed):
     
     print("[+] Loading the model")
     model = load_model(model_path)
@@ -560,6 +560,7 @@ def infer_pt(saving_path, model_path, prompt, img_height, img_width, num_inferen
     images, time = inference(
         model=model,
         prompt=prompt,
+        negative_prompt=negative_prompt,
         img_height=img_height,
         img_width=img_width,
         num_inference_steps=num_inference_steps,
