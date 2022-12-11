@@ -352,6 +352,7 @@
 
         axios.post('/voltaml/job', {
             "prompt": document.getElementById("prompt").value,
+            "prompt-ve": document.getElementById("prompt-ve").value,
             "img_height": Number(document.getElementById("height").value),
             "img_width": Number(document.getElementById("width").value),
             "num_inference_steps": Number(document.getElementById("inference").value),
