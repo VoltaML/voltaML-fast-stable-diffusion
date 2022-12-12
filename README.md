@@ -1,4 +1,8 @@
-![Screenshot from 2022-11-22 15-29-39](https://user-images.githubusercontent.com/107309002/206966210-7e9e57a0-0184-431b-8d28-304c46bce02b.png)
+
+
+<p align="center">
+  <img width="1000" height="500" src="https://user-images.githubusercontent.com/107309002/207094372-9aacc79e-7731-41ea-8d77-29d5ce75167f.png">
+</p>
 
 
 <h1 align="center">🔥 🔥 voltaML-fast-stable-diffusion webUI 🔥 🔥 </h1>
