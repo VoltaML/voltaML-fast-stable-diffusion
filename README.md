@@ -35,7 +35,7 @@ Setup docker on Windows using [these intructions](https://docs.docker.com/deskto
 
 ### Launch voltaML container
 ```
-sudo docker run --gpus=all -v $pwd/engine:/workspace/voltaML-fast-stable-diffusion/engine -it -p "8800:8800" voltaml/volta_stable_diffusion:v0.2
+sudo docker run --gpus=all -v $pwd/engine:/workspace/voltaML-fast-stable-diffusion/engine -it voltaml/volta_diffusion_webui:v0.1
 ```
 ⚠️ You need to mount a local volume to save your work onto your system. Or else the work will be deleted once you exit the container </br>
 ⚠️ To save your work in the container itself, you have to commit the container and then exit the container.
@@ -53,9 +53,7 @@ sudo docker run --gpus=all -v $pwd/engine:/workspace/voltaML-fast-stable-diffusi
  6. Switch your backend to TensorRT, select the model and enjoy the fastest outputs 🚀🚀 
 
 ## Benchmark
-```
-python3 volta_infer.py --backend='TRT' --benchmark
-```
+
 The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
 | Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       |
