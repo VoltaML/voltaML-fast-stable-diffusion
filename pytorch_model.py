@@ -1,24 +1,33 @@
 import time
 from typing import List, Union
+import uuid
 
 import torch
 from diffusers import StableDiffusionPipeline
 
 
+
 def load_model(
-    model_name_or_path="runwayml/stable-diffusion-v1-5",
+    model_name_or_path="runwayml/stable-diffusion-v1-5", hf_token='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'
 ) -> StableDiffusionPipeline:
     """Load model
 
     :param model_name_or_path: model name (downloaded from HF Hub) or model path (local), defaults to "runwayml/stable-diffusion-v1-5"
     :return: the Stable Diffusion pipeline
     """
-    pipe = StableDiffusionPipeline.from_pretrained(
-        model_name_or_path,
-        revision="fp16",
-        torch_dtype=torch.float16,
-        use_auth_token=True,
-    )
+    try:
+        pipe = StableDiffusionPipeline.from_pretrained(
+            model_name_or_path,
+            revision="fp16",
+            torch_dtype=torch.float16,
+            use_auth_token=hf_token,
+        )
+    except:
+        pipe = StableDiffusionPipeline.from_pretrained(
+                model_name_or_path,
+                use_auth_token=hf_token,
+            )
+
     pipe = pipe.to("cuda")
 
     return pipe
@@ -27,6 +36,7 @@ def load_model(
 def inference(
     model: StableDiffusionPipeline,
     prompt: Union[str, List[str]],
+    negative_prompt: Union[str, List[str]],
     img_height: int = 512,
     img_width: int = 512,
     num_inference_steps: int = 50,
@@ -57,6 +67,7 @@ def inference(
     with torch.autocast("cuda"):
         output = model(
             prompt=prompt,
+            negative_prompt=negative_prompt,
             height=img_height,
             width=img_width,
             num_inference_steps=num_inference_steps,

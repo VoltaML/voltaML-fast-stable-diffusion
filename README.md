@@ -1,57 +1,57 @@
-![Screenshot from 2022-11-22 15-29-39](https://user-images.githubusercontent.com/107309002/203284627-fa180962-75b1-41dd-83a7-124b74a1fcdf.png)
-
-## ⚡voltaML-fast-stable-diffusion 🔥 🔥 
 
 
-Lightweight library to accelerate Stable-Diffusion, Dreambooth into fastest inference models with **one single line of code**.
+<p align="center">
+  <img width="1000" height="500" src="https://user-images.githubusercontent.com/107309002/207094372-9aacc79e-7731-41ea-8d77-29d5ce75167f.png">
+</p>
+
+
+<h1 align="center">🔥 🔥 voltaML-fast-stable-diffusion webUI 🔥 🔥 </h1>
+
+<p align="center">
+  <b> Accelerate your machine learning and deep learning models by upto 10X </b> 
+</p>
+
+###                                                   
 
 <div align="center">
 <a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
 </div>
 
-### **🔥[Accelerate Computer vision, NLP models etc.](https://github.com/VoltaML/voltaML) with voltaML. Upto 10X speed up in inference🔥**
 
-## Installation
+Lightweight library to accelerate Stable-Diffusion, Dreambooth into fastest inference models with **WebUI single click or single line of code**.
 
-### voltaML Docker Container 🐳
-````        
-git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git
-cd voltaML-fast-stable-diffusion
+<h1 align="center"> Setup webUI </h3>
 
-sudo docker pull voltaml/volta_diffusion:v0.2 
+![Screenshot from 2022-12-12 11-19-09](https://user-images.githubusercontent.com/107309002/206970939-f827f7b9-6966-41c1-a2aa-3ed18e73d399.png)
 
-sudo docker run -it --gpus all --ipc=host --ulimit memlock=-1 --ulimit stack=67108864 -v $(pwd):/code --rm voltaml/volta_diffusion:v0.2 
-````
+![Screenshot from 2022-12-12 11-36-37](https://user-images.githubusercontent.com/107309002/206972269-1223c567-3df8-41c5-a7b3-f31e544b98aa.png)
 
-### Own setup:
 
-Requirements: Please refer to the requirements.txt file to set it up on your own environment.
+#### Docker setup (if required)
+Setup docker on Ubuntu using [these intructions](https://docs.docker.com/engine/install/ubuntu/).
 
-It is recommended to use our voltaml/volta_diffusion container or NVIDIA TensorRT container
+Setup docker on Windows using [these intructions](https://docs.docker.com/desktop/install/windows-install/)
 
-## Usage
 
-### Hugging Face Login
-Login into your Hugging Face account through the terminal
+### Launch voltaML container
 ```
-huggingface-cli login
-Token: #enter your huggingface token
+sudo docker run --gpus=all -v $pwd/engine:/workspace/voltaML-fast-stable-diffusion/engine -it -p "8800:8800" voltaml/volta_stable_diffusion:v0.2
 ```
-### Accelerate
-```
-bash optimize.sh --model='runwayml/stable-diffusion-v1-5' # your model path/ hugging face name
-```
+⚠️ You need to mount a local volume to save your work onto your system. Or else the work will be deleted once you exit the container </br>
+⚠️ To save your work in the container itself, you have to commit the container and then exit the container.
 
-### Inference
+### How to use webUI 
+ 1. Once you launch the container, a flask app will run and copy/paste the url to run the webUI on your local host.
+ ![Screenshot from 2022-12-12 12-36-01](https://user-images.githubusercontent.com/107309002/206982082-ee498781-9e6d-4b80-a652-2e4e29a2835e.png)
 
-**For TensorRT**
-```
-python3 volta_infer.py --backend='TRT' --prompt='a gigantic robotic bipedal dinosaur, highly detailed, photorealistic, digital painting, artstation, concept art, sharp focus, illustration, art by greg rutkowski and alphonse mucha'
-```
-**For PyTorch**
-```
-python3 volta_infer.py --backend='PT' --prompt='a gigantic robotic bipedal dinosaur, highly detailed, photorealistic, digital painting, artstation, concept art, sharp focus, illustration, art by greg rutkowski and alphonse mucha'
-```
+ 2. There are two backends to run the SD on, PyTorch and TensorRT (fastest version)
+ 3. To run on PyTorch inference, you have to select the model, the model will be downloaded (which will take a few mins) into the container and the inference will be displayed. Downloaded models will be shown as below
+![download_sd](https://user-images.githubusercontent.com/107309002/206983689-5f40f446-426b-45b7-88fa-db224099dd8e.png)
+ 4. To run TensoRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. <br/>
+![Screenshot from 2022-12-12 13-17-23](https://user-images.githubusercontent.com/107309002/206989892-6f04dbdf-312b-41b3-bb69-684610659fae.png)
+ 5. Once acceleration is done, the model will show up in your TensorRT drop down menu.
+ 6. Switch your backend to TensorRT, select the model and enjoy the fastest outputs 🚀🚀 
+
 ## Benchmark
 ```
 python3 volta_infer.py --backend='TRT' --benchmark
@@ -62,24 +62,14 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 |----------------|--------------|----------------|----------------|
 | PyTorch        |     4.3      | 8.8            | 15.1           |
 | Flash attention xformers| 5.5 | 15.6            |27.5            |
-| VoltaML(TRT)   |     7.7      | 17.2            | 36.1           |
+| AITemplate     | Not supported | 26.7               | 55|
+| VoltaML(TRT-Flash)   |     11.4      | 29.2            | 62.8           |
 
+ 
+### ⚠️ ‼️ Warnings/Caveats
 
-![diffusion posts](https://user-images.githubusercontent.com/107309002/203910224-e4e89fe5-5929-4e5e-ac8d-4f126fc5c273.jpg)
-![diffusion posts 1](https://user-images.githubusercontent.com/107309002/203910230-f83eda45-eb85-48a2-b5c8-e4f3ec8c21dd.jpg)
-![diffusion posts 3](https://user-images.githubusercontent.com/107309002/203910233-79991ee4-24e1-4ac0-b0b2-d41543f75cef.jpg)
-![diffusion posts 4](https://user-images.githubusercontent.com/107309002/203910349-1168695b-816f-4d35-9fa7-7e0331816eeb.jpg)
+**This is v0.1 of the product. Things might break. A lot of improvements are on the way, so please bear with us.**
 
-## To-Do:
-* Integrate Flash-attention
-* Integrate AITemplate
-* Try Flash-attention with TensorRT
-
-## Contribution:
-We invite the open source community to contribute and help us better voltaML. Please check out our [contribution guide](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/main/CONTRIBUTION.md)
-
-## References
-* https://www.photoroom.com/tech/stable-diffusion-25-percent-faster-and-save-seconds/ </br>
-* https://github.com/kamalkraj/stable-diffusion-tritonserver </br>
-* https://github.com/luohao123/gaintmodels </br>
-* https://github.com/stochasticai/x-stable-diffusion
+1. This will only work for NVIDIA GPUs with compute capability > 7.5
+2. Cards with less than 12GB VRAM will have issues with acceleration, due to high memory required for the conversions. We're working on resolving these in our next release.  
+3. While the model is accelerating, **no other functionality will work since the GPU will be fully occupied**
