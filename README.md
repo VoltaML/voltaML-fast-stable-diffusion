@@ -33,4 +33,14 @@ Setup docker on Windows using [these intructions](https://docs.docker.com/deskto
 ```
 sudo docker run --gpus=all -v $pwd/engine:/workspace/volta_stable_diffusion/engine -it -p "8800:8800" voltaml/volta_stable_diffusion:v0.2
 ```
+## Benchmark
+```
+python3 volta_infer.py --backend='TRT' --benchmark
+```
+The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
+| Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       |
+|----------------|--------------|----------------|----------------|
+| PyTorch        |     4.3      | 8.8            | 15.1           |
+| Flash attention xformers| 5.5 | 15.6            |27.5            |
+| VoltaML(TRT-Flash)   |     11.4      | 29.2            | 62.8           |
