@@ -35,7 +35,7 @@ Setup docker on Windows using [these intructions](https://docs.docker.com/deskto
 
 ### Launch voltaML container
 ```
-sudo docker run --gpus=all -v $pwd/engine:/workspace/volta_stable_diffusion/engine -it -p "8800:8800" voltaml/volta_stable_diffusion:v0.2
+sudo docker run --gpus=all -v $pwd/engine:/workspace/voltaML-fast-stable-diffusion/engine -it -p "8800:8800" voltaml/volta_stable_diffusion:v0.2
 ```
 ⚠️ You need to mount a local volume to save your work onto your system. Or else the work will be deleted once you exit the container </br>
 ⚠️ To save your work in the container itself, you have to commit the container and then exit the container.
