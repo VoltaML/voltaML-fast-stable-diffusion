@@ -1,4 +1,8 @@
-![Screenshot from 2022-11-22 15-29-39](https://user-images.githubusercontent.com/107309002/206966210-7e9e57a0-0184-431b-8d28-304c46bce02b.png)
+
+
+<p align="center">
+  <img width="1000" height="500" src="https://user-images.githubusercontent.com/107309002/207094372-9aacc79e-7731-41ea-8d77-29d5ce75167f.png">
+</p>
 
 
 <h1 align="center">🔥 🔥 voltaML-fast-stable-diffusion webUI 🔥 🔥 </h1>
@@ -43,7 +47,7 @@ sudo docker run --gpus=all -v $pwd/engine:/workspace/volta_stable_diffusion/engi
  2. There are two backends to run the SD on, PyTorch and TensorRT (fastest version)
  3. To run on PyTorch inference, you have to select the model, the model will be downloaded (which will take a few mins) into the container and the inference will be displayed. Downloaded models will be shown as below
 ![download_sd](https://user-images.githubusercontent.com/107309002/206983689-5f40f446-426b-45b7-88fa-db224099dd8e.png)
- 4. To run TensoRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. 
+ 4. To run TensoRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. <br/>
 ![Screenshot from 2022-12-12 13-17-23](https://user-images.githubusercontent.com/107309002/206989892-6f04dbdf-312b-41b3-bb69-684610659fae.png)
  5. Once acceleration is done, the model will show up in your TensorRT drop down menu.
  6. Switch your backend to TensorRT, select the model and enjoy the fastest outputs 🚀🚀 
