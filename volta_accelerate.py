@@ -92,7 +92,6 @@ class DemoDiffusion:
     ):
         """
         Initializes the Diffusion pipeline.
-
         Args:
             denoising_steps (int):
                 The number of denoising steps.
@@ -180,7 +179,6 @@ class DemoDiffusion:
         """
         Build and load engines for TensorRT accelerated inference.
         Export ONNX models first, if applicable.
-
         Args:
             engine_dir (str):
                 Directory to write the TensorRT engines.
@@ -282,7 +280,6 @@ class DemoDiffusion:
     ):
         """
         Run the diffusion pipeline.
-
         Args:
             prompt (str):
                 The text prompt to guide image generation.
@@ -444,7 +441,7 @@ class DemoDiffusion:
                 # Save image
                 image_name_prefix = 'sd-'+('fp16' if self.denoising_fp16 else 'fp32')+''.join(set(['-'+prompt[i].replace(' ','_')[:10] for i in range(batch_size)]))+'-'
                 save_image(images, self.output_dir, image_name_prefix)
-
+            return str(e2e_toc - e2e_tic)
                 
 def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
     
@@ -541,12 +538,13 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     print("[I] Running StableDiffusion pipeline")
     if args.nvtx_profile:
         cudart.cudaProfilerStart()
-    images = demo.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
+    pipeline_time = demo.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
     if args.nvtx_profile:
         cudart.cudaProfilerStop()
 
     demo.teardown()
-
+    gc.collect()
+    return pipeline_time
 
     
 def infer_pt(saving_path, model_path, prompt, negative_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed):
@@ -581,7 +579,7 @@ def infer_pt(saving_path, model_path, prompt, negative_prompt, img_height, img_w
     )
     del model
     gc.collect()
-    return "Success."
+    return str(round(time,2))
 
                 
 if __name__ == "__main__":

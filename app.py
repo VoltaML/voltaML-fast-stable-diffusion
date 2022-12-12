@@ -71,44 +71,34 @@ def upload_file():
             if not os.path.exists(saving_path):
                 os.makedirs(saving_path)
 
+         
             if "pt" in backend.lower():
-                thread = threading.Thread(target=infer_pt, kwargs={
-                    'saving_path': saving_path,
-                    'negative_prompt':negative_prompt,
-                    'model_path': model,
-                    'prompt': prompt,
-                    'img_height': img_height,
-                    'img_width': img_width,
-                    'num_inference_steps': num_inference_steps,
-                    'guidance_scale': guidance_scale,
-                    'num_images_per_prompt': num_images_per_prompt,
-                    'seed': seed
-                })
-                thread.start()
-            elif "trt" in backend.lower():
-                thread = threading.Thread(target=infer_trt, kwargs={
-                    'saving_path': saving_path,
-                    'model': model,
-                    'prompt': prompt,
-                    'neg_prompt':negative_prompt,
-                    'img_height': img_height,
-                    'img_width': img_width,
-                    'num_inference_steps': num_inference_steps,
-                    'guidance_scale': guidance_scale,
-                    'num_images_per_prompt': num_images_per_prompt,
-                    'seed': seed
-                })
-                thread.start()
-                # status = infer_trt(saving_path=saving_path, 
-                #                     model=model,
-                #                     prompt=prompt,
-                #                     img_height=img_height, 
-                #                     img_width=img_width, 
-                #                     num_inference_steps=num_inference_steps, 
-                #                     guidance_scale=guidance_scale, 
-                #                     num_images_per_prompt=num_images_per_prompt, 
-                #                     seed=seed
-                #         )
+                pipeline_time = infer_pt(saving_path=saving_path, 
+                                    model_path=model,
+                                    prompt=prompt,
+                                    negative_prompt=negative_prompt,
+                                    img_height=img_height, 
+                                    img_width=img_width, 
+                                    num_inference_steps=num_inference_steps, 
+                                    guidance_scale=guidance_scale, 
+                                    num_images_per_prompt=num_images_per_prompt, 
+                                    seed=seed
+                        )
+            elif 'trt' in backend.lower():
+                pipeline_time = infer_trt(saving_path=saving_path, 
+                                    model=model,
+                                    prompt=prompt,
+                                    neg_prompt=negative_prompt,
+                                    img_height=img_height,
+                                    img_width=img_width,
+                                    num_inference_steps=num_inference_steps, 
+                                    guidance_scale=guidance_scale, 
+                                    num_images_per_prompt=num_images_per_prompt, 
+                                    seed=seed
+                        )
+            gc.collect()
+            with open(saving_path+'/%s.json'%job_id, 'w') as f:
+                json.dump({'pipeline_time':pipeline_time}, f)
 
             return {
                 "status": "SUCCESS",
@@ -183,10 +173,15 @@ def get_result():
         if len(glob(out_path + '/*.png')) > 0:
             imgs = os.listdir(out_path)
             imgs = [out_path + "/" + file for file in imgs]
+            
+            f = open(out_path+'/%s.json'%jobId)
+            temp = json.load(f)
+            pipeline_time = temp['pipeline_time']
             return {
                 "status": "SUCCESS",
                 "progress": "100%",
-                "out_path": imgs
+                "out_path": imgs,
+                "inference_time": pipeline_time+' s'
             }
         else:
             return {
@@ -201,4 +196,4 @@ def get_result():
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=5002, debug=True)
+    app.run(host="0.0.0.0", port=5003, debug=True)

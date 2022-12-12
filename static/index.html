@@ -174,7 +174,7 @@
 
                         <label for="height" class="form-label"
                                style="margin-top: 1.5rem; padding-left: 0.5rem">Height</label>
-                        <input type="range" class="form-range" min="256" max="1024" step="256" id="height">
+                        <input type="range" class="form-range" min="256" max="1024" step="256" id="height" value="512">
                         <div style="display: flex; justify-content: space-between">
                             <div class="form-text" style="padding-left: 0.5rem; color: white">256</div>
                             <div class="form-text" style="padding-left: 0.5rem; color: white">512</div>
@@ -184,7 +184,7 @@
 
                         <label for="width" class="form-label"
                                style="margin-top: 1.5rem; padding-left: 0.5rem">Width</label>
-                        <input type="range" class="form-range" min="256" max="1024" step="256" id="width">
+                        <input type="range" class="form-range" min="256" max="1024" step="256" id="width" value="512">
                         <div style="display: flex; justify-content: space-between">
                             <div class="form-text" style="padding-left: 0.5rem; color: white">256</div>
                             <div class="form-text" style="padding-left: 0.5rem; color: white">512</div>
@@ -218,6 +218,7 @@
                     </div>
                     <div class="output-images">
                         <h3> Image Output </h3>
+                        <p id="time">  </p>
                         <div id="need_to_download"></div>
                         <div id="image_output">
                         </div>
@@ -264,6 +265,11 @@
     let text1 = "Accelerated Models";
     let text2 = "Need to Accelerate";
 
+    const localImages = localStorage.getItem('imgs');
+    if ( localImages ) {
+        document.getElementById('image_output').innerHTML = localImages.split(',').map((path) => `<img src="/${path}" />`).join(" ");
+    }
+
 
     const setModels = () => {
         let type;
@@ -305,9 +311,11 @@
                     loading = false;
                     console.log(interval);
                     document.getElementById('need_to_download').innerHTML = '';
-		    clearInterval(interval);
+                    clearInterval(interval);
                     document.getElementById('submit_btn').removeAttribute('disabled');
                     document.getElementById('image_output').innerHTML = data.out_path.map((path) => `<img src="/${path}" />`).join(" ");
+                    localStorage.setItem('imgs', data.out_path);
+                    document.getElementById('time').innerText = '( Inference Time : ' + data.inference_time + ' )';
                 }
             }).catch(() => {
                 document.getElementById('need_to_download').innerHTML = '';

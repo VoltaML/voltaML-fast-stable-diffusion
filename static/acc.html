@@ -29,6 +29,9 @@
     <div style="padding-inline: 2rem;">
         <div class="header">
             <img src="/static/heading_logo.png" style="width: auto; height: 35px" alt="">
+            <div class="alert alert-success m-0 d-none" id="waiting">
+              <p style="margin-bottom:0;"> The model is accelerating. ETA ( 15 - 20 mins ) </p>
+            </div>
             <img src="/static/heading_text.png" style="width: auto; height: 25px;" alt="">
         </div>
         <div class="app">
@@ -40,7 +43,7 @@
                               color="green"></path>
                     </svg>
                     &nbsp;&nbsp;
-                    <a href="/" style="text-decoration: none"> <span style="color: white">Text to Image</span></a>
+                    <a href="/" style="text-decoration: none" id="texttoimage"> <span style="color: white">Text to Image</span></a>
                 </div>
                 <div class="demo-button active">
                     <svg width="15" height="18" viewBox="0 0 15 18" fill="none" xmlns="http://www.w3.org/2000/svg"
@@ -287,18 +290,6 @@ imagesLoaded( grid ).on( 'progress', function() {
     let jobId = null;
     let interval = null;
 
-    const pollForImages = () => {
-        interval = setInterval(() => {
-            axios.get(`/voltaml/results?jobId=${jobId}`).then(({data}) => {
-                if (data.status === "SUCCESS") {
-                    loading = false;
-                    clearInterval(interval);
-                    document.getElementById('image_output').innerHTML = data.out_path.map((path) => `<img src="/${path}" />`).join(" ");
-                }
-            });
-        }, 1000)
-    }
-
     const accelerate = (ele) => {
         loading = true;
 
@@ -318,9 +309,13 @@ imagesLoaded( grid ).on( 'progress', function() {
             document.querySelectorAll('.btn.glow-on-hover').forEach(e => {
                 e.setAttribute('disabled', 'true');
                 e.classList.remove("glow-on-hover");
-            })
-            // jobId = data.jobId;
-            // pollForImages();
+            });
+            document.getElementById('waiting').classList.remove('d-none');
+            document.getElementById('texttoimage').setAttribute('href', '#');
+            setTimeout(() => {
+            document.getElementById('waiting').classList.add('d-none');
+            document.getElementById('texttoimage').setAttribute('href', '/');
+            }, 900000);
         }).catch(() => {
             loading = false;
         })
