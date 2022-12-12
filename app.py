@@ -171,9 +171,9 @@ def get_result():
     print('Images ', glob(out_path + '/*'))
     if os.path.exists(out_path):
         if len(glob(out_path + '/*.png')) > 0:
-            imgs = os.listdir(out_path)
-            imgs = [out_path + "/" + file for file in imgs]
-            
+            # imgs = os.listdir(out_path)
+            # imgs = [out_path + "/" + file for file in imgs]
+            imgs = glob(out_path+'/*.png')
             f = open(out_path+'/%s.json'%jobId)
             temp = json.load(f)
             pipeline_time = temp['pipeline_time']
