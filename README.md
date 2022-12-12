@@ -46,14 +46,7 @@ sudo docker run --gpus=all -v $pwd/engine:/workspace/volta_stable_diffusion/engi
  4. To run TensoRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. 
 ![Screenshot from 2022-12-12 13-17-23](https://user-images.githubusercontent.com/107309002/206989892-6f04dbdf-312b-41b3-bb69-684610659fae.png)
  5. Once acceleration is done, the model will show up in your TensorRT drop down menu.
- 
-### ⚠️ ‼️ Warnings/Caveats
-
-This is v0.1 of the product. Things might break. A lot of improvements are on the way, so please bear with us.
-
-1. This will only work for NVIDIA GPUs with compute capability > 7.5
-2. Cards with less than 12GB VRAM will have issues with acceleration, due to high memory required for the conversions. We're working on resolving these in our next release.  
-3. 
+ 6. Switch your backend to TensorRT, select the model and enjoy the fastest outputs 🚀🚀 
 
 ## Benchmark
 ```
@@ -67,3 +60,12 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 | Flash attention xformers| 5.5 | 15.6            |27.5            |
 | AITemplate     | Not supported | 26.7               | 55|
 | VoltaML(TRT-Flash)   |     11.4      | 29.2            | 62.8           |
+
+ 
+### ⚠️ ‼️ Warnings/Caveats
+
+**This is v0.1 of the product. Things might break. A lot of improvements are on the way, so please bear with us.**
+
+1. This will only work for NVIDIA GPUs with compute capability > 7.5
+2. Cards with less than 12GB VRAM will have issues with acceleration, due to high memory required for the conversions. We're working on resolving these in our next release.  
+3. While the model is accelerating, **no other functionality will work since the GPU will be fully occupied**
