@@ -267,7 +267,7 @@
 
     const localImages = localStorage.getItem('imgs');
     if ( localImages ) {
-        document.getElementById('image_output').innerHTML = localImages.split(',').map((path) => `<img src="/${path}" />`).join(" ");
+        document.getElementById('image_output').innerHTML = localImages.split(',').map((path) => path.slice(-3) === 'png' ? `<img src="/${path}" />` : undefined).join(" ");
     }
 
 
@@ -313,7 +313,7 @@
                     document.getElementById('need_to_download').innerHTML = '';
                     clearInterval(interval);
                     document.getElementById('submit_btn').removeAttribute('disabled');
-                    document.getElementById('image_output').innerHTML = data.out_path.map((path) => `<img src="/${path}" />`).join(" ");
+                    document.getElementById('image_output').innerHTML = data.out_path.map((path) => path.slice(-3) === 'png' ? `<img src="/${path}" />` : undefined).join(" ");
                     localStorage.setItem('imgs', data.out_path);
                     document.getElementById('time').innerText = '( Inference Time : ' + data.inference_time + ' )';
                 }
