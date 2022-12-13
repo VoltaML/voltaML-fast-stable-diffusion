@@ -210,8 +210,6 @@ class DemoDiffusion:
                 enable_preview=enable_preview)
             engine.__del__()
             del engine
-            self.stream.free()
-            del self.stream
             gc.collect()
             torch.cuda.empty_cache()
 

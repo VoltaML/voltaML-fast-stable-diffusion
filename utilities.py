@@ -69,7 +69,7 @@ class Engine():
                 (trt_version[0] == 8 and (trt_version[1] > 5 or (trt_version[1] == 5 and trt_version[2] >= 1))):
                 preview_features = [trt.PreviewFeature.FASTER_DYNAMIC_SHAPES_0805]
 
-        engine = engine_from_network(network_from_onnx_path(onnx_path), config=CreateConfig(fp16=fp16,max_workspace_size=11100654080, profiles=[p],
+        engine = engine_from_network(network_from_onnx_path(onnx_path), config=CreateConfig(fp16=fp16,max_workspace_size=8100654080, profiles=[p],
             preview_features=preview_features))
         save_engine(engine, path=self.engine_path)
 
