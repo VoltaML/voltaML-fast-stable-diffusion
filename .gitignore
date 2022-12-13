@@ -161,3 +161,9 @@ cython_debug/
 
 unet/
 unet.engine
+
+
+
+#project specific
+/engine
+/static/output
