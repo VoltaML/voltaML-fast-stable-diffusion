@@ -32,6 +32,7 @@ import tensorrt as trt
 from utilities import Engine, DPMScheduler, LMSDiscreteScheduler, save_image, TRT_LOGGER
 from pytorch_model import inference, load_model
 import gc
+import pickle
 
 def parseArgs():
     parser = argparse.ArgumentParser(description="Options for Stable Diffusion Demo")
@@ -175,6 +176,7 @@ class DemoDiffusion:
         static_batch=False,
         static_shape=True,
         enable_preview=False,
+        compile_only=True
     ):
         """
         Build and load engines for TensorRT accelerated inference.
@@ -207,54 +209,100 @@ class DemoDiffusion:
             enable_preview (bool):
                 Enable TensorRT preview features.
         """
-
-        # Build engines
-        for model_name, obj in self.models.items():
-            engine = Engine(model_name, engine_dir)
-            if force_build or not os.path.exists(engine.engine_path):
+        if compile_only:
+            print("[I] Compile only mode")
+            for model_name, obj in self.models.items():
+                engine = Engine(model_name, engine_dir)
                 onnx_path = self.getModelPath(model_name, onnx_dir, opt=False)
                 onnx_opt_path = self.getModelPath(model_name, onnx_dir)
-                if not os.path.exists(onnx_opt_path):
-                    # Export onnx
-                    if force_export or not os.path.exists(onnx_path):
-                        print(f"Exporting model: {onnx_path}")
-                        model = obj.get_model()
-                        with torch.inference_mode(), torch.autocast("cuda"):
-                            inputs = obj.get_sample_input(opt_batch_size, opt_image_height, opt_image_width)
-                            torch.onnx.export(model,
-                                    inputs,
-                                    onnx_path,
-                                    export_params=True,
-                                    opset_version=onnx_opset,
-                                    do_constant_folding=True,
-                                    input_names = obj.get_input_names(),
-                                    output_names = obj.get_output_names(),
-                                    dynamic_axes=obj.get_dynamic_axes(),
-                            )
-                        del model
-                        gc.collect()
-                    else:
-                        print(f"Found cached model: {onnx_path}")
+                print(f"Exporting model: {onnx_path}")
+                model = obj.get_model()
+                with torch.inference_mode(), torch.autocast("cuda"):
+                    inputs = obj.get_sample_input(opt_batch_size, opt_image_height, opt_image_width)
+                    torch.onnx.export(model,
+                            inputs,
+                            onnx_path,
+                            export_params=True,
+                            opset_version=onnx_opset,
+                            do_constant_folding=True,
+                            input_names = obj.get_input_names(),
+                            output_names = obj.get_output_names(),
+                            dynamic_axes=obj.get_dynamic_axes(),
+                    )
+                del model
+                torch.cuda.empty_cache()
+                gc.collect()
 
-                    # Optimize onnx
-                    if force_optimize or not os.path.exists(onnx_opt_path):
-                        print(f"Generating optimizing model: {onnx_opt_path}")
-                        onnx_opt_graph = obj.optimize(onnx.load(onnx_path), minimal_optimization=minimal_optimization)
-                        onnx.save(onnx_opt_graph, onnx_opt_path)
-                    else:
-                        print(f"Found cached optimized model: {onnx_opt_path} ")
+                print(f"Generating optimizing model: {onnx_opt_path}")
+                onnx_opt_graph = obj.optimize(onnx.load(onnx_path), minimal_optimization=minimal_optimization)
+                onnx.save(onnx_opt_graph, onnx_opt_path)
+    
 
                 # Build engine
+                print("batch is", opt_batch_size)
                 engine.build(onnx_opt_path, fp16=True, \
                     input_profile=obj.get_input_profile(opt_batch_size, opt_image_height, opt_image_width, \
                         static_batch=static_batch, static_shape=static_shape), \
                     enable_preview=enable_preview)
-            self.engine[model_name] = engine
+                engine.__del__()
+                del engine
+                self.stream.free()
+                del self.stream
+                gc.collect()
+                torch.cuda.empty_cache()
+        else:
+            # Build engines
+            for model_name, obj in self.models.items():
+                engine = Engine(model_name, engine_dir)
+                if force_build or not os.path.exists(engine.engine_path):
+                    onnx_path = self.getModelPath(model_name, onnx_dir, opt=False)
+                    onnx_opt_path = self.getModelPath(model_name, onnx_dir)
+                    if not os.path.exists(onnx_opt_path):
+                        # Export onnx
+                        if force_export or not os.path.exists(onnx_path):
+                            print(f"Exporting model: {onnx_path}")
+                            model = obj.get_model()
+                            with torch.inference_mode(), torch.autocast("cuda"):
+                                inputs = obj.get_sample_input(opt_batch_size, opt_image_height, opt_image_width)
+                                torch.onnx.export(model,
+                                        inputs,
+                                        onnx_path,
+                                        export_params=True,
+                                        opset_version=onnx_opset,
+                                        do_constant_folding=True,
+                                        input_names = obj.get_input_names(),
+                                        output_names = obj.get_output_names(),
+                                        dynamic_axes=obj.get_dynamic_axes(),
+                                )
+                            del model
+                            gc.collect()
+                        else:
+                            print(f"Found cached model: {onnx_path}")
 
-        # Separate iteration to activate engines
-        for model_name, obj in self.models.items():
-            self.engine[model_name].activate()
-        gc.collect()
+                        # Optimize onnx
+                        if force_optimize or not os.path.exists(onnx_opt_path):
+                            print(f"Generating optimizing model: {onnx_opt_path}")
+                            onnx_opt_graph = obj.optimize(onnx.load(onnx_path), minimal_optimization=minimal_optimization)
+                            onnx.save(onnx_opt_graph, onnx_opt_path)
+                        else:
+                            print(f"Found cached optimized model: {onnx_opt_path} ")
+
+                    # Build engine
+                    engine.build(onnx_opt_path, fp16=True, \
+                        input_profile=obj.get_input_profile(opt_batch_size, opt_image_height, opt_image_width, \
+                            static_batch=static_batch, static_shape=static_shape), \
+                        enable_preview=enable_preview)
+                self.engine[model_name] = engine
+                file_model = open(f'{model_name}.obj', 'w') 
+                pickle.dump(engine, file_model)
+                del engine
+                gc.collect()
+
+            # Separate iteration to activate engines
+            for model_name, obj in self.models.items():
+                self.engine[model_name].activate()
+            gc.collect()
+        
 
     def loadModules(
         self,
@@ -485,7 +533,7 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     #     raise ValueError(f"`prompt` must be of type `str` or `str` list, but is {type(args.prompt)}")
     print('String :', args.prompt, type(args.prompt))
     prompt = args.prompt * args.repeat_prompt
-
+    print('happening')
     if not isinstance(args.negative_prompt, list):
         raise ValueError(f"`--negative-prompt` must be of type `str` or `str` list, but is {type(args.negative_prompt)}")
     if len(args.negative_prompt) == 1:
@@ -524,11 +572,18 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
 
     # Load TensorRT engines and pytorch modules
     demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
+        opt_batch_size=1, opt_image_height=image_height, opt_image_width=image_width, \
+        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
+        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
+        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
+        enable_preview=args.build_preview_features,compile_only=True)
+    gc.collect()
+    demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
         opt_batch_size=len(prompt), opt_image_height=image_height, opt_image_width=image_width, \
         force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
         force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
         static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
+        enable_preview=args.build_preview_features,compile_only=False)
     demo.loadModules()
 
     print("[I] Warming up ..")
@@ -647,12 +702,19 @@ if __name__ == "__main__":
         max_batch_size=max_batch_size)
 
     # Load TensorRT engines and pytorch modules
+    print("This is happening on calling accelerate")
     demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
         opt_batch_size=len(prompt), opt_image_height=image_height, opt_image_width=image_width, \
         force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
         force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
         static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
+        enable_preview=args.build_preview_features,compile_only=True)
+    demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
+        opt_batch_size=len(prompt), opt_image_height=image_height, opt_image_width=image_width, \
+        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
+        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
+        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
+        enable_preview=args.build_preview_features,compile_only=False)
     demo.loadModules()
 
     print("[I] Warming up ..")
