@@ -72,8 +72,6 @@ def parseArgs():
     parser.add_argument('-v', '--verbose', action='store_true', help="Show verbose output")
     return parser.parse_args()
 
-
-compiled = False
 class DemoDiffusion:
     """
     Application showcasing the acceleration of Stable Diffusion v1.4 pipeline using NVidia TensorRT w/ Plugins.
@@ -305,7 +303,7 @@ class DemoDiffusion:
                         static_batch=static_batch, static_shape=static_shape), \
                     enable_preview=enable_preview)
             self.engine[model_name] = engine
-            
+
         # Separate iteration to activate engines
         for model_name, obj in self.models.items():
             self.engine[model_name].activate()
@@ -580,14 +578,13 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
 
     # Load TensorRT engines and pytorch modules
 
-    if not compiled:
-        demo.buildOnlyEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
-        opt_batch_size=1, opt_image_height=image_height, opt_image_width=image_width, \
-        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
-        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
-        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
-        compiled=True
+    demo.buildOnlyEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
+    opt_batch_size=1, opt_image_height=image_height, opt_image_width=image_width, \
+    force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
+    force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
+    static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
+    enable_preview=args.build_preview_features)
+    
     
     
     demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
