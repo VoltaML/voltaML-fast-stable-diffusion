@@ -36,7 +36,7 @@ Setup docker on Windows using [these intructions](https://docs.docker.com/deskto
 
 Please create two folders one called "engine" and one called "output" in your local computer.
 
-C:\voltaml\engine </b>
+C:\voltaml\engine </br>
 C:\voltaml\output
 
 ### Launch voltaML container
