@@ -56,12 +56,12 @@ sudo docker run --gpus=all -v 'Path-to-your-local-folder-for-engine'/engine:/wor
 
 The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
-| Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       | 4090 (it/s)|
-|----------------|--------------|----------------|----------------|--------------------|
-| PyTorch        |     4.3      | 8.8            | 15.1           | 19
-| Flash attention xformers| 5.5 | 15.6            |27.5            | 28
-| AITemplate     | Not supported | 26.7               | 55| 60
-| VoltaML(TRT-Flash)   |     11.4      | 29.2            | 62.8           | 85
+| Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       | 4090 (it/s)| 3090 (it/s) | 2080Ti (it/s)|
+|----------------|--------------|----------------|----------------|--------------------|-------------|------|
+| PyTorch        |     4.3      | 8.8            | 15.1           | 19  | 11| 8
+| Flash attention xformers| 5.5 | 15.6            |27.5            | 28 | 15.7 | N/A
+| AITemplate     | Not supported | 26.7               | 55| 60 | N/A | Not supported
+| VoltaML(TRT-Flash)   |     11.4      | 29.2            | 62.8           | 85 | 44.7 | 26.2
 
  
 ### ⚠️ ‼️ Warnings/Caveats
