@@ -32,10 +32,17 @@ Setup docker on Ubuntu using [these intructions](https://docs.docker.com/engine/
 
 Setup docker on Windows using [these intructions](https://docs.docker.com/desktop/install/windows-install/)
 
+### Folder setup
+
+Please create two folders one called "engine" and one called "output" in your local computer.
+
+C:\voltaml\engine </b>
+C:\voltaml\output
 
 ### Launch voltaML container
 ```
-sudo docker run --gpus=all -v 'Path-to-your-local-folder-for-engine'/engine:/workspace/voltaML-fast-stable-diffusion/engine -v 'Path-to-your-local-folder-for-outputs'/engine:/workspace/voltaML-fast-stable-diffusion/static/output -p 5003:5003 -it voltaml/volta_diffusion_webui:v0.1
+sudo docker run --gpus=all -v C:\voltaml\engine/engine:/workspace/voltaML-fast-stable-diffusion/engine -v C:\voltaml\output
+/engine:/workspace/voltaML-fast-stable-diffusion/static/output -p 5003:5003 -it voltaml/volta_diffusion_webui:v0.1
 ```
 ⚠️ You need to mount a local volume to save your work onto your system. Or else the work will be deleted once you exit the container </br>
 ⚠️ To save your work in the container itself, you have to commit the container and then exit the container.
