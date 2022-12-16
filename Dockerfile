@@ -19,11 +19,13 @@ ENV PLUGIN_LIBS="${TRT_OSSPATH}/build/out/libnvinfer_plugin.so"
 
 WORKDIR /workspace
 
+RUN git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git
 
-RUN git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git -b volta_trt_flash
-
-RUN pip3 install -r /workspace/voltaML-fast-stable-diffusion/requirements.txt
 WORKDIR /workspace/voltaML-fast-stable-diffusion
+
+RUN pip3 install -r requirements.txt
+
+ENV CUDA_MODULE_LOADING=LAZY
 
 RUN chmod +x start.sh
 
