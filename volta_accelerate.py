@@ -559,7 +559,6 @@ def load_trt(saving_path,model, prompt, img_height, img_width, num_inference_ste
     global trt_model
     global loaded_model
 
-    
     #if a model is already loaded, remove it from memory
     try:
         trt_model.teardown()
@@ -653,8 +652,11 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     image_width = args.width
     if image_height % 8 != 0 or image_width % 8 != 0:
         raise ValueError(f"Image height and width have to be divisible by 8 but specified as: {image_height} and {image_width}.")
-
-    if loaded_model!=args.model_path:
+    
+    try:
+        if loaded_model!=args.model_path:
+            load_model(saving_path, model, prompt, img_height, img_width, num_inference_steps)
+    except:
         load_model(saving_path, model, prompt, img_height, img_width, num_inference_steps)
     
     try:
