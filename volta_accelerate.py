@@ -528,6 +528,10 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
     isExist = os.path.exists(output_dir)
     if not isExist:
         os.makedirs(output_dir)
+
+    max_batch_size = 16
+    if args.build_dynamic_shape:
+        max_batch_size = 4
     # Register TensorRT plugins
     trt.init_libnvinfer_plugins(TRT_LOGGER, '')
 
@@ -545,7 +549,7 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
     )
 
     demo.buildOnlyEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
-        opt_batch_size=1, opt_image_height=image_height, opt_image_width=image_width, \
+        opt_batch_size=1, opt_image_height=img_height, opt_image_width=img_width, \
         force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
         force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
         static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
