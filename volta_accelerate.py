@@ -494,9 +494,113 @@ class DemoDiffusion:
                 image_name_prefix = 'sd-'+('fp16' if self.denoising_fp16 else 'fp32')+''.join(set(['-'+prompt[i].replace(' ','_')[:10] for i in range(batch_size)]))+'-'
                 save_image(images, self.output_dir, image_name_prefix)
             return str(e2e_toc - e2e_tic)
-                
-def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
+
+def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
     
+    print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
+    args = parseArgs()
+
+    args.output_dir=saving_path
+    args.prompt=[prompt]
+    args.model_path=model
+    args.height=img_height
+    args.width=img_width
+    args.repeat_prompt=num_images_per_prompt
+    args.denoising_steps=num_inference_steps
+    args.seed=seed
+    args.guidance_scale=guidance_scale
+    args.negative_prompt=[neg_prompt]
+    engine_dir = f'engine/{model}'
+    onnx_dir = "onnx"
+    output_dir = "output"
+    isExist = os.path.exists(engine_dir.split('/')[0])
+    if not isExist:
+        os.makedirs(engine_dir.split('/')[0])
+    isExist = os.path.exists(os.path.join(engine_dir.split('/')[0],engine_dir.split('/')[1]))
+    if not isExist:
+        os.makedirs(os.path.join(engine_dir.split('/')[0],engine_dir.split('/')[1]))
+    isExist = os.path.exists(engine_dir)
+    if not isExist:
+        os.makedirs(engine_dir)
+    isExist = os.path.exists(onnx_dir)
+    if not isExist:
+        os.makedirs(onnx_dir)
+    isExist = os.path.exists(output_dir)
+    if not isExist:
+        os.makedirs(output_dir)
+    # Register TensorRT plugins
+    trt.init_libnvinfer_plugins(TRT_LOGGER, '')
+
+    # Initialize demo
+    demo = DemoDiffusion(
+        model_path=args.model_path,
+        denoising_steps=args.denoising_steps,
+        denoising_fp16=(args.denoising_prec == 'fp16'),
+        output_dir=args.output_dir,
+        scheduler=args.scheduler,
+        hf_token=args.hf_token,
+        verbose=args.verbose,
+        nvtx_profile=args.nvtx_profile,
+        max_batch_size=max_batch_size,
+    )
+
+    demo.buildOnlyEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
+        opt_batch_size=1, opt_image_height=image_height, opt_image_width=image_width, \
+        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
+        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
+        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
+        enable_preview=args.build_preview_features)
+
+def load_trt(saving_path,model, prompt, img_height, img_width, num_inference_steps):
+    global trt_model
+    global loaded_model
+
+    
+    #if a model is already loaded, remove it from memory
+    try:
+        trt_model.teardown()
+    except:
+        pass
+
+    args = parseArgs()
+    
+    engine_dir = f'engine/{model}'
+    onnx_dir = "onnx"
+
+    max_batch_size = 16
+    if args.build_dynamic_shape:
+        max_batch_size = 4
+
+    if len(prompt) > max_batch_size:
+        raise ValueError(f"Batch size {len(prompt)} is larger than allowed {max_batch_size}. If dynamic shape is used, then maximum batch size is 4")
+    
+    trt.init_libnvinfer_plugins(TRT_LOGGER, '')
+
+    # Initialize demo
+    trt_model = DemoDiffusion(
+        model_path=model,
+        denoising_steps=num_inference_steps,
+        denoising_fp16=(args.denoising_prec == 'fp16'),
+        output_dir=saving_path,
+        scheduler=args.scheduler,
+        hf_token=args.hf_token,
+        verbose=args.verbose,
+        nvtx_profile=args.nvtx_profile,
+        max_batch_size=max_batch_size,
+    )
+
+    trt_model.loadEngines(engine_dir, onnx_dir, args.onnx_opset, 
+        opt_batch_size=len(prompt), opt_image_height=img_height, opt_image_width=img_width, \
+        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
+        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
+        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
+        enable_preview=args.build_preview_features)
+    trt_model.loadModules()
+    loaded_model = model
+
+def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
+    global trt_model
+    global loaded_model
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
     args = parseArgs()
 
@@ -515,21 +619,9 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     
     args.engine_dir = os.path.join(args.engine_dir, args.model_path)
 
-    isExist = os.path.exists(args.engine_dir.split('/')[0])
-    if not isExist:
-        os.makedirs(args.engine_dir.split('/')[0])
-    isExist = os.path.exists(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    if not isExist:
-        os.makedirs(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    isExist = os.path.exists(args.engine_dir)
-    if not isExist:
-        os.makedirs(args.engine_dir)
-    isExist = os.path.exists(args.onnx_dir)
-    if not isExist:
-        os.makedirs(args.onnx_dir)
-    isExist = os.path.exists(args.output_dir)
-    if not isExist:
-        os.makedirs(args.output_dir)
+    alreadyCompiled = os.path.exists(f'engine/{args.model_path}')
+    if not alreadyCompiled:
+        compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None)
     
     
     # Process prompt
@@ -558,54 +650,32 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     if image_height % 8 != 0 or image_width % 8 != 0:
         raise ValueError(f"Image height and width have to be divisible by 8 but specified as: {image_height} and {image_width}.")
 
-    # Register TensorRT plugins
-    trt.init_libnvinfer_plugins(TRT_LOGGER, '')
-
-    # Initialize demo
-    demo = DemoDiffusion(
-        model_path=args.model_path,
-        denoising_steps=args.denoising_steps,
-        denoising_fp16=(args.denoising_prec == 'fp16'),
-        output_dir=args.output_dir,
-        scheduler=args.scheduler,
-        hf_token=args.hf_token,
-        verbose=args.verbose,
-        nvtx_profile=args.nvtx_profile,
-        max_batch_size=max_batch_size,
-    )
-
-    # Load TensorRT engines and pytorch modules
-    alreadyCompiled = os.path.exists("engine/CompVis/stable-diffusion-v1-4/clip.plan")
-    if not alreadyCompiled:
-        demo.buildOnlyEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
-        opt_batch_size=1, opt_image_height=image_height, opt_image_width=image_width, \
-        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
-        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
-        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
+    if loaded_model!=args.model_path:
+        load_model(saving_path, model, prompt, img_height, img_width, num_inference_steps)
     
-    
-    
-    demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
-        opt_batch_size=len(prompt), opt_image_height=image_height, opt_image_width=image_width, \
-        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
-        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
-        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
-    demo.loadModules()
+    try:
+        print("[I] Warming up ..")
+        for _ in range(args.num_warmup_runs):
+            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, warmup=True, verbose=False, seed=args.seed)
 
-    print("[I] Warming up ..")
-    for _ in range(args.num_warmup_runs):
-        images = demo.infer(prompt, negative_prompt, args.height, args.width, warmup=True, verbose=False, seed=args.seed)
+        print("[I] Running StableDiffusion pipeline")
+        if args.nvtx_profile:
+            cudart.cudaProfilerStart()
+        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
+        if args.nvtx_profile:
+            cudart.cudaProfilerStop()
+    except:
+        load_model(saving_path, model, prompt, img_height, img_width, num_inference_steps)
+        print("[I] Warming up ..")
+        for _ in range(args.num_warmup_runs):
+            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, warmup=True, verbose=False, seed=args.seed)
 
-    print("[I] Running StableDiffusion pipeline")
-    if args.nvtx_profile:
-        cudart.cudaProfilerStart()
-    pipeline_time = demo.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
-    if args.nvtx_profile:
-        cudart.cudaProfilerStop()
-
-    demo.teardown()
+        print("[I] Running StableDiffusion pipeline")
+        if args.nvtx_profile:
+            cudart.cudaProfilerStart()
+        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
+        if args.nvtx_profile:
+            cudart.cudaProfilerStop()
     gc.collect()
     return pipeline_time
 
