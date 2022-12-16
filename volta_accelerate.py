@@ -70,6 +70,8 @@ def parseArgs():
     parser.add_argument('--output-dir', default='output', help="Output directory for logs and image artifacts")
     parser.add_argument('--hf-token', type=str, help="HuggingFace API access token for downloading model checkpoints")
     parser.add_argument('-v', '--verbose', action='store_true', help="Show verbose output")
+    parser.add_argument('--backend', default='PT', help="PT(PyTorch) or TRT(TensorRT)")
+
     return parser.parse_args()
 
 class DemoDiffusion:
@@ -326,6 +328,7 @@ class DemoDiffusion:
         negative_prompt,
         image_height,
         image_width,
+        guidance_scale=7.5,
         warmup = False,
         verbose = False,
         seed=None
@@ -385,6 +388,7 @@ class DemoDiffusion:
             if self.nvtx_profile:
                 nvtx_clip = nvtx.start_range(message='clip', color='green')
             cudart.cudaEventRecord(events['clip-start'], 0)
+            
             # Tokenize input
             text_input_ids = self.tokenizer(
                 prompt,
@@ -458,7 +462,7 @@ class DemoDiffusion:
                     nvtx_latent_step = nvtx.start_range(message='latent_step', color='pink')
                 # Perform guidance
                 noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                noise_pred = noise_pred_uncond + self.guidance_scale * (noise_pred_text - noise_pred_uncond)
+                noise_pred = noise_pred_uncond + guidance_scale * (noise_pred_text - noise_pred_uncond)
 
                 latents = self.scheduler.step(noise_pred, latents, step_index, timestep)
 
@@ -494,6 +498,7 @@ class DemoDiffusion:
                 image_name_prefix = 'sd-'+('fp16' if self.denoising_fp16 else 'fp32')+''.join(set(['-'+prompt[i].replace(' ','_')[:10] for i in range(batch_size)]))+'-'
                 save_image(images, self.output_dir, image_name_prefix)
             return str(e2e_toc - e2e_tic)
+                
 
 def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
     
@@ -546,6 +551,7 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
         verbose=args.verbose,
         nvtx_profile=args.nvtx_profile,
         max_batch_size=max_batch_size,
+        guidance_scale=args.guidance_scale
     )
 
     demo.buildOnlyEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
@@ -555,10 +561,9 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
         static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
         enable_preview=args.build_preview_features)
 
-def load_trt(saving_path,model, prompt, img_height, img_width, num_inference_steps):
+def load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps):
     global trt_model
     global loaded_model
-
     #if a model is already loaded, remove it from memory
     try:
         trt_model.teardown()
@@ -566,7 +571,6 @@ def load_trt(saving_path,model, prompt, img_height, img_width, num_inference_ste
         pass
 
     args = parseArgs()
-    
     engine_dir = f'engine/{model}'
     onnx_dir = "onnx"
 
@@ -628,9 +632,9 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     
     
     # Process prompt
-    # if not isinstance(args.prompt, list):
-    #     raise ValueError(f"`prompt` must be of type `str` or `str` list, but is {type(args.prompt)}")
-    print('String :', args.prompt, type(args.prompt))
+    if not isinstance(args.prompt, list):
+        raise ValueError(f"`prompt` must be of type `str` or `str` list, but is {type(args.prompt)}")
+    # print('String :', args.prompt, type(args.prompt))
     prompt = args.prompt * args.repeat_prompt
 
     if not isinstance(args.negative_prompt, list):
@@ -652,34 +656,34 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     image_width = args.width
     if image_height % 8 != 0 or image_width % 8 != 0:
         raise ValueError(f"Image height and width have to be divisible by 8 but specified as: {image_height} and {image_width}.")
-    
+
     try:
         if loaded_model!=args.model_path:
-            load_model(saving_path, model, prompt, img_height, img_width, num_inference_steps)
+            load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps)
     except:
-        load_model(saving_path, model, prompt, img_height, img_width, num_inference_steps)
-    
+        load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps)
+        
     try:
         print("[I] Warming up ..")
         for _ in range(args.num_warmup_runs):
-            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, warmup=True, verbose=False, seed=args.seed)
+            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, warmup=True, verbose=False, seed=args.seed)
 
         print("[I] Running StableDiffusion pipeline")
         if args.nvtx_profile:
             cudart.cudaProfilerStart()
-        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
+        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, verbose=args.verbose, seed=args.seed)
         if args.nvtx_profile:
             cudart.cudaProfilerStop()
     except:
-        load_model(saving_path, model, prompt, img_height, img_width, num_inference_steps)
+        load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps)
         print("[I] Warming up ..")
         for _ in range(args.num_warmup_runs):
-            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, warmup=True, verbose=False, seed=args.seed)
+            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, warmup=True, verbose=False, seed=args.seed)
 
         print("[I] Running StableDiffusion pipeline")
         if args.nvtx_profile:
             cudart.cudaProfilerStart()
-        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, verbose=args.verbose, seed=args.seed)
+        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, verbose=args.verbose, seed=args.seed)
         if args.nvtx_profile:
             cudart.cudaProfilerStop()
     gc.collect()
@@ -725,95 +729,25 @@ if __name__ == "__main__":
 
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
     args = parseArgs()
-
-    args.engine_dir = os.path.join(args.engine_dir, args.model_path)
-
-    isExist = os.path.exists(args.engine_dir.split('/')[0])
-    if not isExist:
-        os.makedirs(args.engine_dir.split('/')[0])
-    isExist = os.path.exists(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    if not isExist:
-        os.makedirs(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
-    isExist = os.path.exists(args.engine_dir)
-    if not isExist:
-        os.makedirs(args.engine_dir)
-    isExist = os.path.exists(args.onnx_dir)
-    if not isExist:
-        os.makedirs(args.onnx_dir)
-    isExist = os.path.exists(args.output_dir)
-    if not isExist:
-        os.makedirs(args.output_dir)
-    
-    print('String', args.prompt)
-
-    # Process prompt
-    if not isinstance(args.prompt, list):
-        raise ValueError(f"`prompt` must be of type `str` or `str` list, but is {type(args.prompt)}")
-    prompt = args.prompt * args.repeat_prompt
-
-    if not isinstance(args.negative_prompt, list):
-        raise ValueError(f"`--negative-prompt` must be of type `str` or `str` list, but is {type(args.negative_prompt)}")
-    if len(args.negative_prompt) == 1:
-        negative_prompt = args.negative_prompt * len(prompt)
-    else:
-        negative_prompt = args.negative_prompt
-
-    max_batch_size = 16
-    if args.build_dynamic_shape:
-        max_batch_size = 4
-    if len(prompt) > max_batch_size:
-        raise ValueError(f"Batch size {len(prompt)} is larger than allowed {max_batch_size}. If dynamic shape is used, then maximum batch size is 4")
-
-    # Validate image dimensions
-    image_height = args.height
-    image_width = args.width
-    if image_height % 8 != 0 or image_width % 8 != 0:
-        raise ValueError(f"Image height and width have to be divisible by 8 but specified as: {image_height} and {image_width}.")
-
-    # Register TensorRT plugins
-    trt.init_libnvinfer_plugins(TRT_LOGGER, '')
-
-    # Initialize demo
-    demo = DemoDiffusion(
-        model_path=args.model_path,
-        denoising_steps=args.denoising_steps,
-        denoising_fp16=(args.denoising_prec == 'fp16'),
-        output_dir=args.output_dir,
-        scheduler=args.scheduler,
-        hf_token=args.hf_token,
-        verbose=args.verbose,
-        nvtx_profile=args.nvtx_profile,
-        max_batch_size=max_batch_size)
-
-    # Load TensorRT engines and pytorch modules
-    alreadyCompiled = os.path.exists("engine/CompVis/stable-diffusion-v1-4/clip.plan")
-    if not alreadyCompiled:
-        demo.buildOnlyEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
-        opt_batch_size=1, opt_image_height=image_height, opt_image_width=image_width, \
-        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
-        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
-        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
-    
-    
-    
-    demo.loadEngines(args.engine_dir, args.onnx_dir, args.onnx_opset, 
-        opt_batch_size=len(prompt), opt_image_height=image_height, opt_image_width=image_width, \
-        force_export=args.force_onnx_export, force_optimize=args.force_onnx_optimize, \
-        force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
-        static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
-        enable_preview=args.build_preview_features)
-    demo.loadModules()
-
-    print("[I] Warming up ..")
-    for _ in range(args.num_warmup_runs):
-        images = demo.infer(prompt, negative_prompt, image_height, image_width, warmup=True, verbose=False)
-
-    print("[I] Running StableDiffusion pipeline")
-    if args.nvtx_profile:
-        cudart.cudaProfilerStart()
-    images = demo.infer(prompt, negative_prompt, image_height, image_width, verbose=args.verbose)
-    if args.nvtx_profile:
-        cudart.cudaProfilerStop()
-
-    demo.teardown()
+    if "trt" in args.backend.lower():
+        infer_trt(saving_path=args.output_dir,
+                  model=args.model_path,
+                  prompt=args.prompt[0],
+                  neg_prompt=args.negative_prompt[0],
+                  img_height=args.height,
+                  img_width=args.width, 
+                  num_inference_steps=args.denoising_steps,
+                  guidance_scale=15,
+                  num_images_per_prompt=args.repeat_prompt,
+                  seed=args.seed)
+    if "pt" in args.backend.lower():
+        infer_pt(saving_path=args.output_dir,
+                  model_path=args.model_path,
+                  prompt=args.prompt,
+                  negative_prompt=args.negative_prompt,
+                  img_height=args.height,
+                  img_width=args.width, 
+                  num_inference_steps=args.denoising_steps,
+                  guidance_scale=12,
+                  num_images_per_prompt=args.repeat_prompt,
+                  seed=args.seed)

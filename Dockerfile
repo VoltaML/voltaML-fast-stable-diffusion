@@ -19,13 +19,9 @@ ENV PLUGIN_LIBS="${TRT_OSSPATH}/build/out/libnvinfer_plugin.so"
 
 WORKDIR /workspace
 
+RUN git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git
 
-#RUN git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git -b volta_trt_flash --single-branch
-
-#RUN pip3 install -r /workspace/voltaML-fast-stable-diffusion/requirements.txt
 WORKDIR /workspace/voltaML-fast-stable-diffusion
-
-ADD requirements.txt requirements.txt
 
 RUN pip3 install -r requirements.txt
 
