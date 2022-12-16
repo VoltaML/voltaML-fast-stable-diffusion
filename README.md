@@ -32,12 +32,17 @@ Setup docker on Ubuntu using [these intructions](https://docs.docker.com/engine/
 
 Setup docker on Windows using [these intructions](https://docs.docker.com/desktop/install/windows-install/)
 
+### Folder setup
 
+Please create two folders one called "engine" and one called "output" in your local computer.
+````
+C:\voltaml\engine 
+C:\voltaml\output
+````
 ### Launch voltaML container
 ```
-sudo docker run --gpus=all -v 'Path-to-your-local-folder-for-engine'/engine:/workspace/voltaML-fast-stable-diffusion/engine /
-                            -v 'Path-to-your-local-folder-for-outputs'/engine:/workspace/voltaML-fast-stable-diffusion/static/output /
-                            -p 5003:5003 -it voltaml/volta_diffusion_webui:v0.1
+sudo docker run --gpus=all -v C:\voltaml\engine/engine:/workspace/voltaML-fast-stable-diffusion/engine -v C:\voltaml\output
+/engine:/workspace/voltaML-fast-stable-diffusion/static/output -p 5003:5003 -it voltaml/volta_diffusion_webui:v0.1
 ```
 ⚠️ You need to mount a local volume to save your work onto your system. Or else the work will be deleted once you exit the container </br>
 ⚠️ To save your work in the container itself, you have to commit the container and then exit the container.
@@ -58,12 +63,12 @@ sudo docker run --gpus=all -v 'Path-to-your-local-folder-for-engine'/engine:/wor
 
 The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
-| Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       |
-|----------------|--------------|----------------|----------------|
-| PyTorch        |     4.3      | 8.8            | 15.1           |
-| Flash attention xformers| 5.5 | 15.6            |27.5            |
-| AITemplate     | Not supported | 26.7               | 55|
-| VoltaML(TRT-Flash)   |     11.4      | 29.2            | 62.8           |
+| Model          | T4 (it/s)      | A10 (it/s)      | A100 (it/s)       | 4090 (it/s)| 3090 (it/s) | 2080Ti  (it/s)|
+|----------------|--------------|----------------|----------------|--------------------|-------------|------|
+| PyTorch        |     4.3      | 8.8            | 15.1           | 19  | 11| 8
+| Flash attention xformers| 5.5 | 15.6            |27.5            | 28 | 15.7 | N/A
+| AITemplate     | Not supported | 26.7               | 55| 60 | N/A | Not supported
+| VoltaML(TRT-Flash)   |     11.4      | 29.2            | 62.8           | 85 | 44.7 | 26.2
 
  
 ### ⚠️ ‼️ Warnings/Caveats

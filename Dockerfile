@@ -25,8 +25,6 @@ WORKDIR /workspace/voltaML-fast-stable-diffusion
 
 RUN pip3 install -r requirements.txt
 
-ADD . .
-
 ENV CUDA_MODULE_LOADING=LAZY
 
 RUN chmod +x start.sh
