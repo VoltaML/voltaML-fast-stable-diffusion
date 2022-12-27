@@ -126,7 +126,6 @@ class DemoDiffusion:
         assert guidance_scale > 1.0
         self.guidance_scale = guidance_scale
         self.model_path = model_path
-        self.output_dir = output_dir
         self.hf_token = hf_token
         self.device = device
         self.verbose = verbose
@@ -331,7 +330,9 @@ class DemoDiffusion:
         guidance_scale=7.5,
         warmup = False,
         verbose = False,
-        seed=None
+        seed=None,
+        output_dir='static/output',
+
     ):
         """
         Run the diffusion pipeline.
@@ -496,16 +497,15 @@ class DemoDiffusion:
 
                 # Save image
                 image_name_prefix = 'sd-'+('fp16' if self.denoising_fp16 else 'fp32')+''.join(set(['-'+prompt[i].replace(' ','_')[:10] for i in range(batch_size)]))+'-'
-                save_image(images, self.output_dir, image_name_prefix)
+                save_image(images, output_dir, image_name_prefix)
             return str(e2e_toc - e2e_tic)
                 
 
-def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
+def compile_trt(model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
     
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
     args = parseArgs()
 
-    args.output_dir=saving_path
     args.prompt=[prompt]
     args.model_path=model
     args.height=img_height
@@ -517,7 +517,6 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
     args.negative_prompt=[neg_prompt]
     engine_dir = f'engine/{model}'
     onnx_dir = "onnx"
-    output_dir = "output"
     isExist = os.path.exists(engine_dir.split('/')[0])
     if not isExist:
         os.makedirs(engine_dir.split('/')[0])
@@ -530,9 +529,6 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
     isExist = os.path.exists(onnx_dir)
     if not isExist:
         os.makedirs(onnx_dir)
-    isExist = os.path.exists(output_dir)
-    if not isExist:
-        os.makedirs(output_dir)
 
     max_batch_size = 16
     if args.build_dynamic_shape:
@@ -545,7 +541,6 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
         model_path=args.model_path,
         denoising_steps=args.denoising_steps,
         denoising_fp16=(args.denoising_prec == 'fp16'),
-        output_dir=args.output_dir,
         scheduler=args.scheduler,
         hf_token=args.hf_token,
         verbose=args.verbose,
@@ -561,7 +556,7 @@ def compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, n
         static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
         enable_preview=args.build_preview_features)
 
-def load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps):
+def load_trt(model, prompt, img_height, img_width, num_inference_steps):
     global trt_model
     global loaded_model
     #if a model is already loaded, remove it from memory
@@ -588,7 +583,6 @@ def load_trt(saving_path, model, prompt, img_height, img_width, num_inference_st
         model_path=model,
         denoising_steps=num_inference_steps,
         denoising_fp16=(args.denoising_prec == 'fp16'),
-        output_dir=saving_path,
         scheduler=args.scheduler,
         hf_token=args.hf_token,
         verbose=args.verbose,
@@ -658,32 +652,26 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
         raise ValueError(f"Image height and width have to be divisible by 8 but specified as: {image_height} and {image_width}.")
 
     try:
-        if loaded_model!=args.model_path:
-            load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps)
-    except:
-        load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps)
-        
-    try:
         print("[I] Warming up ..")
         for _ in range(args.num_warmup_runs):
-            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, warmup=True, verbose=False, seed=args.seed)
+            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, warmup=True, verbose=False, seed=args.seed, output_dir=args.output_dir)
 
         print("[I] Running StableDiffusion pipeline")
         if args.nvtx_profile:
             cudart.cudaProfilerStart()
-        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, verbose=args.verbose, seed=args.seed)
+        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, verbose=args.verbose, seed=args.seed, output_dir=args.output_dir)
         if args.nvtx_profile:
             cudart.cudaProfilerStop()
     except:
-        load_trt(saving_path, model, prompt, img_height, img_width, num_inference_steps)
+        load_trt(model, prompt, img_height, img_width, num_inference_steps)
         print("[I] Warming up ..")
         for _ in range(args.num_warmup_runs):
-            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, warmup=True, verbose=False, seed=args.seed)
+            images = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, warmup=True, verbose=False, seed=args.seed, output_dir=args.output_dir)
 
         print("[I] Running StableDiffusion pipeline")
         if args.nvtx_profile:
             cudart.cudaProfilerStart()
-        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, verbose=args.verbose, seed=args.seed)
+        pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, verbose=args.verbose, seed=args.seed, output_dir=args.output_dir)
         if args.nvtx_profile:
             cudart.cudaProfilerStop()
     gc.collect()
