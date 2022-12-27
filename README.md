@@ -7,10 +7,6 @@
 
 <h1 align="center">🔥 🔥 voltaML-fast-stable-diffusion webUI 🔥 🔥 </h1>
 
-<p align="center">
-  <b> Accelerate your machine learning and deep learning models by upto 10X </b> 
-</p>
-
 ###                                                   
 
 <div align="center">
@@ -41,8 +37,7 @@ C:\voltaml\output
 ````
 ### Launch voltaML container
 ```
-sudo docker run --gpus=all -v C:\voltaml\engine/engine:/workspace/voltaML-fast-stable-diffusion/engine -v C:\voltaml\output
-/engine:/workspace/voltaML-fast-stable-diffusion/static/output -p 5003:5003 -it voltaml/volta_diffusion_webui:v0.1
+sudo docker run --gpus=all -v "path-to-engine-folder":/workspace/voltaML-fast-stable-diffusion/engine -v "path-to-output-folder":/workspace/voltaML-fast-stable-diffusion/static/output -p 5003:5003 -it voltaml/volta_diffusion_webui:v0.2
 ```
 ⚠️ You need to mount a local volume to save your work onto your system. Or else the work will be deleted once you exit the container </br>
 ⚠️ To save your work in the container itself, you have to commit the container and then exit the container.
@@ -51,7 +46,7 @@ sudo docker run --gpus=all -v C:\voltaml\engine/engine:/workspace/voltaML-fast-s
  1. Once you launch the container, a flask app will run and copy/paste the url to run the webUI on your local host.
  ![Screenshot from 2022-12-12 12-36-01](https://user-images.githubusercontent.com/107309002/206982082-ee498781-9e6d-4b80-a652-2e4e29a2835e.png)
 
- 2. There are two backends to run the SD on, PyTorch and TensorRT (fastest version)
+ 2. There are two backends to run the SD on, PyTorch and TensorRT (fastest version by NVIDIA).  
  3. To run on PyTorch inference, you have to select the model, the model will be downloaded (which will take a few mins) into the container and the inference will be displayed. Downloaded models will be shown as below
 ![download_sd](https://user-images.githubusercontent.com/107309002/206983689-5f40f446-426b-45b7-88fa-db224099dd8e.png)
  4. To run TensoRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. <br/>
