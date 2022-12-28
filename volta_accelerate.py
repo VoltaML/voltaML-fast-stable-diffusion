@@ -33,6 +33,7 @@ from utilities import Engine, DPMScheduler, LMSDiscreteScheduler, save_image, TR
 from pytorch_model import inference, load_model
 import gc
 import pickle
+import shutil
 
 def parseArgs():
     parser = argparse.ArgumentParser(description="Options for Stable Diffusion Demo")
@@ -59,7 +60,7 @@ def parseArgs():
     parser.add_argument('--engine-dir', default='engine', help="Output directory for TensorRT engines")
     parser.add_argument('--force-engine-build', action='store_true', help="Force rebuilding the TensorRT engine")
     parser.add_argument('--build-static-batch', action='store_true', help="Build TensorRT engines with fixed batch size.")
-    parser.add_argument('--build-dynamic-shape', action='store_true', help="Build TensorRT engines with dynamic image shapes.")
+    parser.add_argument('--build-dynamic-shape', action='store_false', help="Build TensorRT engines with dynamic image shapes.")
     parser.add_argument('--build-preview-features', action='store_true', help="Build TensorRT engines with preview features.")
 
     # TensorRT inference
