@@ -515,17 +515,17 @@ def compile_trt(model, prompt, neg_prompt, img_height, img_width, num_inference_
     args.seed=seed
     args.guidance_scale=guidance_scale
     args.negative_prompt=[neg_prompt]
-    engine_dir = f'engine/{model}'
+    args.engine_dir = f'engine/{model}'
     onnx_dir = "onnx"
-    isExist = os.path.exists(engine_dir.split('/')[0])
+    isExist = os.path.exists(args.engine_dir.split('/')[0])
     if not isExist:
-        os.makedirs(engine_dir.split('/')[0])
-    isExist = os.path.exists(os.path.join(engine_dir.split('/')[0],engine_dir.split('/')[1]))
+        os.makedirs(args.engine_dir.split('/')[0])
+    isExist = os.path.exists(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
     if not isExist:
-        os.makedirs(os.path.join(engine_dir.split('/')[0],engine_dir.split('/')[1]))
-    isExist = os.path.exists(engine_dir)
+        os.makedirs(os.path.join(args.engine_dir.split('/')[0],args.engine_dir.split('/')[1]))
+    isExist = os.path.exists(args.engine_dir)
     if not isExist:
-        os.makedirs(engine_dir)
+        os.makedirs(args.engine_dir)
     isExist = os.path.exists(onnx_dir)
     if not isExist:
         os.makedirs(onnx_dir)
@@ -555,6 +555,8 @@ def compile_trt(model, prompt, neg_prompt, img_height, img_width, num_inference_
         force_build=args.force_engine_build, minimal_optimization=args.onnx_minimal_optimization, \
         static_batch=args.build_static_batch, static_shape=not args.build_dynamic_shape, \
         enable_preview=args.build_preview_features)
+    
+    shutil.rmtree(args.onnx_dir)
 
 def load_trt(model, prompt, img_height, img_width, num_inference_steps):
     global trt_model
@@ -622,7 +624,7 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
 
     alreadyCompiled = os.path.exists(f'engine/{args.model_path}')
     if not alreadyCompiled:
-        compile_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None)
+        compile_trt(model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None)
     
     
     # Process prompt
@@ -650,6 +652,21 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
     image_width = args.width
     if image_height % 8 != 0 or image_width % 8 != 0:
         raise ValueError(f"Image height and width have to be divisible by 8 but specified as: {image_height} and {image_width}.")
+        
+    try:
+        print('---------------------')
+        print('Loaded Model ', loaded_model)
+        if loaded_model!=args.model_path:
+            print('Loading Model ', args.model_path)
+            trt_model = None
+            load_trt(model, prompt, img_height, img_width, num_inference_steps)
+        print('---------------------')
+
+    except:
+        print('---------------------')
+        print('Loading Model ', args.model_path)
+        trt_model = None
+        load_trt(model, prompt, img_height, img_width, num_inference_steps)
 
     try:
         print("[I] Warming up ..")
@@ -663,6 +680,7 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
         if args.nvtx_profile:
             cudart.cudaProfilerStop()
     except:
+        trt_model = None
         load_trt(model, prompt, img_height, img_width, num_inference_steps)
         print("[I] Warming up ..")
         for _ in range(args.num_warmup_runs):
@@ -674,6 +692,7 @@ def infer_trt(saving_path, model, prompt, neg_prompt, img_height, img_width, num
         pipeline_time = trt_model.infer(prompt, negative_prompt, args.height, args.width, guidance_scale=args.guidance_scale, verbose=args.verbose, seed=args.seed, output_dir=args.output_dir)
         if args.nvtx_profile:
             cudart.cudaProfilerStop()
+    
     gc.collect()
     return pipeline_time
 
@@ -698,7 +717,7 @@ def infer_pt(saving_path, model_path, prompt, negative_prompt, img_height, img_w
         seed=seed,
         return_time=True,
     )
-    
+    model = None
     print("[+] Time needed to generate the images: {} seconds".format(time))
 
     # Save PIL images with a random name

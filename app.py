@@ -15,6 +15,10 @@ import uuid
 from glob import glob
 from volta_accelerate import *
 from flask import Flask, send_from_directory
+from redis import Redis
+import datetime
+
+
 
 UPLOAD_FOLDER = 'data/INCOMING_JSON/'
 ALLOWED_EXTENSIONS = {"jpg"}
@@ -42,17 +46,33 @@ def hello_world():  # put application's code here
 def acc():  # put application's code here
     return send_from_directory('static', 'acc.html')
 
+# red = Redis(host='localhost', port=6379, db=0)
+
+def event_stream():
+    pubsub = red.pubsub()
+    pubsub.subscribe('notification')
+    for message in pubsub.listen():
+        print(message)
+        yield 'data: %s\n\n' % message['data']
+
+
+
+# @app.route('/stream')
+# def stream():
+#     return Response(event_stream(),
+#                           mimetype="text/event-stream")
 
 @app.route('/voltaml/job', methods=['GET', 'POST'])
 def upload_file():
+    jsonFile = request.get_json()
+    print(jsonFile)
     if request.method == 'POST':
 
         jsonFile = request.get_json()
-        print(jsonFile)
-
         if jsonFile:  ### check if file is json format or not
             # f = request.files['jsonFile']
             body = jsonFile
+            print("Request Params : ", body)
             job_id = random.randint(10000000, 99999999)
 
             prompt = body["prompt"]
@@ -100,6 +120,10 @@ def upload_file():
             with open(saving_path+'/%s.json'%job_id, 'w') as f:
                 json.dump({'pipeline_time':pipeline_time}, f)
 
+            # message = 'Job id %s completed.'%job_id
+            # now = datetime.datetime.now().replace(microsecond=0).time()
+            # red.publish('notification', u'[%s] %s: %s' % (now.isoformat(), 'Aviso', message))
+                
             return {
                 "status": "SUCCESS",
                 "jobId": job_id,
