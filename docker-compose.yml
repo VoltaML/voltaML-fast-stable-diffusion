@@ -1,0 +1,24 @@
+version: "3.7"
+
+services:
+  voltaml:
+    image: voltaml/volta_diffusion_webui:v0.3
+    volumes:
+      - engine:/workspace/voltaML-fast-stable-diffusion/engine
+      - output:/workspace/voltaML-fast-stable-diffusion/static/output
+    ports:
+      - "5003:5003"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - capabilities: ["gpu"]
+
+volumes:
+  output:
+    driver: local
+    driver_opts:
+      type: none
+      device: C:\voltaml\output
+      o: bind
+  engine: {}
