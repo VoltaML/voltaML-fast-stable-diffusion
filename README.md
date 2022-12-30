@@ -24,19 +24,11 @@ Setup docker on Ubuntu using [these intructions](https://docs.docker.com/engine/
 
 Setup docker on Windows using [these intructions](https://docs.docker.com/desktop/install/windows-install/)
 
-### Folder setup
-
-Please create two folders one called "engine" and one called "output" in your local computer.
-
-```
-mkdir engine output
-```
-
 ### Launch voltaML container
 
 Download the [docker-compose.yml](https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/Docker-next/docker-compose.yml) file from this repo.
 
-⚠️ Open it in a text editor and change the path to the output folder.
+⚠️ Linux: Open it in a text editor and change the path of the output folder. It was configured for Windows only.
 
 ```yaml
 output:
