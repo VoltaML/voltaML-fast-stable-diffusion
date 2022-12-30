@@ -18,7 +18,15 @@
         <NSpace vertical class="left-container">
           <!-- Backend selection -->
           <NSpace>
-            <p>Backend</p>
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p>Backend</p>
+              </template>
+              <b class="highlight">TensorRT is the fastest</b> method but
+              requires accelerated model that must be created per machine.
+              <b class="highlight">PyTorch</b> on the other hand is
+              <b class="highlight">slower but works right out of the box.</b>
+            </NTooltip>
             <NSpace align="center" style="height: 100%">
               <NRadioGroup
                 v-model:value="selectedBackend"
@@ -26,8 +34,8 @@
               >
                 <NRadioButton
                   v-for="backend in [
+                    { label: 'TensorRT', value: 'TensorRT' },
                     { label: 'PyTorch', value: 'PyTorch' },
-                    { label: 'TensorFlow', value: 'TensorFlow' },
                   ]"
                   :key="backend.value"
                   :value="backend.value"
@@ -47,11 +55,26 @@
 
           <!-- Sampler -->
           <NSpace>
-            <p>Sampler</p>
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p>Sampler</p>
+              </template>
+              The sampler is the method used to generate the image. Your result
+              may vary drastically depending on the sampler you choose.
+              <b class="highlight"
+                >We recommend using Euler A for the best results (but it also
+                takes more time).
+              </b>
+              <a
+                target="_blank"
+                href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
+                >Learn more</a
+              >
+            </NTooltip>
             <NSpace align="center" style="height: 100%">
               <NRadioGroup
                 v-model:value="selectedSampler"
-                name="radiobuttongroup1"
+                name="sampler-radio-group"
               >
                 <NRadioButton
                   v-for="backend in [
@@ -69,7 +92,6 @@
           </NSpace>
 
           <!-- Dimensions -->
-
           <div class="flex-container">
             <p class="slider-label">Width</p>
             <NSlider
@@ -103,7 +125,18 @@
 
           <!-- Steps -->
           <div class="flex-container">
-            <p class="slider-label">Steps</p>
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p class="slider-label">Steps</p>
+              </template>
+              Number of steps to take in the diffusion process. Higher values
+              will result in more detailed images but will take longer to
+              generate. There is also a point of diminishing returns around 100
+              steps.
+              <b class="highlight"
+                >We recommend using 20-50 steps for most images.</b
+              >
+            </NTooltip>
             <NSlider
               v-model:value="steps"
               :min="5"
@@ -121,7 +154,16 @@
 
           <!-- CFG Scale -->
           <div class="flex-container">
-            <p class="slider-label">CFG Scale</p>
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p class="slider-label">CFG Scale</p>
+              </template>
+              Guidance scale indicates how much should model stay close to the
+              prompt. Higher values might be exactly what you want, but
+              generated images might have some artefacts. Lower values indicates
+              that model can "dream" about this prompt more.
+              <b class="highlight">We recommend using 3-15 for most images.</b>
+            </NTooltip>
             <NSlider
               v-model:value="cfgScale"
               :min="1"
@@ -139,33 +181,46 @@
             />
           </div>
 
+          <!-- Number of images -->
+          <div class="flex-container">
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p class="slider-label">Batch Count</p>
+              </template>
+              Number of images to generate after each other.
+            </NTooltip>
+            <NSlider
+              v-model:value="batchCount"
+              :min="1"
+              :max="9"
+              style="margin-right: 12px"
+            />
+            <NInputNumber
+              v-model:value="batchCount"
+              size="small"
+              style="width: 128px"
+              :min="1"
+              :max="9"
+            />
+          </div>
+
           <!-- Seed -->
           <div class="flex-container">
-            <p class="slider-label">Seed</p>
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p class="slider-label">Seed</p>
+              </template>
+              Seed is a number that represents the starting canvas of your
+              image. If you want to create the same image as your friend, you
+              can use the same settings and seed to do so.
+              <b class="highlight">For random seed use -1.</b>
+            </NTooltip>
             <NInputNumber
               v-model:value="seed"
               size="small"
               :min="-1"
               :max="999999999"
               style="width: 100%"
-            />
-          </div>
-
-          <!-- Number of images -->
-          <div class="flex-container">
-            <p class="slider-label">Batch size</p>
-            <NSlider
-              v-model:value="steps"
-              :min="5"
-              :max="300"
-              style="margin-right: 12px"
-            />
-            <NInputNumber
-              v-model:value="steps"
-              size="small"
-              style="width: 128px"
-              :min="5"
-              :max="300"
             />
           </div>
 
@@ -203,6 +258,7 @@ import {
   NRadioGroup,
   NSlider,
   NSpace,
+  NTooltip,
 } from "naive-ui";
 import { ref } from "vue";
 
@@ -211,6 +267,7 @@ const height = ref(512);
 const seed = ref(-1);
 const steps = ref(50);
 const cfgScale = ref(7);
+const batchCount = ref(1);
 const selectedSampler = ref("k_euler_a");
 const selectedBackend = ref("PyTorch");
 const prompt = ref("");
@@ -238,9 +295,14 @@ const negativePrompt = ref("");
 
 .slider-label {
   margin-right: 12px;
+  width: 64px;
 }
 
 .main-container {
   margin: 18px;
+}
+
+.highlight {
+  color: #63e2b7;
 }
 </style>
