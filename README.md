@@ -47,8 +47,6 @@ output:
     o: bind
 ```
 
-**Then, open a terminal in that folder and run the following command**
-
 #### Linux
 
 ```
