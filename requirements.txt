@@ -17,4 +17,9 @@ accelerate
 flask
 pandas
 jupyterlab
-redis
+tqdm
+
+
+# Backend
+fastapi
+websockets
