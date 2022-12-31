@@ -1,14 +1,13 @@
 import time
-from typing import List, Union
-import uuid
+from typing import List, Optional, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
 
 
-
 def load_model(
-    model_name_or_path="runwayml/stable-diffusion-v1-5", hf_token='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'
+    model_name_or_path="runwayml/stable-diffusion-v1-5",
+    hf_token="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",
 ) -> StableDiffusionPipeline:
     """Load model
 
@@ -22,11 +21,11 @@ def load_model(
             torch_dtype=torch.float16,
             use_auth_token=hf_token,
         )
-    except:
+    except Exception:
         pipe = StableDiffusionPipeline.from_pretrained(
-                model_name_or_path,
-                use_auth_token=hf_token,
-            )
+            model_name_or_path,
+            use_auth_token=hf_token,
+        )
 
     pipe = pipe.to("cuda")
 
@@ -42,7 +41,7 @@ def inference(
     num_inference_steps: int = 50,
     guidance_scale: float = 7.5,
     num_images_per_prompt: int = 1,
-    seed: int = None,
+    seed: Optional[int] = None,
     return_time=False,
 ):
     """Do inference
@@ -59,7 +58,7 @@ def inference(
     :return: the output images and the time (if return time is True)
     """
     generator = None
-    if seed is not None:
+    if seed:
         generator = torch.Generator(device="cuda")
         generator = generator.manual_seed(seed)
 

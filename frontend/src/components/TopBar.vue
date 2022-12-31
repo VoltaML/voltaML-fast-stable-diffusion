@@ -13,7 +13,7 @@
 </template>
 
 <script lang="ts" setup>
-import { useWebsocket } from "@/store/websocketState";
+import { useWebsocket } from "@/store/websockets";
 import { SyncSharp } from "@vicons/ionicons5";
 import { NButton, NSpace } from "naive-ui";
 import { h } from "vue";

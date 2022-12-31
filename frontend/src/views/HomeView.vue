@@ -29,7 +29,7 @@
             </NTooltip>
             <NSpace align="center" style="height: 100%">
               <NRadioGroup
-                v-model:value="selectedBackend"
+                v-model:value="conf.data.settings.backend"
                 name="backend-selection"
               >
                 <NRadioButton
@@ -46,9 +46,13 @@
           </NSpace>
 
           <!-- Prompt -->
-          <NInput v-model:value="prompt" type="textarea" placeholder="Prompt" />
           <NInput
-            v-model:value="negativePrompt"
+            v-model:value="conf.data.settings.txt2img.prompt"
+            type="textarea"
+            placeholder="Prompt"
+          />
+          <NInput
+            v-model:value="conf.data.settings.txt2img.negativePrompt"
             type="textarea"
             placeholder="Negative prompt"
           />
@@ -73,19 +77,19 @@
             </NTooltip>
             <NSpace align="center" style="height: 100%">
               <NRadioGroup
-                v-model:value="selectedSampler"
+                v-model:value="conf.data.settings.txt2img.sampler"
                 name="sampler-radio-group"
               >
                 <NRadioButton
-                  v-for="backend in [
+                  v-for="sampler in [
                     { label: 'Euler A', value: 'k_euler_a' },
                     { label: 'DDIM', value: 'ddim' },
                     { label: 'DPM', value: 'dpm' },
                     { label: 'LMS', value: 'lms' },
                   ]"
-                  :key="backend.value"
-                  :value="backend.value"
-                  :label="backend.label"
+                  :key="sampler.value"
+                  :value="sampler.value"
+                  :label="sampler.label"
                 />
               </NRadioGroup>
             </NSpace>
@@ -95,14 +99,14 @@
           <div class="flex-container">
             <p class="slider-label">Width</p>
             <NSlider
-              v-model:value="width"
+              v-model:value="conf.data.settings.txt2img.width"
               :min="128"
               :max="2048"
               :step="16"
               style="margin-right: 12px"
             />
             <NInputNumber
-              v-model:value="width"
+              v-model:value="conf.data.settings.txt2img.width"
               size="small"
               style="width: 128px"
             />
@@ -110,14 +114,14 @@
           <div class="flex-container">
             <p class="slider-label">Height</p>
             <NSlider
-              v-model:value="height"
+              v-model:value="conf.data.settings.txt2img.height"
               :min="128"
               :max="2048"
               :step="16"
               style="margin-right: 12px"
             />
             <NInputNumber
-              v-model:value="height"
+              v-model:value="conf.data.settings.txt2img.height"
               size="small"
               style="width: 128px"
             />
@@ -138,13 +142,13 @@
               >
             </NTooltip>
             <NSlider
-              v-model:value="steps"
+              v-model:value="conf.data.settings.txt2img.steps"
               :min="5"
               :max="300"
               style="margin-right: 12px"
             />
             <NInputNumber
-              v-model:value="steps"
+              v-model:value="conf.data.settings.txt2img.steps"
               size="small"
               style="width: 128px"
               :min="5"
@@ -165,14 +169,14 @@
               <b class="highlight">We recommend using 3-15 for most images.</b>
             </NTooltip>
             <NSlider
-              v-model:value="cfgScale"
+              v-model:value="conf.data.settings.txt2img.cfgScale"
               :min="1"
               :max="30"
               :step="0.5"
               style="margin-right: 12px"
             />
             <NInputNumber
-              v-model:value="cfgScale"
+              v-model:value="conf.data.settings.txt2img.cfgScale"
               size="small"
               style="width: 128px"
               :min="1"
@@ -190,13 +194,13 @@
               Number of images to generate after each other.
             </NTooltip>
             <NSlider
-              v-model:value="batchCount"
+              v-model:value="conf.data.settings.txt2img.batchCount"
               :min="1"
               :max="9"
               style="margin-right: 12px"
             />
             <NInputNumber
-              v-model:value="batchCount"
+              v-model:value="conf.data.settings.txt2img.batchCount"
               size="small"
               style="width: 128px"
               :min="1"
@@ -216,7 +220,7 @@
               <b class="highlight">For random seed use -1.</b>
             </NTooltip>
             <NInputNumber
-              v-model:value="seed"
+              v-model:value="conf.data.settings.txt2img.seed"
               size="small"
               :min="-1"
               :max="999999999"
@@ -260,18 +264,9 @@ import {
   NSpace,
   NTooltip,
 } from "naive-ui";
-import { ref } from "vue";
+import { useSettings } from "../store/settings";
 
-const width = ref(512);
-const height = ref(512);
-const seed = ref(-1);
-const steps = ref(50);
-const cfgScale = ref(7);
-const batchCount = ref(1);
-const selectedSampler = ref("k_euler_a");
-const selectedBackend = ref("PyTorch");
-const prompt = ref("");
-const negativePrompt = ref("");
+const conf = useSettings();
 </script>
 
 <style scoped>

@@ -3,7 +3,7 @@
 </template>
 
 <script setup lang="ts">
-import { useWebsocket } from "@/store/websocketState";
+import { useWebsocket } from "@/store/websockets";
 import { useNotification } from "naive-ui";
 
 const notification = useNotification();
