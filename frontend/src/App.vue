@@ -22,7 +22,7 @@ import {
 } from "naive-ui";
 import CollapsileNavbarVue from "./components/CollapsileNavbar.vue";
 import TopBarVue from "./components/TopBar.vue";
-import routerContainerVue from "./core/router-container.vue";
+import routerContainerVue from "./router/router-container.vue";
 import WebSocketHandler from "./websockets/WebSocketHandler.vue";
 
 const themeOverrides: GlobalThemeOverrides = {};
