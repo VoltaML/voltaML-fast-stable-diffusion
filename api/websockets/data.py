@@ -1,4 +1,4 @@
-from typing import Any
+from typing import Any, Dict
 
 
 class Data:
@@ -6,5 +6,5 @@ class Data:
         self.data = data
         self.type = type
 
-    def to_json(self) -> dict[str, Any]:
+    def to_json(self) -> Dict[str, Any]:
         return {"type": self.type, "data": self.data}
