@@ -1,0 +1,15 @@
+.idea
+.git
+**\__pycache__
+output
+env
+docker-compose.yml
+**\yarn*
+**\package.json
+
+# Docker
+Dockerfile
+
+# Frontend
+frontend
+!frontend/dist
