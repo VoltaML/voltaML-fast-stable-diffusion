@@ -26,7 +26,7 @@ Setup docker on Windows using [these intructions](https://docs.docker.com/deskto
 
 ### Launch voltaML container
 
-Download the [docker-compose.yml](https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/Docker-next/docker-compose.yml) file from this repo.
+Download the [docker-compose.yml](https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/main/docker-compose.yml) file from this repo.
 
 ⚠️ Linux: Open it in a text editor and change the path of the output folder. It was configured for Windows only.
 
