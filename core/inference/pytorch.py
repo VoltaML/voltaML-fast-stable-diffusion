@@ -1,5 +1,5 @@
 import os
-from typing import Literal, Optional
+from typing import List, Literal, Optional
 
 import torch
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
@@ -70,7 +70,7 @@ class PyTorchInferenceModel:
     def unload(self) -> None:
         self.model = None
 
-    def generate(self, job: Txt2imgJob) -> list[Image]:
+    def generate(self, job: Txt2imgJob) -> List[Image]:
         if self.model is None:
             raise ValueError("Model not loaded")
 
