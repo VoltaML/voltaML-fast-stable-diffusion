@@ -1,6 +1,7 @@
 import io
+import random
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Optional
 
 from discord import File
 from discord.ext import commands
@@ -28,6 +29,7 @@ class Inference(Cog):
         steps: int = 25,
         width: int = 512,
         height: int = 512,
+        seed: Optional[int] = None,
     ):
         job = Txt2imgJob(
             prompt=prompt,
@@ -36,6 +38,7 @@ class Inference(Cog):
             steps=steps,
             height=height,
             width=width,
+            seed=random.randint(0, 1000000) if seed is None else seed,
         )
         message = await ctx.send("Dreaming...")
 
@@ -46,7 +49,9 @@ class Inference(Cog):
         with io.BytesIO() as image_binary:
             images[0].save(image_binary, "PNG")
             image_binary.seek(0)
-            await message.edit(content=f"Done! {time.time() - start_time:.2f}s")
+            await message.edit(
+                content=f"Done! Time: {time.time() - start_time:.2f}s, Seed: {job.seed}"
+            )
             await message.add_files(File(fp=image_binary, filename="dream.png"))
 
 
