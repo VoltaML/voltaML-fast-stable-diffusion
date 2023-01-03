@@ -53,15 +53,15 @@ class PyTorchInferenceModel:
 
     def get_scheduler(self, scheduler: Optional[str]):
         if scheduler == "euler_a":
-            return EulerAncestralDiscreteScheduler.from_config(
-                self.model_id, subfolder="scheduler"
+            return EulerAncestralDiscreteScheduler.from_pretrained(
+                self.model_id, subfolder="scheduler"  # type: ignore
             )
         elif scheduler == "euler":
             return EulerDiscreteScheduler.from_config(
-                self.model_id, subfolder="scheduler"
+                self.model_id, subfolder="scheduler"  # type: ignore
             )
         elif scheduler == "ddim":
-            return DDIMScheduler.from_config(self.model_id, subfolder="scheduler")
+            return DDIMScheduler.from_config(self.model_id, subfolder="scheduler")  # type: ignore
         elif not scheduler:
             return None
         else:

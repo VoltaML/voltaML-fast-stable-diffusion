@@ -18,8 +18,6 @@ class Inference(Cog):
     def __init__(self, bot: "ModularBot") -> None:
         self.bot = bot
         self.model = PyTorchInferenceModel("Linaqruf/anything-v3.0")
-        if self.model.model:
-            self.model.model.enable_attention_slicing()
 
     @commands.hybrid_command(name="dream")
     async def dream(
