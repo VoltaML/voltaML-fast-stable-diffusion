@@ -64,7 +64,7 @@ class Inference(Cog):
                 
         
         if response.get("images"):
-            await message.edit(content=f"{ctx.author.mention} Done! Seed: {seed}")
+            await message.edit(content=f"{ctx.author.mention} Done! Seed: {seed}, Time {response.get('time'):.2f}s")
             await message.add_files(File(convert_base64_to_bytes(response["images"][0]), filename=f"dream.png"))
         else:
             await message.edit(content=f"{ctx.author.mention} Dream failed - {status}")

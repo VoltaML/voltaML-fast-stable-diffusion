@@ -3,14 +3,13 @@ import logging
 import time
 from concurrent.futures import ThreadPoolExecutor
 from threading import Thread
-from typing import List
+from typing import List, Tuple
 
 from PIL.Image import Image
 
+from core.errors import DimensionError, ModelFailedError
 from core.models import ModelHandler
-
-from .errors import DimensionError, ModelFailedError
-from .types import Txt2ImgQueueEntry
+from core.types import Txt2ImgQueueEntry
 
 
 class ThreadWithReturnValue(Thread):
@@ -39,7 +38,7 @@ class Queue:
         self.model_handler: ModelHandler = ModelHandler()
         self.thread_pool = ThreadPoolExecutor(max_workers=1)
     
-    async def add_job(self, job: Txt2ImgQueueEntry) -> tuple[List[Image], float]:
+    async def add_job(self, job: Txt2ImgQueueEntry) -> Tuple[List[Image], float]:
         try:
             logging.info(f"Adding job {job.data.id} to queue")
             
@@ -52,7 +51,6 @@ class Queue:
             while self.jobs[0] != job:
                 await asyncio.sleep(0.1)
             
-            self.jobs.pop(0)
 
             start_time = time.time()
             
@@ -70,6 +68,8 @@ class Queue:
                 await asyncio.sleep(0.1)
             
             images = thread.join()
+            
+            self.jobs.pop(0)
             
             if images is None:
                 raise ModelFailedError("Model failed to generate image")
