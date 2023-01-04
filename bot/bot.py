@@ -111,7 +111,7 @@ class ModularBot(AutoShardedBot):
 
         # Load core extension
         await self.load_extension("bot.core")
-        await self.load_extension("bot.inference")
+        await self.load_extension("bot.txt2img")
 
     @property
     def avatar_url(self):

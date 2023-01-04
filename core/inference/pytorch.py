@@ -1,16 +1,17 @@
+import logging
 import os
-from typing import List, Literal, Optional
+from typing import List, Optional
 
 import torch
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
-from diffusers.schedulers.scheduling_euler_ancestral_discrete import (
-    EulerAncestralDiscreteScheduler,
-)
-from diffusers.schedulers.scheduling_euler_discrete import EulerDiscreteScheduler
+from diffusers.schedulers.scheduling_euler_ancestral_discrete import \
+    EulerAncestralDiscreteScheduler
+from diffusers.schedulers.scheduling_euler_discrete import \
+    EulerDiscreteScheduler
 from PIL.Image import Image
 
-from api.types import Txt2imgJob
+from core.types import Scheduler, Txt2imgData
 
 os.environ["DIFFUSERS_NO_ADVISORY_WARNINGS"] = "1"
 
@@ -19,7 +20,7 @@ class PyTorchInferenceModel:
     def __init__(
         self,
         model_id: str,
-        scheduler: Literal["euler_a", "euler", "ddim", None] = None,
+        scheduler: Scheduler = Scheduler.default,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
     ) -> None:
@@ -30,7 +31,7 @@ class PyTorchInferenceModel:
         self.model: Optional[StableDiffusionPipeline] = self.load()
 
     def load(self) -> StableDiffusionPipeline:
-        print(f"Loading model with {'f32' if self.use_f32 else 'f16'}")
+        logging.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
         if self.scheduler:
             return StableDiffusionPipeline.from_pretrained(  # type: ignore
                 self.model_id,
@@ -51,26 +52,30 @@ class PyTorchInferenceModel:
                 "cuda"
             )
 
-    def get_scheduler(self, scheduler: Optional[str]):
-        if scheduler == "euler_a":
+    def get_scheduler(self, scheduler: Scheduler):
+        if scheduler == scheduler.euler_a:
             return EulerAncestralDiscreteScheduler.from_pretrained(
                 self.model_id, subfolder="scheduler"  # type: ignore
             )
-        elif scheduler == "euler":
+        elif scheduler == scheduler.euler:
             return EulerDiscreteScheduler.from_config(
                 self.model_id, subfolder="scheduler"  # type: ignore
             )
-        elif scheduler == "ddim":
+        elif scheduler == scheduler.ddim:
             return DDIMScheduler.from_config(self.model_id, subfolder="scheduler")  # type: ignore
-        elif not scheduler:
-            return None
         else:
-            raise ValueError(f"Unknown scheduler {scheduler}")
+            return None
+
+    def change_scheduler(self, scheduler: Scheduler) -> None:
+        self.scheduler = self.get_scheduler(scheduler)
+        self.model = self.load()
 
     def unload(self) -> None:
         self.model = None
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
 
-    def generate(self, job: Txt2imgJob) -> List[Image]:
+    def generate(self, job: Txt2imgData) -> List[Image]:
         if self.model is None:
             raise ValueError("Model not loaded")
 
@@ -91,3 +96,10 @@ class PyTorchInferenceModel:
         images: list[Image] = data[0]
 
         return images
+
+    def optimize(self) -> None:
+        if self.model is None:
+            raise ValueError("Model not loaded")
+
+        self.model.enable_attention_slicing()
+        self.model.enable_vae_slicing()

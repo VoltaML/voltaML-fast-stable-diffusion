@@ -1,8 +1,9 @@
 from fastapi import APIRouter, HTTPException
 
 from api.shared import state
-from api.types import Txt2imgJob
-from core.inference.pytorch import infer_pt
+from core import queue
+from core.types import Txt2ImgQueueEntry
+from core.utils import convert_image_to_base64
 
 router = APIRouter()
 
@@ -13,16 +14,18 @@ async def stop():
     return {"message": "Interupted"}
 
 
-@router.post("/voltaml/job")
-def txt2img_job(job: Txt2imgJob):
+@router.post("/generate")
+async def txt2img_job(job: Txt2ImgQueueEntry):
     # Create directory to save images if it does not exist
 
     if job.backend == "PyTorch":
-        pipeline_time = infer_pt(job)
+        images, time = await queue.add_job(job)
     elif job.backend == "TensorRT":
-        pipeline_time = 0
-        # pipeline_time = infer_trt(job)
+        images, time = list(), 0
+        # infer_trt()
     else:
         raise HTTPException(status_code=400, detail="Invalid backend")
 
-    return {"message": "Job completed", "time": pipeline_time}
+    return {"message": "Job completed", 
+            "time": time, 
+            "images": [convert_image_to_base64(i) for i in images]}

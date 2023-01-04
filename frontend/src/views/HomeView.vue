@@ -102,7 +102,7 @@
               v-model:value="conf.data.settings.txt2img.width"
               :min="128"
               :max="2048"
-              :step="16"
+              :step="8"
               style="margin-right: 12px"
             />
             <NInputNumber
@@ -117,7 +117,7 @@
               v-model:value="conf.data.settings.txt2img.height"
               :min="128"
               :max="2048"
-              :step="16"
+              :step="8"
               style="margin-right: 12px"
             />
             <NInputNumber
@@ -230,7 +230,7 @@
 
           <!-- Generate button -->
           <NSpace justify="center">
-            <NButton type="success">Generate</NButton>
+            <NButton type="success" @click="generate">Generate</NButton>
           </NSpace>
         </NSpace>
       </NGi>
@@ -240,9 +240,7 @@
       <!-- Images -->
       <NGi>
         <NSpace justify="center">
-          <NImage
-            src="https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/main/static/0.png?raw=true"
-          />
+          <NImage v-if="image" :src="`data:image/png;base64,${image}`" />
         </NSpace>
       </NGi>
     </NGrid>
@@ -264,9 +262,41 @@ import {
   NSpace,
   NTooltip,
 } from "naive-ui";
+import { ref } from "vue";
 import { useSettings } from "../store/settings";
 
 const conf = useSettings();
+const image = ref("");
+
+const generate = () => {
+  fetch("http://localhost:8080/api/txt2img/generate", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      data: {
+        prompt: conf.data.settings.txt2img.prompt,
+        negative_prompt: conf.data.settings.txt2img.negativePrompt,
+        width: conf.data.settings.txt2img.width,
+        height: conf.data.settings.txt2img.height,
+        steps: conf.data.settings.txt2img.steps,
+        guidance_scale: conf.data.settings.txt2img.cfgScale,
+        seed: conf.data.settings.txt2img.seed,
+        batch_size: 1,
+        batch_count: conf.data.settings.txt2img.batchCount,
+      },
+      model: "Linaqruf/anything-v3.0",
+      scheduler: 1,
+      backend: "PyTorch",
+    }),
+  }).then((res) => {
+    res.json().then((data) => {
+      console.log(data);
+      image.value = data.images[0];
+    });
+  });
+};
 </script>
 
 <style scoped>
