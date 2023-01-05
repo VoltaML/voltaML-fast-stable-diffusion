@@ -58,7 +58,7 @@ class Inference(Cog):
 
         message = await ctx.send("Dreaming...")
         async with aiohttp.ClientSession() as session:
-            async with session.post("http://localhost:8080/api/txt2img/generate", json=payload) as response:
+            async with session.post("http://localhost:5003/api/txt2img/generate", json=payload) as response:
                 status = response.status
                 response = await response.json()
                 

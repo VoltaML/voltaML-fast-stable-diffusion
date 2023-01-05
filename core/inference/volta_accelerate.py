@@ -503,7 +503,8 @@ class DemoDiffusion:
         """
         # Process inputs
         batch_size = len(prompt)
-        assert len(prompt) == len(negative_prompt)
+        # banana = len(6), "" = len(0)
+        # assert len(prompt) == len(negative_prompt)
 
         # Spatial dimensions of latent tensor
         latent_height = image_height // 8
@@ -753,8 +754,9 @@ class DemoDiffusion:
                     )
                     + "-"
                 )
-                save_image(images, output_dir, image_name_prefix)
-            return str(e2e_toc - e2e_tic)
+                # save_image(images, output_dir, image_name_prefix)
+                
+            return str(e2e_toc - e2e_tic), images
 
 
 def compile_trt(

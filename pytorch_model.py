@@ -1,5 +1,5 @@
 import time
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Tuple
 
 import torch
 from diffusers import StableDiffusionPipeline
@@ -49,7 +49,7 @@ def inference(
     guidance_scale: float = 7.5,
     num_images_per_prompt: int = 1,
     seed: Optional[int] = None,
-) -> tuple[List[Image], float]:
+) -> Tuple[List[Image], float]:
     """Do inference
 
     :param model: the Stable Diffusion pipeline

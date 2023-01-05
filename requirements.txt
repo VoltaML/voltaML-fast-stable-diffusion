@@ -1,19 +1,14 @@
+--extra-index-url https://pypi.ngc.nvidia.com
+--extra-index-url https://download.pytorch.org/whl/cu116
 colored
 cuda-python
 diffusers
---extra-index-url https://pypi.ngc.nvidia.com
 scipy
---extra-index-url https://download.pytorch.org/whl/cu116
 transformers
 accelerate
 ftfy
 tqdm
-
-
 # Backend
 fastapi
 websockets
 uvicorn
-
--i https://test.pypi.org/simple/
-formers==0.0.15.dev376
