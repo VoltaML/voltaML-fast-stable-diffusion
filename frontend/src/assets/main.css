@@ -33,6 +33,10 @@ body {
   background: #00ad49;
 }
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 a,
 .green {
   text-decoration: none;

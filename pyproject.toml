@@ -1,6 +1,6 @@
 # Ruff configuration
 [tool.ruff]
-ignore = ["E501"]
+ignore = ["E501", "F541"]
 fix = true
 
 [tool.ruff.flake8-quotes]

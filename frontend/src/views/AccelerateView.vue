@@ -10,12 +10,35 @@
       >Install</NButton
     >
   </NSpace>
-  <n-data-table
-    :columns="columnsRef"
-    :data="dataRef"
-    :pagination="pagination"
-    :bordered="false"
-  />
+  <NCard title="Acceleration progress">
+    <NSpace vertical justify="center">
+      <NSteps :current="1">
+        <NStep
+          title="Start"
+          description="Start the acceleration process by clicking the button next to the model"
+        />
+        <NStep
+          title="Convert to ONNX"
+          description="This process might take a while"
+        />
+        <NStep
+          title="Convert to TensorRT"
+          description="This process might take a while"
+        />
+        <NStep
+          title="Package and cleanup"
+          description="This process might take a while"
+        /> </NSteps></NSpace
+  ></NCard>
+  <NCard>
+    <NDataTable
+      :columns="columnsRef"
+      :data="dataRef"
+      :pagination="pagination"
+      :bordered="true"
+      :remote="true"
+      style="padding-bottom: 24px"
+  /></NCard>
 </template>
 
 <script lang="ts" setup>
@@ -23,11 +46,15 @@ import { modelData, tagColor, type Model } from "@/core/models";
 import { Home, Menu } from "@vicons/ionicons5";
 import {
   NButton,
+  NCard,
   NDataTable,
   NDropdown,
   NIcon,
+  NImage,
   NInput,
   NSpace,
+  NStep,
+  NSteps,
   NTag,
   type DataTableColumns,
 } from "naive-ui";
@@ -134,18 +161,23 @@ const createColumns2 = (): DataTableColumns<Model> => [
     key: "example",
     render(row) {
       return h(
-        NButton,
+        NSpace,
         {
-          type: "tertiary",
-          secondary: true,
-          round: true,
-          block: true,
-          bordered: false,
-          onClick: () => {
-            console.log("Example", row.name);
-          },
+          justify: "center",
         },
-        { default: () => "Show me" }
+        {
+          default: () =>
+            h(
+              NImage,
+              {
+                src: row.example_image_url,
+                height: 64,
+                fit: "cover",
+                lazy: true,
+              },
+              {}
+            ),
+        }
       );
     },
   },

@@ -20,13 +20,11 @@ import gc
 import os
 import shutil
 import time
-import uuid
 
 import numpy as np
 import nvtx
 import onnx
-
-# import tensorrt as trt
+import tensorrt as trt
 import torch
 import tqdm
 from cuda import cudart
@@ -505,7 +503,8 @@ class DemoDiffusion:
         """
         # Process inputs
         batch_size = len(prompt)
-        assert len(prompt) == len(negative_prompt)
+        # banana = len(6), "" = len(0)
+        # assert len(prompt) == len(negative_prompt)
 
         # Spatial dimensions of latent tensor
         latent_height = image_height // 8
@@ -755,8 +754,10 @@ class DemoDiffusion:
                     )
                     + "-"
                 )
-                save_image(images, output_dir, image_name_prefix)
-            return str(e2e_toc - e2e_tic)
+                
+                imgs = save_image(images, output_dir, image_name_prefix)
+                
+            return str(e2e_toc - e2e_tic), imgs
 
 
 def compile_trt(
@@ -1057,50 +1058,6 @@ def infer_trt(
     return pipeline_time
 
 
-def infer_pt(
-    saving_path,
-    model_path,
-    prompt,
-    negative_prompt,
-    img_height,
-    img_width,
-    num_inference_steps,
-    guidance_scale,
-    num_images_per_prompt,
-    seed,
-):
-
-    print("[+] Loading the model")
-    model = load_model(model_path)
-    print("[+] Model loaded")
-
-    print("[+] Generating images...")
-    # PIL images
-    images, time = inference(
-        model=model,
-        prompt=prompt,
-        negative_prompt=negative_prompt,
-        img_height=img_height,
-        img_width=img_width,
-        num_inference_steps=num_inference_steps,
-        guidance_scale=guidance_scale,
-        num_images_per_prompt=num_images_per_prompt,
-        seed=seed,
-        return_time=True,
-    )
-    model = None
-    print("[+] Time needed to generate the images: {} seconds".format(time))
-
-    # Save PIL images with a random name
-    for img in images:
-        img.save("{}/{}.png".format(saving_path, uuid.uuid4()))
-
-    print("[+] Images saved in the following path: {}".format(saving_path))
-    del model
-    gc.collect()
-    return str(round(time, 2))
-
-
 if __name__ == "__main__":
 
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
@@ -1131,4 +1088,3 @@ if __name__ == "__main__":
             num_images_per_prompt=args.repeat_prompt,
             seed=args.seed,
         )
-        

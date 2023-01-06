@@ -1,4 +1,5 @@
 import logging
+from typing import List
 
 from fastapi import WebSocket
 
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 class WebSocketManager:
     def __init__(self):
-        self.active_connections: list[WebSocket] = []
+        self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
         await websocket.accept()
