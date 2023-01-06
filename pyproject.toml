@@ -1,0 +1,12 @@
+# Ruff configuration
+[tool.ruff]
+ignore = ["E501", "F541"]
+fix = true
+
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
+
+# Build configuration
+[build-system]
+requires = ["poetry>=0.12"]
+build-backend = "poetry.masonry.api"
