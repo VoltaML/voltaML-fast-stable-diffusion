@@ -3,25 +3,35 @@ from typing import List
 
 from fastapi import WebSocket
 
-from .data import Data
+from api.websockets.data import Data
 
 logger = logging.getLogger(__name__)
 
 
 class WebSocketManager:
+    "Manages active websocket connections"
+
     def __init__(self):
         self.active_connections: List[WebSocket] = []
 
     async def connect(self, websocket: WebSocket):
+        "Accepts a new websocket connection and adds it to the list of active connections"
+
         await websocket.accept()
         self.active_connections.append(websocket)
 
     def disconnect(self, websocket: WebSocket):
+        "Removes a websocket connection from the list of active connections"
+
         self.active_connections.remove(websocket)
 
-    async def send_personal_message(self, message: str, websocket: WebSocket):
-        await websocket.send_text(message)
+    async def send_personal_message(self, data: Data, websocket: WebSocket):
+        "Sends a data message to a specific websocket connection"
+
+        await websocket.send_json(data.to_json())
 
     async def broadcast(self, data: Data):
+        "Broadcasts data message to all active websocket connections"
+
         for connection in self.active_connections:
             await connection.send_json(data.to_json())

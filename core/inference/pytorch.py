@@ -5,10 +5,10 @@ from typing import List, Optional
 import torch
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
-from diffusers.schedulers.scheduling_euler_ancestral_discrete import \
-    EulerAncestralDiscreteScheduler
-from diffusers.schedulers.scheduling_euler_discrete import \
-    EulerDiscreteScheduler
+from diffusers.schedulers.scheduling_euler_ancestral_discrete import (
+    EulerAncestralDiscreteScheduler,
+)
+from diffusers.schedulers.scheduling_euler_discrete import EulerDiscreteScheduler
 from PIL.Image import Image
 
 from core.types import Scheduler, Txt2imgData
@@ -17,6 +17,8 @@ os.environ["DIFFUSERS_NO_ADVISORY_WARNINGS"] = "1"
 
 
 class PyTorchInferenceModel:
+    "High level model wrapper for PyTorch models"
+
     def __init__(
         self,
         model_id: str,
@@ -31,28 +33,32 @@ class PyTorchInferenceModel:
         self.model: Optional[StableDiffusionPipeline] = self.load()
 
     def load(self) -> StableDiffusionPipeline:
+        "Load the model from HuggingFace"
+
         logging.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
         if self.scheduler:
-            return StableDiffusionPipeline.from_pretrained(  # type: ignore
+            pipe = StableDiffusionPipeline.from_pretrained(
                 self.model_id,
-                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
+                torch_dtype=torch.float16 if self.use_f32 else torch.float32,
                 scheduler=self.scheduler,
                 use_auth_token=self.auth,
                 safety_checker=None,
-            ).to(  # type: ignore
-                "cuda"
-            )
-        else:
-            return StableDiffusionPipeline.from_pretrained(  # type: ignore
-                self.model_id,
-                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
-                use_auth_token=self.auth,
-                safety_checker=None,
-            ).to(  # type: ignore
-                "cuda"
             )
 
+        else:
+            pipe = StableDiffusionPipeline.from_pretrained(
+                self.model_id,
+                torch_dtype=torch.float16 if self.use_f32 else torch.float32,
+                use_auth_token=self.auth,
+                safety_checker=None,
+            )
+
+        assert isinstance(pipe, StableDiffusionPipeline)
+        return pipe.to("cuda")
+
     def get_scheduler(self, scheduler: Scheduler):
+        "Get the scheduler from the scheduler enum"
+
         if scheduler == scheduler.euler_a:
             return EulerAncestralDiscreteScheduler.from_pretrained(
                 self.model_id, subfolder="scheduler"  # type: ignore
@@ -67,15 +73,21 @@ class PyTorchInferenceModel:
             return None
 
     def change_scheduler(self, scheduler: Scheduler) -> None:
+        "Change the scheduler of the model and reload it"
+
         self.scheduler = self.get_scheduler(scheduler)
         self.model = self.load()
 
     def unload(self) -> None:
+        "Unload the model from memory"
+
         self.model = None
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
 
     def generate(self, job: Txt2imgData) -> List[Image]:
+        "Generate an image from a prompt"
+
         if self.model is None:
             raise ValueError("Model not loaded")
 

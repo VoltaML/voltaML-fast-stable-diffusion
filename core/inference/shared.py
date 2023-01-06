@@ -17,6 +17,7 @@ class SupportedModel(Enum):
     AnythingV3 = "Linaqruf/anything-v3.0"
     StableDiffusion1_5 = "runwayml/stable-diffusion-v1-5"
 
+
 @dataclass
 class Txt2ImgQueueEntry:
     job: "Txt2imgData"

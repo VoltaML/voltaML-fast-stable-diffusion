@@ -26,6 +26,8 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
     else:
         raise HTTPException(status_code=400, detail="Invalid backend")
 
-    return {"message": "Job completed", 
-            "time": time, 
-            "images": [convert_image_to_base64(i) for i in images]}
+    return {
+        "message": "Job completed",
+        "time": time,
+        "images": [convert_image_to_base64(i) for i in images],
+    }

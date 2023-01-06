@@ -31,12 +31,19 @@ from cuda import cudart
 from polygraphy import cuda
 from transformers import CLIPTokenizer
 
-from models import CLIP, VAE, UNet
-from pytorch_model import inference, load_model
-from utilities import TRT_LOGGER, DPMScheduler, Engine, LMSDiscreteScheduler, save_image
+from core.trt.models import CLIP, VAE, UNet
+from core.trt.utilities import (
+    TRT_LOGGER,
+    DPMScheduler,
+    Engine,
+    LMSDiscreteScheduler,
+    save_image,
+)
 
 
 def parseArgs():
+    "Parse command line arguments"
+
     parser = argparse.ArgumentParser(description="Options for Stable Diffusion Demo")
     # Stable Diffusion configuration
     parser.add_argument(
@@ -46,7 +53,7 @@ def parseArgs():
         "--negative-prompt",
         nargs="*",
         default=[""],
-        help="The negative prompt(s) to guide the image generation.",
+        help="The negative prompt(s) to guide the image generation",
     )
     parser.add_argument(
         "--repeat-prompt",
@@ -110,7 +117,7 @@ def parseArgs():
     parser.add_argument(
         "--onnx-minimal-optimization",
         action="store_true",
-        help="Restrict ONNX optimization to const folding and shape inference.",
+        help="Restrict ONNX optimization to const folding and shape inference",
     )
 
     # TensorRT engine build
@@ -130,17 +137,17 @@ def parseArgs():
     parser.add_argument(
         "--build-static-batch",
         action="store_true",
-        help="Build TensorRT engines with fixed batch size.",
+        help="Build TensorRT engines with fixed batch size",
     )
     parser.add_argument(
         "--build-dynamic-shape",
         action="store_false",
-        help="Build TensorRT engines with dynamic image shapes.",
+        help="Build TensorRT engines with dynamic image shapes",
     )
     parser.add_argument(
         "--build-preview-features",
         action="store_true",
-        help="Build TensorRT engines with preview features.",
+        help="Build TensorRT engines with preview features",
     )
 
     # TensorRT inference
@@ -192,8 +199,7 @@ class DemoDiffusion:
         scheduler="LMSD",
         guidance_scale=7.5,
         device="cuda",
-        output_dir=".",
-        hf_token=None,
+        hf_token: str = os.environ["HUGGINGFACE_TOKEN"],
         verbose=False,
         nvtx_profile=False,
         max_batch_size=16,
@@ -249,7 +255,7 @@ class DemoDiffusion:
         elif scheduler == "LMSD":
             self.scheduler = LMSDiscreteScheduler(device=self.device, **sched_opts)
         else:
-            raise ValueError(f"Scheduler should be either DPM or LMSD")
+            raise ValueError("Scheduler should be either DPM or LMSD")
 
         self.tokenizer = None
 
@@ -281,15 +287,19 @@ class DemoDiffusion:
         self.stream = cuda.Stream()
 
     def teardown(self):
+        "Unload the engines and free the stream"
+
         for engine in self.engine.values():
             del engine
         self.stream.free()
         del self.stream
 
-    def getModelPath(self, name, onnx_dir, opt=True):
+    def get_model_path(self, name, onnx_dir, opt=True):
+        "Returns the path to the ONNX model"
+
         return os.path.join(onnx_dir, name + (".opt" if opt else "") + ".onnx")
 
-    def buildOnlyEngines(
+    def build_only_engines(
         self,
         engine_dir,
         onnx_dir,
@@ -297,22 +307,21 @@ class DemoDiffusion:
         opt_batch_size,
         opt_image_height,
         opt_image_width,
-        force_export=False,
-        force_optimize=False,
-        force_build=False,
         minimal_optimization=False,
         static_batch=False,
         static_shape=True,
         enable_preview=False,
     ):
+        "Builds the engines from ONNX models"
+
         print("[I] Compile only mode")
         for model_name, obj in self.models.items():
             engine = Engine(model_name, engine_dir)
-            onnx_path = self.getModelPath(model_name, onnx_dir, opt=False)
-            onnx_opt_path = self.getModelPath(model_name, onnx_dir)
+            onnx_path = self.get_model_path(model_name, onnx_dir, opt=False)
+            onnx_opt_path = self.get_model_path(model_name, onnx_dir)
             print(f"Exporting model: {onnx_path}")
             model = obj.get_model()
-            with torch.inference_mode(), torch.autocast("cuda"):
+            with torch.inference_mode(), torch.autocast("cuda"):  # type: ignore
                 inputs = obj.get_sample_input(
                     opt_batch_size, opt_image_height, opt_image_width
                 )
@@ -349,12 +358,11 @@ class DemoDiffusion:
                 ),
                 enable_preview=enable_preview,
             )
-            engine.__del__()
             del engine
             gc.collect()
             torch.cuda.empty_cache()
 
-    def loadEngines(
+    def load_engines(
         self,
         engine_dir,
         onnx_dir,
@@ -405,14 +413,14 @@ class DemoDiffusion:
         for model_name, obj in self.models.items():
             engine = Engine(model_name, engine_dir)
             if force_build or not os.path.exists(engine.engine_path):
-                onnx_path = self.getModelPath(model_name, onnx_dir, opt=False)
-                onnx_opt_path = self.getModelPath(model_name, onnx_dir)
+                onnx_path = self.get_model_path(model_name, onnx_dir, opt=False)
+                onnx_opt_path = self.get_model_path(model_name, onnx_dir)
                 if not os.path.exists(onnx_opt_path):
                     # Export onnx
                     if force_export or not os.path.exists(onnx_path):
                         print(f"Exporting model: {onnx_path}")
                         model = obj.get_model()
-                        with torch.inference_mode(), torch.autocast("cuda"):
+                        with torch.inference_mode(), torch.autocast("cuda"):  # type: ignore
                             inputs = obj.get_sample_input(
                                 opt_batch_size, opt_image_height, opt_image_width
                             )
@@ -528,9 +536,7 @@ class DemoDiffusion:
             generator = torch.Generator(device="cuda").manual_seed(seed)
 
         # Run Stable Diffusion pipeline
-        with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(
-            TRT_LOGGER
-        ) as runtime:
+        with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER):  # type: ignore
             # latents need to be generated on the target device
             unet_channels = 4  # unet.in_channels
             latents_shape = (
@@ -706,15 +712,10 @@ class DemoDiffusion:
             e2e_toc = time.perf_counter()
             if not warmup:
                 print("|------------|--------------|")
-                print("| {:^10} | {:^12} |".format("Module", "Latency"))
+                print(f"| {'Module':^10} | {'Latency':^12} |")
                 print("|------------|--------------|")
                 print(
-                    "| {:^10} | {:>9.2f} ms |".format(
-                        "CLIP",
-                        cudart.cudaEventElapsedTime(
-                            events["clip-start"], events["clip-stop"]
-                        )[1],
-                    )
+                    f"| {'CLIP':^10} | {cudart.cudaEventElapsedTime(events['clip-start'], events['clip-stop'])[1]:>9.2f} ms |"
                 )
                 print(
                     "| {:^10} | {:>9.2f} ms |".format(
@@ -754,9 +755,11 @@ class DemoDiffusion:
                     )
                     + "-"
                 )
-                
+
                 imgs = save_image(images, output_dir, image_name_prefix)
-                
+            else:
+                imgs = []
+
             return str(e2e_toc - e2e_tic), imgs
 
 
@@ -822,7 +825,7 @@ def compile_trt(
         guidance_scale=args.guidance_scale,
     )
 
-    demo.buildOnlyEngines(
+    demo.build_only_engines(
         args.engine_dir,
         args.onnx_dir,
         args.onnx_opset,
@@ -877,7 +880,7 @@ def load_trt(model, prompt, img_height, img_width, num_inference_steps):
         max_batch_size=max_batch_size,
     )
 
-    trt_model.loadEngines(
+    trt_model.load_engines(
         engine_dir,
         onnx_dir,
         args.onnx_opset,
@@ -1075,16 +1078,5 @@ if __name__ == "__main__":
             num_images_per_prompt=args.repeat_prompt,
             seed=args.seed,
         )
-    if "pt" in args.backend.lower():
-        infer_pt(
-            saving_path=args.output_dir,
-            model_path=args.model_path,
-            prompt=args.prompt,
-            negative_prompt=args.negative_prompt,
-            img_height=args.height,
-            img_width=args.width,
-            num_inference_steps=args.denoising_steps,
-            guidance_scale=12,
-            num_images_per_prompt=args.repeat_prompt,
-            seed=args.seed,
-        )
+    else:
+        raise ValueError(f"Backend {args.backend} not supported")

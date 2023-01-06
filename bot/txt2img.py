@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import TYPE_CHECKING, Optional, Literal
+from typing import TYPE_CHECKING, Literal, Optional
 from uuid import uuid4
 
 import aiohttp
@@ -14,7 +14,10 @@ from core.utils import convert_base64_to_bytes
 if TYPE_CHECKING:
     from bot.bot import ModularBot
 
+
 class Inference(Cog):
+    "Commands for generating images from text"
+
     def __init__(self, bot: "ModularBot") -> None:
         self.bot = bot
 
@@ -30,47 +33,60 @@ class Inference(Cog):
         width: int = 512,
         height: int = 512,
         seed: Optional[int] = None,
-        backend: Literal["PyTorch", "TensorRT"] = "PyTorch"
+        backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
     ):
+        "Generate an image from prompt"
+
         if seed is None:
             seed = random.randint(0, 1000000)
-        
+
         if width % 8 != 0 or height % 8 != 0:
             await ctx.send("Width and height must be divisible by 8")
             return
 
         payload = {
-                    "data": {
-                        "prompt": prompt,
-                        "id": uuid4().hex,
-                        "negative_prompt": negative_prompt,
-                        "width": width,
-                        "height": height,
-                        "steps": steps,
-                        "guidance_scale": guidance_scale,
-                        "seed": seed,
-                        "batch_size": 1,
-                        "batch_count": 1,
-                    },
-                    "model": model.value,
-                    "scheduler": Scheduler.default.value,
-                    "backend": backend,
-                    }
+            "data": {
+                "prompt": prompt,
+                "id": uuid4().hex,
+                "negative_prompt": negative_prompt,
+                "width": width,
+                "height": height,
+                "steps": steps,
+                "guidance_scale": guidance_scale,
+                "seed": seed,
+                "batch_size": 1,
+                "batch_count": 1,
+            },
+            "model": model.value,
+            "scheduler": Scheduler.default.value,
+            "backend": backend,
+        }
 
         message = await ctx.send("Dreaming...")
         async with aiohttp.ClientSession() as session:
-            async with session.post("http://localhost:5003/api/txt2img/generate", json=payload) as response:
+            async with session.post(
+                "http://localhost:5003/api/txt2img/generate", json=payload
+            ) as response:
                 status = response.status
                 response = await response.json()
-        
+
         if response.get("images"):
-            await message.edit(content=f"{ctx.author.mention} Done! Seed: {seed}, Time {response.get('time'):.2f}s")
-            await message.add_files(File(convert_base64_to_bytes(response["images"][0]), filename=f"dream.png"))
+            await message.edit(
+                content=f"{ctx.author.mention} Done! Seed: {seed}, Time {response.get('time'):.2f}s"
+            )
+            await message.add_files(
+                File(
+                    convert_base64_to_bytes(response["images"][0]),
+                    filename="dream.png",
+                )
+            )
         else:
             await message.edit(content=f"{ctx.author.mention} Dream failed - {status}")
 
-        logging.info(f"Finished task {prompt} for {ctx.author.__str__()}")
+        logging.info(f"Finished task {prompt} for {str(ctx.author)}")
 
 
 async def setup(bot: "ModularBot"):
+    "Will be called by the bot"
+
     await bot.add_cog(Inference(bot))

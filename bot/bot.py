@@ -10,6 +10,8 @@ logger = logging.getLogger(__name__)
 
 
 class ModularBot(AutoShardedBot):
+    "A bot that can be extended with modules"
+
     def __init__(self) -> None:
         super().__init__(
             command_prefix="!",
@@ -17,6 +19,8 @@ class ModularBot(AutoShardedBot):
         )
 
     async def sync(self):
+        "Sync slash commands with the API"
+
         await self.tree.sync()
 
     def run(
@@ -108,13 +112,16 @@ class ModularBot(AutoShardedBot):
             return
 
     async def async_init(self):
+        "Initialise that runs before the bot starts"
 
         # Load core extension
         await self.load_extension("bot.core")
         await self.load_extension("bot.txt2img")
 
     @property
-    def avatar_url(self):
+    def avatar_url(self) -> str:
+        "Get the bot's avatar URL"
+
         if self.user and self.user.avatar:
             return self.user.avatar.url
         else:

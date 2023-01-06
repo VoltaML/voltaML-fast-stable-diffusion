@@ -1,5 +1,6 @@
 class DimensionError(Exception):
-    pass
+    "Raised when the dimension of the input is not correct"
+
 
 class ModelFailedError(Exception):
-    pass
+    "Raised when the model fails to generate and image or fails to load"

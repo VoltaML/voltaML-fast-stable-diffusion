@@ -10,6 +10,7 @@ class Scheduler(Enum):
     ddim = auto()
     default = auto()
 
+
 @dataclass
 class Txt2imgData:
     prompt: str
@@ -25,12 +26,17 @@ class Txt2imgData:
 
 
 class SupportedModel(Enum):
+    "Enum of models supported by the API"
+
     AnythingV3 = "Linaqruf/anything-v3.0"
     StableDiffusion1_5 = "runwayml/stable-diffusion-v1-5"
     StableDiffusion1_4 = "CompVis/stable-diffusion-v1-4"
-    
+
+
 @dataclass
 class Txt2ImgQueueEntry:
+    "Dataclass for a queue entry"
+
     data: Txt2imgData
     model: SupportedModel
     scheduler: Scheduler
