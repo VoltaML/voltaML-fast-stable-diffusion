@@ -1,6 +1,6 @@
 import logging
 import random
-from typing import TYPE_CHECKING, Optional
+from typing import TYPE_CHECKING, Optional, Literal
 from uuid import uuid4
 
 import aiohttp
@@ -30,6 +30,7 @@ class Inference(Cog):
         width: int = 512,
         height: int = 512,
         seed: Optional[int] = None,
+        backend: Literal["PyTorch", "TensorRT"] = "PyTorch"
     ):
         if seed is None:
             seed = random.randint(0, 1000000)
@@ -53,7 +54,7 @@ class Inference(Cog):
                     },
                     "model": model.value,
                     "scheduler": Scheduler.default.value,
-                    "backend": "PyTorch",
+                    "backend": backend,
                     }
 
         message = await ctx.send("Dreaming...")
@@ -61,7 +62,6 @@ class Inference(Cog):
             async with session.post("http://localhost:5003/api/txt2img/generate", json=payload) as response:
                 status = response.status
                 response = await response.json()
-                
         
         if response.get("images"):
             await message.edit(content=f"{ctx.author.mention} Done! Seed: {seed}, Time {response.get('time'):.2f}s")

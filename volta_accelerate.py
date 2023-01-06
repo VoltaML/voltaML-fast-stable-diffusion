@@ -1131,4 +1131,4 @@ if __name__ == "__main__":
             num_images_per_prompt=args.repeat_prompt,
             seed=args.seed,
         )
-        )
+        

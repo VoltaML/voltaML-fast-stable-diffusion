@@ -102,4 +102,5 @@ class PyTorchInferenceModel:
             raise ValueError("Model not loaded")
 
         self.model.enable_attention_slicing()
-        self.model.enable_vae_slicing()
+        if hasattr(self.model, "enable_vae_slicing"):
+            self.model.enable_vae_slicing()

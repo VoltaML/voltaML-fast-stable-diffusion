@@ -21,7 +21,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
     if job.backend == "PyTorch":
         images, time = await queue.add_job(job)
     elif job.backend == "TensorRT":
-        images, time = list(), 0
+        images, time = await queue.add_job(job)
         # infer_trt()
     else:
         raise HTTPException(status_code=400, detail="Invalid backend")

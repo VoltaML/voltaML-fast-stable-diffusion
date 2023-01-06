@@ -754,9 +754,10 @@ class DemoDiffusion:
                     )
                     + "-"
                 )
-                # save_image(images, output_dir, image_name_prefix)
                 
-            return str(e2e_toc - e2e_tic), images
+                imgs = save_image(images, output_dir, image_name_prefix)
+                
+            return str(e2e_toc - e2e_tic), imgs
 
 
 def compile_trt(
