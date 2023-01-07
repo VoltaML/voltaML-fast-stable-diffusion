@@ -1,14 +1,16 @@
 import gc
 import os
 import time
-from typing import Dict, List, Union
+from typing import TYPE_CHECKING, Dict, List, Union
 
 import torch
 from PIL.Image import Image
 
 from core.inference.pytorch import PyTorchInferenceModel
-from core.inference.volta_accelerate import DemoDiffusion
 from core.types import SupportedModel, Txt2ImgQueueEntry
+
+if TYPE_CHECKING:
+    from core.inference.volta_accelerate import DemoDiffusion
 
 
 class ModelHandler:
@@ -27,6 +29,9 @@ class ModelHandler:
             if job.backend == "TensorRT":
                 print("Selecting TRT")
                 print("Creating...")
+
+                from core.inference.volta_accelerate import DemoDiffusion
+
                 trt_model = DemoDiffusion(
                     model_path=job.model.value,
                     denoising_steps=50,
@@ -60,7 +65,9 @@ class ModelHandler:
 
         print("Model loaded")
         trt_model = self.generated_models[job.model]
-        if isinstance(trt_model, DemoDiffusion):
+        if isinstance(trt_model, PyTorchInferenceModel):
+            return trt_model.generate(job.data, scheduler=job.scheduler)
+        else:
             images: List[Image]
             _, images = trt_model.infer(
                 [job.data.prompt],
@@ -74,19 +81,22 @@ class ModelHandler:
             )
             print("Success")
             return [images[0]]
-        else:
-            return trt_model.generate(job.data)
 
-    def unload(self, model: SupportedModel):
+    def unload(self, model_type: SupportedModel):
         "Unload a model from memory and free up GPU memory"
 
-        if model in self.generated_models:
-            if isinstance(model, DemoDiffusion):
-                model.teardown()
-            else:
-                assert isinstance(model, PyTorchInferenceModel)
+        if model_type in self.generated_models:
+            model = self.generated_models[model_type]
+
+            if isinstance(model, PyTorchInferenceModel):
                 model.unload()
-            self.generated_models.pop(model)
+            else:
+                from core.inference.volta_accelerate import DemoDiffusion
+
+                assert isinstance(model, DemoDiffusion)
+                model.teardown()
+
+            self.generated_models.pop(model_type)
         self.free_memory()
 
     def unload_all(self):

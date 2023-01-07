@@ -5,14 +5,25 @@ from uuid import uuid4
 
 
 class Scheduler(Enum):
+    "Enum of schedulers supported by the API"
+
+    ddim = auto()
+    heun = auto()
+    dpm_discrete = auto()
+    dpm_ancestral = auto()
+    lms = auto()
+    pndm = auto()
     euler = auto()
     euler_a = auto()
-    ddim = auto()
+    dpmpp_sde_ancestral = auto()
+    dpmpp_2m = auto()
     default = auto()
 
 
 @dataclass
 class Txt2imgData:
+    "Dataclass for the data of a txt2img request"
+
     prompt: str
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")

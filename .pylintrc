@@ -6,6 +6,8 @@ disable=
     R0915, # Too many statements
     too-many-lines,
     line-too-long,
+    consider-using-dict-items,
+    import-outside-toplevel
 
 
 [TYPECHECK]

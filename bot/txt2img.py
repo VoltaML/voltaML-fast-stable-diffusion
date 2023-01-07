@@ -30,25 +30,39 @@ class Inference(Cog):
         negative_prompt: str = "",
         guidance_scale: float = 7.0,
         steps: int = 25,
-        width: int = 512,
-        height: int = 512,
+        aspect_ratio: Literal["16:9", "9:16", "1:1", "civitai"] = "1:1",
         seed: Optional[int] = None,
         backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
+        scheduler: Scheduler = Scheduler.default,
+        use_default_negative_prompt: bool = True,
     ):
         "Generate an image from prompt"
+
+        default_negative_prompt = "nswf, lowres, bad anatomy, ((bad hands)), text, error, ((missing fingers)), cropped, jpeg artifacts, worst quality, low quality, signature, watermark, blurry, deformed, extra ears, disfigured, mutation, censored, fused legs, bad legs, bad hands, missing fingers, extra digit, fewer digits, normal quality, username, artist name"
 
         if seed is None:
             seed = random.randint(0, 1000000)
 
-        if width % 8 != 0 or height % 8 != 0:
-            await ctx.send("Width and height must be divisible by 8")
-            return
+        if aspect_ratio == "16:9":
+            width = 680
+            height = 384
+        elif aspect_ratio == "9:16":
+            width = 384
+            height = 680
+        elif aspect_ratio == "civitai":
+            width = 512
+            height = 704
+        else:
+            width = 512
+            height = 512
 
         payload = {
             "data": {
                 "prompt": prompt,
                 "id": uuid4().hex,
-                "negative_prompt": negative_prompt,
+                "negative_prompt": negative_prompt
+                if not use_default_negative_prompt
+                else negative_prompt + default_negative_prompt,
                 "width": width,
                 "height": height,
                 "steps": steps,
@@ -58,7 +72,7 @@ class Inference(Cog):
                 "batch_count": 1,
             },
             "model": model.value,
-            "scheduler": Scheduler.default.value,
+            "scheduler": scheduler.value,
             "backend": backend,
         }
 
