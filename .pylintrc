@@ -7,8 +7,11 @@ disable=
     too-many-lines,
     line-too-long,
     consider-using-dict-items,
-    import-outside-toplevel
+    import-outside-toplevel,
+    invalid-name
 
 
 [TYPECHECK]
-generated-members=torch.*
+generated-members=¨
+    torch.*,
+    cuda.*,

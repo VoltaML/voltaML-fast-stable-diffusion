@@ -17,7 +17,7 @@ async def list_loaded_models():
             "backend": "PyTorch"
             if isinstance(models[model], PyTorchInferenceModel)
             else "TensorRT",
-            "scheduler": models[model].scheduler,  # type: ignore
+            "scheduler": models[model].model.scheduler,  # type: ignore
         }
 
     return loaded_models

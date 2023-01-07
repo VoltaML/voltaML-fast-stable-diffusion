@@ -1,6 +1,7 @@
+import gc
 import logging
 import os
-from typing import List, Optional
+from typing import Callable, List, Optional
 
 import torch
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
@@ -22,33 +23,40 @@ class PyTorchInferenceModel:
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
     ) -> None:
-        self.use_f32 = use_f32
-        self.auth = auth_token
-        self.model_id = model_id
+        self.use_f32: bool = use_f32
+        self.auth: str = auth_token
+        self.model_id_or_path: str = model_id
+        self.device: torch.device = torch.device("cuda")
+        self.callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None
+        self.callback_steps: Optional[int] = None
         self.model: Optional[StableDiffusionPipeline] = self.load()
         change_scheduler(model=self.model, scheduler=scheduler)
 
     def load(self) -> StableDiffusionPipeline:
         "Load the model from HuggingFace"
 
-        logging.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
+        logging.info(
+            f"Loading {self.model_id_or_path} with {'f32' if self.use_f32 else 'f16'}"
+        )
 
         pipe = StableDiffusionPipeline.from_pretrained(
-            self.model_id,
+            self.model_id_or_path,
             torch_dtype=torch.float16 if self.use_f32 else torch.float32,
             use_auth_token=self.auth,
             safety_checker=None,
         )
 
         assert isinstance(pipe, StableDiffusionPipeline)
-        return pipe.to("cuda")
+        return pipe.to(self.device)
 
     def unload(self) -> None:
         "Unload the model from memory"
 
         self.model = None
+        gc.collect()
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
+        gc.collect()
 
     def generate(self, job: Txt2imgData, scheduler: Scheduler) -> List[Image]:
         "Generate an image from a prompt"
@@ -70,6 +78,8 @@ class PyTorchInferenceModel:
             output_type="pil",
             generator=generator,
             return_dict=False,
+            callback=self.callback,
+            callback_steps=self.callback_steps,
         )
 
         images: list[Image] = data[0]

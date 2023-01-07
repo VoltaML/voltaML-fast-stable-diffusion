@@ -536,7 +536,7 @@ class DemoDiffusion:
             generator = torch.Generator(device="cuda").manual_seed(seed)
 
         # Run Stable Diffusion pipeline
-        with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER):  # type: ignore
+        with torch.inference_mode(), torch.autocast("cuda"), trt.Runtime(TRT_LOGGER):  # type: ignore # pylint: disable=no-member
             # latents need to be generated on the target device
             unet_channels = 4  # unet.in_channels
             latents_shape = (
@@ -561,9 +561,12 @@ class DemoDiffusion:
 
             if self.nvtx_profile:
                 nvtx_clip = nvtx.start_range(message="clip", color="green")
+            else:
+                raise Exception("nvtx_profile doesn't exist")
             cudart.cudaEventRecord(events["clip-start"], 0)
 
             # Tokenize input
+            assert self.tokenizer is not None
             text_input_ids = (
                 self.tokenizer(
                     prompt,
@@ -640,10 +643,10 @@ class DemoDiffusion:
                 latent_model_input = torch.cat([latents] * 2)
                 # LMSDiscreteScheduler.scale_model_input()
                 latent_model_input = self.scheduler.scale_model_input(
-                    latent_model_input, step_index
+                    latent_model_input, step_index  # type: ignore
                 )
                 if self.nvtx_profile:
-                    nvtx.end_range(nvtx_latent_scale)
+                    nvtx.end_range(nvtx_latent_scale)  # type: ignore
 
                 # predict the noise residual
                 if self.nvtx_profile:
@@ -677,7 +680,7 @@ class DemoDiffusion:
                     },
                 )["latent"]
                 if self.nvtx_profile:
-                    nvtx.end_range(nvtx_unet)
+                    nvtx.end_range(nvtx_unet)  # type: ignore
 
                 if self.nvtx_profile:
                     nvtx_latent_step = nvtx.start_range(
@@ -692,7 +695,7 @@ class DemoDiffusion:
                 latents = self.scheduler.step(noise_pred, latents, step_index, timestep)
 
                 if self.nvtx_profile:
-                    nvtx.end_range(nvtx_latent_step)
+                    nvtx.end_range(nvtx_latent_step)  # type: ignore
 
             latents = 1.0 / 0.18215 * latents
             cudart.cudaEventRecord(events["denoise-stop"], 0)
@@ -706,7 +709,7 @@ class DemoDiffusion:
             images = self.runEngine("vae", {"latent": sample_inp})["images"]
             cudart.cudaEventRecord(events["vae-stop"], 0)
             if self.nvtx_profile:
-                nvtx.end_range(nvtx_vae)
+                nvtx.end_range(nvtx_vae)  # type: ignore
 
             torch.cuda.synchronize()
             e2e_toc = time.perf_counter()
@@ -810,7 +813,7 @@ def compile_trt(
     if args.build_dynamic_shape:
         max_batch_size = 4
     # Register TensorRT plugins
-    trt.init_libnvinfer_plugins(TRT_LOGGER, "")
+    trt.init_libnvinfer_plugins(TRT_LOGGER, "")  # type: ignore # pylint: disable=no-member
 
     # Initialize demo
     demo = DemoDiffusion(
@@ -832,9 +835,6 @@ def compile_trt(
         opt_batch_size=1,
         opt_image_height=img_height,
         opt_image_width=img_width,
-        force_export=args.force_onnx_export,
-        force_optimize=args.force_onnx_optimize,
-        force_build=args.force_engine_build,
         minimal_optimization=args.onnx_minimal_optimization,
         static_batch=args.build_static_batch,
         static_shape=not args.build_dynamic_shape,
@@ -849,8 +849,9 @@ def load_trt(model, prompt, img_height, img_width, num_inference_steps):
     global loaded_model
     # if a model is already loaded, remove it from memory
     try:
-        trt_model.teardown()
-    except:
+        if trt_model:  # pylint: disable=used-before-assignment
+            trt_model.teardown()
+    except Exception:
         pass
 
     args = parseArgs()
@@ -866,7 +867,7 @@ def load_trt(model, prompt, img_height, img_width, num_inference_steps):
             f"Batch size {len(prompt)} is larger than allowed {max_batch_size}. If dynamic shape is used, then maximum batch size is 4"
         )
 
-    trt.init_libnvinfer_plugins(TRT_LOGGER, "")
+    trt.init_libnvinfer_plugins(TRT_LOGGER, "")  # type: ignore # pylint: disable=no-member
 
     # Initialize demo
     trt_model = DemoDiffusion(
@@ -995,6 +996,8 @@ def infer_trt(
         load_trt(model, prompt, img_height, img_width, num_inference_steps)
 
     try:
+        if trt_model is None:
+            raise Exception("Model not loaded")
         print("[I] Warming up ..")
         for _ in range(args.num_warmup_runs):
             images = trt_model.infer(
@@ -1029,7 +1032,7 @@ def infer_trt(
         load_trt(model, prompt, img_height, img_width, num_inference_steps)
         print("[I] Warming up ..")
         for _ in range(args.num_warmup_runs):
-            images = trt_model.infer(
+            images = trt_model.infer(  # type: ignore
                 prompt,
                 negative_prompt,
                 args.height,
@@ -1044,7 +1047,7 @@ def infer_trt(
         print("[I] Running StableDiffusion pipeline")
         if args.nvtx_profile:
             cudart.cudaProfilerStart()
-        pipeline_time = trt_model.infer(
+        pipeline_time = trt_model.infer(  # type: ignore
             prompt,
             negative_prompt,
             args.height,
