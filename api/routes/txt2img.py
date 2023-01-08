@@ -10,12 +10,15 @@ router = APIRouter()
 
 @router.post("/interupt")
 async def stop():
+    "Interupt the current job"
+
     state.interrupt = True
     return {"message": "Interupted"}
 
 
 @router.post("/generate")
 async def txt2img_job(job: Txt2ImgQueueEntry):
+    "Generate images from text"
     # Create directory to save images if it does not exist
 
     if job.backend == "PyTorch":

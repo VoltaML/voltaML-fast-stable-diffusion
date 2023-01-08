@@ -42,6 +42,14 @@ class SupportedModel(Enum):
     AnythingV3 = "Linaqruf/anything-v3.0"
     StableDiffusion1_5 = "runwayml/stable-diffusion-v1-5"
     StableDiffusion1_4 = "CompVis/stable-diffusion-v1-4"
+    Analog = "wavymulder/Analog-Diffusion"
+    Redshift = "nitrosocke/redshift-diffusion"
+    Arcane = "nitrosocke/Arcane-Diffusion"
+    Archer = "nitrosocke/archer-diffusion"
+    Eimis = "eimiss/EimisAnimeDiffusion_1.0v"
+    OpenJourney = "prompthero/openjourney"
+    Dreamlike = "dreamlike-art/dreamlike-diffusion-1.0"
+    Nitro = "nitrosocke/Nitro-Diffusion"
 
 
 @dataclass
