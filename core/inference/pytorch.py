@@ -28,7 +28,7 @@ class PyTorchInferenceModel:
         self.model_id_or_path: str = model_id
         self.device: torch.device = torch.device("cuda")
         self.callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None
-        self.callback_steps: Optional[int] = None
+        self.callback_steps: int = 10
         self.model: Optional[StableDiffusionPipeline] = self.load()
         change_scheduler(model=self.model, scheduler=scheduler)
 
@@ -44,6 +44,7 @@ class PyTorchInferenceModel:
             torch_dtype=torch.float16 if self.use_f32 else torch.float32,
             use_auth_token=self.auth,
             safety_checker=None,
+            requires_safety_checker=False,
         )
 
         assert isinstance(pipe, StableDiffusionPipeline)

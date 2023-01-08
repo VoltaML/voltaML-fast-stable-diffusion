@@ -51,14 +51,14 @@ class ModelHandler:
             )
             print("Loading modules")
             trt_model.loadModules()
-            self.generated_models[model.value] = trt_model
+            self.generated_models[model] = trt_model
             print("Loading done")
         else:
             print("Selecting PyTorch")
             start_time = time.time()
             pt_model = PyTorchInferenceModel(model.value, model.value)
             pt_model.optimize()
-            self.generated_models[model.value] = pt_model
+            self.generated_models[model] = pt_model
             print(f"Finished loading in {time.time() - start_time:.2f}s")
 
     def generate(self, job: Txt2ImgQueueEntry) -> List[Image]:

@@ -1,6 +1,12 @@
+import logging
+
+from coloredlogs import install as coloredlogs_install
 from uvicorn import run as uvicorn_run
 
 from api.app import app as api_app
+
+coloredlogs_install(level="INFO")
+root_logger = logging.getLogger()
 
 
 def main():

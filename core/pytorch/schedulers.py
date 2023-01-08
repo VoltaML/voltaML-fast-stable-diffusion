@@ -27,25 +27,25 @@ def change_scheduler(model: StableDiffusionPipeline, scheduler: Scheduler):
     config = model.scheduler.config  # type: ignore
     new_scheduler = None
 
-    if scheduler == scheduler.ddim:
+    if scheduler == Scheduler.ddim:
         new_scheduler = DDIMScheduler
-    elif scheduler == scheduler.heun:
+    elif scheduler == Scheduler.heun:
         new_scheduler = HeunDiscreteScheduler
-    elif scheduler == scheduler.dpm_discrete:
+    elif scheduler == Scheduler.dpm_discrete:
         new_scheduler = KDPM2DiscreteScheduler
-    elif scheduler == scheduler.dpm_ancestral:
+    elif scheduler == Scheduler.dpm_ancestral:
         new_scheduler = KDPM2AncestralDiscreteScheduler
-    elif scheduler == scheduler.lms:
+    elif scheduler == Scheduler.lms:
         new_scheduler = LMSDiscreteScheduler
-    elif scheduler == scheduler.pndm:
+    elif scheduler == Scheduler.pndm:
         new_scheduler = PNDMScheduler
-    elif scheduler == scheduler.euler:
+    elif scheduler == Scheduler.euler:
         new_scheduler = EulerDiscreteScheduler
-    elif scheduler == scheduler.euler_a:
+    elif scheduler == Scheduler.euler_a:
         new_scheduler = EulerAncestralDiscreteScheduler
-    elif scheduler == scheduler.dpmpp_sde_ancestral:
+    elif scheduler == Scheduler.dpmpp_sde_ancestral:
         new_scheduler = DPMSolverSinglestepScheduler
-    elif scheduler == scheduler.dpmpp_2m:
+    elif scheduler == Scheduler.dpmpp_2m:
         new_scheduler = DPMSolverMultistepScheduler
     else:
         new_scheduler = model.scheduler  # type: ignore

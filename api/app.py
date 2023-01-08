@@ -2,7 +2,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 
-from api.routes import memory, models, static, test, txt2img, ws
+from api.routes import hardware, models, static, test, txt2img, ws
 
 app = FastAPI(docs_url="/api/docs", redoc_url="/api/redoc")
 
@@ -25,7 +25,7 @@ app.add_middleware(
 app.include_router(static.router)
 app.include_router(test.router, prefix="/api/test")
 app.include_router(txt2img.router, prefix="/api/txt2img")
-app.include_router(memory.router, prefix="/api/memory")
+app.include_router(hardware.router, prefix="/api/hardware")
 app.include_router(models.router, prefix="/api/models")
 app.include_router(ws.router, prefix="/api/websockets")
 

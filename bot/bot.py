@@ -118,6 +118,7 @@ class ModularBot(AutoShardedBot):
         await self.load_extension("bot.core")
         await self.load_extension("bot.txt2img")
         await self.load_extension("bot.models")
+        await self.load_extension("bot.hardware")
 
     @property
     def avatar_url(self) -> str:

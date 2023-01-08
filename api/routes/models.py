@@ -9,6 +9,8 @@ router = APIRouter(tags=["models"])
 
 @router.get("/loaded")
 async def list_loaded_models():
+    "Returns a dictionary containing information about loaded models"
+
     models = queue.model_handler.generated_models
     loaded_models = {}
 
@@ -17,7 +19,7 @@ async def list_loaded_models():
             "backend": "PyTorch"
             if isinstance(models[model], PyTorchInferenceModel)
             else "TensorRT",
-            "scheduler": models[model].model.scheduler,  # type: ignore
+            "current_scheduler": type(models[model].model.scheduler).__name__,  # type: ignore
         }
 
     return loaded_models

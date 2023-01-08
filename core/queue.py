@@ -79,12 +79,12 @@ class Queue:
             thread.start()
 
             # wait for the thread to finish
-            logging.info(f"Job {job} finished")
-
-            # get the value returned from the thread
             while thread.is_alive():
                 await asyncio.sleep(0.1)
 
+            logging.info(f"Job {job.data.id} finished")
+
+            # get the value returned from the thread
             images = thread.join()
 
             self.jobs.pop(0)
