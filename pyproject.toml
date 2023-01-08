@@ -1,12 +1,37 @@
-# Ruff configuration
-[tool.ruff]
-ignore = ["E501", "F541"]
-fix = true
+[tool.poetry]
+name = "voltaml-fast-stable-diffusion"
+version = "0.1.0"
+description = ""
+authors = ["Voltaml <none@none.none>"]
+license = "Apache 2.0"
 
-[tool.ruff.flake8-quotes]
-docstring-quotes = "double"
+[tool.poetry.dependencies]
+python = "^3.8"
+fastapi = "^0.89.0"
+ftfy = "^6.1.1"
+colored = "^1.4.4"
+cuda-python = "^12.0.0"
+diffusers = "^0.11.1"
+transformers = "4.24.0"
+tqdm = "^4.64.1"
+websockets = "^10.4"
+uvicorn = "^0.20.0"
 
-# Build configuration
+[tool.poetry.dev-dependencies]
+
+[[tool.poetry.source]]
+name = "nvidia"
+url = "https://pypi.ngc.nvidia.com"
+default = false
+secondary = true
+
+
+[[tool.poetry.source]]
+name = "torch"
+url = "https://download.pytorch.org/whl/cu116"
+default = false
+secondary = true
+
 [build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

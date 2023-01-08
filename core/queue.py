@@ -1,49 +1,31 @@
 import asyncio
 import logging
 import time
-from concurrent.futures import ThreadPoolExecutor
-from threading import Thread
-from typing import Dict, List, Optional, Tuple
+from typing import Callable, List, Literal, Tuple
 
 from PIL.Image import Image
 
 from core.errors import DimensionError, ModelFailedError
-from core.models import ModelHandler
-from core.types import Txt2ImgQueueEntry
+from core.model_handler import ModelHandler
+from core.thread import ThreadWithReturnValue
+from core.types import SupportedModel, Txt2ImgQueueEntry
 
 
-class ThreadWithReturnValue(Thread):
-    "A thread class that supports returning a value from the target function"
-
-    def __init__(
-        self,
-        group=None,
-        target=None,
-        name=None,
-        args: Optional[Tuple] = None,
-        kwargs: Optional[Dict] = None,
-    ):
-        if args is None:
-            args = ()
-        if kwargs is None:
-            kwargs = {}
-
-        super().__init__(group, target, name, args, kwargs)
-        self._return = None
-
-    def run(self):
-        if self._target is not None:  # type: ignore
-            self._return = self._target(*self._args, **self._kwargs)  # type: ignore
-
-    def join(self, *args):
-        Thread.join(self, *args)
-        return self._return
-
-
-def run(model_handler: ModelHandler, job: Txt2ImgQueueEntry) -> List[Image]:
+def thread_generate(model_handler: ModelHandler, job: Txt2ImgQueueEntry) -> List[Image]:
     "Run the model for a separate thread"
 
     return model_handler.generate(job)
+
+
+def thread_load_model(
+    model_handler: ModelHandler,
+    model: SupportedModel,
+    backend: Literal["PyTorch", "TensorRT"],
+    device: str,
+) -> None:
+    "Load a model in a separate thread"
+
+    model_handler.load_model(model, backend=backend, device=device)
 
 
 class Queue:
@@ -53,9 +35,34 @@ class Queue:
         self.jobs: List[Txt2ImgQueueEntry] = list()
         self.running = False
         self.model_handler: ModelHandler = ModelHandler()
-        self.thread_pool = ThreadPoolExecutor(max_workers=1)
 
-    async def add_job(self, job: Txt2ImgQueueEntry) -> Tuple[List[Image], float]:
+    async def load_model(
+        self,
+        model: SupportedModel,
+        backend: Literal["PyTorch", "TensorRT"],
+        device: str,
+    ) -> None:
+        "Load a model into memory"
+
+        await self.run_in_thread(
+            target=thread_load_model,
+            args=(self.model_handler, model, backend, device),
+        )
+
+    async def run_in_thread(self, target: Callable, args):
+        "Run a function in a separate thread"
+
+        thread = ThreadWithReturnValue(target=target, args=args)
+        thread.start()
+
+        # wait for the thread to finish
+        while thread.is_alive():
+            await asyncio.sleep(0.1)
+
+        # get the value returned from the thread
+        return thread.join()
+
+    async def generate(self, job: Txt2ImgQueueEntry) -> Tuple[List[Image], float]:
         "Add a job to the queue and run it if it is first in the queue, wait otherwise"
 
         try:
@@ -73,19 +80,11 @@ class Queue:
             start_time = time.time()
 
             # create a new thread
-            thread = ThreadWithReturnValue(target=run, args=(self.model_handler, job))
-
-            # start the thread
-            thread.start()
-
-            # wait for the thread to finish
-            while thread.is_alive():
-                await asyncio.sleep(0.1)
+            images = await self.run_in_thread(
+                target=thread_generate, args=(self.model_handler, job)
+            )
 
             logging.info(f"Job {job.data.id} finished")
-
-            # get the value returned from the thread
-            images = thread.join()
 
             self.jobs.pop(0)
 

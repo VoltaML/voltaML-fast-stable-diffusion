@@ -6,6 +6,7 @@ from typing import TYPE_CHECKING, Dict, List, Literal, Union
 import torch
 from PIL.Image import Image
 
+from core.errors import AutoLoadDisabledError
 from core.inference.pytorch import PyTorchInferenceModel
 from core.types import SupportedModel, Txt2ImgQueueEntry
 
@@ -22,8 +23,13 @@ class ModelHandler:
         ] = {}
 
     def load_model(
-        self, model: SupportedModel, backend: Literal["PyTorch", "TensorRT"]
+        self,
+        model: SupportedModel,
+        backend: Literal["PyTorch", "TensorRT"],
+        device: str = "cuda",
     ):
+        "Load a model into memory"
+
         if backend == "TensorRT":
             print("Selecting TRT")
             print("Creating...")
@@ -56,15 +62,20 @@ class ModelHandler:
         else:
             print("Selecting PyTorch")
             start_time = time.time()
-            pt_model = PyTorchInferenceModel(model.value, model.value)
+            pt_model = PyTorchInferenceModel(model.value, model.value, device=device)
             pt_model.optimize()
             self.generated_models[model] = pt_model
             print(f"Finished loading in {time.time() - start_time:.2f}s")
 
-    def generate(self, job: Txt2ImgQueueEntry) -> List[Image]:
+    def generate(
+        self, job: Txt2ImgQueueEntry, autoload_model: bool = True
+    ) -> List[Image]:
         "Generate an image(s) from a prompt"
 
         if job.model not in self.generated_models:
+            if not autoload_model:
+                raise AutoLoadDisabledError
+
             self.load_model(model=job.model, backend=job.backend)
 
         print("Model loaded")

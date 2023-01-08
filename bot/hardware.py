@@ -16,6 +16,7 @@ class Hardware(Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="gpus")
+    @commands.has_permissions(administrator=True)
     async def gpus(self, ctx: Context):
         "List all available GPUs"
 

@@ -19,9 +19,9 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
     # Create directory to save images if it does not exist
 
     if job.backend == "PyTorch":
-        images, time = await queue.add_job(job)
+        images, time = await queue.generate(job)
     elif job.backend == "TensorRT":
-        images, time = await queue.add_job(job)
+        images, time = await queue.generate(job)
         # infer_trt()
     else:
         raise HTTPException(status_code=400, detail="Invalid backend")

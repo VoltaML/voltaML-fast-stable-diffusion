@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Literal
 
 from aiohttp import ClientSession
 from discord.ext import commands
@@ -18,6 +18,7 @@ class Models(Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="loaded")
+    @commands.has_permissions(administrator=True)
     async def loaded_models(self, ctx: Context) -> None:
         "Show models loaded in the API"
 
@@ -34,6 +35,7 @@ class Models(Cog):
             await ctx.send(f"Error: {status}")
 
     @commands.hybrid_command(name="avaliable")
+    @commands.has_permissions(administrator=True)
     async def avaliable_models(self, ctx: Context) -> None:
         "List all avaliable models"
 
@@ -49,22 +51,51 @@ class Models(Cog):
         else:
             await ctx.send(f"Error: {status}")
 
-    @commands.hybrid_command(name="unload")
-    async def unload_model(self, ctx: Context, model: SupportedModel) -> None:
-        "Unload a model"
+    @commands.hybrid_command(name="load")
+    @commands.has_permissions(administrator=True)
+    async def load_model(
+        self,
+        ctx: Context,
+        model: SupportedModel,
+        device: str = "cuda",
+        backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
+    ) -> None:
+        "Load a model"
+
+        message = await ctx.send(f"Loading model {model.value}...")
 
         async with ClientSession() as session:
             async with session.post(
-                "http://localhost:5003/api/models/unload",
-                json={"model": model.value},
+                "http://localhost:5003/api/models/load",
+                params={"model": model.value, "backend": backend, "device": device},
             ) as response:
                 status = response.status
                 response = await response.json()
 
         if status == 200:
-            await ctx.send(f"Model unloaded: {response['message']}")
+            await message.edit(content=f"Model loaded: {response['message']}")
         else:
-            await ctx.send(f"Error: {status}")
+            await message.edit(content=f"Error: {status}")
+
+    @commands.hybrid_command(name="unload")
+    @commands.has_permissions(administrator=True)
+    async def unload_model(self, ctx: Context, model: SupportedModel) -> None:
+        "Unload a model"
+
+        message = await ctx.send(f"Unloading model {model.value}...")
+
+        async with ClientSession() as session:
+            async with session.post(
+                "http://localhost:5003/api/models/unload",
+                params={"model": model.value},
+            ) as response:
+                status = response.status
+                response = await response.json()
+
+        if status == 200:
+            await message.edit(content=f"Model unloaded: {model.value}")
+        else:
+            await message.edit(content=f"Error: {status}")
 
 
 async def setup(bot: "ModularBot") -> None:

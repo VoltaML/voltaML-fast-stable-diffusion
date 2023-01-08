@@ -1,10 +1,40 @@
-from fastapi import FastAPI
+import logging
+
+from fastapi import Depends, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
+from starlette import status
 
 from api.routes import hardware, models, static, test, txt2img, ws
 
-app = FastAPI(docs_url="/api/docs", redoc_url="/api/redoc")
+
+async def log_request(request: Request):
+    "Log all requests"
+
+    logging.info(
+        f"url: {request.url}, params: {request.query_params}, body: {await request.body()}"
+    )
+
+
+app = FastAPI(
+    docs_url="/api/docs", redoc_url="/api/redoc", dependencies=[Depends(log_request)]
+)
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(request: Request, _: RequestValidationError):
+    "Show more info about validation errors"
+
+    logging.error(
+        f"url: {request.url}, params: {request.query_params}, body: {await request.body()}"
+    )
+    content = {"status_code": 10422, "data": None}
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
+
 
 # Origins that are allowed to access the API
 origins = [

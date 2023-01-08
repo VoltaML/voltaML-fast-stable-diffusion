@@ -84,7 +84,7 @@ class Inference(Cog):
                 status = response.status
                 response = await response.json()
 
-        if response.get("images"):
+        if status == 200:
             await message.edit(
                 content=f"{ctx.author.mention} Done! Seed: {seed}, Time {response.get('time'):.2f}s"
             )

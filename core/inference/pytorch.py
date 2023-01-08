@@ -22,11 +22,12 @@ class PyTorchInferenceModel:
         scheduler: Scheduler = Scheduler.default,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
+        device: str = "cuda",
     ) -> None:
         self.use_f32: bool = use_f32
         self.auth: str = auth_token
         self.model_id_or_path: str = model_id
-        self.device: torch.device = torch.device("cuda")
+        self.device: str = device
         self.callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None
         self.callback_steps: int = 10
         self.model: Optional[StableDiffusionPipeline] = self.load()
