@@ -50,6 +50,7 @@ class SupportedModel(Enum):
     OpenJourney = "prompthero/openjourney"
     Dreamlike = "dreamlike-art/dreamlike-diffusion-1.0"
     Nitro = "nitrosocke/Nitro-Diffusion"
+    Protogen3_4 = "darkstorm2150/Protogen_x3.4_Official_Release"
 
 
 @dataclass

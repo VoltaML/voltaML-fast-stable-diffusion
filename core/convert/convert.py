@@ -27,35 +27,18 @@ except ImportError as exc:
         "OmegaConf is required to convert the LDM checkpoints. Please install it with `pip install OmegaConf`."
     ) from exc
 
-from diffusers import (
-    AutoencoderKL,
-    DDIMScheduler,
-    DPMSolverMultistepScheduler,
-    EulerAncestralDiscreteScheduler,
-    EulerDiscreteScheduler,
-    HeunDiscreteScheduler,
-    LDMTextToImagePipeline,
-    LMSDiscreteScheduler,
-    PNDMScheduler,
-    StableDiffusionPipeline,
-    UNet2DConditionModel,
-)
+from diffusers import (AutoencoderKL, DDIMScheduler,
+                       DPMSolverMultistepScheduler,
+                       EulerAncestralDiscreteScheduler, EulerDiscreteScheduler,
+                       HeunDiscreteScheduler, LDMTextToImagePipeline,
+                       LMSDiscreteScheduler, PNDMScheduler,
+                       StableDiffusionPipeline, UNet2DConditionModel)
 from diffusers.pipelines.latent_diffusion.pipeline_latent_diffusion import (
-    LDMBertConfig,
-    LDMBertModel,
-)
-from diffusers.pipelines.paint_by_example import (
-    PaintByExampleImageEncoder,
-    PaintByExamplePipeline,
-)
-from diffusers.pipelines.stable_diffusion import StableDiffusionSafetyChecker
-from transformers import (
-    AutoFeatureExtractor,
-    BertTokenizerFast,
-    CLIPTextModel,
-    CLIPTokenizer,
-    CLIPVisionConfig,
-)
+    LDMBertConfig, LDMBertModel)
+from diffusers.pipelines.paint_by_example import (PaintByExampleImageEncoder,
+                                                  PaintByExamplePipeline)
+from transformers import (AutoFeatureExtractor, BertTokenizerFast,
+                          CLIPTextModel, CLIPTokenizer, CLIPVisionConfig)
 
 
 def shave_segments(path, n_shave_prefix_segments=1):
