@@ -1,5 +1,6 @@
-from typing import TYPE_CHECKING, Literal
+from typing import TYPE_CHECKING, Dict, Literal
 
+import discord
 from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
@@ -23,14 +24,32 @@ class Models(Cog):
         "Show models loaded in the API"
 
         async with ClientSession() as session:
-            async with session.get(
-                "http://localhost:5003/api/models/loaded"
-            ) as response:
-                status = response.status
-                response = await response.json()
+            async with session.get("http://localhost:5003/api/models/loaded") as r:
+                status = r.status
+                response: Dict[str, Dict] = await r.json()
 
         if status == 200:
-            await ctx.send(f"Loaded models: {', '.join(response)}")
+            devices = []
+            for model in response:
+                if response[model]["device"] not in devices:
+                    devices.append(response[model]["device"])
+
+            for device in devices:
+                embed = discord.Embed(title=f"Loaded models on {device}")
+                embed.add_field(
+                    name="Models",
+                    value="\n".join(
+                        [
+                            model
+                            for model in response
+                            if response[model]["device"] == device
+                        ]
+                    ),
+                )
+
+                await ctx.send(
+                    embed=embed,
+                )
         else:
             await ctx.send(f"Error: {status}")
 

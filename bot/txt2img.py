@@ -27,7 +27,7 @@ class Inference(Cog):
         self,
         ctx: Context,
         prompt: str,
-        model: SupportedModel = SupportedModel.AnythingV3,
+        model: SupportedModel,
         negative_prompt: str = "",
         guidance_scale: float = 7.0,
         steps: Literal[25, 30, 50] = 30,
