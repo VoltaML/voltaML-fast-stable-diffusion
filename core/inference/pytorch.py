@@ -88,12 +88,29 @@ class PyTorchInferenceModel:
 
         return images
 
-    def optimize(self) -> None:
+    def optimize(self, enable_cpu_offload: bool = False) -> None:
         "Optimize the model for inference"
 
         if self.model is None:
             raise ValueError("Model not loaded")
 
         self.model.enable_attention_slicing()
-        if hasattr(self.model, "enable_vae_slicing"):
+        logging.info("Optimization: Enabled attention slicing")
+
+        try:
             self.model.enable_vae_slicing()
+            logging.info("Optimization: Enabled VAE slicing")
+        except AttributeError:
+            logging.info("Optimization: VAE slicing not available")
+
+        if enable_cpu_offload:
+            try:
+                self.model.enable_sequential_cpu_offload()
+                logging.info("Optimization: Enabled sequential CPU offload")
+            except ModuleNotFoundError:
+                logging.info("Optimization: accelerate not available")
+
+        try:
+            self.model.enable_xformers_memory_efficient_attention()
+        except ModuleNotFoundError:
+            logging.info("Optimization: xformers not available")

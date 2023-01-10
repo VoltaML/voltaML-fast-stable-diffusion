@@ -75,7 +75,7 @@ class Models(Cog):
         if status == 200:
             await message.edit(content=f"Model loaded: {response['message']}")
         else:
-            await message.edit(content=f"Error: {status}")
+            await message.edit(content=f"Error: **{response.get('detail')}**")
 
     @commands.hybrid_command(name="unload")
     @commands.has_permissions(administrator=True)

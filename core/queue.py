@@ -44,10 +44,13 @@ class Queue:
     ) -> None:
         "Load a model into memory"
 
-        await self.run_in_thread(
+        _, err = await self.run_in_thread(
             target=thread_load_model,
             args=(self.model_handler, model, backend, device),
         )
+
+        if err:
+            raise err
 
     async def run_in_thread(self, target: Callable, args):
         "Run a function in a separate thread"
@@ -80,13 +83,16 @@ class Queue:
             start_time = time.time()
 
             # create a new thread
-            images = await self.run_in_thread(
+            images, exception = await self.run_in_thread(
                 target=thread_generate, args=(self.model_handler, job)
             )
 
             logging.info(f"Job {job.data.id} finished")
 
             self.jobs.pop(0)
+
+            if exception:
+                raise exception
 
             if images is None:
                 raise ModelFailedError("Model failed to generate image")

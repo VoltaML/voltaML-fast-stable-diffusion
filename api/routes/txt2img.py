@@ -1,7 +1,11 @@
+from typing import List
+
 from fastapi import APIRouter, HTTPException
+from PIL.Image import Image
 
 from api.shared import state
 from core import queue
+from core.errors import AutoLoadDisabledError
 from core.types import Txt2ImgQueueEntry
 from core.utils import convert_image_to_base64
 
@@ -19,18 +23,20 @@ async def stop():
 @router.post("/generate")
 async def txt2img_job(job: Txt2ImgQueueEntry):
     "Generate images from text"
-    # Create directory to save images if it does not exist
 
-    if job.backend == "PyTorch":
-        images, time = await queue.generate(job)
-    elif job.backend == "TensorRT":
-        images, time = await queue.generate(job)
-        # infer_trt()
+    if job.backend in ["PyTorch", "TensorRT"]:
+        try:
+            images: List[Image]
+            time: float
+            images, time = await queue.generate(job)
+        except AutoLoadDisabledError:
+            raise HTTPException(  # pylint: disable=raise-missing-from
+                status_code=400, detail="Model is not loaded"
+            )
     else:
         raise HTTPException(status_code=400, detail="Invalid backend")
 
     return {
-        "message": "Job completed",
         "time": time,
         "images": [convert_image_to_base64(i) for i in images],
     }

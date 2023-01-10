@@ -19,7 +19,7 @@ class ModelHandler:
 
     def __init__(self) -> None:
         self.generated_models: Dict[
-            SupportedModel, Union[DemoDiffusion, PyTorchInferenceModel]
+            SupportedModel, Union["DemoDiffusion", PyTorchInferenceModel]
         ] = {}
 
     def load_model(
@@ -29,6 +29,9 @@ class ModelHandler:
         device: str = "cuda",
     ):
         "Load a model into memory"
+
+        if model in self.generated_models:
+            return
 
         if backend == "TensorRT":
             print("Selecting TRT")
@@ -67,13 +70,11 @@ class ModelHandler:
             self.generated_models[model] = pt_model
             print(f"Finished loading in {time.time() - start_time:.2f}s")
 
-    def generate(
-        self, job: Txt2ImgQueueEntry, autoload_model: bool = True
-    ) -> List[Image]:
+    def generate(self, job: Txt2ImgQueueEntry) -> List[Image]:
         "Generate an image(s) from a prompt"
 
         if job.model not in self.generated_models:
-            if not autoload_model:
+            if not job.autoload:
                 raise AutoLoadDisabledError
 
             self.load_model(model=job.model, backend=job.backend)

@@ -1,6 +1,7 @@
 from typing import Literal
 
-from fastapi import APIRouter
+import torch
+from fastapi import APIRouter, HTTPException
 
 from core import queue
 from core.inference.pytorch import PyTorchInferenceModel
@@ -41,7 +42,12 @@ async def load_model(
 ):
     "Loads a model into memory"
 
-    await queue.load_model(model, backend, device)
+    try:
+        await queue.load_model(model, backend, device)
+    except torch.cuda.OutOfMemoryError:  # type: ignore
+        raise HTTPException(  # pylint: disable=raise-missing-from
+            status_code=500, detail="Out of memory"
+        )
     return {"message": "Model loaded"}
 
 
@@ -51,3 +57,11 @@ async def unload_model(model: SupportedModel):
 
     queue.model_handler.unload(model)
     return {"message": "Model unloaded"}
+
+
+@router.post("/cleanup")
+async def cleanup():
+    "Free up memory manually"
+
+    queue.model_handler.free_memory()
+    return {"message": "Memory cleaned up"}

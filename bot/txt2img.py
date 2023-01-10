@@ -4,6 +4,7 @@ from typing import TYPE_CHECKING, Literal, Optional
 from uuid import uuid4
 
 import aiohttp
+import discord
 from discord import File
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
@@ -30,11 +31,12 @@ class Inference(Cog):
         negative_prompt: str = "",
         guidance_scale: float = 7.0,
         steps: Literal[25, 30, 50] = 30,
-        aspect_ratio: Literal["16:9", "9:16", "1:1", "civitai"] = "1:1",
+        aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
         seed: Optional[int] = None,
         backend: Literal["PyTorch"] = "PyTorch",
         scheduler: Scheduler = Scheduler.euler_a,
         use_default_negative_prompt: bool = True,
+        verbose: bool = False,
     ):
         "Generate an image from prompt"
 
@@ -92,17 +94,45 @@ class Inference(Cog):
                 response = await response.json()
 
         if status == 200:
+            if verbose:
+                embed = discord.Embed(
+                    color=discord.Color.green(),
+                )
+                embed.add_field(name="Seed", value=seed)
+                embed.add_field(name="Time", value=f"{response.get('time'):.2f}s")
+                embed.add_field(name="Model", value=model.value)
+                embed.add_field(
+                    name="Negative Prompt",
+                    value=negative_prompt
+                    if not use_default_negative_prompt
+                    else "*Default*"
+                    + (" + " if negative_prompt else "")
+                    + negative_prompt,
+                )
+                embed.add_field(name="Guidance Scale", value=guidance_scale)
+                embed.add_field(name="Steps", value=steps)
+                embed.add_field(name="Aspect Ratio", value=aspect_ratio)
+
+                await message.edit(embed=embed)
+
             await message.edit(
-                content=f"{ctx.author.mention} Done! Seed: {seed}, Time {response.get('time'):.2f}s"
+                content=f"{ctx.author.mention} - **{prompt}**, Time: {response.get('time'):.2f}s, Seed: {seed}"
             )
             await message.add_files(
                 File(
                     convert_base64_to_bytes(response["images"][0]),
-                    filename="dream.png",
+                    filename=f"{seed}.png",
                 )
             )
         else:
-            await message.edit(content=f"{ctx.author.mention} Dream failed - {status}")
+            if response.get("detail"):
+                await message.edit(
+                    content=f"{ctx.author.mention} Dream failed - **{response.get('detail')}**"
+                )
+            else:
+                await message.edit(
+                    content=f"{ctx.author.mention} Dream failed - {status}"
+                )
 
         logging.info(f"Finished task {prompt} for {str(ctx.author)}")
 

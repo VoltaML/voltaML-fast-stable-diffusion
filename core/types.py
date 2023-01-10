@@ -45,9 +45,10 @@ class SupportedModel(Enum):
     OpenJourney = "prompthero/openjourney"
     DreamlikeDiffusion = "dreamlike-art/dreamlike-diffusion-1.0"
     DreamlikePhotoreal = "dreamlike-art/dreamlike-photoreal-2.0"
-    Protogen5_8 = "darkstorm2150/Protogen_x5.8_Official_Release"
+    Protogen5_8_Anime = "darkstorm2150/Protogen_x5.8_Official_Release"
     SynthWave = "ItsJayQz/SynthwavePunk-v2"
     InkpunkDiffusion = "Envvi/Inkpunk-Diffusion"
+    Protogen5_3_Realism = "darkstorm2150/Protogen_v5.3_Official_Release"
 
 
 @dataclass
@@ -58,3 +59,4 @@ class Txt2ImgQueueEntry:
     model: SupportedModel
     scheduler: Scheduler
     backend: Literal["PyTorch", "TensorRT"]
+    autoload: bool = field(default=False)

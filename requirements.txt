@@ -9,6 +9,7 @@ transformers
 accelerate
 ftfy
 tqdm
+OmegaConf
 # Backend
 fastapi
 websockets

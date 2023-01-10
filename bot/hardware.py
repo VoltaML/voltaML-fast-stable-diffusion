@@ -40,6 +40,23 @@ class Hardware(Cog):
 
         await ctx.send(embed=embed)
 
+    @commands.hybrid_command(name="clean-memory")
+    @commands.has_permissions(administrator=True)
+    async def clean(self, ctx: Context):
+        "Free the memory manually"
+
+        await ctx.defer()
+
+        async with ClientSession() as session:
+            async with session.post("http://localhost:5003/api/models/cleanup") as resp:
+                status = resp.status
+
+        if status != 200:
+            await ctx.send("Something went wrong")
+            return
+
+        await ctx.send("Cleaned up the memory")
+
 
 async def setup(bot: "ModularBot"):
     "Will be loaded by bot"
