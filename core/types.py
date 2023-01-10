@@ -41,16 +41,13 @@ class SupportedModel(Enum):
 
     AnythingV3 = "Linaqruf/anything-v3.0"
     StableDiffusion1_5 = "runwayml/stable-diffusion-v1-5"
-    StableDiffusion1_4 = "CompVis/stable-diffusion-v1-4"
-    Analog = "wavymulder/Analog-Diffusion"
-    Redshift = "nitrosocke/redshift-diffusion"
-    Arcane = "nitrosocke/Arcane-Diffusion"
-    Archer = "nitrosocke/archer-diffusion"
-    Eimis = "eimiss/EimisAnimeDiffusion_1.0v"
+    StableDiffusion2_1 = "stabilityai/stable-diffusion-2-1"
     OpenJourney = "prompthero/openjourney"
-    Dreamlike = "dreamlike-art/dreamlike-diffusion-1.0"
-    Nitro = "nitrosocke/Nitro-Diffusion"
-    Protogen3_4 = "darkstorm2150/Protogen_x3.4_Official_Release"
+    DreamlikeDiffusion = "dreamlike-art/dreamlike-diffusion-1.0"
+    DreamlikePhotoreal = "dreamlike-art/dreamlike-photoreal-2.0"
+    Protogen5_8 = "darkstorm2150/Protogen_x5.8_Official_Release"
+    SynthWave = "ItsJayQz/SynthwavePunk-v2"
+    InkpunkDiffusion = "Envvi/Inkpunk-Diffusion"
 
 
 @dataclass
