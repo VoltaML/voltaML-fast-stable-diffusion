@@ -20,7 +20,16 @@ class Inference(Cog):
     "Commands for generating images from text"
 
     def __init__(self, bot: "ModularBot") -> None:
-        self.bot = bot
+        self.bot = (bot,)
+        self.queue_number: int = 0
+
+    @commands.hybrid_command(name="reset-queue")
+    @commands.has_permissions(administrator=True)
+    async def reset_queue(self, ctx: Context):
+        "Reset the queue number"
+
+        self.queue_number = 0
+        await ctx.send("✅ Queue reset!")
 
     @commands.hybrid_command(name="dream")
     async def dream(
@@ -40,6 +49,7 @@ class Inference(Cog):
     ):
         "Generate an image from prompt"
 
+        self.queue_number += 1
         default_negative_prompt = "nsfw, lowres, bad anatomy, ((bad hands)), text, error, ((missing fingers)), cropped, jpeg artifacts, worst quality, low quality, signature, watermark, blurry, deformed, extra ears, disfigured, mutation, censored, fused legs, bad legs, bad hands, missing fingers, extra digit, fewer digits, normal quality, username, artist name"
 
         if model == SupportedModel.SynthWave:
@@ -85,13 +95,17 @@ class Inference(Cog):
             "backend": backend,
         }
 
-        message = await ctx.send("Dreaming...")
+        message = await ctx.send(
+            "Dreaming... **Queue number: " + str(self.queue_number) + "**"
+        )
         async with aiohttp.ClientSession() as session:
             async with session.post(
                 "http://localhost:5003/api/txt2img/generate", json=payload
             ) as response:
                 status = response.status
                 response = await response.json()
+
+        self.queue_number -= 1
 
         if status == 200:
             if verbose:

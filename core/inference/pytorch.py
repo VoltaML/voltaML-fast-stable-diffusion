@@ -31,7 +31,9 @@ class PyTorchInferenceModel:
         self.callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None
         self.callback_steps: int = 10
         self.model: Optional[StableDiffusionPipeline] = self.load()
-        change_scheduler(model=self.model, scheduler=scheduler, config=self.model.scheduler.config)
+        change_scheduler(
+            model=self.model, scheduler=scheduler, config=self.model.scheduler.config  # type: ignore
+        )
 
     def load(self) -> StableDiffusionPipeline:
         "Load the model from HuggingFace"
@@ -40,16 +42,15 @@ class PyTorchInferenceModel:
             f"Loading {self.model_id_or_path} with {'f32' if self.use_f32 else 'f16'}"
         )
 
-        
         pipe = StableDiffusionPipeline.from_pretrained(
             self.model_id_or_path,
             torch_dtype=torch.float16 if self.use_f32 else torch.float32,
             use_auth_token=self.auth,
             safety_checker=None,
             requires_safety_checker=False,
-            cache_dir=os.getcwd() + "/huggingface_models/"
+            cache_dir=os.getcwd() + "/huggingface_models/",
         )
-        
+
         assert isinstance(pipe, StableDiffusionPipeline)
         return pipe.to(self.device)
 
@@ -70,7 +71,9 @@ class PyTorchInferenceModel:
 
         generator = torch.Generator("cuda").manual_seed(job.seed)
 
-        change_scheduler(model=self.model, scheduler=scheduler, config=self.model.scheduler.config)
+        change_scheduler(
+            model=self.model, scheduler=scheduler, config=self.model.scheduler.config  # type: ignore
+        )
 
         data = self.model(
             prompt=job.prompt,
