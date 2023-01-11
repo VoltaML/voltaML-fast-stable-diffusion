@@ -10,6 +10,7 @@ from core.errors import AutoLoadDisabledError
 from core.inference.pytorch import PyTorchInferenceModel
 from core.types import SupportedModel, Txt2ImgQueueEntry
 
+
 if TYPE_CHECKING:
     from core.inference.volta_accelerate import DemoDiffusion
 
@@ -41,9 +42,8 @@ class ModelHandler:
 
             trt_model = DemoDiffusion(
                 model_path=model.value,
-                denoising_steps=50,
+                denoising_steps=25,
                 denoising_fp16=True,
-                scheduler="LMSD",
                 hf_token=os.environ["HUGGINGFACE_TOKEN"],
                 verbose=False,
                 nvtx_profile=False,
@@ -96,6 +96,8 @@ class ModelHandler:
                 verbose=False,
                 seed=job.data.seed,
                 output_dir="output",
+                num_of_infer_steps=job.data.steps,
+                scheduler=job.scheduler
             )
             self.free_memory()  # ! Might cause issues with TRT, need to check
             return [images[0]]
