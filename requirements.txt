@@ -3,9 +3,9 @@
 colored
 coloredlogs
 cuda-python
-diffusers
+diffusers==0.11.1
 scipy
-transformers
+transformers==4.24.0
 accelerate
 ftfy
 tqdm
@@ -16,3 +16,14 @@ websockets
 uvicorn
 # Bot
 discord
+nvtx
+onnx==1.12.0
+onnx-graphsurgeon==0.3.25
+onnxruntime==1.13.1
+polygraphy==0.43.1
+torch==1.12.0+cu116
+accelerate
+flask
+pandas
+jupyterlab
+redis
