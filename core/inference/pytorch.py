@@ -40,14 +40,16 @@ class PyTorchInferenceModel:
             f"Loading {self.model_id_or_path} with {'f32' if self.use_f32 else 'f16'}"
         )
 
+        
         pipe = StableDiffusionPipeline.from_pretrained(
             self.model_id_or_path,
             torch_dtype=torch.float16 if self.use_f32 else torch.float32,
             use_auth_token=self.auth,
             safety_checker=None,
             requires_safety_checker=False,
+            cache_dir=os.getcwd() + "huggingface_models/"
         )
-
+        
         assert isinstance(pipe, StableDiffusionPipeline)
         return pipe.to(self.device)
 
