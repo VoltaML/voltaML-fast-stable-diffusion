@@ -47,7 +47,7 @@ class PyTorchInferenceModel:
             use_auth_token=self.auth,
             safety_checker=None,
             requires_safety_checker=False,
-            cache_dir=os.getcwd() + "huggingface_models/"
+            cache_dir=os.getcwd() + "/huggingface_models/"
         )
         
         assert isinstance(pipe, StableDiffusionPipeline)

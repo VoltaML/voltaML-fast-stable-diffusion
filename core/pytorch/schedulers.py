@@ -19,12 +19,14 @@ from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
 from diffusers.schedulers.scheduling_pndm import PNDMScheduler
 
 from core.types import Scheduler
+from typing import Union, TYPE_CHECKING
 
+if TYPE_CHECKING:
+    from core.inference.volta_accelerate import DemoDiffusion
 
-def change_scheduler(model: StableDiffusionPipeline, scheduler: Scheduler):
+def change_scheduler(model: Union[StableDiffusionPipeline, "DemoDiffusion"], scheduler: Scheduler, config):
     "Get the scheduler from the scheduler enum"
-
-    config = model.scheduler.config  # type: ignore
+    
     new_scheduler = None
 
     if scheduler == Scheduler.ddim:

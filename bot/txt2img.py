@@ -33,7 +33,7 @@ class Inference(Cog):
         steps: Literal[25, 30, 50] = 30,
         aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
         seed: Optional[int] = None,
-        backend: Literal["PyTorch"] = "PyTorch",
+        backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
         scheduler: Scheduler = Scheduler.euler_a,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,

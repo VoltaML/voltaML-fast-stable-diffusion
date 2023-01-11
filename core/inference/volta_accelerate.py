@@ -33,8 +33,11 @@ from cuda import cudart
 from polygraphy import cuda
 from transformers import CLIPTokenizer
 
-from models import CLIP, VAE, UNet
-from utilities import (
+from core.types import Scheduler
+from core.pytorch.schedulers import change_scheduler
+
+from core.trt.models import CLIP, VAE, UNet
+from core.trt.utilities import (
     TRT_LOGGER,
     Engine,
     save_image,
@@ -105,8 +108,8 @@ def parseArgs():
     )
     parser.add_argument(
         "--scheduler",
-        type=str,
-        default="LMSD",
+        type=Scheduler,
+        default=Scheduler.euler_a,
         # choices=["LMSD", "DPM"],
         help="Scheduler for diffusion process",
     )
@@ -214,7 +217,8 @@ class DemoDiffusion:
         self,
         denoising_steps,
         denoising_fp16=True,
-        scheduler="LMSD",
+        scheduler: Scheduler = Scheduler.euler_a,
+        #scheduler="LMSD",
         guidance_scale=7.5,
         eta=0.0,
         device="cuda",
@@ -277,29 +281,9 @@ class DemoDiffusion:
             "clip_sample": False
             }
 
-        if scheduler == "DDIM":
-            self.scheduler = DDIMScheduler.from_config(sched_opts)
-        elif scheduler == "HEUN":
-            self.scheduler = HeunDiscreteScheduler.from_config(sched_opts)
-        elif scheduler == "DPM-Discrete":
-            self.scheduler = KDPM2DiscreteScheduler.from_config(sched_opts)
-        elif scheduler == "DPM-ADS":
-            self.scheduler = KDPM2AncestralDiscreteScheduler.from_config(sched_opts)
-        elif scheduler == "LMSD":
-            self.scheduler = LMSDiscreteScheduler.from_config(sched_opts)
-        elif scheduler == "PNDM":
-            self.scheduler = PNDMScheduler.from_config(sched_opts)
-        elif scheduler == "EULER":
-            self.scheduler = EulerDiscreteScheduler.from_config(sched_opts)
-        elif scheduler == "EULER_A":
-            self.scheduler = EulerAncestralDiscreteScheduler.from_config(sched_opts)
-        elif scheduler == "DPMSS":
-            self.scheduler = DPMSolverSinglestepScheduler.from_config(sched_opts)
-        elif scheduler == "DPMP2M":
-            self.scheduler = DPMSolverMultistepScheduler.from_config(sched_opts)
-        else:
-            raise ValueError("Scheduler should be either DPM or LMSD")
-
+        change_scheduler(self, scheduler, config=sched_opts)
+        
+        
         self.tokenizer = None
 
         self.unet_model_key = 'unet_fp16' if denoising_fp16 else 'unet'
@@ -472,11 +456,7 @@ class DemoDiffusion:
         self,
     ):
         self.tokenizer = CLIPTokenizer.from_pretrained("openai/clip-vit-large-patch14")
-        # self.scheduler.set_timesteps(self.denoising_steps)
-        # self.timesteps_tensor = self.scheduler.timesteps.to(self.device)
 
-        # Pre-compute latent input scales and linear multistep coefficients
-        # self.scheduler.configure()
 
     def runEngine(self, model_name, feed_dict):
         engine = self.engine[model_name]
@@ -511,6 +491,8 @@ class DemoDiffusion:
         verbose = False,
         seed=None,
         output_dir='static/output',
+        num_of_infer_steps=50,
+        scheduler: Scheduler = Scheduler.euler_a
     ):
         """
         Run the diffusion pipeline.
@@ -532,6 +514,23 @@ class DemoDiffusion:
         batch_size = len(prompt)
         assert len(prompt) == len(negative_prompt)
 
+        ## Number of infer steps
+        self.denoising_steps = num_of_infer_steps
+
+        sched_opts = {
+                    "beta_end": 0.012,
+                    "beta_schedule": "scaled_linear",
+                    "beta_start": 0.00085,
+                    "num_train_timesteps": 1000,
+                    "set_alpha_to_one": False,
+                    "skip_prk_steps": True,
+                    "steps_offset": 1,
+                    "trained_betas": None,
+                    "clip_sample": False
+                    }
+
+        change_scheduler(self, scheduler, sched_opts)
+        
         # Spatial dimensions of latent tensor
         latent_height = image_height // 8
         latent_width = image_width // 8
@@ -706,8 +705,9 @@ class DemoDiffusion:
 
                 # Save image
                 image_name_prefix = 'sd-'+('fp16' if self.denoising_fp16 else 'fp32')+''.join(set(['-'+prompt[i].replace(' ','_')[:10] for i in range(batch_size)]))+'-'
-                save_image(images, output_dir, image_name_prefix)
-            return str(e2e_toc - e2e_tic)
+                
+                imgs = save_image(images, output_dir, image_name_prefix)
+            return str(e2e_toc - e2e_tic), imgs
                 
 
 def compile_trt(model, prompt, neg_prompt, img_height, img_width, num_inference_steps, guidance_scale, num_images_per_prompt, seed=None):
