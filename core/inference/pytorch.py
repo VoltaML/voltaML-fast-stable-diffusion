@@ -31,7 +31,7 @@ class PyTorchInferenceModel:
         self.callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None
         self.callback_steps: int = 10
         self.model: Optional[StableDiffusionPipeline] = self.load()
-        change_scheduler(model=self.model, scheduler=scheduler)
+        change_scheduler(model=self.model, scheduler=scheduler, config=self.model.scheduler.config)
 
     def load(self) -> StableDiffusionPipeline:
         "Load the model from HuggingFace"
@@ -70,7 +70,7 @@ class PyTorchInferenceModel:
 
         generator = torch.Generator("cuda").manual_seed(job.seed)
 
-        change_scheduler(model=self.model, scheduler=scheduler)
+        change_scheduler(model=self.model, scheduler=scheduler, config=self.model.scheduler.config)
 
         data = self.model(
             prompt=job.prompt,
