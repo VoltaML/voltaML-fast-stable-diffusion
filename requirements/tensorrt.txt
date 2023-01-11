@@ -1,0 +1,6 @@
+nvtx
+onnx==1.12.0
+onnx-graphsurgeon==0.3.25
+onnxruntime==1.13.1
+polygraphy==0.43.1
+torch==1.12.0+cu116

@@ -50,7 +50,7 @@ class ModelHandler:
                 max_batch_size=16,
             )
             print("Loading engines...")
-            trt_model.load_engines(
+            trt_model.loadEngines(
                 engine_dir="engine/" + model.value,
                 onnx_dir="onnx",
                 onnx_opset=16,
