@@ -14,7 +14,7 @@ class Core(Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="sync")
-    @commands.has_permissions(administrator=True)
+    @commands.is_owner()
     async def sync(self, ctx: Context):
         "Sync slash commands with the API"
 

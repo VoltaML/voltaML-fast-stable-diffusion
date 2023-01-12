@@ -47,7 +47,7 @@ class Inference(Cog):
         self.queue_number: int = 0
 
     @commands.hybrid_command(name="reset-queue")
-    @commands.has_permissions(administrator=True)
+    @commands.is_owner()
     async def reset_queue(self, ctx: Context):
         "Reset the queue number"
 

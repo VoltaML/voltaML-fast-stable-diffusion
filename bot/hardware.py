@@ -16,7 +16,7 @@ class Hardware(Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="gpus")
-    @commands.has_permissions(administrator=True)
+    @commands.is_owner()
     async def gpus(self, ctx: Context):
         "List all available GPUs"
 
@@ -41,7 +41,7 @@ class Hardware(Cog):
         await ctx.send(embed=embed)
 
     @commands.hybrid_command(name="clean-memory")
-    @commands.has_permissions(administrator=True)
+    @commands.is_owner()
     async def clean(self, ctx: Context):
         "Free the memory manually"
 
