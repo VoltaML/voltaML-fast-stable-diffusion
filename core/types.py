@@ -40,7 +40,6 @@ class SupportedModel(Enum):
     "Enum of models supported by the API"
 
     AnythingV3 = "Linaqruf/anything-v3.0"
-    StableDiffusion1_5 = "runwayml/stable-diffusion-v1-5"
     StableDiffusion2_1 = "stabilityai/stable-diffusion-2-1"
     OpenJourney = "prompthero/openjourney"
     DreamlikeDiffusion = "dreamlike-art/dreamlike-diffusion-1.0"
