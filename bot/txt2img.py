@@ -1,6 +1,7 @@
+import asyncio
 import logging
 import random
-from typing import TYPE_CHECKING, Literal, Optional
+from typing import TYPE_CHECKING, Dict, Literal, Optional
 from uuid import uuid4
 
 import aiohttp
@@ -14,6 +15,28 @@ from core.utils import convert_base64_to_bytes
 
 if TYPE_CHECKING:
     from bot.bot import ModularBot
+
+
+async def dream_call(payload: Dict):
+    "Call to the backend to generate an image"
+
+    async def call():
+        async with aiohttp.ClientSession() as session:
+            async with session.post(
+                "http://localhost:5003/api/txt2img/generate", json=payload
+            ) as response:
+                status = response.status
+                response = await response.json()
+
+        return status, response
+
+    try:
+        status, response = await call()
+    except aiohttp.ClientOSError:
+        await asyncio.sleep(0.5)
+        status, response = await call()
+
+    return status, response
 
 
 class Inference(Cog):
@@ -98,12 +121,12 @@ class Inference(Cog):
         message = await ctx.send(
             "Dreaming... **Queue number: " + str(self.queue_number) + "**"
         )
-        async with aiohttp.ClientSession() as session:
-            async with session.post(
-                "http://localhost:5003/api/txt2img/generate", json=payload
-            ) as response:
-                status = response.status
-                response = await response.json()
+
+        try:
+            status, response = await dream_call(payload=payload)
+        except Exception as e:
+            self.queue_number -= 1
+            raise e
 
         self.queue_number -= 1
 
