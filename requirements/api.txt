@@ -1,3 +1,4 @@
 fastapi
 websockets
 uvicorn
+coloredlogs
