@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from enum import Enum, auto
+from enum import Enum
 from typing import Literal
 from uuid import uuid4
 
@@ -7,17 +7,17 @@ from uuid import uuid4
 class Scheduler(Enum):
     "Enum of schedulers supported by the API"
 
-    ddim = auto()
-    heun = auto()
-    dpm_discrete = auto()
-    dpm_ancestral = auto()
-    lms = auto()
-    pndm = auto()
-    euler = auto()
-    euler_a = auto()
-    dpmpp_sde_ancestral = auto()
-    dpmpp_2m = auto()
-    default = auto()
+    euler_a = "Euler A"
+    ddim = "DDIM"
+    heun = "Heun"
+    dpm_discrete = "DPM Discrete"
+    dpm_ancestral = "DPM A"
+    lms = "LMS"
+    pndm = "PNDM"
+    euler = "Euler"
+    dpmpp_sde_ancestral = "DPMPP SDE A"
+    dpmpp_2m = "DPMPP 2M"
+    default = "Default"
 
 
 @dataclass

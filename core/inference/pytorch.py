@@ -7,7 +7,8 @@ import torch
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
 from PIL.Image import Image
 
-from core.pytorch.schedulers import change_scheduler
+from core.config import config
+from core.schedulers import change_scheduler
 from core.types import Scheduler, Txt2imgData
 
 os.environ["DIFFUSERS_NO_ADVISORY_WARNINGS"] = "1"
@@ -23,13 +24,17 @@ class PyTorchInferenceModel:
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
         device: str = "cuda",
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
+        callback_steps: int = 10,
     ) -> None:
         self.use_f32: bool = use_f32
         self.auth: str = auth_token
         self.model_id_or_path: str = model_id
         self.device: str = device
-        self.callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None
-        self.callback_steps: int = 10
+        self.callback: Optional[
+            Callable[[int, int, torch.FloatTensor], None]
+        ] = callback
+        self.callback_steps: int = callback_steps
         self.model: Optional[StableDiffusionPipeline] = self.load()
         change_scheduler(
             model=self.model, scheduler=scheduler, config=self.model.scheduler.config  # type: ignore
@@ -48,7 +53,7 @@ class PyTorchInferenceModel:
             use_auth_token=self.auth,
             safety_checker=None,
             requires_safety_checker=False,
-            cache_dir=os.getcwd() + "/huggingface_models/",
+            cache_dir=config.cache_dir,
         )
 
         assert isinstance(pipe, StableDiffusionPipeline)
@@ -117,5 +122,6 @@ class PyTorchInferenceModel:
 
         try:
             self.model.enable_xformers_memory_efficient_attention()
+            logging.info("Optimization: Enabled xformers memory efficient attention")
         except ModuleNotFoundError:
             logging.info("Optimization: xformers not available")

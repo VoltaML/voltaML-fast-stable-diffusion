@@ -8,7 +8,8 @@ disable=
     line-too-long,
     consider-using-dict-items,
     import-outside-toplevel,
-    invalid-name
+    invalid-name,
+    relative-beyond-top-level
 
 
 [TYPECHECK]

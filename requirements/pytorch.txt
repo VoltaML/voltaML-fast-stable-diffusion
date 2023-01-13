@@ -11,4 +11,5 @@ ftfy
 tqdm
 OmegaConf
 accelerate
-torch
+torch==1.13.0+cu116
+torchvision

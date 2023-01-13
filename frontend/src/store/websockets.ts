@@ -7,9 +7,11 @@ import { useWebSocket } from "@vueuse/core";
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
+import { useState } from "../store/state";
 
 export const useWebsocket = defineStore("websocket", () => {
   let useNotification: NotificationApiInjection | null = null;
+  const global = useState();
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     autoReconnect: false,
     heartbeat: {
@@ -26,7 +28,7 @@ export const useWebsocket = defineStore("websocket", () => {
         console.error("Notification handler not injected");
         return;
       }
-      processWebSocket(data);
+      processWebSocket(data, global);
     },
   });
 

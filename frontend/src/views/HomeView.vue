@@ -1,16 +1,5 @@
 <template>
   <div class="main-container">
-    <!-- Progress bar -->
-    <div class="progress-container">
-      <NProgress
-        type="line"
-        :percentage="60"
-        indicator-placement="outside"
-        processing
-        color="#63e2b7"
-      />
-    </div>
-
     <!-- Main -->
 
     <NGrid cols="2" x-gap="12">
@@ -230,7 +219,12 @@
 
           <!-- Generate button -->
           <NSpace justify="center">
-            <NButton type="success" @click="generate">Generate</NButton>
+            <NButton
+              type="success"
+              @click="generate"
+              :disabled="!global.state.generating"
+              >Generate</NButton
+            >
           </NSpace>
         </NSpace>
       </NGi>
@@ -240,7 +234,11 @@
       <!-- Images -->
       <NGi>
         <NSpace justify="center">
-          <NImage v-if="image" :src="`data:image/png;base64,${image}`" />
+          <NImage
+            v-if="global.state.txt2img.currentImage"
+            :src="`data:image/png;base64,${global.state.txt2img.currentImage}`"
+            :img-props="{ style: 'max-width: 100%; max-height: 100%' }"
+          />
         </NSpace>
       </NGi>
     </NGrid>
@@ -248,6 +246,7 @@
 </template>
 
 <script setup lang="ts">
+import { serverUrl } from "@/env";
 import {
   NButton,
   NGi,
@@ -255,57 +254,70 @@ import {
   NImage,
   NInput,
   NInputNumber,
-  NProgress,
   NRadioButton,
   NRadioGroup,
   NSlider,
   NSpace,
   NTooltip,
 } from "naive-ui";
-import { ref } from "vue";
 import { useSettings } from "../store/settings";
+import { useState } from "../store/state";
 
+const global = useState();
 const conf = useSettings();
-const image = ref("");
+
+const checkSeed = (seed: number) => {
+  // If -1 create random seed
+  if (seed === -1) {
+    seed = Math.floor(Math.random() * 999999999);
+  }
+
+  return seed;
+};
 
 const generate = () => {
-  fetch("http://localhost:8080/api/txt2img/generate", {
+  global.state.generating = true;
+  fetch(`${serverUrl}/api/txt2img/generate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
+        id: "420",
         prompt: conf.data.settings.txt2img.prompt,
         negative_prompt: conf.data.settings.txt2img.negativePrompt,
         width: conf.data.settings.txt2img.width,
         height: conf.data.settings.txt2img.height,
         steps: conf.data.settings.txt2img.steps,
         guidance_scale: conf.data.settings.txt2img.cfgScale,
-        seed: conf.data.settings.txt2img.seed,
+        seed: checkSeed(conf.data.settings.txt2img.seed),
         batch_size: 1,
         batch_count: conf.data.settings.txt2img.batchCount,
       },
       model: "Linaqruf/anything-v3.0",
-      scheduler: 1,
+      scheduler: "Euler A",
       backend: "PyTorch",
+      autoload: false,
     }),
-  }).then((res) => {
-    res.json().then((data) => {
-      console.log(data);
-      image.value = data.images[0];
+  })
+    .then((res) => {
+      global.state.generating = false;
+      res.json().then((data) => {
+        global.state.txt2img.currentImage = data.images[0];
+        global.state.progress = 0;
+      });
+    })
+    .catch((err) => {
+      global.state.generating = false;
+      console.log(err);
     });
-  });
 };
 </script>
 
 <style scoped>
 .left-container {
   margin: 0 12px;
-}
-
-.progress-container {
-  margin: 12px;
 }
 
 .split {

@@ -6,10 +6,11 @@ from typing import TYPE_CHECKING, Dict, List, Literal, Union
 import torch
 from PIL.Image import Image
 
+from core import shared
 from core.errors import AutoLoadDisabledError
+from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
 from core.types import SupportedModel, Txt2ImgQueueEntry
-
 
 if TYPE_CHECKING:
     from core.inference.volta_accelerate import DemoDiffusion
@@ -65,7 +66,13 @@ class ModelHandler:
         else:
             print("Selecting PyTorch")
             start_time = time.time()
-            pt_model = PyTorchInferenceModel(model.value, model.value, device=device)
+            pt_model = PyTorchInferenceModel(
+                model.value,
+                model.value,
+                device=device,
+                callback=pytorch_callback,
+                callback_steps=1,
+            )
             pt_model.optimize()
             self.generated_models[model] = pt_model
             print(f"Finished loading in {time.time() - start_time:.2f}s")
@@ -81,6 +88,10 @@ class ModelHandler:
 
         print("Model loaded")
         model = self.generated_models[job.model]
+
+        shared.current_model = model
+        shared.current_steps = job.data.steps
+
         if isinstance(model, PyTorchInferenceModel):
             data = model.generate(job.data, scheduler=job.scheduler)
             self.free_memory()
@@ -97,7 +108,7 @@ class ModelHandler:
                 seed=job.data.seed,
                 output_dir="output",
                 num_of_infer_steps=job.data.steps,
-                scheduler=job.scheduler
+                scheduler=job.scheduler,
             )
             self.free_memory()  # ! Might cause issues with TRT, need to check
             return [images[0]]

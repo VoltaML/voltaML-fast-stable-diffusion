@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from typing import List
 
@@ -13,6 +14,7 @@ class WebSocketManager:
 
     def __init__(self):
         self.active_connections: List[WebSocket] = []
+        self.loop = asyncio.get_event_loop()
 
     async def connect(self, websocket: WebSocket):
         "Accepts a new websocket connection and adds it to the list of active connections"
@@ -35,3 +37,9 @@ class WebSocketManager:
 
         for connection in self.active_connections:
             await connection.send_json(data.to_json())
+
+    def broadcast_sync(self, data: Data):
+        "Broadcasts data message to all active websocket connections synchronously"
+
+        for connection in self.active_connections:
+            self.loop.run_until_complete(connection.send_json(data.to_json()))

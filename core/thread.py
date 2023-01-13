@@ -18,7 +18,7 @@ class ThreadWithReturnValue(Thread):
         if kwargs is None:
             kwargs = {}
 
-        super().__init__(group, target, name, args, kwargs)
+        super().__init__(group, target, name, args, kwargs, daemon=True)
         self._return = None
         self._err: Optional[Exception] = None
 
