@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from fastapi import APIRouter, HTTPException
@@ -23,6 +24,8 @@ async def stop():
 @router.post("/generate")
 async def txt2img_job(job: Txt2ImgQueueEntry):
     "Generate images from text"
+
+    logging.debug(f"Job: {job}")
 
     if job.backend in ["PyTorch", "TensorRT"]:
         try:

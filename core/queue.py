@@ -8,7 +8,7 @@ from PIL.Image import Image
 from core.errors import DimensionError, ModelFailedError
 from core.model_handler import ModelHandler
 from core.thread import ThreadWithReturnValue
-from core.types import SupportedModel, Txt2ImgQueueEntry
+from core.types import Txt2ImgQueueEntry
 
 
 def thread_generate(model_handler: ModelHandler, job: Txt2ImgQueueEntry) -> List[Image]:
@@ -19,7 +19,7 @@ def thread_generate(model_handler: ModelHandler, job: Txt2ImgQueueEntry) -> List
 
 def thread_load_model(
     model_handler: ModelHandler,
-    model: SupportedModel,
+    model: str,
     backend: Literal["PyTorch", "TensorRT"],
     device: str,
 ) -> None:
@@ -32,13 +32,13 @@ class Queue:
     "A queue for handling jobs"
 
     def __init__(self) -> None:
-        self.jobs: List[Txt2ImgQueueEntry] = list()
+        self.jobs: List[Txt2ImgQueueEntry] = []
         self.running = False
         self.model_handler: ModelHandler = ModelHandler()
 
     async def load_model(
         self,
-        model: SupportedModel,
+        model: str,
         backend: Literal["PyTorch", "TensorRT"],
         device: str,
     ) -> None:

@@ -1,3 +1,4 @@
+import logging
 from typing import Literal
 
 import torch
@@ -18,11 +19,23 @@ async def list_loaded_models():
     loaded_models = {}
 
     for model in models:
-        loaded_models[model.value] = {
+        logging.debug(f"Model: {model}")
+        logging.debug(f"Backend: {models[model]}")
+        hl_model = models[model]
+
+        if isinstance(hl_model, PyTorchInferenceModel):
+            ll_model = hl_model.model
+            assert ll_model is not None
+        else:
+            ll_model = hl_model
+
+        scheduler = ll_model.scheduler  # type: ignore
+        logging.debug(f"Current scheduler: {type(scheduler).__name__}")
+        loaded_models[model] = {
             "backend": "PyTorch"
             if isinstance(models[model], PyTorchInferenceModel)
             else "TensorRT",
-            "current_scheduler": type(models[model].model.scheduler).__name__ if isinstance(model, PyTorchInferenceModel) else type(models[model].scheduler).__name__,  # type: ignore
+            "current_scheduler": type(scheduler).__name__,
             "device": models[model].device,
         }
 
@@ -38,7 +51,7 @@ async def list_avaliable_models():
 
 @router.post("/load")
 async def load_model(
-    model: SupportedModel, backend: Literal["PyTorch", "TensorRT"], device: str = "cuda"
+    model: str, backend: Literal["PyTorch", "TensorRT"], device: str = "cuda"
 ):
     "Loads a model into memory"
 
@@ -52,7 +65,7 @@ async def load_model(
 
 
 @router.post("/unload")
-async def unload_model(model: SupportedModel):
+async def unload_model(model: str):
     "Unloads a model from memory"
 
     queue.model_handler.unload(model)

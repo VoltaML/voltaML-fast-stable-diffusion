@@ -13,7 +13,7 @@ from core import shared
 from core.errors import AutoLoadDisabledError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
-from core.types import SupportedModel, Txt2ImgQueueEntry
+from core.types import Scheduler, Txt2ImgQueueEntry
 
 if TYPE_CHECKING:
     from core.inference.volta_accelerate import DemoDiffusion
@@ -26,24 +26,24 @@ class ModelHandler:
 
     def __init__(self) -> None:
         self.generated_models: Dict[
-            SupportedModel, Union["DemoDiffusion", PyTorchInferenceModel]
+            str, Union["DemoDiffusion", PyTorchInferenceModel]
         ] = {}
 
     def load_model(
         self,
-        model: SupportedModel,
+        model: str,
         backend: Literal["PyTorch", "TensorRT"],
         device: str = "cuda",
     ):
         "Load a model into memory"
 
         if model in self.generated_models:
-            logger.debug(f"{model.value} is already loaded")
+            logger.debug(f"{model} is already loaded")
             websocket_manager.broadcast_sync(
                 Notification(
                     "info",
                     "Model already loaded",
-                    f"{model.value} is already loaded with {'PyTorch' if isinstance(self.generated_models[model], PyTorchInferenceModel) else 'TensorRT'} backend",
+                    f"{model} is already loaded with {'PyTorch' if isinstance(self.generated_models[model], PyTorchInferenceModel) else 'TensorRT'} backend",
                 )
             )
             return
@@ -54,14 +54,14 @@ class ModelHandler:
                 Notification(
                     "info",
                     "TensorRT",
-                    f"Loading {model.value} into memory, this may take a while",
+                    f"Loading {model} into memory, this may take a while",
                 )
             )
 
             from core.inference.volta_accelerate import DemoDiffusion
 
             trt_model = DemoDiffusion(
-                model_path=model.value,
+                model_path=model,
                 denoising_steps=25,
                 denoising_fp16=True,
                 hf_token=os.environ["HUGGINGFACE_TOKEN"],
@@ -71,7 +71,7 @@ class ModelHandler:
             )
             logger.debug("Loading engines...")
             trt_model.loadEngines(
-                engine_dir="engine/" + model.value,
+                engine_dir="engine/" + model,
                 onnx_dir="onnx",
                 onnx_opset=16,
                 opt_batch_size=150,
@@ -89,14 +89,14 @@ class ModelHandler:
                 Notification(
                     "info",
                     "PyTorch",
-                    f"Loading {model.value} into memory, this may take a while",
+                    f"Loading {model} into memory, this may take a while",
                 )
             )
 
             start_time = time.time()
             pt_model = PyTorchInferenceModel(
-                model.value,
-                model.value,
+                model_id=model,
+                scheduler=Scheduler.euler_a,
                 device=device,
                 callback=pytorch_callback,
                 callback_steps=1,
@@ -109,7 +109,7 @@ class ModelHandler:
             Notification(
                 "success",
                 "Model loaded",
-                f"{model.value} loaded with {'PyTorch' if backend == 'PyTorch' else 'TensorRT'} backend",
+                f"{model} loaded with {'PyTorch' if backend == 'PyTorch' else 'TensorRT'} backend",
             )
         )
 
@@ -158,7 +158,7 @@ class ModelHandler:
         self.free_memory()
         return [images[0]]
 
-    def unload(self, model_type: SupportedModel):
+    def unload(self, model_type: str):
         "Unload a model from memory and free up GPU memory"
 
         if model_type in self.generated_models:

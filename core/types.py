@@ -54,7 +54,7 @@ class Txt2ImgQueueEntry:
     "Dataclass for a queue entry"
 
     data: Txt2imgData
-    model: SupportedModel
+    model: str
     scheduler: Scheduler
     backend: Literal["PyTorch", "TensorRT"]
     autoload: bool = field(default=False)
