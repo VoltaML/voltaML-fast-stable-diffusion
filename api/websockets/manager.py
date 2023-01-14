@@ -1,6 +1,7 @@
 import asyncio
 import logging
-from typing import List
+from asyncio import AbstractEventLoop
+from typing import Coroutine, List, Optional
 
 from fastapi import WebSocket
 
@@ -14,7 +15,18 @@ class WebSocketManager:
 
     def __init__(self):
         self.active_connections: List[WebSocket] = []
-        self.loop = asyncio.get_event_loop()
+        self.loop: Optional[AbstractEventLoop] = None
+        self.to_run: List[Coroutine] = []
+
+    async def sync_loop(self):
+        "Infinite loop that runs all coroutines in the to_run list"
+
+        while True:
+            for task in self.to_run:
+                await task
+                self.to_run.remove(task)
+
+            await asyncio.sleep(0.1)
 
     async def connect(self, websocket: WebSocket):
         "Accepts a new websocket connection and adds it to the list of active connections"
@@ -42,4 +54,4 @@ class WebSocketManager:
         "Broadcasts data message to all active websocket connections synchronously"
 
         for connection in self.active_connections:
-            self.loop.run_until_complete(connection.send_json(data.to_json()))
+            self.to_run.append(connection.send_json(data.to_json()))

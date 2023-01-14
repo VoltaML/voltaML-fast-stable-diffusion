@@ -1,3 +1,4 @@
+import asyncio
 import logging
 
 from fastapi import Depends, FastAPI, Request
@@ -7,6 +8,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from starlette import status
 
+from api import websocket_manager
 from api.routes import hardware, models, static, test, txt2img, ws
 
 
@@ -21,6 +23,13 @@ async def log_request(request: Request):
 app = FastAPI(
     docs_url="/api/docs", redoc_url="/api/redoc", dependencies=[Depends(log_request)]
 )
+
+
+@app.on_event("startup")
+async def startup_event():
+    "Run websocket sync loop"
+
+    asyncio.create_task(websocket_manager.sync_loop())
 
 
 @app.exception_handler(RequestValidationError)
