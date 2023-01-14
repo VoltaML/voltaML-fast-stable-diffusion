@@ -10,7 +10,7 @@ from discord import File
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
-from core.types import Scheduler, SupportedModel
+from core.types import KDiffusionScheduler, SupportedModel
 from core.utils import convert_base64_to_bytes
 
 if TYPE_CHECKING:
@@ -66,7 +66,7 @@ class Inference(Cog):
         aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
         seed: Optional[int] = None,
         backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
-        scheduler: Scheduler = Scheduler.euler_a,
+        scheduler: KDiffusionScheduler = KDiffusionScheduler.euler_a,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
     ):

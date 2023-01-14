@@ -1,4 +1,6 @@
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
+from typing import TYPE_CHECKING, Union
+
+from diffusers.pipelines.stable_diffusion import StableDiffusionKDiffusionPipeline
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 from diffusers.schedulers.scheduling_dpmsolver_multistep import (
     DPMSolverMultistepScheduler,
@@ -18,15 +20,23 @@ from diffusers.schedulers.scheduling_k_dpm_2_discrete import KDPM2DiscreteSchedu
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
 from diffusers.schedulers.scheduling_pndm import PNDMScheduler
 
-from core.types import Scheduler
-from typing import Union, TYPE_CHECKING
+from core.types import KDiffusionScheduler, Scheduler
 
 if TYPE_CHECKING:
     from core.inference.volta_accelerate import DemoDiffusion
 
-def change_scheduler(model: Union[StableDiffusionPipeline, "DemoDiffusion"], scheduler: Scheduler, config):
+
+def change_scheduler(
+    model: Union[StableDiffusionKDiffusionPipeline, "DemoDiffusion"],
+    scheduler: Union[Scheduler, KDiffusionScheduler],
+    config=None,
+):
     "Get the scheduler from the scheduler enum"
-    
+
+    if isinstance(model, StableDiffusionKDiffusionPipeline):
+        model.set_scheduler(scheduler.value)
+        return
+
     new_scheduler = None
 
     if scheduler == Scheduler.ddim:

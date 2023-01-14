@@ -4,14 +4,12 @@ import os
 from typing import Callable, List, Optional
 
 import torch
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipeline
+from diffusers.pipelines.stable_diffusion import StableDiffusionKDiffusionPipeline
 from PIL.Image import Image
 
 from core.config import config
 from core.schedulers import change_scheduler
-from core.types import Scheduler, Txt2imgData
-
-os.environ["DIFFUSERS_NO_ADVISORY_WARNINGS"] = "1"
+from core.types import KDiffusionScheduler, Txt2imgData
 
 
 class PyTorchInferenceModel:
@@ -20,7 +18,7 @@ class PyTorchInferenceModel:
     def __init__(
         self,
         model_id: str,
-        scheduler: Scheduler = Scheduler.euler_a,
+        scheduler: KDiffusionScheduler = KDiffusionScheduler.euler_a,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
         device: str = "cuda",
@@ -35,20 +33,18 @@ class PyTorchInferenceModel:
             Callable[[int, int, torch.FloatTensor], None]
         ] = callback
         self.callback_steps: int = callback_steps
-        self.model: Optional[StableDiffusionPipeline] = self.load()
-        change_scheduler(
-            model=self.model, scheduler=scheduler, config=self.model.scheduler.config  # type: ignore
-        )
+        self.model: Optional[StableDiffusionKDiffusionPipeline] = self.load()
+        change_scheduler(model=self.model, scheduler=scheduler)
 
-    def load(self) -> StableDiffusionPipeline:
+    def load(self) -> StableDiffusionKDiffusionPipeline:
         "Load the model from HuggingFace"
 
         logging.info(
             f"Loading {self.model_id_or_path} with {'f32' if self.use_f32 else 'f16'}"
         )
 
-        pipe = StableDiffusionPipeline.from_pretrained(
-            self.model_id_or_path,
+        pipe = StableDiffusionKDiffusionPipeline.from_pretrained(
+            pretrained_model_name_or_path=self.model_id_or_path,
             torch_dtype=torch.float16 if self.use_f32 else torch.float32,
             use_auth_token=self.auth,
             safety_checker=None,
@@ -56,8 +52,10 @@ class PyTorchInferenceModel:
             cache_dir=config.cache_dir,
         )
 
-        assert isinstance(pipe, StableDiffusionPipeline)
-        return pipe.to(self.device)
+        assert isinstance(pipe, StableDiffusionKDiffusionPipeline)
+        pipe = pipe.to(self.device)
+        pipe.set_scheduler("sample_euler_ancestral")
+        return pipe
 
     def unload(self) -> None:
         "Unload the model from memory"
@@ -68,7 +66,7 @@ class PyTorchInferenceModel:
         torch.cuda.ipc_collect()
         gc.collect()
 
-    def generate(self, job: Txt2imgData, scheduler: Scheduler) -> List[Image]:
+    def generate(self, job: Txt2imgData, scheduler: KDiffusionScheduler) -> List[Image]:
         "Generate an image from a prompt"
 
         if self.model is None:
@@ -76,9 +74,7 @@ class PyTorchInferenceModel:
 
         generator = torch.Generator("cuda").manual_seed(job.seed)
 
-        change_scheduler(
-            model=self.model, scheduler=scheduler, config=self.model.scheduler.config  # type: ignore
-        )
+        change_scheduler(model=self.model, scheduler=scheduler)
 
         data = self.model(
             prompt=job.prompt,
@@ -106,12 +102,6 @@ class PyTorchInferenceModel:
 
         self.model.enable_attention_slicing()
         logging.info("Optimization: Enabled attention slicing")
-
-        try:
-            self.model.enable_vae_slicing()
-            logging.info("Optimization: Enabled VAE slicing")
-        except AttributeError:
-            logging.info("Optimization: VAE slicing not available")
 
         if enable_cpu_offload:
             try:

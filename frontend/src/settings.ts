@@ -1,3 +1,30 @@
+export enum Sampler {
+  EULER_A = "Euler A",
+  EULER = "Euler",
+  DDIM = "DDIM",
+  HEUN = "Heun",
+  DPMDISCRETE = "DPM Discrete",
+  DPM_A = "DPM A",
+  LMS = "LMS",
+  PNDM = "PNDM",
+  DPMPP_SDE_A = "DPMPP SDE A",
+  DPMPP_2M = "DPMPP 2M",
+}
+
+export enum KDiffusionSampler {
+  EULER_A = "sample_euler_ancestral",
+  EULER = "sample_euler",
+  LMS = "sample_lms",
+  HEUN = "sample_heun",
+  DPM2 = "sample_dpm_2",
+  DPM2_A = "sample_dpm_2_ancestral",
+  DPMPP_2S_A = "sample_dpmpp_2s_ancestral",
+  DPMPP_2M = "sample_dpmpp_2m",
+  DPMPP_SDE = "sample_dpmpp_sde",
+  DPM_FAST = "sample_dpm_fast",
+  DPM_ADAPTIVE = "sample_dpm_adaptive",
+}
+
 export interface SettingsInterface {
   $schema: string;
   backend: "PyTorch" | "TensorRT";
@@ -6,17 +33,7 @@ export interface SettingsInterface {
     height: number;
     seed: number;
     cfgScale: number;
-    sampler:
-      | "Euler A"
-      | "Euler"
-      | "DDIM"
-      | "Heun"
-      | "DPM Dicsrete"
-      | "DPM A"
-      | "LMS"
-      | "PNDM"
-      | "DPMPP SDE A"
-      | "DPMPP 2M";
+    sampler: Sampler | KDiffusionSampler;
     prompt: string;
     negativePrompt: string;
     steps: number;
@@ -32,7 +49,7 @@ const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: "Euler A",
+    sampler: KDiffusionSampler.EULER,
     prompt: "",
     steps: 50,
     batchCount: 1,

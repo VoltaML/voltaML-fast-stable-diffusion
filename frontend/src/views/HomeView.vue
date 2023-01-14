@@ -1,7 +1,6 @@
 <template>
   <div class="main-container">
     <!-- Main -->
-
     <NGrid cols="2" x-gap="12">
       <NGi>
         <NSpace vertical class="left-container">
@@ -20,6 +19,7 @@
               <NRadioGroup
                 v-model:value="conf.data.settings.backend"
                 name="backend-selection"
+                :on-update-value="resetScheduler"
               >
                 <NRadioButton
                   v-for="backend in [
@@ -66,18 +66,7 @@
             </NTooltip>
 
             <NSelect
-              :options="[
-                { label: 'Euler A', value: 'Euler A' },
-                { label: 'Euler', value: 'Euler' },
-                { label: 'DDIM', value: 'DDIM' },
-                { label: 'Heun', value: 'Heun' },
-                { label: 'DPM Dicsrete', value: 'DPM Dicsrete' },
-                { label: 'DPM A', value: 'DPM A' },
-                { label: 'LMS', value: 'LMS' },
-                { label: 'PNDM', value: 'PNDM' },
-                { label: 'DPMPP SDE A', value: 'DPMPP SDE A' },
-                { label: 'DPMPP 2M', value: 'DPMPP 2M' },
-              ]"
+              :options="conf.scheduler_options"
               v-model:value="conf.data.settings.txt2img.sampler"
               style="flex-grow: 1"
             />
@@ -272,11 +261,22 @@ import {
   NTooltip,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
+import { KDiffusionSampler, Sampler } from "../settings";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
 const conf = useSettings();
+
+function resetScheduler(value: string) {
+  // Reset scheduler when choosing different backend
+
+  if (value === "PyTorch") {
+    conf.data.settings.txt2img.sampler = KDiffusionSampler.EULER_A;
+  } else {
+    conf.data.settings.txt2img.sampler = Sampler.EULER_A;
+  }
+}
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed

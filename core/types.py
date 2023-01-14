@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Literal
+from typing import Literal, Union
 from uuid import uuid4
 
 
@@ -17,6 +17,22 @@ class Scheduler(Enum):
     euler = "Euler"
     dpmpp_sde_ancestral = "DPMPP SDE A"
     dpmpp_2m = "DPMPP 2M"
+
+
+class KDiffusionScheduler(Enum):
+    "Enum of schedulers supported by the API"
+
+    euler_a = "sample_euler_ancestral"
+    euler = "sample_euler"
+    lms = "sample_lms"
+    heun = "sample_heun"
+    dpm2 = "sample_dpm_2"
+    dpm2_a = "sample_dpm_2_ancestral"
+    dpmpp_2s_a = "sample_dpmpp_2s_ancestral"
+    dpmpp_2m = "sample_dpmpp_2m"
+    dpmpp_sde = "sample_dpmpp_sde"
+    dpm_fast = "sample_dpm_fast"
+    dpm_adaptive = "sample_dpm_adaptive"
 
 
 @dataclass
@@ -55,6 +71,6 @@ class Txt2ImgQueueEntry:
 
     data: Txt2imgData
     model: str
-    scheduler: Scheduler
+    scheduler: Union[Scheduler, KDiffusionScheduler]
     backend: Literal["PyTorch", "TensorRT"]
     autoload: bool = field(default=False)

@@ -13,7 +13,7 @@ from core import shared
 from core.errors import AutoLoadDisabledError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
-from core.types import Scheduler, Txt2ImgQueueEntry
+from core.types import KDiffusionScheduler, Scheduler, Txt2ImgQueueEntry
 
 if TYPE_CHECKING:
     from core.inference.volta_accelerate import DemoDiffusion
@@ -96,7 +96,7 @@ class ModelHandler:
             start_time = time.time()
             pt_model = PyTorchInferenceModel(
                 model_id=model,
-                scheduler=Scheduler.euler_a,
+                scheduler=KDiffusionScheduler.euler_a,
                 device=device,
                 callback=pytorch_callback,
                 callback_steps=1,
@@ -137,12 +137,18 @@ class ModelHandler:
 
         if isinstance(model, PyTorchInferenceModel):
             logger.debug("Generating with PyTorch")
-            data = model.generate(job.data, scheduler=job.scheduler)
+            scheduler = job.scheduler
+            assert isinstance(scheduler, KDiffusionScheduler)
+            data = model.generate(job.data, scheduler=scheduler)
             self.free_memory()
             return data
 
         logger.debug("Generating with TensorRT")
         images: List[Image]
+
+        scheduler = job.scheduler
+        assert isinstance(scheduler, Scheduler)
+
         _, images = model.infer(
             [job.data.prompt],
             [job.data.negative_prompt],
@@ -153,7 +159,7 @@ class ModelHandler:
             seed=job.data.seed,
             output_dir="output",
             num_of_infer_steps=job.data.steps,
-            scheduler=job.scheduler,
+            scheduler=scheduler,
         )
         self.free_memory()
         return [images[0]]
