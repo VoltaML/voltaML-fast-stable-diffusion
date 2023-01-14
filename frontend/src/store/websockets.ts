@@ -4,13 +4,13 @@ import {
   type WebSocketMessage,
 } from "@/websockets/websockets";
 import { useWebSocket } from "@vueuse/core";
-import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
+import { useNotification } from "naive-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useState } from "../store/state";
 
 export const useWebsocket = defineStore("websocket", () => {
-  let useNotification: NotificationApiInjection | null = null;
+  const notificationProvider = useNotification();
   const global = useState();
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     autoReconnect: false,
@@ -24,11 +24,7 @@ export const useWebsocket = defineStore("websocket", () => {
         return;
       }
       const data = JSON.parse(event.data) as WebSocketMessage;
-      if (useNotification === null) {
-        console.error("Notification handler not injected");
-        return;
-      }
-      processWebSocket(data, global);
+      processWebSocket(data, global, notificationProvider);
     },
   });
 
@@ -41,12 +37,6 @@ export const useWebsocket = defineStore("websocket", () => {
       case "OPEN":
         return "Connected";
     }
-  }
-
-  function injectNotificationHanler(
-    notification_effect: NotificationApiInjection
-  ) {
-    useNotification = notification_effect;
   }
 
   function get_color() {
@@ -71,7 +61,6 @@ export const useWebsocket = defineStore("websocket", () => {
     loading,
     text,
     ws_open: websocket.open,
-    injectNotificationHanler,
     color,
   };
 });

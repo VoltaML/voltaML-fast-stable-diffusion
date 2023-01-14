@@ -6,7 +6,17 @@ export interface SettingsInterface {
     height: number;
     seed: number;
     cfgScale: number;
-    sampler: "k_euler_a" | "ddim" | "dpm" | "lms";
+    sampler:
+      | "Euler A"
+      | "Euler"
+      | "DDIM"
+      | "Heun"
+      | "DPM Dicsrete"
+      | "DPM A"
+      | "LMS"
+      | "PNDM"
+      | "DPMPP SDE A"
+      | "DPMPP 2M";
     prompt: string;
     negativePrompt: string;
     steps: number;
@@ -22,7 +32,7 @@ const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: "k_euler_a",
+    sampler: "Euler A",
     prompt: "",
     steps: 50,
     batchCount: 1,

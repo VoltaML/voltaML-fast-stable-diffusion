@@ -1,13 +1,11 @@
 <template>
   <NConfigProvider :theme="darkTheme" :theme-overrides="themeOverrides">
     <NNotificationProvider placement="bottom-right">
-      <WebSocketHandler>
-        <NMessageProvider>
-          <CollapsileNavbarVue />
-          <TopBarVue />
-          <routerContainerVue />
-        </NMessageProvider>
-      </WebSocketHandler>
+      <NMessageProvider>
+        <CollapsileNavbarVue />
+        <TopBarVue />
+        <routerContainerVue />
+      </NMessageProvider>
     </NNotificationProvider>
   </NConfigProvider>
 </template>
@@ -23,7 +21,6 @@ import {
 import CollapsileNavbarVue from "./components/CollapsileNavbar.vue";
 import TopBarVue from "./components/TopBar.vue";
 import routerContainerVue from "./router/router-container.vue";
-import WebSocketHandler from "./websockets/WebSocketHandler.vue";
 
 const themeOverrides: GlobalThemeOverrides = {};
 </script>

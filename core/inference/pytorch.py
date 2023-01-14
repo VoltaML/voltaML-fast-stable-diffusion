@@ -20,7 +20,7 @@ class PyTorchInferenceModel:
     def __init__(
         self,
         model_id: str,
-        scheduler: Scheduler = Scheduler.default,
+        scheduler: Scheduler = Scheduler.euler_a,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
         device: str = "cuda",

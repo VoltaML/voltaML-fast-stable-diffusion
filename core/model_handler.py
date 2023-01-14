@@ -1,4 +1,5 @@
 import gc
+import logging
 import os
 import time
 from typing import TYPE_CHECKING, Dict, List, Literal, Union
@@ -6,6 +7,8 @@ from typing import TYPE_CHECKING, Dict, List, Literal, Union
 import torch
 from PIL.Image import Image
 
+from api import websocket_manager
+from api.websockets import Notification
 from core import shared
 from core.errors import AutoLoadDisabledError
 from core.functions import pytorch_callback
@@ -33,11 +36,25 @@ class ModelHandler:
         "Load a model into memory"
 
         if model in self.generated_models:
+            logging.debug(f"{model.value} is already loaded")
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "info",
+                    "Model already loaded",
+                    f"{model.value} is already loaded with {'PyTorch' if isinstance(self.generated_models[model], PyTorchInferenceModel) else 'TensorRT'} backend",
+                )
+            )
             return
 
         if backend == "TensorRT":
-            print("Selecting TRT")
-            print("Creating...")
+
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "info",
+                    "TensorRT",
+                    f"Loading {model.value} into memory, this may take a while",
+                )
+            )
 
             from core.inference.volta_accelerate import DemoDiffusion
 
@@ -50,7 +67,7 @@ class ModelHandler:
                 nvtx_profile=False,
                 max_batch_size=16,
             )
-            print("Loading engines...")
+            logging.debug("Loading engines...")
             trt_model.loadEngines(
                 engine_dir="engine/" + model.value,
                 onnx_dir="onnx",
@@ -59,12 +76,21 @@ class ModelHandler:
                 opt_image_height=512,
                 opt_image_width=512,
             )
-            print("Loading modules")
+            logging.debug("Loading modules")
             trt_model.loadModules()
             self.generated_models[model] = trt_model
-            print("Loading done")
+            logging.debug("Loading done")
         else:
-            print("Selecting PyTorch")
+            logging.debug("Selecting PyTorch")
+
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "info",
+                    "PyTorch",
+                    f"Loading {model.value} into memory, this may take a while",
+                )
+            )
+
             start_time = time.time()
             pt_model = PyTorchInferenceModel(
                 model.value,
@@ -75,7 +101,15 @@ class ModelHandler:
             )
             pt_model.optimize()
             self.generated_models[model] = pt_model
-            print(f"Finished loading in {time.time() - start_time:.2f}s")
+            logging.info(f"Finished loading in {time.time() - start_time:.2f}s")
+
+        websocket_manager.broadcast_sync(
+            Notification(
+                "success",
+                "Model loaded",
+                f"{model.value} loaded with {'PyTorch' if backend == 'PyTorch' else 'TensorRT'} backend",
+            )
+        )
 
     def generate(self, job: Txt2ImgQueueEntry) -> List[Image]:
         "Generate an image(s) from a prompt"

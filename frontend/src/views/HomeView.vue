@@ -47,10 +47,10 @@
           />
 
           <!-- Sampler -->
-          <NSpace>
+          <div class="flex-container">
             <NTooltip :max-width="600">
               <template #trigger>
-                <p>Sampler</p>
+                <p style="margin-right: 12px">Sampler</p>
               </template>
               The sampler is the method used to generate the image. Your result
               may vary drastically depending on the sampler you choose.
@@ -64,25 +64,24 @@
                 >Learn more</a
               >
             </NTooltip>
-            <NSpace align="center" style="height: 100%">
-              <NRadioGroup
-                v-model:value="conf.data.settings.txt2img.sampler"
-                name="sampler-radio-group"
-              >
-                <NRadioButton
-                  v-for="sampler in [
-                    { label: 'Euler A', value: 'k_euler_a' },
-                    { label: 'DDIM', value: 'ddim' },
-                    { label: 'DPM', value: 'dpm' },
-                    { label: 'LMS', value: 'lms' },
-                  ]"
-                  :key="sampler.value"
-                  :value="sampler.value"
-                  :label="sampler.label"
-                />
-              </NRadioGroup>
-            </NSpace>
-          </NSpace>
+
+            <NSelect
+              :options="[
+                { label: 'Euler A', value: 'Euler A' },
+                { label: 'Euler', value: 'Euler' },
+                { label: 'DDIM', value: 'DDIM' },
+                { label: 'Heun', value: 'Heun' },
+                { label: 'DPM Dicsrete', value: 'DPM Dicsrete' },
+                { label: 'DPM A', value: 'DPM A' },
+                { label: 'LMS', value: 'LMS' },
+                { label: 'PNDM', value: 'PNDM' },
+                { label: 'DPMPP SDE A', value: 'DPMPP SDE A' },
+                { label: 'DPMPP 2M', value: 'DPMPP 2M' },
+              ]"
+              v-model:value="conf.data.settings.txt2img.sampler"
+              style="flex-grow: 1"
+            />
+          </div>
 
           <!-- Dimensions -->
           <div class="flex-container">
@@ -97,7 +96,7 @@
             <NInputNumber
               v-model:value="conf.data.settings.txt2img.width"
               size="small"
-              style="width: 128px"
+              style="min-width: 96px; width: 96px"
             />
           </div>
           <div class="flex-container">
@@ -112,7 +111,7 @@
             <NInputNumber
               v-model:value="conf.data.settings.txt2img.height"
               size="small"
-              style="width: 128px"
+              style="min-width: 96px; width: 96px"
             />
           </div>
 
@@ -139,7 +138,7 @@
             <NInputNumber
               v-model:value="conf.data.settings.txt2img.steps"
               size="small"
-              style="width: 128px"
+              style="min-width: 96px; width: 96px"
               :min="5"
               :max="300"
             />
@@ -167,7 +166,7 @@
             <NInputNumber
               v-model:value="conf.data.settings.txt2img.cfgScale"
               size="small"
-              style="width: 128px"
+              style="min-width: 96px; width: 96px"
               :min="1"
               :max="30"
               :step="0.5"
@@ -191,7 +190,7 @@
             <NInputNumber
               v-model:value="conf.data.settings.txt2img.batchCount"
               size="small"
-              style="width: 128px"
+              style="min-width: 96px; width: 96px"
               :min="1"
               :max="9"
             />
@@ -213,7 +212,7 @@
               size="small"
               :min="-1"
               :max="999999999"
-              style="width: 100%"
+              style="min-width: 96px; width: 96px"
             />
           </div>
 
@@ -222,7 +221,7 @@
             <NButton
               type="success"
               @click="generate"
-              :disabled="!global.state.generating"
+              :disabled="global.state.generating"
               >Generate</NButton
             >
           </NSpace>
@@ -237,7 +236,9 @@
           <NImage
             v-if="global.state.txt2img.currentImage"
             :src="`data:image/png;base64,${global.state.txt2img.currentImage}`"
-            :img-props="{ style: 'max-width: 100%; max-height: 100%' }"
+            :img-props="{
+              style: 'max-width: 100%; max-height: 70vh; object-fit: contain;',
+            }"
           />
         </NSpace>
       </NGi>
@@ -256,10 +257,12 @@ import {
   NInputNumber,
   NRadioButton,
   NRadioGroup,
+  NSelect,
   NSlider,
   NSpace,
   NTooltip,
 } from "naive-ui";
+import { v4 as uuidv4 } from "uuid";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
@@ -284,7 +287,7 @@ const generate = () => {
     },
     body: JSON.stringify({
       data: {
-        id: "420",
+        id: uuidv4(),
         prompt: conf.data.settings.txt2img.prompt,
         negative_prompt: conf.data.settings.txt2img.negativePrompt,
         width: conf.data.settings.txt2img.width,

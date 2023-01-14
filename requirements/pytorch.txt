@@ -13,3 +13,4 @@ OmegaConf
 accelerate
 torch==1.13.0+cu116
 torchvision
+pynvml

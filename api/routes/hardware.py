@@ -1,36 +1,52 @@
 import torch
-from fastapi import APIRouter
+from fastapi import APIRouter, HTTPException
+from pynvml import nvml, smi
 from torch._C import _CudaDeviceProperties
 
 router = APIRouter(tags=["hardware"])
 
-
-@router.get("/stats")
-async def free_memory():
-    "Returns a dictionary containing memory statistics for current session"
-
-    return torch.cuda.memory_stats()
+nvsmi = smi.nvidia_smi.getInstance()
+assert nvsmi is not None
 
 
-@router.get("/memory_summary")
-async def memory_summary():
-    "Returns a string containing a summary of memory usage, including number of allocated and cached tensors and their sizes"
+@router.get("/driver")
+async def driver():
+    "Return the version of the NVIDIA driver"
 
-    return torch.cuda.memory_summary()
-
-
-@router.get("/memory_allocated")
-async def memory_allocated():
-    "Returns the total amount of memory currently allocated in gigabytes"
-
-    return torch.cuda.memory_allocated() / 1024**3
+    return nvml.nvmlSystemGetDriverVersion()
 
 
-@router.get("/memory_reserved")
-async def memory_reserved():
-    "Returns the total amount of memory currently reserved in gigabytes"
+@router.get("/gpu_ids")
+async def gpu_ids() -> list[int]:
+    "List all available GPUs"
 
-    return torch.cuda.memory_reserved() / 1024**3
+    return list(range(torch.cuda.device_count()))
+
+
+@router.get("/gpu_name/{gpu_id}")
+async def gpu(gpu_id: int) -> str:
+    "Return the name of the GPU"
+
+    return torch.cuda.get_device_name(gpu_id)
+
+
+@router.get("/gpu_memory/{gpu_id}")
+async def gpu_memory(gpu_id: int):
+    "Return the memory statistics of the GPU"
+
+    data = nvsmi.DeviceQuery("memory.free, memory.total")["gpu"]
+    try:
+        data = data[gpu_id]
+        data = data["fb_memory_usage"]
+        total = data["total"]
+        free = data["free"]
+        unit = data["unit"]
+
+        return (total, free, unit)
+    except IndexError:
+        raise HTTPException(  # pylint: disable=raise-missing-from
+            status_code=400, detail="GPU not found"
+        )
 
 
 @router.get("/gpus")

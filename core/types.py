@@ -17,7 +17,6 @@ class Scheduler(Enum):
     euler = "Euler"
     dpmpp_sde_ancestral = "DPMPP SDE A"
     dpmpp_2m = "DPMPP 2M"
-    default = "Default"
 
 
 @dataclass
