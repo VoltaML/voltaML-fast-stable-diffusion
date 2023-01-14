@@ -212,7 +212,7 @@
               size="small"
               :min="-1"
               :max="999999999"
-              style="min-width: 96px; width: 96px"
+              style="flex-grow: 1"
             />
           </div>
 
@@ -222,6 +222,7 @@
               type="success"
               @click="generate"
               :disabled="global.state.generating"
+              :loading="global.state.generating"
               >Generate</NButton
             >
           </NSpace>
@@ -232,15 +233,23 @@
 
       <!-- Images -->
       <NGi>
-        <NSpace justify="center">
+        <div
+          style="
+            height: 100%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+          "
+        >
           <NImage
             v-if="global.state.txt2img.currentImage"
             :src="`data:image/png;base64,${global.state.txt2img.currentImage}`"
             :img-props="{
-              style: 'max-width: 100%; max-height: 70vh; object-fit: contain;',
+              style:
+                'max-width: 100%; max-height: 70vh; object-fit: contain; width: 100%; height: 100%;',
             }"
           />
-        </NSpace>
+        </div>
       </NGi>
     </NGrid>
   </div>
@@ -299,7 +308,7 @@ const generate = () => {
         batch_count: conf.data.settings.txt2img.batchCount,
       },
       model: "Linaqruf/anything-v3.0",
-      scheduler: "Euler A",
+      scheduler: conf.data.settings.txt2img.sampler,
       backend: "PyTorch",
       autoload: false,
     }),
@@ -309,6 +318,8 @@ const generate = () => {
       res.json().then((data) => {
         global.state.txt2img.currentImage = data.images[0];
         global.state.progress = 0;
+        global.state.total_steps = 0;
+        global.state.current_step = 0;
       });
     })
     .catch((err) => {

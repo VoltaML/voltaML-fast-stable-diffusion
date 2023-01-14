@@ -8,8 +8,10 @@
         indicator-placement="outside"
         :processing="global.state.progress < 100 && global.state.progress > 0"
         color="#63e2b7"
-        :show-indicator="false"
-      />
+        :show-indicator="true"
+      >
+        {{ global.state.current_step }} / {{ global.state.total_steps }}
+      </NProgress>
     </div>
     <NSpace inline justify="end" align="center">
       <NButton

@@ -8,6 +8,8 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
+  current_step: number;
+  total_steps: number;
 }
 
 export const useState = defineStore("state", () => {
@@ -18,6 +20,8 @@ export const useState = defineStore("state", () => {
       images: [],
       currentImage: "",
     },
+    current_step: 0,
+    total_steps: 0,
   });
   return { state };
 });

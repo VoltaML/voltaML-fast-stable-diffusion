@@ -47,6 +47,8 @@ export function processWebSocket(
       console.log(message.data);
       global.state.txt2img.currentImage = message.data.image;
       global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
+      global.state.total_steps = message.data.total_steps;
       break;
     }
     case "notification": {

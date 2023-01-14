@@ -13,7 +13,7 @@ from api.routes import hardware, models, static, test, txt2img, ws
 async def log_request(request: Request):
     "Log all requests"
 
-    logging.info(
+    logging.debug(
         f"url: {request.url}, params: {request.query_params}, body: {await request.body()}"
     )
 

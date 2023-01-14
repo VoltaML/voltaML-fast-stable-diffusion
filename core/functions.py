@@ -30,6 +30,8 @@ def pytorch_callback(step: int, _: int, image_tensor: torch.FloatTensor):
             data={
                 "progress": int((step / shared.current_steps) * 100),
                 "image": convert_image_to_base64(image),
+                "current_step": step,
+                "total_steps": shared.current_steps,
             },
         )
     )
