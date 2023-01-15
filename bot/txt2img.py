@@ -69,6 +69,7 @@ class Inference(Cog):
         scheduler: KDiffusionScheduler = KDiffusionScheduler.euler_a,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
+        use_karras_sigmas: bool = True,
     ):
         "Generate an image from prompt"
 
@@ -116,6 +117,7 @@ class Inference(Cog):
             "model": model.value,
             "scheduler": scheduler.value,
             "backend": backend,
+            "use_karras_sigmas": use_karras_sigmas,
         }
 
         message = await ctx.send(

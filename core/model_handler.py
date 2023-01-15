@@ -139,7 +139,9 @@ class ModelHandler:
             logger.debug("Generating with PyTorch")
             scheduler = job.scheduler
             assert isinstance(scheduler, KDiffusionScheduler)
-            data = model.generate(job.data, scheduler=scheduler)
+            data = model.generate(
+                job.data, scheduler=scheduler, use_karras_sigmas=job.use_karras_sigmas
+            )
             self.free_memory()
             return data
 

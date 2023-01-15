@@ -1,13 +1,13 @@
 import gc
 import logging
 import os
-from typing import Callable, List, Optional
+from typing import Callable, Dict, List, Optional
 
 import torch
-from diffusers.pipelines.stable_diffusion import StableDiffusionKDiffusionPipeline
 from PIL.Image import Image
 
 from core.config import config
+from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 from core.schedulers import change_scheduler
 from core.types import KDiffusionScheduler, Txt2imgData
 
@@ -22,16 +22,14 @@ class PyTorchInferenceModel:
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
         device: str = "cuda",
-        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
+        callback: Optional[Callable[[Dict], None]] = None,
         callback_steps: int = 10,
     ) -> None:
         self.use_f32: bool = use_f32
         self.auth: str = auth_token
         self.model_id_or_path: str = model_id
         self.device: str = device
-        self.callback: Optional[
-            Callable[[int, int, torch.FloatTensor], None]
-        ] = callback
+        self.callback: Optional[Callable[[Dict], None]] = callback
         self.callback_steps: int = callback_steps
         self.model: Optional[StableDiffusionKDiffusionPipeline] = self.load()
         change_scheduler(model=self.model, scheduler=scheduler)
@@ -49,6 +47,7 @@ class PyTorchInferenceModel:
             use_auth_token=self.auth,
             safety_checker=None,
             requires_safety_checker=False,
+            feature_extractor=None,
             cache_dir=config.cache_dir,
         )
 
@@ -66,7 +65,12 @@ class PyTorchInferenceModel:
         torch.cuda.ipc_collect()
         gc.collect()
 
-    def generate(self, job: Txt2imgData, scheduler: KDiffusionScheduler) -> List[Image]:
+    def generate(
+        self,
+        job: Txt2imgData,
+        scheduler: KDiffusionScheduler,
+        use_karras_sigmas: bool = True,
+    ) -> List[Image]:
         "Generate an image from a prompt"
 
         if self.model is None:
@@ -88,6 +92,7 @@ class PyTorchInferenceModel:
             return_dict=False,
             callback=self.callback,
             callback_steps=self.callback_steps,
+            use_karras_sigmas=use_karras_sigmas,
         )
 
         images: list[Image] = data[0]

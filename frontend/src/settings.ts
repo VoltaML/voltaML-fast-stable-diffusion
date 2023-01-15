@@ -28,6 +28,7 @@ export enum KDiffusionSampler {
 export interface SettingsInterface {
   $schema: string;
   backend: "PyTorch" | "TensorRT";
+  useKarrasSigmas: 1 | 0;
   txt2img: {
     width: number;
     height: number;
@@ -44,6 +45,7 @@ export interface SettingsInterface {
 const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_settings.json",
   backend: "PyTorch",
+  useKarrasSigmas: 1,
   txt2img: {
     width: 512,
     height: 512,
@@ -51,7 +53,7 @@ const defaultSettings: SettingsInterface = {
     cfgScale: 7,
     sampler: KDiffusionSampler.EULER,
     prompt: "",
-    steps: 50,
+    steps: 25,
     batchCount: 1,
     negativePrompt:
       "lowres, bad anatomy, bad hands, text, error, missing fingers, cropped, jpeg artifacts, worst quality, low quality, signature, watermark, blurry, deformed, extra ears, disfigured, mutation, censored, fused legs, bad legs, bad hands, missing fingers, extra digit, fewer digits, normal quality, username, artist name",

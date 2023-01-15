@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Union
 
-from diffusers.pipelines.stable_diffusion import StableDiffusionKDiffusionPipeline
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 from diffusers.schedulers.scheduling_dpmsolver_multistep import (
     DPMSolverMultistepScheduler,
@@ -20,6 +19,7 @@ from diffusers.schedulers.scheduling_k_dpm_2_discrete import KDPM2DiscreteSchedu
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
 from diffusers.schedulers.scheduling_pndm import PNDMScheduler
 
+from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 from core.types import KDiffusionScheduler, Scheduler
 
 if TYPE_CHECKING:

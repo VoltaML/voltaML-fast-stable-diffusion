@@ -1,12 +1,19 @@
+import logging
+
 import torch
 
 from api import websocket_manager
 from api.websockets.data import Data
 from core import shared
 
+logger = logging.getLogger(__name__)
 
-def pytorch_callback(step: int, _timestep: int, _tensor: torch.FloatTensor):
+
+def pytorch_callback(data: dict):
     "Send a websocket message to the client with the progress percentage and partial image"
+
+    _x: torch.Tensor = data["x"]
+    step = int(data["i"]) + 1
 
     websocket_manager.broadcast_sync(
         data=Data(

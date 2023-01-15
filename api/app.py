@@ -10,6 +10,7 @@ from starlette import status
 
 from api import websocket_manager
 from api.routes import hardware, models, static, test, txt2img, ws
+from core import shared
 
 
 async def log_request(request: Request):
@@ -27,8 +28,9 @@ app = FastAPI(
 
 @app.on_event("startup")
 async def startup_event():
-    "Run websocket sync loop"
+    "Prepare the event loop for other asynchronous tasks"
 
+    shared.asyncio_loop = asyncio.get_event_loop()
     asyncio.create_task(websocket_manager.sync_loop())
 
 

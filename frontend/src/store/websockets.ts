@@ -13,7 +13,9 @@ export const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
   const global = useState();
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
-    autoReconnect: false,
+    autoReconnect: {
+      delay: 3000,
+    },
     heartbeat: {
       message: "ping",
       interval: 30000,

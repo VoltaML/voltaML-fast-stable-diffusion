@@ -1,7 +1,7 @@
 <template>
   <div class="main-container">
     <!-- Main -->
-    <NGrid cols="2" x-gap="12">
+    <NGrid cols="1 850:2" x-gap="12">
       <NGi>
         <NSpace vertical class="left-container">
           <!-- Backend selection -->
@@ -68,6 +68,25 @@
             <NSelect
               :options="conf.scheduler_options"
               v-model:value="conf.data.settings.txt2img.sampler"
+              style="flex-grow: 1"
+            />
+
+            <div style="width: 32px"></div>
+
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p style="margin-right: 12px">Karras sigmas</p>
+              </template>
+              If Karras sigmas should be used. Same as using ...Karras sampler
+              in A111
+            </NTooltip>
+
+            <NSelect
+              :options="[
+                { label: 'No', value: 0 },
+                { label: 'Yes', value: 1 },
+              ]"
+              v-model:value="conf.data.settings.useKarrasSigmas"
               style="flex-grow: 1"
             />
           </div>
@@ -206,7 +225,7 @@
           </div>
 
           <!-- Generate button -->
-          <NSpace justify="center">
+          <NSpace justify="center" style="padding-bottom: 64px">
             <NButton
               type="success"
               @click="generate"
@@ -311,6 +330,8 @@ const generate = () => {
       scheduler: conf.data.settings.txt2img.sampler,
       backend: "PyTorch",
       autoload: false,
+      use_karras_sigmas:
+        conf.data.settings.useKarrasSigmas === 1 ? true : false,
     }),
   })
     .then((res) => {

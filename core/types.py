@@ -73,4 +73,5 @@ class Txt2ImgQueueEntry:
     model: str
     scheduler: Union[Scheduler, KDiffusionScheduler]
     backend: Literal["PyTorch", "TensorRT"]
+    use_karras_sigmas: bool = field(default=True)
     autoload: bool = field(default=False)
