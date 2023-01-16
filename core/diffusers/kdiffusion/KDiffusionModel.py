@@ -14,8 +14,10 @@
 
 import importlib
 import logging
+import random
 from typing import Callable, Dict, List, Optional, Union
 
+import k_diffusion.sampling
 import torch
 from diffusers.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
@@ -23,6 +25,8 @@ from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
 from diffusers.utils import is_accelerate_available, logging
 from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 from k_diffusion.sampling import get_sigmas_karras
+
+from core.hijack.torch_hijack import TorchHijack
 
 logger = logging.get_logger(__name__)
 
@@ -88,6 +92,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         safety_checker,
         feature_extractor,
         requires_safety_checker: bool = True,
+        sampler_noises=None,
     ):
         super().__init__()
 
@@ -111,6 +116,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         )
         self.register_to_config(requires_safety_checker=requires_safety_checker)
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
+        self.sampler_noises = sampler_noises
 
         model = ModelWrapper(unet, scheduler.alphas_cumprod)
         if scheduler.prediction_type == "v_prediction":
@@ -391,6 +397,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         callback: Optional[Callable[[Dict], None]] = None,
         callback_steps: Optional[int] = 1,
         use_karras_sigmas: bool = True,
+        seed: Optional[int] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -446,6 +453,12 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
+        # Apply torch seed
+        if seed:
+            torch.manual_seed(seed)
+        else:
+            torch.manual_seed(random.randint(0, 100000000))
+
         # 0. Default height and width to unet
         height = height or self.unet.config.sample_size * self.vae_scale_factor
         width = width or self.unet.config.sample_size * self.vae_scale_factor

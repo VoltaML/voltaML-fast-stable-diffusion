@@ -89,6 +89,7 @@ class PyTorchInferenceModel:
             negative_prompt=job.negative_prompt,
             output_type="pil",
             generator=generator,
+            seed=job.seed,
             return_dict=False,
             callback=self.callback,
             callback_steps=self.callback_steps,
