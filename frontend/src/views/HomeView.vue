@@ -253,9 +253,10 @@
             v-if="global.state.txt2img.currentImage"
             :src="`data:image/png;base64,${global.state.txt2img.currentImage}`"
             :img-props="{
-              style:
-                'max-width: 100%; max-height: 70vh; object-fit: contain; width: 100%; height: 100%;',
+              style: 'max-width: 100%; max-height: 70vh; width: 100%',
             }"
+            style="max-width: 100%; max-height: 70vh; width: 100%; height: 100%"
+            object-fit="contain"
           />
         </div>
       </NGi>

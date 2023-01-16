@@ -51,7 +51,7 @@ const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: KDiffusionSampler.EULER,
+    sampler: KDiffusionSampler.EULER_A,
     prompt: "",
     steps: 25,
     batchCount: 1,
