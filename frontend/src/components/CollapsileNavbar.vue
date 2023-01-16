@@ -65,7 +65,12 @@ const menuOptionsMain: MenuOption[] = [
     icon: renderIcon(Warning),
   },
   {
-    label: () => h(RouterLink, { to: "/about" }, { default: () => "About" }),
+    label: () =>
+      h(
+        RouterLink,
+        { to: "https://stax124.github.io/voltaML-fast-stable-diffusion/" },
+        { default: () => "About" }
+      ),
     key: "about",
     icon: renderIcon(InformationCircle),
   },

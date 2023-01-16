@@ -17,7 +17,6 @@ import logging
 import random
 from typing import Callable, Dict, List, Optional, Union
 
-import k_diffusion.sampling
 import torch
 from diffusers.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
@@ -26,7 +25,7 @@ from diffusers.utils import is_accelerate_available, logging
 from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 from k_diffusion.sampling import get_sigmas_karras
 
-from core.hijack.torch_hijack import TorchHijack
+from core import shared
 
 logger = logging.get_logger(__name__)
 
@@ -458,6 +457,11 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             torch.manual_seed(seed)
         else:
             torch.manual_seed(random.randint(0, 100000000))
+
+        # Apply image decode steps
+        shared.image_decode_steps = (
+            callback_steps if callback_steps else shared.image_decode_steps
+        )
 
         # 0. Default height and width to unet
         height = height or self.unet.config.sample_size * self.vae_scale_factor

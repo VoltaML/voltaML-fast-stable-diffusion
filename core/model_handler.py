@@ -99,7 +99,7 @@ class ModelHandler:
                 scheduler=KDiffusionScheduler.euler_a,
                 device=device,
                 callback=pytorch_callback,
-                callback_steps=1,
+                callback_steps=shared.image_decode_steps,
             )
             pt_model.optimize()
             self.generated_models[model] = pt_model

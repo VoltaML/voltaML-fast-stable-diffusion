@@ -45,7 +45,9 @@ export function processWebSocket(
     }
     case "txt2img": {
       console.log(message.data);
-      global.state.txt2img.currentImage = message.data.image;
+      global.state.txt2img.currentImage = message.data.image
+        ? message.data.image
+        : global.state.txt2img.currentImage;
       global.state.progress = message.data.progress;
       global.state.current_step = message.data.current_step;
       global.state.total_steps = message.data.total_steps;

@@ -10,3 +10,4 @@ if TYPE_CHECKING:
 current_model: Union["DemoDiffusion", PyTorchInferenceModel, None] = None
 current_steps: int = 50
 asyncio_loop: Optional[asyncio.AbstractEventLoop] = None
+image_decode_steps: int = 5
