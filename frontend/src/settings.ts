@@ -29,6 +29,7 @@ export interface SettingsInterface {
   $schema: string;
   backend: "PyTorch" | "TensorRT";
   useKarrasSigmas: 1 | 0;
+  model: string;
   txt2img: {
     width: number;
     height: number;
@@ -46,6 +47,7 @@ const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_settings.json",
   backend: "PyTorch",
   useKarrasSigmas: 1,
+  model: "none",
   txt2img: {
     width: 512,
     height: 512,

@@ -59,7 +59,6 @@ class PyTorchInferenceModel:
     def unload(self) -> None:
         "Unload the model from memory"
 
-        self.model = None
         gc.collect()
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
@@ -106,9 +105,6 @@ class PyTorchInferenceModel:
         if self.model is None:
             raise ValueError("Model not loaded")
 
-        self.model.enable_attention_slicing()
-        logging.info("Optimization: Enabled attention slicing")
-
         if enable_cpu_offload:
             try:
                 self.model.enable_sequential_cpu_offload()
@@ -120,4 +116,8 @@ class PyTorchInferenceModel:
             self.model.enable_xformers_memory_efficient_attention()
             logging.info("Optimization: Enabled xformers memory efficient attention")
         except ModuleNotFoundError:
-            logging.info("Optimization: xformers not available")
+            logging.info(
+                "Optimization: xformers not available, enabling attention slicing instead"
+            )
+            self.model.enable_attention_slicing()
+            logging.info("Optimization: Enabled attention slicing")

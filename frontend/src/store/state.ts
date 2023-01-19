@@ -14,7 +14,7 @@ export interface StateInterface {
 
 export const useState = defineStore("state", () => {
   const state: StateInterface = reactive({
-    progress: 100,
+    progress: 0,
     generating: false,
     txt2img: {
       images: [],

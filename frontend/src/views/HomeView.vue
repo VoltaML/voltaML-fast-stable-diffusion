@@ -327,7 +327,7 @@ const generate = () => {
         batch_size: 1,
         batch_count: conf.data.settings.txt2img.batchCount,
       },
-      model: "Linaqruf/anything-v3.0",
+      model: conf.data.settings.model,
       scheduler: conf.data.settings.txt2img.sampler,
       backend: "PyTorch",
       autoload: false,

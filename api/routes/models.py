@@ -4,9 +4,8 @@ from typing import Literal
 import torch
 from fastapi import APIRouter, HTTPException
 
-from core import queue
+from core import model_list, queue
 from core.inference.pytorch import PyTorchInferenceModel
-from core.types import SupportedModel
 
 router = APIRouter(tags=["models"])
 
@@ -46,7 +45,7 @@ async def list_loaded_models():
 async def list_avaliable_models():
     "Show a list of avaliable models"
 
-    return [i.value for i in SupportedModel]
+    return [i for i in model_list.pytorch()]
 
 
 @router.post("/load")
@@ -70,6 +69,14 @@ async def unload_model(model: str):
 
     queue.model_handler.unload(model)
     return {"message": "Model unloaded"}
+
+
+@router.post("/unload-all")
+async def unload_all_models():
+    "Unload all models from memory"
+
+    queue.model_handler.unload_all()
+    return {"message": "All models unloaded"}
 
 
 @router.post("/cleanup")

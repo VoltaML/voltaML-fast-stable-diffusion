@@ -166,7 +166,7 @@ class ModelHandler:
         self.free_memory()
         return [images[0]]
 
-    def unload(self, model_type: str):
+    def unload(self, model_type: str, unloading_all: bool = False):
         "Unload a model from memory and free up GPU memory"
 
         if model_type in self.generated_models:
@@ -182,7 +182,8 @@ class ModelHandler:
                 logger.debug("Unloading TensorRT model")
                 model.teardown()
 
-            self.generated_models.pop(model_type)
+            if not unloading_all:
+                self.generated_models.pop(model_type)
             logger.debug("Unloaded model")
 
         self.free_memory()
@@ -194,7 +195,9 @@ class ModelHandler:
         logger.debug("Unloading all models")
 
         for model in self.generated_models:
-            self.unload(model)
+            self.unload(model, unloading_all=True)
+
+        self.generated_models = {}
 
     def free_memory(self):
         "Free up GPU memory by purging dangling objects"
