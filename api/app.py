@@ -4,7 +4,7 @@ import logging
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from starlette import status
 
@@ -24,6 +24,13 @@ async def log_request(request: Request):
 app = FastAPI(
     docs_url="/api/docs", redoc_url="/api/redoc", dependencies=[Depends(log_request)]
 )
+
+
+@app.exception_handler(404)
+async def custom_http_exception_handler(_request, _exc):
+    "Redirect back to the main page (frontend will handle it)"
+
+    return RedirectResponse("/")
 
 
 @app.on_event("startup")

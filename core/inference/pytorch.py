@@ -9,7 +9,7 @@ from PIL.Image import Image
 from core.config import config
 from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 from core.schedulers import change_scheduler
-from core.types import KDiffusionScheduler, Txt2imgData
+from core.types import KDiffusionScheduler, Txt2ImgQueueEntry
 
 
 class PyTorchInferenceModel:
@@ -27,7 +27,7 @@ class PyTorchInferenceModel:
     ) -> None:
         self.use_f32: bool = use_f32
         self.auth: str = auth_token
-        self.model_id_or_path: str = model_id
+        self.model_path: str = model_id
         self.device: str = device
         self.callback: Optional[Callable[[Dict], None]] = callback
         self.callback_steps: int = callback_steps
@@ -38,11 +38,11 @@ class PyTorchInferenceModel:
         "Load the model from HuggingFace"
 
         logging.info(
-            f"Loading {self.model_id_or_path} with {'f32' if self.use_f32 else 'f16'}"
+            f"Loading {self.model_path} with {'f32' if self.use_f32 else 'f16'}"
         )
 
         pipe = StableDiffusionKDiffusionPipeline.from_pretrained(
-            pretrained_model_name_or_path=self.model_id_or_path,
+            pretrained_model_name_or_path=self.model_path,
             torch_dtype=torch.float16 if self.use_f32 else torch.float32,
             use_auth_token=self.auth,
             safety_checker=None,
@@ -64,35 +64,33 @@ class PyTorchInferenceModel:
         torch.cuda.ipc_collect()
         gc.collect()
 
-    def generate(
+    def txt2img(
         self,
-        job: Txt2imgData,
-        scheduler: KDiffusionScheduler,
-        use_karras_sigmas: bool = True,
+        job: Txt2ImgQueueEntry,
     ) -> List[Image]:
         "Generate an image from a prompt"
 
         if self.model is None:
             raise ValueError("Model not loaded")
 
-        generator = torch.Generator("cuda").manual_seed(job.seed)
+        generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
-        change_scheduler(model=self.model, scheduler=scheduler)
+        change_scheduler(model=self.model, scheduler=job.scheduler)
 
         data = self.model(
-            prompt=job.prompt,
-            height=job.height,
-            width=job.width,
-            num_inference_steps=job.steps,
-            guidance_scale=job.guidance_scale,
-            negative_prompt=job.negative_prompt,
+            prompt=job.data.prompt,
+            height=job.data.height,
+            width=job.data.width,
+            num_inference_steps=job.data.steps,
+            guidance_scale=job.data.guidance_scale,
+            negative_prompt=job.data.negative_prompt,
             output_type="pil",
             generator=generator,
-            seed=job.seed,
+            seed=job.data.seed,
             return_dict=False,
             callback=self.callback,
             callback_steps=self.callback_steps,
-            use_karras_sigmas=use_karras_sigmas,
+            use_karras_sigmas=job.use_karras_sigmas,
         )
 
         images: list[Image] = data[0]

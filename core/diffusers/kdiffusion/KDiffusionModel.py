@@ -117,13 +117,15 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.sampler_noises = sampler_noises
 
-        model = ModelWrapper(unet, scheduler.alphas_cumprod)
+        model = ModelWrapper(unet, scheduler.alphas_cumprod)  # type: ignore
         if scheduler.prediction_type == "v_prediction":
             self.k_diffusion_model = CompVisVDenoiser(model)
         else:
             self.k_diffusion_model = CompVisDenoiser(model)
 
     def set_scheduler(self, scheduler_type: str):
+        "Set the scheduler to use for the pipeline. Uses k_diffusion library."
+
         library = importlib.import_module("k_diffusion")
         sampling = getattr(library, "sampling")
         self.sampler = getattr(sampling, scheduler_type)
@@ -502,8 +504,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             sigmas = get_sigmas_karras(
                 n=num_inference_steps, sigma_min=sigma_min, sigma_max=sigma_max
             )
-            logger.debug("Applied Karras sigmas: %s", sigmas)
             sigmas = sigmas.to(text_embeddings.dtype).to(self.device)
+            logger.debug("Applied Karras sigmas: %s", sigmas)
         else:
             sigmas = self.scheduler.sigmas
             sigmas = sigmas.to(text_embeddings.dtype)

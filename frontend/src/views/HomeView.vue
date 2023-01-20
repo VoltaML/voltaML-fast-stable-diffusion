@@ -105,6 +105,9 @@
               v-model:value="conf.data.settings.txt2img.width"
               size="small"
               style="min-width: 96px; width: 96px"
+              :step="8"
+              :min="128"
+              :max="2048"
             />
           </div>
           <div class="flex-container">
@@ -120,6 +123,9 @@
               v-model:value="conf.data.settings.txt2img.height"
               size="small"
               style="min-width: 96px; width: 96px"
+              :step="8"
+              :min="128"
+              :max="2048"
             />
           </div>
 

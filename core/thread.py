@@ -1,5 +1,10 @@
+from asyncio import ensure_future
 from threading import Thread
-from typing import Dict, Optional, Tuple
+from typing import Any, Callable, Coroutine, Dict, Optional, Tuple, TypeVar, Union
+
+from core.shared import asyncio_loop
+
+T = TypeVar("T")
 
 
 class ThreadWithReturnValue(Thread):
@@ -7,9 +12,9 @@ class ThreadWithReturnValue(Thread):
 
     def __init__(
         self,
+        target: Union[Callable[..., T], Coroutine[Any, Any, T]],
         group=None,
-        target=None,
-        name=None,
+        name: Optional[str] = None,
         args: Optional[Tuple] = None,
         kwargs: Optional[Dict] = None,
     ):
@@ -18,17 +23,27 @@ class ThreadWithReturnValue(Thread):
         if kwargs is None:
             kwargs = {}
 
-        super().__init__(group, target, name, args, kwargs, daemon=True)
-        self._return = None
+        super().__init__(group, target, name, args, kwargs, daemon=True)  # type: ignore
+        self._return: Any = None
         self._err: Optional[Exception] = None
 
     def run(self):
-        if self._target is not None:  # type: ignore
-            try:
-                self._return = self._target(*self._args, **self._kwargs)  # type: ignore
-            except Exception as err:  # pylint: disable=broad-except
-                self._err = err
+        target: Union[Callable, Coroutine] = self._target  # type: ignore
+        if target is not None:  # type: ignore
+            if isinstance(target, Callable):
+                try:
+                    self._return = target(*self._args, **self._kwargs)  # type: ignore
+                except Exception as err:  # pylint: disable=broad-except
+                    self._err = err
+            else:
+                try:
+                    if asyncio_loop:
+                        self._return = ensure_future(target, loop=asyncio_loop).result()
+                    else:
+                        raise Exception("Asyncio loop not found")
+                except Exception as err:  # pylint: disable=broad-except
+                    self._err = err
 
-    def join(self, *args):
+    def join(self, *args) -> Tuple[Any | None, Exception | None]:
         Thread.join(self, *args)
         return (self._return, self._err)

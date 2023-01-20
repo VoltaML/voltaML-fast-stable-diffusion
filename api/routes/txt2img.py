@@ -5,8 +5,8 @@ from fastapi import APIRouter, HTTPException
 from PIL.Image import Image
 
 from api.shared import state
-from core import queue
-from core.errors import AutoLoadDisabledError
+from core import cluster
+from core.errors import BadSchedulerError, ModelNotLoadedError
 from core.types import Txt2ImgQueueEntry
 from core.utils import convert_image_to_base64
 
@@ -27,17 +27,18 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
 
     logging.debug(f"Job: {job}")
 
-    if job.backend in ["PyTorch", "TensorRT"]:
-        try:
-            images: List[Image]
-            time: float
-            images, time = await queue.generate(job)
-        except AutoLoadDisabledError:
-            raise HTTPException(  # pylint: disable=raise-missing-from
-                status_code=400, detail="Model is not loaded"
-            )
-    else:
-        raise HTTPException(status_code=400, detail="Invalid backend")
+    try:
+        images: List[Image]
+        time: float
+        images, time = await cluster.generate(job)
+    except ModelNotLoadedError:
+        raise HTTPException(  # pylint: disable=raise-missing-from
+            status_code=400, detail="Model is not loaded"
+        )
+    except BadSchedulerError:
+        raise HTTPException(  # pylint: disable=raise-missing-from
+            status_code=400, detail="Scheduler is not of a proper type"
+        )
 
     return {
         "time": time,

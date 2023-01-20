@@ -48,13 +48,14 @@ from diffusers.schedulers.scheduling_k_dpm_2_ancestral_discrete import (
 from diffusers.schedulers.scheduling_k_dpm_2_discrete import KDPM2DiscreteScheduler
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
 from diffusers.schedulers.scheduling_pndm import PNDMScheduler
+from PIL import Image
 from polygraphy import cuda
 from transformers import CLIPTokenizer
 
 from core.schedulers import change_scheduler
 from core.trt.models import CLIP, VAE, UNet
 from core.trt.utilities import TRT_LOGGER, Engine, save_image
-from core.types import Scheduler
+from core.types import Scheduler, Txt2ImgQueueEntry
 
 
 def parseArgs():
@@ -517,6 +518,11 @@ class DemoDiffusion:
         if accepts_generator:
             extra_step_kwargs["generator"] = generator
         return extra_step_kwargs
+
+    def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
+        "Run text2image job"
+
+        raise NotImplementedError
 
     def infer(
         self,

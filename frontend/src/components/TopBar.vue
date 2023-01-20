@@ -1,11 +1,20 @@
 <template>
   <div class="top-bar">
     <NSelect
-      style="max-width: 250px; padding-left: 12px"
+      style="max-width: 250px; padding-left: 12px; padding-right: 12px"
       :options="modelOptions"
       @update:value="onModelChange"
       :loading="modelsLoading"
+      placeholder="Select model"
+      value="none"
     />
+    <NButton quaternary circle type="default" @click="refreshModels">
+      <template #icon>
+        <NIcon>
+          <ReloadOutline />
+        </NIcon>
+      </template>
+    </NButton>
 
     <!-- Progress bar -->
     <div class="progress-container">
@@ -37,8 +46,8 @@
 <script lang="ts" setup>
 import { serverUrl } from "@/env";
 import { useWebsocket } from "@/store/websockets";
-import { SyncSharp } from "@vicons/ionicons5";
-import { NButton, NProgress, NSelect, NSpace } from "naive-ui";
+import { ReloadOutline, SyncSharp } from "@vicons/ionicons5";
+import { NButton, NIcon, NProgress, NSelect, NSpace } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { h, reactive, ref } from "vue";
 import { useSettings } from "../store/settings";
@@ -54,6 +63,8 @@ function refreshModels() {
   fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
     res.json().then((data: Array<string>) => {
       // add all the strings from the list to model options
+      modelOptions.splice(0, modelOptions.length);
+      modelOptions.push(...defaultOptions);
       data.forEach((item) => {
         modelOptions.push({
           label: item.split("/")[1],
@@ -70,6 +81,11 @@ async function onModelChange(value: string) {
   await fetch(`${serverUrl}/api/models/unload-all`, {
     method: "POST",
   });
+
+  if (value === "none") {
+    conf.data.settings.model = value;
+    return;
+  }
 
   const load_url = new URL(`${serverUrl}/api/models/load`);
   const params = { model: value, backend: conf.data.settings.backend };
@@ -89,7 +105,7 @@ const syncIcon = () => {
 
 const defaultOptions: SelectMixedOption[] = [
   {
-    label: "None",
+    label: "No model selected",
     value: "none",
   },
 ];

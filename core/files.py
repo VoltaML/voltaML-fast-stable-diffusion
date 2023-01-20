@@ -5,7 +5,7 @@ from typing import Dict
 from diffusers.utils import hf_cache_home
 
 
-class ModelList:
+class CachedModelList:
     "List of models downloaded for PyTorch and (or) converted to TRT"
 
     def __init__(self):

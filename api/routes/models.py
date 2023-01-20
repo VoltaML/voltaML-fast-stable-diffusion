@@ -1,61 +1,38 @@
-import logging
-from typing import Literal
+from typing import Literal, Optional
 
 import torch
 from fastapi import APIRouter, HTTPException
 
-from core import model_list, queue
-from core.inference.pytorch import PyTorchInferenceModel
+from core import cached_model_list, cluster
+from core.gpu import GPU
 
 router = APIRouter(tags=["models"])
 
 
 @router.get("/loaded")
 async def list_loaded_models():
-    "Returns a dictionary containing information about loaded models"
+    "Returns a list containing information about loaded models"
 
-    models = queue.model_handler.generated_models
-    loaded_models = {}
-
-    for model in models:
-        logging.debug(f"Model: {model}")
-        logging.debug(f"Backend: {models[model]}")
-        hl_model = models[model]
-
-        if isinstance(hl_model, PyTorchInferenceModel):
-            ll_model = hl_model.model
-            assert ll_model is not None
-        else:
-            ll_model = hl_model
-
-        scheduler = ll_model.scheduler  # type: ignore
-        logging.debug(f"Current scheduler: {type(scheduler).__name__}")
-        loaded_models[model] = {
-            "backend": "PyTorch"
-            if isinstance(models[model], PyTorchInferenceModel)
-            else "TensorRT",
-            "current_scheduler": type(scheduler).__name__,
-            "device": models[model].device,
-        }
-
-    return loaded_models
+    return await cluster.loaded_models()
 
 
 @router.get("/avaliable")
 async def list_avaliable_models():
     "Show a list of avaliable models"
 
-    return [i for i in model_list.pytorch()]
+    return [i for i in cached_model_list.pytorch()]
 
 
 @router.post("/load")
 async def load_model(
-    model: str, backend: Literal["PyTorch", "TensorRT"], device: str = "cuda"
+    model: str,
+    backend: Literal["PyTorch", "TensorRT"],
+    preferred_gpu: Optional[int] = None,
 ):
     "Loads a model into memory"
 
     try:
-        await queue.load_model(model, backend, device)
+        await cluster.load_model(model, backend, preferred_gpu=preferred_gpu)
     except torch.cuda.OutOfMemoryError:  # type: ignore
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=500, detail="Out of memory"
@@ -64,10 +41,11 @@ async def load_model(
 
 
 @router.post("/unload")
-async def unload_model(model: str):
+async def unload_model(model: str, gpu_id: int):
     "Unloads a model from memory"
 
-    queue.model_handler.unload(model)
+    gpu: GPU = [i for i in cluster.gpus if i.gpu_id == gpu_id][0]
+    await gpu.unload(model)
     return {"message": "Model unloaded"}
 
 
@@ -75,13 +53,16 @@ async def unload_model(model: str):
 async def unload_all_models():
     "Unload all models from memory"
 
-    queue.model_handler.unload_all()
+    for gpu in cluster.gpus:
+        await gpu.unload_all()
+
     return {"message": "All models unloaded"}
 
 
-@router.post("/cleanup")
+@router.post("/memory-cleanup")
 async def cleanup():
     "Free up memory manually"
 
-    queue.model_handler.free_memory()
+    for gpu in cluster.gpus:
+        gpu.memory_cleanup()
     return {"message": "Memory cleaned up"}

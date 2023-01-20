@@ -1,6 +1,7 @@
-from core.files import ModelList
+from core.cluster import Cluster
+from core.files import CachedModelList
 
-from .queue import Queue
+cached_model_list = CachedModelList()
+cluster = Cluster()
 
-queue = Queue()
-model_list = ModelList()
+__all__ = ["cached_model_list", "cluster"]
