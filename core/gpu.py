@@ -83,6 +83,8 @@ class GPU:
     ):
         "Load a model into memory"
 
+        logger.debug(f"Loading {model} with {backend} backend")
+
         def thread_call(
             model: str,
             backend: Literal["PyTorch", "TensorRT"],
@@ -99,6 +101,7 @@ class GPU:
                 return
 
             if backend == "TensorRT":
+                logger.debug("Selecting TensorRT")
 
                 websocket_manager.broadcast_sync(
                     Notification(
@@ -163,7 +166,9 @@ class GPU:
                 )
             )
 
-        await run_in_thread_async(func=thread_call, args=(model, backend, self.gpu_id))
+        _, err = await run_in_thread_async(func=thread_call, args=(model, backend))
+        if err:
+            raise err
 
     def loaded_models_list(self) -> list:
         "Return a list of loaded models"

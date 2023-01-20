@@ -11,6 +11,8 @@ from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 from core.schedulers import change_scheduler
 from core.types import KDiffusionScheduler, Txt2ImgQueueEntry
 
+logger = logging.getLogger(__name__)
+
 
 class PyTorchInferenceModel:
     "High level model wrapper for PyTorch models"
@@ -37,7 +39,7 @@ class PyTorchInferenceModel:
     def load(self) -> StableDiffusionKDiffusionPipeline:
         "Load the model from HuggingFace"
 
-        logging.info(
+        logger.info(
             f"Loading {self.model_path} with {'f32' if self.use_f32 else 'f16'}"
         )
 
@@ -49,6 +51,10 @@ class PyTorchInferenceModel:
             requires_safety_checker=False,
             feature_extractor=None,
             cache_dir=config.cache_dir,
+        )
+
+        logger.debug(
+            f"Loaded {self.model_path} with {'f32' if self.use_f32 else 'f16'}"
         )
 
         assert isinstance(pipe, StableDiffusionKDiffusionPipeline)

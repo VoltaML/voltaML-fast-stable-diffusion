@@ -6,7 +6,7 @@
       @update:value="onModelChange"
       :loading="modelsLoading"
       placeholder="Select model"
-      value="none"
+      default-value="none"
     />
     <NButton quaternary circle type="default" @click="refreshModels">
       <template #icon>
