@@ -34,7 +34,7 @@ async def run_in_thread_async(
     func: Union[Callable[..., Any], Coroutine[Any, Any, Any]],
     args: Optional[Tuple] = None,
     kwarkgs: Optional[Dict] = None,
-) -> Tuple[Any | None, Exception | None]:
+) -> Tuple[Union[Any, None], Union[Exception, None]]:
     "Run a function in a separate thread"
 
     thread = ThreadWithReturnValue(target=func, args=args, kwargs=kwarkgs)

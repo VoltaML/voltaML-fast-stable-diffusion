@@ -19,7 +19,7 @@ class Models(Cog):
         self.bot = bot
 
     @commands.hybrid_command(name="loaded")
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def loaded_models(self, ctx: Context) -> None:
         "Show models loaded in the API"
 
@@ -54,7 +54,7 @@ class Models(Cog):
             await ctx.send(f"Error: {status}")
 
     @commands.hybrid_command(name="avaliable")
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def avaliable_models(self, ctx: Context) -> None:
         "List all avaliable models"
 
@@ -71,7 +71,7 @@ class Models(Cog):
             await ctx.send(f"Error: {status}")
 
     @commands.hybrid_command(name="load")
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def load_model(
         self,
         ctx: Context,
@@ -97,7 +97,7 @@ class Models(Cog):
             await message.edit(content=f"Error: **{response.get('detail')}**")
 
     @commands.hybrid_command(name="unload")
-    @commands.is_owner()
+    @commands.has_permissions(administrator=True)
     async def unload_model(self, ctx: Context, model: SupportedModel) -> None:
         "Unload a model"
 

@@ -53,6 +53,6 @@ class ThreadWithReturnValue(Thread):
                     except Exception as err:  # pylint: disable=broad-except
                         self._err = err
 
-    def join(self, *args) -> Tuple[Any | None, Exception | None]:
+    def join(self, *args) -> Tuple[Union[Any, None], Union[Exception, None]]:
         Thread.join(self, *args)
         return (self._return, self._err)

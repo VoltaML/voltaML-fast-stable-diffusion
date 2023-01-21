@@ -1,3 +1,5 @@
+from typing import List
+
 import torch
 from fastapi import APIRouter, HTTPException
 from pynvml import nvml, smi
@@ -17,7 +19,7 @@ async def driver():
 
 
 @router.get("/gpu_ids")
-async def gpu_ids() -> list[int]:
+async def gpu_ids() -> List[int]:
     "List all available GPUs"
 
     return list(range(torch.cuda.device_count()))

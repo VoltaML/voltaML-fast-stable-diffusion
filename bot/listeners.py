@@ -2,7 +2,7 @@ from typing import TYPE_CHECKING
 
 import discord
 from discord.ext import commands
-from discord.ext.commands import Cog, context
+from discord.ext.commands import Cog
 
 if TYPE_CHECKING:
     from bot.bot import ModularBot
