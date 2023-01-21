@@ -118,6 +118,7 @@ class Inference(Cog):
             "scheduler": scheduler.value,
             "backend": backend,
             "use_karras_sigmas": use_karras_sigmas,
+            "save_image": False,
         }
 
         message = await ctx.send(
