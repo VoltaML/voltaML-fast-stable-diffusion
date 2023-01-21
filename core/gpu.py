@@ -12,6 +12,7 @@ from core import shared
 from core.errors import BadSchedulerError, DimensionError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
+from core.png_metadata import save_image
 from core.queue import Queue
 from core.types import (
     Img2ImgQueueEntry,
@@ -65,12 +66,12 @@ class GPU:
 
         start_time = time.time()
 
-        deltatime = time.time() - start_time
-
         if isinstance(job, Txt2ImgQueueEntry):
             images = await self.txt2img(job)
         elif isinstance(job, Img2ImgQueueEntry):
             images = await self.img2img(job)
+
+        deltatime = time.time() - start_time
 
         self.queue.mark_finished()
 
@@ -223,6 +224,11 @@ class GPU:
             raise error
 
         assert images is not None
+
+        if job.save_image:
+            for image in images:
+                save_image(image, job)
+
         return images
 
     async def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:

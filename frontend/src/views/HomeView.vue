@@ -4,36 +4,6 @@
     <NGrid cols="1 850:2" x-gap="12">
       <NGi>
         <NSpace vertical class="left-container">
-          <!-- Backend selection -->
-          <NSpace>
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p>Backend</p>
-              </template>
-              <b class="highlight">TensorRT is the fastest</b> method but
-              requires accelerated model that must be created per machine.
-              <b class="highlight">PyTorch</b> on the other hand is
-              <b class="highlight">slower but works right out of the box.</b>
-            </NTooltip>
-            <NSpace align="center" style="height: 100%">
-              <NRadioGroup
-                v-model:value="conf.data.settings.backend"
-                name="backend-selection"
-                :on-update-value="resetScheduler"
-              >
-                <NRadioButton
-                  v-for="backend in [
-                    { label: 'TensorRT', value: 'TensorRT' },
-                    { label: 'PyTorch', value: 'PyTorch' },
-                  ]"
-                  :key="backend.value"
-                  :value="backend.value"
-                  :label="backend.label"
-                />
-              </NRadioGroup>
-            </NSpace>
-          </NSpace>
-
           <!-- Prompt -->
           <NInput
             v-model:value="conf.data.settings.txt2img.prompt"
@@ -247,24 +217,40 @@
 
       <!-- Images -->
       <NGi>
-        <div
-          style="
-            height: auto;
-            width: 100%;
-            display: flex;
-            justify-content: center;
-          "
-        >
-          <NImage
-            v-if="global.state.txt2img.currentImage"
-            :src="`data:image/png;base64,${global.state.txt2img.currentImage}`"
-            :img-props="{
-              style: 'max-width: 100%; max-height: 70vh; width: 100%',
-            }"
-            style="max-width: 100%; max-height: 70vh; width: 100%; height: 100%"
-            object-fit="contain"
-          />
-        </div>
+        <NCard title="Output" segmented hoverable>
+          <div
+            style="
+              height: 70vh;
+              width: 100%;
+              display: flex;
+              justify-content: center;
+            "
+          >
+            <NImageGroup
+              style="
+                max-width: 100%;
+                max-height: 70vh;
+                width: 100%;
+                height: 100%;
+              "
+            >
+              <NImage
+                v-if="global.state.txt2img.currentImage"
+                :src="`data:image/png;base64,${global.state.txt2img.currentImage}`"
+                :img-props="{
+                  style: 'max-width: 100%; max-height: 70vh; width: 100%',
+                }"
+                style="
+                  max-width: 100%;
+                  max-height: 70vh;
+                  width: 100%;
+                  height: 100%;
+                "
+                object-fit="contain"
+              />
+            </NImageGroup>
+          </div>
+        </NCard>
       </NGi>
     </NGrid>
   </div>
@@ -274,35 +260,24 @@
 import { serverUrl } from "@/env";
 import {
   NButton,
+  NCard,
   NGi,
   NGrid,
   NImage,
+  NImageGroup,
   NInput,
   NInputNumber,
-  NRadioButton,
-  NRadioGroup,
   NSelect,
   NSlider,
   NSpace,
   NTooltip,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { KDiffusionSampler, Sampler } from "../settings";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
 const conf = useSettings();
-
-function resetScheduler(value: string) {
-  // Reset scheduler when choosing different backend
-
-  if (value === "PyTorch") {
-    conf.data.settings.txt2img.sampler = KDiffusionSampler.EULER_A;
-  } else {
-    conf.data.settings.txt2img.sampler = Sampler.EULER_A;
-  }
-}
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed

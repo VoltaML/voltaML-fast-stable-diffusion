@@ -49,6 +49,7 @@ class SupportedModel(Enum):
     SynthWave = "ItsJayQz/SynthwavePunk-v2"
     InkpunkDiffusion = "Envvi/Inkpunk-Diffusion"
     Protogen5_3_Realism = "darkstorm2150/Protogen_v5.3_Official_Release"
+    AnythingV4 = "andite/anything-v4.0"
 
 
 @dataclass
@@ -93,6 +94,7 @@ class Txt2ImgQueueEntry:
     scheduler: Union[Scheduler, KDiffusionScheduler]
     use_karras_sigmas: bool = field(default=True)
     websocket_id: Union[str, None] = field(default=None)
+    save_image: bool = field(default=True)
 
 
 @dataclass
@@ -104,3 +106,4 @@ class Img2ImgQueueEntry:
     scheduler: Union[Scheduler, KDiffusionScheduler]
     use_karras_sigmas: bool = field(default=True)
     websocket_id: Union[str, None] = field(default=None)
+    save_image: bool = field(default=True)

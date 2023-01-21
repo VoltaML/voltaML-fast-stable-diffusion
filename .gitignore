@@ -178,3 +178,4 @@ testing/
 #project specific
 /engine
 /static/output
+/outputs

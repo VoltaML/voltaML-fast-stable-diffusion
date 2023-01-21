@@ -1,5 +1,8 @@
 import asyncio
+import logging
 from typing import List, Optional
+
+logger = logging.getLogger(__name__)
 
 
 class Queue:
@@ -12,7 +15,12 @@ class Queue:
     def mark_finished(self):
         "Mark the current job as finished"
 
-        self.current_job = None
+        self.jobs.pop(0)
+
+        if self.jobs:
+            self.current_job = self.jobs[0]
+        else:
+            self.current_job = None
 
     async def wait_for_turn(self, job_id):
         "Wait until the job can be processed"
