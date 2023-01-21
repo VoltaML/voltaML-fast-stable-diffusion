@@ -94,6 +94,14 @@ class Cluster:
                 useful_gpus.append(gpu)
 
         if len(useful_gpus) == 0:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not loaded",
+                    "The model you are trying to use is not loaded, please load it first",
+                )
+            )
+
             raise ModelNotLoadedError("Model not loaded on any GPU.")
 
         best_gpu: GPU = useful_gpus[0]

@@ -16,7 +16,6 @@ async def list_loaded_models():
     "Returns a list containing information about loaded models"
 
     models = await cluster.loaded_models()
-    logger.debug(models)
     return models
 
 

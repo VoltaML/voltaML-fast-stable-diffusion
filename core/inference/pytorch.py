@@ -61,7 +61,8 @@ class PyTorchInferenceModel:
     def unload(self) -> None:
         "Unload the model from memory"
 
-        gc.collect()
+        del self.model
+
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
         gc.collect()

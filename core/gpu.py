@@ -9,7 +9,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
-from core.errors import BadSchedulerError, DimensionError, ModelNotLoadedError
+from core.errors import BadSchedulerError, DimensionError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
 from core.queue import Queue
@@ -178,17 +178,6 @@ class GPU:
         "Generate an image(s) from a prompt"
 
         def thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
-            if job.model not in self.loaded_models:
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        "error",
-                        "Model not loaded",
-                        "The model you are trying to use is not loaded, please load it first",
-                    )
-                )
-
-                raise ModelNotLoadedError
-
             model: Union["DemoDiffusion", PyTorchInferenceModel] = self.loaded_models[
                 job.model
             ]
@@ -245,39 +234,38 @@ class GPU:
         "Release all unused memory"
 
         if torch.cuda.is_available():
+            logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
+
             with torch.cuda.device(self.gpu_id):
                 torch.cuda.empty_cache()
                 torch.cuda.ipc_collect()
 
-    async def unload(self, model_type: str, unloading_all: bool = False):
+    async def unload(self, model_type: str):
         "Unload a model from memory and free up GPU memory"
 
         if model_type in self.loaded_models:
             model = self.loaded_models[model_type]
 
             if isinstance(model, PyTorchInferenceModel):
-                logger.debug("Unloading PyTorch model")
+                logger.debug(f"Unloading PyTorch model: {model_type}")
                 model.unload()
             else:
                 from core.inference.volta_accelerate import DemoDiffusion
 
                 assert isinstance(model, DemoDiffusion)
-                logger.debug("Unloading TensorRT model")
+                logger.debug(f"Unloading TensorRT model: {model_type}")
                 model.teardown()
 
-            if not unloading_all:
-                self.loaded_models.pop(model_type)
+            del self.loaded_models[model_type]
+            self.memory_cleanup()
             logger.debug("Unloaded model")
-
-        self.memory_cleanup()
-        logger.debug("Freed memory")
 
     async def unload_all(self):
         "Unload all models from memory and free up GPU memory"
 
         logger.debug("Unloading all models")
 
-        for model in self.loaded_models:
-            await self.unload(model, unloading_all=True)
+        for model in list(self.loaded_models.keys()):
+            await self.unload(model)
 
-        self.loaded_models = {}
+        self.memory_cleanup()
