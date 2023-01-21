@@ -86,6 +86,7 @@ ipython_config.py
 
 # Diffusers convert files
 out
+traced_unet/
 
 # Docs
 node_modules/
@@ -170,6 +171,7 @@ cython_debug/
 
 unet/
 unet.engine
+testing/
 
 
 

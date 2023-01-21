@@ -9,7 +9,7 @@ from PIL.Image import Image
 from core.config import config
 from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 from core.schedulers import change_scheduler
-from core.types import KDiffusionScheduler, Txt2ImgQueueEntry
+from core.types import Img2ImgQueueEntry, KDiffusionScheduler, Txt2ImgQueueEntry
 
 logger = logging.getLogger(__name__)
 
@@ -29,7 +29,7 @@ class PyTorchInferenceModel:
     ) -> None:
         self.use_f32: bool = use_f32
         self.auth: str = auth_token
-        self.model_path: str = model_id
+        self.model_id: str = model_id
         self.device: str = device
         self.callback: Optional[Callable[[Dict], None]] = callback
         self.callback_steps: int = callback_steps
@@ -39,13 +39,11 @@ class PyTorchInferenceModel:
     def load(self) -> StableDiffusionKDiffusionPipeline:
         "Load the model from HuggingFace"
 
-        logger.info(
-            f"Loading {self.model_path} with {'f32' if self.use_f32 else 'f16'}"
-        )
+        logger.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
         pipe = StableDiffusionKDiffusionPipeline.from_pretrained(
-            pretrained_model_name_or_path=self.model_path,
-            torch_dtype=torch.float16 if self.use_f32 else torch.float32,
+            pretrained_model_name_or_path=self.model_id,
+            torch_dtype=torch.float32 if self.use_f32 else torch.float16,
             use_auth_token=self.auth,
             safety_checker=None,
             requires_safety_checker=False,
@@ -53,9 +51,7 @@ class PyTorchInferenceModel:
             cache_dir=config.cache_dir,
         )
 
-        logger.debug(
-            f"Loaded {self.model_path} with {'f32' if self.use_f32 else 'f16'}"
-        )
+        logger.debug(f"Loaded {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
         assert isinstance(pipe, StableDiffusionKDiffusionPipeline)
         pipe = pipe.to(self.device)
@@ -83,7 +79,7 @@ class PyTorchInferenceModel:
 
         change_scheduler(model=self.model, scheduler=job.scheduler)
 
-        data = self.model(
+        data = self.model.txt2img(
             prompt=job.data.prompt,
             height=job.data.height,
             width=job.data.width,
@@ -103,18 +99,18 @@ class PyTorchInferenceModel:
 
         return images
 
-    def optimize(self, enable_cpu_offload: bool = False) -> None:
+    def img2img(self, job: Img2ImgQueueEntry) -> List[Image]:
+        "Generate an image from an image"
+
+        raise NotImplementedError
+
+    def optimize(self) -> None:
         "Optimize the model for inference"
+
+        logger.info("Optimizing model")
 
         if self.model is None:
             raise ValueError("Model not loaded")
-
-        if enable_cpu_offload:
-            try:
-                self.model.enable_sequential_cpu_offload()
-                logging.info("Optimization: Enabled sequential CPU offload")
-            except ModuleNotFoundError:
-                logging.info("Optimization: accelerate not available")
 
         try:
             self.model.enable_xformers_memory_efficient_attention()
@@ -125,3 +121,11 @@ class PyTorchInferenceModel:
             )
             self.model.enable_attention_slicing()
             logging.info("Optimization: Enabled attention slicing")
+
+        try:
+            self.model.enable_traced_unet(self.model_id)
+            logging.info("Optimization: Enabled traced UNet")
+        except ValueError:
+            logging.info("Optimization: Traced UNet not available")
+
+        logger.info("Optimization complete")

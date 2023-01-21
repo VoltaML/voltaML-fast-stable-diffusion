@@ -78,7 +78,7 @@ class Cluster:
 
         models: Dict = {}
         for gpu in self.gpus:
-            models[gpu.gpu_id] = gpu.loaded_models.keys()
+            models[gpu.gpu_id] = list(gpu.loaded_models.keys())
 
         return models
 

@@ -13,19 +13,27 @@ logger = logging.getLogger(__name__)
 
 
 def cheap_approximation(sample: torch.Tensor):
+    "Convert a tensor of latents to RGB"
+
     # Credit to Automatic111 stable-diffusion-webui
     # https://discuss.huggingface.co/t/decoding-latents-to-rgb-without-upscaling/23204/2
 
-    coefs = torch.tensor(
-        [
-            [0.298, 0.207, 0.208],
-            [0.187, 0.286, 0.173],
-            [-0.158, 0.189, 0.264],
-            [-0.184, -0.271, -0.473],
-        ]
-    ).to(sample.device)
+    coefs = (
+        torch.tensor(
+            [
+                [0.298, 0.207, 0.208],
+                [0.187, 0.286, 0.173],
+                [-0.158, 0.189, 0.264],
+                [-0.184, -0.271, -0.473],
+            ]
+        )
+        .to(torch.float16)
+        .to(sample.device)
+    )
 
-    x_sample = torch.einsum("lxy,lr -> rxy", sample, coefs)
+    cast_sample = sample.to(torch.float16).to(sample.device)
+
+    x_sample = torch.einsum("lxy,lr -> rxy", cast_sample, coefs)
 
     return x_sample
 

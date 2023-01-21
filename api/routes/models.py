@@ -1,3 +1,4 @@
+import logging
 from typing import Literal, Optional
 
 import torch
@@ -7,13 +8,16 @@ from core import cached_model_list, cluster
 from core.gpu import GPU
 
 router = APIRouter(tags=["models"])
+logger = logging.getLogger(__name__)
 
 
 @router.get("/loaded")
 async def list_loaded_models():
     "Returns a list containing information about loaded models"
 
-    return await cluster.loaded_models()
+    models = await cluster.loaded_models()
+    logger.debug(models)
+    return models
 
 
 @router.get("/avaliable")

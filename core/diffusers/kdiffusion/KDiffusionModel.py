@@ -26,6 +26,7 @@ from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 from k_diffusion.sampling import get_sigmas_karras
 
 from core import shared
+from core.inference.unet_tracer import get_traced_unet
 
 logger = logging.get_logger(__name__)
 
@@ -95,13 +96,6 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
     ):
         super().__init__()
 
-        logger.info(
-            f"{self.__class__} is an experimntal pipeline and is likely to change in the future. We recommend to use"
-            " this pipeline for fast experimentation / iteration if needed, but advice to rely on existing pipelines"
-            " as defined in https://huggingface.co/docs/diffusers/api/schedulers#implemented-schedulers for"
-            " production settings."
-        )
-
         # get correct sigmas from LMS
         scheduler = LMSDiscreteScheduler.from_config(scheduler.config)
         self.register_modules(
@@ -113,6 +107,12 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
+
+        # Text Encoder: <class 'transformers.models.clip.modeling_clip.CLIPTextModel'>
+        # VAE: <class 'diffusers.models.vae.AutoencoderKL'>
+        # Unet: <class 'diffusers.models.unet_2d_condition.UNet2DConditionModel'>
+        # Tokenizer: <class 'transformers.models.clip.tokenization_clip.CLIPTokenizer'>
+
         self.register_to_config(requires_safety_checker=requires_safety_checker)
         self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
         self.sampler_noises = sampler_noises
@@ -152,6 +152,20 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             # TODO(Patrick) - there is currently a bug with cpu offload of nn.Parameter in accelerate
             # fix by only offloading self.safety_checker for now
             cpu_offload(self.safety_checker.vision_model, device)
+
+    def enable_traced_unet(self, model_id: str):
+        "Loads a precomputed JIT traced U-Net model."
+
+        traced_unet = get_traced_unet(model_id=model_id, pipe=self)
+        if traced_unet is not None:
+            self.unet = traced_unet
+        else:
+            raise ValueError(f"Traced U-Net model with id {model_id} does not exist.")
+
+    def channel_last_memory(self):
+        "Enable alternative way of ordering NCHW tensors"
+
+        self.unet = self.unet.to(memory_format=torch.channels_last)  # type: ignore
 
     @property
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline._execution_device
@@ -381,7 +395,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         return latents
 
     @torch.no_grad()
-    def __call__(
+    def txt2img(
         self,
         prompt: Union[str, List[str]],
         height: Optional[int] = None,
