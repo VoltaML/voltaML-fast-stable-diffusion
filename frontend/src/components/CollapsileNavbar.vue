@@ -26,7 +26,10 @@
 
 <script lang="ts" setup>
 import {
-  Home,
+  Albums,
+  Download,
+  Duplicate,
+  Image,
   Images,
   InformationCircle,
   Speedometer,
@@ -45,9 +48,31 @@ function renderIcon(icon: Component) {
 
 const menuOptionsMain: MenuOption[] = [
   {
-    label: () => h(RouterLink, { to: "/" }, { default: () => "Home" }),
-    key: "home",
-    icon: renderIcon(Home),
+    label: () => h(RouterLink, { to: "/" }, { default: () => "Text to Image" }),
+    key: "txt2img",
+    icon: renderIcon(Image),
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        { to: "/image2image" },
+        { default: () => "Image to Image" }
+      ),
+    key: "image2image",
+    icon: renderIcon(Images),
+  },
+  {
+    label: () =>
+      h(RouterLink, { to: "/upscale" }, { default: () => "Upscale" }),
+    key: "upscale",
+    icon: renderIcon(Duplicate),
+  },
+  {
+    label: () =>
+      h(RouterLink, { to: "/download" }, { default: () => "Download" }),
+    key: "download",
+    icon: renderIcon(Download),
   },
   {
     label: () =>
@@ -63,7 +88,7 @@ const menuOptionsMain: MenuOption[] = [
         { default: () => "Image Browser" }
       ),
     key: "imageBrowser",
-    icon: renderIcon(Images),
+    icon: renderIcon(Albums),
   },
   {
     label: () => h(RouterLink, { to: "/stats" }, { default: () => "Stats" }),
