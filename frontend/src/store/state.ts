@@ -15,6 +15,7 @@ export interface StateInterface {
     currentImage: imgData;
     currentImageMetadata: imgMetadata;
   };
+  drawer_content: string;
 }
 
 export const useState = defineStore("state", () => {
@@ -43,6 +44,7 @@ export const useState = defineStore("state", () => {
         model: "",
       },
     },
+    drawer_content: "Empty",
   });
   return { state };
 });

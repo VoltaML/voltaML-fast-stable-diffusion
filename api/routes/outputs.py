@@ -40,6 +40,17 @@ def img2img() -> list[str]:
 
     return [x.as_posix() for x in path.rglob("**/*.png")]
 
+@router.get("/extra")
+def extra() -> list[str]:
+    "List all generated images"
+
+    path = Path("outputs/extra")
+
+    if not path.exists():
+        return []
+
+    return [x.as_posix() for x in path.rglob("**/*.png")]
+
 
 @router.get("/data")
 async def txt2img_data(filename: str) -> ImageMetadata:

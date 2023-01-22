@@ -68,21 +68,34 @@ def pytorch_callback(data: dict):
     )
 
 
-def image_meta_from_file(path: Path):
+def image_meta_from_file(path: Path) -> ImageMetadata:
     "Return image metadata from a file"
 
     with path.open("rb") as f:
         image = Image.open(f)
         text = image.text  # type: ignore
-        metadata = ImageMetadata(
-            prompt=text["prompt"],
-            negative_prompt=text["negative_prompt"],
-            height=int(text["height"]),
-            width=int(text["width"]),
-            seed=text["seed"],
-            guidance_scale=float(text["guidance_scale"]),
-            steps=int(text["steps"]),
-            model=text["model"],
-        )
+
+        try:
+            metadata = ImageMetadata(
+                prompt=text["prompt"],
+                negative_prompt=text["negative_prompt"],
+                height=int(text["height"]),
+                width=int(text["width"]),
+                seed=text["seed"],
+                guidance_scale=float(text["guidance_scale"]),
+                steps=int(text["steps"]),
+                model=text["model"],
+            )
+        except KeyError:
+            metadata = ImageMetadata(
+                prompt="",
+                negative_prompt="",
+                height=0,
+                width=0,
+                seed="",
+                guidance_scale=0.0,
+                steps=0,
+                model="",
+            )
 
     return metadata

@@ -31,7 +31,6 @@ import {
   Duplicate,
   Image,
   Images,
-  InformationCircle,
   Speedometer,
   StatsChart,
   Warning,
@@ -63,9 +62,8 @@ const menuOptionsMain: MenuOption[] = [
     icon: renderIcon(Images),
   },
   {
-    label: () =>
-      h(RouterLink, { to: "/upscale" }, { default: () => "Upscale" }),
-    key: "upscale",
+    label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+    key: "extra",
     icon: renderIcon(Duplicate),
   },
   {
@@ -99,16 +97,6 @@ const menuOptionsMain: MenuOption[] = [
     label: () => h(RouterLink, { to: "/test" }, { default: () => "Test" }),
     key: "test",
     icon: renderIcon(Warning),
-  },
-  {
-    label: () =>
-      h(
-        RouterLink,
-        { to: "https://stax124.github.io/voltaML-fast-stable-diffusion/" },
-        { default: () => "About" }
-      ),
-    key: "about",
-    icon: renderIcon(InformationCircle),
   },
 ];
 

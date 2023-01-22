@@ -1,13 +1,28 @@
 import { createRouter, createWebHistory } from "vue-router";
-import HomeView from "../views/HomeView.vue";
+import TextToImage from "../views/TextToImageView.vue";
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: "/",
-      name: "home",
-      component: HomeView,
+      name: "text2image",
+      component: TextToImage,
+    },
+    {
+      path: "/image2image",
+      name: "image2image",
+      component: () => import("../views/Image2ImageView.vue"),
+    },
+    {
+      path: "/extra",
+      name: "extra",
+      component: () => import("../views/ExtraView.vue"),
+    },
+    {
+      path: "/download",
+      name: "download",
+      component: () => import("../views/DownloadView.vue"),
     },
     {
       path: "/about",

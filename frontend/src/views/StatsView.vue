@@ -1,6 +1,6 @@
 <template>
-  <Stats></Stats>
+  <NProgress type="dashboard" :percentage="80" />
 </template>
 <script setup lang="ts">
-import Stats from "../components/Stats.vue";
+import { NProgress } from "naive-ui";
 </script>
