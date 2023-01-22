@@ -2,3 +2,5 @@ fastapi
 websockets
 uvicorn
 coloredlogs
+pyngrok
+nest_asyncio

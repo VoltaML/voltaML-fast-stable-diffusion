@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass, field
 
 from diffusers.utils import DIFFUSERS_CACHE
@@ -26,4 +27,4 @@ class Configuration:
     "Main configuration class for the application"
 
     txt2img: Txt2ImgConfig = field(default=Txt2ImgConfig())
-    cache_dir: str = field(default=DIFFUSERS_CACHE)
+    cache_dir: str = field(default=os.environ.get("DIFFUSERS_CACHE", DIFFUSERS_CACHE))
