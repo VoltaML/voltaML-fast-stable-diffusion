@@ -27,6 +27,7 @@
 <script lang="ts" setup>
 import {
   Home,
+  Images,
   InformationCircle,
   Speedometer,
   StatsChart,
@@ -53,6 +54,16 @@ const menuOptionsMain: MenuOption[] = [
       h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
     key: "plugins",
     icon: renderIcon(Speedometer),
+  },
+  {
+    label: () =>
+      h(
+        RouterLink,
+        { to: "/imageBrowser" },
+        { default: () => "Image Browser" }
+      ),
+    key: "imageBrowser",
+    icon: renderIcon(Images),
   },
   {
     label: () => h(RouterLink, { to: "/stats" }, { default: () => "Stats" }),

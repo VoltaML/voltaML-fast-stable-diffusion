@@ -128,6 +128,7 @@ refreshModels();
   padding-bottom: 10px;
   width: 100%;
   background-color: rgb(24, 24, 28, 0.6);
+  height: 32px;
 }
 
 .logo {

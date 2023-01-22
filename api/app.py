@@ -1,5 +1,6 @@
 import asyncio
 import logging
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
@@ -9,7 +10,7 @@ from fastapi.staticfiles import StaticFiles
 from starlette import status
 
 from api import websocket_manager
-from api.routes import hardware, models, static, test, txt2img, ws
+from api.routes import hardware, models, outputs, static, test, txt2img, ws
 from core import shared
 
 
@@ -38,6 +39,7 @@ async def startup_event():
     "Prepare the event loop for other asynchronous tasks"
 
     shared.asyncio_loop = asyncio.get_event_loop()
+    logging.info(shared.asyncio_loop)
     asyncio.create_task(websocket_manager.sync_loop())
 
 
@@ -75,7 +77,12 @@ app.include_router(test.router, prefix="/api/test")
 app.include_router(txt2img.router, prefix="/api/txt2img")
 app.include_router(hardware.router, prefix="/api/hardware")
 app.include_router(models.router, prefix="/api/models")
+app.include_router(outputs.router, prefix="/api/output")
 app.include_router(ws.router, prefix="/api/websockets")
 
 # Mount static files (css, js, images, etc.)
 app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
+output_folder = Path("outputs")
+output_folder.mkdir(exist_ok=True)
+app.mount("/outputs", StaticFiles(directory="outputs"), name="outputs")

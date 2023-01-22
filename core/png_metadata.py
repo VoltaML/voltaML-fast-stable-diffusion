@@ -22,6 +22,7 @@ def create_metadata(job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]):
     metadata.add_text("steps", str(job.data.steps))
     metadata.add_text("guidance_scale", str(job.data.guidance_scale))
     metadata.add_text("seed", str(job.data.seed))
+    metadata.add_text("model", job.model)
 
     return metadata
 

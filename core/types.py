@@ -6,6 +6,20 @@ from uuid import uuid4
 from PIL import Image
 
 
+@dataclass
+class ImageMetadata:
+    "Metadata written to the image when it is saved"
+
+    prompt: str
+    negative_prompt: str
+    width: int
+    height: int
+    steps: int
+    guidance_scale: float
+    seed: str
+    model: str
+
+
 class Scheduler(Enum):
     "Enum of schedulers supported by the API"
 

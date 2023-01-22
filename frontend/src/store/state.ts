@@ -1,5 +1,6 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
+import type { imgData, imgMetadata } from "../core/interfaces";
 
 export interface StateInterface {
   progress: number;
@@ -10,6 +11,10 @@ export interface StateInterface {
   };
   current_step: number;
   total_steps: number;
+  imageBrowser: {
+    currentImage: imgData;
+    currentImageMetadata: imgMetadata;
+  };
 }
 
 export const useState = defineStore("state", () => {
@@ -22,6 +27,22 @@ export const useState = defineStore("state", () => {
     },
     current_step: 0,
     total_steps: 0,
+    imageBrowser: {
+      currentImage: {
+        path: "",
+        time: 0,
+      },
+      currentImageMetadata: {
+        prompt: "",
+        negative_prompt: "",
+        width: 0,
+        height: 0,
+        steps: 0,
+        guidance_scale: 0,
+        seed: "",
+        model: "",
+      },
+    },
   });
   return { state };
 });

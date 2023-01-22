@@ -1,4 +1,5 @@
 import logging
+from pathlib import Path
 
 import numpy as np
 import torch
@@ -7,6 +8,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.data import Data
 from core import shared
+from core.types import ImageMetadata
 from core.utils import convert_image_to_base64
 
 logger = logging.getLogger(__name__)
@@ -64,3 +66,23 @@ def pytorch_callback(data: dict):
             },
         )
     )
+
+
+def image_meta_from_file(path: Path):
+    "Return image metadata from a file"
+
+    with path.open("rb") as f:
+        image = Image.open(f)
+        text = image.text  # type: ignore
+        metadata = ImageMetadata(
+            prompt=text["prompt"],
+            negative_prompt=text["negative_prompt"],
+            height=int(text["height"]),
+            width=int(text["width"]),
+            seed=text["seed"],
+            guidance_scale=float(text["guidance_scale"]),
+            steps=int(text["steps"]),
+            model=text["model"],
+        )
+
+    return metadata

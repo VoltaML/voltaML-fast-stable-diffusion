@@ -21,13 +21,15 @@ coloredlogs_install(level=args.log_level)
 
 logger = logging.getLogger(__name__)
 
+PILLogger = logging.getLogger("PIL.PngImagePlugin")
+PILLogger.setLevel(logging.INFO)
+
 traced_unet_folder = Path("traced_unet")
 traced_unet_folder.mkdir(exist_ok=True)
 
 
 def main():
     "Run the API"
-
     import torch.backends.cudnn
 
     # Enable best cudnn functions
