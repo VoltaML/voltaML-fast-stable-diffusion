@@ -3,6 +3,7 @@ version: "3.7"
 services:
   voltaml:
     image: voltaml/volta_diffusion_webui:latest
+
     volumes:
       - engine:/workspace/voltaML-fast-stable-diffusion/engine
       - output:/workspace/voltaML-fast-stable-diffusion/static/output
