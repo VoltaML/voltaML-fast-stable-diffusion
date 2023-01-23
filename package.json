@@ -3,7 +3,7 @@
   "version": "0.0.3",
   "description": "Fast Stable Diffusion",
   "main": "index.js",
-  "license": "Multiple",
+  "license": "GPL-3.0",
   "private": false,
   "devDependencies": {
     "vitepress": "^1.0.0-alpha.36",

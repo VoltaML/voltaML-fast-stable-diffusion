@@ -14,7 +14,7 @@
           :auto-focus="false"
           :block-scroll="false"
           :show-mask="false"
-          :default-height="400"
+          :default-height="0"
         >
           <NDrawerContent>{{ glob.state.drawer_content }} </NDrawerContent>
         </NDrawer>
@@ -25,12 +25,12 @@
 
 <script setup lang="ts">
 import {
-  darkTheme,
   NConfigProvider,
   NDrawer,
   NDrawerContent,
   NMessageProvider,
   NNotificationProvider,
+  darkTheme,
   type GlobalThemeOverrides,
 } from "naive-ui";
 import CollapsileNavbarVue from "./components/CollapsileNavbar.vue";
