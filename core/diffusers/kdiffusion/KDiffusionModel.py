@@ -41,11 +41,15 @@ logger = logging.get_logger(__name__)
 
 
 class ModelWrapper:
+    "Wrapper for a model to be used with the K-Diffusion pipeline"
+
     def __init__(self, model, alphas_cumprod):
         self.model = model
         self.alphas_cumprod = alphas_cumprod
 
     def apply_model(self, *args, **kwargs):
+        "Generate propper arguments from the passed ones and apply them to the model"
+
         if len(args) == 3:
             encoder_hidden_states = args[-1]
             args = args[:2]
@@ -121,22 +125,30 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             feature_extractor=feature_extractor,
         )
 
-        self.vae: AutoencoderKL = self.vae
-        self.text_encoder: CLIPTextModel = self.text_encoder
-        self.unet: Union[UNet2DConditionModel, TracedUNet] = self.unet
-        self.tokenizer: CLIPTokenizer = self.tokenizer
-        self.scheduler: LMSDiscreteScheduler = self.scheduler
+        self.vae: AutoencoderKL = self.vae  # pylint: disable=no-member
+        self.text_encoder: CLIPTextModel = (
+            self.text_encoder  # pylint: disable=no-member
+        )
+        self.unet: Union[
+            UNet2DConditionModel, TracedUNet
+        ] = self.unet  # pylint: disable=no-member
+        self.tokenizer: CLIPTokenizer = self.tokenizer  # pylint: disable=no-member
+        self.scheduler: LMSDiscreteScheduler = (
+            self.scheduler  # pylint: disable=no-member
+        )
         self.safety_checker: Optional[
             SafeStableDiffusionSafetyChecker
-        ] = self.safety_checker
-        self.feature_extractor: Optional[CLIPVisionModel] = self.feature_extractor
+        ] = self.safety_checker  # pylint: disable=no-member
+        self.feature_extractor: Optional[
+            CLIPVisionModel
+        ] = self.feature_extractor  # pylint: disable=no-member
 
         self.register_to_config(requires_safety_checker=requires_safety_checker)
         self.vae_scale_factor = 2 ** (len(self.vae.config["block_out_channels"]) - 1)
         self.sampler_noises = sampler_noises
 
         model = ModelWrapper(unet, self.scheduler.alphas_cumprod)
-        if scheduler.prediction_type == "v_prediction":  # type: ignore
+        if scheduler.prediction_type == "v_prediction":  # type: ignore # pylint: disable=no-member
             self.k_diffusion_model = CompVisVDenoiser(model)
         else:
             self.k_diffusion_model = CompVisDenoiser(model)
@@ -146,7 +158,9 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
 
         library = importlib.import_module("k_diffusion")
         sampling = getattr(library, "sampling")
-        self.sampler = getattr(sampling, scheduler_type)
+        self.sampler = getattr(  # pylint: disable=attribute-defined-outside-init
+            sampling, scheduler_type
+        )
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline.enable_sequential_cpu_offload
     def enable_sequential_cpu_offload(self, gpu_id=0):
@@ -198,10 +212,13 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         for module in self.unet.modules():
             if (
                 hasattr(module, "_hf_hook")
-                and hasattr(module._hf_hook, "execution_device")
-                and module._hf_hook.execution_device is not None  # type: ignore
+                and hasattr(
+                    module._hf_hook,  # pylint: disable=protected-access
+                    "execution_device",
+                )
+                and module._hf_hook.execution_device is not None  # type: ignore # pylint: disable=protected-access
             ):
-                return torch.device(module._hf_hook.execution_device)  # type: ignore
+                return torch.device(module._hf_hook.execution_device)  # type: ignore # pylint: disable=protected-access
         return self.device
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline._encode_prompt
@@ -336,6 +353,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
+        "Check if the image is safe to be displayed"
+
         if self.safety_checker is not None:
             if self.feature_extractor is not None:
                 safety_checker_input = self.feature_extractor(
@@ -351,6 +370,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline.decode_latents
     def decode_latents(self, latents):
+        "Decode latents to images"
+
         latents = 1 / 0.18215 * latents
         image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
@@ -359,6 +380,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         return image
 
     def check_inputs_txt2img(self, prompt, height, width):
+        "Check if the inputs are valid"
+
         if not isinstance(prompt, str) and not isinstance(prompt, list):
             raise ValueError(
                 f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
@@ -380,6 +403,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         generator,
         latents=None,
     ):
+        "Prepare the initial latents for text to image processing"
+
         shape = (
             batch_size,
             num_channels_latents,
@@ -611,7 +636,6 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         return_dict: bool = True,
         callback: Optional[Callable[[Dict], None]] = None,
         use_karras_sigmas: bool = True,
-        **kwargs,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -825,6 +849,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         device,
         generator=None,
     ):
+        "Prepare latent variables for the image to image pipeline"
+
         image = image.to(device=device, dtype=dtype)
 
         batch_size = batch_size * num_images_per_prompt
@@ -899,7 +925,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         return latents
 
     def get_timesteps(self, num_inference_steps, strength):
-        # get the original timestep using init_timestep
+        "Get the original timestep using init_timestep"
+
         init_timestep = min(int(num_inference_steps * strength), num_inference_steps)
 
         t_start = max(num_inference_steps - init_timestep, 0)

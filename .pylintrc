@@ -13,6 +13,6 @@ disable=
 
 
 [TYPECHECK]
-generated-members=¨
+generated-members=
     torch.*,
     cuda.*,
