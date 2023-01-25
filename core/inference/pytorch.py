@@ -4,13 +4,15 @@ import os
 from typing import Callable, Dict, List, Optional
 
 import torch
-from PIL.Image import Image
+from PIL import Image
 
+from api import websocket_manager
+from api.websockets import Data
 from core.config import config
 from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, KDiffusionScheduler, Txt2ImgQueueEntry
-from core.utils import process_image
+from core.utils import convert_image_to_base64, process_image
 
 logger = logging.getLogger(__name__)
 
@@ -71,7 +73,7 @@ class PyTorchInferenceModel:
     def txt2img(
         self,
         job: Txt2ImgQueueEntry,
-    ) -> List[Image]:
+    ) -> List[Image.Image]:
         "Generate an image from a prompt"
 
         if self.model is None:
@@ -95,12 +97,23 @@ class PyTorchInferenceModel:
             callback=self.callback,
             use_karras_sigmas=job.use_karras_sigmas,
         )
+        images: list[Image.Image] = data[0]
 
-        images: list[Image] = data[0]
+        websocket_manager.broadcast_sync(
+            data=Data(
+                data_type="txt2img",
+                data={
+                    "progress": 0,
+                    "current_step": 0,
+                    "total_steps": 0,
+                    "image": convert_image_to_base64(images[0]),
+                },
+            )
+        )
 
         return images
 
-    def img2img(self, job: Img2ImgQueueEntry) -> List[Image]:
+    def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
         if self.model is None:
@@ -124,7 +137,7 @@ class PyTorchInferenceModel:
             use_karras_sigmas=job.use_karras_sigmas,
         )
 
-        images: list[Image] = data[0]
+        images: list[Image.Image] = data[0]
 
         return images
 
