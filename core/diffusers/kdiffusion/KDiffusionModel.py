@@ -18,16 +18,24 @@ import random
 from typing import Callable, Dict, List, Optional, Union
 
 import torch
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.models.vae import AutoencoderKL
 from diffusers.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
+from diffusers.pipelines.stable_diffusion_safe.safety_checker import (
+    CLIPVisionModel,
+    SafeStableDiffusionSafetyChecker,
+)
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
-from diffusers.utils import is_accelerate_available, logging
+from diffusers.utils import deprecate, is_accelerate_available, logging
 from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 from k_diffusion.sampling import get_sigmas_karras
 from PIL import Image
+from transformers.models.clip.modeling_clip import CLIPTextModel
+from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from core.functions import preprocess_image
-from core.inference.unet_tracer import get_traced_unet
+from core.inference.unet_tracer import TracedUNet, get_traced_unet
 
 logger = logging.get_logger(__name__)
 
@@ -43,6 +51,10 @@ class ModelWrapper:
             args = args[:2]
         if kwargs.get("cond", None) is not None:
             encoder_hidden_states = kwargs.pop("cond")
+        else:
+            encoder_hidden_states = None
+
+        assert encoder_hidden_states is not None
         return self.model(
             *args, encoder_hidden_states=encoder_hidden_states, **kwargs
         ).sample
@@ -109,17 +121,22 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             feature_extractor=feature_extractor,
         )
 
-        # Text Encoder: <class 'transformers.models.clip.modeling_clip.CLIPTextModel'>
-        # VAE: <class 'diffusers.models.vae.AutoencoderKL'>
-        # Unet: <class 'diffusers.models.unet_2d_condition.UNet2DConditionModel'>
-        # Tokenizer: <class 'transformers.models.clip.tokenization_clip.CLIPTokenizer'>
+        self.vae: AutoencoderKL = self.vae
+        self.text_encoder: CLIPTextModel = self.text_encoder
+        self.unet: Union[UNet2DConditionModel, TracedUNet] = self.unet
+        self.tokenizer: CLIPTokenizer = self.tokenizer
+        self.scheduler: LMSDiscreteScheduler = self.scheduler
+        self.safety_checker: Optional[
+            SafeStableDiffusionSafetyChecker
+        ] = self.safety_checker
+        self.feature_extractor: Optional[CLIPVisionModel] = self.feature_extractor
 
         self.register_to_config(requires_safety_checker=requires_safety_checker)
-        self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)
+        self.vae_scale_factor = 2 ** (len(self.vae.config["block_out_channels"]) - 1)
         self.sampler_noises = sampler_noises
 
-        model = ModelWrapper(unet, scheduler.alphas_cumprod)  # type: ignore
-        if scheduler.prediction_type == "v_prediction":
+        model = ModelWrapper(unet, self.scheduler.alphas_cumprod)
+        if scheduler.prediction_type == "v_prediction":  # type: ignore
             self.k_diffusion_model = CompVisVDenoiser(model)
         else:
             self.k_diffusion_model = CompVisDenoiser(model)
@@ -182,9 +199,9 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             if (
                 hasattr(module, "_hf_hook")
                 and hasattr(module._hf_hook, "execution_device")
-                and module._hf_hook.execution_device is not None
+                and module._hf_hook.execution_device is not None  # type: ignore
             ):
-                return torch.device(module._hf_hook.execution_device)
+                return torch.device(module._hf_hook.execution_device)  # type: ignore
         return self.device
 
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline._encode_prompt
@@ -212,6 +229,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
                 The prompt or prompts not to guide the image generation. Ignored when not using guidance (i.e., ignored
                 if `guidance_scale` is less than `1`).
         """
+
         batch_size = len(prompt) if isinstance(prompt, list) else 1
 
         text_inputs = self.tokenizer(
@@ -252,8 +270,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         text_embeddings = text_embeddings[0]
 
         # duplicate text embeddings for each generation per prompt, using mps friendly method
-        bs_embed, seq_len, _ = text_embeddings.shape
-        text_embeddings = text_embeddings.repeat(1, num_images_per_prompt, 1)
+        bs_embed, seq_len, _ = text_embeddings.shape  # type: ignore
+        text_embeddings = text_embeddings.repeat(1, num_images_per_prompt, 1)  # type: ignore
         text_embeddings = text_embeddings.view(
             bs_embed * num_images_per_prompt, seq_len, -1
         )
@@ -319,12 +337,14 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline.run_safety_checker
     def run_safety_checker(self, image, device, dtype):
         if self.safety_checker is not None:
-            safety_checker_input = self.feature_extractor(
-                self.numpy_to_pil(image), return_tensors="pt"
-            ).to(device)
-            image, has_nsfw_concept = self.safety_checker(
-                images=image, clip_input=safety_checker_input.pixel_values.to(dtype)
-            )
+            if self.feature_extractor is not None:
+                safety_checker_input = self.feature_extractor(
+                    self.numpy_to_pil(image), return_tensors="pt"
+                ).to(device)
+                image, has_nsfw_concept = self.safety_checker(
+                    images=image, clip_input=safety_checker_input.pixel_values.to(dtype)
+                )
+            has_nsfw_concept = None
         else:
             has_nsfw_concept = None
         return image, has_nsfw_concept
@@ -332,7 +352,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
     # Copied from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion.StableDiffusionPipeline.decode_latents
     def decode_latents(self, latents):
         latents = 1 / 0.18215 * latents
-        image = self.vae.decode(latents).sample
+        image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloa16
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
@@ -395,9 +415,9 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
-        num_images_per_prompt: Optional[int] = 1,
+        num_images_per_prompt: int = 1,
         generator: Optional[torch.Generator] = None,
-        latents: Optional[torch.FloatTensor] = None,
+        input_latents: Optional[torch.FloatTensor] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
         callback: Optional[Callable[[Dict], None]] = None,
@@ -458,6 +478,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
+
         # Apply torch seed
         if seed:
             torch.manual_seed(seed)
@@ -465,8 +486,10 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             torch.manual_seed(random.randint(0, 100000000))
 
         # 0. Default height and width to unet
-        height = height or self.unet.config.sample_size * self.vae_scale_factor
-        width = width or self.unet.config.sample_size * self.vae_scale_factor
+        sample_size = self.unet.config.sample_size  # type: ignore
+
+        height = height or sample_size * self.vae_scale_factor
+        width = width or sample_size * self.vae_scale_factor
 
         # 1. Check inputs. Raise error if not correct
         self.check_inputs_txt2img(prompt, height, width)
@@ -498,8 +521,10 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         # 4.1. Prepare sigmas (or karras sigmas)
         if use_karras_sigmas:
             logger.debug("Applying KARRAS SIGMAS")
-            sigma_min: float = self.k_diffusion_model.sigmas[0].item()
-            sigma_max: float = self.k_diffusion_model.sigmas[-1].item()
+            kdiff_sigmas = self.k_diffusion_model.sigmas
+            assert isinstance(kdiff_sigmas, torch.Tensor)
+            sigma_min: float = kdiff_sigmas[0].item()
+            sigma_max: float = kdiff_sigmas[-1].item()
             sigmas = get_sigmas_karras(
                 n=num_inference_steps, sigma_min=sigma_min, sigma_max=sigma_max
             )
@@ -510,7 +535,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             sigmas = sigmas.to(text_embeddings.dtype)
 
         # 5. Prepare latent variables
-        num_channels_latents = self.unet.in_channels
+        num_channels_latents = self.unet.in_channels  # type: ignore
         latents = self.prepare_latents_txt2img(
             batch_size=batch_size * num_images_per_prompt,
             num_channels_latents=num_channels_latents,
@@ -519,7 +544,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             dtype=text_embeddings.dtype,
             device=device,
             generator=generator,
-            latents=latents,
+            latents=input_latents,
         )
         latents = latents * sigmas[0]
         self.k_diffusion_model.sigmas = self.k_diffusion_model.sigmas.to(latents.device)
@@ -577,8 +602,8 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
         seed: Optional[int] = None,
         init_image: Optional[Union[torch.FloatTensor, Image.Image]] = None,
         strength: float = 0.8,
-        num_inference_steps: Optional[int] = 50,
-        guidance_scale: Optional[float] = 7.5,
+        num_inference_steps: int = 50,
+        guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         num_images_per_prompt: int = 1,
         generator: Optional[Union[torch.Generator, List[torch.Generator]]] = None,
@@ -705,8 +730,10 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
 
         if use_karras_sigmas:
             logger.debug("Applying KARRAS SIGMAS")
-            sigma_min: float = self.k_diffusion_model.sigmas[0].item()
-            sigma_max: float = self.k_diffusion_model.sigmas[-1].item()
+            kdiff_sigmas = self.k_diffusion_model.sigmas
+            assert isinstance(kdiff_sigmas, torch.Tensor)
+            sigma_min: float = kdiff_sigmas[0].item()
+            sigma_max: float = kdiff_sigmas[-1].item()
             sigmas = get_sigmas_karras(
                 n=num_inference_steps, sigma_min=sigma_min, sigma_max=sigma_max
             )
@@ -812,7 +839,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
                 self.vae.encode(image[i : i + 1]).latent_dist.sample(generator[i])
                 for i in range(batch_size)
             ]
-            init_latents = torch.cat(init_latents, dim=0)
+            init_latents = torch.cat(init_latents, dim=0)  # type: ignore
         else:
             init_latents = self.vae.encode(image).latent_dist.sample(generator)
 
@@ -866,7 +893,7 @@ class StableDiffusionKDiffusionPipeline(DiffusionPipeline):
             ).to(device)
 
         # get latents
-        init_latents = self.scheduler.add_noise(init_latents, noise, timestep)
+        init_latents = self.scheduler.add_noise(init_latents, noise, timestep)  # type: ignore
         latents = init_latents
 
         return latents

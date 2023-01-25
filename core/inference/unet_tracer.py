@@ -44,11 +44,9 @@ def generate_traced_model(
     )
     assert isinstance(pipe, StableDiffusionKDiffusionPipeline)
     pipe = pipe.to("cuda")
-    unet = pipe.unet  # type: ignore
+    unet = pipe.unet
     unet.eval()
-    unet.forward = functools.partial(
-        unet.forward, return_dict=False
-    )  # set return_dict=False as default
+    unet.forward = functools.partial(unet.forward, return_dict=False)  # type: ignore
 
     # warmup
     for _ in range(3):
