@@ -10,7 +10,17 @@ from fastapi.staticfiles import StaticFiles
 from starlette import status
 
 from api import websocket_manager
-from api.routes import hardware, models, outputs, static, test, txt2img, ws
+from api.routes import (
+    core,
+    hardware,
+    img2img,
+    models,
+    outputs,
+    static,
+    test,
+    txt2img,
+    ws,
+)
 from core import shared
 
 
@@ -78,6 +88,8 @@ app.include_router(txt2img.router, prefix="/api/txt2img")
 app.include_router(hardware.router, prefix="/api/hardware")
 app.include_router(models.router, prefix="/api/models")
 app.include_router(outputs.router, prefix="/api/output")
+app.include_router(core.router, prefix="/api")
+app.include_router(img2img.router, prefix="/api/img2img")
 app.include_router(ws.router, prefix="/api/websockets")
 
 # Mount static files (css, js, images, etc.)

@@ -234,7 +234,58 @@ class GPU:
     async def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Run an image2image job"
 
-        raise NotImplementedError
+        def thread_call(job: Img2ImgQueueEntry) -> List[Image.Image]:
+            model: Union["DemoDiffusion", PyTorchInferenceModel] = self.loaded_models[
+                job.model
+            ]
+
+            shared.current_model = model
+            shared.current_steps = job.data.steps
+
+            if isinstance(model, PyTorchInferenceModel):
+                logger.debug("Generating with PyTorch")
+                scheduler = job.scheduler
+                if not isinstance(scheduler, KDiffusionScheduler):
+                    raise BadSchedulerError
+                images: List[Image.Image] = model.img2img(job)
+                self.memory_cleanup()
+                return images
+
+            logger.debug("Generating with TensorRT")
+            images: List[Image.Image]
+
+            scheduler = job.scheduler
+            assert isinstance(scheduler, Scheduler)
+
+            _, images = model.infer(
+                [job.data.prompt],
+                [job.data.negative_prompt],
+                job.data.height,
+                job.data.width,
+                guidance_scale=job.data.guidance_scale,
+                verbose=False,
+                seed=job.data.seed,
+                output_dir="output",
+                num_of_infer_steps=job.data.steps,
+                scheduler=scheduler,
+            )
+            self.memory_cleanup()
+            return images
+
+        images: Optional[List[Image.Image]]
+        error: Optional[Exception]
+        images, error = await run_in_thread_async(func=thread_call, args=(job,))
+
+        if error is not None:
+            raise error
+
+        assert images is not None
+
+        if job.save_image:
+            for image in images:
+                save_image(image, job)
+
+        return images
 
     def memory_cleanup(self):
         "Release all unused memory"

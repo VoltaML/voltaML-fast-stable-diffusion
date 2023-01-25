@@ -3,12 +3,12 @@ import base64
 from io import BytesIO
 from typing import Any, Callable, Coroutine, Dict, Optional, Tuple, Union
 
-from PIL.Image import Image
+from PIL import Image
 
 from core.thread import ThreadWithReturnValue
 
 
-def convert_image_to_stream(image: Image) -> BytesIO:
+def convert_image_to_stream(image: Image.Image) -> BytesIO:
     "Convert an image to a stream of bytes"
 
     stream = BytesIO()
@@ -17,7 +17,19 @@ def convert_image_to_stream(image: Image) -> BytesIO:
     return stream
 
 
-def convert_image_to_base64(image: Image) -> str:
+def process_image(image: Union[Image.Image, bytes, str]) -> Image.Image:
+    "Converts the image to a PIL Image if it is a base64 string or bytes"
+
+    if isinstance(image, str):
+        b = convert_base64_to_bytes(image)
+        return Image.open(b)
+    elif isinstance(image, bytes):
+        return Image.open(image)
+    else:
+        return image
+
+
+def convert_image_to_base64(image: Image.Image) -> str:
     "Convert an image to a base64 string"
 
     stream = convert_image_to_stream(image)

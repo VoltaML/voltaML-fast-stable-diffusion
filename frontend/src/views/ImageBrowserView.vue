@@ -67,7 +67,7 @@
     <NCard style="height: 200px">
       <NTabs type="segment">
         <NTabPane name="Txt2Img">
-          <NScrollbar x-scrollable trigger="none">
+          <NScrollbar x-scrollable trigger="hover">
             <div style="white-space: nowrap">
               <span
                 v-for="(i, index) in txt2imgData"

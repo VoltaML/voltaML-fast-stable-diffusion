@@ -10,6 +10,7 @@ from core.config import config
 from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, KDiffusionScheduler, Txt2ImgQueueEntry
+from core.utils import process_image
 
 logger = logging.getLogger(__name__)
 
@@ -92,7 +93,6 @@ class PyTorchInferenceModel:
             seed=job.data.seed,
             return_dict=False,
             callback=self.callback,
-            callback_steps=self.callback_steps,
             use_karras_sigmas=job.use_karras_sigmas,
         )
 
@@ -103,7 +103,30 @@ class PyTorchInferenceModel:
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image]:
         "Generate an image from an image"
 
-        raise NotImplementedError
+        if self.model is None:
+            raise ValueError("Model not loaded")
+
+        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+
+        change_scheduler(model=self.model, scheduler=job.scheduler)
+
+        data = self.model.img2img(
+            prompt=job.data.prompt,
+            init_image=process_image(job.data.image),
+            num_inference_steps=job.data.steps,
+            guidance_scale=job.data.guidance_scale,
+            negative_prompt=job.data.negative_prompt,
+            output_type="pil",
+            generator=generator,
+            seed=job.data.seed,
+            return_dict=False,
+            callback=self.callback,
+            use_karras_sigmas=job.use_karras_sigmas,
+        )
+
+        images: list[Image] = data[0]
+
+        return images
 
     def optimize(self) -> None:
         "Optimize the model for inference"

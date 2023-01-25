@@ -179,6 +179,27 @@
               :max="9"
             />
           </div>
+          <div class="flex-container">
+            <NTooltip :max-width="600">
+              <template #trigger>
+                <p class="slider-label">Batch Size</p>
+              </template>
+              Number of images to generate in paralel.
+            </NTooltip>
+            <NSlider
+              v-model:value="conf.data.settings.txt2img.batchSize"
+              :min="1"
+              :max="9"
+              style="margin-right: 12px"
+            />
+            <NInputNumber
+              v-model:value="conf.data.settings.txt2img.batchSize"
+              size="small"
+              style="min-width: 96px; width: 96px"
+              :min="1"
+              :max="9"
+            />
+          </div>
 
           <!-- Seed -->
           <div class="flex-container">
@@ -305,7 +326,7 @@ const generate = () => {
         steps: conf.data.settings.txt2img.steps,
         guidance_scale: conf.data.settings.txt2img.cfgScale,
         seed: checkSeed(conf.data.settings.txt2img.seed),
-        batch_size: 1,
+        batch_size: conf.data.settings.txt2img.batchSize,
         batch_count: conf.data.settings.txt2img.batchCount,
       },
       model: conf.data.settings.model,

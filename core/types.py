@@ -3,8 +3,6 @@ from enum import Enum
 from typing import Union
 from uuid import uuid4
 
-from PIL import Image
-
 
 @dataclass
 class ImageMetadata:
@@ -87,7 +85,7 @@ class Img2imgData:
     "Dataclass for the data of an img2img request"
 
     prompt: str
-    image: Image.Image
+    image: Union[bytes, str]
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)

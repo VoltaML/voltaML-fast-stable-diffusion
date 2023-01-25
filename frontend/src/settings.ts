@@ -40,6 +40,7 @@ export interface SettingsInterface {
     negativePrompt: string;
     steps: number;
     batchCount: number;
+    batchSize: number;
   };
 }
 
@@ -57,6 +58,7 @@ const defaultSettings: SettingsInterface = {
     prompt: "",
     steps: 25,
     batchCount: 1,
+    batchSize: 1,
     negativePrompt:
       "lowres, bad anatomy, bad hands, text, error, missing fingers, cropped, jpeg artifacts, worst quality, low quality, signature, watermark, blurry, deformed, extra ears, disfigured, mutation, censored, fused legs, bad legs, bad hands, missing fingers, extra digit, fewer digits, normal quality, username, artist name",
   },
