@@ -4,8 +4,8 @@ from typing import Literal, Optional
 import torch
 from fastapi import APIRouter, HTTPException
 
-from core import cached_model_list, cluster
 from core.gpu import GPU
+from core.shared_dependent import cached_model_list, cluster
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)

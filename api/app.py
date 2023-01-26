@@ -49,7 +49,6 @@ async def startup_event():
     "Prepare the event loop for other asynchronous tasks"
 
     shared.asyncio_loop = asyncio.get_event_loop()
-    logging.info(shared.asyncio_loop)
     asyncio.create_task(websocket_manager.sync_loop())
 
 

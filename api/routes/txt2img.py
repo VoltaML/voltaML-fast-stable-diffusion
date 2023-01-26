@@ -3,8 +3,8 @@ from typing import List
 from fastapi import APIRouter, HTTPException
 from PIL.Image import Image
 
-from core import cluster
 from core.errors import BadSchedulerError, ModelNotLoadedError
+from core.shared_dependent import cluster
 from core.types import Txt2ImgQueueEntry
 from core.utils import convert_image_to_base64
 

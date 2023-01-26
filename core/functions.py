@@ -103,6 +103,8 @@ def image_meta_from_file(path: Path) -> ImageMetadata:
 
 
 def preprocess_image(image):
+    "Preprocess an image for the model"
+
     if isinstance(image, torch.Tensor):
         return image
     elif isinstance(image, Image.Image):
