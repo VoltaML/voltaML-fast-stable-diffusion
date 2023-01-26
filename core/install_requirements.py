@@ -78,7 +78,7 @@ def install_tensorrt():
     install_requirements("requirements/tensorrt.txt")
 
 
-def is_installed(package):
+def is_installed(package: str):
     "Check if a package is installed"
 
     try:
@@ -113,13 +113,40 @@ def commit_hash():
             shell=True,
             check=True,
             capture_output=True,
-            stdout=subprocess.PIPE,
         )
         stored_commit_hash = result.stdout.decode(encoding="utf-8").strip()
     except subprocess.CalledProcessError:
         stored_commit_hash = "<none>"
 
     return stored_commit_hash
+
+
+def version_check(commit: str):
+    """
+    Check if the local version is up to date
+
+    Taken from: https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/645f4e7ef8c9d59deea7091a22373b2da2b780f2/launch.py#L134
+    """
+
+    try:
+        import requests
+
+        commits = requests.get(
+            "https://api.github.com/repos/Stax124/voltaML-fast-stable-diffusion/branches/WebUI",
+            timeout=5,
+        ).json()
+        print(f"Current commit: {commit}")
+        if commit not in ("<none>", commits["commit"]["sha"]):
+            print("--------------------------------------------------------")
+            print("| You are not up to date with the most recent release. |")
+            print("| Consider running `git pull` to update.               |")
+            print("--------------------------------------------------------")
+        elif commits["commit"]["sha"] == commit:
+            print("You are up to date with the most recent release.")
+        else:
+            print("Not a git clone, can't perform version check.")
+    except Exception as e:  # pylint: disable=broad-except
+        print("version check failed", e)
 
 
 def is_up_to_date():
@@ -135,14 +162,16 @@ def in_virtualenv():
 def create_environment():
     "Create a virtual environment"
 
+    command = (
+        "source venv/bin/activate"
+        if sys.platform == "linux"
+        else "venv\\Scripts\\activate.bat OR venv\\Scripts\\Activate.ps1"
+    )
+
     if virtualenv_exists():
-        command = (
-            "source venv/bin/activate"
-            if sys.platform == "linux"
-            else "venv\\Scripts\\activate.bat OR venv\\Scripts\\Activate.ps1"
-        )
+
         logger.info(
-            f"Virtual environment already exists, you just need to activate it - {command}"
+            f"Virtual environment already exists, you just need to activate it with '{command}'"
         )
         sys.exit(1)
 
@@ -154,6 +183,9 @@ def create_environment():
                 f"{python_executable} -m virtualenv venv",
                 shell=True,
                 check=True,
+            )
+            logger.info(
+                f"Virtual environment created, please activate it with '{command}'"
             )
         except subprocess.CalledProcessError:
             logger.error("Failed to create virtual environment")

@@ -3,7 +3,13 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from core.install_requirements import create_environment, in_virtualenv, install_pytorch
+from core.install_requirements import (
+    commit_hash,
+    create_environment,
+    in_virtualenv,
+    install_pytorch,
+    version_check,
+)
 
 parser = ArgumentParser()
 parser.add_argument(
@@ -61,6 +67,8 @@ def checks():
 
         logger.error("Please run the script from a virtual environment")
         sys.exit(1)
+
+    version_check(commit_hash())
 
     install_pytorch()
 
