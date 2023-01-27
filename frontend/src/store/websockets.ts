@@ -1,4 +1,4 @@
-import { webSocketUrl } from "@/env";
+import { serverUrl, webSocketUrl } from "@/env";
 import {
   processWebSocket,
   type WebSocketMessage,
@@ -8,10 +8,12 @@ import { useNotification } from "naive-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useState } from "../store/state";
+import { useSettings } from "./settings";
 
 export const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
   const global = useState();
+  const conf = useSettings();
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     autoReconnect: {
       delay: 3000,
@@ -21,12 +23,25 @@ export const useWebsocket = defineStore("websocket", () => {
       interval: 30000,
     },
     onMessage: (ws: WebSocket, event: MessageEvent) => {
-      console.info(event.data);
       if (event.data === "pong") {
         return;
       }
+      console.info(event.data);
       const data = JSON.parse(event.data) as WebSocketMessage;
       processWebSocket(data, global, notificationProvider);
+    },
+    onConnected: () => {
+      fetch(`${serverUrl}/api/models/loaded`).then((response) => {
+        if (response.status === 200) {
+          response.json().then((data) => {
+            if (data.length === 0) {
+              conf.data.settings.model = "none";
+              return;
+            }
+            conf.data.settings.model = data[0][0];
+          });
+        }
+      });
     },
   });
 

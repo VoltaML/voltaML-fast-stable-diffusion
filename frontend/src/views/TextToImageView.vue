@@ -3,242 +3,237 @@
     <!-- Main -->
     <NGrid cols="1 850:2" x-gap="12">
       <NGi>
-        <NSpace vertical class="left-container">
-          <!-- Prompt -->
-          <NInput
-            v-model:value="conf.data.settings.txt2img.prompt"
-            type="textarea"
-            placeholder="Prompt"
-          />
-          <NInput
-            v-model:value="conf.data.settings.txt2img.negativePrompt"
-            type="textarea"
-            placeholder="Negative prompt"
-          />
-
-          <!-- Sampler -->
-          <div class="flex-container">
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p style="margin-right: 12px">Sampler</p>
-              </template>
-              The sampler is the method used to generate the image. Your result
-              may vary drastically depending on the sampler you choose.
-              <b class="highlight"
-                >We recommend using Euler A for the best results (but it also
-                takes more time).
-              </b>
-              <a
-                target="_blank"
-                href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
-                >Learn more</a
-              >
-            </NTooltip>
-
-            <NSelect
-              :options="conf.scheduler_options"
-              v-model:value="conf.data.settings.txt2img.sampler"
-              style="flex-grow: 1"
+        <NCard title="Settings">
+          <NSpace vertical class="left-container">
+            <!-- Prompt -->
+            <NInput
+              v-model:value="conf.data.settings.txt2img.prompt"
+              type="textarea"
+              placeholder="Prompt"
+            />
+            <NInput
+              v-model:value="conf.data.settings.txt2img.negativePrompt"
+              type="textarea"
+              placeholder="Negative prompt"
             />
 
-            <div style="width: 32px"></div>
+            <!-- Sampler -->
+            <div class="flex-container">
+              <NTooltip :max-width="600">
+                <template #trigger>
+                  <p style="margin-right: 12px; width: 150px">Sampler</p>
+                </template>
+                The sampler is the method used to generate the image. Your
+                result may vary drastically depending on the sampler you choose.
+                <b class="highlight"
+                  >We recommend using Euler A for the best results (but it also
+                  takes more time).
+                </b>
+                <a
+                  target="_blank"
+                  href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
+                  >Learn more</a
+                >
+              </NTooltip>
 
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p style="margin-right: 12px">Karras sigmas</p>
-              </template>
-              If Karras sigmas should be used. Same as using ...Karras sampler
-              in A111
-            </NTooltip>
+              <NSelect
+                :options="conf.scheduler_options"
+                v-model:value="conf.data.settings.txt2img.sampler"
+                style="flex-grow: 1"
+              />
 
-            <NSelect
-              :options="[
-                { label: 'No', value: 0 },
-                { label: 'Yes', value: 1 },
-              ]"
-              v-model:value="conf.data.settings.useKarrasSigmas"
-              style="flex-grow: 1"
-            />
-          </div>
+              <div style="width: 32px"></div>
 
-          <!-- Dimensions -->
-          <div class="flex-container">
-            <p class="slider-label">Width</p>
-            <NSlider
-              v-model:value="conf.data.settings.txt2img.width"
-              :min="128"
-              :max="2048"
-              :step="8"
-              style="margin-right: 12px"
-            />
-            <NInputNumber
-              v-model:value="conf.data.settings.txt2img.width"
-              size="small"
-              style="min-width: 96px; width: 96px"
-              :step="8"
-              :min="128"
-              :max="2048"
-            />
-          </div>
-          <div class="flex-container">
-            <p class="slider-label">Height</p>
-            <NSlider
-              v-model:value="conf.data.settings.txt2img.height"
-              :min="128"
-              :max="2048"
-              :step="8"
-              style="margin-right: 12px"
-            />
-            <NInputNumber
-              v-model:value="conf.data.settings.txt2img.height"
-              size="small"
-              style="min-width: 96px; width: 96px"
-              :step="8"
-              :min="128"
-              :max="2048"
-            />
-          </div>
+              <NTooltip :max-width="600">
+                <template #trigger>
+                  <p style="margin-right: 12px; width: 150px">Karras sigmas</p>
+                </template>
+                If Karras sigmas should be used. Same as using ...Karras sampler
+                in A111
+              </NTooltip>
 
-          <!-- Steps -->
-          <div class="flex-container">
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p class="slider-label">Steps</p>
-              </template>
-              Number of steps to take in the diffusion process. Higher values
-              will result in more detailed images but will take longer to
-              generate. There is also a point of diminishing returns around 100
-              steps.
-              <b class="highlight"
-                >We recommend using 20-50 steps for most images.</b
-              >
-            </NTooltip>
-            <NSlider
-              v-model:value="conf.data.settings.txt2img.steps"
-              :min="5"
-              :max="300"
-              style="margin-right: 12px"
-            />
-            <NInputNumber
-              v-model:value="conf.data.settings.txt2img.steps"
-              size="small"
-              style="min-width: 96px; width: 96px"
-              :min="5"
-              :max="300"
-            />
-          </div>
+              <NSelect
+                :options="[
+                  { label: 'No', value: 0 },
+                  { label: 'Yes', value: 1 },
+                ]"
+                v-model:value="conf.data.settings.useKarrasSigmas"
+                style="flex-grow: 1"
+              />
+            </div>
 
-          <!-- CFG Scale -->
-          <div class="flex-container">
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p class="slider-label">CFG Scale</p>
-              </template>
-              Guidance scale indicates how much should model stay close to the
-              prompt. Higher values might be exactly what you want, but
-              generated images might have some artefacts. Lower values indicates
-              that model can "dream" about this prompt more.
-              <b class="highlight">We recommend using 3-15 for most images.</b>
-            </NTooltip>
-            <NSlider
-              v-model:value="conf.data.settings.txt2img.cfgScale"
-              :min="1"
-              :max="30"
-              :step="0.5"
-              style="margin-right: 12px"
-            />
-            <NInputNumber
-              v-model:value="conf.data.settings.txt2img.cfgScale"
-              size="small"
-              style="min-width: 96px; width: 96px"
-              :min="1"
-              :max="30"
-              :step="0.5"
-            />
-          </div>
+            <!-- Dimensions -->
+            <div class="flex-container">
+              <p class="slider-label">Width</p>
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.width"
+                :min="128"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.width"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="128"
+                :max="2048"
+              />
+            </div>
+            <div class="flex-container">
+              <p class="slider-label">Height</p>
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.height"
+                :min="128"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.height"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="128"
+                :max="2048"
+              />
+            </div>
 
-          <!-- Number of images -->
-          <div class="flex-container">
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p class="slider-label">Batch Count</p>
-              </template>
-              Number of images to generate after each other.
-            </NTooltip>
-            <NSlider
-              v-model:value="conf.data.settings.txt2img.batchCount"
-              :min="1"
-              :max="9"
-              style="margin-right: 12px"
-            />
-            <NInputNumber
-              v-model:value="conf.data.settings.txt2img.batchCount"
-              size="small"
-              style="min-width: 96px; width: 96px"
-              :min="1"
-              :max="9"
-            />
-          </div>
-          <div class="flex-container">
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p class="slider-label">Batch Size</p>
-              </template>
-              Number of images to generate in paralel.
-            </NTooltip>
-            <NSlider
-              v-model:value="conf.data.settings.txt2img.batchSize"
-              :min="1"
-              :max="9"
-              style="margin-right: 12px"
-            />
-            <NInputNumber
-              v-model:value="conf.data.settings.txt2img.batchSize"
-              size="small"
-              style="min-width: 96px; width: 96px"
-              :min="1"
-              :max="9"
-            />
-          </div>
+            <!-- Steps -->
+            <div class="flex-container">
+              <NTooltip :max-width="600">
+                <template #trigger>
+                  <p class="slider-label">Steps</p>
+                </template>
+                Number of steps to take in the diffusion process. Higher values
+                will result in more detailed images but will take longer to
+                generate. There is also a point of diminishing returns around
+                100 steps.
+                <b class="highlight"
+                  >We recommend using 20-50 steps for most images.</b
+                >
+              </NTooltip>
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.steps"
+                :min="5"
+                :max="300"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.steps"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="5"
+                :max="300"
+              />
+            </div>
 
-          <!-- Seed -->
-          <div class="flex-container">
-            <NTooltip :max-width="600">
-              <template #trigger>
-                <p class="slider-label">Seed</p>
-              </template>
-              Seed is a number that represents the starting canvas of your
-              image. If you want to create the same image as your friend, you
-              can use the same settings and seed to do so.
-              <b class="highlight">For random seed use -1.</b>
-            </NTooltip>
-            <NInputNumber
-              v-model:value="conf.data.settings.txt2img.seed"
-              size="small"
-              :min="-1"
-              :max="999999999"
-              style="flex-grow: 1"
-            />
-          </div>
+            <!-- CFG Scale -->
+            <div class="flex-container">
+              <NTooltip :max-width="600">
+                <template #trigger>
+                  <p class="slider-label">CFG Scale</p>
+                </template>
+                Guidance scale indicates how much should model stay close to the
+                prompt. Higher values might be exactly what you want, but
+                generated images might have some artefacts. Lower values
+                indicates that model can "dream" about this prompt more.
+                <b class="highlight"
+                  >We recommend using 3-15 for most images.</b
+                >
+              </NTooltip>
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.cfgScale"
+                :min="1"
+                :max="30"
+                :step="0.5"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.cfgScale"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="1"
+                :max="30"
+                :step="0.5"
+              />
+            </div>
 
-          <!-- Generate button -->
-          <NSpace justify="center" style="padding-bottom: 64px">
-            <NButton
-              type="success"
-              @click="generate"
-              :disabled="global.state.generating"
-              :loading="global.state.generating"
-              >Generate</NButton
-            >
+            <!-- Number of images -->
+            <div class="flex-container">
+              <NTooltip :max-width="600">
+                <template #trigger>
+                  <p class="slider-label">Batch Count</p>
+                </template>
+                Number of images to generate after each other.
+              </NTooltip>
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.batchCount"
+                :min="1"
+                :max="9"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.batchCount"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="1"
+                :max="9"
+              />
+            </div>
+            <div class="flex-container">
+              <NTooltip :max-width="600">
+                <template #trigger>
+                  <p class="slider-label">Batch Size</p>
+                </template>
+                Number of images to generate in paralel.
+              </NTooltip>
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.batchSize"
+                :min="1"
+                :max="9"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.batchSize"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="1"
+                :max="9"
+              />
+            </div>
+
+            <!-- Seed -->
+            <div class="flex-container">
+              <NTooltip :max-width="600">
+                <template #trigger>
+                  <p class="slider-label">Seed</p>
+                </template>
+                Seed is a number that represents the starting canvas of your
+                image. If you want to create the same image as your friend, you
+                can use the same settings and seed to do so.
+                <b class="highlight">For random seed use -1.</b>
+              </NTooltip>
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.seed"
+                size="small"
+                :min="-1"
+                :max="999999999"
+                style="flex-grow: 1"
+              />
+            </div>
           </NSpace>
-        </NSpace>
+        </NCard>
       </NGi>
 
       <!-- Split -->
 
       <!-- Images -->
       <NGi>
-        <NCard title="Output" segmented hoverable>
+        <GenerateSection :generate="generate" />
+
+        <NCard title="Output" hoverable>
           <div
             style="
               height: 70vh;
@@ -278,9 +273,10 @@
 </template>
 
 <script setup lang="ts">
+import "@/assets/2img.css";
+import GenerateSection from "@/components/GenerateSection.vue";
 import { serverUrl } from "@/env";
 import {
-  NButton,
   NCard,
   NGi,
   NGrid,
@@ -292,6 +288,7 @@ import {
   NSlider,
   NSpace,
   NTooltip,
+  useNotification,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
 import { useSettings } from "../store/settings";
@@ -299,6 +296,7 @@ import { useState } from "../store/state";
 
 const global = useState();
 const conf = useSettings();
+const notification = useNotification();
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -310,7 +308,15 @@ const checkSeed = (seed: number) => {
 };
 
 const generate = () => {
+  if (conf.data.settings.txt2img.seed === null) {
+    notification.error({
+      title: "Seed is not set",
+      description: "Please set a seed.",
+    });
+    return;
+  }
   global.state.generating = true;
+
   fetch(`${serverUrl}/api/txt2img/generate`, {
     method: "POST",
     headers: {
@@ -352,32 +358,3 @@ const generate = () => {
     });
 };
 </script>
-
-<style scoped>
-.left-container {
-  margin: 0 12px;
-}
-
-.split {
-  width: 50%;
-}
-
-.flex-container {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-}
-
-.slider-label {
-  margin-right: 12px;
-  width: 64px;
-}
-
-.main-container {
-  margin: 18px;
-}
-
-.highlight {
-  color: #63e2b7;
-}
-</style>

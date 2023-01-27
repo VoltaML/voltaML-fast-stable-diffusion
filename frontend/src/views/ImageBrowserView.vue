@@ -1,16 +1,29 @@
 <template>
   <NGrid cols="1 850:3">
-    <NGi span="2" style="height: calc(100vh - 200px - 53px - 24px)">
+    <NGi
+      span="2"
+      style="
+        height: calc(100vh - 200px - 53px - 24px);
+        display: inline-flex;
+        justify-content: center;
+      "
+    >
       <NImage
         v-if="global.state.imageBrowser.currentImage.path !== ''"
         :src="imageSrc"
         object-fit="contain"
-        style="width: 100%; height: 100%; justify-content: center"
+        style="width: 100%; height: 100%; justify-content: center; margin: 8px"
         :img-props="{ style: { maxWidth: '95%', maxHeight: '95%' } }"
       />
     </NGi>
     <NGi>
       <NGrid cols="2">
+        <NGi span="2">
+          <NCard title="File" size="small">{{
+            global.state.imageBrowser.currentImage.path.split("/").pop()
+          }}</NCard>
+        </NGi>
+
         <NGi span="2">
           <NCard title="Prompt" size="small">{{
             global.state.imageBrowser.currentImageMetadata.prompt
@@ -133,6 +146,9 @@ fetch(`${serverUrl}/api/output/txt2img`)
   .then((data) => {
     data.forEach((item: imgData) => {
       txt2imgData.push(item);
+    });
+    txt2imgData.sort((a, b) => {
+      return a.time - b.time;
     });
   });
 </script>

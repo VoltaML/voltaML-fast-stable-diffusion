@@ -1,9 +1,12 @@
 import logging
+import os
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-from core.install_requirements import (
+os.environ["TORCH_CUDNN_V8_API_ENABLED"] = "1"
+
+from core.install_requirements import (  # pylint: disable=wrong-import-position
     commit_hash,
     create_environment,
     in_virtualenv,

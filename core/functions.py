@@ -9,6 +9,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.data import Data
 from core import shared
+from core.errors import InferenceInterruptedError
 from core.types import ImageMetadata
 from core.utils import convert_image_to_base64
 
@@ -43,6 +44,10 @@ def cheap_approximation(sample: torch.Tensor):
 
 def pytorch_callback(data: dict):
     "Send a websocket message to the client with the progress percentage and partial image"
+
+    if shared.interrupt:
+        shared.interrupt = False
+        raise InferenceInterruptedError
 
     _x: torch.Tensor = data["x"][0]
     step = int(data["i"]) + 1

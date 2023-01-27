@@ -1,11 +1,13 @@
 import logging
-from typing import Dict, List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import torch
+from PIL import Image
 
 from api import websocket_manager
 from api.websockets.notification import Notification
-from core.errors import ModelNotLoadedError
+from core import shared
+from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.gpu import GPU
 from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
 
@@ -25,16 +27,6 @@ class Cluster:
         for i in range(torch.cuda.device_count()):
             if i not in [i.gpu_id for i in self.gpus]:
                 self.gpus.append(GPU(i))
-
-    async def txt2img(self, job: Txt2ImgQueueEntry):
-        "Send a text to image job to the cluster."
-
-        raise NotImplementedError
-
-    async def img2img(self):
-        "Send an image to image job to the cluster."
-
-        raise NotImplementedError
 
     async def least_loaded_gpu(self) -> GPU:
         "Return the GPU with the most free memory in the system."
@@ -82,11 +74,15 @@ class Cluster:
 
         return models
 
-    async def generate(self, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]):
+    async def generate(
+        self, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]
+    ) -> Tuple[List[Image.Image], float]:
         "Generate images from the queue"
 
         # Find gpu with the model loaded, raise error if not found
         # if multiple found, use one that has the least jobs in queue
+
+        shared.interrupt = False
 
         useful_gpus: List[GPU] = []
         for gpu in self.gpus:
@@ -113,4 +109,15 @@ class Cluster:
             if len(best_gpu.queue.jobs) > len(gpu.queue.jobs):
                 best_gpu = gpu
 
-        return await best_gpu.generate(job)
+        try:
+            return await best_gpu.generate(job)
+        except InferenceInterruptedError:
+            await websocket_manager.broadcast(
+                Notification(
+                    "warning",
+                    "Inference interrupted",
+                    "The inference was forcefully interrupted",
+                )
+            )
+
+            return ([], 0.0)

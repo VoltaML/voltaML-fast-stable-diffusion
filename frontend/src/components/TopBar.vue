@@ -7,6 +7,7 @@
       :loading="modelsLoading"
       placeholder="Select model"
       default-value="none"
+      :value="conf.data.settings.model"
     />
     <NButton quaternary circle type="default" @click="refreshModels">
       <template #icon>

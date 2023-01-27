@@ -179,32 +179,7 @@ cd voltaML-fast-stable-diffusion
 
 ### API + Compiled frontend
 
-Create an environment
-
-```
-python -m virtualenv env
-```
-
-Activate the environment
-
-```
-# Linux
-source env/bin/activate
-
-or
-
-# Windows
-.\env\Scripts\activate
-```
-
-Install dependencies
-
-```
-pip install -r requirements/pytorch.txt
-pip install -r requirements/api.txt
-```
-
-Start up the API
+Start up the API, you might be prompted to activate the virtual environment (how will be explained in the message)
 
 ```
 python main.py

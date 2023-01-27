@@ -9,3 +9,4 @@ current_model: Union["DemoDiffusion", "PyTorchInferenceModel", None] = None
 current_steps: int = 50
 asyncio_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 image_decode_steps: int = 5
+interrupt: bool = False

@@ -9,6 +9,10 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
+  img2img: {
+    currentImage: string;
+    images: string[];
+  };
   current_step: number;
   total_steps: number;
   imageBrowser: {
@@ -23,6 +27,10 @@ export const useState = defineStore("state", () => {
     progress: 0,
     generating: false,
     txt2img: {
+      images: [],
+      currentImage: "",
+    },
+    img2img: {
       images: [],
       currentImage: "",
     },

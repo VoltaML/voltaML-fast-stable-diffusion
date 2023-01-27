@@ -11,7 +11,7 @@ from starlette import status
 
 from api import websocket_manager
 from api.routes import (
-    core,
+    general,
     hardware,
     img2img,
     models,
@@ -87,7 +87,7 @@ app.include_router(txt2img.router, prefix="/api/txt2img")
 app.include_router(hardware.router, prefix="/api/hardware")
 app.include_router(models.router, prefix="/api/models")
 app.include_router(outputs.router, prefix="/api/output")
-app.include_router(core.router, prefix="/api")
+app.include_router(general.router, prefix="/api/general")
 app.include_router(img2img.router, prefix="/api/img2img")
 app.include_router(ws.router, prefix="/api/websockets")
 

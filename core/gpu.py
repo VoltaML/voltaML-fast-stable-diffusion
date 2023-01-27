@@ -9,7 +9,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
-from core.errors import BadSchedulerError, DimensionError
+from core.errors import BadSchedulerError, DimensionError, InferenceInterruptedError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
 from core.png_metadata import save_image
@@ -66,10 +66,14 @@ class GPU:
 
         start_time = time.time()
 
-        if isinstance(job, Txt2ImgQueueEntry):
-            images = await self.txt2img(job)
-        elif isinstance(job, Img2ImgQueueEntry):
-            images = await self.img2img(job)
+        try:
+            if isinstance(job, Txt2ImgQueueEntry):
+                images = await self.txt2img(job)
+            elif isinstance(job, Img2ImgQueueEntry):
+                images = await self.img2img(job)
+        except InferenceInterruptedError as err:
+            self.queue.mark_finished()
+            raise err
 
         deltatime = time.time() - start_time
 
