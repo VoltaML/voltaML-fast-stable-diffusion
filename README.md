@@ -8,34 +8,36 @@
   </b></p>
   
   
-<p>
-  <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/graphs/contributors">
-    <img src="https://img.shields.io/github/contributors/VoltaML/voltaML-fast-stable-diffusion" alt="contributors" />
-  </a>
-  <a href="">
-    <img src="https://img.shields.io/github/last-commit/VoltaML/voltaML-fast-stable-diffusion" alt="last update" />
-  </a>
-  <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/network/members">
-    <img src="https://img.shields.io/github/forks/VoltaML/voltaML-fast-stable-diffusion" alt="forks" />
-  </a>
-  <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/stargazers">
-    <img src="https://img.shields.io/github/stars/VoltaML/voltaML-fast-stable-diffusion" alt="stars" />
-  </a>
-  <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/">
-    <img src="https://img.shields.io/github/issues/VoltaML/voltaML-fast-stable-diffusion" alt="open issues" />
-  </a>
-  <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/master/LICENSE">
-    <img src="https://img.shields.io/github/license/VoltaML/voltaML-fast-stable-diffusion.svg" alt="license" />
-  </a>
-</p>
-   
-<h4>
-    <a href="https://stax124.github.io/voltaML-fast-stable-diffusion/">Documentation</a>
-  <span> · </span>
-    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Report Bug</a>
-  <span> · </span>
-    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Request Feature</a>
+  <p>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/graphs/contributors">
+      <img src="https://img.shields.io/github/contributors/VoltaML/voltaML-fast-stable-diffusion" alt="contributors" />
+    </a>
+    <a href="">
+      <img src="https://img.shields.io/github/last-commit/VoltaML/voltaML-fast-stable-diffusion" alt="last update" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/network/members">
+      <img src="https://img.shields.io/github/forks/VoltaML/voltaML-fast-stable-diffusion" alt="forks" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/stargazers">
+      <img src="https://img.shields.io/github/stars/VoltaML/voltaML-fast-stable-diffusion" alt="stars" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/">
+      <img src="https://img.shields.io/github/issues/VoltaML/voltaML-fast-stable-diffusion" alt="open issues" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/master/LICENSE">
+      <img src="https://img.shields.io/github/license/VoltaML/voltaML-fast-stable-diffusion.svg" alt="license" />
+    </a>
+  </p>
+  <a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
+    
+  <h4>
+      <a href="https://stax124.github.io/voltaML-fast-stable-diffusion/">Documentation</a>
+    <span> · </span>
+      <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Report Bug</a>
+    <span> · </span>
+      <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Request Feature</a>
   </h4>
+
 </div>
 
 <br />
