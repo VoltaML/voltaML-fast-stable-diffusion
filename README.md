@@ -136,8 +136,8 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 
 You need to export following environment variables to run this project locally:
 
-- `DISCORD_BOT_TOKEN`
 - `HUGGINGFACE_TOKEN`
+- `DISCORD_BOT_TOKEN` (only if you want to use the discord bot)
 
 When running with docker, you need to set these environment variables in the <b style="color: greenyellow">docker-compose.yml</b> file
 
