@@ -131,8 +131,24 @@ def version_check(commit: str):
     try:
         import requests
 
+        current_branch = (
+            subprocess.check_output("git rev-parse --abbrev-ref HEAD", shell=True)
+            .decode("utf-8")
+            .strip()
+        )
+
+        origin = (
+            subprocess.check_output("git config --get remote.origin.url", shell=True)
+            .decode("utf-8")
+            .strip()
+        )
+        username = origin.split("/")[-2]
+        project = origin.split("/")[-1].split(".")[  # pylint: disable=use-maxsplit-arg
+            0
+        ]
+
         commits = requests.get(
-            "https://api.github.com/repos/Stax124/voltaML-fast-stable-diffusion/branches/WebUI",
+            f"https://api.github.com/repos/{username}/{project}/branches/{current_branch}",
             timeout=5,
         ).json()
         print(f"Current commit: {commit}")
@@ -171,7 +187,7 @@ def create_environment():
     if virtualenv_exists():
 
         logger.info(
-            f"Virtual environment already exists, you just need to activate it with '{command}'"
+            f"Virtual environment already exists, you just need to activate it with '{command}', then run the script again"
         )
         sys.exit(1)
 
@@ -185,7 +201,7 @@ def create_environment():
                 check=True,
             )
             logger.info(
-                f"Virtual environment created, please activate it with '{command}'"
+                f"Virtual environment created, please activate it with '{command}', then run the script again"
             )
         except subprocess.CalledProcessError:
             logger.error("Failed to create virtual environment")

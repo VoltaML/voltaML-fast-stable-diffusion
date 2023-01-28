@@ -3,7 +3,7 @@ name: Documentation
 on:
   push:
     branches:
-      - WebUI
+      - experimental
 
 jobs:
   deploy:

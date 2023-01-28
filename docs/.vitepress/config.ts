@@ -10,12 +10,12 @@ export default defineConfig({
 	themeConfig: {
 		editLink: {
 			pattern:
-				"https://github.com/Stax124/voltaML-fast-stable-diffusion/edit/main/docs/:path",
+				"https://github.com/VoltaML/voltaML-fast-stable-diffusion/edit/main/docs/:path",
 		},
 		socialLinks: [
 			{
 				icon: "github",
-				link: "https://github.com/Stax124/voltaML-fast-stable-diffusion",
+				link: "https://github.com/voltaML/voltaML-fast-stable-diffusion",
 			},
 		],
 		sidebar: [
