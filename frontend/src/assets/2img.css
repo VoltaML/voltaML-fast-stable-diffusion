@@ -1,0 +1,26 @@
+.left-container {
+  margin: 0 12px;
+}
+
+.split {
+  width: 50%;
+}
+
+.flex-container {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+}
+
+.slider-label {
+  margin-right: 12px;
+  width: 128px;
+}
+
+.main-container {
+  margin: 18px;
+}
+
+.highlight {
+  color: #63e2b7;
+}

@@ -1,0 +1,99 @@
+
+.navbar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  z-index: 1000;
+}
+
+.progress-container[data-v-5c74f64a] {
+  margin: 12px;
+  flex-grow: 1;
+  width: 400px;
+}
+.top-bar[data-v-5c74f64a] {
+  display: inline-flex;
+  align-items: center;
+  border-bottom: #505050 1px solid;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  width: 100%;
+  background-color: rgb(24, 24, 28, 0.6);
+  height: 32px;
+}
+.logo[data-v-5c74f64a] {
+  margin-right: 16px;
+  margin-left: 16px;
+}
+.left-container {
+  margin: 0 12px;
+}
+
+.split {
+  width: 50%;
+}
+
+.flex-container {
+  width: 100%;
+  display: inline-flex;
+  align-items: center;
+}
+
+.slider-label {
+  margin-right: 12px;
+  width: 128px;
+}
+
+.main-container {
+  margin: 18px;
+}
+
+.highlight {
+  color: #63e2b7;
+}
+body {
+  min-height: 100vh;
+  margin-left: 64px;
+  color: #fff;
+  background-color: rgb(18, 18, 21);
+  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+    Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* width */
+::-webkit-scrollbar {
+  width: 10px;
+}
+
+/* Track */
+::-webkit-scrollbar-track {
+  border-radius: 10px;
+}
+
+/* Handle */
+::-webkit-scrollbar-thumb {
+  background: rgb(77, 77, 77);
+  border-radius: 10px;
+}
+
+/* Handle on hover */
+::-webkit-scrollbar-thumb:hover {
+  background: #00ad49;
+}
+
+::-webkit-scrollbar {
+  display: none;
+}
+
+a,
+.green {
+  text-decoration: none;
+  color: hsla(160, 100%, 37%, 1);
+  transition: 0.4s;
+}

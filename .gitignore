@@ -10,7 +10,7 @@ __pycache__/
 .Python
 build/
 develop-eggs/
-dist/
+/dist
 downloads/
 eggs/
 .eggs/
@@ -25,6 +25,7 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+poetry.lock
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -77,10 +78,19 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+test.ipynb
 
 # IPython
 profile_default/
 ipython_config.py
+
+# Diffusers convert files
+out
+traced_unet/
+
+# Docs
+node_modules/
+docs/.vitepress/cache
 
 # pyenv
 #   For a library or package, you might want to ignore these files since the code is
@@ -161,9 +171,11 @@ cython_debug/
 
 unet/
 unet.engine
+testing/
 
 
 
 #project specific
 /engine
 /static/output
+/outputs

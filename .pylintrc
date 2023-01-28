@@ -1,0 +1,18 @@
+[MASTER]
+init-hook="import sys; sys.path.insert(0, '.')"
+disable=
+    C0114, # Missing module docstring
+    W1203, # Use lazy % formatting in logging functions
+    R0915, # Too many statements
+    too-many-lines,
+    line-too-long,
+    consider-using-dict-items,
+    import-outside-toplevel,
+    invalid-name,
+    relative-beyond-top-level
+
+
+[TYPECHECK]
+generated-members=
+    torch.*,
+    cuda.*,
