@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 from typing import Dict
 
-from diffusers.utils import hf_cache_home
+from diffusers.utils.constants import hf_cache_home
 
 
 class CachedModelList:

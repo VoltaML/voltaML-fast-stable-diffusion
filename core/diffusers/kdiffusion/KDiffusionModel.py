@@ -18,8 +18,8 @@ import random
 from typing import Callable, Dict, List, Optional, Union
 
 import torch
+from diffusers.models.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
-from diffusers.models.vae import AutoencoderKL
 from diffusers.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.pipelines.stable_diffusion_safe.safety_checker import (
