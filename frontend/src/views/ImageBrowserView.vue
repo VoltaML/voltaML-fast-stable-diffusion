@@ -3,7 +3,7 @@
     <NGi
       span="2"
       style="
-        height: calc(100vh - 200px - 53px - 24px);
+        height: calc((100vh - 170px) - 24px);
         display: inline-flex;
         justify-content: center;
       "
@@ -17,65 +17,14 @@
       />
     </NGi>
     <NGi>
-      <NGrid cols="2">
-        <NGi span="2">
-          <NCard title="File" size="small">{{
-            global.state.imageBrowser.currentImage.path.split("/").pop()
-          }}</NCard>
-        </NGi>
-
-        <NGi span="2">
-          <NCard title="Prompt" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.prompt
-          }}</NCard>
-        </NGi>
-
-        <NGi span="2">
-          <NCard title="Negative Prompt" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.negative_prompt
-          }}</NCard>
-        </NGi>
-
-        <NGi>
-          <NCard title="Width" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.width
-          }}</NCard>
-        </NGi>
-        <NGi>
-          <NCard title="Height" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.height
-          }}</NCard>
-        </NGi>
-
-        <NGi>
-          <NCard title="Steps" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.steps
-          }}</NCard>
-        </NGi>
-        <NGi>
-          <NCard title="Guidance Scale" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.guidance_scale
-          }}</NCard>
-        </NGi>
-
-        <NGi>
-          <NCard title="Seed" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.seed
-          }}</NCard>
-        </NGi>
-        <NGi>
-          <NCard title="Model" size="small">{{
-            global.state.imageBrowser.currentImageMetadata.model
-          }}</NCard>
-        </NGi>
-      </NGrid>
-    </NGi>
-    <NGi span="3">
-      <NCard style="height: 200px">
-        <NTabs type="segment">
-          <NTabPane name="Txt2Img">
-            <NScrollbar x-scrollable trigger="hover">
-              <div style="white-space: nowrap">
+      <div style="height: 100%; width: 100%">
+        <NCard>
+          <NTabs type="segment" style="height: 100%">
+            <NTabPane
+              name="Txt2Img"
+              style="height: calc(((100vh - 200px) - 53px) - 24px)"
+            >
+              <NScrollbar trigger="hover" style="height: 100%">
                 <span
                   v-for="(i, index) in txt2imgData"
                   @click="txt2imgClick(index)"
@@ -90,12 +39,49 @@
                     style="justify-content: center"
                   />
                 </span>
-              </div>
-            </NScrollbar>
-          </NTabPane>
-          <NTabPane name="Img2Img"> </NTabPane>
-        </NTabs>
-      </NCard>
+              </NScrollbar>
+            </NTabPane>
+            <NTabPane name="Img2Img"> </NTabPane>
+          </NTabs>
+        </NCard>
+      </div>
+    </NGi>
+    <NGi span="3">
+      <NDescriptions bordered>
+        <NDescriptionsItem label="File" content-style="max-width: 100px">
+          {{ global.state.imageBrowser.currentImage.path.split("/").pop() }}
+        </NDescriptionsItem>
+        <NDescriptionsItem label="Model" content-style="max-width: 100px">
+          {{ global.state.imageBrowser.currentImageMetadata.model }}
+        </NDescriptionsItem>
+        <NDescriptionsItem label="Seed" content-style="max-width: 100px">
+          {{ global.state.imageBrowser.currentImageMetadata.seed }}
+        </NDescriptionsItem>
+        <NDescriptionsItem label="Prompt" content-style="max-width: 100px">
+          {{ global.state.imageBrowser.currentImageMetadata.prompt }}
+        </NDescriptionsItem>
+        <NDescriptionsItem
+          label="Negative Prompt"
+          content-style="max-width: 100px"
+        >
+          {{ global.state.imageBrowser.currentImageMetadata.negative_prompt }}
+        </NDescriptionsItem>
+        <NDescriptionsItem label="Steps" content-style="max-width: 100px">
+          {{ global.state.imageBrowser.currentImageMetadata.steps }}
+        </NDescriptionsItem>
+        <NDescriptionsItem label="Width" content-style="max-width: 100px">
+          {{ global.state.imageBrowser.currentImageMetadata.width }}
+        </NDescriptionsItem>
+        <NDescriptionsItem label="Height" content-style="max-width: 100px">
+          {{ global.state.imageBrowser.currentImageMetadata.height }}
+        </NDescriptionsItem>
+        <NDescriptionsItem
+          label="Guidance Scale"
+          content-style="max-width: 100px"
+        >
+          {{ global.state.imageBrowser.currentImageMetadata.guidance_scale }}
+        </NDescriptionsItem>
+      </NDescriptions>
     </NGi>
   </NGrid>
 </template>
@@ -105,6 +91,8 @@ import type { imgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 import {
   NCard,
+  NDescriptions,
+  NDescriptionsItem,
   NGi,
   NGrid,
   NImage,
@@ -148,7 +136,7 @@ fetch(`${serverUrl}/api/output/txt2img`)
       txt2imgData.push(item);
     });
     txt2imgData.sort((a, b) => {
-      return a.time - b.time;
+      return b.time - a.time;
     });
   });
 </script>
@@ -156,12 +144,12 @@ fetch(`${serverUrl}/api/output/txt2img`)
 <style scoped>
 .img-slider {
   aspect-ratio: 1/1;
-  height: 100px;
+  height: 182px;
   width: auto;
 }
 
 .img-container:not(:last-child) {
-  margin-right: 8px;
+  margin-right: 6px;
 }
 
 .img-container {
