@@ -5,6 +5,7 @@ import type { imgData, imgMetadata } from "../core/interfaces";
 export interface StateInterface {
   progress: number;
   generating: boolean;
+  downloading: boolean;
   txt2img: {
     currentImage: string;
     images: string[];
@@ -26,6 +27,7 @@ export const useState = defineStore("state", () => {
   const state: StateInterface = reactive({
     progress: 0,
     generating: false,
+    downloading: false,
     txt2img: {
       images: [],
       currentImage: "",

@@ -1,9 +1,23 @@
 import logging
+import os
 from pathlib import Path
+from typing import Optional
 
 import numpy as np
 import torch
-from diffusers.utils import PIL_INTERPOLATION
+from diffusers.utils import (
+    CONFIG_NAME,
+    DIFFUSERS_CACHE,
+    FLAX_WEIGHTS_NAME,
+    HF_HUB_OFFLINE,
+    ONNX_WEIGHTS_NAME,
+    PIL_INTERPOLATION,
+    WEIGHTS_NAME,
+    http_user_agent,
+    is_safetensors_available,
+)
+from huggingface_hub import model_info  # type: ignore
+from huggingface_hub._snapshot_download import snapshot_download
 from PIL import Image
 
 from api import websocket_manager
@@ -126,7 +140,7 @@ def preprocess_image(image):
         image = np.concatenate(image, axis=0)
         image = np.array(image).astype(np.float32) / 255.0
         image = image.transpose(0, 3, 1, 2)
-        image = 2.0 * image - 1.0
+        image = 2.0 * image - 1.0  # type: ignore
         image = torch.from_numpy(image)
     elif isinstance(image[0], torch.Tensor):
         image = torch.cat(image, dim=0)  # type: ignore

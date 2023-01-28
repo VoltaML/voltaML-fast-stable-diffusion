@@ -69,3 +69,11 @@ async def cleanup():
     for gpu in cluster.gpus:
         gpu.memory_cleanup()
     return {"message": "Memory cleaned up"}
+
+
+@router.post("/download")
+async def download_model(model: str):
+    "Download a model to the cache"
+
+    await cluster.download_model(model)
+    return {"message": "Model downloaded"}

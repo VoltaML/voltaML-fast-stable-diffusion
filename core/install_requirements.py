@@ -1,8 +1,12 @@
+import importlib.metadata
 import importlib.util
 import logging
 import subprocess
 import sys
 from pathlib import Path
+from typing import Optional
+
+from packaging import version as packaging_version
 
 skip_requirements = ["cuda-python"]
 logger = logging.getLogger(__name__)
@@ -12,11 +16,18 @@ def check_requirements(path_to_requirements: str = "requirements.txt"):
     "Check if all requirements are installed"
 
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
-        requirements = [i.split("==")[0] for i in f.read().splitlines()]
+        requirements = {}
+        for i in f.read().splitlines():
+            if "==" in i:
+                requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
+            elif ">=" in i:
+                requirements[i.split(">=")[0]] = i.replace(i.split(">=")[0], "").strip()
+            elif "<=" in i:
+                requirements[i.split("<=")[0]] = i.replace(i.split("<=")[0], "").strip()
 
         for requirement in requirements:
             fixed_name = requirement.replace("-", "_").lower()
-            if not is_installed(fixed_name):
+            if not is_installed(fixed_name, requirements[requirement]):
                 return False
 
         return True
@@ -26,7 +37,14 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
     "Check if requirements are installed, if not, install them"
 
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
-        requirements = [i.split("==")[0] for i in f.read().splitlines()]
+        requirements = {}
+        for i in f.read().splitlines():
+            if "==" in i:
+                requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
+            elif ">=" in i:
+                requirements[i.split(">=")[0]] = i.replace(i.split(">=")[0], "").strip()
+            elif "<=" in i:
+                requirements[i.split("<=")[0]] = i.replace(i.split("<=")[0], "").strip()
 
         try:
             for requirement in requirements:
@@ -38,7 +56,7 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                     continue
 
                 fixed_name = requirement.replace("-", "_").lower()
-                if not is_installed(fixed_name):
+                if not is_installed(fixed_name, requirements[requirement]):
                     logger.debug(f"Requirement {requirement} is not installed")
                     raise ImportError
 
@@ -78,14 +96,39 @@ def install_tensorrt():
     install_requirements("requirements/tensorrt.txt")
 
 
-def is_installed(package: str):
+def is_installed(package: str, version: Optional[str] = None):
     "Check if a package is installed"
+
+    logger.debug(f"Checking if {package} is installed: {version}")
 
     try:
         spec = importlib.util.find_spec(package)
         if spec is None:
-            logger.debug(f"Package {package} - {'not found'}")
+            raise ModuleNotFoundError
+
+        if version is not None:
+            version_number = version.split("=")[-1]
+            version_type = version[:2]
+            required_version = packaging_version.parse(version_number)
+            current_version = packaging_version.parse(
+                importlib.metadata.version(package)
+            )
+
+            if version_type == "=":
+                assert current_version == required_version
+            elif version_type == ">":
+                assert current_version > required_version
+            elif version_type == "<":
+                assert current_version < required_version
+
+    except AssertionError:
+        logger.debug(
+            f"Package {package} - found - incorrect version - {version} - {importlib.metadata.version(package)}"
+        )
+        return False
+
     except ModuleNotFoundError:
+        logger.debug(f"Package {package} - not found")
         return False
 
     return spec is not None

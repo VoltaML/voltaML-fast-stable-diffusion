@@ -1,15 +1,5 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
-  <NSpace justify="end" inline align="center" class="install">
-    <NInput
-      v-model:value="customModel"
-      placeholder="Custom model"
-      style="width: 350px"
-    />
-    <NButton type="primary" bordered secondary style="margin-right: 24px"
-      >Install</NButton
-    >
-  </NSpace>
   <NCard title="Acceleration progress">
     <NSpace vertical justify="center">
       <NSteps :current="1">
@@ -51,7 +41,6 @@ import {
   NDropdown,
   NIcon,
   NImage,
-  NInput,
   NSpace,
   NStep,
   NSteps,
@@ -64,7 +53,7 @@ import type {
   FilterOptionValue,
 } from "naive-ui/es/data-table/src/interface";
 import type { DropdownMixedOption } from "naive-ui/es/dropdown/src/interface";
-import { h, reactive, ref, type Component } from "vue";
+import { h, reactive, type Component } from "vue";
 
 const tagsFilterOptions = () => {
   // Return all the tags from the models
@@ -86,8 +75,6 @@ const tagsFilter: Filter<Model> = (value: FilterOptionValue, row: Model) => {
 const getTagColor = (tag: string) => {
   return tagColor[tag];
 };
-
-const customModel = ref("");
 
 const renderIcon = (
   icon: Component,

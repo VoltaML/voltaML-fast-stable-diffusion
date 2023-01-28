@@ -7,9 +7,11 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
+from core.diffusers.functions import download_model
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.gpu import GPU
 from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
+from core.utils import run_in_thread_async
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +66,14 @@ class Cluster:
                     message=f"{model} is already loaded on selected GPU.",
                 )
             )
+
+    async def download_model(self, model: str):
+        "Download a model from the internet."
+
+        _, err = await run_in_thread_async(download_model, args=(model,))
+
+        if err:
+            raise err
 
     async def loaded_models(self) -> Dict[int, List[str]]:
         "Return a list of all loaded models."

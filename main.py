@@ -5,6 +5,7 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 os.environ["TORCH_CUDNN_V8_API_ENABLED"] = "1"
+os.environ["CUDA_MODULE_LOADING"] = "LAZY"
 
 from core.install_requirements import (  # pylint: disable=wrong-import-position
     commit_hash,
