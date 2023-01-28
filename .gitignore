@@ -87,6 +87,7 @@ ipython_config.py
 # Diffusers convert files
 out
 traced_unet/
+onnx
 
 # Docs
 node_modules/

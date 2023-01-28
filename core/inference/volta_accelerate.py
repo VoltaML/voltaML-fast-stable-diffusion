@@ -25,7 +25,6 @@ from typing import List
 
 import numpy as np
 import nvtx
-import onnx
 import tensorrt as trt
 import torch
 import tqdm
@@ -52,6 +51,7 @@ from PIL import Image
 from polygraphy import cuda
 from transformers import CLIPTokenizer
 
+import onnx
 from core.schedulers import change_scheduler
 from core.trt.models import CLIP, VAE, UNet
 from core.trt.utilities import TRT_LOGGER, Engine, save_image

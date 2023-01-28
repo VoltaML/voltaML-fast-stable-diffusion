@@ -114,12 +114,16 @@ def is_installed(package: str, version: Optional[str] = None):
                 importlib.metadata.version(package)
             )
 
-            if version_type == "=":
+            logger.debug(
+                f"Required version: {required_version} - Current version: {current_version} - version type: {version_type}"
+            )
+
+            if version_type == "==":
                 assert current_version == required_version
-            elif version_type == ">":
-                assert current_version > required_version
-            elif version_type == "<":
-                assert current_version < required_version
+            elif version_type == ">=":
+                assert current_version >= required_version
+            elif version_type == "<=":
+                assert current_version <= required_version
 
     except AssertionError:
         logger.debug(

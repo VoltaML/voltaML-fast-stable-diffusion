@@ -36,7 +36,8 @@ async def load_model(
 
     try:
         await cluster.load_model(model, backend, preferred_gpu=preferred_gpu)
-    except torch.cuda.OutOfMemoryError:  # type: ignore
+    except torch.cuda.OutOfMemoryError as err:  # type: ignore
+        logger.warning(err)
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=500, detail="Out of memory"
         )

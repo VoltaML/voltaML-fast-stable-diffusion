@@ -132,7 +132,7 @@ class GPU:
                     engine_dir="engine/" + model,
                     onnx_dir="onnx",
                     onnx_opset=16,
-                    opt_batch_size=150,
+                    opt_batch_size=1,
                     opt_image_height=512,
                     opt_image_width=512,
                 )

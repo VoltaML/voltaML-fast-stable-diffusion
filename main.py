@@ -33,8 +33,9 @@ PILLogger.setLevel(logging.INFO)
 xFormersLogger = logging.getLogger("xformers")
 xFormersLogger.setLevel(logging.ERROR)
 
-traced_unet_folder = Path("traced_unet")
-traced_unet_folder.mkdir(exist_ok=True)
+Path("traced_unet").mkdir(exist_ok=True)
+Path("onnx").mkdir(exist_ok=True)
+Path("engine").mkdir(exist_ok=True)
 
 
 def main():
