@@ -1,17 +1,18 @@
 --extra-index-url https://pypi.ngc.nvidia.com
---extra-index-url https://download.pytorch.org/whl/cu116
+--extra-index-url https://download.pytorch.org/whl/cu117
 colored
 coloredlogs
 cuda-python
-diffusers==0.11.1
+diffusers
 scipy
-transformers==4.24.0
+transformers
 accelerate
 ftfy
 tqdm
 OmegaConf
 accelerate
-torch==1.13.0+cu116
+torch==1.13.1+cu117
 torchvision
 pynvml
 k-diffusion
+xformers==0.0.16rc425
