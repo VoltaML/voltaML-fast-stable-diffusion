@@ -86,6 +86,17 @@ def checks():
             ]
         )
 
+    if not is_installed("packaging"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "packaging",
+            ]
+        )
+
     # Inject coloredlogs
     from coloredlogs import install as coloredlogs_install
 

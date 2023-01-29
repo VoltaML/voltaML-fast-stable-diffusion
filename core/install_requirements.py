@@ -6,8 +6,6 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-from packaging import version as packaging_version
-
 skip_requirements = ["cuda-python"]
 logger = logging.getLogger(__name__)
 
@@ -108,6 +106,8 @@ def is_installed(package: str, version: Optional[str] = None):
             raise ModuleNotFoundError
 
         if version is not None:
+            from packaging import version as packaging_version
+
             version_number = version.split("=")[-1]
             version_type = version[:2]
             required_version = packaging_version.parse(version_number)
