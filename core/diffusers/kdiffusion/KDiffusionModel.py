@@ -58,7 +58,6 @@ class ModelWrapper:
         else:
             encoder_hidden_states = None
 
-        assert encoder_hidden_states is not None
         return self.model(
             *args, encoder_hidden_states=encoder_hidden_states, **kwargs
         ).sample
