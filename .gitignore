@@ -88,6 +88,7 @@ ipython_config.py
 out
 traced_unet/
 onnx
+converted
 
 # Docs
 node_modules/

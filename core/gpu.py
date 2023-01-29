@@ -1,6 +1,7 @@
 import logging
 import os
 import time
+from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 
 import torch
@@ -9,6 +10,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
+from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import BadSchedulerError, DimensionError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
@@ -330,3 +332,30 @@ class GPU:
             await self.unload(model)
 
         self.memory_cleanup()
+
+    async def convert_from_checkpoint(self, checkpoint: str, is_sd2: bool):
+        "Convert a checkpoint to a proper model structure that can be loaded"
+
+        from_safetensors = ".safetensors" in checkpoint
+
+        def call(**kwargs):
+            save_path = kwargs.pop("dump_path")
+            pipe = load_pipeline_from_original_stable_diffusion_ckpt(**kwargs)
+            pipe.save_pretrained(save_path, safe_serialization=True)
+
+        _, err = await run_in_thread_async(
+            func=call,
+            kwarkgs={
+                "checkpoint_path": checkpoint,
+                "device": self.cuda_id,
+                "extract_ema": True,
+                "from_safetensors": from_safetensors,
+                "original_config_file": "v1-inference.yaml",
+                "upcast_attention": is_sd2,
+                "image_size": 768 if is_sd2 else 512,
+                "dump_path": f"converted/{Path(checkpoint).name}",
+            },
+        )
+
+        if err is not None:
+            raise err

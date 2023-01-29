@@ -40,5 +40,5 @@ export default defineConfig({
 			},
 		],
 	},
-	cleanUrls: "with-subfolders",
+	cleanUrls: true,
 });

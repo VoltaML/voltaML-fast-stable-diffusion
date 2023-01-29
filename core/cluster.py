@@ -131,3 +131,17 @@ class Cluster:
             )
 
             return ([], 0.0)
+
+    async def convert_from_checkpoint(self, checkpoint_path: str, is_sd2: bool):
+        "Convert a checkpoint to a proper model structure that can be loaded"
+
+        best_gpu: GPU = self.gpus[0]
+        for gpu in self.gpus:
+            if best_gpu is None:
+                best_gpu = gpu
+                continue
+
+            if len(best_gpu.queue.jobs) > len(gpu.queue.jobs):
+                best_gpu = gpu
+
+        await best_gpu.convert_from_checkpoint(checkpoint_path, is_sd2=is_sd2)

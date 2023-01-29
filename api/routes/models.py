@@ -24,7 +24,7 @@ async def list_loaded_models():
 async def list_avaliable_models():
     "Show a list of avaliable models"
 
-    return [i for i in cached_model_list.pytorch()]
+    return cached_model_list.pytorch()
 
 
 @router.post("/load")
@@ -79,3 +79,11 @@ async def download_model(model: str):
 
     await cluster.download_model(model)
     return {"message": "Model downloaded"}
+
+
+@router.post("/convert-from-checkpoint")
+async def convert_from_checkpoint(path: str, is_sd2: bool = False):
+    "Convert a checkpoint to a PyTorch model"
+
+    await cluster.convert_from_checkpoint(path, is_sd2)
+    return {"message": "Model converted"}

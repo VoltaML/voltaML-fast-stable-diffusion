@@ -59,17 +59,22 @@ const global = useState();
 const conf = useSettings();
 const modelsLoading = ref(true);
 
+interface ModelEntry {
+  name: string;
+  path: number;
+}
+
 function refreshModels() {
   modelsLoading.value = true;
   fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
-    res.json().then((data: Array<string>) => {
+    res.json().then((data: Array<ModelEntry>) => {
       // add all the strings from the list to model options
       modelOptions.splice(0, modelOptions.length);
       modelOptions.push(...defaultOptions);
       data.forEach((item) => {
         modelOptions.push({
-          label: item.split("/")[1],
-          value: item,
+          label: item.name,
+          value: item.path,
         });
       });
 
