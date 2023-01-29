@@ -26,10 +26,26 @@ parser.add_argument(
 )
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
+parser.add_argument(
+    "--token",
+    help="Token to use for the API",
+    default=os.environ["HUGGINGFACE_TOKEN"],
+    type=str,
+)
 args = parser.parse_args()
+
+
+# Apply the token
+os.environ["HUGGINGFACE_TOKEN"] = args.token
 
 logging.basicConfig(level=args.log_level)
 logger = logging.getLogger(__name__)
+
+if not args.token:
+    logger.error(
+        "No token provided. Please provide a token with --token or set the HUGGINGFACE_TOKEN environment variable"
+    )
+    sys.exit(1)
 
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
