@@ -38,13 +38,15 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
 
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
         requirements = {}
-        for i in f.read().splitlines():
+        for i in [r.strip() for r in f.read().splitlines()]:
             if "==" in i:
                 requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
             elif ">=" in i:
                 requirements[i.split(">=")[0]] = i.replace(i.split(">=")[0], "").strip()
             elif "<=" in i:
                 requirements[i.split("<=")[0]] = i.replace(i.split("<=")[0], "").strip()
+            else:
+                requirements[i] = None
 
         try:
             for requirement in requirements:
@@ -55,6 +57,7 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                 ):
                     continue
 
+                logger.debug(f"Checking requirement: {requirement}")
                 fixed_name = requirement.replace("-", "_").lower()
                 if not is_installed(fixed_name, requirements[requirement]):
                     logger.debug(f"Requirement {requirement} is not installed")
@@ -98,8 +101,6 @@ def install_tensorrt():
 
 def is_installed(package: str, version: Optional[str] = None):
     "Check if a package is installed"
-
-    logger.debug(f"Checking if {package} is installed: {version}")
 
     try:
         spec = importlib.util.find_spec(package)
