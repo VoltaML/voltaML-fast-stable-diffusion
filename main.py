@@ -25,6 +25,7 @@ parser.add_argument(
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
 )
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
+parser.add_argument("--host", action="store_true", help="Expose the API to the network")
 args = parser.parse_args()
 
 logging.basicConfig(level=args.log_level)
@@ -60,7 +61,8 @@ def main():
 
     from api.app import app as api_app
 
-    uvicorn_run(api_app, host="0.0.0.0", port=5003)
+    host = "0.0.0.0" if args.host else "localhost"
+    uvicorn_run(api_app, host=host, port=5003)
 
 
 def checks():

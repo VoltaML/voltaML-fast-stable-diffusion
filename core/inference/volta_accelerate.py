@@ -395,7 +395,7 @@ class DemoDiffusion:
         force_build=False,
         minimal_optimization=False,
         static_batch=False,
-        static_shape=True,
+        static_shape=False,
         enable_preview=False,
     ):
         """
