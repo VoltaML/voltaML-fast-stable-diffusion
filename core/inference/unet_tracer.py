@@ -1,4 +1,6 @@
 import functools
+import logging
+import os
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -9,8 +11,6 @@ import torch
 if TYPE_CHECKING:
     from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
 
-import logging
-import os
 
 logger = logging.getLogger(__name__)
 

@@ -181,3 +181,4 @@ testing/
 /engine
 /static/output
 /outputs
+/frontend/yarn.lock
