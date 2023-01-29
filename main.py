@@ -53,9 +53,10 @@ logging.getLogger("xformers").setLevel(logging.ERROR)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
 # Create necessary folders
-Path("traced_unet").mkdir(exist_ok=True)
-Path("onnx").mkdir(exist_ok=True)
 Path("engine").mkdir(exist_ok=True)
+Path("onnx").mkdir(exist_ok=True)
+Path("traced_unet").mkdir(exist_ok=True)
+Path("converted").mkdir(exist_ok=True)
 
 
 def main():
