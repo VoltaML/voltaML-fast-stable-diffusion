@@ -1,5 +1,6 @@
 import logging
 import os
+import subprocess
 import sys
 from argparse import ArgumentParser
 from pathlib import Path
@@ -12,6 +13,7 @@ from core.install_requirements import (  # pylint: disable=wrong-import-position
     create_environment,
     in_virtualenv,
     install_pytorch,
+    is_installed,
     version_check,
 )
 
@@ -28,11 +30,12 @@ args = parser.parse_args()
 logging.basicConfig(level=args.log_level)
 logger = logging.getLogger(__name__)
 
-PILLogger = logging.getLogger("PIL.PngImagePlugin")
-PILLogger.setLevel(logging.INFO)
-xFormersLogger = logging.getLogger("xformers")
-xFormersLogger.setLevel(logging.ERROR)
+# Suppress some annoying logs
+logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
+logging.getLogger("xformers").setLevel(logging.ERROR)
+logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
+# Create necessary folders
 Path("traced_unet").mkdir(exist_ok=True)
 Path("onnx").mkdir(exist_ok=True)
 Path("engine").mkdir(exist_ok=True)
@@ -42,12 +45,8 @@ def main():
     "Run the API"
     import torch.backends.cudnn
 
-    # Enable best cudnn functions
+    # Benchmark a few fucntions to find the best configuration
     torch.backends.cudnn.benchmark = True
-
-    from coloredlogs import install as coloredlogs_install
-
-    coloredlogs_install(level=args.log_level)
 
     if args.ngrok:
         import nest_asyncio
@@ -73,8 +72,27 @@ def checks():
         logger.error("Please run the script from a virtual environment")
         sys.exit(1)
 
+    # Install more user friendly logging
+    if not is_installed("coloredlogs"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "coloredlogs",
+            ]
+        )
+
+    # Inject coloredlogs
+    from coloredlogs import install as coloredlogs_install
+
+    coloredlogs_install(level=args.log_level)
+
+    # Check if we are up to date with the latest release
     version_check(commit_hash())
 
+    # Install pytorch and api requirements
     install_pytorch()
 
 
