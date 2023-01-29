@@ -167,6 +167,7 @@ const toRawType = (value) => {
 const isPlainObject$2 = (val) => toTypeString(val) === "[object Object]";
 const isIntegerKey = (key) => isString$1(key) && key !== "NaN" && key[0] !== "-" && "" + parseInt(key, 10) === key;
 const isReservedProp = /* @__PURE__ */ makeMap(
+  // the leading comma is intentional so empty string "" is also included
   ",key,ref,ref_for,ref_key,onVnodeBeforeMount,onVnodeMounted,onVnodeBeforeUpdate,onVnodeUpdated,onVnodeBeforeUnmount,onVnodeUnmounted"
 );
 const cacheStringFunction = (fn) => {
@@ -228,9 +229,17 @@ class EffectScope {
       }
     }
   }
+  /**
+   * This should only be called on non-detached scopes
+   * @internal
+   */
   on() {
     activeEffectScope = this;
   }
+  /**
+   * This should only be called on non-detached scopes
+   * @internal
+   */
   off() {
     activeEffectScope = this.parent;
   }
@@ -645,7 +654,10 @@ const shallowReactiveHandlers = /* @__PURE__ */ extend({}, mutableHandlers, {
 const toShallow = (value) => value;
 const getProto = (v) => Reflect.getPrototypeOf(v);
 function get$1$1(target, key, isReadonly2 = false, isShallow2 = false) {
-  target = target["__v_raw"];
+  target = target[
+    "__v_raw"
+    /* ReactiveFlags.RAW */
+  ];
   const rawTarget = toRaw(target);
   const rawKey = toRaw(key);
   if (!isReadonly2) {
@@ -665,7 +677,10 @@ function get$1$1(target, key, isReadonly2 = false, isShallow2 = false) {
   }
 }
 function has$1(key, isReadonly2 = false) {
-  const target = this["__v_raw"];
+  const target = this[
+    "__v_raw"
+    /* ReactiveFlags.RAW */
+  ];
   const rawTarget = toRaw(target);
   const rawKey = toRaw(key);
   if (!isReadonly2) {
@@ -677,7 +692,10 @@ function has$1(key, isReadonly2 = false) {
   return key === rawKey ? target.has(key) : target.has(key) || target.has(rawKey);
 }
 function size$1(target, isReadonly2 = false) {
-  target = target["__v_raw"];
+  target = target[
+    "__v_raw"
+    /* ReactiveFlags.RAW */
+  ];
   !isReadonly2 && track(toRaw(target), "iterate", ITERATE_KEY);
   return Reflect.get(target, "size", target);
 }
@@ -737,7 +755,10 @@ function clear() {
 function createForEach(isReadonly2, isShallow2) {
   return function forEach(callback, thisArg) {
     const observed = this;
-    const target = observed["__v_raw"];
+    const target = observed[
+      "__v_raw"
+      /* ReactiveFlags.RAW */
+    ];
     const rawTarget = toRaw(target);
     const wrap = isShallow2 ? toShallow : isReadonly2 ? toReadonly : toReactive;
     !isReadonly2 && track(rawTarget, "iterate", ITERATE_KEY);
@@ -748,7 +769,10 @@ function createForEach(isReadonly2, isShallow2) {
 }
 function createIterableMethod(method, isReadonly2, isShallow2) {
   return function(...args) {
-    const target = this["__v_raw"];
+    const target = this[
+      "__v_raw"
+      /* ReactiveFlags.RAW */
+    ];
     const rawTarget = toRaw(target);
     const targetIsMap = isMap(rawTarget);
     const isPair = method === "entries" || method === Symbol.iterator && targetIsMap;
@@ -757,6 +781,7 @@ function createIterableMethod(method, isReadonly2, isShallow2) {
     const wrap = isShallow2 ? toShallow : isReadonly2 ? toReadonly : toReactive;
     !isReadonly2 && track(rawTarget, "iterate", isKeyOnly ? MAP_KEY_ITERATE_KEY : ITERATE_KEY);
     return {
+      // iterator protocol
       next() {
         const { value, done } = innerIterator.next();
         return done ? { value, done } : {
@@ -764,6 +789,7 @@ function createIterableMethod(method, isReadonly2, isShallow2) {
           done
         };
       },
+      // iterable protocol
       [Symbol.iterator]() {
         return this;
       }
@@ -814,10 +840,22 @@ function createInstrumentations() {
     has(key) {
       return has$1.call(this, key, true);
     },
-    add: createReadonlyMethod("add"),
-    set: createReadonlyMethod("set"),
-    delete: createReadonlyMethod("delete"),
-    clear: createReadonlyMethod("clear"),
+    add: createReadonlyMethod(
+      "add"
+      /* TriggerOpTypes.ADD */
+    ),
+    set: createReadonlyMethod(
+      "set"
+      /* TriggerOpTypes.SET */
+    ),
+    delete: createReadonlyMethod(
+      "delete"
+      /* TriggerOpTypes.DELETE */
+    ),
+    clear: createReadonlyMethod(
+      "clear"
+      /* TriggerOpTypes.CLEAR */
+    ),
     forEach: createForEach(true, false)
   };
   const shallowReadonlyInstrumentations2 = {
@@ -830,10 +868,22 @@ function createInstrumentations() {
     has(key) {
       return has$1.call(this, key, true);
     },
-    add: createReadonlyMethod("add"),
-    set: createReadonlyMethod("set"),
-    delete: createReadonlyMethod("delete"),
-    clear: createReadonlyMethod("clear"),
+    add: createReadonlyMethod(
+      "add"
+      /* TriggerOpTypes.ADD */
+    ),
+    set: createReadonlyMethod(
+      "set"
+      /* TriggerOpTypes.SET */
+    ),
+    delete: createReadonlyMethod(
+      "delete"
+      /* TriggerOpTypes.DELETE */
+    ),
+    clear: createReadonlyMethod(
+      "clear"
+      /* TriggerOpTypes.CLEAR */
+    ),
     forEach: createForEach(true, true)
   };
   const iteratorMethods = ["keys", "values", "entries", Symbol.iterator];
@@ -892,7 +942,10 @@ function targetTypeMap(rawType) {
   }
 }
 function getTargetType(value) {
-  return value["__v_skip"] || !Object.isExtensible(value) ? 0 : targetTypeMap(toRawType(value));
+  return value[
+    "__v_skip"
+    /* ReactiveFlags.SKIP */
+  ] || !Object.isExtensible(value) ? 0 : targetTypeMap(toRawType(value));
 }
 function reactive(target) {
   if (isReadonly(target)) {
@@ -910,7 +963,13 @@ function createReactiveObject(target, isReadonly2, baseHandlers, collectionHandl
   if (!isObject$1(target)) {
     return target;
   }
-  if (target["__v_raw"] && !(isReadonly2 && target["__v_isReactive"])) {
+  if (target[
+    "__v_raw"
+    /* ReactiveFlags.RAW */
+  ] && !(isReadonly2 && target[
+    "__v_isReactive"
+    /* ReactiveFlags.IS_REACTIVE */
+  ])) {
     return target;
   }
   const existingProxy = proxyMap.get(target);
@@ -927,21 +986,36 @@ function createReactiveObject(target, isReadonly2, baseHandlers, collectionHandl
 }
 function isReactive(value) {
   if (isReadonly(value)) {
-    return isReactive(value["__v_raw"]);
+    return isReactive(value[
+      "__v_raw"
+      /* ReactiveFlags.RAW */
+    ]);
   }
-  return !!(value && value["__v_isReactive"]);
+  return !!(value && value[
+    "__v_isReactive"
+    /* ReactiveFlags.IS_REACTIVE */
+  ]);
 }
 function isReadonly(value) {
-  return !!(value && value["__v_isReadonly"]);
+  return !!(value && value[
+    "__v_isReadonly"
+    /* ReactiveFlags.IS_READONLY */
+  ]);
 }
 function isShallow(value) {
-  return !!(value && value["__v_isShallow"]);
+  return !!(value && value[
+    "__v_isShallow"
+    /* ReactiveFlags.IS_SHALLOW */
+  ]);
 }
 function isProxy(value) {
   return isReactive(value) || isReadonly(value);
 }
 function toRaw(observed) {
-  const raw = observed && observed["__v_raw"];
+  const raw = observed && observed[
+    "__v_raw"
+    /* ReactiveFlags.RAW */
+  ];
   return raw ? toRaw(raw) : observed;
 }
 function markRaw(value) {
@@ -1063,7 +1137,10 @@ class ComputedRefImpl {
     });
     this.effect.computed = this;
     this.effect.active = this._cacheable = !isSSR;
-    this["__v_isReadonly"] = isReadonly2;
+    this[
+      "__v_isReadonly"
+      /* ReactiveFlags.IS_READONLY */
+    ] = isReadonly2;
   }
   get value() {
     const self2 = toRaw(this);
@@ -1255,7 +1332,12 @@ function flushJobs(seen2) {
       if (job && job.active !== false) {
         if (false)
           ;
-        callWithErrorHandling(job, null, 14);
+        callWithErrorHandling(
+          job,
+          null,
+          14
+          /* ErrorCodes.SCHEDULER */
+        );
       }
     }
   } finally {
@@ -1287,7 +1369,8 @@ function emit$1(instance, event, ...rawArgs) {
     }
   }
   let handlerName;
-  let handler = props[handlerName = toHandlerKey(event)] || props[handlerName = toHandlerKey(camelize(event))];
+  let handler = props[handlerName = toHandlerKey(event)] || // also try camelCase event handler (#2249)
+  props[handlerName = toHandlerKey(camelize(event))];
   if (!handler && isModelListener2) {
     handler = props[handlerName = toHandlerKey(hyphenate(event))];
   }
@@ -1419,12 +1502,21 @@ function renderComponentRoot(instance) {
         },
         slots,
         emit
-      } : { attrs, slots, emit }) : render13(props, null));
+      } : { attrs, slots, emit }) : render13(
+        props,
+        null
+        /* we know it doesn't need it */
+      ));
       fallthroughAttrs = Component.props ? attrs : getFunctionalFallthrough(attrs);
     }
   } catch (err) {
     blockStack.length = 0;
-    handleError(err, instance, 1);
+    handleError(
+      err,
+      instance,
+      1
+      /* ErrorCodes.RENDER_FUNCTION */
+    );
     result = createVNode(Comment);
   }
   let root2 = result;
@@ -1597,13 +1689,23 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
       } else if (isReactive(s)) {
         return traverse(s);
       } else if (isFunction$2(s)) {
-        return callWithErrorHandling(s, instance, 2);
+        return callWithErrorHandling(
+          s,
+          instance,
+          2
+          /* ErrorCodes.WATCH_GETTER */
+        );
       } else
         ;
     });
   } else if (isFunction$2(source)) {
     if (cb) {
-      getter = () => callWithErrorHandling(source, instance, 2);
+      getter = () => callWithErrorHandling(
+        source,
+        instance,
+        2
+        /* ErrorCodes.WATCH_GETTER */
+      );
     } else {
       getter = () => {
         if (instance && instance.isUnmounted) {
@@ -1625,7 +1727,12 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
   let cleanup;
   let onCleanup = (fn) => {
     cleanup = effect.onStop = () => {
-      callWithErrorHandling(fn, instance, 4);
+      callWithErrorHandling(
+        fn,
+        instance,
+        4
+        /* ErrorCodes.WATCH_CLEANUP */
+      );
     };
   };
   let ssrCleanup;
@@ -1660,6 +1767,7 @@ function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EM
         }
         callWithAsyncErrorHandling(cb, instance, 3, [
           newValue,
+          // pass undefined as the old value when it's changed for the first time
           oldValue === INITIAL_WATCHER_VALUE ? void 0 : isMultiSource && oldValue[0] === INITIAL_WATCHER_VALUE ? [] : oldValue,
           onCleanup
         ]);
@@ -1734,7 +1842,10 @@ function createPathGetter(ctx2, path) {
   };
 }
 function traverse(value, seen2) {
-  if (!isObject$1(value) || value["__v_skip"]) {
+  if (!isObject$1(value) || value[
+    "__v_skip"
+    /* ReactiveFlags.SKIP */
+  ]) {
     return value;
   }
   seen2 = seen2 || /* @__PURE__ */ new Set();
@@ -1781,14 +1892,17 @@ const BaseTransitionImpl = {
     mode: String,
     appear: Boolean,
     persisted: Boolean,
+    // enter
     onBeforeEnter: TransitionHookValidator,
     onEnter: TransitionHookValidator,
     onAfterEnter: TransitionHookValidator,
     onEnterCancelled: TransitionHookValidator,
+    // leave
     onBeforeLeave: TransitionHookValidator,
     onLeave: TransitionHookValidator,
     onAfterLeave: TransitionHookValidator,
     onLeaveCancelled: TransitionHookValidator,
+    // appear
     onBeforeAppear: TransitionHookValidator,
     onAppear: TransitionHookValidator,
     onAfterAppear: TransitionHookValidator,
@@ -1905,7 +2019,10 @@ function resolveTransitionHooks(vnode, props, state, instance) {
         }
       }
       if (el._leaveCb) {
-        el._leaveCb(true);
+        el._leaveCb(
+          true
+          /* cancelled */
+        );
       }
       const leavingVNode = leavingVNodesCache[key];
       if (leavingVNode && isSameVNodeType(vnode, leavingVNode) && leavingVNode.el._leaveCb) {
@@ -1950,7 +2067,10 @@ function resolveTransitionHooks(vnode, props, state, instance) {
     leave(el, remove2) {
       const key2 = String(vnode.key);
       if (el._enterCb) {
-        el._enterCb(true);
+        el._enterCb(
+          true
+          /* cancelled */
+        );
       }
       if (state.isUnmounting) {
         return remove2();
@@ -2060,7 +2180,13 @@ function registerKeepAliveHook(hook, type, target = currentInstance) {
   }
 }
 function injectToKeepAliveRoot(hook, type, target, keepAliveRoot) {
-  const injected = injectHook(type, hook, keepAliveRoot, true);
+  const injected = injectHook(
+    type,
+    hook,
+    keepAliveRoot,
+    true
+    /* prepend */
+  );
   onUnmounted(() => {
     remove(keepAliveRoot[type], injected);
   }, target);
@@ -2087,16 +2213,46 @@ function injectHook(type, hook, target = currentInstance, prepend = false) {
     return wrappedHook;
   }
 }
-const createHook = (lifecycle) => (hook, target = currentInstance) => (!isInSSRComponentSetup || lifecycle === "sp") && injectHook(lifecycle, (...args) => hook(...args), target);
-const onBeforeMount = createHook("bm");
-const onMounted = createHook("m");
-const onBeforeUpdate = createHook("bu");
-const onUpdated = createHook("u");
-const onBeforeUnmount = createHook("bum");
-const onUnmounted = createHook("um");
-const onServerPrefetch = createHook("sp");
-const onRenderTriggered = createHook("rtg");
-const onRenderTracked = createHook("rtc");
+const createHook = (lifecycle) => (hook, target = currentInstance) => (
+  // post-create lifecycle registrations are noops during SSR (except for serverPrefetch)
+  (!isInSSRComponentSetup || lifecycle === "sp") && injectHook(lifecycle, (...args) => hook(...args), target)
+);
+const onBeforeMount = createHook(
+  "bm"
+  /* LifecycleHooks.BEFORE_MOUNT */
+);
+const onMounted = createHook(
+  "m"
+  /* LifecycleHooks.MOUNTED */
+);
+const onBeforeUpdate = createHook(
+  "bu"
+  /* LifecycleHooks.BEFORE_UPDATE */
+);
+const onUpdated = createHook(
+  "u"
+  /* LifecycleHooks.UPDATED */
+);
+const onBeforeUnmount = createHook(
+  "bum"
+  /* LifecycleHooks.BEFORE_UNMOUNT */
+);
+const onUnmounted = createHook(
+  "um"
+  /* LifecycleHooks.UNMOUNTED */
+);
+const onServerPrefetch = createHook(
+  "sp"
+  /* LifecycleHooks.SERVER_PREFETCH */
+);
+const onRenderTriggered = createHook(
+  "rtg"
+  /* LifecycleHooks.RENDER_TRIGGERED */
+);
+const onRenderTracked = createHook(
+  "rtc"
+  /* LifecycleHooks.RENDER_TRACKED */
+);
 function onErrorCaptured(hook, target = currentInstance) {
   injectHook("ec", hook, target);
 }
@@ -2162,12 +2318,21 @@ function resolveAsset(type, name, warnMissing = true, maybeSelfReference = false
   if (instance) {
     const Component = instance.type;
     if (type === COMPONENTS) {
-      const selfName = getComponentName(Component, false);
+      const selfName = getComponentName(
+        Component,
+        false
+        /* do not include inferred name to avoid breaking existing code */
+      );
       if (selfName && (selfName === name || selfName === camelize(name) || selfName === capitalize(camelize(name)))) {
         return Component;
       }
     }
-    const res = resolve(instance[type] || Component[type], name) || resolve(instance.appContext[type], name);
+    const res = (
+      // local registration
+      // check instance[type] first which is resolved for options API
+      resolve(instance[type] || Component[type], name) || // global registration
+      resolve(instance.appContext[type], name)
+    );
     if (!res && maybeSelfReference) {
       return Component;
     }
@@ -2221,9 +2386,17 @@ function renderSlot(slots, name, props = {}, fallback, noSlotted) {
   }
   openBlock();
   const validSlotContent = slot && ensureValidVNode$1(slot(props));
-  const rendered = createBlock(Fragment, {
-    key: props.key || validSlotContent && validSlotContent.key || `_${name}`
-  }, validSlotContent || (fallback ? fallback() : []), validSlotContent && slots._ === 1 ? 64 : -2);
+  const rendered = createBlock(
+    Fragment,
+    {
+      key: props.key || // slot content array of a dynamic conditional slot may have a branch
+      // key attached in the `createSlots` helper, respect that
+      validSlotContent && validSlotContent.key || `_${name}`
+    },
+    validSlotContent || (fallback ? fallback() : []),
+    validSlotContent && slots._ === 1 ? 64 : -2
+    /* PatchFlags.BAIL */
+  );
   if (!noSlotted && rendered.scopeId) {
     rendered.slotScopeIds = [rendered.scopeId + "-s"];
   }
@@ -2250,22 +2423,26 @@ const getPublicInstance = (i) => {
     return getExposeProxy(i) || i.proxy;
   return getPublicInstance(i.parent);
 };
-const publicPropertiesMap = /* @__PURE__ */ extend(/* @__PURE__ */ Object.create(null), {
-  $: (i) => i,
-  $el: (i) => i.vnode.el,
-  $data: (i) => i.data,
-  $props: (i) => i.props,
-  $attrs: (i) => i.attrs,
-  $slots: (i) => i.slots,
-  $refs: (i) => i.refs,
-  $parent: (i) => getPublicInstance(i.parent),
-  $root: (i) => getPublicInstance(i.root),
-  $emit: (i) => i.emit,
-  $options: (i) => resolveMergedOptions(i),
-  $forceUpdate: (i) => i.f || (i.f = () => queueJob(i.update)),
-  $nextTick: (i) => i.n || (i.n = nextTick.bind(i.proxy)),
-  $watch: (i) => instanceWatch.bind(i)
-});
+const publicPropertiesMap = (
+  // Move PURE marker to new line to workaround compiler discarding it
+  // due to type annotation
+  /* @__PURE__ */ extend(/* @__PURE__ */ Object.create(null), {
+    $: (i) => i,
+    $el: (i) => i.vnode.el,
+    $data: (i) => i.data,
+    $props: (i) => i.props,
+    $attrs: (i) => i.attrs,
+    $slots: (i) => i.slots,
+    $refs: (i) => i.refs,
+    $parent: (i) => getPublicInstance(i.parent),
+    $root: (i) => getPublicInstance(i.root),
+    $emit: (i) => i.emit,
+    $options: (i) => resolveMergedOptions(i),
+    $forceUpdate: (i) => i.f || (i.f = () => queueJob(i.update)),
+    $nextTick: (i) => i.n || (i.n = nextTick.bind(i.proxy)),
+    $watch: (i) => instanceWatch.bind(i)
+  })
+);
 const hasSetupBinding = (state, key) => state !== EMPTY_OBJ && !state.__isScriptSetup && hasOwn(state, key);
 const PublicInstanceProxyHandlers = {
   get({ _: instance }, key) {
@@ -2290,7 +2467,11 @@ const PublicInstanceProxyHandlers = {
       } else if (data !== EMPTY_OBJ && hasOwn(data, key)) {
         accessCache[key] = 2;
         return data[key];
-      } else if ((normalizedProps = instance.propsOptions[0]) && hasOwn(normalizedProps, key)) {
+      } else if (
+        // only cache other properties when instance has declared (thus stable)
+        // props
+        (normalizedProps = instance.propsOptions[0]) && hasOwn(normalizedProps, key)
+      ) {
         accessCache[key] = 3;
         return props[key];
       } else if (ctx2 !== EMPTY_OBJ && hasOwn(ctx2, key)) {
@@ -2307,12 +2488,18 @@ const PublicInstanceProxyHandlers = {
         track(instance, "get", key);
       }
       return publicGetter(instance);
-    } else if ((cssModule = type.__cssModules) && (cssModule = cssModule[key])) {
+    } else if (
+      // css module (injected by vue-loader)
+      (cssModule = type.__cssModules) && (cssModule = cssModule[key])
+    ) {
       return cssModule;
     } else if (ctx2 !== EMPTY_OBJ && hasOwn(ctx2, key)) {
       accessCache[key] = 4;
       return ctx2[key];
-    } else if (globalProperties = appContext.config.globalProperties, hasOwn(globalProperties, key)) {
+    } else if (
+      // global properties
+      globalProperties = appContext.config.globalProperties, hasOwn(globalProperties, key)
+    ) {
       {
         return globalProperties[key];
       }
@@ -2359,15 +2546,22 @@ function applyOptions(instance) {
   const ctx2 = instance.ctx;
   shouldCacheAccess = false;
   if (options.beforeCreate) {
-    callHook$1(options.beforeCreate, instance, "bc");
+    callHook$1(
+      options.beforeCreate,
+      instance,
+      "bc"
+      /* LifecycleHooks.BEFORE_CREATE */
+    );
   }
   const {
+    // state
     data: dataOptions,
     computed: computedOptions,
     methods,
     watch: watchOptions,
     provide: provideOptions,
     inject: injectOptions,
+    // lifecycle
     created,
     beforeMount,
     mounted,
@@ -2384,8 +2578,10 @@ function applyOptions(instance) {
     renderTriggered,
     errorCaptured,
     serverPrefetch,
+    // public API
     expose,
     inheritAttrs,
+    // assets
     components,
     directives,
     filters
@@ -2442,7 +2638,12 @@ function applyOptions(instance) {
     });
   }
   if (created) {
-    callHook$1(created, instance, "c");
+    callHook$1(
+      created,
+      instance,
+      "c"
+      /* LifecycleHooks.CREATED */
+    );
   }
   function registerLifecycleHook(register, hook) {
     if (isArray$3(hook)) {
@@ -2496,7 +2697,12 @@ function resolveInjections(injectOptions, ctx2, checkDuplicateProperties = NOOP,
     let injected;
     if (isObject$1(opt)) {
       if ("default" in opt) {
-        injected = inject(opt.from || key, opt.default, true);
+        injected = inject(
+          opt.from || key,
+          opt.default,
+          true
+          /* treat default function as factory */
+        );
       } else {
         injected = inject(opt.from || key);
       }
@@ -2589,8 +2795,10 @@ const internalOptionMergeStrats = {
   data: mergeDataFn,
   props: mergeObjectOptions,
   emits: mergeObjectOptions,
+  // objects
   methods: mergeObjectOptions,
   computed: mergeObjectOptions,
+  // lifecycle
   beforeCreate: mergeAsArray,
   created: mergeAsArray,
   beforeMount: mergeAsArray,
@@ -2605,9 +2813,12 @@ const internalOptionMergeStrats = {
   deactivated: mergeAsArray,
   errorCaptured: mergeAsArray,
   serverPrefetch: mergeAsArray,
+  // assets
   components: mergeObjectOptions,
   directives: mergeObjectOptions,
+  // watch
   watch: mergeWatchOptions,
+  // provide / inject
   provide: mergeDataFn,
   inject: mergeInject
 };
@@ -2679,7 +2890,12 @@ function updateProps(instance, rawProps, rawPrevProps, optimized) {
   const rawCurrentProps = toRaw(props);
   const [options] = instance.propsOptions;
   let hasAttrsChanged = false;
-  if ((optimized || patchFlag > 0) && !(patchFlag & 16)) {
+  if (
+    // always force full diff in dev
+    // - #1942 if hmr is enabled with sfc component
+    // - vite#872 non-sfc component used by sfc component
+    (optimized || patchFlag > 0) && !(patchFlag & 16)
+  ) {
     if (patchFlag & 8) {
       const propsToUpdate = instance.vnode.dynamicProps;
       for (let i = 0; i < propsToUpdate.length; i++) {
@@ -2696,7 +2912,15 @@ function updateProps(instance, rawProps, rawPrevProps, optimized) {
             }
           } else {
             const camelizedKey = camelize(key);
-            props[camelizedKey] = resolvePropValue(options, rawCurrentProps, camelizedKey, value, instance, false);
+            props[camelizedKey] = resolvePropValue(
+              options,
+              rawCurrentProps,
+              camelizedKey,
+              value,
+              instance,
+              false
+              /* isAbsent */
+            );
           }
         } else {
           if (value !== attrs[key]) {
@@ -2712,10 +2936,23 @@ function updateProps(instance, rawProps, rawPrevProps, optimized) {
     }
     let kebabKey;
     for (const key in rawCurrentProps) {
-      if (!rawProps || !hasOwn(rawProps, key) && ((kebabKey = hyphenate(key)) === key || !hasOwn(rawProps, kebabKey))) {
+      if (!rawProps || // for camelCase
+      !hasOwn(rawProps, key) && // it's possible the original props was passed in as kebab-case
+      // and converted to camelCase (#955)
+      ((kebabKey = hyphenate(key)) === key || !hasOwn(rawProps, kebabKey))) {
         if (options) {
-          if (rawPrevProps && (rawPrevProps[key] !== void 0 || rawPrevProps[kebabKey] !== void 0)) {
-            props[key] = resolvePropValue(options, rawCurrentProps, key, void 0, instance, true);
+          if (rawPrevProps && // for camelCase
+          (rawPrevProps[key] !== void 0 || // for kebab-case
+          rawPrevProps[kebabKey] !== void 0)) {
+            props[key] = resolvePropValue(
+              options,
+              rawCurrentProps,
+              key,
+              void 0,
+              instance,
+              true
+              /* isAbsent */
+            );
           }
         } else {
           delete props[key];
@@ -2789,10 +3026,16 @@ function resolvePropValue(options, props, key, value, instance, isAbsent) {
         value = defaultValue;
       }
     }
-    if (opt[0]) {
+    if (opt[
+      0
+      /* BooleanFlags.shouldCast */
+    ]) {
       if (isAbsent && !hasDefault) {
         value = false;
-      } else if (opt[1] && (value === "" || value === hyphenate(key))) {
+      } else if (opt[
+        1
+        /* BooleanFlags.shouldCastTrue */
+      ] && (value === "" || value === hyphenate(key))) {
         value = true;
       }
     }
@@ -2849,8 +3092,14 @@ function normalizePropsOptions(comp, appContext, asMixin = false) {
         if (prop) {
           const booleanIndex = getTypeIndex(Boolean, prop.type);
           const stringIndex = getTypeIndex(String, prop.type);
-          prop[0] = booleanIndex > -1;
-          prop[1] = stringIndex < 0 || booleanIndex < stringIndex;
+          prop[
+            0
+            /* BooleanFlags.shouldCast */
+          ] = booleanIndex > -1;
+          prop[
+            1
+            /* BooleanFlags.shouldCastTrue */
+          ] = stringIndex < 0 || booleanIndex < stringIndex;
           if (booleanIndex > -1 || hasOwn(prop, "default")) {
             needCastKeys.push(normalizedKey);
           }
@@ -3377,7 +3626,20 @@ function baseCreateRenderer(options, createHydrationFns) {
     for (let i = 0; i < newChildren.length; i++) {
       const oldVNode = oldChildren[i];
       const newVNode = newChildren[i];
-      const container = oldVNode.el && (oldVNode.type === Fragment || !isSameVNodeType(oldVNode, newVNode) || oldVNode.shapeFlag & (6 | 64)) ? hostParentNode(oldVNode.el) : fallbackContainer;
+      const container = (
+        // oldVNode may be an errored async setup() component inside Suspense
+        // which will not have a mounted element
+        oldVNode.el && // - In the case of a Fragment, we need to provide the actual parent
+        // of the Fragment itself so it can move its children.
+        (oldVNode.type === Fragment || // - In the case of different nodes, there is going to be a replacement
+        // which also requires the correct parent container
+        !isSameVNodeType(oldVNode, newVNode) || // - In the case of a component, it could contain anything.
+        oldVNode.shapeFlag & (6 | 64)) ? hostParentNode(oldVNode.el) : (
+          // In other cases, the parent container is not actually used so we
+          // just pass the block element here to avoid a DOM parentNode call.
+          fallbackContainer
+        )
+      );
       patch(oldVNode, newVNode, container, null, parentComponent, parentSuspense, isSVG2, slotScopeIds, true);
     }
   };
@@ -3416,10 +3678,23 @@ function baseCreateRenderer(options, createHydrationFns) {
       hostInsert(fragmentEndAnchor, container, anchor);
       mountChildren(n2.children, container, fragmentEndAnchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized);
     } else {
-      if (patchFlag > 0 && patchFlag & 64 && dynamicChildren && n1.dynamicChildren) {
+      if (patchFlag > 0 && patchFlag & 64 && dynamicChildren && // #2715 the previous fragment could've been a BAILed one as a result
+      // of renderSlot() with no valid children
+      n1.dynamicChildren) {
         patchBlockChildren(n1.dynamicChildren, dynamicChildren, container, parentComponent, parentSuspense, isSVG2, slotScopeIds);
-        if (n2.key != null || parentComponent && n2 === parentComponent.subTree) {
-          traverseStaticChildren(n1, n2, true);
+        if (
+          // #2080 if the stable fragment has a key, it's a <template v-for> that may
+          //  get moved around. Make sure all root level vnodes inherit el.
+          // #2134 or if it's a component root, it may also get moved around
+          // as the component is being moved.
+          n2.key != null || parentComponent && n2 === parentComponent.subTree
+        ) {
+          traverseStaticChildren(
+            n1,
+            n2,
+            true
+            /* shallow */
+          );
         }
       } else {
         patchChildren(n1, n2, container, fragmentEndAnchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized);
@@ -3494,6 +3769,10 @@ function baseCreateRenderer(options, createHydrationFns) {
           };
           if (isAsyncWrapperVNode) {
             initialVNode.type.__asyncLoader().then(
+              // note: we are moving the render call into an async callback,
+              // which means it won't track dependencies - but it's ok because
+              // a server-rendered async wrapper is already in resolved state
+              // and it will never need to change.
               () => !instance.isUnmounted && hydrateSubTree()
             );
           } else {
@@ -3540,7 +3819,9 @@ function baseCreateRenderer(options, createHydrationFns) {
         patch(
           prevTree,
           nextTree,
+          // parent may have changed if it's in a teleport
           hostParentNode(prevTree.el),
+          // anchor may have changed if it's in a fragment
           getNextHostNode(prevTree),
           instance,
           parentSuspense,
@@ -3562,6 +3843,7 @@ function baseCreateRenderer(options, createHydrationFns) {
       componentUpdateFn,
       () => queueJob(update),
       instance.scope
+      // track it in component's effect scope
     );
     const update = instance.update = () => effect.run();
     update.id = instance.uid;
@@ -3732,7 +4014,13 @@ function baseCreateRenderer(options, createHydrationFns) {
           patch(null, nextChild, container, anchor, parentComponent, parentSuspense, isSVG2, slotScopeIds, optimized);
         } else if (moved) {
           if (j < 0 || i !== increasingNewIndexSequence[j]) {
-            move2(nextChild, container, anchor, 2);
+            move2(
+              nextChild,
+              container,
+              anchor,
+              2
+              /* MoveType.REORDER */
+            );
           } else {
             j--;
           }
@@ -3818,7 +4106,8 @@ function baseCreateRenderer(options, createHydrationFns) {
       }
       if (shapeFlag & 64) {
         vnode.type.remove(vnode, parentComponent, parentSuspense, optimized, internals, doRemove);
-      } else if (dynamicChildren && (type !== Fragment || patchFlag > 0 && patchFlag & 64)) {
+      } else if (dynamicChildren && // #1153: fast path should not be taken for non-stable (v-for) fragments
+      (type !== Fragment || patchFlag > 0 && patchFlag & 64)) {
         unmountChildren(dynamicChildren, parentComponent, parentSuspense, false, true);
       } else if (type === Fragment && patchFlag & (128 | 256) || !optimized && shapeFlag & 16) {
         unmountChildren(children, parentComponent, parentSuspense);
@@ -4069,16 +4358,37 @@ const TeleportImpl = {
       }
       if (disabled) {
         if (!wasDisabled) {
-          moveTeleport(n2, container, mainAnchor, internals, 1);
+          moveTeleport(
+            n2,
+            container,
+            mainAnchor,
+            internals,
+            1
+            /* TeleportMoveTypes.TOGGLE */
+          );
         }
       } else {
         if ((n2.props && n2.props.to) !== (n1.props && n1.props.to)) {
           const nextTarget = n2.target = resolveTarget(n2.props, querySelector);
           if (nextTarget) {
-            moveTeleport(n2, nextTarget, null, internals, 0);
+            moveTeleport(
+              n2,
+              nextTarget,
+              null,
+              internals,
+              0
+              /* TeleportMoveTypes.TARGET_CHANGE */
+            );
           }
         } else if (wasDisabled) {
-          moveTeleport(n2, target, targetAnchor, internals, 1);
+          moveTeleport(
+            n2,
+            target,
+            targetAnchor,
+            internals,
+            1
+            /* TeleportMoveTypes.TOGGLE */
+          );
         }
       }
     }
@@ -4114,7 +4424,13 @@ function moveTeleport(vnode, container, parentAnchor, { o: { insert }, m: move2 
   if (!isReorder || isTeleportDisabled(props)) {
     if (shapeFlag & 16) {
       for (let i = 0; i < children.length; i++) {
-        move2(children[i], container, parentAnchor, 2);
+        move2(
+          children[i],
+          container,
+          parentAnchor,
+          2
+          /* MoveType.REORDER */
+        );
       }
     }
   }
@@ -4187,10 +4503,27 @@ function setupBlock(vnode) {
   return vnode;
 }
 function createElementBlock(type, props, children, patchFlag, dynamicProps, shapeFlag) {
-  return setupBlock(createBaseVNode(type, props, children, patchFlag, dynamicProps, shapeFlag, true));
+  return setupBlock(createBaseVNode(
+    type,
+    props,
+    children,
+    patchFlag,
+    dynamicProps,
+    shapeFlag,
+    true
+    /* isBlock */
+  ));
 }
 function createBlock(type, props, children, patchFlag, dynamicProps) {
-  return setupBlock(createVNode(type, props, children, patchFlag, dynamicProps, true));
+  return setupBlock(createVNode(
+    type,
+    props,
+    children,
+    patchFlag,
+    dynamicProps,
+    true
+    /* isBlock: prevent a block from tracking itself */
+  ));
 }
 function isVNode(value) {
   return value ? value.__v_isVNode === true : false;
@@ -4240,7 +4573,15 @@ function createBaseVNode(type, props = null, children = null, patchFlag = 0, dyn
   } else if (children) {
     vnode.shapeFlag |= isString$1(children) ? 8 : 16;
   }
-  if (isBlockTreeEnabled > 0 && !isBlockNode && currentBlock && (vnode.patchFlag > 0 || shapeFlag & 6) && vnode.patchFlag !== 32) {
+  if (isBlockTreeEnabled > 0 && // avoid a block node from tracking itself
+  !isBlockNode && // has current parent block
+  currentBlock && // presence of a patch flag indicates this node needs patching on updates.
+  // component nodes also should always be patched, because even if the
+  // component doesn't need to update, it needs to persist the instance on to
+  // the next vnode so that it can be properly unmounted later.
+  (vnode.patchFlag > 0 || shapeFlag & 6) && // the EVENTS flag is only for hydration and if it is the only flag, the
+  // vnode should not be considered dynamic due to handler caching.
+  vnode.patchFlag !== 32) {
     currentBlock.push(vnode);
   }
   return vnode;
@@ -4251,7 +4592,12 @@ function _createVNode(type, props = null, children = null, patchFlag = 0, dynami
     type = Comment;
   }
   if (isVNode(type)) {
-    const cloned = cloneVNode(type, props, true);
+    const cloned = cloneVNode(
+      type,
+      props,
+      true
+      /* mergeRef: true */
+    );
     if (children) {
       normalizeChildren(cloned, children);
     }
@@ -4298,7 +4644,12 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
     type: vnode.type,
     props: mergedProps,
     key: mergedProps && normalizeKey(mergedProps),
-    ref: extraProps && extraProps.ref ? mergeRef && ref2 ? isArray$3(ref2) ? ref2.concat(normalizeRef(extraProps)) : [ref2, normalizeRef(extraProps)] : normalizeRef(extraProps) : ref2,
+    ref: extraProps && extraProps.ref ? (
+      // #2078 in the case of <component :is="vnode" ref="extra"/>
+      // if the vnode itself already has a ref, cloneVNode will need to merge
+      // the refs so the single vnode can be set on multiple refs
+      mergeRef && ref2 ? isArray$3(ref2) ? ref2.concat(normalizeRef(extraProps)) : [ref2, normalizeRef(extraProps)] : normalizeRef(extraProps)
+    ) : ref2,
     scopeId: vnode.scopeId,
     slotScopeIds: vnode.slotScopeIds,
     children,
@@ -4306,12 +4657,20 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
     targetAnchor: vnode.targetAnchor,
     staticCount: vnode.staticCount,
     shapeFlag: vnode.shapeFlag,
+    // if the vnode is cloned with extra props, we can no longer assume its
+    // existing patch flag to be reliable and need to add the FULL_PROPS flag.
+    // note: preserve flag for fragments since they use the flag for children
+    // fast paths only.
     patchFlag: extraProps && vnode.type !== Fragment ? patchFlag === -1 ? 16 : patchFlag | 16 : patchFlag,
     dynamicProps: vnode.dynamicProps,
     dynamicChildren: vnode.dynamicChildren,
     appContext: vnode.appContext,
     dirs: vnode.dirs,
     transition: vnode.transition,
+    // These should technically only be non-null on mounted VNodes. However,
+    // they *should* be copied for kept-alive vnodes. So we just always copy
+    // them since them being non-null during a mount doesn't affect the logic as
+    // they will simply be overwritten.
     component: vnode.component,
     suspense: vnode.suspense,
     ssContent: vnode.ssContent && cloneVNode(vnode.ssContent),
@@ -4335,6 +4694,7 @@ function normalizeVNode(child) {
     return createVNode(
       Fragment,
       null,
+      // #3666, avoid reference pollution when reusing vnode
       child.slice()
     );
   } else if (typeof child === "object") {
@@ -4437,7 +4797,10 @@ function createComponentInstance(vnode, parent, suspense) {
     subTree: null,
     effect: null,
     update: null,
-    scope: new EffectScope(true),
+    scope: new EffectScope(
+      true
+      /* detached */
+    ),
     render: null,
     proxy: null,
     exposed: null,
@@ -4446,14 +4809,20 @@ function createComponentInstance(vnode, parent, suspense) {
     provides: parent ? parent.provides : Object.create(appContext.provides),
     accessCache: null,
     renderCache: [],
+    // local resolved assets
     components: null,
     directives: null,
+    // resolved props and emits options
     propsOptions: normalizePropsOptions(type, appContext),
     emitsOptions: normalizeEmitsOptions(type, appContext),
+    // emit
     emit: null,
     emitted: null,
+    // props default value
     propsDefaults: EMPTY_OBJ,
+    // inheritAttrs
     inheritAttrs: type.inheritAttrs,
+    // state
     ctx: EMPTY_OBJ,
     data: EMPTY_OBJ,
     props: EMPTY_OBJ,
@@ -4462,10 +4831,13 @@ function createComponentInstance(vnode, parent, suspense) {
     refs: EMPTY_OBJ,
     setupState: EMPTY_OBJ,
     setupContext: null,
+    // suspense related
     suspense,
     suspenseId: suspense ? suspense.pendingId : 0,
     asyncDep: null,
     asyncResolved: false,
+    // lifecycle hooks
+    // not using enums here because it results in computed properties
     isMounted: false,
     isUnmounted: false,
     isDeactivated: false,
@@ -4536,7 +4908,12 @@ function setupStatefulComponent(instance, isSSR) {
         return setupResult.then((resolvedResult) => {
           handleSetupResult(instance, resolvedResult, isSSR);
         }).catch((e) => {
-          handleError(e, instance, 0);
+          handleError(
+            e,
+            instance,
+            0
+            /* ErrorCodes.SETUP_FUNCTION */
+          );
         });
       } else {
         instance.asyncDep = setupResult;
@@ -4698,6 +5075,10 @@ const nodeOps = {
   setScopeId(el, id) {
     el.setAttribute(id, "");
   },
+  // __UNSAFE__
+  // Reason: innerHTML.
+  // Static content here can only come from compiled templates.
+  // As long as the user only uses trusted templates, this is safe.
   insertStaticContent(content, parent, anchor, isSVG2, start, end) {
     const before = anchor ? anchor.previousSibling : parent.lastChild;
     if (start && (start === end || start.nextSibling)) {
@@ -4719,7 +5100,9 @@ const nodeOps = {
       parent.insertBefore(template, anchor);
     }
     return [
+      // first
       before ? before.nextSibling : parent.firstChild,
+      // last
       anchor ? anchor.previousSibling : parent.lastChild
     ];
   }
@@ -4829,10 +5212,14 @@ function patchDOMProp(el, key, value, prevChildren, parentComponent, parentSuspe
     el[key] = value == null ? "" : value;
     return;
   }
-  if (key === "value" && el.tagName !== "PROGRESS" && !el.tagName.includes("-")) {
+  if (key === "value" && el.tagName !== "PROGRESS" && // custom elements may use _value internally
+  !el.tagName.includes("-")) {
     el._value = value;
     const newValue = value == null ? "" : value;
-    if (el.value !== newValue || el.tagName === "OPTION") {
+    if (el.value !== newValue || // #4956: always set for OPTION elements because its value falls back to
+    // textContent if no value attribute is present. And setting .value for
+    // OPTION has no side effect
+    el.tagName === "OPTION") {
       el.value = newValue;
     }
     if (value == null) {
@@ -5384,13 +5771,16 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.28
-  * (c) 2022 Eduardo San Martin Morote
+  * pinia v2.0.29
+  * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
 let activePinia;
 const setActivePinia = (pinia2) => activePinia = pinia2;
-const piniaSymbol = Symbol();
+const piniaSymbol = (
+  /* istanbul ignore next */
+  Symbol()
+);
 function isPlainObject$1(o) {
   return o && typeof o === "object" && Object.prototype.toString.call(o) === "[object Object]" && typeof o.toJSON !== "function";
 }
@@ -5425,6 +5815,8 @@ function createPinia() {
       return this;
     },
     _p,
+    // it's actually undefined here
+    // @ts-expect-error
     _a: null,
     _e: scope,
     _s: /* @__PURE__ */ new Map(),
@@ -5473,7 +5865,10 @@ function mergeReactiveObjects(target, patchToApply) {
   }
   return target;
 }
-const skipHydrateSymbol = Symbol();
+const skipHydrateSymbol = (
+  /* istanbul ignore next */
+  Symbol()
+);
 function shouldHydrate(obj) {
   return !isPlainObject$1(obj) || !obj.hasOwnProperty(skipHydrateSymbol);
 }
@@ -5515,6 +5910,7 @@ function createSetupStore($id, setup, options = {}, pinia2, hot, isOptionsStore)
   const optionsForPlugin = assign$1({ actions: {} }, options);
   const $subscribeOptions = {
     deep: true
+    // flush: 'post',
   };
   let isListening;
   let isSyncListening;
@@ -5605,6 +6001,7 @@ function createSetupStore($id, setup, options = {}, pinia2, hot, isOptionsStore)
   }
   const partialStore = {
     _p: pinia2,
+    // _s: scope,
     $id,
     $onAction: addSubscription.bind(null, actionSubscriptions),
     $patch,
@@ -5696,7 +6093,9 @@ function defineStore(idOrOptions, setup, setupOptions) {
   }
   function useStore(pinia2, hot) {
     const currentInstance2 = getCurrentInstance();
-    pinia2 = pinia2 || currentInstance2 && inject(piniaSymbol, null);
+    pinia2 = // in test mode, ignore the argument provided as we can always retrieve a
+    // pinia instance with getActivePinia()
+    pinia2 || currentInstance2 && inject(piniaSymbol, null);
     if (pinia2)
       setActivePinia(pinia2);
     pinia2 = activePinia;
@@ -6198,6 +6597,7 @@ function resolveSelectorWithAmp(amp, selector) {
     if (!round) {
       amp.forEach((partialAmp) => {
         nextAmp.push(
+          // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
           (partialAmp && partialAmp + " ") + partialSelector
         );
       });
@@ -6237,7 +6637,10 @@ function parseSelectorPath(selectorPaths) {
   let amp = [""];
   selectorPaths.forEach((selector) => {
     selector = selector && selector.trim();
-    if (!selector) {
+    if (
+      // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+      !selector
+    ) {
       return;
     }
     if (selector.includes("&")) {
@@ -6436,9 +6839,13 @@ function murmur2(str) {
   var k, i = 0, len2 = str.length;
   for (; len2 >= 4; ++i, len2 -= 4) {
     k = str.charCodeAt(i) & 255 | (str.charCodeAt(++i) & 255) << 8 | (str.charCodeAt(++i) & 255) << 16 | (str.charCodeAt(++i) & 255) << 24;
-    k = (k & 65535) * 1540483477 + ((k >>> 16) * 59797 << 16);
-    k ^= k >>> 24;
-    h2 = (k & 65535) * 1540483477 + ((k >>> 16) * 59797 << 16) ^ (h2 & 65535) * 1540483477 + ((h2 >>> 16) * 59797 << 16);
+    k = /* Math.imul(k, m): */
+    (k & 65535) * 1540483477 + ((k >>> 16) * 59797 << 16);
+    k ^= /* k >>> r: */
+    k >>> 24;
+    h2 = /* Math.imul(k, m): */
+    (k & 65535) * 1540483477 + ((k >>> 16) * 59797 << 16) ^ /* Math.imul(h, m): */
+    (h2 & 65535) * 1540483477 + ((h2 >>> 16) * 59797 << 16);
   }
   switch (len2) {
     case 3:
@@ -6447,10 +6854,12 @@ function murmur2(str) {
       h2 ^= (str.charCodeAt(i + 1) & 255) << 8;
     case 1:
       h2 ^= str.charCodeAt(i) & 255;
-      h2 = (h2 & 65535) * 1540483477 + ((h2 >>> 16) * 59797 << 16);
+      h2 = /* Math.imul(h, m): */
+      (h2 & 65535) * 1540483477 + ((h2 >>> 16) * 59797 << 16);
   }
   h2 ^= h2 >>> 13;
-  h2 = (h2 & 65535) * 1540483477 + ((h2 >>> 16) * 59797 << 16);
+  h2 = /* Math.imul(h, m): */
+  (h2 & 65535) * 1540483477 + ((h2 >>> 16) * 59797 << 16);
   return ((h2 ^ h2 >>> 15) >>> 0).toString(36);
 }
 if (typeof window !== "undefined") {
@@ -6859,6 +7268,7 @@ function createTrapHandler(name, el, originalHandler) {
     };
   }
   console.error(
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions
     `[evtd/create-trap-handler]: name \`${name}\` is invalid. This could be a bug of evtd.`
   );
   return {};
@@ -7166,17 +7576,22 @@ function useCompitable(reactive2, keys2) {
     return reactive2[keys2[keys2.length - 1]];
   });
 }
-const isIos = (typeof window === "undefined" ? false : /iPad|iPhone|iPod/.test(navigator.platform) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) && !window.MSStream;
+const isIos = (typeof window === "undefined" ? false : /iPad|iPhone|iPod/.test(navigator.platform) || navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1) && // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
+!window.MSStream;
 function useIsIos() {
   return isIos;
 }
 const defaultBreakpointOptions = {
+  // mobile
+  // 0 ~ 640 doesn't mean it should display well in all the range,
+  // but means you should treat it like a mobile phone.)
   xs: 0,
   s: 640,
   m: 1024,
   l: 1280,
   xl: 1536,
   "2xl": 1920
+  // normal desktop display
 };
 function createMediaQuery(screenWidth) {
   return `(min-width: ${screenWidth}px)`;
@@ -7864,6 +8279,10 @@ function lowBit(n) {
   return n & -n;
 }
 class FinweckTree {
+  /**
+   * @param l length of the array
+   * @param min min value of the array
+   */
   constructor(l, min) {
     this.l = l;
     this.min = min;
@@ -7873,6 +8292,11 @@ class FinweckTree {
     }
     this.ft = ft;
   }
+  /**
+   * Add arr[i] by n, start from 0
+   * @param i the index of the element to be added
+   * @param n the value to be added
+   */
   add(i, n) {
     if (n === 0)
       return;
@@ -7883,9 +8307,19 @@ class FinweckTree {
       i += lowBit(i);
     }
   }
+  /**
+   * Get the value of index i
+   * @param i index
+   * @returns value of the index
+   */
   get(i) {
     return this.sum(i + 1) - this.sum(i);
   }
+  /**
+   * Get the sum of first i elements
+   * @param i count of head elements to be added
+   * @returns the sum of first i elements
+   */
   sum(i) {
     if (i === void 0)
       i = this.l;
@@ -7901,6 +8335,11 @@ class FinweckTree {
     }
     return ret;
   }
+  /**
+   * Get the largest count of head elements whose sum are <= threshold
+   * @param threshold
+   * @returns the largest count of head elements whose sum are <= threshold
+   */
   getBound(threshold) {
     let l = 0;
     let r = this.l;
@@ -8019,6 +8458,7 @@ const keepOffsetDirection = {
   bottom: false,
   left: true,
   right: false
+  // left--
 };
 const cssPositionToOppositeAlign = {
   top: "end",
@@ -8058,7 +8498,12 @@ function getPlacementAndOffsetOfFollower(placement, targetRect, followerRect, sh
     const currentAlignCssPositionProp = oppositionPositions[oppositeAlignCssPositionProp];
     const oppositeAlignCssSizeProp = propToCompare[oppositeAlignCssPositionProp];
     if (followerRect[oppositeAlignCssSizeProp] > targetRect[oppositeAlignCssSizeProp]) {
-      if (targetRect[oppositeAlignCssPositionProp] + targetRect[oppositeAlignCssSizeProp] < followerRect[oppositeAlignCssSizeProp]) {
+      if (
+        // current space is not enough
+        // ----------[ target ]---------|
+        // -------[     follower        ]
+        targetRect[oppositeAlignCssPositionProp] + targetRect[oppositeAlignCssSizeProp] < followerRect[oppositeAlignCssSizeProp]
+      ) {
         const followerOverTargetSize = (followerRect[oppositeAlignCssSizeProp] - targetRect[oppositeAlignCssSizeProp]) / 2;
         if (targetRect[oppositeAlignCssPositionProp] < followerOverTargetSize || targetRect[currentAlignCssPositionProp] < followerOverTargetSize) {
           if (targetRect[oppositeAlignCssPositionProp] < targetRect[currentAlignCssPositionProp]) {
@@ -8072,7 +8517,10 @@ function getPlacementAndOffsetOfFollower(placement, targetRect, followerRect, sh
         }
       }
     } else if (followerRect[oppositeAlignCssSizeProp] < targetRect[oppositeAlignCssSizeProp]) {
-      if (targetRect[currentAlignCssPositionProp] < 0 && targetRect[oppositeAlignCssPositionProp] > targetRect[currentAlignCssPositionProp]) {
+      if (targetRect[currentAlignCssPositionProp] < 0 && // opposite align has larger space
+      // ------------[   target   ]
+      // ----------------[follower]
+      targetRect[oppositeAlignCssPositionProp] > targetRect[currentAlignCssPositionProp]) {
         properAlign = oppositeAligns[align];
       }
     }
@@ -8081,7 +8529,12 @@ function getPlacementAndOffsetOfFollower(placement, targetRect, followerRect, sh
     const possibleAlternativeAlignCssPositionProp2 = oppositionPositions[possibleAlternativeAlignCssPositionProp1];
     const alternativeAlignCssSizeProp = propToCompare[possibleAlternativeAlignCssPositionProp1];
     const followerOverTargetSize = (followerRect[alternativeAlignCssSizeProp] - targetRect[alternativeAlignCssSizeProp]) / 2;
-    if (targetRect[possibleAlternativeAlignCssPositionProp1] < followerOverTargetSize || targetRect[possibleAlternativeAlignCssPositionProp2] < followerOverTargetSize) {
+    if (
+      // center is not enough
+      // ----------- [ target ]--|
+      // -------[     follower     ]
+      targetRect[possibleAlternativeAlignCssPositionProp1] < followerOverTargetSize || targetRect[possibleAlternativeAlignCssPositionProp2] < followerOverTargetSize
+    ) {
       if (targetRect[possibleAlternativeAlignCssPositionProp1] > targetRect[possibleAlternativeAlignCssPositionProp2]) {
         properAlign = cssPositionToOppositeAlign[possibleAlternativeAlignCssPositionProp1];
         properOffset = deriveOffset(alternativeAlignCssSizeProp, possibleAlternativeAlignCssPositionProp1, offsetVertically);
@@ -8092,7 +8545,11 @@ function getPlacementAndOffsetOfFollower(placement, targetRect, followerRect, sh
     }
   }
   let properPosition = position;
-  if (targetRect[position] < followerRect[propToCompare[position]] && targetRect[position] < targetRect[oppositionPositions[position]]) {
+  if (
+    // space is not enough
+    targetRect[position] < followerRect[propToCompare[position]] && // opposite position's space is larger
+    targetRect[position] < targetRect[oppositionPositions[position]]
+  ) {
     properPosition = oppositionPositions[position];
   }
   return {
@@ -9092,6 +9549,7 @@ const styles = c(".v-vl", {
   height: "100%",
   overflow: "auto",
   minWidth: "1px"
+  // a zero width container won't be scrollable
 }, [
   c("&:not(.v-vl--show-scrollbar)", {
     scrollbarWidth: "none"
@@ -9115,6 +9573,7 @@ const VVirtualList = defineComponent({
       type: Array,
       default: () => []
     },
+    // it is suppose to be the min height
     itemSize: {
       type: Number,
       required: true
@@ -9136,6 +9595,9 @@ const VVirtualList = defineComponent({
       type: String,
       default: "key"
     },
+    // Whether it is a good API?
+    // ResizeObserver + footer & header is not enough.
+    // Too complex for simple case
     paddingTop: {
       type: [Number, String],
       default: 0
@@ -9323,7 +9785,9 @@ const VVirtualList = defineComponent({
             listEl.scrollBy(0, delta);
           } else if (index === anchorIndex) {
             const previousHeightSum = ft.sum(index);
-            if (height + previousHeightSum > listEl.scrollTop + listEl.offsetHeight) {
+            if (height + previousHeightSum > // Note, listEl shouldn't have border, nor offsetHeight won't be
+            // correct
+            listEl.scrollTop + listEl.offsetHeight) {
               listEl.scrollBy(0, delta);
             }
           }
@@ -9590,12 +10054,14 @@ const VOverflow = defineComponent({
       ref: "selfRef"
     }, [
       renderSlot($slots, "default"),
+      // $slots.counter should only has 1 element
       $slots.counter ? $slots.counter() : h("span", {
         style: {
           display: "inline-block"
         },
         ref: "counterRef"
       }),
+      // $slots.tail should only has 1 element
       $slots.tail ? $slots.tail() : null
     ]);
   }
@@ -10431,7 +10897,11 @@ var hasOwnProperty$7 = objectProto$8.hasOwnProperty;
 function arrayLikeKeys(value, inherited) {
   var isArr = isArray$2(value), isArg = !isArr && isArguments$1(value), isBuff = !isArr && !isArg && isBuffer$1(value), isType = !isArr && !isArg && !isBuff && isTypedArray$1(value), skipIndexes = isArr || isArg || isBuff || isType, result = skipIndexes ? baseTimes(value.length, String) : [], length = result.length;
   for (var key in value) {
-    if ((inherited || hasOwnProperty$7.call(value, key)) && !(skipIndexes && (key == "length" || isBuff && (key == "offset" || key == "parent") || isType && (key == "buffer" || key == "byteLength" || key == "byteOffset") || isIndex(key, length)))) {
+    if ((inherited || hasOwnProperty$7.call(value, key)) && !(skipIndexes && // Safari 9 has enumerable `arguments.length` in strict mode.
+    (key == "length" || // Node.js 0.10 has enumerable non-index properties on buffers.
+    isBuff && (key == "offset" || key == "parent") || // PhantomJS 2 has enumerable non-index properties on typed arrays.
+    isType && (key == "buffer" || key == "byteLength" || key == "byteOffset") || // Skip index properties.
+    isIndex(key, length)))) {
       result.push(key);
     }
   }
@@ -10817,6 +11287,7 @@ function basePropertyOf(object) {
   };
 }
 var deburredLetters = {
+  // Latin-1 Supplement block.
   "À": "A",
   "Á": "A",
   "Â": "A",
@@ -10879,6 +11350,7 @@ var deburredLetters = {
   "Þ": "Th",
   "þ": "th",
   "ß": "ss",
+  // Latin Extended-A block.
   "Ā": "A",
   "Ă": "A",
   "Ą": "A",
@@ -11750,6 +12222,7 @@ function useTheme(resolveId, mountId, style2, defaultTheme, props, clsPrefixRef)
     const { common: globalSelfCommonOverrides, peers: globalPeersOverrides = {} } = globalSelfOverrides;
     const mergedCommon = merge$2({}, selfCommon || globalSelfCommon || globalCommon || defaultTheme.common, globalCommonOverrides, globalSelfCommonOverrides, selfCommonOverrides);
     const mergedSelf = merge$2(
+      // {}, executed every time, no need for empty obj
       (_a2 = self2 || globalSelf || defaultTheme.self) === null || _a2 === void 0 ? void 0 : _a2(mergedCommon),
       builtinOverrides,
       globalSelfOverrides,
@@ -11775,6 +12248,7 @@ function useConfig(props = {}, options = {
 }) {
   const NConfigProvider2 = inject(configProviderInjectionKey, null);
   return {
+    // NConfigProvider,
     inlineThemeDisabled: NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.inlineThemeDisabled,
     mergedRtlRef: NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedRtlRef,
     mergedComponentPropsRef: NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedComponentPropsRef,
@@ -11909,6 +12383,7 @@ const enUS = {
     tipZoomOut: "Zoom out",
     tipZoomIn: "Zoom in",
     tipClose: "Close (Esc)",
+    // TODO: translation
     tipOriginalSize: "Zoom to original size"
   }
 };
@@ -12754,6 +13229,8 @@ const NFadeInExpandTransition = defineComponent({
     onAfterLeave: Function,
     onAfterEnter: Function,
     width: Boolean,
+    // reverse mode is only used in tree
+    // it make it from expanded to collapsed after mounted
     reverse: Boolean
   },
   setup(props, { slots }) {
@@ -13656,7 +14133,10 @@ function flatten(treeNodes, expandedKeys) {
         return;
       if (treeNode.isGroup) {
         traverse2(treeNode.children);
-      } else if (expandedKeySet === void 0 || expandedKeySet.has(treeNode.key)) {
+      } else if (
+        // normal non-leaf node
+        expandedKeySet === void 0 || expandedKeySet.has(treeNode.key)
+      ) {
         traverse2(treeNode.children);
       }
     });
@@ -13873,22 +14353,27 @@ const base$1 = {
   alphaScrollbarHover: "0.3",
   alphaCode: "0.12",
   alphaTag: "0.2",
+  // primary
   primaryHover: "#7fe7c4",
   primaryDefault: "#63e2b7",
   primaryActive: "#5acea7",
   primarySuppl: "rgb(42, 148, 125)",
+  // info
   infoHover: "#8acbec",
   infoDefault: "#70c0e8",
   infoActive: "#66afd3",
   infoSuppl: "rgb(56, 137, 197)",
+  // error
   errorHover: "#e98b8b",
   errorDefault: "#e88080",
   errorActive: "#e57272",
   errorSuppl: "rgb(208, 58, 82)",
+  // warning
   warningHover: "#f5d599",
   warningDefault: "#f2c97d",
   warningActive: "#e6c260",
   warningSuppl: "rgb(240, 138, 0)",
+  // success
   successHover: "#7fe7c4",
   successDefault: "#63e2b7",
   successActive: "#5acea7",
@@ -13907,30 +14392,38 @@ function neutral$1(alpha) {
 }
 const derived$1 = Object.assign(Object.assign({ name: "common" }, commonVariables$m), {
   baseColor: base$1.neutralBase,
+  // primary color
   primaryColor: base$1.primaryDefault,
   primaryColorHover: base$1.primaryHover,
   primaryColorPressed: base$1.primaryActive,
   primaryColorSuppl: base$1.primarySuppl,
+  // info color
   infoColor: base$1.infoDefault,
   infoColorHover: base$1.infoHover,
   infoColorPressed: base$1.infoActive,
   infoColorSuppl: base$1.infoSuppl,
+  // success color
   successColor: base$1.successDefault,
   successColorHover: base$1.successHover,
   successColorPressed: base$1.successActive,
   successColorSuppl: base$1.successSuppl,
+  // warning color
   warningColor: base$1.warningDefault,
   warningColorHover: base$1.warningHover,
   warningColorPressed: base$1.warningActive,
   warningColorSuppl: base$1.warningSuppl,
+  // error color
   errorColor: base$1.errorDefault,
   errorColorHover: base$1.errorHover,
   errorColorPressed: base$1.errorActive,
   errorColorSuppl: base$1.errorSuppl,
+  // text color
   textColorBase: base$1.neutralTextBase,
   textColor1: overlay$1(base$1.alpha1),
   textColor2: overlay$1(base$1.alpha2),
   textColor3: overlay$1(base$1.alpha3),
+  // textColor4: overlay(base.alpha4), // disabled, placeholder, icon
+  // textColor5: overlay(base.alpha5),
   textColorDisabled: overlay$1(base$1.alpha4),
   placeholderColor: overlay$1(base$1.alpha4),
   placeholderColorDisabled: overlay$1(base$1.alpha5),
@@ -13945,11 +14438,13 @@ const derived$1 = Object.assign(Object.assign({ name: "common" }, commonVariable
   opacity5: base$1.alpha5,
   dividerColor: overlay$1(base$1.alphaDivider),
   borderColor: overlay$1(base$1.alphaBorder),
+  // close
   closeIconColorHover: overlay$1(Number(base$1.alphaClose)),
   closeIconColor: overlay$1(Number(base$1.alphaClose)),
   closeIconColorPressed: overlay$1(Number(base$1.alphaClose)),
   closeColorHover: "rgba(255, 255, 255, .12)",
   closeColorPressed: "rgba(255, 255, 255, .08)",
+  // clear
   clearColor: overlay$1(base$1.alpha4),
   clearColorHover: scaleColor(overlay$1(base$1.alpha4), { alpha: 1.25 }),
   clearColorPressed: scaleColor(overlay$1(base$1.alpha4), { alpha: 0.8 }),
@@ -14018,22 +14513,27 @@ const base = {
   alphaScrollbarHover: "0.4",
   alphaCode: "0.05",
   alphaTag: "0.02",
+  // primary
   primaryHover: "#36ad6a",
   primaryDefault: "#18a058",
   primaryActive: "#0c7a43",
   primarySuppl: "#36ad6a",
+  // info
   infoHover: "#4098fc",
   infoDefault: "#2080f0",
   infoActive: "#1060c9",
   infoSuppl: "#4098fc",
+  // error
   errorHover: "#de576d",
   errorDefault: "#d03050",
   errorActive: "#ab1f3f",
   errorSuppl: "#de576d",
+  // warning
   warningHover: "#fcb040",
   warningDefault: "#f0a020",
   warningActive: "#c97c10",
   warningSuppl: "#fcb040",
+  // success
   successHover: "#36ad6a",
   successDefault: "#18a058",
   successActive: "#0c7a43",
@@ -14052,30 +14552,38 @@ function neutral(alpha) {
 }
 const derived = Object.assign(Object.assign({ name: "common" }, commonVariables$m), {
   baseColor: base.neutralBase,
+  // primary color
   primaryColor: base.primaryDefault,
   primaryColorHover: base.primaryHover,
   primaryColorPressed: base.primaryActive,
   primaryColorSuppl: base.primarySuppl,
+  // info color
   infoColor: base.infoDefault,
   infoColorHover: base.infoHover,
   infoColorPressed: base.infoActive,
   infoColorSuppl: base.infoSuppl,
+  // success color
   successColor: base.successDefault,
   successColorHover: base.successHover,
   successColorPressed: base.successActive,
   successColorSuppl: base.successSuppl,
+  // warning color
   warningColor: base.warningDefault,
   warningColorHover: base.warningHover,
   warningColorPressed: base.warningActive,
   warningColorSuppl: base.warningSuppl,
+  // error color
   errorColor: base.errorDefault,
   errorColorHover: base.errorHover,
   errorColorPressed: base.errorActive,
   errorColorSuppl: base.errorSuppl,
+  // text color
   textColorBase: base.neutralTextBase,
   textColor1: "rgb(31, 34, 37)",
   textColor2: "rgb(51, 54, 57)",
   textColor3: "rgb(118, 124, 130)",
+  // textColor4: neutral(base.alpha4), // disabled, placeholder, icon
+  // textColor5: neutral(base.alpha5),
   textColorDisabled: neutral(base.alpha4),
   placeholderColor: neutral(base.alpha4),
   placeholderColorDisabled: neutral(base.alpha5),
@@ -14090,11 +14598,13 @@ const derived = Object.assign(Object.assign({ name: "common" }, commonVariables$
   opacity5: base.alpha5,
   dividerColor: "rgb(239, 239, 245)",
   borderColor: "rgb(224, 224, 230)",
+  // close
   closeIconColor: neutral(Number(base.alphaClose)),
   closeIconColorHover: neutral(Number(base.alphaClose)),
   closeIconColorPressed: neutral(Number(base.alphaClose)),
   closeColorHover: "rgba(0, 0, 0, .09)",
   closeColorPressed: "rgba(0, 0, 0, .13)",
+  // clear
   clearColor: neutral(base.alpha4),
   clearColorHover: scaleColor(neutral(base.alpha4), { lightness: 0.75 }),
   clearColorPressed: scaleColor(neutral(base.alpha4), { lightness: 0.9 }),
@@ -14119,11 +14629,14 @@ const derived = Object.assign(Object.assign({ name: "common" }, commonVariables$
   actionColor: "rgb(250, 250, 252)",
   tableHeaderColor: "rgb(250, 250, 252)",
   hoverColor: "rgb(243, 243, 245)",
+  // use color with alpha since it can be nested with header filter & sorter effect
   tableColorHover: "rgba(0, 0, 100, 0.03)",
   tableColorStriped: "rgba(0, 0, 100, 0.02)",
   pressedColor: "rgb(237, 237, 239)",
   opacityDisabled: base.alphaDisabled,
   inputColorDisabled: "rgb(250, 250, 252)",
+  // secondary button color
+  // can also be used in tertiary button & quaternary button
   buttonColor2: "rgba(46, 51, 56, .05)",
   buttonColor2Hover: "rgba(46, 51, 56, .09)",
   buttonColor2Pressed: "rgba(46, 51, 56, .13)",
@@ -14365,6 +14878,7 @@ const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), {
   },
   useUnifiedContainer: Boolean,
   triggerDisplayManually: Boolean,
+  // If container is set, resize observer won't not attached
   container: Function,
   content: Function,
   containerClass: String,
@@ -15012,6 +15526,7 @@ const NSelectOption = defineComponent({
       nodePropsRef,
       handleOptionClick,
       handleOptionMouseEnter
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(internalSelectionMenuInjectionKey);
     const isPendingRef = useMemo(() => {
       const { value: pendingTmNode } = pendingTmNodeRef;
@@ -15117,6 +15632,7 @@ const NSelectGroupHeader = defineComponent({
       renderOptionRef,
       labelFieldRef,
       nodePropsRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(internalSelectionMenuInjectionKey);
     return {
       labelField: labelFieldRef,
@@ -15289,6 +15805,7 @@ const NInternalSelectMenu = defineComponent({
       type: Boolean,
       default: true
     },
+    // show is used to toggle pending state initialization
     show: {
       type: Boolean,
       default: true
@@ -15322,6 +15839,7 @@ const NInternalSelectMenu = defineComponent({
       default: true
     },
     inlineThemeDisabled: Boolean,
+    // deprecated
     onToggle: Function
   }),
   setup(props) {
@@ -15761,6 +16279,7 @@ const style$j = c$1([cB("popover", `
  background-color: var(--n-color);
  pointer-events: all;
  `)]),
+  // body transition
   c$1("&.popover-transition-enter-from, &.popover-transition-leave-to", `
  opacity: 0;
  transform: scale(.85);
@@ -15885,11 +16404,13 @@ const popoverBodyProps = Object.assign(Object.assign({}, useTheme.props), {
   contentStyle: [Object, String],
   headerStyle: [Object, String],
   footerStyle: [Object, String],
+  // private
   internalDeactivateImmediately: Boolean,
   animated: Boolean,
   onClickoutside: Function,
   internalTrapFocus: Boolean,
   internalOnAfterLeave: Function,
+  // deprecated
   minWidth: Number,
   maxWidth: Number
 });
@@ -16092,6 +16613,9 @@ const NPopoverBody = defineComponent({
         }, attrs), internalTrapFocus ? h(FocusTrap, { active: props.show, autoFocus: true }, { default: renderContentInnerNode }) : renderContentInnerNode());
       } else {
         contentNode = renderBody(
+          // The popover class and overlap class must exists, they will be used
+          // to place the body & transition animation.
+          // Shadow class exists for reuse box-shadow.
           [
             `${mergedClsPrefix}-popover-shared`,
             themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass.value,
@@ -16124,6 +16648,8 @@ const NPopoverBody = defineComponent({
         return this.animated ? h(Transition, {
           name: "popover-transition",
           appear: this.isMounted,
+          // Don't use watch to enable follower, since the transition may
+          // make position sync timing very subtle and buggy.
           onEnter: () => {
             this.followerEnabled = true;
           },
@@ -16228,9 +16754,11 @@ const popoverBaseProps = {
   contentStyle: [Object, String],
   headerStyle: [Object, String],
   footerStyle: [Object, String],
+  // events
   onClickoutside: Function,
   "onUpdate:show": [Function, Array],
   onUpdateShow: [Function, Array],
+  // internal
   internalDeactivateImmediately: Boolean,
   internalSyncTargetWithParent: Boolean,
   internalInheritedEventHandlers: {
@@ -16242,6 +16770,7 @@ const popoverBaseProps = {
     type: Array,
     default: () => []
   },
+  // deprecated
   onShow: [Function, Array],
   onHide: [Function, Array],
   arrow: {
@@ -16448,6 +16977,7 @@ const NPopover = defineComponent({
       binderInstRef,
       positionManually: positionManuallyRef,
       mergedShowConsideringDisabledProp: mergedShowConsideringDisabledPropRef,
+      // if to show popover body
       uncontrolledShow: uncontrolledShowRef,
       mergedShowArrow: mergedShowArrowRef,
       getMergedShow,
@@ -16602,6 +17132,7 @@ const tagDark = {
       fontSizeMedium: fontSizeSmall,
       fontSizeLarge: fontSizeMedium,
       fontWeightStrong,
+      // checked
       textColorCheckable: textColor2,
       textColorHoverCheckable: textColor2,
       textColorPressedCheckable: textColor2,
@@ -16612,6 +17143,7 @@ const tagDark = {
       colorChecked: primaryColor,
       colorCheckedHover: primaryColorHover,
       colorCheckedPressed: primaryColorPressed,
+      // default
       border: `1px solid ${borderColor}`,
       textColor: textColor2,
       color: tagColor,
@@ -16687,6 +17219,7 @@ const self$V = (vars) => {
     fontSizeMedium: fontSizeSmall,
     fontSizeLarge: fontSizeMedium,
     fontWeightStrong,
+    // checked
     textColorCheckable: textColor2,
     textColorHoverCheckable: textColor2,
     textColorPressedCheckable: textColor2,
@@ -16697,6 +17230,7 @@ const self$V = (vars) => {
     colorChecked: primaryColor,
     colorCheckedHover: primaryColorHover,
     colorCheckedPressed: primaryColorPressed,
+    // default
     border: `1px solid ${borderColor}`,
     textColor: textColor2,
     color: tagColor,
@@ -16860,6 +17394,7 @@ const tagProps = Object.assign(Object.assign(Object.assign({}, useTheme.props), 
   onMouseleave: Function,
   "onUpdate:checked": Function,
   onUpdateChecked: Function,
+  // private
   internalCloseFocusable: {
     type: Boolean,
     default: true
@@ -16868,6 +17403,7 @@ const tagProps = Object.assign(Object.assign(Object.assign({}, useTheme.props), 
     type: Boolean,
     default: true
   },
+  // deprecated
   onCheckedChange: Function
 });
 const tagInjectionKey = createInjectionKey("n-tag");
@@ -17127,6 +17663,7 @@ const self$U = (vars) => {
     heightMedium,
     heightLarge,
     borderRadius,
+    // default
     textColor: textColor2,
     textColorDisabled,
     placeholderColor,
@@ -17149,6 +17686,7 @@ const self$U = (vars) => {
     arrowColor: iconColor,
     arrowColorDisabled: iconColorDisabled,
     loadingColor: primaryColor,
+    // warning
     borderWarning: `1px solid ${warningColor}`,
     borderHoverWarning: `1px solid ${warningColorHover}`,
     borderActiveWarning: `1px solid ${warningColor}`,
@@ -17162,6 +17700,7 @@ const self$U = (vars) => {
     })}`,
     colorActiveWarning: inputColor,
     caretColorWarning: warningColor,
+    // error
     borderError: `1px solid ${errorColor}`,
     borderHoverError: `1px solid ${errorColorHover}`,
     borderActiveError: `1px solid ${errorColor}`,
@@ -17207,6 +17746,7 @@ const internalSelectionDark = {
       heightMedium,
       heightLarge,
       borderRadius,
+      // default
       textColor: textColor2,
       textColorDisabled,
       placeholderColor,
@@ -17229,6 +17769,7 @@ const internalSelectionDark = {
       arrowColor: iconColor,
       arrowColorDisabled: iconColorDisabled,
       loadingColor: primaryColor,
+      // warning
       borderWarning: `1px solid ${warningColor}`,
       borderHoverWarning: `1px solid ${warningColorHover}`,
       borderActiveWarning: `1px solid ${warningColor}`,
@@ -17242,6 +17783,7 @@ const internalSelectionDark = {
       })}`,
       colorActiveWarning: changeColor(warningColor, { alpha: 0.1 }),
       caretColorWarning: warningColor,
+      // error
       borderError: `1px solid ${errorColor}`,
       borderHoverError: `1px solid ${errorColorHover}`,
       borderActiveError: `1px solid ${errorColor}`,
@@ -17777,6 +18319,7 @@ const NInternalSelection = defineComponent({
         arrowColor,
         arrowColorDisabled,
         loadingColor,
+        // form warning
         colorActiveWarning,
         boxShadowFocusWarning,
         boxShadowActiveWarning,
@@ -17785,6 +18328,7 @@ const NInternalSelection = defineComponent({
         borderFocusWarning,
         borderHoverWarning,
         borderActiveWarning,
+        // form error
         colorActiveError,
         boxShadowFocusError,
         boxShadowActiveError,
@@ -17793,10 +18337,12 @@ const NInternalSelection = defineComponent({
         borderFocusError,
         borderHoverError,
         borderActiveError,
+        // clear
         clearColor,
         clearColorHover,
         clearColorPressed,
         clearSize,
+        // arrow
         arrowSize: arrowSize2,
         [createKey("height", size2)]: height,
         [createKey("fontSize", size2)]: fontSize2
@@ -17826,6 +18372,7 @@ const NInternalSelection = defineComponent({
         "--n-arrow-color": arrowColor,
         "--n-arrow-color-disabled": arrowColorDisabled,
         "--n-loading-color": loadingColor,
+        // form warning
         "--n-color-active-warning": colorActiveWarning,
         "--n-box-shadow-focus-warning": boxShadowFocusWarning,
         "--n-box-shadow-active-warning": boxShadowActiveWarning,
@@ -17834,6 +18381,7 @@ const NInternalSelection = defineComponent({
         "--n-border-focus-warning": borderFocusWarning,
         "--n-border-hover-warning": borderHoverWarning,
         "--n-border-active-warning": borderActiveWarning,
+        // form error
         "--n-color-active-error": colorActiveError,
         "--n-box-shadow-focus-error": boxShadowFocusError,
         "--n-box-shadow-active-error": boxShadowActiveError,
@@ -17842,10 +18390,12 @@ const NInternalSelection = defineComponent({
         "--n-border-focus-error": borderFocusError,
         "--n-border-hover-error": borderHoverError,
         "--n-border-active-error": borderActiveError,
+        // clear
         "--n-clear-size": clearSize,
         "--n-clear-color": clearColor,
         "--n-clear-color-hover": clearColorHover,
         "--n-clear-color-pressed": clearColorPressed,
+        // arrow-size
         "--n-arrow-size": arrowSize2
       };
     });
@@ -17861,6 +18411,7 @@ const NInternalSelection = defineComponent({
       selected: selectedRef,
       showTagsPanel: showTagsPopoverRef,
       isComposing: isComposingRef2,
+      // dom ref
       counterRef,
       counterWrapperRef,
       patternInputMirrorRef,
@@ -18059,6 +18610,9 @@ const NInternalSelection = defineComponent({
           [`${clsPrefix}-base-selection--selected`]: this.selected || this.active && this.pattern,
           [`${clsPrefix}-base-selection--disabled`]: this.disabled,
           [`${clsPrefix}-base-selection--multiple`]: this.multiple,
+          // focus is not controlled by selection itself since it always need
+          // to be managed together with menu. provide :focus style will cause
+          // many redundant codes.
           [`${clsPrefix}-base-selection--focus`]: this.focused
         }
       ], style: this.cssVars, onClick: this.onClick, onMouseenter: this.handleMouseEnter, onMouseleave: this.handleMouseLeave, onKeydown: this.onKeydown, onFocusin: this.handleFocusin, onFocusout: this.handleFocusout, onMousedown: this.handleMouseDown },
@@ -18364,6 +18918,7 @@ const inputDark = {
       borderFocus: `1px solid ${primaryColorHover}`,
       boxShadowFocus: `0 0 8px 0 ${changeColor(primaryColor, { alpha: 0.3 })}`,
       loadingColor: primaryColor,
+      // warning
       loadingColorWarning: warningColor,
       borderWarning: `1px solid ${warningColor}`,
       borderHoverWarning: `1px solid ${warningColorHover}`,
@@ -18373,6 +18928,7 @@ const inputDark = {
         alpha: 0.3
       })}`,
       caretColorWarning: warningColor,
+      // error
       loadingColorError: errorColor,
       borderError: `1px solid ${errorColor}`,
       borderHoverError: `1px solid ${errorColorHover}`,
@@ -18429,6 +18985,7 @@ const self$S = (vars) => {
     borderFocus: `1px solid ${primaryColorHover}`,
     boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, { alpha: 0.2 })}`,
     loadingColor: primaryColor,
+    // warning
     loadingColorWarning: warningColor,
     borderWarning: `1px solid ${warningColor}`,
     borderHoverWarning: `1px solid ${warningColorHover}`,
@@ -18438,6 +18995,7 @@ const self$S = (vars) => {
       alpha: 0.2
     })}`,
     caretColorWarning: warningColor,
+    // error
     loadingColorError: errorColor,
     borderError: `1px solid ${errorColor}`,
     borderHoverError: `1px solid ${errorColorHover}`,
@@ -18529,7 +19087,10 @@ function useCursor(inputElRef) {
 const WordCount = defineComponent({
   name: "InputWordCount",
   setup(_, { slots }) {
-    const { mergedValueRef, maxlengthRef, mergedClsPrefixRef, countGraphemesRef } = inject(inputInjectionKey);
+    const { mergedValueRef, maxlengthRef, mergedClsPrefixRef, countGraphemesRef } = (
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      inject(inputInjectionKey)
+    );
     const wordCountRef = computed(() => {
       const { value: mergedValue } = mergedValueRef;
       if (mergedValue === null || Array.isArray(mergedValue))
@@ -18562,6 +19123,7 @@ const style$f = cB("input", `
  font-size: var(--n-font-size);
  --n-padding-vertical: calc((var(--n-height) - 1.5 * var(--n-font-size)) / 2);
 `, [
+  // common
   cE("input, textarea", `
  overflow: hidden;
  flex-grow: 1;
@@ -18621,6 +19183,7 @@ const style$f = cB("input", `
  left: 0;
  height: 100%;
  `)]),
+  // input
   cB("input-wrapper", `
  overflow: hidden;
  display: inline-flex;
@@ -18651,6 +19214,7 @@ const style$f = cB("input", `
   cE("eye", `
  transition: color .3s var(--n-bezier);
  `),
+  // textarea
   cM("textarea", "width: 100%;", [cB("input-word-count", `
  position: absolute;
  right: var(--n-padding-right);
@@ -18681,6 +19245,7 @@ const style$f = cB("input", `
  white-space: pre-wrap;
  overflow-wrap: break-word;
  `)]),
+  // pair
   cM("pair", [cE("input-el, placeholder", "text-align: center;"), cE("separator", `
  display: flex;
  align-items: center;
@@ -18875,6 +19440,7 @@ const inputProps = Object.assign(Object.assign({}, useTheme.props), {
   status: String,
   "onUpdate:value": [Function, Array],
   onUpdateValue: [Function, Array],
+  /** private */
   textDecoration: [String, Array],
   attrSize: {
     type: Number,
@@ -18889,6 +19455,7 @@ const inputProps = Object.assign(Object.assign({}, useTheme.props), {
   internalDeactivateOnEnter: Boolean,
   internalForceFocus: Boolean,
   internalLoadingBeforeSuffix: Boolean,
+  /** deprecated */
   showPasswordToggle: Boolean
 });
 const NInput = defineComponent({
@@ -19493,6 +20060,7 @@ const NInput = defineComponent({
         "--n-text-color-disabled": textColorDisabled,
         "--n-box-shadow-focus": boxShadowFocus,
         "--n-loading-color": loadingColor,
+        // form warning
         "--n-caret-color-warning": caretColorWarning,
         "--n-color-focus-warning": colorFocusWarning,
         "--n-box-shadow-focus-warning": boxShadowFocusWarning,
@@ -19500,6 +20068,7 @@ const NInput = defineComponent({
         "--n-border-focus-warning": borderFocusWarning,
         "--n-border-hover-warning": borderHoverWarning,
         "--n-loading-color-warning": loadingColorWarning,
+        // form error
         "--n-caret-color-error": caretColorError,
         "--n-color-focus-error": colorFocusError,
         "--n-box-shadow-focus-error": boxShadowFocusError,
@@ -19507,6 +20076,7 @@ const NInput = defineComponent({
         "--n-border-focus-error": borderFocusError,
         "--n-border-hover-error": borderHoverError,
         "--n-loading-color-error": loadingColorError,
+        // clear-button
         "--n-clear-color": clearColor,
         "--n-clear-size": clearSize,
         "--n-clear-color-hover": clearColorHover,
@@ -19523,6 +20093,7 @@ const NInput = defineComponent({
       return size2[0];
     }), cssVarsRef, props) : void 0;
     return Object.assign(Object.assign({}, exposedProps), {
+      // DOM ref
       wrapperElRef,
       inputElRef,
       inputMirrorElRef,
@@ -19530,6 +20101,7 @@ const NInput = defineComponent({
       textareaElRef,
       textareaMirrorElRef,
       textareaScrollbarInstRef,
+      // value
       rtlEnabled: rtlEnabledRef,
       uncontrolledValue: uncontrolledValueRef,
       mergedValue: mergedValueRef,
@@ -19550,6 +20122,7 @@ const NInput = defineComponent({
       placeholderStyle: placeholderStyleRef,
       mergedStatus: mergedStatusRef,
       textAreaScrollContainerWidth: textAreaScrollContainerWidthRef,
+      // methods
       handleTextAreaScroll,
       handleCompositionStart,
       handleCompositionEnd,
@@ -19766,7 +20339,8 @@ const observeIntersection = (el, options, shouldStartLoadingRef) => {
   let observer;
   let observerAndObservedElements;
   if (rootObservers.has(resolvedOptionsAndHash.hash)) {
-    observerAndObservedElements = rootObservers.get(resolvedOptionsAndHash.hash);
+    observerAndObservedElements = // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    rootObservers.get(resolvedOptionsAndHash.hash);
     if (!observerAndObservedElements[1].has(el)) {
       observer = observerAndObservedElements[0];
       observerAndObservedElements[1].add(el);
@@ -19935,18 +20509,22 @@ const self$N = (vars) => {
     fontSizeMedium,
     fontSizeLarge,
     opacityDisabled,
+    // secondary
     colorOpacitySecondary: "0.16",
     colorOpacitySecondaryHover: "0.22",
     colorOpacitySecondaryPressed: "0.28",
     colorSecondary: buttonColor2,
     colorSecondaryHover: buttonColor2Hover,
     colorSecondaryPressed: buttonColor2Pressed,
+    // tertiary
     colorTertiary: buttonColor2,
     colorTertiaryHover: buttonColor2Hover,
     colorTertiaryPressed: buttonColor2Pressed,
+    // quaternary
     colorQuaternary: "#0000",
     colorQuaternaryHover: buttonColor2Hover,
     colorQuaternaryPressed: buttonColor2Pressed,
+    // default type
     color: "#0000",
     colorHover: "#0000",
     colorPressed: "#0000",
@@ -19974,6 +20552,7 @@ const self$N = (vars) => {
     borderFocus: `1px solid ${primaryColorHover}`,
     borderDisabled: `1px solid ${borderColor}`,
     rippleColor: primaryColor,
+    // primary
     colorPrimary: primaryColor,
     colorHoverPrimary: primaryColorHover,
     colorPressedPrimary: primaryColorPressed,
@@ -20000,6 +20579,7 @@ const self$N = (vars) => {
     borderFocusPrimary: `1px solid ${primaryColorHover}`,
     borderDisabledPrimary: `1px solid ${primaryColor}`,
     rippleColorPrimary: primaryColor,
+    // info
     colorInfo: infoColor,
     colorHoverInfo: infoColorHover,
     colorPressedInfo: infoColorPressed,
@@ -20026,6 +20606,7 @@ const self$N = (vars) => {
     borderFocusInfo: `1px solid ${infoColorHover}`,
     borderDisabledInfo: `1px solid ${infoColor}`,
     rippleColorInfo: infoColor,
+    // success
     colorSuccess: successColor,
     colorHoverSuccess: successColorHover,
     colorPressedSuccess: successColorPressed,
@@ -20052,6 +20633,7 @@ const self$N = (vars) => {
     borderFocusSuccess: `1px solid ${successColorHover}`,
     borderDisabledSuccess: `1px solid ${successColor}`,
     rippleColorSuccess: successColor,
+    // warning
     colorWarning: warningColor,
     colorHoverWarning: warningColorHover,
     colorPressedWarning: warningColorPressed,
@@ -20078,6 +20660,7 @@ const self$N = (vars) => {
     borderFocusWarning: `1px solid ${warningColorHover}`,
     borderDisabledWarning: `1px solid ${warningColor}`,
     rippleColorWarning: warningColor,
+    // error
     colorError: errorColor,
     colorHoverError: errorColorHover,
     colorPressedError: errorColorPressed,
@@ -20269,6 +20852,7 @@ const style$e = c$1([cB("button", `
     boxShadow: "0 0 0.5px 0 var(--n-ripple-color)"
   },
   to: {
+    // don't use exact 5px since chrome will display the animation with glitches
     boxShadow: "0 0 0.5px 4.5px var(--n-ripple-color)"
   }
 }), c$1("@keyframes button-wave-opacity", {
@@ -20622,6 +21206,7 @@ const Button = defineComponent({
         this.secondary && `${mergedClsPrefix}-button--secondary`,
         this.loading && `${mergedClsPrefix}-button--loading`,
         this.ghost && `${mergedClsPrefix}-button--ghost`
+        // required for button group border collapse
       ], tabindex: this.mergedFocusable ? 0 : -1, type: this.attrType, style: this.cssVars, disabled: this.disabled, onClick: this.handleClick, onBlur: this.handleBlur, onMousedown: this.handleMousedown, onKeyup: this.handleKeyup, onKeydown: this.handleKeydown },
       this.iconPlacement === "right" && children,
       h(NFadeInExpandTransition, { width: true }, {
@@ -20941,6 +21526,7 @@ const NCard = defineComponent({
         "--n-close-color-pressed": closeColorPressed,
         "--n-border-color": borderColor,
         "--n-box-shadow": boxShadow,
+        // size
         "--n-padding-top": paddingTop,
         "--n-padding-bottom": paddingBottom,
         "--n-padding-left": paddingLeft,
@@ -21112,6 +21698,7 @@ const codeDark = {
       textColor: textColor2,
       fontSize: fontSize2,
       fontWeightStrong,
+      // extracted from hljs atom-one-dark.scss
       "mono-3": "#5c6370",
       "hue-1": "#56b6c2",
       "hue-2": "#61aeee",
@@ -21121,6 +21708,7 @@ const codeDark = {
       "hue-5-2": "#be5046",
       "hue-6": "#d19a66",
       "hue-6-2": "#e6c07b",
+      // line-number styles
       lineNumberTextColor: textColor3
     };
   }
@@ -21186,6 +21774,7 @@ const configProviderProps = {
     type: Boolean,
     default: void 0
   },
+  // deprecated
   as: {
     type: String,
     validator: () => {
@@ -21480,6 +22069,7 @@ const selectProps = Object.assign(Object.assign({}, useTheme.props), {
   nodeProps: Function,
   ignoreComposition: { type: Boolean, default: true },
   showOnFocus: Boolean,
+  // for jsx
   onUpdateValue: [Function, Array],
   onBlur: [Function, Array],
   onClear: [Function, Array],
@@ -21501,6 +22091,7 @@ const selectProps = Object.assign(Object.assign({}, useTheme.props), {
     type: Boolean,
     default: true
   },
+  /** deprecated */
   onChange: [Function, Array],
   items: Array
 });
@@ -22158,9 +22749,11 @@ const self$C = (vars) => {
     textColorDisabled,
     borderColor,
     borderRadius,
+    // item font size
     fontSizeTiny,
     fontSizeSmall,
     fontSizeMedium,
+    // item size
     heightTiny,
     heightSmall,
     heightMedium
@@ -22369,6 +22962,7 @@ const self$z = (vars) => {
     fontSizeMedium,
     fontSizeLarge,
     fontSizeHuge,
+    // non-inverted
     optionTextColor: textColor2,
     optionTextColorHover: textColor2,
     optionTextColorActive: primaryColor,
@@ -22380,6 +22974,7 @@ const self$z = (vars) => {
     optionColorHover: hoverColor,
     optionColorActive: changeColor(primaryColor, { alpha: 0.1 }),
     groupHeaderTextColor: textColor3,
+    // inverted
     optionTextColorInverted: "#BBB",
     optionTextColorHoverInverted: "#FFF",
     optionTextColorActiveInverted: "#FFF",
@@ -22457,12 +23052,14 @@ const self$y = (vars) => {
     thButtonColorHover: tableColorHover,
     thIconColor: iconColor,
     thIconColorActive: primaryColor,
+    // modal
     borderColorModal: composite(modalColor, dividerColor),
     tdColorHoverModal: composite(modalColor, tableColorHover),
     tdColorStripedModal: composite(modalColor, tableColorStriped),
     thColorModal: composite(modalColor, tableHeaderColor),
     thColorHoverModal: composite(composite(modalColor, tableHeaderColor), tableColorHover),
     tdColorModal: modalColor,
+    // popover
     borderColorPopover: composite(popoverColor, dividerColor),
     tdColorHoverPopover: composite(popoverColor, tableColorHover),
     tdColorStripedPopover: composite(popoverColor, tableColorStriped),
@@ -22471,6 +23068,7 @@ const self$y = (vars) => {
     tdColorPopover: popoverColor,
     boxShadowBefore: "inset -12px 0 8px -12px rgba(0, 0, 0, .18)",
     boxShadowAfter: "inset 12px 0 8px -12px rgba(0, 0, 0, .18)",
+    // loading
     loadingColor: primaryColor,
     loadingSize: heightSmall,
     opacityLoading: opacityDisabled
@@ -22839,6 +23437,7 @@ const NDropdownOption = defineComponent({
       const submenuNodeProps = (_a2 = this.menuProps) === null || _a2 === void 0 ? void 0 : _a2.call(
         this,
         rawNode,
+        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         rawNode.children
       );
       submenuVNode = h(NDropdownMenu, Object.assign({}, submenuNodeProps, { clsPrefix, scrollable: this.scrollable, tmNodes: this.tmNode.children, parentKey: this.tmNode.key }));
@@ -22913,8 +23512,12 @@ const NDropdownGroupHeader = defineComponent({
     const {
       showIconRef,
       hasSubmenuRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dropdownMenuInjectionKey);
-    const { renderLabelRef, labelFieldRef, nodePropsRef, renderOptionRef } = inject(dropdownInjectionKey);
+    const { renderLabelRef, labelFieldRef, nodePropsRef, renderOptionRef } = (
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      inject(dropdownInjectionKey)
+    );
     return {
       labelField: labelFieldRef,
       showIcon: showIconRef,
@@ -23250,6 +23853,7 @@ const dropdownBaseProps = {
     type: String,
     default: "children"
   },
+  // for menu, not documented
   value: [String, Number]
 };
 const popoverPropKeys = Object.keys(popoverBaseProps);
@@ -23474,8 +24078,11 @@ const NDropdown = defineComponent({
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       mergedTheme: themeRef,
+      // data
       tmNodes: tmNodesRef,
+      // show
       mergedShow: mergedShowRef,
+      // methods
       handleAfterLeave: () => {
         if (!props.animated)
           return;
@@ -23572,6 +24179,7 @@ const commonVars$6 = {
   panelHeaderPadding: "8px 12px",
   calendarDaysHeight: "32px",
   calendarTitleGridTempateColumns: "28px 28px 1fr 28px 28px",
+  // type
   calendarLeftPaddingDate: "6px 12px 4px 12px",
   calendarLeftPaddingDatetime: "4px 12px",
   calendarLeftPaddingDaterange: "6px 12px 4px 12px",
@@ -23682,6 +24290,12 @@ const self$u = (vars) => {
     borderRadius
   });
 };
+const descriptionsLight = {
+  name: "Descriptions",
+  common: commonLight,
+  self: self$u
+};
+const descriptionsLight$1 = descriptionsLight;
 const descriptionsDark = {
   name: "Descriptions",
   common: commonDark,
@@ -23761,6 +24375,12 @@ const self$r = (vars) => {
     fontWeight: fontWeightStrong
   };
 };
+const dividerLight = {
+  name: "Divider",
+  common: commonLight,
+  self: self$r
+};
+const dividerLight$1 = dividerLight;
 const dividerDark = {
   name: "Divider",
   common: commonDark,
@@ -23986,6 +24606,8 @@ const NDrawerBodyWrapper = defineComponent({
   render() {
     const { $slots, mergedClsPrefix } = this;
     return this.displayDirective === "show" || this.displayed || this.show ? withDirectives(
+      /* Keep the wrapper dom. Make sure the drawer has a host.
+        Nor the detached content will disappear without transition */
       h(
         "div",
         { role: "none" },
@@ -23999,6 +24621,10 @@ const NDrawerBodyWrapper = defineComponent({
                 `${mergedClsPrefix}-drawer`,
                 this.rtlEnabled && `${mergedClsPrefix}-drawer--rtl`,
                 `${mergedClsPrefix}-drawer--${this.placement}-placement`,
+                /**
+                 * When the mouse is pressed to resize the drawer,
+                 * disable text selection
+                 */
                 this.isDragging && `${mergedClsPrefix}-drawer--unselectable`,
                 this.nativeScrollbar && `${mergedClsPrefix}-drawer--native-scrollbar`
               ]
@@ -24309,6 +24935,7 @@ const drawerProps = Object.assign(Object.assign({}, useTheme.props), {
   onUpdateShow: [Function, Array],
   onAfterEnter: Function,
   onAfterLeave: Function,
+  /** @deprecated */
   drawerStyle: [String, Object],
   drawerClass: String,
   target: null,
@@ -24593,6 +25220,7 @@ const spaceProps = Object.assign(Object.assign({}, useTheme.props), {
     type: Boolean,
     default: true
   },
+  // internal
   internalUseGap: {
     type: Boolean,
     default: void 0
@@ -24743,6 +25371,7 @@ const gridItemProps = {
     default: 0
   },
   suffix: Boolean,
+  // private props
   privateOffset: Number,
   privateSpan: Number,
   privateColStart: Number,
@@ -24763,6 +25392,7 @@ const NGi = defineComponent({
       itemStyleRef,
       overflowRef,
       layoutShiftDisabledRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(gridInjectionKey);
     const self2 = getCurrentInstance();
     return {
@@ -24779,6 +25409,7 @@ const NGi = defineComponent({
           privateShow = true,
           privateColStart = void 0,
           privateOffset = 0
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
         } = self2.vnode.props;
         const { value: xGap } = xGapRef;
         const mergedXGap = pxfy(xGap || 0);
@@ -24831,6 +25462,7 @@ const defaultBreakpoints = {
   l: 1280,
   xl: 1536,
   xxl: 1920
+  // normal desktop display
 };
 const defaultCols = 24;
 const SSR_ATTR_NAME = "__ssr__";
@@ -24846,6 +25478,7 @@ const gridProps = {
   },
   itemResponsive: Boolean,
   collapsed: Boolean,
+  // may create grid rows < collapsedRows since a item may take all the row
   collapsedRows: {
     type: Number,
     default: 1
@@ -25326,6 +25959,7 @@ const self$i = (vars) => {
     siderToggleButtonIconColorInverted: textColor2,
     siderToggleBarColor: composite(bodyColor, scrollbarColor),
     siderToggleBarColorHover: composite(bodyColor, scrollbarColorHover),
+    // hack for inverted background
     __invertScrollbar: "true"
   };
 };
@@ -26620,6 +27254,9 @@ const NImagePreview = defineComponent({
               name: "fade-in-scale-up-transition",
               onAfterLeave: this.handleAfterLeave,
               appear: this.appear,
+              // BUG:
+              // onEnter will be called twice, I don't know why
+              // Maybe it is a bug of vue
               onEnter: this.syncTransformOrigin,
               onBeforeLeave: this.syncTransformOrigin
             }, {
@@ -26804,6 +27441,7 @@ const NImage = defineComponent({
       onClick: this.mergedOnClick,
       onError: this.mergedOnError,
       onLoad: this.mergedOnLoad,
+      // If interseciton observer options is set, do not use native lazy
       loading: isImageSupportNativeLazy && lazy && !this.intersectionObserverOptions ? "lazy" : "eager",
       style: [
         imgProps.style || "",
@@ -26926,6 +27564,7 @@ const inputNumberProps = Object.assign(Object.assign({}, useTheme.props), {
   onFocus: [Function, Array],
   onBlur: [Function, Array],
   onClear: [Function, Array],
+  // deprecated
   onChange: [Function, Array]
 });
 const NInputNumber = defineComponent({
@@ -27048,7 +27687,8 @@ const NInputNumber = defineComponent({
         if (formatProp) {
           displayedValueRef.value = formatProp(mergedValue);
         } else {
-          if (mergedValue === null || precision === void 0 || getPrecision(mergedValue) > precision) {
+          if (mergedValue === null || precision === void 0 || // precision overflow
+          getPrecision(mergedValue) > precision) {
             displayedValueRef.value = format(mergedValue, void 0);
           } else {
             displayedValueRef.value = format(mergedValue, precision);
@@ -27365,6 +28005,7 @@ const NInputNumber = defineComponent({
       handleMinusMousedown,
       handleKeyDown,
       handleUpdateDisplayedValue,
+      // theme
       mergedTheme: themeRef,
       inputThemeOverrides: {
         paddingSmall: "0 8px 0 10px",
@@ -27791,6 +28432,7 @@ const layoutSiderProps = {
   onUpdateCollapsed: [Function, Array],
   onAfterEnter: Function,
   onAfterLeave: Function,
+  // deprecated
   onExpand: [Function, Array],
   onCollapse: [Function, Array],
   onScroll: Function
@@ -27838,6 +28480,7 @@ const NLayoutSider = defineComponent({
       const {
         "onUpdate:collapsed": _onUpdateCollapsed,
         onUpdateCollapsed,
+        // deprecated
         onExpand,
         onCollapse
       } = props;
@@ -27965,6 +28608,8 @@ const NLayoutSider = defineComponent({
         contentStyle: this.contentStyle,
         theme: this.mergedTheme.peers.Scrollbar,
         themeOverrides: this.mergedTheme.peerOverrides.Scrollbar,
+        // here is a hack, since in light theme the scrollbar color is dark,
+        // we need to invert it in light color...
         builtinThemeOverrides: this.inverted && this.cssVars.__invertScrollbar === "true" ? {
           colorHover: "rgba(255, 255, 255, .4)",
           color: "rgba(255, 255, 255, .3)"
@@ -28462,6 +29107,7 @@ function itemRenderer(tmNode, menuProps2) {
     extra: rawNode.titleExtra || rawNode.extra,
     key,
     internalKey: key,
+    // since key can't be used as a prop
     level,
     root: level === 0,
     isGroup: isGroup2
@@ -28741,6 +29387,7 @@ const menuProps = Object.assign(Object.assign({}, useTheme.props), {
   dropdownProps: Object,
   accordion: Boolean,
   nodeProps: Function,
+  // deprecated
   items: Array,
   onOpenNamesChange: [Function, Array],
   onSelect: [Function, Array],
@@ -29159,6 +29806,7 @@ const NMessage = defineComponent({
     const {
       props: messageProviderProps2,
       mergedClsPrefixRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(messageProviderInjectionKey);
     const rtlEnabledRef = useRtl("Message", mergedRtlRef, mergedClsPrefixRef);
     const themeRef = useTheme("Message", "-message", style$3, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
@@ -29261,7 +29909,9 @@ const MessageEnvironment = defineComponent({
       type: String,
       required: true
     },
+    // private
     onInternalAfterLeave: Function,
+    // deprecated
     onHide: Function,
     onAfterHide: Function
   }),
@@ -29511,6 +30161,7 @@ const Notification = defineComponent({
       mergedClsPrefixRef,
       mergedThemeRef,
       props: providerProps
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(notificationProviderInjectionKey);
     const { inlineThemeDisabled, mergedRtlRef } = useConfig();
     const rtlEnabledRef = useRtl("Notification", mergedRtlRef, mergedClsPrefixRef);
@@ -29610,13 +30261,17 @@ const notificationEnvOptions = Object.assign(Object.assign({}, notificationProps
   onLeave: Function,
   onAfterEnter: Function,
   onAfterLeave: Function,
+  /** @deprecated */
   onHide: Function,
+  /** @deprecated */
   onAfterShow: Function,
+  /** @deprecated */
   onAfterHide: Function
 });
 const NotificationEnvironment = defineComponent({
   name: "NotificationEnvironment",
   props: Object.assign(Object.assign({}, notificationEnvOptions), {
+    // private
     internalKey: {
       type: String,
       required: true
@@ -29629,6 +30284,7 @@ const NotificationEnvironment = defineComponent({
   setup(props) {
     const {
       wipTransitionCountRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(notificationProviderInjectionKey);
     const showRef = ref(true);
     let timerId = null;
@@ -29734,6 +30390,7 @@ const NotificationEnvironment = defineComponent({
     return h(Transition, {
       name: "notification-transition",
       appear: true,
+      // convert to any since Element is not compitable with HTMLElement
       onBeforeEnter: this.handleBeforeEnter,
       onAfterEnter: this.handleAfterEnter,
       onBeforeLeave: this.handleBeforeLeave,
@@ -31122,7 +31779,10 @@ const NSlider = defineComponent({
       while (++index < markValues.length) {
         const diff = markValues[index] - currentValue;
         const distance = Math.abs(diff);
-        if ((buffer === void 0 || diff * buffer > 0) && (closestMark === null || distance < closestMark.distance)) {
+        if (
+          // find marks in the same direction
+          (buffer === void 0 || diff * buffer > 0) && (closestMark === null || distance < closestMark.distance)
+        ) {
           closestMark = {
             index,
             distance,
@@ -31180,6 +31840,7 @@ const NSlider = defineComponent({
       const currentValue = arrifiedValueRef.value[activeIndex];
       const nextValue = step <= 0 || step === "mark" ? currentValue : currentValue + step * ratio;
       doDispatchValue(
+        // Avoid the number of value does not change when `step` is null
         sanitizeValue(nextValue, currentValue, ratio > 0 ? 1 : -1),
         activeIndex
       );
@@ -31520,6 +32181,7 @@ const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31529,6 +32191,7 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$7 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31538,6 +32201,7 @@ const _hoisted_4$7 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_5$3 = [_hoisted_2$b, _hoisted_3$a, _hoisted_4$7];
 const Albums = defineComponent({
@@ -31559,6 +32223,7 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31568,6 +32233,7 @@ const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$6 = [_hoisted_2$a, _hoisted_3$9];
 const Download = defineComponent({
@@ -31589,6 +32255,7 @@ const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31598,6 +32265,7 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$5 = [_hoisted_2$9, _hoisted_3$8];
 const Duplicate = defineComponent({
@@ -31619,6 +32287,7 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$7 = [_hoisted_2$8];
 const Image = defineComponent({
@@ -31640,6 +32309,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31649,6 +32319,7 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$4 = [_hoisted_2$7, _hoisted_3$6];
 const Images = defineComponent({
@@ -31674,6 +32345,7 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31683,6 +32355,7 @@ const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$3 = [_hoisted_2$6, _hoisted_3$5];
 const ReloadOutline = defineComponent({
@@ -31704,6 +32377,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$4 = [_hoisted_2$5];
 const Speedometer = defineComponent({
@@ -31725,6 +32399,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31734,6 +32409,7 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31743,6 +32419,7 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31752,6 +32429,7 @@ const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_6$1 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$2, _hoisted_5$2];
 const StatsChart = defineComponent({
@@ -31777,6 +32455,7 @@ const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31790,6 +32469,7 @@ const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -31803,6 +32483,7 @@ const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_5$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$1];
 const SyncSharp = defineComponent({
@@ -31824,6 +32505,7 @@ const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$1 = [_hoisted_2$2];
 const Warning = defineComponent({
@@ -32104,8 +32786,11 @@ function useHistoryStateNavigation(base2) {
       back: null,
       current: currentLocation.value,
       forward: null,
+      // the length is off by one, we need to decrease it
       position: history2.length - 1,
       replaced: true,
+      // don't add a scroll as the user may have an anchor, and we want
+      // scrollBehavior to be triggered without a saved position
       scroll: null
     }, true);
   }
@@ -32125,6 +32810,7 @@ function useHistoryStateNavigation(base2) {
   function replace(to, data) {
     const state = assign({}, history2.state, buildState(
       historyState.value.back,
+      // keep back and forward entries but override current position
       to,
       historyState.value.forward,
       true
@@ -32135,6 +32821,9 @@ function useHistoryStateNavigation(base2) {
   function push(to, data) {
     const currentState = assign(
       {},
+      // use current history state to gracefully handle a wrong call to
+      // history.replaceState
+      // https://github.com/vuejs/router/issues/366
       historyState.value,
       history2.state,
       {
@@ -32164,6 +32853,7 @@ function createWebHistory(base2) {
     history.go(delta);
   }
   const routerHistory = assign({
+    // it's overridden right after
     location: "",
     base: base2,
     go,
@@ -32228,7 +32918,10 @@ function tokensToParser(segments, extraOptions) {
   let pattern = options.start ? "^" : "";
   const keys2 = [];
   for (const segment of segments) {
-    const segmentScores = segment.length ? [] : [90];
+    const segmentScores = segment.length ? [] : [
+      90
+      /* PathScore.Root */
+    ];
     if (options.strict && !segment.length)
       pattern += "/";
     for (let tokenIndex = 0; tokenIndex < segment.length; tokenIndex++) {
@@ -32257,7 +32950,9 @@ function tokensToParser(segments, extraOptions) {
         }
         let subPattern = repeatable ? `((?:${re2})(?:/(?:${re2}))*)` : `(${re2})`;
         if (!tokenIndex)
-          subPattern = optional && segment.length < 2 ? `(?:/${subPattern})` : "/" + subPattern;
+          subPattern = // avoid an optional / if there are more segments e.g. /:p?-static
+          // or /:p?-:p2
+          optional && segment.length < 2 ? `(?:/${subPattern})` : "/" + subPattern;
         if (optional)
           subPattern += "?";
         pattern += subPattern;
@@ -32500,6 +33195,7 @@ function createRouteRecordMatcher(record, parent, options) {
   const matcher = assign(parser, {
     record,
     parent,
+    // these needs to be populated by the parent
     children: [],
     alias: []
   });
@@ -32528,9 +33224,14 @@ function createRouterMatcher(routes, globalOptions) {
       const aliases = typeof record.alias === "string" ? [record.alias] : record.alias;
       for (const alias of aliases) {
         normalizedRecords.push(assign({}, mainNormalizedRecord, {
+          // this allows us to hold a copy of the `components` option
+          // so that async components cache is hold on the original record
           components: originalRecord ? originalRecord.record.components : mainNormalizedRecord.components,
           path: alias,
+          // we might be the child of an alias
           aliasOf: originalRecord ? originalRecord.record : mainNormalizedRecord
+          // the aliases are always of the same kind as the original since they
+          // are defined on the same record
         }));
       }
     }
@@ -32593,7 +33294,9 @@ function createRouterMatcher(routes, globalOptions) {
   }
   function insertMatcher(matcher) {
     let i = 0;
-    while (i < matchers.length && comparePathParserScore(matcher, matchers[i]) >= 0 && (matcher.record.path !== matchers[i].record.path || !isRecordChildOf(matcher, matchers[i])))
+    while (i < matchers.length && comparePathParserScore(matcher, matchers[i]) >= 0 && // Adding children with empty path should still appear before the parent
+    // https://github.com/vuejs/router/issues/1124
+    (matcher.record.path !== matchers[i].record.path || !isRecordChildOf(matcher, matchers[i])))
       i++;
     matchers.splice(i, 0, matcher);
     if (matcher.record.name && !isAliasRecord(matcher))
@@ -32612,10 +33315,15 @@ function createRouterMatcher(routes, globalOptions) {
         });
       name = matcher.record.name;
       params = assign(
+        // paramsFromLocation is a new object
         paramsFromLocation(
           currentLocation.params,
+          // only keep params that exist in the resolved location
+          // TODO: only keep optional params coming from a parent record
           matcher.keys.filter((k) => !k.optional).map((k) => k.name)
         ),
+        // discard any existing params in the current location that do not exist here
+        // #1497 this ensures better active/exact matching
         location2.params && paramsFromLocation(location2.params, matcher.keys.map((k) => k.name))
       );
       path = matcher.stringify(params);
@@ -32830,7 +33538,8 @@ function useCallbacks() {
   };
 }
 function guardToPromiseFn(guard, to, from, record, name) {
-  const enterCallbackArray = record && (record.enterCallbacks[name] = record.enterCallbacks[name] || []);
+  const enterCallbackArray = record && // name is defined if record is because of the function overload
+  (record.enterCallbacks[name] = record.enterCallbacks[name] || []);
   return () => new Promise((resolve2, reject) => {
     const next = (valid) => {
       if (valid === false) {
@@ -32846,7 +33555,8 @@ function guardToPromiseFn(guard, to, from, record, name) {
           to: valid
         }));
       } else {
-        if (enterCallbackArray && record.enterCallbacks[name] === enterCallbackArray && typeof valid === "function") {
+        if (enterCallbackArray && // since enterCallbackArray is truthy, both record and name also are
+        record.enterCallbacks[name] === enterCallbackArray && typeof valid === "function") {
           enterCallbackArray.push(valid);
         }
         resolve2();
@@ -32904,7 +33614,14 @@ function useLink(props) {
     if (index > -1)
       return index;
     const parentRecordPath = getOriginalPath(matched[length - 2]);
-    return length > 1 && getOriginalPath(routeMatched) === parentRecordPath && currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index;
+    return (
+      // we are dealing with nested routes
+      length > 1 && // if the parent and matched route have the same path, this link is
+      // referring to the empty child. Or we currently are on a different
+      // child of the same parent
+      getOriginalPath(routeMatched) === parentRecordPath && // avoid comparing the child with its parent
+      currentMatched[currentMatched.length - 1].path !== parentRecordPath ? currentMatched.findIndex(isSameRouteRecord.bind(null, matched[length - 2])) : index
+    );
   });
   const isActive = computed(() => activeRecordIndex.value > -1 && includesParams(currentRoute.params, route.value.params));
   const isExactActive = computed(() => activeRecordIndex.value > -1 && activeRecordIndex.value === currentRoute.matched.length - 1 && isSameRouteLocationParams(currentRoute.params, route.value.params));
@@ -32912,6 +33629,7 @@ function useLink(props) {
     if (guardEvent(e)) {
       return router2[unref(props.replace) ? "replace" : "push"](
         unref(props.to)
+        // avoid uncaught errors are they are logged anyway
       ).catch(noop$1);
     }
     return Promise.resolve();
@@ -32934,6 +33652,7 @@ const RouterLinkImpl = /* @__PURE__ */ defineComponent({
     },
     replace: Boolean,
     activeClass: String,
+    // inactiveClass: String,
     exactActiveClass: String,
     custom: Boolean,
     ariaCurrentValue: {
@@ -32947,6 +33666,11 @@ const RouterLinkImpl = /* @__PURE__ */ defineComponent({
     const { options } = inject(routerKey);
     const elClass = computed(() => ({
       [getLinkClass(props.activeClass, options.linkActiveClass, "router-link-active")]: link.isActive,
+      // [getLinkClass(
+      //   props.inactiveClass,
+      //   options.linkInactiveClass,
+      //   'router-link-inactive'
+      // )]: !link.isExactActive,
       [getLinkClass(props.exactActiveClass, options.linkExactActiveClass, "router-link-exact-active")]: link.isExactActive
     }));
     return () => {
@@ -32954,6 +33678,8 @@ const RouterLinkImpl = /* @__PURE__ */ defineComponent({
       return props.custom ? children : h("a", {
         "aria-current": link.isExactActive ? props.ariaCurrentValue : null,
         href: link.href,
+        // this would override user added attrs but Vue will still add
+        // the listener, so we end up triggering both
         onClick: link.navigate,
         class: elClass.value
       }, children);
@@ -32997,6 +33723,7 @@ function getOriginalPath(record) {
 const getLinkClass = (propClass, globalClass, defaultClass) => propClass != null ? propClass : globalClass != null ? globalClass : defaultClass;
 const RouterViewImpl = /* @__PURE__ */ defineComponent({
   name: "RouterView",
+  // #674 we manually inherit them
   inheritAttrs: false,
   props: {
     name: {
@@ -33005,6 +33732,8 @@ const RouterViewImpl = /* @__PURE__ */ defineComponent({
     },
     route: Object
   },
+  // Better compat for @vue/compat users
+  // https://github.com/vuejs/router/issues/1315
   compatConfig: { MODE: 3 },
   setup(props, { attrs, slots }) {
     const injectedRoute = inject(routerViewLocationKey);
@@ -33036,7 +33765,9 @@ const RouterViewImpl = /* @__PURE__ */ defineComponent({
           }
         }
       }
-      if (instance && to && (!from || !isSameRouteRecord(to, from) || !oldInstance)) {
+      if (instance && to && // if there is no instance but to and from are the same this might be
+      // the first visit
+      (!from || !isSameRouteRecord(to, from) || !oldInstance)) {
         (to.enterCallbacks[name] || []).forEach((callback) => callback(instance));
       }
     }, { flush: "post" });
@@ -33059,7 +33790,11 @@ const RouterViewImpl = /* @__PURE__ */ defineComponent({
         onVnodeUnmounted,
         ref: viewRef
       }));
-      return normalizeSlot(slots.default, { Component: component, route }) || component;
+      return (
+        // pass the vnode to the slot as a prop.
+        // h and <component :is="..."> both accept vnodes
+        normalizeSlot(slots.default, { Component: component, route }) || component
+      );
     };
   }
 });
@@ -33085,7 +33820,10 @@ function createRouter(options) {
   }
   const normalizeParams = applyToParams.bind(null, (paramValue) => "" + paramValue);
   const encodeParams = applyToParams.bind(null, encodeParam);
-  const decodeParams = applyToParams.bind(null, decode);
+  const decodeParams = (
+    // @ts-expect-error: intentionally avoid the type check
+    applyToParams.bind(null, decode)
+  );
   function addRoute(parentOrRoute, route) {
     let parent;
     let record;
@@ -33149,8 +33887,17 @@ function createRouter(options) {
     const href = routerHistory.createHref(fullPath);
     return assign({
       fullPath,
+      // keep the hash encoded so fullPath is effectively path + encodedQuery +
+      // hash
       hash,
-      query: stringifyQuery$1 === stringifyQuery ? normalizeQuery(rawLocation.query) : rawLocation.query || {}
+      query: (
+        // if the user is using a custom query lib like qs, we might have
+        // nested objects, so we keep the query as is, meaning it can contain
+        // numbers at `$route.query`, but at the point, the user will have to
+        // use their own type anyway.
+        // https://github.com/vuejs/router/issues/328#issuecomment-649481567
+        stringifyQuery$1 === stringifyQuery ? normalizeQuery(rawLocation.query) : rawLocation.query || {}
+      )
     }, matchedRoute, {
       redirectedFrom: void 0,
       href
@@ -33179,12 +33926,16 @@ function createRouter(options) {
       const { redirect } = lastMatched;
       let newTargetLocation = typeof redirect === "function" ? redirect(to) : redirect;
       if (typeof newTargetLocation === "string") {
-        newTargetLocation = newTargetLocation.includes("?") || newTargetLocation.includes("#") ? newTargetLocation = locationAsObject(newTargetLocation) : { path: newTargetLocation };
+        newTargetLocation = newTargetLocation.includes("?") || newTargetLocation.includes("#") ? newTargetLocation = locationAsObject(newTargetLocation) : (
+          // force empty params
+          { path: newTargetLocation }
+        );
         newTargetLocation.params = {};
       }
       return assign({
         query: to.query,
         hash: to.hash,
+        // avoid transferring params if the redirect has a path
         params: "path" in newTargetLocation ? {} : to.params
       }, newTargetLocation);
     }
@@ -33203,6 +33954,7 @@ function createRouter(options) {
           force,
           replace: replace2
         }),
+        // keep original redirectedFrom if it exists
         redirectedFrom || targetLocation
       );
     const toLocation = targetLocation;
@@ -33213,20 +33965,41 @@ function createRouter(options) {
       handleScroll(
         from,
         from,
+        // this is a push, the only way for it to be triggered from a
+        // history.listen is with a redirect, which makes it become a push
         true,
+        // This cannot be the first navigation because the initial location
+        // cannot be manually navigated to
         false
       );
     }
-    return (failure ? Promise.resolve(failure) : navigate(toLocation, from)).catch((error) => isNavigationFailure(error) ? isNavigationFailure(error, 2) ? error : markAsReady(error) : triggerError(error, toLocation, from)).then((failure2) => {
+    return (failure ? Promise.resolve(failure) : navigate(toLocation, from)).catch((error) => isNavigationFailure(error) ? (
+      // navigation redirects still mark the router as ready
+      isNavigationFailure(
+        error,
+        2
+        /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */
+      ) ? error : markAsReady(error)
+    ) : (
+      // reject any unknown error
+      triggerError(error, toLocation, from)
+    )).then((failure2) => {
       if (failure2) {
-        if (isNavigationFailure(failure2, 2)) {
+        if (isNavigationFailure(
+          failure2,
+          2
+          /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */
+        )) {
           return pushWithRedirect(
+            // keep options
             assign({
+              // preserve an existing replacement but allow the redirect to override it
               replace: replace2
             }, locationAsObject(failure2.to), {
               state: typeof failure2.to === "object" ? assign({}, data, failure2.to.state) : data,
               force
             }),
+            // preserve the original redirectedFrom if any
             redirectedFrom || toLocation
           );
         }
@@ -33294,7 +34067,11 @@ function createRouter(options) {
       }
       guards.push(canceledNavigationCheck);
       return runGuardQueue(guards);
-    }).catch((err) => isNavigationFailure(err, 8) ? err : Promise.reject(err));
+    }).catch((err) => isNavigationFailure(
+      err,
+      8
+      /* ErrorTypes.NAVIGATION_CANCELLED */
+    ) ? err : Promise.reject(err));
   }
   function triggerAfterEach(to, from, failure) {
     for (const guard of afterGuards.list())
@@ -33337,15 +34114,28 @@ function createRouter(options) {
         saveScrollPosition(getScrollKey(from.fullPath, info.delta), computeScrollPosition());
       }
       navigate(toLocation, from).catch((error) => {
-        if (isNavigationFailure(error, 4 | 8)) {
+        if (isNavigationFailure(
+          error,
+          4 | 8
+          /* ErrorTypes.NAVIGATION_CANCELLED */
+        )) {
           return error;
         }
-        if (isNavigationFailure(error, 2)) {
+        if (isNavigationFailure(
+          error,
+          2
+          /* ErrorTypes.NAVIGATION_GUARD_REDIRECT */
+        )) {
           pushWithRedirect(
             error.to,
             toLocation
+            // avoid an uncaught rejection, let push call triggerError
           ).then((failure) => {
-            if (isNavigationFailure(failure, 4 | 16) && !info.delta && info.type === NavigationType.pop) {
+            if (isNavigationFailure(
+              failure,
+              4 | 16
+              /* ErrorTypes.NAVIGATION_DUPLICATED */
+            ) && !info.delta && info.type === NavigationType.pop) {
               routerHistory.go(-1, false);
             }
           }).catch(noop$1);
@@ -33357,14 +34147,25 @@ function createRouter(options) {
         return triggerError(error, toLocation, from);
       }).then((failure) => {
         failure = failure || finalizeNavigation(
+          // after navigation, all matched components are resolved
           toLocation,
           from,
           false
         );
         if (failure) {
-          if (info.delta && !isNavigationFailure(failure, 8)) {
+          if (info.delta && // a new navigation has been triggered, so we do not want to revert, that will change the current history
+          // entry while a different route is displayed
+          !isNavigationFailure(
+            failure,
+            8
+            /* ErrorTypes.NAVIGATION_CANCELLED */
+          )) {
             routerHistory.go(-info.delta, false);
-          } else if (info.type === NavigationType.pop && isNavigationFailure(failure, 4 | 16)) {
+          } else if (info.type === NavigationType.pop && isNavigationFailure(
+            failure,
+            4 | 16
+            /* ErrorTypes.NAVIGATION_DUPLICATED */
+          )) {
             routerHistory.go(-1, false);
           }
         }
@@ -33439,7 +34240,9 @@ function createRouter(options) {
         enumerable: true,
         get: () => unref(currentRoute)
       });
-      if (isBrowser && !started && currentRoute.value === START_LOCATION_NORMALIZED) {
+      if (isBrowser && // used for the initial navigation client side to avoid pushing
+      // multiple times when the router is used in multiple apps
+      !started && currentRoute.value === START_LOCATION_NORMALIZED) {
         started = true;
         push(routerHistory.location).catch((err) => {
         });
@@ -33942,6 +34745,7 @@ const useState = defineStore("state", () => {
   const state = reactive({
     progress: 0,
     generating: false,
+    downloading: false,
     txt2img: {
       images: [],
       currentImage: ""
@@ -34955,7 +35759,7 @@ const router = createRouter({
     {
       path: "/test",
       name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/TestView.css"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -34971,7 +35775,7 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  iconSwitchTransition as $,
+  c$1 as $,
   _export_sfc as A,
   h as B,
   cB as C,
@@ -34986,35 +35790,35 @@ export {
   resultLight$1 as L,
   createKey as M,
   NGi as N,
-  NProgress as O,
-  useFormItem as P,
-  ref as Q,
-  useMergedState as R,
+  ref as O,
+  Fragment as P,
+  NButton as Q,
+  NProgress as R,
   SuccessIcon as S,
-  provide as T,
-  toRef as U,
-  createInjectionKey as V,
+  useFormItem as T,
+  useMergedState as U,
+  provide as V,
   WarningIcon as W,
-  call as X,
-  c$1 as Y,
-  cM as Z,
+  toRef as X,
+  createInjectionKey as Y,
+  call as Z,
   _sfc_main$1 as _,
   useSettings as a,
   ErrorIcon$1 as a$,
-  insideModal as a0,
-  insidePopover as a1,
-  inject as a2,
-  useMemo as a3,
-  checkboxLight$1 as a4,
-  useRtl as a5,
-  createId as a6,
-  NIconSwitchTransition as a7,
-  on as a8,
-  popselectLight$1 as a9,
-  getSlot$1 as aA,
-  depx as aB,
-  formatLength as aC,
-  NButton as aD,
+  cM as a0,
+  iconSwitchTransition as a1,
+  insideModal as a2,
+  insidePopover as a3,
+  inject as a4,
+  useMemo as a5,
+  checkboxLight$1 as a6,
+  useRtl as a7,
+  createId as a8,
+  NIconSwitchTransition as a9,
+  flatten$2 as aA,
+  getSlot$1 as aB,
+  depx as aC,
+  formatLength as aD,
   NScrollbar as aE,
   onBeforeUnmount as aF,
   off as aG,
@@ -35038,54 +35842,56 @@ export {
   stepsLight$1 as aY,
   throwError as aZ,
   FinishedIcon as a_,
-  watch as aa,
-  NInternalSelectMenu as ab,
-  keysOf as ac,
-  createTreeMate as ad,
-  happensIn as ae,
-  nextTick as af,
-  createTmOptions as ag,
-  keep as ah,
-  createRefSetter as ai,
-  mergeEventHandlers as aj,
-  omit as ak,
-  NPopover as al,
-  popoverBaseProps as am,
-  cNotM as an,
-  useLocale as ao,
-  watchEffect as ap,
-  resolveSlot as aq,
-  Fragment as ar,
-  useAdjustedTo as as,
-  paginationLight$1 as at,
-  ellipsisLight$1 as au,
-  onDeactivated as av,
-  mergeProps as aw,
-  radioLight$1 as ax,
-  resolveWrappedSlot as ay,
-  flatten$2 as az,
+  on as aa,
+  popselectLight$1 as ab,
+  watch as ac,
+  NInternalSelectMenu as ad,
+  keysOf as ae,
+  createTreeMate as af,
+  happensIn as ag,
+  nextTick as ah,
+  createTmOptions as ai,
+  keep as aj,
+  createRefSetter as ak,
+  mergeEventHandlers as al,
+  omit as am,
+  NPopover as an,
+  popoverBaseProps as ao,
+  cNotM as ap,
+  useLocale as aq,
+  watchEffect as ar,
+  resolveSlot as as,
+  useAdjustedTo as at,
+  paginationLight$1 as au,
+  ellipsisLight$1 as av,
+  onDeactivated as aw,
+  mergeProps as ax,
+  radioLight$1 as ay,
+  resolveWrappedSlot as az,
   createVNode as b,
   reactive as b0,
   NTag as b1,
   NIcon as b2,
-  useSsrAdapter as b3,
-  cssrAnchorMetaName$1 as b4,
-  c as b5,
-  isSymbol as b6,
-  isObject as b7,
-  root$1 as b8,
-  AddIcon as b9,
-  render$1 as ba,
-  NBaseClose as bb,
-  useCompitable as bc,
-  onFontsReady as bd,
-  tabsLight$1 as be,
-  withDirectives as bf,
-  vShow as bg,
-  TransitionGroup as bh,
-  cloneVNode as bi,
-  toDisplayString as bj,
-  renderList as bk,
+  dividerLight$1 as b3,
+  useSsrAdapter as b4,
+  cssrAnchorMetaName$1 as b5,
+  c as b6,
+  isSymbol as b7,
+  isObject as b8,
+  root$1 as b9,
+  useCompitable as ba,
+  descriptionsLight$1 as bb,
+  AddIcon as bc,
+  render$1 as bd,
+  NBaseClose as be,
+  onFontsReady as bf,
+  tabsLight$1 as bg,
+  withDirectives as bh,
+  vShow as bi,
+  TransitionGroup as bj,
+  cloneVNode as bk,
+  renderList as bl,
+  toDisplayString as bm,
   createElementBlock as c,
   defineComponent as d,
   unref as e,

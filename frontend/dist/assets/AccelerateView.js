@@ -1,4 +1,4 @@
-import { d as defineComponent, B as h, E as useConfig, P as useFormItem, Q as ref, G as computed, R as useMergedState, T as provide, U as toRef, V as createInjectionKey, X as call, Y as c, C as cB, D as cE, Z as cM, $ as iconSwitchTransition, a0 as insideModal, a1 as insidePopover, a2 as inject, a3 as useMemo, F as useTheme, a4 as checkboxLight, a5 as useRtl, M as createKey, H as useThemeClass, a6 as createId, a7 as NIconSwitchTransition, a8 as on, a9 as popselectLight, aa as watch, ab as NInternalSelectMenu, ac as keysOf, ad as createTreeMate, ae as happensIn, af as nextTick, ag as createTmOptions, ah as keep, ai as createRefSetter, aj as mergeEventHandlers, ak as omit, al as NPopover, am as popoverBaseProps, an as cNotM, ao as useLocale, ap as watchEffect, aq as resolveSlot, h as NInput, l as NSelect, ar as Fragment, I as NBaseIcon, as as useAdjustedTo, at as paginationLight, au as ellipsisLight, av as onDeactivated, j as NTooltip, aw as mergeProps, ax as radioLight, ay as resolveWrappedSlot, az as flatten$1, aA as getSlot, aB as depx, aC as formatLength, aD as NButton, aE as NScrollbar, aF as onBeforeUnmount, aG as off, aH as ChevronDownIcon, aI as NDropdown, aJ as pxfy, aK as get, aL as NBaseLoading, aM as ChevronRightIcon, aN as onUnmounted, aO as VVirtualList, aP as VResizeObserver, aQ as warn, aR as repeat, aS as NEmpty, aT as cssrAnchorMetaName, aU as beforeNextFrameOnce, aV as fadeInScaleUpTransition, aW as Transition, aX as dataTableLight, aY as stepsLight, aZ as throwError, a_ as FinishedIcon, a$ as ErrorIcon, o as openBlock, c as createElementBlock, i as createBaseVNode, b0 as reactive, b as createVNode, w as withCtx, e as unref, b1 as NTag, g as NSpace, r as NImage, k as createTextVNode, f as NCard, b2 as NIcon, A as _export_sfc } from "./index.js";
+import { d as defineComponent, B as h, E as useConfig, T as useFormItem, O as ref, G as computed, U as useMergedState, V as provide, X as toRef, Y as createInjectionKey, Z as call, $ as c, C as cB, D as cE, a0 as cM, a1 as iconSwitchTransition, a2 as insideModal, a3 as insidePopover, a4 as inject, a5 as useMemo, F as useTheme, a6 as checkboxLight, a7 as useRtl, M as createKey, H as useThemeClass, a8 as createId, a9 as NIconSwitchTransition, aa as on, ab as popselectLight, ac as watch, ad as NInternalSelectMenu, ae as keysOf, af as createTreeMate, ag as happensIn, ah as nextTick, ai as createTmOptions, aj as keep, ak as createRefSetter, al as mergeEventHandlers, am as omit, an as NPopover, ao as popoverBaseProps, ap as cNotM, aq as useLocale, ar as watchEffect, as as resolveSlot, h as NInput, l as NSelect, P as Fragment, I as NBaseIcon, at as useAdjustedTo, au as paginationLight, av as ellipsisLight, aw as onDeactivated, j as NTooltip, ax as mergeProps, ay as radioLight, az as resolveWrappedSlot, aA as flatten$1, aB as getSlot, aC as depx, aD as formatLength, Q as NButton, aE as NScrollbar, aF as onBeforeUnmount, aG as off, aH as ChevronDownIcon, aI as NDropdown, aJ as pxfy, aK as get, aL as NBaseLoading, aM as ChevronRightIcon, aN as onUnmounted, aO as VVirtualList, aP as VResizeObserver, aQ as warn, aR as repeat, aS as NEmpty, aT as cssrAnchorMetaName, aU as beforeNextFrameOnce, aV as fadeInScaleUpTransition, aW as Transition, aX as dataTableLight, aY as stepsLight, aZ as throwError, a_ as FinishedIcon, a$ as ErrorIcon, o as openBlock, c as createElementBlock, i as createBaseVNode, b0 as reactive, b as createVNode, w as withCtx, e as unref, b1 as NTag, g as NSpace, r as NImage, f as NCard, b2 as NIcon, A as _export_sfc } from "./index.js";
 function smallerSize(size) {
   switch (size) {
     case "tiny":
@@ -150,6 +150,7 @@ const checkboxGroupProps = {
   },
   "onUpdate:value": [Function, Array],
   onUpdateValue: [Function, Array],
+  // deprecated
   onChange: [Function, Array]
 };
 const NCheckboxGroup = defineComponent({
@@ -299,6 +300,7 @@ const style$7 = c([
  `)]), cM("checked", [cB("checkbox-box", `
  background-color: var(--n-color-checked);
  `, [cB("checkbox-icon", [
+    // if not set width to 100%, safari & old chrome won't display the icon
     c(".check-icon", `
  opacity: 1;
  transform: scale(1);
@@ -397,9 +399,11 @@ const style$7 = c([
  `, [c("&:empty", {
     display: "none"
   })])]),
+  // modal table header checkbox
   insideModal(cB("checkbox", `
  --n-merged-color-table: var(--n-color-table-modal);
  `)),
+  // popover table header checkbox
   insidePopover(cB("checkbox", `
  --n-merged-color-table: var(--n-color-table-popover);
  `))
@@ -435,7 +439,9 @@ const checkboxProps = Object.assign(Object.assign({}, useTheme.props), {
   },
   "onUpdate:checked": [Function, Array],
   onUpdateChecked: [Function, Array],
+  // private
   privateInsideTable: Boolean,
+  // deprecated
   onChange: [Function, Array]
 });
 const NCheckbox = defineComponent({
@@ -669,6 +675,7 @@ const panelProps = {
   },
   nodeProps: Function,
   virtualScroll: Boolean,
+  // deprecated
   onChange: [Function, Array]
 };
 const panelPropKeys = keysOf(panelProps);
@@ -1141,7 +1148,9 @@ const paginationProps = Object.assign(Object.assign({}, useTheme.props), {
   onUpdatePage: [Function, Array],
   "onUpdate:pageSize": [Function, Array],
   onUpdatePageSize: [Function, Array],
+  /** @deprecated */
   onPageSizeChange: [Function, Array],
+  /** @deprecated */
   onChange: [Function, Array]
 });
 const NPagination = defineComponent({
@@ -1731,7 +1740,10 @@ const NEllipsis = defineComponent({
         props.expandTrigger === "click" ? createCursorClass(mergedClsPrefixRef.value, "pointer") : void 0
       ],
       style: ellipsisStyleRef.value
-    }), { ref: "triggerRef", onClick: handleClickRef.value, onMouseenter: props.expandTrigger === "click" ? getTooltipDisabled : void 0 }), props.lineClamp ? slots : h("span", { ref: "triggerInnerRef" }, slots));
+    }), { ref: "triggerRef", onClick: handleClickRef.value, onMouseenter: (
+      // get tooltip disabled will derive cursor style
+      props.expandTrigger === "click" ? getTooltipDisabled : void 0
+    ) }), props.lineClamp ? slots : h("span", { ref: "triggerInnerRef" }, slots));
     function syncEllipsisStyle(trigger) {
       if (!trigger)
         return;
@@ -1798,6 +1810,7 @@ const RenderSorter = defineComponent({
       required: true
     },
     order: {
+      // asc, desc
       type: [String, Boolean],
       default: false
     }
@@ -1821,6 +1834,7 @@ const dataTableProps = Object.assign(Object.assign({}, useTheme.props), {
   },
   minHeight: [Number, String],
   maxHeight: [Number, String],
+  // Use any type as row data to make prop data acceptable
   columns: {
     type: Array,
     default: () => []
@@ -1911,6 +1925,7 @@ const dataTableProps = Object.assign(Object.assign({}, useTheme.props), {
   "onUpdate:expandedRowKeys": [Function, Array],
   onUpdateExpandedRowKeys: [Function, Array],
   onScroll: Function,
+  // deprecated
   onPageChange: [Function, Array],
   onPageSizeChange: [Function, Array],
   onSorterChange: [Function, Array],
@@ -2004,6 +2019,7 @@ const radioProps = {
   size: String,
   onUpdateChecked: [Function, Array],
   "onUpdate:checked": [Function, Array],
+  // deprecated
   checkedValue: {
     type: Boolean,
     default: void 0
@@ -2667,6 +2683,7 @@ const NDataTableFilterMenu = defineComponent({
       mergedClsPrefixRef,
       mergedThemeRef,
       localeRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     const temporalValueRef = ref(props.value);
     const checkboxGroupValueRef = computed(() => {
@@ -2772,6 +2789,7 @@ const FilterButton = defineComponent({
       paginationBehaviorOnFilterRef,
       doUpdatePage,
       doUpdateFilters
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     const showPopoverRef = ref(false);
     const filterStateRef = mergedFilterStateRef;
@@ -2968,6 +2986,7 @@ const SelectionMenu = defineComponent({
       rawPaginatedDataRef,
       doCheckAll,
       doUncheckAll
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     const handleSelectRef = computed(() => createSelectHandler(checkOptionsRef.value, rawPaginatedDataRef, doCheckAll, doUncheckAll));
     const optionsRef = computed(() => createDropdownOptions(checkOptionsRef.value, localeRef.value));
@@ -3017,6 +3036,7 @@ const TableHeader = defineComponent({
       deriveNextSorter,
       doUncheckAll,
       doCheckAll
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     const cellElsRef = ref({});
     function getCellActualWidth(key) {
@@ -3263,6 +3283,7 @@ const RenderSafeCheckbox = defineComponent({
     const {
       mergedCheckedRowKeySetRef,
       mergedInderminateRowKeySetRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     return () => {
       const { rowKey } = props;
@@ -3290,6 +3311,7 @@ const RenderSafeRadio = defineComponent({
     const {
       mergedCheckedRowKeySetRef,
       componentId
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     return () => {
       const { rowKey } = props;
@@ -3410,6 +3432,7 @@ const TableBody = defineComponent({
       doCheck,
       doUncheck,
       renderCell
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     const scrollbarInstRef = ref(null);
     const virtualListRef = ref(null);
@@ -3911,6 +3934,7 @@ const MainTable = defineComponent({
       minHeightRef,
       flexHeightRef,
       syncScrollState
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(dataTableInjectionKey);
     const headerInstRef = ref(null);
     const bodyInstRef = ref(null);
@@ -4168,7 +4192,11 @@ function useSorter(props, { dataRelatedColsRef, filteredDataRef }) {
       return columnToSort.map((column) => {
         return {
           columnKey: column.key,
+          // column to sort has controlled sorter
+          // sorter && sort order won't be undefined
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           order: column.sortOrder,
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           sorter: column.sorter
         };
       });
@@ -4478,12 +4506,16 @@ function useTableData(props, { dataRelatedColsRef }) {
   });
   const mergedPaginationRef = computed(() => {
     return Object.assign(Object.assign({}, props.pagination), {
+      // reset deprecated methods
       onChange: void 0,
       onUpdatePage: void 0,
       onUpdatePageSize: void 0,
       onPageSizeChange: void 0,
       "onUpdate:page": mergedOnUpdatePage,
       "onUpdate:pageSize": mergedOnUpdatePageSize,
+      // writing merged props after pagination to avoid
+      // pagination[key] === undefined
+      // key still exists but value is undefined
       page: boundedMergedCurrentPageRef.value,
       pageSize: mergedPageSizeRef.value,
       pageCount: mergedItemCountRef.value === void 0 ? mergedPageCountRef.value : void 0,
@@ -4560,6 +4592,7 @@ function useTableData(props, { dataRelatedColsRef }) {
     doUpdatePageSize,
     doUpdatePage,
     onUnstableColumnResize,
+    // exported methods
     filter,
     filters,
     clearFilter,
@@ -4947,6 +4980,8 @@ const style$1 = c([cB("data-table", `
  flex-direction: column;
  flex-grow: 1;
  `, [c(">", [cB("data-table-base-table-body", "flex-basis: 0;", [
+  // last-child means there is no empty icon
+  // body is a scrollbar, we need to override height 100%
   c("&:last-child", "flex-grow: 1;")
 ])])])])])])]), c(">", [cB("data-table-loading-wrapper", `
  color: var(--n-loading-color);
@@ -5146,6 +5181,8 @@ const style$1 = c([cB("data-table", `
  `)]), cM("last-row", `
  border-bottom: 0 solid var(--n-merged-border-color);
  `, [
+  // make sure there is no overlap between bottom border and
+  // fixed column box shadow
   c("&::after", `
  bottom: 0 !important;
  `),
@@ -5687,6 +5724,7 @@ const stepProps = {
   title: String,
   description: String,
   disabled: Boolean,
+  // index will be filled by parent steps, not user
   internalIndex: {
     type: Number,
     default: 0
@@ -5843,6 +5881,7 @@ const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -5852,6 +5891,7 @@ const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4$1 = [_hoisted_2$1, _hoisted_3$1];
 const Home = defineComponent({
@@ -5877,6 +5917,7 @@ const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -5890,6 +5931,7 @@ const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_4 = /* @__PURE__ */ createBaseVNode(
   "path",
@@ -5903,6 +5945,7 @@ const _hoisted_4 = /* @__PURE__ */ createBaseVNode(
   },
   null,
   -1
+  /* HOISTED */
 );
 const _hoisted_5 = [_hoisted_2, _hoisted_3, _hoisted_4];
 const Menu = defineComponent({
@@ -6003,7 +6046,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const getTagColor = (tag) => {
       return tagColor[tag];
     };
-    const customModel = ref("");
     const renderIcon = (icon, size = "medium") => {
       return () => {
         return h(
@@ -6132,33 +6174,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const pagination = reactive({ pageSize: 10 });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        createVNode(unref(NSpace), {
-          justify: "end",
-          inline: "",
-          align: "center",
-          class: "install"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NInput), {
-              value: customModel.value,
-              "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
-              placeholder: "Custom model",
-              style: { "width": "350px" }
-            }, null, 8, ["value"]),
-            createVNode(unref(NButton), {
-              type: "primary",
-              bordered: "",
-              secondary: "",
-              style: { "margin-right": "24px" }
-            }, {
-              default: withCtx(() => [
-                createTextVNode("Install")
-              ]),
-              _: 1
-            })
-          ]),
-          _: 1
-        }),
         createVNode(unref(NCard), { title: "Acceleration progress" }, {
           default: withCtx(() => [
             createVNode(unref(NSpace), {
@@ -6210,8 +6225,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const AccelerateView_vue_vue_type_style_index_0_scoped_e1d3c154_lang = "";
-const AccelerateView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-e1d3c154"]]);
+const AccelerateView_vue_vue_type_style_index_0_scoped_da45f49a_lang = "";
+const AccelerateView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-da45f49a"]]);
 export {
   AccelerateView as default
 };
