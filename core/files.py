@@ -32,7 +32,7 @@ class CachedModelList:
                 continue
 
             name: str = "/".join(model_name.split("--")[1:3])
-            models.append({"name": name, "path": name, "engine": "PyTorch"})
+            models.append({"name": name, "path": name, "backend": "PyTorch"})
 
         logger.debug(
             f"Looking for converted models in {self.checkpoint_converted_path}"
@@ -44,7 +44,7 @@ class CachedModelList:
                 {
                     "name": model_name,
                     "path": str(self.checkpoint_converted_path.joinpath(model_name)),
-                    "engine": "PyTorch",
+                    "backend": "PyTorch",
                 }
             )
 
@@ -63,9 +63,9 @@ class CachedModelList:
                 logger.debug(f"Found model {model_name}")
                 models.append(
                     {
-                        "name": model_name,
+                        "name": "/".join([author, model_name]),
                         "path": "/".join([author, model_name]),
-                        "engine": "TensorRT",
+                        "backend": "TensorRT",
                     }
                 )
 

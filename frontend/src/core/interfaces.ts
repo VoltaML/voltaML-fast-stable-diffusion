@@ -13,3 +13,9 @@ export interface imgMetadata {
   seed: string;
   model: string;
 }
+
+export interface ModelEntry {
+  name: string;
+  path: number;
+  backend: "TensorRT" | "PyTorch";
+}

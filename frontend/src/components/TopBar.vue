@@ -45,6 +45,7 @@
 </template>
 
 <script lang="ts" setup>
+import type { ModelEntry } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 import { useWebsocket } from "@/store/websockets";
 import { ReloadOutline, SyncSharp } from "@vicons/ionicons5";
@@ -59,11 +60,6 @@ const global = useState();
 const conf = useSettings();
 const modelsLoading = ref(true);
 
-interface ModelEntry {
-  name: string;
-  path: number;
-}
-
 function refreshModels() {
   modelsLoading.value = true;
   fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
@@ -72,9 +68,10 @@ function refreshModels() {
       modelOptions.splice(0, modelOptions.length);
       modelOptions.push(...defaultOptions);
       data.forEach((item) => {
+        console.log([item, item.path + ":" + item.backend]);
         modelOptions.push({
           label: item.name,
-          value: item.path,
+          value: item.path + ":" + item.backend,
         });
       });
 
@@ -84,23 +81,40 @@ function refreshModels() {
 }
 
 async function onModelChange(value: string) {
+  const model = value.split(":")[0];
+  const x = value.split(":")[1];
+
+  if (x !== "PyTorch" && x !== "TensorRT") {
+    throw new Error("Invalid backend");
+  }
+
+  const backend: "PyTorch" | "TensorRT" = x;
+
   await fetch(`${serverUrl}/api/models/unload-all`, {
     method: "POST",
   });
 
-  if (value === "none") {
+  if (model === "none") {
     conf.data.settings.model = value;
     return;
   }
 
+  conf.data.settings.backend = backend;
+
   const load_url = new URL(`${serverUrl}/api/models/load`);
-  const params = { model: value, backend: conf.data.settings.backend };
+  const params = { model: model, backend: backend };
   load_url.search = new URLSearchParams(params).toString();
+
+  modelsLoading.value = true;
 
   await fetch(load_url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
+  }).catch(() => {
+    modelsLoading.value = false;
   });
+
+  modelsLoading.value = false;
 
   conf.data.settings.model = value;
 }
@@ -112,7 +126,7 @@ const syncIcon = () => {
 const defaultOptions: SelectMixedOption[] = [
   {
     label: "No model selected",
-    value: "none",
+    value: "none:PyTorch",
   },
 ];
 const modelOptions: SelectMixedOption[] = reactive([...defaultOptions]);

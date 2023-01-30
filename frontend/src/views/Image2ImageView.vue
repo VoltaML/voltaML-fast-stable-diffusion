@@ -361,8 +361,6 @@ const generate = () => {
       },
       model: conf.data.settings.model,
       scheduler: conf.data.settings.txt2img.sampler,
-      backend: "PyTorch",
-      autoload: false,
       use_karras_sigmas:
         conf.data.settings.useKarrasSigmas === 1 ? true : false,
     }),
