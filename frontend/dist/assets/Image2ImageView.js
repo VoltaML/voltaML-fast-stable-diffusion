@@ -1,5 +1,5 @@
 import { d as defineComponent, u as useState, a as useSettings, c as createElementBlock, b as createVNode, w as withCtx, e as unref, o as openBlock, N as NGi, f as NCard, g as NSpace, h as NInput, i as createBaseVNode, j as NTooltip, k as createTextVNode, l as NSelect, m as NSlider, n as NInputNumber, _ as _sfc_main$1, p as NImageGroup, q as createBlock, r as NImage, s as createCommentVNode, t as NGrid, v as serverUrl, x as v4, y as pushScopeId, z as popScopeId, A as _export_sfc } from "./index.js";
-const _withScopeId = (n) => (pushScopeId("data-v-9a0d27ca"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-2cff365d"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", { class: "image-container" }, [
   /* @__PURE__ */ createBaseVNode("img", { src: "https://lexica-serve-encoded-images2.sharif.workers.dev/full_jpg/2d2d306f-3005-4930-9f6f-2e5ae6d3945f" })
@@ -66,8 +66,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           },
           model: conf.data.settings.model,
           scheduler: conf.data.settings.txt2img.sampler,
-          backend: "PyTorch",
-          autoload: false,
           use_karras_sigmas: conf.data.settings.useKarrasSigmas === 1 ? true : false
         })
       }).then((res) => {
@@ -400,8 +398,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Image2ImageView_vue_vue_type_style_index_0_scoped_9a0d27ca_lang = "";
-const Image2ImageView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-9a0d27ca"]]);
+const Image2ImageView_vue_vue_type_style_index_0_scoped_2cff365d_lang = "";
+const Image2ImageView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-2cff365d"]]);
 export {
   Image2ImageView as default
 };

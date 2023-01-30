@@ -50,7 +50,7 @@ import { serverUrl } from "@/env";
 import { useWebsocket } from "@/store/websockets";
 import { ReloadOutline, SyncSharp } from "@vicons/ionicons5";
 import { NButton, NIcon, NProgress, NSelect, NSpace } from "naive-ui";
-import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
+import type { SelectGroupOption } from "naive-ui/es/select/src/interface";
 import { h, reactive, ref } from "vue";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
@@ -66,14 +66,38 @@ function refreshModels() {
     res.json().then((data: Array<ModelEntry>) => {
       // add all the strings from the list to model options
       modelOptions.splice(0, modelOptions.length);
-      modelOptions.push(...defaultOptions);
+
+      const pytorchGroup: SelectGroupOption = {
+        type: "group",
+        label: "PyTorch",
+        key: "pytorch",
+        children: [],
+      };
+
+      const tensorrtGroup: SelectGroupOption = {
+        type: "group",
+        label: "TensorRT",
+        key: "tensorrt",
+        children: [],
+      };
+
       data.forEach((item) => {
-        console.log([item, item.path + ":" + item.backend]);
-        modelOptions.push({
-          label: item.name,
-          value: item.path + ":" + item.backend,
-        });
+        if (item.backend === "PyTorch") {
+          pytorchGroup.children?.push({
+            label: item.name,
+            value: item.path + ":" + item.backend,
+          });
+        } else if (item.backend === "TensorRT") {
+          tensorrtGroup.children?.push({
+            label: item.name,
+            value: item.path + ":" + item.backend,
+          });
+        }
       });
+
+      modelOptions.push(tensorrtGroup);
+      modelOptions.push(pytorchGroup);
+      modelOptions.push(defaultOptions);
 
       modelsLoading.value = false;
     });
@@ -116,20 +140,25 @@ async function onModelChange(value: string) {
 
   modelsLoading.value = false;
 
-  conf.data.settings.model = value;
+  conf.data.settings.model = model;
 }
 
 const syncIcon = () => {
   return h(SyncSharp);
 };
 
-const defaultOptions: SelectMixedOption[] = [
-  {
-    label: "No model selected",
-    value: "none:PyTorch",
-  },
-];
-const modelOptions: SelectMixedOption[] = reactive([...defaultOptions]);
+const defaultOptions: SelectGroupOption = {
+  type: "group",
+  label: "Unload",
+  key: "unload",
+  children: [
+    {
+      label: "Unload all models",
+      value: "none:PyTorch",
+    },
+  ],
+};
+const modelOptions: Array<SelectGroupOption> = reactive([defaultOptions]);
 
 refreshModels();
 </script>

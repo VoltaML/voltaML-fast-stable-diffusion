@@ -35028,44 +35028,82 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
         res.json().then((data) => {
           modelOptions.splice(0, modelOptions.length);
-          modelOptions.push(...defaultOptions);
+          const pytorchGroup = {
+            type: "group",
+            label: "PyTorch",
+            key: "pytorch",
+            children: []
+          };
+          const tensorrtGroup = {
+            type: "group",
+            label: "TensorRT",
+            key: "tensorrt",
+            children: []
+          };
           data.forEach((item) => {
-            modelOptions.push({
-              label: item.name,
-              value: item.path
-            });
+            var _a2, _b;
+            if (item.backend === "PyTorch") {
+              (_a2 = pytorchGroup.children) == null ? void 0 : _a2.push({
+                label: item.name,
+                value: item.path + ":" + item.backend
+              });
+            } else if (item.backend === "TensorRT") {
+              (_b = tensorrtGroup.children) == null ? void 0 : _b.push({
+                label: item.name,
+                value: item.path + ":" + item.backend
+              });
+            }
           });
+          modelOptions.push(tensorrtGroup);
+          modelOptions.push(pytorchGroup);
+          modelOptions.push(defaultOptions);
           modelsLoading.value = false;
         });
       });
     }
     async function onModelChange(value) {
+      const model = value.split(":")[0];
+      const x = value.split(":")[1];
+      if (x !== "PyTorch" && x !== "TensorRT") {
+        throw new Error("Invalid backend");
+      }
+      const backend = x;
       await fetch(`${serverUrl}/api/models/unload-all`, {
         method: "POST"
       });
-      if (value === "none") {
+      if (model === "none") {
         conf.data.settings.model = value;
         return;
       }
+      conf.data.settings.backend = backend;
       const load_url = new URL(`${serverUrl}/api/models/load`);
-      const params = { model: value, backend: conf.data.settings.backend };
+      const params = { model, backend };
       load_url.search = new URLSearchParams(params).toString();
+      modelsLoading.value = true;
       await fetch(load_url, {
         method: "POST",
         headers: { "Content-Type": "application/json" }
+      }).catch(() => {
+        modelsLoading.value = false;
       });
-      conf.data.settings.model = value;
+      modelsLoading.value = false;
+      conf.data.settings.model = model;
     }
     const syncIcon = () => {
       return h(SyncSharp);
     };
-    const defaultOptions = [
-      {
-        label: "No model selected",
-        value: "none"
-      }
-    ];
-    const modelOptions = reactive([...defaultOptions]);
+    const defaultOptions = {
+      type: "group",
+      label: "Unload",
+      key: "unload",
+      children: [
+        {
+          label: "Unload all models",
+          value: "none:PyTorch"
+        }
+      ]
+    };
+    const modelOptions = reactive([defaultOptions]);
     refreshModels();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
@@ -35135,7 +35173,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_b2e0dcee_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_27054ef7_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -35143,7 +35181,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-b2e0dcee"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-27054ef7"]]);
 const _sfc_main$3 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
