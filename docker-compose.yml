@@ -5,11 +5,11 @@ services:
     image: voltaml:latest
     environment:
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
-
+      - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - engine:/workspace/voltaML-fast-stable-diffusion/engine
+      - /home/kubuntu/tmp/engine:/workspace/voltaML-fast-stable-diffusion/engine
       - /home/kubuntu/tmp/outputs:/workspace/voltaML-fast-stable-diffusion/outputs
-      - cache:/root/.cache/huggingface
+      - /home/kubuntu/.cache/huggingface:/root/.cache/huggingface
     ports:
       - "5003:5003"
     deploy:
@@ -20,5 +20,4 @@ services:
               capabilities: ["gpu"]
 
 volumes:
-  engine: {}
   cache: {}

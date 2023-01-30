@@ -1,23 +1,9 @@
 import logging
-import os
 from pathlib import Path
-from typing import Optional
 
 import numpy as np
 import torch
-from diffusers.utils import (
-    CONFIG_NAME,
-    DIFFUSERS_CACHE,
-    FLAX_WEIGHTS_NAME,
-    HF_HUB_OFFLINE,
-    ONNX_WEIGHTS_NAME,
-    PIL_INTERPOLATION,
-    WEIGHTS_NAME,
-    http_user_agent,
-    is_safetensors_available,
-)
-from huggingface_hub import model_info  # type: ignore
-from huggingface_hub._snapshot_download import snapshot_download
+from diffusers.utils import PIL_INTERPOLATION
 from PIL import Image
 
 from api import websocket_manager

@@ -69,8 +69,8 @@ async def validation_exception_handler(request: Request, _: RequestValidationErr
 origins = [
     "http://localhost:5173",
     "https://localhost:5173",
-    "http://127.0.0.1:5003/",
-    "https://127.0.0.1:5003/",
+    "http://127.0.0.1:5003",
+    "https://127.0.0.1:5003",
 ]
 
 # Allow CORS for specified origins

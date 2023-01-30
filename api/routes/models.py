@@ -24,7 +24,7 @@ async def list_loaded_models():
 async def list_avaliable_models():
     "Show a list of avaliable models"
 
-    return cached_model_list.pytorch()
+    return cached_model_list.all()
 
 
 @router.post("/load")

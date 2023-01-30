@@ -29,33 +29,18 @@ import tensorrt as trt
 import torch
 import tqdm
 from cuda import cudart
-from diffusers.schedulers.scheduling_ddim import DDIMScheduler
-from diffusers.schedulers.scheduling_dpmsolver_multistep import (
-    DPMSolverMultistepScheduler,
-)
-from diffusers.schedulers.scheduling_dpmsolver_singlestep import (
-    DPMSolverSinglestepScheduler,
-)
-from diffusers.schedulers.scheduling_euler_ancestral_discrete import (
-    EulerAncestralDiscreteScheduler,
-)
-from diffusers.schedulers.scheduling_euler_discrete import EulerDiscreteScheduler
-from diffusers.schedulers.scheduling_heun_discrete import HeunDiscreteScheduler
-from diffusers.schedulers.scheduling_k_dpm_2_ancestral_discrete import (
-    KDPM2AncestralDiscreteScheduler,
-)
-from diffusers.schedulers.scheduling_k_dpm_2_discrete import KDPM2DiscreteScheduler
-from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
-from diffusers.schedulers.scheduling_pndm import PNDMScheduler
 from PIL import Image
 from polygraphy import cuda
 from transformers import CLIPTokenizer
 
 import onnx
+from api import websocket_manager
+from api.websockets import Data, Notification
 from core.schedulers import change_scheduler
 from core.trt.models import CLIP, VAE, UNet
 from core.trt.utilities import TRT_LOGGER, Engine, save_image
 from core.types import Scheduler, Txt2ImgQueueEntry
+from core.utils import convert_image_to_base64
 
 
 def parseArgs():
@@ -429,9 +414,18 @@ class DemoDiffusion:
             enable_preview (bool):
                 Enable TensorRT preview features.
         """
+        websocket_manager.broadcast_sync(
+            Notification(
+                severity="info", message=f"Loading engines...", title="TensorRT"
+            )
+        )
+
         # Build engines
         for model_name, obj in self.models.items():
             engine = Engine(model_name, engine_dir)
+            print(
+                f"Loading engine: {engine.engine_path}, {os.path.exists(engine.engine_path)}"
+            )
             if force_build or not os.path.exists(engine.engine_path):
                 onnx_path = self.getModelPath(model_name, onnx_dir, opt=False)
                 onnx_opt_path = self.getModelPath(model_name, onnx_dir)
@@ -444,6 +438,7 @@ class DemoDiffusion:
                             inputs = obj.get_sample_input(
                                 opt_batch_size, opt_image_height, opt_image_width
                             )
+                            print("Starting export of ONNX model")
                             torch.onnx.export(
                                 model,
                                 inputs,
@@ -455,6 +450,7 @@ class DemoDiffusion:
                                 output_names=obj.get_output_names(),
                                 dynamic_axes=obj.get_dynamic_axes(),
                             )
+                            print("Finished export of ONNX model")
                         del model
                         gc.collect()
                     else:
@@ -470,6 +466,7 @@ class DemoDiffusion:
                     else:
                         print(f"Found cached optimized model: {onnx_opt_path} ")
                 # Build engine
+                print("Building the TRT engine...")
                 engine.build(
                     onnx_opt_path,
                     fp16=True,
@@ -482,11 +479,16 @@ class DemoDiffusion:
                     ),
                     enable_preview=enable_preview,
                 )
+                print("Finished building the TRT engine")
             self.engine[model_name] = engine
 
         # Separate iteration to activate engines
         for model_name, obj in self.models.items():
             self.engine[model_name].activate()
+        websocket_manager.broadcast_sync(
+            Notification(severity="info", message=f"Engines loaded", title="TensorRT")
+        )
+
         gc.collect()
 
     def loadModules(
@@ -788,6 +790,18 @@ class DemoDiffusion:
                     noise_pred, timestep, latents, **extra_step_kwargs
                 ).prev_sample
 
+                websocket_manager.broadcast_sync(
+                    Data(
+                        data_type="txt2img",
+                        data={
+                            "progress": int((step_index / num_of_infer_steps) * 100),
+                            "current_step": step_index,
+                            "total_steps": num_of_infer_steps,
+                            "image": "",
+                        },
+                    )
+                )
+
                 if self.nvtx_profile:
                     nvtx.end_range(nvtx_latent_step)
 
@@ -857,8 +871,20 @@ class DemoDiffusion:
                     )
                     + "-"
                 )
-
                 imgs = save_image(images, output_dir, image_name_prefix)
+
+                websocket_manager.broadcast_sync(
+                    Data(
+                        data_type="txt2img",
+                        data={
+                            "progress": 0,
+                            "current_step": 0,
+                            "total_steps": 0,
+                            "image": convert_image_to_base64(imgs[0]),
+                        },
+                    )
+                )
+
             return str(e2e_toc - e2e_tic), imgs
 
 

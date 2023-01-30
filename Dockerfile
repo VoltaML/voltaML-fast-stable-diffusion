@@ -33,6 +33,7 @@ RUN pip3 install -r requirements/tensorrt.txt
 COPY . /workspace/voltaML-fast-stable-diffusion
 
 ENV LOG_LEVEL=INFO
+ENV TENSORRT_ENGINE_PATH="/workspace/voltaML-fast-stable-diffusion/engine"
 
 # Run the server
 RUN chmod +x start.sh

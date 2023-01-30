@@ -79,7 +79,7 @@ def main():
 
     from api.app import app as api_app
 
-    host = "0.0.0.0" if args.host else "localhost"
+    host = "0.0.0.0" if args.host else "127.0.0.1"
     uvicorn_run(api_app, host=host, port=5003)
 
 
