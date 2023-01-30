@@ -12,7 +12,7 @@ class CachedModelList:
         self.pytorch_path = Path(hf_cache_home) / "diffusers"
         self.converted_path = Path("converted")
 
-    def pytorch(self) -> list[Dict[str, Any]]:
+    def pytorch(self) -> List[Dict[str, Any]]:
         "List of models downloaded for PyTorch"
 
         models: List[Dict[str, Any]] = []

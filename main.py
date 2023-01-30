@@ -32,6 +32,7 @@ parser.add_argument(
     default=os.environ["HUGGINGFACE_TOKEN"],
     type=str,
 )
+parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
 args = parser.parse_args()
 
 
@@ -85,45 +86,48 @@ def main():
 def checks():
     "Check if the script is run from a virtual environment, if yes, check requirements"
 
-    if not in_virtualenv():
-        create_environment()
+    if not args.in_container:
+        if not in_virtualenv():
+            create_environment()
 
-        logger.error("Please run the script from a virtual environment")
-        sys.exit(1)
+            logger.error("Please run the script from a virtual environment")
+            sys.exit(1)
 
-    # Install more user friendly logging
-    if not is_installed("coloredlogs"):
-        subprocess.check_call(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "coloredlogs",
-            ]
-        )
+        # Install more user friendly logging
+        if not is_installed("coloredlogs"):
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "coloredlogs",
+                ]
+            )
 
-    if not is_installed("packaging"):
-        subprocess.check_call(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "packaging",
-            ]
-        )
+        if not is_installed("packaging"):
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "packaging",
+                ]
+            )
 
     # Inject coloredlogs
     from coloredlogs import install as coloredlogs_install
 
     coloredlogs_install(level=args.log_level)
 
-    # Check if we are up to date with the latest release
-    version_check(commit_hash())
+    if not args.in_container:
 
-    # Install pytorch and api requirements
-    install_pytorch()
+        # Check if we are up to date with the latest release
+        version_check(commit_hash())
+
+        # Install pytorch and api requirements
+        install_pytorch()
 
 
 if __name__ == "__main__":

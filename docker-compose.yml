@@ -2,24 +2,23 @@ version: "3.7"
 
 services:
   voltaml:
-    image: voltaml/volta_diffusion_webui:latest
+    image: voltaml:latest
+    environment:
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
 
     volumes:
       - engine:/workspace/voltaML-fast-stable-diffusion/engine
-      - output:/workspace/voltaML-fast-stable-diffusion/static/output
+      - /home/kubuntu/tmp/outputs:/workspace/voltaML-fast-stable-diffusion/outputs
+      - cache:/root/.cache/huggingface
     ports:
       - "5003:5003"
     deploy:
       resources:
         reservations:
           devices:
-            - capabilities: ["gpu"]
+            - driver: nvidia
+              capabilities: ["gpu"]
 
 volumes:
-  output:
-    driver: local
-    driver_opts:
-      type: none
-      device: C:\voltaml\output
-      o: bind
   engine: {}
+  cache: {}

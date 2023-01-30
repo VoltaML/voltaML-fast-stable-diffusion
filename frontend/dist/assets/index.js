@@ -35031,8 +35031,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           modelOptions.push(...defaultOptions);
           data.forEach((item) => {
             modelOptions.push({
-              label: item.split("/")[1],
-              value: item
+              label: item.name,
+              value: item.path
             });
           });
           modelsLoading.value = false;
@@ -35135,7 +35135,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_5c74f64a_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_b2e0dcee_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -35143,7 +35143,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-5c74f64a"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-b2e0dcee"]]);
 const _sfc_main$3 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

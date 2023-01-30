@@ -16,3 +16,4 @@ torchvision
 pynvml
 k-diffusion
 xformers==0.0.16rc425
+safetensors
