@@ -26,25 +26,17 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.get("http://localhost:5003/api/models/loaded") as r:
                 status = r.status
-                response: Dict[str, List] = await r.json()
+                response: Dict[str, List[str]] = await r.json()
 
         if status == 200:
-            models = []
             for device in response.keys():
-                for model in response[device]:
-                    models.append(model)
-
-            models = set(models)
-
-            embed = discord.Embed(title=f"Loaded models: {len(models)}")
-            embed.add_field(
-                name="Models",
-                value="\n".join(models),
-            )
-
-            await ctx.send(
-                embed=embed,
-            )
+                models = [i for i in response[device]]
+                embed = discord.Embed(title=f"GPU-{device}")
+                embed.add_field(
+                    name="Models",
+                    value="\n".join(models),
+                )
+                await ctx.send(embed=embed)
         else:
             await ctx.send(f"Error: {status}")
 
@@ -88,13 +80,15 @@ class Models(Cog):
                 response = await response.json()
 
         if status == 200:
-            await message.edit(content=f"Model loaded: {response['message']}")
+            await message.edit(content=f"{response['message']}: {model.value}")
         else:
             await message.edit(content=f"Error: **{response.get('detail')}**")
 
     @commands.hybrid_command(name="unload")
     @commands.has_permissions(administrator=True)
-    async def unload_model(self, ctx: Context, model: SupportedModel) -> None:
+    async def unload_model(
+        self, ctx: Context, model: SupportedModel, gpu_id: int
+    ) -> None:
         "Unload a model"
 
         message = await ctx.send(f"Unloading model {model.value}...")
@@ -102,13 +96,13 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.post(
                 "http://localhost:5003/api/models/unload",
-                params={"model": model.value},
+                params={"model": model.value, "gpu_id": gpu_id},
             ) as response:
                 status = response.status
                 response = await response.json()
 
         if status == 200:
-            await message.edit(content=f"Model unloaded: {model.value}")
+            await message.edit(content=f"{response['message']}: {model.value}")
         else:
             await message.edit(content=f"Error: {status}")
 

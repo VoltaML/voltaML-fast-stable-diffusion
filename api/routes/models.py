@@ -5,7 +5,6 @@ from typing import Literal, Optional
 import torch
 from fastapi import APIRouter, HTTPException
 
-from core.gpu import GPU
 from core.shared_dependent import cached_model_list, cluster
 
 router = APIRouter(tags=["models"])
@@ -49,8 +48,7 @@ async def load_model(
 async def unload_model(model: str, gpu_id: int):
     "Unloads a model from memory"
 
-    gpu: GPU = [i for i in cluster.gpus if i.gpu_id == gpu_id][0]
-    await gpu.unload(model)
+    await cluster.unload(model, gpu_id)
     return {"message": "Model unloaded"}
 
 

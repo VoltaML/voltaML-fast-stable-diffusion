@@ -145,3 +145,9 @@ class Cluster:
                 best_gpu = gpu
 
         await best_gpu.convert_from_checkpoint(checkpoint_path, is_sd2=is_sd2)
+
+    async def unload(self, model: str, gpu_id: int):
+        "Unload a model from a GPU"
+
+        gpu: GPU = [i for i in self.gpus if i.gpu_id == gpu_id][0]
+        await gpu.unload(model)
