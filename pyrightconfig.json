@@ -1,0 +1,6 @@
+{
+    "exclude": [
+        "core/hijack/diffusers/",
+        "venv/"
+    ]
+}
