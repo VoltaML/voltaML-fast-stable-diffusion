@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, Literal
+from typing import TYPE_CHECKING, Dict, List, Literal
 
 import discord
 from aiohttp import ClientSession
@@ -63,10 +63,11 @@ class Models(Cog):
                 "http://localhost:5003/api/models/avaliable"
             ) as response:
                 status = response.status
-                response = await response.json()
+                data: List[Dict[str, str]] = await response.json()
 
         if status == 200:
-            await ctx.send(f"Avaliable models: {', '.join(response)}")
+            models = set([i["name"] for i in data])
+            await ctx.send("Avaliable models:\n{}".format("\n ".join(models)))
         else:
             await ctx.send(f"Error: {status}")
 

@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List
 
-from diffusers.utils.constants import hf_cache_home
+from core.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +12,7 @@ class CachedModelList:
     "List of models downloaded for PyTorch and (or) converted to TRT"
 
     def __init__(self):
-        self.pytorch_path = Path(hf_cache_home) / "diffusers"
+        self.pytorch_path = Path(config.cache_dir)
         self.checkpoint_converted_path = Path("converted")
         self.tensorrt_engine_path = Path(
             os.environ.get("TENSORRT_ENGINE_PATH", "engine")
