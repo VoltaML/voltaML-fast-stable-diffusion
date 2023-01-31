@@ -26,30 +26,25 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.get("http://localhost:5003/api/models/loaded") as r:
                 status = r.status
-                response: Dict[str, Dict] = await r.json()
+                response: Dict[str, List] = await r.json()
 
         if status == 200:
-            devices = []
-            for model in response:
-                if response[model]["device"] not in devices:
-                    devices.append(response[model]["device"])
+            models = []
+            for device in response.keys():
+                for model in response[device]:
+                    models.append(model)
 
-            for device in devices:
-                embed = discord.Embed(title=f"Loaded models on {device}")
-                embed.add_field(
-                    name="Models",
-                    value="\n".join(
-                        [
-                            model
-                            for model in response
-                            if response[model]["device"] == device
-                        ]
-                    ),
-                )
+            models = set(models)
 
-                await ctx.send(
-                    embed=embed,
-                )
+            embed = discord.Embed(title=f"Loaded models: {len(models)}")
+            embed.add_field(
+                name="Models",
+                value="\n".join(models),
+            )
+
+            await ctx.send(
+                embed=embed,
+            )
         else:
             await ctx.send(f"Error: {status}")
 
