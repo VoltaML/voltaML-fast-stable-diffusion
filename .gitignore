@@ -78,7 +78,6 @@ target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
-test.ipynb
 
 # IPython
 profile_default/
@@ -174,6 +173,7 @@ cython_debug/
 unet/
 unet.engine
 testing/
+*.ipynb
 
 
 

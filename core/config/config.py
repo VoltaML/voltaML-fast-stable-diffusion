@@ -1,24 +1,27 @@
 from dataclasses import dataclass, field
 
+from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.utils import DIFFUSERS_CACHE
-
-from ..schedulers import Scheduler
 
 
 @dataclass
 class Txt2ImgConfig:
     "Configuration for the text to image pipeline"
 
-    model_id: str = "EleutherAI/gpt-neo-125M"
-    scheduler: Scheduler = Scheduler.euler_a
+    model_id: str = "andite/anything-v4.0"
+    scheduler: KarrasDiffusionSchedulers = (
+        KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler
+    )
 
 
 @dataclass
 class Img2ImgConfig:
     "Configuration for the image to image pipeline"
 
-    model_id: str = "EleutherAI/gpt-neo-125M"
-    scheduler: Scheduler = Scheduler.euler_a
+    model_id: str = "andite/anything-v4.0"
+    scheduler: KarrasDiffusionSchedulers = (
+        KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler
+    )
 
 
 @dataclass

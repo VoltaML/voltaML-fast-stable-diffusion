@@ -1,6 +1,9 @@
-from typing import TYPE_CHECKING, Union
+from typing import TYPE_CHECKING, Dict, Union
 
+from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
+from diffusers.schedulers.scheduling_ddpm import DDPMScheduler
+from diffusers.schedulers.scheduling_deis_multistep import DEISMultistepScheduler
 from diffusers.schedulers.scheduling_dpmsolver_multistep import (
     DPMSolverMultistepScheduler,
 )
@@ -19,47 +22,46 @@ from diffusers.schedulers.scheduling_k_dpm_2_discrete import KDPM2DiscreteSchedu
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
 from diffusers.schedulers.scheduling_pndm import PNDMScheduler
 
-from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
-from core.types import KDiffusionScheduler, Scheduler
+from core.types import PyTorchModelType
 
 if TYPE_CHECKING:
     from core.inference.volta_accelerate import DemoDiffusion
 
 
 def change_scheduler(
-    model: Union[StableDiffusionKDiffusionPipeline, "DemoDiffusion"],
-    scheduler: Union[Scheduler, KDiffusionScheduler],
-    config=None,
+    model: Union[PyTorchModelType, "DemoDiffusion"],
+    scheduler: KarrasDiffusionSchedulers,
+    config: Dict,
 ):
-    "Get the scheduler from the scheduler enum"
-
-    if isinstance(model, StableDiffusionKDiffusionPipeline):
-        model.set_scheduler(scheduler.value)
-        return
+    "Change the scheduler of the model"
 
     new_scheduler = None
 
-    if scheduler == Scheduler.ddim:
+    if scheduler == KarrasDiffusionSchedulers.DDIMScheduler:
         new_scheduler = DDIMScheduler
-    elif scheduler == Scheduler.heun:
+    elif scheduler == KarrasDiffusionSchedulers.DDPMScheduler:
+        new_scheduler = DDPMScheduler
+    elif scheduler == KarrasDiffusionSchedulers.DEISMultistepScheduler:
+        new_scheduler = DEISMultistepScheduler
+    elif scheduler == KarrasDiffusionSchedulers.HeunDiscreteScheduler:
         new_scheduler = HeunDiscreteScheduler
-    elif scheduler == Scheduler.dpm_discrete:
+    elif scheduler == KarrasDiffusionSchedulers.KDPM2DiscreteScheduler:
         new_scheduler = KDPM2DiscreteScheduler
-    elif scheduler == Scheduler.dpm_ancestral:
+    elif scheduler == KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler:
         new_scheduler = KDPM2AncestralDiscreteScheduler
-    elif scheduler == Scheduler.lms:
+    elif scheduler == KarrasDiffusionSchedulers.LMSDiscreteScheduler:
         new_scheduler = LMSDiscreteScheduler
-    elif scheduler == Scheduler.pndm:
+    elif scheduler == KarrasDiffusionSchedulers.PNDMScheduler:
         new_scheduler = PNDMScheduler
-    elif scheduler == Scheduler.euler:
+    elif scheduler == KarrasDiffusionSchedulers.EulerDiscreteScheduler:
         new_scheduler = EulerDiscreteScheduler
-    elif scheduler == Scheduler.euler_a:
+    elif scheduler == KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler:
         new_scheduler = EulerAncestralDiscreteScheduler
-    elif scheduler == Scheduler.dpmpp_sde_ancestral:
+    elif scheduler == KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler:
         new_scheduler = DPMSolverSinglestepScheduler
-    elif scheduler == Scheduler.dpmpp_2m:
+    elif scheduler == KarrasDiffusionSchedulers.DPMSolverMultistepScheduler:
         new_scheduler = DPMSolverMultistepScheduler
     else:
         new_scheduler = model.scheduler  # type: ignore
 
-    model.scheduler = new_scheduler.from_config(config)  # type: ignore
+    model.scheduler = new_scheduler.from_config(config=config)  # type: ignore

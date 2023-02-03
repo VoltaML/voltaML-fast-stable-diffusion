@@ -1,5 +1,6 @@
 import logging
 from pathlib import Path
+from typing import List
 
 import numpy as np
 import torch
@@ -42,24 +43,25 @@ def cheap_approximation(sample: torch.Tensor):
     return x_sample
 
 
-def pytorch_callback(data: dict):
+def pytorch_callback(step: int, _timestep: int, tensor: torch.Tensor):
     "Send a websocket message to the client with the progress percentage and partial image"
 
     if shared.interrupt:
         shared.interrupt = False
         raise InferenceInterruptedError
 
-    _x: torch.Tensor = data["x"][0]
-    step = int(data["i"]) + 1
+    print(tensor.shape)
+
     send_image = step % shared.image_decode_steps == 0
-    image: str = ""
+    images: List[str] = []
 
     if send_image:
-        decoded_rgb = cheap_approximation(_x)
-        decoded_rgb = torch.clamp((decoded_rgb + 1.0) / 2.0, min=0.0, max=1.0)
-        decoded_rgb = 255.0 * np.moveaxis(decoded_rgb.cpu().numpy(), 0, 2)
-        decoded_rgb = decoded_rgb.astype(np.uint8)
-        image = convert_image_to_base64(Image.fromarray(decoded_rgb))
+        for i in range(tensor.shape[0]):
+            decoded_rgb = cheap_approximation(tensor[i])
+            decoded_rgb = torch.clamp((decoded_rgb + 1.0) / 2.0, min=0.0, max=1.0)
+            decoded_rgb = 255.0 * np.moveaxis(decoded_rgb.cpu().numpy(), 0, 2)
+            decoded_rgb = decoded_rgb.astype(np.uint8)
+            images.append(convert_image_to_base64(Image.fromarray(decoded_rgb)))
 
     websocket_manager.broadcast_sync(
         data=Data(
@@ -68,7 +70,7 @@ def pytorch_callback(data: dict):
                 "progress": int((step / shared.current_steps) * 100),
                 "current_step": step,
                 "total_steps": shared.current_steps,
-                "image": image,
+                "images": images,
             },
         )
     )
@@ -127,6 +129,32 @@ def preprocess_image(image):
         image = np.array(image).astype(np.float32) / 255.0
         image = image.transpose(0, 3, 1, 2)
         image = 2.0 * image - 1.0  # type: ignore
+        image = torch.from_numpy(image)
+    elif isinstance(image[0], torch.Tensor):
+        image = torch.cat(image, dim=0)  # type: ignore
+    return image
+
+
+def preprocess(image):
+    "Preprocess an image for the img2img procedure"
+
+    if isinstance(image, torch.Tensor):
+        return image
+    elif isinstance(image, Image.Image):
+        image = [image]
+
+    if isinstance(image[0], Image.Image):
+        w, h = image[0].size
+        w, h = map(lambda x: x - x % 8, (w, h))  # resize to integer multiple of 8
+
+        image = [
+            np.array(i.resize((w, h), resample=PIL_INTERPOLATION["lanczos"]))[None, :]  # type: ignore
+            for i in image
+        ]
+        image = np.concatenate(image, axis=0)
+        image = np.array(image).astype(np.float32) / 255.0
+        image = image.transpose(0, 3, 1, 2)
+        image = 2.0 * image - 1.0
         image = torch.from_numpy(image)
     elif isinstance(image[0], torch.Tensor):
         image = torch.cat(image, dim=0)  # type: ignore

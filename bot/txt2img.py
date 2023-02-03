@@ -6,11 +6,12 @@ from uuid import uuid4
 
 import aiohttp
 import discord
+from diffusers.schedulers import KarrasDiffusionSchedulers
 from discord import File
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
-from core.types import KDiffusionScheduler, SupportedModel
+from core.types import SupportedModel
 from core.utils import convert_base64_to_bytes
 
 if TYPE_CHECKING:
@@ -66,7 +67,7 @@ class Inference(Cog):
         aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
         seed: Optional[int] = None,
         backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
-        scheduler: KDiffusionScheduler = KDiffusionScheduler.euler_a,
+        scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
         use_karras_sigmas: bool = True,
@@ -188,7 +189,7 @@ class Inference(Cog):
         aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
         seed: Optional[int] = None,
         backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
-        scheduler: KDiffusionScheduler = KDiffusionScheduler.euler_a,
+        scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
         use_karras_sigmas: bool = True,

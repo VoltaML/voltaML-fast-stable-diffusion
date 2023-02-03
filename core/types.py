@@ -3,6 +3,29 @@ from enum import Enum
 from typing import Union
 from uuid import uuid4
 
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_depth2img import (
+    StableDiffusionDepth2ImgPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_image_variation import (
+    StableDiffusionImageVariationPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
+    StableDiffusionImg2ImgPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import (
+    StableDiffusionInpaintPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_instruct_pix2pix import (
+    StableDiffusionInstructPix2PixPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale import (
+    StableDiffusionUpscalePipeline,
+)
+from diffusers.schedulers import KarrasDiffusionSchedulers
+
 
 @dataclass
 class ImageMetadata:
@@ -16,37 +39,6 @@ class ImageMetadata:
     guidance_scale: float
     seed: str
     model: str
-
-
-class Scheduler(Enum):
-    "Enum of schedulers supported by the API"
-
-    euler_a = "Euler A"
-    ddim = "DDIM"
-    heun = "Heun"
-    dpm_discrete = "DPM Discrete"
-    dpm_ancestral = "DPM A"
-    lms = "LMS"
-    pndm = "PNDM"
-    euler = "Euler"
-    dpmpp_sde_ancestral = "DPMPP SDE A"
-    dpmpp_2m = "DPMPP 2M"
-
-
-class KDiffusionScheduler(Enum):
-    "Enum of schedulers supported by the API"
-
-    euler_a = "sample_euler_ancestral"
-    euler = "sample_euler"
-    lms = "sample_lms"
-    heun = "sample_heun"
-    dpm2 = "sample_dpm_2"
-    dpm2_a = "sample_dpm_2_ancestral"
-    dpmpp_2s_a = "sample_dpmpp_2s_ancestral"
-    dpmpp_2m = "sample_dpmpp_2m"
-    dpmpp_sde = "sample_dpmpp_sde"
-    dpm_fast = "sample_dpm_fast"
-    dpm_adaptive = "sample_dpm_adaptive"
 
 
 class SupportedModel(Enum):
@@ -95,6 +87,7 @@ class Img2imgData:
     seed: int = field(default=0)
     batch_size: int = 1
     batch_count: int = 1
+    strength: float = 0.6
 
 
 @dataclass
@@ -103,7 +96,7 @@ class Txt2ImgQueueEntry:
 
     data: Txt2imgData
     model: str
-    scheduler: Union[Scheduler, KDiffusionScheduler]
+    scheduler: KarrasDiffusionSchedulers
     use_karras_sigmas: bool = field(default=True)
     websocket_id: Union[str, None] = field(default=None)
     save_image: bool = field(default=True)
@@ -115,7 +108,18 @@ class Img2ImgQueueEntry:
 
     data: Img2imgData
     model: str
-    scheduler: Union[Scheduler, KDiffusionScheduler]
+    scheduler: KarrasDiffusionSchedulers
     use_karras_sigmas: bool = field(default=True)
     websocket_id: Union[str, None] = field(default=None)
     save_image: bool = field(default=True)
+
+
+PyTorchModelType = Union[
+    StableDiffusionDepth2ImgPipeline,
+    StableDiffusionImageVariationPipeline,
+    StableDiffusionImg2ImgPipeline,
+    StableDiffusionInpaintPipeline,
+    StableDiffusionInstructPix2PixPipeline,
+    StableDiffusionPipeline,
+    StableDiffusionUpscalePipeline,
+]

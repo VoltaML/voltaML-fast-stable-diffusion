@@ -9,7 +9,7 @@ from typing import TYPE_CHECKING, Optional
 import torch
 
 if TYPE_CHECKING:
-    from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
+    from core.types import PyTorchModelType
 
 
 logger = logging.getLogger(__name__)
@@ -101,7 +101,7 @@ class UNet2DConditionOutput:
 class TracedUNet(torch.nn.Module):
     "UNet model optimized with JIT tracing"
 
-    def __init__(self, unet_traced, pipe: "StableDiffusionKDiffusionPipeline"):
+    def __init__(self, unet_traced, pipe: "PyTorchModelType"):
         super().__init__()
         self.in_channels = pipe.unet.in_channels  # type: ignore
         self.device = pipe.unet.device  # type: ignore
@@ -114,9 +114,7 @@ class TracedUNet(torch.nn.Module):
         return UNet2DConditionOutput(sample=sample)
 
 
-def get_traced_unet(
-    model_id: str, pipe: "StableDiffusionKDiffusionPipeline"
-) -> Optional[TracedUNet]:
+def get_traced_unet(model_id: str, pipe: "PyTorchModelType") -> Optional[TracedUNet]:
     "Get a traced UNet model"
 
     author, model_name = model_id.split("/")

@@ -11,17 +11,12 @@ from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
-from core.errors import BadSchedulerError, DimensionError
+from core.errors import DimensionError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
 from core.png_metadata import save_image
 from core.queue import Queue
-from core.types import (
-    Img2ImgQueueEntry,
-    KDiffusionScheduler,
-    Scheduler,
-    Txt2ImgQueueEntry,
-)
+from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
 from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
@@ -156,7 +151,6 @@ class GPU:
                 start_time = time.time()
                 pt_model = PyTorchInferenceModel(
                     model_id=model,
-                    scheduler=KDiffusionScheduler.euler_a,
                     device=self.cuda_id,
                     callback=pytorch_callback,
                     callback_steps=shared.image_decode_steps,
@@ -194,18 +188,12 @@ class GPU:
 
             if isinstance(model, PyTorchInferenceModel):
                 logger.debug("Generating with PyTorch")
-                scheduler = job.scheduler
-                if not isinstance(scheduler, KDiffusionScheduler):
-                    raise BadSchedulerError
                 images: List[Image.Image] = model.txt2img(job)
                 self.memory_cleanup()
                 return images
 
             logger.debug("Generating with TensorRT")
             images: List[Image.Image]
-
-            scheduler = job.scheduler
-            assert isinstance(scheduler, Scheduler)
 
             _, images = model.infer(
                 [job.data.prompt],
@@ -217,7 +205,7 @@ class GPU:
                 seed=job.data.seed,
                 output_dir="output",
                 num_of_infer_steps=job.data.steps,
-                scheduler=scheduler,
+                scheduler=job.scheduler,
             )
             self.memory_cleanup()
             return images
@@ -250,18 +238,12 @@ class GPU:
 
             if isinstance(model, PyTorchInferenceModel):
                 logger.debug("Generating with PyTorch")
-                scheduler = job.scheduler
-                if not isinstance(scheduler, KDiffusionScheduler):
-                    raise BadSchedulerError
                 images: List[Image.Image] = model.img2img(job)
                 self.memory_cleanup()
                 return images
 
             logger.debug("Generating with TensorRT")
             images: List[Image.Image]
-
-            scheduler = job.scheduler
-            assert isinstance(scheduler, Scheduler)
 
             _, images = model.infer(
                 [job.data.prompt],
@@ -270,10 +252,9 @@ class GPU:
                 job.data.width,
                 guidance_scale=job.data.guidance_scale,
                 verbose=False,
-                seed=job.data.seed,
                 output_dir="output",
                 num_of_infer_steps=job.data.steps,
-                scheduler=scheduler,
+                scheduler=job.scheduler,
             )
             self.memory_cleanup()
             return images

@@ -29,6 +29,7 @@ import tensorrt as trt
 import torch
 import tqdm
 from cuda import cudart
+from diffusers.schedulers import KarrasDiffusionSchedulers
 from PIL import Image
 from polygraphy import cuda
 from transformers import CLIPTokenizer
@@ -39,7 +40,7 @@ from api.websockets import Data, Notification
 from core.schedulers import change_scheduler
 from core.trt.models import CLIP, VAE, UNet
 from core.trt.utilities import TRT_LOGGER, Engine, save_image
-from core.types import Scheduler, Txt2ImgQueueEntry
+from core.types import Txt2ImgQueueEntry
 from core.utils import convert_image_to_base64
 
 
@@ -89,9 +90,8 @@ def parseArgs():
     )
     parser.add_argument(
         "--scheduler",
-        type=Scheduler,
-        default=Scheduler.euler_a,
-        # choices=["LMSD", "DPM"],
+        type=KarrasDiffusionSchedulers,
+        default=KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         help="Scheduler for diffusion process",
     )
 
@@ -198,7 +198,7 @@ class DemoDiffusion:
         self,
         denoising_steps,
         denoising_fp16=True,
-        scheduler: Scheduler = Scheduler.euler_a,
+        scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         # scheduler="LMSD",
         guidance_scale=7.5,
         eta=0.0,
@@ -416,7 +416,7 @@ class DemoDiffusion:
         """
         websocket_manager.broadcast_sync(
             Notification(
-                severity="info", message=f"Loading engines...", title="TensorRT"
+                severity="info", message="Loading engines...", title="TensorRT"
             )
         )
 
@@ -539,7 +539,7 @@ class DemoDiffusion:
         seed=None,
         output_dir="static/output",
         num_of_infer_steps=50,
-        scheduler: Scheduler = Scheduler.euler_a,
+        scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
     ):
         """
         Run the diffusion pipeline.
@@ -576,7 +576,7 @@ class DemoDiffusion:
             "clip_sample": False,
         }
 
-        change_scheduler(self, scheduler, sched_opts)
+        change_scheduler(self, scheduler=scheduler, config=sched_opts)
 
         # Spatial dimensions of latent tensor
         latent_height = image_height // 8
