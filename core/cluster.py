@@ -7,9 +7,9 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
-from core.diffusers.functions import download_model
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.gpu import GPU
+from core.inference.functions import download_model
 from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
 from core.utils import run_in_thread_async
 
@@ -156,3 +156,18 @@ class Cluster:
 
         gpu: GPU = [i for i in self.gpus if i.gpu_id == gpu_id][0]
         await gpu.unload(model)
+
+    async def accelerate(self, model: str):
+        "Accelerate a model on a GPU"
+
+        # Pick a totaly unoccupied GPU
+        unused_gpus: List[GPU] = [i for i in self.gpus if len(i.queue.jobs) == 0]
+
+        if len(unused_gpus) == 0:
+            raise ValueError("No unused GPUs")
+
+        unused_gpus = sorted(unused_gpus, key=lambda x: x.vram_free(), reverse=True)
+        gpu = unused_gpus[0]
+
+        logger.debug(f"Accelerating {model} on GPU {gpu.gpu_id}...")
+        await gpu.accelerate(model)

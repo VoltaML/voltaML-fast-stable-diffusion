@@ -23,9 +23,11 @@ def generate_traced_model(
 ):
     "Generate a traced model for the given model id"
 
-    from core.diffusers.kdiffusion import StableDiffusionKDiffusionPipeline
-
     torch.set_grad_enabled(False)
+
+    from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+        StableDiffusionPipeline,
+    )
 
     # load inputs
     def generate_inputs():
@@ -34,7 +36,7 @@ def generate_traced_model(
         encoder_hidden_states = torch.randn(2, 77, 768).half().cuda()
         return sample, timestep, encoder_hidden_states
 
-    pipe = StableDiffusionKDiffusionPipeline.from_pretrained(
+    pipe = StableDiffusionPipeline.from_pretrained(
         model,
         torch_dtype=torch.float16,
         use_auth_token=auth_token,
@@ -42,9 +44,9 @@ def generate_traced_model(
         requires_safety_checker=False,
         feature_extractor=None,
     )
-    assert isinstance(pipe, StableDiffusionKDiffusionPipeline)
+    assert isinstance(pipe, StableDiffusionPipeline)
     pipe = pipe.to("cuda")
-    unet = pipe.unet
+    unet = pipe.unet  # type: ignore
     unet.eval()
     unet.forward = functools.partial(unet.forward, return_dict=False)  # type: ignore
 

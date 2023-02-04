@@ -123,7 +123,7 @@ class GPU:
                     hf_token=os.environ["HUGGINGFACE_TOKEN"],
                     verbose=False,
                     nvtx_profile=False,
-                    max_batch_size=16,
+                    max_batch_size=9,
                 )
                 logger.debug("Loading engines...")
                 trt_model.loadEngines(
@@ -339,5 +339,39 @@ class GPU:
             },
         )
 
+        if err is not None:
+            raise err
+
+    async def accelerate(self, model: str):
+        "Convert a model to a TensorRT model"
+
+        def call():
+            from core.inference.volta_accelerate import DemoDiffusion
+
+            trt_model = DemoDiffusion(
+                model_path=model,
+                denoising_steps=25,
+                denoising_fp16=True,
+                hf_token=os.environ["HUGGINGFACE_TOKEN"],
+                verbose=False,
+                nvtx_profile=False,
+                max_batch_size=9,
+            )
+
+            trt_model.loadEngines(
+                engine_dir="engine/" + model,
+                onnx_dir="onnx",
+                onnx_opset=16,
+                opt_batch_size=1,
+                opt_image_height=512,
+                opt_image_width=512,
+                force_build=True,
+                static_batch=True,
+                static_shape=True,
+            )
+            trt_model.teardown()
+            del trt_model
+
+        _, err = await run_in_thread_async(func=call)
         if err is not None:
             raise err

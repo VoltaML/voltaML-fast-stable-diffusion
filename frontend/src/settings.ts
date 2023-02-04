@@ -42,6 +42,7 @@ export interface SettingsInterface {
     batchSize: number;
     resizeMethod: number;
     denoisingStrength: number;
+    image: string;
   };
 }
 
@@ -77,6 +78,7 @@ const defaultSettings: SettingsInterface = {
     negativePrompt: defaultNegativePrompt,
     denoisingStrength: 0.6,
     resizeMethod: 0,
+    image: "",
   },
 };
 

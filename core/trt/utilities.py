@@ -90,7 +90,7 @@ class Engine:
             network_from_onnx_path(onnx_path),
             config=CreateConfig(
                 fp16=fp16,
-                max_workspace_size=8100654080,
+                max_workspace_size=7000000000,
                 profiles=[p],
                 preview_features=preview_features,
             ),

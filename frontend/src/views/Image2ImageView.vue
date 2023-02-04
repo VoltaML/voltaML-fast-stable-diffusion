@@ -3,13 +3,10 @@
     <!-- Main -->
     <NGrid cols="1 850:2" x-gap="12">
       <NGi>
-        <NCard style="margin-bottom: 12px" title="Input image">
-          <div class="image-container">
-            <img
-              src="https://lexica-serve-encoded-images2.sharif.workers.dev/full_jpg/2d2d306f-3005-4930-9f6f-2e5ae6d3945f"
-            />
-          </div>
-        </NCard>
+        <ImageUpload
+          :callback="imageSelectCallback"
+          :preview="conf.data.settings.img2img.image"
+        />
 
         <NCard title="Settings">
           <NSpace vertical class="left-container">
@@ -290,6 +287,7 @@
 <script setup lang="ts">
 import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
+import ImageUpload from "@/components/ImageUpload.vue";
 import { serverUrl } from "@/env";
 import {
   NCard,
@@ -318,6 +316,10 @@ const checkSeed = (seed: number) => {
   }
 
   return seed;
+};
+
+const imageSelectCallback = (base64Image: string) => {
+  conf.data.settings.img2img.image = base64Image;
 };
 
 const generate = () => {

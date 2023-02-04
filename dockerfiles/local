@@ -1,15 +1,18 @@
+# syntax = docker/dockerfile:experimental
 FROM nvcr.io/nvidia/tensorrt:22.11-py3
 
-# Install TensorRT with plugins
-RUN pip install --upgrade pip && pip install --upgrade tensorrt
+# Install latest pip and TensorRT
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install --upgrade pip
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install --upgrade tensorrt==8.5.2.2
 
-RUN git clone https://github.com/NVIDIA/TensorRT.git -b release/8.5 --single-branch \
+# Clone the TensorRT repository
+RUN git clone https://github.com/NVIDIA/TensorRT.git --branch 8.5.2 --single-branch \
     && cd TensorRT/ \
     && git submodule update --init --recursive
 
+# Build TensorRT plugins
 ENV TRT_OSSPATH=/workspace/TensorRT
 WORKDIR /workspace/TensorRT
-
 RUN mkdir -p build \
     && cd build \
     && cmake .. -DTRT_OUT_DIR=$PWD/out \
@@ -23,19 +26,23 @@ ENV CUDA_MODULE_LOADING=LAZY
 # Prepare the environment
 WORKDIR /workspace/voltaML-fast-stable-diffusion
 
-COPY requirements requirements
+# Install python dependencies (multi-stage build to enable caching)
+COPY requirements/pytorch.txt requirements/pytorch.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip3 install -r requirements/pytorch.txt
 
-# Install python dependencies
-RUN pip3 install -r requirements/api.txt
-RUN pip3 install -r requirements/pytorch.txt
-RUN pip3 install -r requirements/tensorrt.txt
+COPY requirements/api.txt requirements/api.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip3 install -r requirements/api.txt
 
+COPY requirements/tensorrt.txt requirements/tensorrt.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip3 install -r requirements/tensorrt.txt
+
+# Copy the source code
 COPY . /workspace/voltaML-fast-stable-diffusion
 
+# Set environment variables
 ENV LOG_LEVEL=INFO
 ENV TENSORRT_ENGINE_PATH="/workspace/voltaML-fast-stable-diffusion/engine"
 
 # Run the server
 RUN chmod +x start.sh
-
 ENTRYPOINT ["bash", "./start.sh"]

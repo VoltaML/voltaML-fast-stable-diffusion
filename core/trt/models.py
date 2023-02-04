@@ -23,9 +23,10 @@ import onnx_graphsurgeon as gs
 import torch
 from cuda import cudart
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
-from onnx import shape_inference
 from polygraphy.backend.onnx.loader import fold_constants
 from transformers import CLIPTextModel
+
+from onnx import shape_inference
 
 
 class Optimizer:

@@ -15,6 +15,6 @@ torch==1.13.1+cu117
 torchvision
 pynvml
 k-diffusion
-xformers==0.0.16rc425
+xformers==0.0.16
 safetensors
 pytorch-lightning
