@@ -14,7 +14,9 @@ def deprecate(*args, take_from: Optional[Union[Dict, Any]] = None, standard_warn
         args = (args,)
 
     for attribute, version_name, message in args:
-        if version.parse(version.parse(__version__).base_version) >= version.parse(version_name):
+        if version.parse(version.parse(__version__).base_version) >= version.parse(
+            version_name
+        ):
             raise ValueError(
                 f"The deprecation tuple {(attribute, version_name, message)} should be removed since diffusers'"
                 f" version {__version__} is >= {version_name}"
@@ -40,7 +42,9 @@ def deprecate(*args, take_from: Optional[Union[Dict, Any]] = None, standard_warn
         line_number = call_frame.lineno
         function = call_frame.function
         key, value = next(iter(deprecated_kwargs.items()))
-        raise TypeError(f"{function} in {filename} line {line_number-1} got an unexpected keyword argument `{key}`")
+        raise TypeError(
+            f"{function} in {filename} line {line_number-1} got an unexpected keyword argument `{key}`"
+        )
 
     if len(values) == 0:
         return

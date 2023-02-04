@@ -75,7 +75,12 @@ class PNDMPipeline(DiffusionPipeline):
 
         # Sample gaussian noise to begin loop
         image = torch.randn(
-            (batch_size, self.unet.in_channels, self.unet.sample_size, self.unet.sample_size),
+            (
+                batch_size,
+                self.unet.in_channels,
+                self.unet.sample_size,
+                self.unet.sample_size,
+            ),
             generator=generator,
         )
         image = image.to(self.device)

@@ -23,7 +23,11 @@ import jax
 import jax.numpy as jnp
 
 from ..configuration_utils import ConfigMixin, register_to_config
-from .scheduling_utils_flax import FlaxSchedulerMixin, FlaxSchedulerOutput, broadcast_to_shape_from_left
+from .scheduling_utils_flax import (
+    FlaxSchedulerMixin,
+    FlaxSchedulerOutput,
+    broadcast_to_shape_from_left,
+)
 
 
 def betas_for_alpha_bar(num_diffusion_timesteps: int, max_beta=0.999) -> jnp.ndarray:
@@ -133,20 +137,34 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
         if trained_betas is not None:
             self.betas = jnp.asarray(trained_betas)
         elif beta_schedule == "linear":
-            self.betas = jnp.linspace(beta_start, beta_end, num_train_timesteps, dtype=jnp.float32)
+            self.betas = jnp.linspace(
+                beta_start, beta_end, num_train_timesteps, dtype=jnp.float32
+            )
         elif beta_schedule == "scaled_linear":
             # this schedule is very specific to the latent diffusion model.
-            self.betas = jnp.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=jnp.float32) ** 2
+            self.betas = (
+                jnp.linspace(
+                    beta_start**0.5,
+                    beta_end**0.5,
+                    num_train_timesteps,
+                    dtype=jnp.float32,
+                )
+                ** 2
+            )
         elif beta_schedule == "squaredcos_cap_v2":
             # Glide cosine schedule
             self.betas = betas_for_alpha_bar(num_train_timesteps)
         else:
-            raise NotImplementedError(f"{beta_schedule} does is not implemented for {self.__class__}")
+            raise NotImplementedError(
+                f"{beta_schedule} does is not implemented for {self.__class__}"
+            )
 
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = jnp.cumprod(self.alphas, axis=0)
 
-        self.final_alpha_cumprod = jnp.array(1.0) if set_alpha_to_one else self.alphas_cumprod[0]
+        self.final_alpha_cumprod = (
+            jnp.array(1.0) if set_alpha_to_one else self.alphas_cumprod[0]
+        )
 
         # For now we only support F-PNDM, i.e. the runge-kutta method
         # For more information on the algorithm please take a look at the paper: https://arxiv.org/pdf/2202.09778.pdf
@@ -157,9 +175,13 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
         self.init_noise_sigma = 1.0
 
     def create_state(self):
-        return PNDMSchedulerState.create(num_train_timesteps=self.config.num_train_timesteps)
+        return PNDMSchedulerState.create(
+            num_train_timesteps=self.config.num_train_timesteps
+        )
 
-    def set_timesteps(self, state: PNDMSchedulerState, num_inference_steps: int, shape: Tuple) -> PNDMSchedulerState:
+    def set_timesteps(
+        self, state: PNDMSchedulerState, num_inference_steps: int, shape: Tuple
+    ) -> PNDMSchedulerState:
         """
         Sets the discrete timesteps used for the diffusion chain. Supporting function to be run before inference.
 
@@ -178,7 +200,9 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
         # rounding to avoid issues when num_inference_step is power of 3
         _timesteps = (jnp.arange(0, num_inference_steps) * step_ratio).round() + offset
 
-        state = state.replace(num_inference_steps=num_inference_steps, _timesteps=_timesteps)
+        state = state.replace(
+            num_inference_steps=num_inference_steps, _timesteps=_timesteps
+        )
 
         if self.config.skip_prk_steps:
             # for some models like stable diffusion the prk steps can/should be skipped to
@@ -187,12 +211,21 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
             state = state.replace(
                 prk_timesteps=jnp.array([]),
                 plms_timesteps=jnp.concatenate(
-                    [state._timesteps[:-1], state._timesteps[-2:-1], state._timesteps[-1:]]
+                    [
+                        state._timesteps[:-1],
+                        state._timesteps[-2:-1],
+                        state._timesteps[-1:],
+                    ]
                 )[::-1],
             )
         else:
-            prk_timesteps = jnp.array(state._timesteps[-self.pndm_order :]).repeat(2) + jnp.tile(
-                jnp.array([0, self.config.num_train_timesteps // num_inference_steps // 2]), self.pndm_order
+            prk_timesteps = jnp.array(state._timesteps[-self.pndm_order :]).repeat(
+                2
+            ) + jnp.tile(
+                jnp.array(
+                    [0, self.config.num_train_timesteps // num_inference_steps // 2]
+                ),
+                self.pndm_order,
             )
 
             state = state.replace(
@@ -201,7 +234,9 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
             )
 
         return state.replace(
-            timesteps=jnp.concatenate([state.prk_timesteps, state.plms_timesteps]).astype(jnp.int32),
+            timesteps=jnp.concatenate(
+                [state.prk_timesteps, state.plms_timesteps]
+            ).astype(jnp.int32),
             counter=0,
             # Reserve space for the state variables
             cur_model_output=jnp.zeros(shape),
@@ -210,7 +245,10 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
         )
 
     def scale_model_input(
-        self, state: PNDMSchedulerState, sample: jnp.ndarray, timestep: Optional[int] = None
+        self,
+        state: PNDMSchedulerState,
+        sample: jnp.ndarray,
+        timestep: Optional[int] = None,
     ) -> jnp.ndarray:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
@@ -303,12 +341,16 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
             )
 
         diff_to_prev = jnp.where(
-            state.counter % 2, 0, self.config.num_train_timesteps // state.num_inference_steps // 2
+            state.counter % 2,
+            0,
+            self.config.num_train_timesteps // state.num_inference_steps // 2,
         )
         prev_timestep = timestep - diff_to_prev
         timestep = state.prk_timesteps[state.counter // 4 * 4]
 
-        def remainder_0(state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int):
+        def remainder_0(
+            state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int
+        ):
             return (
                 state.replace(
                     cur_model_output=state.cur_model_output + 1 / 6 * model_output,
@@ -318,15 +360,34 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
                 model_output,
             )
 
-        def remainder_1(state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int):
-            return state.replace(cur_model_output=state.cur_model_output + 1 / 3 * model_output), model_output
+        def remainder_1(
+            state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int
+        ):
+            return (
+                state.replace(
+                    cur_model_output=state.cur_model_output + 1 / 3 * model_output
+                ),
+                model_output,
+            )
 
-        def remainder_2(state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int):
-            return state.replace(cur_model_output=state.cur_model_output + 1 / 3 * model_output), model_output
+        def remainder_2(
+            state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int
+        ):
+            return (
+                state.replace(
+                    cur_model_output=state.cur_model_output + 1 / 3 * model_output
+                ),
+                model_output,
+            )
 
-        def remainder_3(state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int):
+        def remainder_3(
+            state: PNDMSchedulerState, model_output: jnp.ndarray, ets_at: int
+        ):
             model_output = state.cur_model_output + 1 / 6 * model_output
-            return state.replace(cur_model_output=jnp.zeros_like(state.cur_model_output)), model_output
+            return (
+                state.replace(cur_model_output=jnp.zeros_like(state.cur_model_output)),
+                model_output,
+            )
 
         state, model_output = jax.lax.switch(
             state.counter % 4,
@@ -338,7 +399,9 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
         )
 
         cur_sample = state.cur_sample
-        prev_sample = self._get_prev_sample(cur_sample, timestep, prev_timestep, model_output)
+        prev_sample = self._get_prev_sample(
+            cur_sample, timestep, prev_timestep, model_output
+        )
         state = state.replace(counter=state.counter + 1)
 
         return (prev_sample, state)
@@ -380,7 +443,9 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
                 "for more information."
             )
 
-        prev_timestep = timestep - self.config.num_train_timesteps // state.num_inference_steps
+        prev_timestep = (
+            timestep - self.config.num_train_timesteps // state.num_inference_steps
+        )
         prev_timestep = jnp.where(prev_timestep > 0, prev_timestep, 0)
 
         # Reference:
@@ -392,7 +457,9 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
 
         prev_timestep = jnp.where(state.counter == 1, timestep, prev_timestep)
         timestep = jnp.where(
-            state.counter == 1, timestep + self.config.num_train_timesteps // state.num_inference_steps, timestep
+            state.counter == 1,
+            timestep + self.config.num_train_timesteps // state.num_inference_steps,
+            timestep,
         )
 
         # Reference:
@@ -441,7 +508,9 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
 
         def counter_other(state: PNDMSchedulerState):
             ets = state.ets.at[3].set(model_output)
-            next_model_output = (1 / 24) * (55 * ets[3] - 59 * ets[2] + 37 * ets[1] - 9 * ets[0])
+            next_model_output = (1 / 24) * (
+                55 * ets[3] - 59 * ets[2] + 37 * ets[1] - 9 * ets[0]
+            )
 
             ets = ets.at[0].set(ets[1])
             ets = ets.at[1].set(ets[2])
@@ -462,7 +531,9 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
 
         sample = state.cur_sample
         model_output = state.cur_model_output
-        prev_sample = self._get_prev_sample(sample, timestep, prev_timestep, model_output)
+        prev_sample = self._get_prev_sample(
+            sample, timestep, prev_timestep, model_output
+        )
         state = state.replace(counter=state.counter + 1)
 
         return (prev_sample, state)
@@ -481,7 +552,11 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
         # model_output -> e_θ(x_t, t)
         # prev_sample -> x_(t−δ)
         alpha_prod_t = self.alphas_cumprod[timestep]
-        alpha_prod_t_prev = jnp.where(prev_timestep >= 0, self.alphas_cumprod[prev_timestep], self.final_alpha_cumprod)
+        alpha_prod_t_prev = jnp.where(
+            prev_timestep >= 0,
+            self.alphas_cumprod[prev_timestep],
+            self.final_alpha_cumprod,
+        )
         beta_prod_t = 1 - alpha_prod_t
         beta_prod_t_prev = 1 - alpha_prod_t_prev
 
@@ -498,7 +573,10 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
 
         # full formula (9)
         prev_sample = (
-            sample_coeff * sample - (alpha_prod_t_prev - alpha_prod_t) * model_output / model_output_denom_coeff
+            sample_coeff * sample
+            - (alpha_prod_t_prev - alpha_prod_t)
+            * model_output
+            / model_output_denom_coeff
         )
 
         return prev_sample
@@ -511,13 +589,19 @@ class FlaxPNDMScheduler(FlaxSchedulerMixin, ConfigMixin):
     ) -> jnp.ndarray:
         sqrt_alpha_prod = self.alphas_cumprod[timesteps] ** 0.5
         sqrt_alpha_prod = sqrt_alpha_prod.flatten()
-        sqrt_alpha_prod = broadcast_to_shape_from_left(sqrt_alpha_prod, original_samples.shape)
+        sqrt_alpha_prod = broadcast_to_shape_from_left(
+            sqrt_alpha_prod, original_samples.shape
+        )
 
         sqrt_one_minus_alpha_prod = (1 - self.alphas_cumprod[timesteps]) ** 0.5
         sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.flatten()
-        sqrt_one_minus_alpha_prod = broadcast_to_shape_from_left(sqrt_one_minus_alpha_prod, original_samples.shape)
+        sqrt_one_minus_alpha_prod = broadcast_to_shape_from_left(
+            sqrt_one_minus_alpha_prod, original_samples.shape
+        )
 
-        noisy_samples = sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
+        noisy_samples = (
+            sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
+        )
         return noisy_samples
 
     def __len__(self):

@@ -123,7 +123,8 @@ class FlaxKarrasVeScheduler(FlaxSchedulerMixin, ConfigMixin):
         schedule = [
             (
                 self.config.sigma_max**2
-                * (self.config.sigma_min**2 / self.config.sigma_max**2) ** (i / (num_inference_steps - 1))
+                * (self.config.sigma_min**2 / self.config.sigma_max**2)
+                ** (i / (num_inference_steps - 1))
             )
             for i in timesteps
         ]
@@ -194,7 +195,9 @@ class FlaxKarrasVeScheduler(FlaxSchedulerMixin, ConfigMixin):
         if not return_dict:
             return (sample_prev, derivative, state)
 
-        return FlaxKarrasVeOutput(prev_sample=sample_prev, derivative=derivative, state=state)
+        return FlaxKarrasVeOutput(
+            prev_sample=sample_prev, derivative=derivative, state=state
+        )
 
     def step_correct(
         self,
@@ -226,12 +229,16 @@ class FlaxKarrasVeScheduler(FlaxSchedulerMixin, ConfigMixin):
         """
         pred_original_sample = sample_prev + sigma_prev * model_output
         derivative_corr = (sample_prev - pred_original_sample) / sigma_prev
-        sample_prev = sample_hat + (sigma_prev - sigma_hat) * (0.5 * derivative + 0.5 * derivative_corr)
+        sample_prev = sample_hat + (sigma_prev - sigma_hat) * (
+            0.5 * derivative + 0.5 * derivative_corr
+        )
 
         if not return_dict:
             return (sample_prev, derivative, state)
 
-        return FlaxKarrasVeOutput(prev_sample=sample_prev, derivative=derivative, state=state)
+        return FlaxKarrasVeOutput(
+            prev_sample=sample_prev, derivative=derivative, state=state
+        )
 
     def add_noise(self, original_samples, noise, timesteps):
         raise NotImplementedError()

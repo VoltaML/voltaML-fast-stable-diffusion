@@ -124,11 +124,19 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         if trained_betas is not None:
             self.betas = torch.from_numpy(trained_betas)
         elif beta_schedule == "linear":
-            self.betas = torch.linspace(beta_start, beta_end, num_train_timesteps, dtype=torch.float32)
+            self.betas = torch.linspace(
+                beta_start, beta_end, num_train_timesteps, dtype=torch.float32
+            )
         elif beta_schedule == "scaled_linear":
             # this schedule is very specific to the latent diffusion model.
             self.betas = (
-                torch.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=torch.float32) ** 2
+                torch.linspace(
+                    beta_start**0.5,
+                    beta_end**0.5,
+                    num_train_timesteps,
+                    dtype=torch.float32,
+                )
+                ** 2
             )
         elif beta_schedule == "squaredcos_cap_v2":
             # Glide cosine schedule
@@ -138,7 +146,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
             betas = torch.linspace(-6, 6, num_train_timesteps)
             self.betas = torch.sigmoid(betas) * (beta_end - beta_start) + beta_start
         else:
-            raise NotImplementedError(f"{beta_schedule} does is not implemented for {self.__class__}")
+            raise NotImplementedError(
+                f"{beta_schedule} does is not implemented for {self.__class__}"
+            )
 
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
@@ -149,11 +159,15 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
 
         # setable values
         self.num_inference_steps = None
-        self.timesteps = torch.from_numpy(np.arange(0, num_train_timesteps)[::-1].copy())
+        self.timesteps = torch.from_numpy(
+            np.arange(0, num_train_timesteps)[::-1].copy()
+        )
 
         self.variance_type = variance_type
 
-    def scale_model_input(self, sample: torch.FloatTensor, timestep: Optional[int] = None) -> torch.FloatTensor:
+    def scale_model_input(
+        self, sample: torch.FloatTensor, timestep: Optional[int] = None
+    ) -> torch.FloatTensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
         current timestep.
@@ -167,7 +181,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         """
         return sample
 
-    def set_timesteps(self, num_inference_steps: int, device: Union[str, torch.device] = None):
+    def set_timesteps(
+        self, num_inference_steps: int, device: Union[str, torch.device] = None
+    ):
         """
         Sets the discrete timesteps used for the diffusion chain. Supporting function to be run before inference.
 
@@ -178,7 +194,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         num_inference_steps = min(self.config.num_train_timesteps, num_inference_steps)
         self.num_inference_steps = num_inference_steps
         timesteps = np.arange(
-            0, self.config.num_train_timesteps, self.config.num_train_timesteps // self.num_inference_steps
+            0,
+            self.config.num_train_timesteps,
+            self.config.num_train_timesteps // self.num_inference_steps,
         )[::-1].copy()
         self.timesteps = torch.from_numpy(timesteps).to(device)
 
@@ -246,8 +264,13 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         """
         t = timestep
 
-        if model_output.shape[1] == sample.shape[1] * 2 and self.variance_type in ["learned", "learned_range"]:
-            model_output, predicted_variance = torch.split(model_output, sample.shape[1], dim=1)
+        if model_output.shape[1] == sample.shape[1] * 2 and self.variance_type in [
+            "learned",
+            "learned_range",
+        ]:
+            model_output, predicted_variance = torch.split(
+                model_output, sample.shape[1], dim=1
+            )
         else:
             predicted_variance = None
 
@@ -260,7 +283,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         # 2. compute predicted original sample from predicted noise also called
         # "predicted x_0" of formula (15) from https://arxiv.org/pdf/2006.11239.pdf
         if predict_epsilon:
-            pred_original_sample = (sample - beta_prod_t ** (0.5) * model_output) / alpha_prod_t ** (0.5)
+            pred_original_sample = (
+                sample - beta_prod_t ** (0.5) * model_output
+            ) / alpha_prod_t ** (0.5)
         else:
             pred_original_sample = model_output
 
@@ -270,27 +295,39 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
 
         # 4. Compute coefficients for pred_original_sample x_0 and current sample x_t
         # See formula (7) from https://arxiv.org/pdf/2006.11239.pdf
-        pred_original_sample_coeff = (alpha_prod_t_prev ** (0.5) * self.betas[t]) / beta_prod_t
+        pred_original_sample_coeff = (
+            alpha_prod_t_prev ** (0.5) * self.betas[t]
+        ) / beta_prod_t
         current_sample_coeff = self.alphas[t] ** (0.5) * beta_prod_t_prev / beta_prod_t
 
         # 5. Compute predicted previous sample µ_t
         # See formula (7) from https://arxiv.org/pdf/2006.11239.pdf
-        pred_prev_sample = pred_original_sample_coeff * pred_original_sample + current_sample_coeff * sample
+        pred_prev_sample = (
+            pred_original_sample_coeff * pred_original_sample
+            + current_sample_coeff * sample
+        )
 
         # 6. Add noise
         variance = 0
         if t > 0:
             noise = torch.randn(
-                model_output.size(), dtype=model_output.dtype, layout=model_output.layout, generator=generator
+                model_output.size(),
+                dtype=model_output.dtype,
+                layout=model_output.layout,
+                generator=generator,
             ).to(model_output.device)
-            variance = (self._get_variance(t, predicted_variance=predicted_variance) ** 0.5) * noise
+            variance = (
+                self._get_variance(t, predicted_variance=predicted_variance) ** 0.5
+            ) * noise
 
         pred_prev_sample = pred_prev_sample + variance
 
         if not return_dict:
             return (pred_prev_sample,)
 
-        return DDPMSchedulerOutput(prev_sample=pred_prev_sample, pred_original_sample=pred_original_sample)
+        return DDPMSchedulerOutput(
+            prev_sample=pred_prev_sample, pred_original_sample=pred_original_sample
+        )
 
     def add_noise(
         self,
@@ -299,7 +336,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         timesteps: torch.IntTensor,
     ) -> torch.FloatTensor:
         # Make sure alphas_cumprod and timestep have same device and dtype as original_samples
-        self.alphas_cumprod = self.alphas_cumprod.to(device=original_samples.device, dtype=original_samples.dtype)
+        self.alphas_cumprod = self.alphas_cumprod.to(
+            device=original_samples.device, dtype=original_samples.dtype
+        )
         timesteps = timesteps.to(original_samples.device)
 
         sqrt_alpha_prod = self.alphas_cumprod[timesteps] ** 0.5
@@ -312,7 +351,9 @@ class DDPMScheduler(SchedulerMixin, ConfigMixin):
         while len(sqrt_one_minus_alpha_prod.shape) < len(original_samples.shape):
             sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.unsqueeze(-1)
 
-        noisy_samples = sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
+        noisy_samples = (
+            sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
+        )
         return noisy_samples
 
     def __len__(self):

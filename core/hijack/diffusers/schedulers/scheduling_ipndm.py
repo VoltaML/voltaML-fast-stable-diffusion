@@ -53,7 +53,9 @@ class IPNDMScheduler(SchedulerMixin, ConfigMixin):
         # running values
         self.ets = []
 
-    def set_timesteps(self, num_inference_steps: int, device: Union[str, torch.device] = None):
+    def set_timesteps(
+        self, num_inference_steps: int, device: Union[str, torch.device] = None
+    ):
         """
         Sets the discrete timesteps used for the diffusion chain. Supporting function to be run before inference.
 
@@ -104,7 +106,10 @@ class IPNDMScheduler(SchedulerMixin, ConfigMixin):
         timestep_index = (self.timesteps == timestep).nonzero().item()
         prev_timestep_index = timestep_index + 1
 
-        ets = sample * self.betas[timestep_index] + model_output * self.alphas[timestep_index]
+        ets = (
+            sample * self.betas[timestep_index]
+            + model_output * self.alphas[timestep_index]
+        )
         self.ets.append(ets)
 
         if len(self.ets) == 1:
@@ -114,16 +119,25 @@ class IPNDMScheduler(SchedulerMixin, ConfigMixin):
         elif len(self.ets) == 3:
             ets = (23 * self.ets[-1] - 16 * self.ets[-2] + 5 * self.ets[-3]) / 12
         else:
-            ets = (1 / 24) * (55 * self.ets[-1] - 59 * self.ets[-2] + 37 * self.ets[-3] - 9 * self.ets[-4])
+            ets = (1 / 24) * (
+                55 * self.ets[-1]
+                - 59 * self.ets[-2]
+                + 37 * self.ets[-3]
+                - 9 * self.ets[-4]
+            )
 
-        prev_sample = self._get_prev_sample(sample, timestep_index, prev_timestep_index, ets)
+        prev_sample = self._get_prev_sample(
+            sample, timestep_index, prev_timestep_index, ets
+        )
 
         if not return_dict:
             return (prev_sample,)
 
         return SchedulerOutput(prev_sample=prev_sample)
 
-    def scale_model_input(self, sample: torch.FloatTensor, *args, **kwargs) -> torch.FloatTensor:
+    def scale_model_input(
+        self, sample: torch.FloatTensor, *args, **kwargs
+    ) -> torch.FloatTensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
         current timestep.

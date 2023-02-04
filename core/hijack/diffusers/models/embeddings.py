@@ -82,7 +82,9 @@ class TimestepEmbedding(nn.Module):
 
 
 class Timesteps(nn.Module):
-    def __init__(self, num_channels: int, flip_sin_to_cos: bool, downscale_freq_shift: float):
+    def __init__(
+        self, num_channels: int, flip_sin_to_cos: bool, downscale_freq_shift: float
+    ):
         super().__init__()
         self.num_channels = num_channels
         self.flip_sin_to_cos = flip_sin_to_cos
@@ -102,16 +104,25 @@ class GaussianFourierProjection(nn.Module):
     """Gaussian Fourier embeddings for noise levels."""
 
     def __init__(
-        self, embedding_size: int = 256, scale: float = 1.0, set_W_to_weight=True, log=True, flip_sin_to_cos=False
+        self,
+        embedding_size: int = 256,
+        scale: float = 1.0,
+        set_W_to_weight=True,
+        log=True,
+        flip_sin_to_cos=False,
     ):
         super().__init__()
-        self.weight = nn.Parameter(torch.randn(embedding_size) * scale, requires_grad=False)
+        self.weight = nn.Parameter(
+            torch.randn(embedding_size) * scale, requires_grad=False
+        )
         self.log = log
         self.flip_sin_to_cos = flip_sin_to_cos
 
         if set_W_to_weight:
             # to delete later
-            self.W = nn.Parameter(torch.randn(embedding_size) * scale, requires_grad=False)
+            self.W = nn.Parameter(
+                torch.randn(embedding_size) * scale, requires_grad=False
+            )
 
             self.weight = self.W
 
@@ -173,12 +184,16 @@ class ImagePositionalEmbeddings(nn.Module):
     def forward(self, index):
         emb = self.emb(index)
 
-        height_emb = self.height_emb(torch.arange(self.height, device=index.device).view(1, self.height))
+        height_emb = self.height_emb(
+            torch.arange(self.height, device=index.device).view(1, self.height)
+        )
 
         # 1 x H x D -> 1 x H x 1 x D
         height_emb = height_emb.unsqueeze(2)
 
-        width_emb = self.width_emb(torch.arange(self.width, device=index.device).view(1, self.width))
+        width_emb = self.width_emb(
+            torch.arange(self.width, device=index.device).view(1, self.width)
+        )
 
         # 1 x W x D -> 1 x 1 x W x D
         width_emb = width_emb.unsqueeze(1)

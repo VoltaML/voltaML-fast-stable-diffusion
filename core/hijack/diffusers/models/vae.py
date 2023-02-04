@@ -79,7 +79,9 @@ class Encoder(nn.Module):
         super().__init__()
         self.layers_per_block = layers_per_block
 
-        self.conv_in = torch.nn.Conv2d(in_channels, block_out_channels[0], kernel_size=3, stride=1, padding=1)
+        self.conv_in = torch.nn.Conv2d(
+            in_channels, block_out_channels[0], kernel_size=3, stride=1, padding=1
+        )
 
         self.mid_block = None
         self.down_blocks = nn.ModuleList([])
@@ -119,11 +121,15 @@ class Encoder(nn.Module):
         )
 
         # out
-        self.conv_norm_out = nn.GroupNorm(num_channels=block_out_channels[-1], num_groups=norm_num_groups, eps=1e-6)
+        self.conv_norm_out = nn.GroupNorm(
+            num_channels=block_out_channels[-1], num_groups=norm_num_groups, eps=1e-6
+        )
         self.conv_act = nn.SiLU()
 
         conv_out_channels = 2 * out_channels if double_z else out_channels
-        self.conv_out = nn.Conv2d(block_out_channels[-1], conv_out_channels, 3, padding=1)
+        self.conv_out = nn.Conv2d(
+            block_out_channels[-1], conv_out_channels, 3, padding=1
+        )
 
     def forward(self, x):
         sample = x
@@ -158,7 +164,9 @@ class Decoder(nn.Module):
         super().__init__()
         self.layers_per_block = layers_per_block
 
-        self.conv_in = nn.Conv2d(in_channels, block_out_channels[-1], kernel_size=3, stride=1, padding=1)
+        self.conv_in = nn.Conv2d(
+            in_channels, block_out_channels[-1], kernel_size=3, stride=1, padding=1
+        )
 
         self.mid_block = None
         self.up_blocks = nn.ModuleList([])
@@ -201,7 +209,9 @@ class Decoder(nn.Module):
             prev_output_channel = output_channel
 
         # out
-        self.conv_norm_out = nn.GroupNorm(num_channels=block_out_channels[0], num_groups=norm_num_groups, eps=1e-6)
+        self.conv_norm_out = nn.GroupNorm(
+            num_channels=block_out_channels[0], num_groups=norm_num_groups, eps=1e-6
+        )
         self.conv_act = nn.SiLU()
         self.conv_out = nn.Conv2d(block_out_channels[0], out_channels, 3, padding=1)
 
@@ -234,7 +244,14 @@ class VectorQuantizer(nn.Module):
     # backwards compatibility we use the buggy version by default, but you can
     # specify legacy=False to fix it.
     def __init__(
-        self, n_e, vq_embed_dim, beta, remap=None, unknown_index="random", sane_index_shape=False, legacy=True
+        self,
+        n_e,
+        vq_embed_dim,
+        beta,
+        remap=None,
+        unknown_index="random",
+        sane_index_shape=False,
+        legacy=True,
     ):
         super().__init__()
         self.n_e = n_e
@@ -271,7 +288,9 @@ class VectorQuantizer(nn.Module):
         new = match.argmax(-1)
         unknown = match.sum(2) < 1
         if self.unknown_index == "random":
-            new[unknown] = torch.randint(0, self.re_embed, size=new[unknown].shape).to(device=new.device)
+            new[unknown] = torch.randint(0, self.re_embed, size=new[unknown].shape).to(
+                device=new.device
+            )
         else:
             new[unknown] = self.unknown_index
         return new.reshape(ishape)
@@ -305,9 +324,13 @@ class VectorQuantizer(nn.Module):
 
         # compute loss for embedding
         if not self.legacy:
-            loss = self.beta * torch.mean((z_q.detach() - z) ** 2) + torch.mean((z_q - z.detach()) ** 2)
+            loss = self.beta * torch.mean((z_q.detach() - z) ** 2) + torch.mean(
+                (z_q - z.detach()) ** 2
+            )
         else:
-            loss = torch.mean((z_q.detach() - z) ** 2) + self.beta * torch.mean((z_q - z.detach()) ** 2)
+            loss = torch.mean((z_q.detach() - z) ** 2) + self.beta * torch.mean(
+                (z_q - z.detach()) ** 2
+            )
 
         # preserve gradients
         z_q = z + (z_q - z).detach()
@@ -316,12 +339,16 @@ class VectorQuantizer(nn.Module):
         z_q = z_q.permute(0, 3, 1, 2).contiguous()
 
         if self.remap is not None:
-            min_encoding_indices = min_encoding_indices.reshape(z.shape[0], -1)  # add batch axis
+            min_encoding_indices = min_encoding_indices.reshape(
+                z.shape[0], -1
+            )  # add batch axis
             min_encoding_indices = self.remap_to_used(min_encoding_indices)
             min_encoding_indices = min_encoding_indices.reshape(-1, 1)  # flatten
 
         if self.sane_index_shape:
-            min_encoding_indices = min_encoding_indices.reshape(z_q.shape[0], z_q.shape[2], z_q.shape[3])
+            min_encoding_indices = min_encoding_indices.reshape(
+                z_q.shape[0], z_q.shape[2], z_q.shape[3]
+            )
 
         return z_q, loss, (perplexity, min_encodings, min_encoding_indices)
 
@@ -370,7 +397,10 @@ class DiagonalGaussianDistribution(object):
             return torch.Tensor([0.0])
         else:
             if other is None:
-                return 0.5 * torch.sum(torch.pow(self.mean, 2) + self.var - 1.0 - self.logvar, dim=[1, 2, 3])
+                return 0.5 * torch.sum(
+                    torch.pow(self.mean, 2) + self.var - 1.0 - self.logvar,
+                    dim=[1, 2, 3],
+                )
             else:
                 return 0.5 * torch.sum(
                     torch.pow(self.mean - other.mean, 2) / other.var
@@ -385,7 +415,10 @@ class DiagonalGaussianDistribution(object):
         if self.deterministic:
             return torch.Tensor([0.0])
         logtwopi = np.log(2.0 * np.pi)
-        return 0.5 * torch.sum(logtwopi + self.logvar + torch.pow(sample - self.mean, 2) / self.var, dim=dims)
+        return 0.5 * torch.sum(
+            logtwopi + self.logvar + torch.pow(sample - self.mean, 2) / self.var,
+            dim=dims,
+        )
 
     def mode(self):
         return self.mean
@@ -447,7 +480,13 @@ class VQModel(ModelMixin, ConfigMixin):
         vq_embed_dim = vq_embed_dim if vq_embed_dim is not None else latent_channels
 
         self.quant_conv = torch.nn.Conv2d(latent_channels, vq_embed_dim, 1)
-        self.quantize = VectorQuantizer(num_vq_embeddings, vq_embed_dim, beta=0.25, remap=None, sane_index_shape=False)
+        self.quantize = VectorQuantizer(
+            num_vq_embeddings,
+            vq_embed_dim,
+            beta=0.25,
+            remap=None,
+            sane_index_shape=False,
+        )
         self.post_quant_conv = torch.nn.Conv2d(vq_embed_dim, latent_channels, 1)
 
         # pass init params to Decoder
@@ -471,7 +510,10 @@ class VQModel(ModelMixin, ConfigMixin):
         return VQEncoderOutput(latents=h)
 
     def decode(
-        self, h: torch.FloatTensor, force_not_quantize: bool = False, return_dict: bool = True
+        self,
+        h: torch.FloatTensor,
+        force_not_quantize: bool = False,
+        return_dict: bool = True,
     ) -> Union[DecoderOutput, torch.FloatTensor]:
         # also go through quantization layer
         if not force_not_quantize:
@@ -486,7 +528,9 @@ class VQModel(ModelMixin, ConfigMixin):
 
         return DecoderOutput(sample=dec)
 
-    def forward(self, sample: torch.FloatTensor, return_dict: bool = True) -> Union[DecoderOutput, torch.FloatTensor]:
+    def forward(
+        self, sample: torch.FloatTensor, return_dict: bool = True
+    ) -> Union[DecoderOutput, torch.FloatTensor]:
         r"""
         Args:
             sample (`torch.FloatTensor`): Input sample.
@@ -566,7 +610,9 @@ class AutoencoderKL(ModelMixin, ConfigMixin):
         self.quant_conv = torch.nn.Conv2d(2 * latent_channels, 2 * latent_channels, 1)
         self.post_quant_conv = torch.nn.Conv2d(latent_channels, latent_channels, 1)
 
-    def encode(self, x: torch.FloatTensor, return_dict: bool = True) -> AutoencoderKLOutput:
+    def encode(
+        self, x: torch.FloatTensor, return_dict: bool = True
+    ) -> AutoencoderKLOutput:
         h = self.encoder(x)
         moments = self.quant_conv(h)
         posterior = DiagonalGaussianDistribution(moments)
@@ -576,7 +622,9 @@ class AutoencoderKL(ModelMixin, ConfigMixin):
 
         return AutoencoderKLOutput(latent_dist=posterior)
 
-    def decode(self, z: torch.FloatTensor, return_dict: bool = True) -> Union[DecoderOutput, torch.FloatTensor]:
+    def decode(
+        self, z: torch.FloatTensor, return_dict: bool = True
+    ) -> Union[DecoderOutput, torch.FloatTensor]:
         z = self.post_quant_conv(z)
         dec = self.decoder(z)
 

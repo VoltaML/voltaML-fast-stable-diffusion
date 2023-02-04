@@ -84,7 +84,9 @@ class ScoreSdeVeScheduler(SchedulerMixin, ConfigMixin):
 
         self.set_sigmas(num_train_timesteps, sigma_min, sigma_max, sampling_eps)
 
-    def scale_model_input(self, sample: torch.FloatTensor, timestep: Optional[int] = None) -> torch.FloatTensor:
+    def scale_model_input(
+        self, sample: torch.FloatTensor, timestep: Optional[int] = None
+    ) -> torch.FloatTensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
         current timestep.
@@ -99,7 +101,10 @@ class ScoreSdeVeScheduler(SchedulerMixin, ConfigMixin):
         return sample
 
     def set_timesteps(
-        self, num_inference_steps: int, sampling_eps: float = None, device: Union[str, torch.device] = None
+        self,
+        num_inference_steps: int,
+        sampling_eps: float = None,
+        device: Union[str, torch.device] = None,
     ):
         """
         Sets the continuous timesteps used for the diffusion chain. Supporting function to be run before inference.
@@ -110,12 +115,20 @@ class ScoreSdeVeScheduler(SchedulerMixin, ConfigMixin):
             sampling_eps (`float`, optional): final timestep value (overrides value given at Scheduler instantiation).
 
         """
-        sampling_eps = sampling_eps if sampling_eps is not None else self.config.sampling_eps
+        sampling_eps = (
+            sampling_eps if sampling_eps is not None else self.config.sampling_eps
+        )
 
-        self.timesteps = torch.linspace(1, sampling_eps, num_inference_steps, device=device)
+        self.timesteps = torch.linspace(
+            1, sampling_eps, num_inference_steps, device=device
+        )
 
     def set_sigmas(
-        self, num_inference_steps: int, sigma_min: float = None, sigma_max: float = None, sampling_eps: float = None
+        self,
+        num_inference_steps: int,
+        sigma_min: float = None,
+        sigma_max: float = None,
+        sampling_eps: float = None,
     ):
         """
         Sets the noise scales used for the diffusion chain. Supporting function to be run before inference.
@@ -133,13 +146,23 @@ class ScoreSdeVeScheduler(SchedulerMixin, ConfigMixin):
         """
         sigma_min = sigma_min if sigma_min is not None else self.config.sigma_min
         sigma_max = sigma_max if sigma_max is not None else self.config.sigma_max
-        sampling_eps = sampling_eps if sampling_eps is not None else self.config.sampling_eps
+        sampling_eps = (
+            sampling_eps if sampling_eps is not None else self.config.sampling_eps
+        )
         if self.timesteps is None:
             self.set_timesteps(num_inference_steps, sampling_eps)
 
-        self.sigmas = sigma_min * (sigma_max / sigma_min) ** (self.timesteps / sampling_eps)
-        self.discrete_sigmas = torch.exp(torch.linspace(math.log(sigma_min), math.log(sigma_max), num_inference_steps))
-        self.sigmas = torch.tensor([sigma_min * (sigma_max / sigma_min) ** t for t in self.timesteps])
+        self.sigmas = sigma_min * (sigma_max / sigma_min) ** (
+            self.timesteps / sampling_eps
+        )
+        self.discrete_sigmas = torch.exp(
+            torch.linspace(
+                math.log(sigma_min), math.log(sigma_max), num_inference_steps
+            )
+        )
+        self.sigmas = torch.tensor(
+            [sigma_min * (sigma_max / sigma_min) ** t for t in self.timesteps]
+        )
 
     def get_adjacent_sigma(self, timesteps, t):
         return torch.where(
@@ -199,10 +222,16 @@ class ScoreSdeVeScheduler(SchedulerMixin, ConfigMixin):
         drift = drift - diffusion**2 * model_output
 
         #  equation 6: sample noise for the diffusion term of
-        noise = torch.randn(sample.shape, layout=sample.layout, generator=generator).to(sample.device)
-        prev_sample_mean = sample - drift  # subtract because `dt` is a small negative timestep
+        noise = torch.randn(sample.shape, layout=sample.layout, generator=generator).to(
+            sample.device
+        )
+        prev_sample_mean = (
+            sample - drift
+        )  # subtract because `dt` is a small negative timestep
         # TODO is the variable diffusion the correct scaling term for the noise?
-        prev_sample = prev_sample_mean + diffusion * noise  # add impact of diffusion field g
+        prev_sample = (
+            prev_sample_mean + diffusion * noise
+        )  # add impact of diffusion field g
 
         if not return_dict:
             return (prev_sample, prev_sample_mean)
@@ -239,10 +268,14 @@ class ScoreSdeVeScheduler(SchedulerMixin, ConfigMixin):
 
         # For small batch sizes, the paper "suggest replacing norm(z) with sqrt(d), where d is the dim. of z"
         # sample noise for correction
-        noise = torch.randn(sample.shape, layout=sample.layout, generator=generator).to(sample.device)
+        noise = torch.randn(sample.shape, layout=sample.layout, generator=generator).to(
+            sample.device
+        )
 
         # compute step size from the model_output, the noise, and the snr
-        grad_norm = torch.norm(model_output.reshape(model_output.shape[0], -1), dim=-1).mean()
+        grad_norm = torch.norm(
+            model_output.reshape(model_output.shape[0], -1), dim=-1
+        ).mean()
         noise_norm = torch.norm(noise.reshape(noise.shape[0], -1), dim=-1).mean()
         step_size = (self.config.snr * noise_norm / grad_norm) ** 2 * 2
         step_size = step_size * torch.ones(sample.shape[0]).to(sample.device)

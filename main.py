@@ -122,7 +122,6 @@ def checks():
     coloredlogs_install(level=args.log_level)
 
     if not args.in_container:
-
         # Check if we are up to date with the latest release
         version_check(commit_hash())
 

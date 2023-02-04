@@ -36,7 +36,9 @@ logger = logging.get_logger(__name__)
 
 class OnnxRuntimeModel:
     def __init__(self, model=None, **kwargs):
-        logger.info("`diffusers.OnnxRuntimeModel` is experimental and might change in the future.")
+        logger.info(
+            "`diffusers.OnnxRuntimeModel` is experimental and might change in the future."
+        )
         self.model = model
         self.model_save_dir = kwargs.get("model_save_dir", None)
         self.latest_model_name = kwargs.get("latest_model_name", "model.onnx")
@@ -60,9 +62,16 @@ class OnnxRuntimeModel:
             logger.info("No onnxruntime provider specified, using CPUExecutionProvider")
             provider = "CPUExecutionProvider"
 
-        return ort.InferenceSession(path, providers=[provider], sess_options=sess_options)
+        return ort.InferenceSession(
+            path, providers=[provider], sess_options=sess_options
+        )
 
-    def _save_pretrained(self, save_directory: Union[str, Path], file_name: Optional[str] = None, **kwargs):
+    def _save_pretrained(
+        self,
+        save_directory: Union[str, Path],
+        file_name: Optional[str] = None,
+        **kwargs,
+    ):
         """
         Save a model and its configuration file to a directory, so that it can be re-loaded using the
         [`~optimum.onnxruntime.modeling_ort.ORTModel.from_pretrained`] class method. It will always save the
@@ -98,7 +107,9 @@ class OnnxRuntimeModel:
                 Directory to which to save. Will be created if it doesn't exist.
         """
         if os.path.isfile(save_directory):
-            logger.error(f"Provided path ({save_directory}) should be a directory, not a file")
+            logger.error(
+                f"Provided path ({save_directory}) should be a directory, not a file"
+            )
             return
 
         os.makedirs(save_directory, exist_ok=True)
@@ -147,7 +158,9 @@ class OnnxRuntimeModel:
         # load model from local directory
         if os.path.isdir(model_id):
             model = OnnxRuntimeModel.load_model(
-                os.path.join(model_id, model_file_name), provider=provider, sess_options=sess_options
+                os.path.join(model_id, model_file_name),
+                provider=provider,
+                sess_options=sess_options,
             )
             kwargs["model_save_dir"] = Path(model_id)
         # load model from hub
@@ -163,7 +176,9 @@ class OnnxRuntimeModel:
             )
             kwargs["model_save_dir"] = Path(model_cache_path).parent
             kwargs["latest_model_name"] = Path(model_cache_path).name
-            model = OnnxRuntimeModel.load_model(model_cache_path, provider=provider, sess_options=sess_options)
+            model = OnnxRuntimeModel.load_model(
+                model_cache_path, provider=provider, sess_options=sess_options
+            )
         return cls(model=model, **kwargs)
 
     @classmethod

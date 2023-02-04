@@ -78,8 +78,18 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         time_embedding_type: str = "positional",
         freq_shift: int = 0,
         flip_sin_to_cos: bool = True,
-        down_block_types: Tuple[str] = ("DownBlock2D", "AttnDownBlock2D", "AttnDownBlock2D", "AttnDownBlock2D"),
-        up_block_types: Tuple[str] = ("AttnUpBlock2D", "AttnUpBlock2D", "AttnUpBlock2D", "UpBlock2D"),
+        down_block_types: Tuple[str] = (
+            "DownBlock2D",
+            "AttnDownBlock2D",
+            "AttnDownBlock2D",
+            "AttnDownBlock2D",
+        ),
+        up_block_types: Tuple[str] = (
+            "AttnUpBlock2D",
+            "AttnUpBlock2D",
+            "AttnUpBlock2D",
+            "UpBlock2D",
+        ),
         block_out_channels: Tuple[int] = (224, 448, 672, 896),
         layers_per_block: int = 2,
         mid_block_scale_factor: float = 1,
@@ -95,14 +105,20 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         time_embed_dim = block_out_channels[0] * 4
 
         # input
-        self.conv_in = nn.Conv2d(in_channels, block_out_channels[0], kernel_size=3, padding=(1, 1))
+        self.conv_in = nn.Conv2d(
+            in_channels, block_out_channels[0], kernel_size=3, padding=(1, 1)
+        )
 
         # time
         if time_embedding_type == "fourier":
-            self.time_proj = GaussianFourierProjection(embedding_size=block_out_channels[0], scale=16)
+            self.time_proj = GaussianFourierProjection(
+                embedding_size=block_out_channels[0], scale=16
+            )
             timestep_input_dim = 2 * block_out_channels[0]
         elif time_embedding_type == "positional":
-            self.time_proj = Timesteps(block_out_channels[0], flip_sin_to_cos, freq_shift)
+            self.time_proj = Timesteps(
+                block_out_channels[0], flip_sin_to_cos, freq_shift
+            )
             timestep_input_dim = block_out_channels[0]
 
         self.time_embedding = TimestepEmbedding(timestep_input_dim, time_embed_dim)
@@ -151,7 +167,9 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         for i, up_block_type in enumerate(up_block_types):
             prev_output_channel = output_channel
             output_channel = reversed_block_out_channels[i]
-            input_channel = reversed_block_out_channels[min(i + 1, len(block_out_channels) - 1)]
+            input_channel = reversed_block_out_channels[
+                min(i + 1, len(block_out_channels) - 1)
+            ]
 
             is_final_block = i == len(block_out_channels) - 1
 
@@ -172,8 +190,14 @@ class UNet2DModel(ModelMixin, ConfigMixin):
             prev_output_channel = output_channel
 
         # out
-        num_groups_out = norm_num_groups if norm_num_groups is not None else min(block_out_channels[0] // 4, 32)
-        self.conv_norm_out = nn.GroupNorm(num_channels=block_out_channels[0], num_groups=num_groups_out, eps=norm_eps)
+        num_groups_out = (
+            norm_num_groups
+            if norm_num_groups is not None
+            else min(block_out_channels[0] // 4, 32)
+        )
+        self.conv_norm_out = nn.GroupNorm(
+            num_channels=block_out_channels[0], num_groups=num_groups_out, eps=norm_eps
+        )
         self.conv_act = nn.SiLU()
         self.conv_out = nn.Conv2d(block_out_channels[0], out_channels, 3, padding=1)
 
@@ -201,12 +225,16 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         # 1. time
         timesteps = timestep
         if not torch.is_tensor(timesteps):
-            timesteps = torch.tensor([timesteps], dtype=torch.long, device=sample.device)
+            timesteps = torch.tensor(
+                [timesteps], dtype=torch.long, device=sample.device
+            )
         elif torch.is_tensor(timesteps) and len(timesteps.shape) == 0:
             timesteps = timesteps[None].to(sample.device)
 
         # broadcast to batch dimension in a way that's compatible with ONNX/Core ML
-        timesteps = timesteps * torch.ones(sample.shape[0], dtype=timesteps.dtype, device=timesteps.device)
+        timesteps = timesteps * torch.ones(
+            sample.shape[0], dtype=timesteps.dtype, device=timesteps.device
+        )
 
         t_emb = self.time_proj(timesteps)
         emb = self.time_embedding(t_emb)
@@ -234,10 +262,14 @@ class UNet2DModel(ModelMixin, ConfigMixin):
         skip_sample = None
         for upsample_block in self.up_blocks:
             res_samples = down_block_res_samples[-len(upsample_block.resnets) :]
-            down_block_res_samples = down_block_res_samples[: -len(upsample_block.resnets)]
+            down_block_res_samples = down_block_res_samples[
+                : -len(upsample_block.resnets)
+            ]
 
             if hasattr(upsample_block, "skip_conv"):
-                sample, skip_sample = upsample_block(sample, res_samples, emb, skip_sample)
+                sample, skip_sample = upsample_block(
+                    sample, res_samples, emb, skip_sample
+                )
             else:
                 sample = upsample_block(sample, res_samples, emb)
 
@@ -252,7 +284,9 @@ class UNet2DModel(ModelMixin, ConfigMixin):
             sample += skip_sample
 
         if self.config.time_embedding_type == "fourier":
-            timesteps = timesteps.reshape((sample.shape[0], *([1] * len(sample.shape[1:]))))
+            timesteps = timesteps.reshape(
+                (sample.shape[0], *([1] * len(sample.shape[1:])))
+            )
             sample = sample / timesteps
 
         if not return_dict:

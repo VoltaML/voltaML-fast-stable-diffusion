@@ -58,7 +58,9 @@ logger = get_logger(__name__)
 
 
 hf_cache_home = os.path.expanduser(
-    os.getenv("HF_HOME", os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "huggingface"))
+    os.getenv(
+        "HF_HOME", os.path.join(os.getenv("XDG_CACHE_HOME", "~/.cache"), "huggingface")
+    )
 )
 default_cache_path = os.path.join(hf_cache_home, "diffusers")
 

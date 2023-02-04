@@ -87,14 +87,24 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
         if trained_betas is not None:
             self.betas = torch.from_numpy(trained_betas)
         elif beta_schedule == "linear":
-            self.betas = torch.linspace(beta_start, beta_end, num_train_timesteps, dtype=torch.float32)
+            self.betas = torch.linspace(
+                beta_start, beta_end, num_train_timesteps, dtype=torch.float32
+            )
         elif beta_schedule == "scaled_linear":
             # this schedule is very specific to the latent diffusion model.
             self.betas = (
-                torch.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=torch.float32) ** 2
+                torch.linspace(
+                    beta_start**0.5,
+                    beta_end**0.5,
+                    num_train_timesteps,
+                    dtype=torch.float32,
+                )
+                ** 2
             )
         else:
-            raise NotImplementedError(f"{beta_schedule} does is not implemented for {self.__class__}")
+            raise NotImplementedError(
+                f"{beta_schedule} does is not implemented for {self.__class__}"
+            )
 
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
@@ -108,7 +118,9 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
 
         # setable values
         self.num_inference_steps = None
-        timesteps = np.linspace(0, num_train_timesteps - 1, num_train_timesteps, dtype=float)[::-1].copy()
+        timesteps = np.linspace(
+            0, num_train_timesteps - 1, num_train_timesteps, dtype=float
+        )[::-1].copy()
         self.timesteps = torch.from_numpy(timesteps)
         self.is_scale_input_called = False
 
@@ -133,7 +145,9 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
         self.is_scale_input_called = True
         return sample
 
-    def set_timesteps(self, num_inference_steps: int, device: Union[str, torch.device] = None):
+    def set_timesteps(
+        self, num_inference_steps: int, device: Union[str, torch.device] = None
+    ):
         """
         Sets the timesteps used for the diffusion chain. Supporting function to be run before inference.
 
@@ -145,7 +159,9 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
         """
         self.num_inference_steps = num_inference_steps
 
-        timesteps = np.linspace(0, self.config.num_train_timesteps - 1, num_inference_steps, dtype=float)[::-1].copy()
+        timesteps = np.linspace(
+            0, self.config.num_train_timesteps - 1, num_inference_steps, dtype=float
+        )[::-1].copy()
         sigmas = np.array(((1 - self.alphas_cumprod) / self.alphas_cumprod) ** 0.5)
         sigmas = np.interp(timesteps, np.arange(0, len(sigmas)), sigmas)
         sigmas = np.concatenate([sigmas, [0.0]]).astype(np.float32)
@@ -206,7 +222,9 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
         pred_original_sample = sample - sigma * model_output
         sigma_from = self.sigmas[step_index]
         sigma_to = self.sigmas[step_index + 1]
-        sigma_up = (sigma_to**2 * (sigma_from**2 - sigma_to**2) / sigma_from**2) ** 0.5
+        sigma_up = (
+            sigma_to**2 * (sigma_from**2 - sigma_to**2) / sigma_from**2
+        ) ** 0.5
         sigma_down = (sigma_to**2 - sigma_up**2) ** 0.5
 
         # 2. Convert to an ODE derivative
@@ -219,13 +237,19 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
         device = model_output.device if torch.is_tensor(model_output) else "cpu"
         if str(device) == "mps":
             # randn does not work reproducibly on mps
-            noise = torch.randn(model_output.shape, dtype=model_output.dtype, device="cpu", generator=generator).to(
-                device
-            )
+            noise = torch.randn(
+                model_output.shape,
+                dtype=model_output.dtype,
+                device="cpu",
+                generator=generator,
+            ).to(device)
         else:
-            noise = torch.randn(model_output.shape, dtype=model_output.dtype, device=device, generator=generator).to(
-                device
-            )
+            noise = torch.randn(
+                model_output.shape,
+                dtype=model_output.dtype,
+                device=device,
+                generator=generator,
+            ).to(device)
 
         prev_sample = prev_sample + noise * sigma_up
 
@@ -243,10 +267,14 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
         timesteps: torch.FloatTensor,
     ) -> torch.FloatTensor:
         # Make sure sigmas and timesteps have the same device and dtype as original_samples
-        self.sigmas = self.sigmas.to(device=original_samples.device, dtype=original_samples.dtype)
+        self.sigmas = self.sigmas.to(
+            device=original_samples.device, dtype=original_samples.dtype
+        )
         if original_samples.device.type == "mps" and torch.is_floating_point(timesteps):
             # mps does not support float64
-            self.timesteps = self.timesteps.to(original_samples.device, dtype=torch.float32)
+            self.timesteps = self.timesteps.to(
+                original_samples.device, dtype=torch.float32
+            )
             timesteps = timesteps.to(original_samples.device, dtype=torch.float32)
         else:
             self.timesteps = self.timesteps.to(original_samples.device)
@@ -254,7 +282,9 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
 
         schedule_timesteps = self.timesteps
 
-        if isinstance(timesteps, torch.IntTensor) or isinstance(timesteps, torch.LongTensor):
+        if isinstance(timesteps, torch.IntTensor) or isinstance(
+            timesteps, torch.LongTensor
+        ):
             deprecate(
                 "timesteps as indices",
                 "0.8.0",
@@ -265,7 +295,9 @@ class EulerAncestralDiscreteScheduler(SchedulerMixin, ConfigMixin):
             )
             step_indices = timesteps
         else:
-            step_indices = [(schedule_timesteps == t).nonzero().item() for t in timesteps]
+            step_indices = [
+                (schedule_timesteps == t).nonzero().item() for t in timesteps
+            ]
 
         sigma = self.sigmas[step_indices].flatten()
         while len(sigma.shape) < len(original_samples.shape):

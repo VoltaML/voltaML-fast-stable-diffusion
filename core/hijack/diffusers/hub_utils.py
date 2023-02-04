@@ -73,7 +73,9 @@ def http_user_agent(user_agent: Union[Dict, str, None] = None) -> str:
     return ua
 
 
-def get_full_repo_name(model_id: str, organization: Optional[str] = None, token: Optional[str] = None):
+def get_full_repo_name(
+    model_id: str, organization: Optional[str] = None, token: Optional[str] = None
+):
     if token is None:
         token = HfFolder.get_token()
     if organization is None:
@@ -131,7 +133,9 @@ def init_git_repo(args, at_init: bool = False):
 
     # By default, ignore the checkpoint folders
     if not os.path.exists(os.path.join(args.output_dir, ".gitignore")):
-        with open(os.path.join(args.output_dir, ".gitignore"), "w", encoding="utf-8") as writer:
+        with open(
+            os.path.join(args.output_dir, ".gitignore"), "w", encoding="utf-8"
+        ) as writer:
             writer.writelines(["checkpoint-*/"])
 
     return repo
@@ -187,13 +191,21 @@ def push_to_hub(
     ):
         repo.command_queue[-1]._process.kill()
 
-    git_head_commit_url = repo.push_to_hub(commit_message=commit_message, blocking=blocking, auto_lfs_prune=True)
+    git_head_commit_url = repo.push_to_hub(
+        commit_message=commit_message, blocking=blocking, auto_lfs_prune=True
+    )
     # push separately the model card to be independent from the rest of the model
     create_model_card(args, model_name=model_name)
     try:
-        repo.push_to_hub(commit_message="update model card README.md", blocking=blocking, auto_lfs_prune=True)
+        repo.push_to_hub(
+            commit_message="update model card README.md",
+            blocking=blocking,
+            auto_lfs_prune=True,
+        )
     except EnvironmentError as exc:
-        logger.error(f"Error pushing update to the model card. Please read logs and retry.\n${exc}")
+        logger.error(
+            f"Error pushing update to the model card. Please read logs and retry.\n${exc}"
+        )
 
     return git_head_commit_url
 
@@ -232,10 +244,14 @@ def create_model_card(args, model_name):
         else None,
         adam_beta1=args.adam_beta1 if hasattr(args, "adam_beta1") else None,
         adam_beta2=args.adam_beta2 if hasattr(args, "adam_beta2") else None,
-        adam_weight_decay=args.adam_weight_decay if hasattr(args, "adam_weight_decay") else None,
+        adam_weight_decay=args.adam_weight_decay
+        if hasattr(args, "adam_weight_decay")
+        else None,
         adam_epsilon=args.adam_epsilon if hasattr(args, "adam_epsilon") else None,
         lr_scheduler=args.lr_scheduler if hasattr(args, "lr_scheduler") else None,
-        lr_warmup_steps=args.lr_warmup_steps if hasattr(args, "lr_warmup_steps") else None,
+        lr_warmup_steps=args.lr_warmup_steps
+        if hasattr(args, "lr_warmup_steps")
+        else None,
         ema_inv_gamma=args.ema_inv_gamma if hasattr(args, "ema_inv_gamma") else None,
         ema_power=args.ema_power if hasattr(args, "ema_power") else None,
         ema_max_decay=args.ema_max_decay if hasattr(args, "ema_max_decay") else None,

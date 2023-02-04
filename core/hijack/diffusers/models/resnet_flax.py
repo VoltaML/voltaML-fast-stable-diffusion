@@ -68,7 +68,9 @@ class FlaxResnetBlock2D(nn.Module):
     dtype: jnp.dtype = jnp.float32
 
     def setup(self):
-        out_channels = self.in_channels if self.out_channels is None else self.out_channels
+        out_channels = (
+            self.in_channels if self.out_channels is None else self.out_channels
+        )
 
         self.norm1 = nn.GroupNorm(num_groups=32, epsilon=1e-5)
         self.conv1 = nn.Conv(
@@ -91,7 +93,11 @@ class FlaxResnetBlock2D(nn.Module):
             dtype=self.dtype,
         )
 
-        use_nin_shortcut = self.in_channels != out_channels if self.use_nin_shortcut is None else self.use_nin_shortcut
+        use_nin_shortcut = (
+            self.in_channels != out_channels
+            if self.use_nin_shortcut is None
+            else self.use_nin_shortcut
+        )
 
         self.conv_shortcut = None
         if use_nin_shortcut:

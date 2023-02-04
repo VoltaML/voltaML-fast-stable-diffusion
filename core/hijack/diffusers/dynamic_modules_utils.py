@@ -28,9 +28,7 @@ from huggingface_hub import HfFolder, cached_download, hf_hub_download, model_in
 from .utils import DIFFUSERS_DYNAMIC_MODULE_NAME, HF_MODULES_CACHE, logging
 
 
-COMMUNITY_PIPELINES_URL = (
-    "https://raw.githubusercontent.com/huggingface/diffusers/main/examples/community/{pipeline}.py"
-)
+COMMUNITY_PIPELINES_URL = "https://raw.githubusercontent.com/huggingface/diffusers/main/examples/community/{pipeline}.py"
 
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
@@ -77,9 +75,13 @@ def get_relative_imports(module_file):
         content = f.read()
 
     # Imports of the form `import .xxx`
-    relative_imports = re.findall("^\s*import\s+\.(\S+)\s*$", content, flags=re.MULTILINE)
+    relative_imports = re.findall(
+        "^\s*import\s+\.(\S+)\s*$", content, flags=re.MULTILINE
+    )
     # Imports of the form `from .xxx import yyy`
-    relative_imports += re.findall("^\s*from\s+\.(\S+)\s+import", content, flags=re.MULTILINE)
+    relative_imports += re.findall(
+        "^\s*from\s+\.(\S+)\s+import", content, flags=re.MULTILINE
+    )
     # Unique-ify
     return list(set(relative_imports))
 
@@ -104,7 +106,9 @@ def get_relative_import_files(module_file):
 
         module_path = Path(module_file).parent
         new_import_files = [str(module_path / m) for m in new_imports]
-        new_import_files = [f for f in new_import_files if f not in all_relative_imports]
+        new_import_files = [
+            f for f in new_import_files if f not in all_relative_imports
+        ]
         files_to_check = [f"{f}.py" for f in new_import_files]
 
         no_change = len(new_import_files) == 0
@@ -252,7 +256,9 @@ def get_cached_module_file(
         submodule = "local"
     elif pretrained_model_name_or_path.count("/") == 0:
         # community pipeline on GitHub
-        github_url = COMMUNITY_PIPELINES_URL.format(pipeline=pretrained_model_name_or_path)
+        github_url = COMMUNITY_PIPELINES_URL.format(
+            pipeline=pretrained_model_name_or_path
+        )
         try:
             resolved_module_file = cached_download(
                 github_url,
@@ -266,7 +272,9 @@ def get_cached_module_file(
             submodule = "git"
             module_file = pretrained_model_name_or_path + ".py"
         except EnvironmentError:
-            logger.error(f"Could not locate the {module_file} inside {pretrained_model_name_or_path}.")
+            logger.error(
+                f"Could not locate the {module_file} inside {pretrained_model_name_or_path}."
+            )
             raise
     else:
         try:
@@ -281,9 +289,13 @@ def get_cached_module_file(
                 local_files_only=local_files_only,
                 use_auth_token=use_auth_token,
             )
-            submodule = os.path.join("local", "--".join(pretrained_model_name_or_path.split("/")))
+            submodule = os.path.join(
+                "local", "--".join(pretrained_model_name_or_path.split("/"))
+            )
         except EnvironmentError:
-            logger.error(f"Could not locate the {module_file} inside {pretrained_model_name_or_path}.")
+            logger.error(
+                f"Could not locate the {module_file} inside {pretrained_model_name_or_path}."
+            )
             raise
 
     # Check we have all the requirements in our environment
@@ -300,7 +312,10 @@ def get_cached_module_file(
         shutil.copy(resolved_module_file, submodule_path / module_file)
         for module_needed in modules_needed:
             module_needed = f"{module_needed}.py"
-            shutil.copy(os.path.join(pretrained_model_name_or_path, module_needed), submodule_path / module_needed)
+            shutil.copy(
+                os.path.join(pretrained_model_name_or_path, module_needed),
+                submodule_path / module_needed,
+            )
     else:
         # Get the commit hash
         # TODO: we will get this info in the etag soon, so retrieve it from there and not here.
@@ -311,7 +326,9 @@ def get_cached_module_file(
         else:
             token = None
 
-        commit_hash = model_info(pretrained_model_name_or_path, revision=revision, token=token).sha
+        commit_hash = model_info(
+            pretrained_model_name_or_path, revision=revision, token=token
+        ).sha
 
         # The module file will end up being placed in a subfolder with the git hash of the repo. This way we get the
         # benefit of versioning.

@@ -57,7 +57,9 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
         text_encoder: FlaxCLIPTextModel,
         tokenizer: CLIPTokenizer,
         unet: FlaxUNet2DConditionModel,
-        scheduler: Union[FlaxDDIMScheduler, FlaxPNDMScheduler, FlaxLMSDiscreteScheduler],
+        scheduler: Union[
+            FlaxDDIMScheduler, FlaxPNDMScheduler, FlaxLMSDiscreteScheduler
+        ],
         safety_checker: FlaxStableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
         dtype: jnp.dtype = jnp.float32,
@@ -87,7 +89,9 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
 
     def prepare_inputs(self, prompt: Union[str, List[str]]):
         if not isinstance(prompt, (str, list)):
-            raise ValueError(f"`prompt` has to be of type `str` or `list` but is {type(prompt)}")
+            raise ValueError(
+                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
+            )
 
         text_input = self.tokenizer(
             prompt,
@@ -109,11 +113,15 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
 
         if jit:
             features = shard(features)
-            has_nsfw_concepts = _p_get_has_nsfw_concepts(self, features, safety_model_params)
+            has_nsfw_concepts = _p_get_has_nsfw_concepts(
+                self, features, safety_model_params
+            )
             has_nsfw_concepts = unshard(has_nsfw_concepts)
             safety_model_params = unreplicate(safety_model_params)
         else:
-            has_nsfw_concepts = self._get_has_nsfw_concepts(features, safety_model_params)
+            has_nsfw_concepts = self._get_has_nsfw_concepts(
+                features, safety_model_params
+            )
 
         images_was_copied = False
         for idx, has_nsfw_concept in enumerate(has_nsfw_concepts):
@@ -145,10 +153,14 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
         debug: bool = False,
     ):
         if height % 8 != 0 or width % 8 != 0:
-            raise ValueError(f"`height` and `width` have to be divisible by 8 but are {height} and {width}.")
+            raise ValueError(
+                f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
+            )
 
         # get prompt text embeddings
-        text_embeddings = self.text_encoder(prompt_ids, params=params["text_encoder"])[0]
+        text_embeddings = self.text_encoder(prompt_ids, params=params["text_encoder"])[
+            0
+        ]
 
         # TODO: currently it is assumed `do_classifier_free_guidance = guidance_scale > 1.0`
         # implement this conditional `do_classifier_free_guidance = guidance_scale > 1.0`
@@ -156,17 +168,26 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
 
         max_length = prompt_ids.shape[-1]
         uncond_input = self.tokenizer(
-            [""] * batch_size, padding="max_length", max_length=max_length, return_tensors="np"
+            [""] * batch_size,
+            padding="max_length",
+            max_length=max_length,
+            return_tensors="np",
         )
-        uncond_embeddings = self.text_encoder(uncond_input.input_ids, params=params["text_encoder"])[0]
+        uncond_embeddings = self.text_encoder(
+            uncond_input.input_ids, params=params["text_encoder"]
+        )[0]
         context = jnp.concatenate([uncond_embeddings, text_embeddings])
 
         latents_shape = (batch_size, self.unet.in_channels, height // 8, width // 8)
         if latents is None:
-            latents = jax.random.normal(prng_seed, shape=latents_shape, dtype=jnp.float32)
+            latents = jax.random.normal(
+                prng_seed, shape=latents_shape, dtype=jnp.float32
+            )
         else:
             if latents.shape != latents_shape:
-                raise ValueError(f"Unexpected latents shape, got {latents.shape}, expected {latents_shape}")
+                raise ValueError(
+                    f"Unexpected latents shape, got {latents.shape}, expected {latents_shape}"
+                )
 
         def loop_body(step, args):
             latents, scheduler_state = args
@@ -178,7 +199,9 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
             t = jnp.array(scheduler_state.timesteps, dtype=jnp.int32)[step]
             timestep = jnp.broadcast_to(t, latents_input.shape[0])
 
-            latents_input = self.scheduler.scale_model_input(scheduler_state, latents_input, t)
+            latents_input = self.scheduler.scale_model_input(
+                scheduler_state, latents_input, t
+            )
 
             # predict the noise residual
             noise_pred = self.unet.apply(
@@ -189,14 +212,20 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
             ).sample
             # perform guidance
             noise_pred_uncond, noise_prediction_text = jnp.split(noise_pred, 2, axis=0)
-            noise_pred = noise_pred_uncond + guidance_scale * (noise_prediction_text - noise_pred_uncond)
+            noise_pred = noise_pred_uncond + guidance_scale * (
+                noise_prediction_text - noise_pred_uncond
+            )
 
             # compute the previous noisy sample x_t -> x_t-1
-            latents, scheduler_state = self.scheduler.step(scheduler_state, noise_pred, t, latents).to_tuple()
+            latents, scheduler_state = self.scheduler.step(
+                scheduler_state, noise_pred, t, latents
+            ).to_tuple()
             return latents, scheduler_state
 
         scheduler_state = self.scheduler.set_timesteps(
-            params["scheduler"], num_inference_steps=num_inference_steps, shape=latents.shape
+            params["scheduler"],
+            num_inference_steps=num_inference_steps,
+            shape=latents.shape,
         )
 
         # scale the initial noise by the standard deviation required by the scheduler
@@ -207,11 +236,15 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
             for i in range(num_inference_steps):
                 latents, scheduler_state = loop_body(i, (latents, scheduler_state))
         else:
-            latents, _ = jax.lax.fori_loop(0, num_inference_steps, loop_body, (latents, scheduler_state))
+            latents, _ = jax.lax.fori_loop(
+                0, num_inference_steps, loop_body, (latents, scheduler_state)
+            )
 
         # scale and decode the image latents with vae
         latents = 1 / 0.18215 * latents
-        image = self.vae.apply({"params": params["vae"]}, latents, method=self.vae.decode).sample
+        image = self.vae.apply(
+            {"params": params["vae"]}, latents, method=self.vae.decode
+        ).sample
 
         image = (image / 2 + 0.5).clip(0, 1).transpose(0, 2, 3, 1)
         return image
@@ -276,11 +309,28 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
         """
         if jit:
             images = _p_generate(
-                self, prompt_ids, params, prng_seed, num_inference_steps, height, width, guidance_scale, latents, debug
+                self,
+                prompt_ids,
+                params,
+                prng_seed,
+                num_inference_steps,
+                height,
+                width,
+                guidance_scale,
+                latents,
+                debug,
             )
         else:
             images = self._generate(
-                prompt_ids, params, prng_seed, num_inference_steps, height, width, guidance_scale, latents, debug
+                prompt_ids,
+                params,
+                prng_seed,
+                num_inference_steps,
+                height,
+                width,
+                guidance_scale,
+                latents,
+                debug,
             )
 
         if self.safety_checker is not None:
@@ -288,8 +338,12 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
             images_uint8_casted = (images * 255).round().astype("uint8")
             num_devices, batch_size = images.shape[:2]
 
-            images_uint8_casted = np.asarray(images_uint8_casted).reshape(num_devices * batch_size, height, width, 3)
-            images_uint8_casted, has_nsfw_concept = self._run_safety_checker(images_uint8_casted, safety_params, jit)
+            images_uint8_casted = np.asarray(images_uint8_casted).reshape(
+                num_devices * batch_size, height, width, 3
+            )
+            images_uint8_casted, has_nsfw_concept = self._run_safety_checker(
+                images_uint8_casted, safety_params, jit
+            )
             images = np.asarray(images)
 
             # block images
@@ -305,16 +359,35 @@ class FlaxStableDiffusionPipeline(FlaxDiffusionPipeline):
         if not return_dict:
             return (images, has_nsfw_concept)
 
-        return FlaxStableDiffusionPipelineOutput(images=images, nsfw_content_detected=has_nsfw_concept)
+        return FlaxStableDiffusionPipelineOutput(
+            images=images, nsfw_content_detected=has_nsfw_concept
+        )
 
 
 # TODO: maybe use a config dict instead of so many static argnums
 @partial(jax.pmap, static_broadcasted_argnums=(0, 4, 5, 6, 7, 9))
 def _p_generate(
-    pipe, prompt_ids, params, prng_seed, num_inference_steps, height, width, guidance_scale, latents, debug
+    pipe,
+    prompt_ids,
+    params,
+    prng_seed,
+    num_inference_steps,
+    height,
+    width,
+    guidance_scale,
+    latents,
+    debug,
 ):
     return pipe._generate(
-        prompt_ids, params, prng_seed, num_inference_steps, height, width, guidance_scale, latents, debug
+        prompt_ids,
+        params,
+        prng_seed,
+        num_inference_steps,
+        height,
+        width,
+        guidance_scale,
+        latents,
+        debug,
     )
 
 

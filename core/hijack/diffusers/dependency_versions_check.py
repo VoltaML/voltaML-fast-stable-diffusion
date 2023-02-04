@@ -23,7 +23,9 @@ from .utils.versions import require_version, require_version_core
 # order specific notes:
 # - tqdm must be checked before tokenizers
 
-pkgs_to_check_at_runtime = "python tqdm regex requests packaging filelock numpy tokenizers".split()
+pkgs_to_check_at_runtime = (
+    "python tqdm regex requests packaging filelock numpy tokenizers".split()
+)
 if sys.version_info < (3, 7):
     pkgs_to_check_at_runtime.append("dataclasses")
 if sys.version_info < (3, 8):
@@ -40,7 +42,9 @@ for pkg in pkgs_to_check_at_runtime:
 
         require_version_core(deps[pkg])
     else:
-        raise ValueError(f"can't find {pkg} in {deps.keys()}, check dependency_versions_table.py")
+        raise ValueError(
+            f"can't find {pkg} in {deps.keys()}, check dependency_versions_table.py"
+        )
 
 
 def dep_version_check(pkg, hint=None):

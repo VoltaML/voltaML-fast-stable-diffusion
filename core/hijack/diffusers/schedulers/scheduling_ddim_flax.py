@@ -23,7 +23,11 @@ import flax
 import jax.numpy as jnp
 
 from ..configuration_utils import ConfigMixin, register_to_config
-from .scheduling_utils_flax import FlaxSchedulerMixin, FlaxSchedulerOutput, broadcast_to_shape_from_left
+from .scheduling_utils_flax import (
+    FlaxSchedulerMixin,
+    FlaxSchedulerOutput,
+    broadcast_to_shape_from_left,
+)
 
 
 def betas_for_alpha_bar(num_diffusion_timesteps, max_beta=0.999) -> jnp.ndarray:
@@ -64,7 +68,10 @@ class DDIMSchedulerState:
 
     @classmethod
     def create(cls, num_train_timesteps: int, alphas_cumprod: jnp.ndarray):
-        return cls(timesteps=jnp.arange(0, num_train_timesteps)[::-1], alphas_cumprod=alphas_cumprod)
+        return cls(
+            timesteps=jnp.arange(0, num_train_timesteps)[::-1],
+            alphas_cumprod=alphas_cumprod,
+        )
 
 
 @dataclass
@@ -120,15 +127,27 @@ class FlaxDDIMScheduler(FlaxSchedulerMixin, ConfigMixin):
         steps_offset: int = 0,
     ):
         if beta_schedule == "linear":
-            self.betas = jnp.linspace(beta_start, beta_end, num_train_timesteps, dtype=jnp.float32)
+            self.betas = jnp.linspace(
+                beta_start, beta_end, num_train_timesteps, dtype=jnp.float32
+            )
         elif beta_schedule == "scaled_linear":
             # this schedule is very specific to the latent diffusion model.
-            self.betas = jnp.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=jnp.float32) ** 2
+            self.betas = (
+                jnp.linspace(
+                    beta_start**0.5,
+                    beta_end**0.5,
+                    num_train_timesteps,
+                    dtype=jnp.float32,
+                )
+                ** 2
+            )
         elif beta_schedule == "squaredcos_cap_v2":
             # Glide cosine schedule
             self.betas = betas_for_alpha_bar(num_train_timesteps)
         else:
-            raise NotImplementedError(f"{beta_schedule} does is not implemented for {self.__class__}")
+            raise NotImplementedError(
+                f"{beta_schedule} does is not implemented for {self.__class__}"
+            )
 
         self.alphas = 1.0 - self.betas
 
@@ -139,13 +158,18 @@ class FlaxDDIMScheduler(FlaxSchedulerMixin, ConfigMixin):
         # For the final step, there is no previous alphas_cumprod because we are already at 0
         # `set_alpha_to_one` decides whether we set this parameter simply to one or
         # whether we use the final alpha of the "non-previous" one.
-        self.final_alpha_cumprod = jnp.array(1.0) if set_alpha_to_one else float(self._alphas_cumprod[0])
+        self.final_alpha_cumprod = (
+            jnp.array(1.0) if set_alpha_to_one else float(self._alphas_cumprod[0])
+        )
 
         # standard deviation of the initial noise distribution
         self.init_noise_sigma = 1.0
 
     def scale_model_input(
-        self, state: DDIMSchedulerState, sample: jnp.ndarray, timestep: Optional[int] = None
+        self,
+        state: DDIMSchedulerState,
+        sample: jnp.ndarray,
+        timestep: Optional[int] = None,
     ) -> jnp.ndarray:
         """
         Args:
@@ -160,16 +184,21 @@ class FlaxDDIMScheduler(FlaxSchedulerMixin, ConfigMixin):
 
     def create_state(self):
         return DDIMSchedulerState.create(
-            num_train_timesteps=self.config.num_train_timesteps, alphas_cumprod=self._alphas_cumprod
+            num_train_timesteps=self.config.num_train_timesteps,
+            alphas_cumprod=self._alphas_cumprod,
         )
 
     def _get_variance(self, timestep, prev_timestep, alphas_cumprod):
         alpha_prod_t = alphas_cumprod[timestep]
-        alpha_prod_t_prev = jnp.where(prev_timestep >= 0, alphas_cumprod[prev_timestep], self.final_alpha_cumprod)
+        alpha_prod_t_prev = jnp.where(
+            prev_timestep >= 0, alphas_cumprod[prev_timestep], self.final_alpha_cumprod
+        )
         beta_prod_t = 1 - alpha_prod_t
         beta_prod_t_prev = 1 - alpha_prod_t_prev
 
-        variance = (beta_prod_t_prev / beta_prod_t) * (1 - alpha_prod_t / alpha_prod_t_prev)
+        variance = (beta_prod_t_prev / beta_prod_t) * (
+            1 - alpha_prod_t / alpha_prod_t_prev
+        )
 
         return variance
 
@@ -193,7 +222,9 @@ class FlaxDDIMScheduler(FlaxSchedulerMixin, ConfigMixin):
         timesteps = (jnp.arange(0, num_inference_steps) * step_ratio).round()[::-1]
         timesteps = timesteps + offset
 
-        return state.replace(num_inference_steps=num_inference_steps, timesteps=timesteps)
+        return state.replace(
+            num_inference_steps=num_inference_steps, timesteps=timesteps
+        )
 
     def step(
         self,
@@ -240,19 +271,25 @@ class FlaxDDIMScheduler(FlaxSchedulerMixin, ConfigMixin):
         eta = 0.0
 
         # 1. get previous step value (=t-1)
-        prev_timestep = timestep - self.config.num_train_timesteps // state.num_inference_steps
+        prev_timestep = (
+            timestep - self.config.num_train_timesteps // state.num_inference_steps
+        )
 
         alphas_cumprod = state.alphas_cumprod
 
         # 2. compute alphas, betas
         alpha_prod_t = alphas_cumprod[timestep]
-        alpha_prod_t_prev = jnp.where(prev_timestep >= 0, alphas_cumprod[prev_timestep], self.final_alpha_cumprod)
+        alpha_prod_t_prev = jnp.where(
+            prev_timestep >= 0, alphas_cumprod[prev_timestep], self.final_alpha_cumprod
+        )
 
         beta_prod_t = 1 - alpha_prod_t
 
         # 3. compute predicted original sample from predicted noise also called
         # "predicted x_0" of formula (12) from https://arxiv.org/pdf/2010.02502.pdf
-        pred_original_sample = (sample - beta_prod_t ** (0.5) * model_output) / alpha_prod_t ** (0.5)
+        pred_original_sample = (
+            sample - beta_prod_t ** (0.5) * model_output
+        ) / alpha_prod_t ** (0.5)
 
         # 4. compute variance: "sigma_t(η)" -> see formula (16)
         # σ_t = sqrt((1 − α_t−1)/(1 − α_t)) * sqrt(1 − α_t/α_t−1)
@@ -260,10 +297,14 @@ class FlaxDDIMScheduler(FlaxSchedulerMixin, ConfigMixin):
         std_dev_t = eta * variance ** (0.5)
 
         # 5. compute "direction pointing to x_t" of formula (12) from https://arxiv.org/pdf/2010.02502.pdf
-        pred_sample_direction = (1 - alpha_prod_t_prev - std_dev_t**2) ** (0.5) * model_output
+        pred_sample_direction = (1 - alpha_prod_t_prev - std_dev_t**2) ** (
+            0.5
+        ) * model_output
 
         # 6. compute x_t without "random noise" of formula (12) from https://arxiv.org/pdf/2010.02502.pdf
-        prev_sample = alpha_prod_t_prev ** (0.5) * pred_original_sample + pred_sample_direction
+        prev_sample = (
+            alpha_prod_t_prev ** (0.5) * pred_original_sample + pred_sample_direction
+        )
 
         if not return_dict:
             return (prev_sample, state)
@@ -278,13 +319,19 @@ class FlaxDDIMScheduler(FlaxSchedulerMixin, ConfigMixin):
     ) -> jnp.ndarray:
         sqrt_alpha_prod = self.alphas_cumprod[timesteps] ** 0.5
         sqrt_alpha_prod = sqrt_alpha_prod.flatten()
-        sqrt_alpha_prod = broadcast_to_shape_from_left(sqrt_alpha_prod, original_samples.shape)
+        sqrt_alpha_prod = broadcast_to_shape_from_left(
+            sqrt_alpha_prod, original_samples.shape
+        )
 
         sqrt_one_minus_alpha_prod = (1 - self.alphas_cumprod[timesteps]) ** 0.0
         sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.flatten()
-        sqrt_one_minus_alpha_prod = broadcast_to_shape_from_left(sqrt_one_minus_alpha_prod, original_samples.shape)
+        sqrt_one_minus_alpha_prod = broadcast_to_shape_from_left(
+            sqrt_one_minus_alpha_prod, original_samples.shape
+        )
 
-        noisy_samples = sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
+        noisy_samples = (
+            sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
+        )
         return noisy_samples
 
     def __len__(self):

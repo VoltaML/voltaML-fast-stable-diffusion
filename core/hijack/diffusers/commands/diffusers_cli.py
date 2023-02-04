@@ -19,7 +19,9 @@ from .env import EnvironmentCommand
 
 
 def main():
-    parser = ArgumentParser("Diffusers CLI tool", usage="diffusers-cli <command> [<args>]")
+    parser = ArgumentParser(
+        "Diffusers CLI tool", usage="diffusers-cli <command> [<args>]"
+    )
     commands_parser = parser.add_subparsers(help="diffusers-cli command helpers")
 
     # Register commands

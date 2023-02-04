@@ -27,21 +27,27 @@ if is_torch_available():
     import torch
 
     torch_device = "cuda" if torch.cuda.is_available() else "cpu"
-    is_torch_higher_equal_than_1_12 = version.parse(version.parse(torch.__version__).base_version) >= version.parse(
-        "1.12"
-    )
+    is_torch_higher_equal_than_1_12 = version.parse(
+        version.parse(torch.__version__).base_version
+    ) >= version.parse("1.12")
 
     if is_torch_higher_equal_than_1_12:
         # Some builds of torch 1.12 don't have the mps backend registered. See #892 for more details
         mps_backend_registered = hasattr(torch.backends, "mps")
-        torch_device = "mps" if (mps_backend_registered and torch.backends.mps.is_available()) else torch_device
+        torch_device = (
+            "mps"
+            if (mps_backend_registered and torch.backends.mps.is_available())
+            else torch_device
+        )
 
 
 def torch_all_close(a, b, *args, **kwargs):
     if not is_torch_available():
         raise ValueError("PyTorch needs to be installed to use this function.")
     if not torch.allclose(a, b, *args, **kwargs):
-        assert False, f"Max diff is absolute {(a - b).abs().max()}. Diff tensor is {(a - b).abs()}."
+        assert (
+            False
+        ), f"Max diff is absolute {(a - b).abs().max()}. Diff tensor is {(a - b).abs()}."
     return True
 
 
@@ -120,23 +126,27 @@ def require_torch(test_case):
 
 def require_torch_gpu(test_case):
     """Decorator marking a test that requires CUDA and PyTorch."""
-    return unittest.skipUnless(is_torch_available() and torch_device == "cuda", "test requires PyTorch+CUDA")(
-        test_case
-    )
+    return unittest.skipUnless(
+        is_torch_available() and torch_device == "cuda", "test requires PyTorch+CUDA"
+    )(test_case)
 
 
 def require_flax(test_case):
     """
     Decorator marking a test that requires JAX & Flax. These tests are skipped when one / both are not installed
     """
-    return unittest.skipUnless(is_flax_available(), "test requires JAX & Flax")(test_case)
+    return unittest.skipUnless(is_flax_available(), "test requires JAX & Flax")(
+        test_case
+    )
 
 
 def require_onnxruntime(test_case):
     """
     Decorator marking a test that requires onnxruntime. These tests are skipped when onnxruntime isn't installed.
     """
-    return unittest.skipUnless(is_onnx_available(), "test requires onnxruntime")(test_case)
+    return unittest.skipUnless(is_onnx_available(), "test requires onnxruntime")(
+        test_case
+    )
 
 
 def load_numpy(arry: Union[str, np.ndarray]) -> np.ndarray:
@@ -194,7 +204,8 @@ def load_image(image: Union[str, PIL.Image.Image]) -> PIL.Image.Image:
 def load_hf_numpy(path) -> np.ndarray:
     if not path.startswith("http://") or path.startswith("https://"):
         path = os.path.join(
-            "https://huggingface.co/datasets/fusing/diffusers-testing/resolve/main", urllib.parse.quote(path)
+            "https://huggingface.co/datasets/fusing/diffusers-testing/resolve/main",
+            urllib.parse.quote(path),
         )
 
     return load_numpy(path)
@@ -287,7 +298,9 @@ def pytest_terminal_summary_main(tr, id):
             f.write("slowest durations\n")
             for i, rep in enumerate(dlist):
                 if rep.duration < durations_min:
-                    f.write(f"{len(dlist)-i} durations < {durations_min} secs were omitted")
+                    f.write(
+                        f"{len(dlist)-i} durations < {durations_min} secs were omitted"
+                    )
                     break
                 f.write(f"{rep.duration:02.2f}s {rep.when:<8} {rep.nodeid}\n")
 
@@ -301,7 +314,9 @@ def pytest_terminal_summary_main(tr, id):
             msg = tr._getfailureheadline(rep)
             tr.write_sep("_", msg, red=True, bold=True)
             # chop off the optional leading extra frames, leaving only the last one
-            longrepr = re.sub(r".*_ _ _ (_ ){10,}_ _ ", "", rep.longreprtext, 0, re.M | re.S)
+            longrepr = re.sub(
+                r".*_ _ _ (_ ){10,}_ _ ", "", rep.longreprtext, 0, re.M | re.S
+            )
             tr._tw.line(longrepr)
             # note: not printing out any rep.sections to keep the report short
 
@@ -335,7 +350,9 @@ def pytest_terminal_summary_main(tr, id):
         tr.summary_warnings()  # normal warnings
         tr.summary_warnings()  # final warnings
 
-    tr.reportchars = "wPpsxXEf"  # emulate -rA (used in summary_passes() and short_test_summary())
+    tr.reportchars = (
+        "wPpsxXEf"  # emulate -rA (used in summary_passes() and short_test_summary())
+    )
     with open(report_files["passes"], "w") as f:
         tr._tw = create_terminal_writer(config, f)
         tr.summary_passes()

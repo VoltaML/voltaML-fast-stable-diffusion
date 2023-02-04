@@ -116,11 +116,19 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
         if trained_betas is not None:
             self.betas = torch.from_numpy(trained_betas)
         elif beta_schedule == "linear":
-            self.betas = torch.linspace(beta_start, beta_end, num_train_timesteps, dtype=torch.float32)
+            self.betas = torch.linspace(
+                beta_start, beta_end, num_train_timesteps, dtype=torch.float32
+            )
         elif beta_schedule == "scaled_linear":
             # this schedule is very specific to the latent diffusion model.
             self.betas = (
-                torch.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=torch.float32) ** 2
+                torch.linspace(
+                    beta_start**0.5,
+                    beta_end**0.5,
+                    num_train_timesteps,
+                    dtype=torch.float32,
+                )
+                ** 2
             )
         elif beta_schedule == "squaredcos_cap_v2":
             # Glide cosine schedule
@@ -130,7 +138,9 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
             betas = torch.linspace(-6, 6, num_train_timesteps)
             self.betas = torch.sigmoid(betas) * (beta_end - beta_start) + beta_start
         else:
-            raise NotImplementedError(f"{beta_schedule} does is not implemented for {self.__class__}")
+            raise NotImplementedError(
+                f"{beta_schedule} does is not implemented for {self.__class__}"
+            )
 
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
@@ -143,11 +153,15 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
 
         # setable values
         self.num_inference_steps = None
-        self.timesteps = torch.from_numpy(np.arange(0, num_train_timesteps)[::-1].copy())
+        self.timesteps = torch.from_numpy(
+            np.arange(0, num_train_timesteps)[::-1].copy()
+        )
 
         self.eta = eta
 
-    def scale_model_input(self, sample: torch.FloatTensor, timestep: Optional[int] = None) -> torch.FloatTensor:
+    def scale_model_input(
+        self, sample: torch.FloatTensor, timestep: Optional[int] = None
+    ) -> torch.FloatTensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
         current timestep.
@@ -188,14 +202,20 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
                     t = t + 1
                     timesteps.append(t)
 
-        timesteps = np.array(timesteps) * (self.config.num_train_timesteps // self.num_inference_steps)
+        timesteps = np.array(timesteps) * (
+            self.config.num_train_timesteps // self.num_inference_steps
+        )
         self.timesteps = torch.from_numpy(timesteps).to(device)
 
     def _get_variance(self, t):
         prev_timestep = t - self.config.num_train_timesteps // self.num_inference_steps
 
         alpha_prod_t = self.alphas_cumprod[t]
-        alpha_prod_t_prev = self.alphas_cumprod[prev_timestep] if prev_timestep >= 0 else self.final_alpha_cumprod
+        alpha_prod_t_prev = (
+            self.alphas_cumprod[prev_timestep]
+            if prev_timestep >= 0
+            else self.final_alpha_cumprod
+        )
         beta_prod_t = 1 - alpha_prod_t
         beta_prod_t_prev = 1 - alpha_prod_t_prev
 
@@ -206,7 +226,9 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
         # Is equivalent to formula (16) in https://arxiv.org/pdf/2010.02502.pdf
         # without eta.
         # variance = (1 - alpha_prod_t_prev) / (1 - alpha_prod_t) * self.betas[t]
-        variance = (beta_prod_t_prev / beta_prod_t) * (1 - alpha_prod_t / alpha_prod_t_prev)
+        variance = (beta_prod_t_prev / beta_prod_t) * (
+            1 - alpha_prod_t / alpha_prod_t_prev
+        )
 
         return variance
 
@@ -245,16 +267,24 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
 
         """
         t = timestep
-        prev_timestep = timestep - self.config.num_train_timesteps // self.num_inference_steps
+        prev_timestep = (
+            timestep - self.config.num_train_timesteps // self.num_inference_steps
+        )
 
         # 1. compute alphas, betas
         alpha_prod_t = self.alphas_cumprod[t]
-        alpha_prod_t_prev = self.alphas_cumprod[prev_timestep] if prev_timestep >= 0 else self.final_alpha_cumprod
+        alpha_prod_t_prev = (
+            self.alphas_cumprod[prev_timestep]
+            if prev_timestep >= 0
+            else self.final_alpha_cumprod
+        )
         beta_prod_t = 1 - alpha_prod_t
 
         # 2. compute predicted original sample from predicted noise also called
         # "predicted x_0" of formula (15) from https://arxiv.org/pdf/2006.11239.pdf
-        pred_original_sample = (sample - beta_prod_t**0.5 * model_output) / alpha_prod_t**0.5
+        pred_original_sample = (
+            sample - beta_prod_t**0.5 * model_output
+        ) / alpha_prod_t**0.5
 
         # 3. Clip "predicted x_0"
         if self.config.clip_sample:
@@ -269,7 +299,10 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
 
         # 5. Add noise
         noise = torch.randn(
-            model_output.shape, dtype=model_output.dtype, generator=generator, device=model_output.device
+            model_output.shape,
+            dtype=model_output.dtype,
+            generator=generator,
+            device=model_output.device,
         )
         std_dev_t = self.eta * self._get_variance(timestep) ** 0.5
 
@@ -279,13 +312,21 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
 
         # 6. compute "direction pointing to x_t" of formula (12)
         # from https://arxiv.org/pdf/2010.02502.pdf
-        pred_sample_direction = (1 - alpha_prod_t_prev - std_dev_t**2) ** 0.5 * model_output
+        pred_sample_direction = (
+            1 - alpha_prod_t_prev - std_dev_t**2
+        ) ** 0.5 * model_output
 
         # 7. compute x_{t-1} of formula (12) from https://arxiv.org/pdf/2010.02502.pdf
-        prev_unknown_part = alpha_prod_t_prev**0.5 * pred_original_sample + pred_sample_direction + variance
+        prev_unknown_part = (
+            alpha_prod_t_prev**0.5 * pred_original_sample
+            + pred_sample_direction
+            + variance
+        )
 
         # 8. Algorithm 1 Line 5 https://arxiv.org/pdf/2201.09865.pdf
-        prev_known_part = (alpha_prod_t**0.5) * original_image + ((1 - alpha_prod_t) ** 0.5) * noise
+        prev_known_part = (alpha_prod_t**0.5) * original_image + (
+            (1 - alpha_prod_t) ** 0.5
+        ) * noise
 
         # 9. Algorithm 1 Line 8 https://arxiv.org/pdf/2201.09865.pdf
         pred_prev_sample = mask * prev_known_part + (1.0 - mask) * prev_unknown_part
@@ -296,7 +337,9 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
                 pred_original_sample,
             )
 
-        return RePaintSchedulerOutput(prev_sample=pred_prev_sample, pred_original_sample=pred_original_sample)
+        return RePaintSchedulerOutput(
+            prev_sample=pred_prev_sample, pred_original_sample=pred_original_sample
+        )
 
     def undo_step(self, sample, timestep, generator=None):
         n = self.config.num_train_timesteps // self.num_inference_steps
@@ -316,7 +359,9 @@ class RePaintScheduler(SchedulerMixin, ConfigMixin):
         noise: torch.FloatTensor,
         timesteps: torch.IntTensor,
     ) -> torch.FloatTensor:
-        raise NotImplementedError("Use `DDPMScheduler.add_noise()` to train for sampling with RePaint.")
+        raise NotImplementedError(
+            "Use `DDPMScheduler.add_noise()` to train for sampling with RePaint."
+        )
 
     def __len__(self):
         return self.config.num_train_timesteps

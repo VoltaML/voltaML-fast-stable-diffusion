@@ -73,7 +73,9 @@ class DanceDiffusionPipeline(DiffusionPipeline):
         """
 
         if audio_length_in_s is None:
-            audio_length_in_s = self.unet.config.sample_size / self.unet.config.sample_rate
+            audio_length_in_s = (
+                self.unet.config.sample_size / self.unet.config.sample_rate
+            )
 
         sample_size = audio_length_in_s * self.unet.sample_rate
 
@@ -86,7 +88,9 @@ class DanceDiffusionPipeline(DiffusionPipeline):
 
         original_sample_size = int(sample_size)
         if sample_size % down_scale_factor != 0:
-            sample_size = ((audio_length_in_s * self.unet.sample_rate) // down_scale_factor + 1) * down_scale_factor
+            sample_size = (
+                (audio_length_in_s * self.unet.sample_rate) // down_scale_factor + 1
+            ) * down_scale_factor
             logger.info(
                 f"{audio_length_in_s} is increased to {sample_size / self.unet.sample_rate} so that it can be handled"
                 f" by the model. It will be cut to {original_sample_size / self.unet.sample_rate} after the denoising"
@@ -96,7 +100,10 @@ class DanceDiffusionPipeline(DiffusionPipeline):
 
         dtype = next(iter(self.unet.parameters())).dtype
         audio = torch.randn(
-            (batch_size, self.unet.in_channels, sample_size), generator=generator, device=self.device, dtype=dtype
+            (batch_size, self.unet.in_channels, sample_size),
+            generator=generator,
+            device=self.device,
+            dtype=dtype,
         )
 
         # set step values

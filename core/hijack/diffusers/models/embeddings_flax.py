@@ -39,8 +39,12 @@ def get_sinusoidal_embeddings(
     assert timesteps.ndim == 1, "Timesteps should be a 1d-array"
     assert embedding_dim % 2 == 0, f"Embedding dimension {embedding_dim} should be even"
     num_timescales = float(embedding_dim // 2)
-    log_timescale_increment = math.log(max_timescale / min_timescale) / (num_timescales - freq_shift)
-    inv_timescales = min_timescale * jnp.exp(jnp.arange(num_timescales, dtype=jnp.float32) * -log_timescale_increment)
+    log_timescale_increment = math.log(max_timescale / min_timescale) / (
+        num_timescales - freq_shift
+    )
+    inv_timescales = min_timescale * jnp.exp(
+        jnp.arange(num_timescales, dtype=jnp.float32) * -log_timescale_increment
+    )
     emb = jnp.expand_dims(timesteps, 1) * jnp.expand_dims(inv_timescales, 0)
 
     # scale embeddings
@@ -89,5 +93,8 @@ class FlaxTimesteps(nn.Module):
     @nn.compact
     def __call__(self, timesteps):
         return get_sinusoidal_embeddings(
-            timesteps, embedding_dim=self.dim, freq_shift=self.freq_shift, flip_sin_to_cos=True
+            timesteps,
+            embedding_dim=self.dim,
+            freq_shift=self.freq_shift,
+            flip_sin_to_cos=True,
         )

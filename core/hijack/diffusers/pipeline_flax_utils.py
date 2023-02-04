@@ -32,7 +32,13 @@ from .configuration_utils import ConfigMixin
 from .hub_utils import http_user_agent
 from .modeling_flax_utils import FLAX_WEIGHTS_NAME, FlaxModelMixin
 from .schedulers.scheduling_utils_flax import SCHEDULER_CONFIG_NAME, FlaxSchedulerMixin
-from .utils import CONFIG_NAME, DIFFUSERS_CACHE, BaseOutput, is_transformers_available, logging
+from .utils import (
+    CONFIG_NAME,
+    DIFFUSERS_CACHE,
+    BaseOutput,
+    is_transformers_available,
+    logging,
+)
 
 
 if is_transformers_available():
@@ -121,7 +127,9 @@ class FlaxDiffusionPipeline(ConfigMixin):
                 # check if the module is a pipeline module
                 pipeline_dir = module.__module__.split(".")[-2]
                 path = module.__module__.split(".")
-                is_pipeline_module = pipeline_dir in path and hasattr(pipelines, pipeline_dir)
+                is_pipeline_module = pipeline_dir in path and hasattr(
+                    pipelines, pipeline_dir
+                )
 
                 # if library is not in LOADABLE_CLASSES, then it is a custom module.
                 # Or if it's a pipeline module, then the module is inside the pipeline
@@ -140,7 +148,9 @@ class FlaxDiffusionPipeline(ConfigMixin):
             # set models
             setattr(self, name, module)
 
-    def save_pretrained(self, save_directory: Union[str, os.PathLike], params: Union[Dict, FrozenDict]):
+    def save_pretrained(
+        self, save_directory: Union[str, os.PathLike], params: Union[Dict, FrozenDict]
+    ):
         # TODO: handle inference_state
         """
         Save all variables of the pipeline that can be saved and loaded as well as the pipelines configuration file to
@@ -181,17 +191,22 @@ class FlaxDiffusionPipeline(ConfigMixin):
                     break
 
             save_method = getattr(sub_model, save_method_name)
-            expects_params = "params" in set(inspect.signature(save_method).parameters.keys())
+            expects_params = "params" in set(
+                inspect.signature(save_method).parameters.keys()
+            )
 
             if expects_params:
                 save_method(
-                    os.path.join(save_directory, pipeline_component_name), params=params[pipeline_component_name]
+                    os.path.join(save_directory, pipeline_component_name),
+                    params=params[pipeline_component_name],
                 )
             else:
                 save_method(os.path.join(save_directory, pipeline_component_name))
 
     @classmethod
-    def from_pretrained(cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], **kwargs):
+    def from_pretrained(
+        cls, pretrained_model_name_or_path: Optional[Union[str, os.PathLike]], **kwargs
+    ):
         r"""
         Instantiate a Flax diffusion pipeline from pre-trained pipeline weights.
 
@@ -304,7 +319,12 @@ class FlaxDiffusionPipeline(ConfigMixin):
             # make sure we only download sub-folders and `diffusers` filenames
             folder_names = [k for k in config_dict.keys() if not k.startswith("_")]
             allow_patterns = [os.path.join(k, "*") for k in folder_names]
-            allow_patterns += [FLAX_WEIGHTS_NAME, SCHEDULER_CONFIG_NAME, CONFIG_NAME, cls.config_name]
+            allow_patterns += [
+                FLAX_WEIGHTS_NAME,
+                SCHEDULER_CONFIG_NAME,
+                CONFIG_NAME,
+                cls.config_name,
+            ]
 
             # make sure we don't download PyTorch weights
             ignore_patterns = "*.bin"
@@ -356,7 +376,9 @@ class FlaxDiffusionPipeline(ConfigMixin):
         # some modules can be passed directly to the init
         # in this case they are already instantiated in `kwargs`
         # extract them here
-        expected_modules = set(inspect.signature(pipeline_class.__init__).parameters.keys())
+        expected_modules = set(
+            inspect.signature(pipeline_class.__init__).parameters.keys()
+        )
         passed_class_obj = {k: kwargs.pop(k) for k in expected_modules if k in kwargs}
 
         init_dict, _ = pipeline_class.extract_init_dict(config_dict, **kwargs)
@@ -387,14 +409,18 @@ class FlaxDiffusionPipeline(ConfigMixin):
                     library = importlib.import_module(library_name)
                     class_obj = getattr(library, class_name)
                     importable_classes = LOADABLE_CLASSES[library_name]
-                    class_candidates = {c: getattr(library, c) for c in importable_classes.keys()}
+                    class_candidates = {
+                        c: getattr(library, c) for c in importable_classes.keys()
+                    }
 
                     expected_class_obj = None
                     for class_name, class_candidate in class_candidates.items():
                         if issubclass(class_obj, class_candidate):
                             expected_class_obj = class_candidate
 
-                    if not issubclass(passed_class_obj[name].__class__, expected_class_obj):
+                    if not issubclass(
+                        passed_class_obj[name].__class__, expected_class_obj
+                    ):
                         raise ValueError(
                             f"{passed_class_obj[name]} is of type: {type(passed_class_obj[name])}, but should be"
                             f" {expected_class_obj}"
@@ -425,7 +451,9 @@ class FlaxDiffusionPipeline(ConfigMixin):
                 class_obj = import_flax_or_no_model(library, class_name)
 
                 importable_classes = LOADABLE_CLASSES[library_name]
-                class_candidates = {c: getattr(library, c) for c in importable_classes.keys()}
+                class_candidates = {
+                    c: getattr(library, c) for c in importable_classes.keys()
+                }
 
             if loaded_sub_model is None and sub_model_should_be_defined:
                 load_method_name = None
@@ -442,16 +470,22 @@ class FlaxDiffusionPipeline(ConfigMixin):
                     loaded_sub_model = cached_folder
 
                 if issubclass(class_obj, FlaxModelMixin):
-                    loaded_sub_model, loaded_params = load_method(loadable_folder, from_pt=from_pt, dtype=dtype)
+                    loaded_sub_model, loaded_params = load_method(
+                        loadable_folder, from_pt=from_pt, dtype=dtype
+                    )
                     params[name] = loaded_params
-                elif is_transformers_available() and issubclass(class_obj, FlaxPreTrainedModel):
+                elif is_transformers_available() and issubclass(
+                    class_obj, FlaxPreTrainedModel
+                ):
                     if from_pt:
                         # TODO(Suraj): Fix this in Transformers. We should be able to use `_do_init=False` here
                         loaded_sub_model = load_method(loadable_folder, from_pt=from_pt)
                         loaded_params = loaded_sub_model.params
                         del loaded_sub_model._params
                     else:
-                        loaded_sub_model, loaded_params = load_method(loadable_folder, _do_init=False)
+                        loaded_sub_model, loaded_params = load_method(
+                            loadable_folder, _do_init=False
+                        )
                     params[name] = loaded_params
                 elif issubclass(class_obj, FlaxSchedulerMixin):
                     loaded_sub_model, scheduler_state = load_method(loadable_folder)
@@ -474,7 +508,9 @@ class FlaxDiffusionPipeline(ConfigMixin):
         images = (images * 255).round().astype("uint8")
         if images.shape[-1] == 1:
             # special case for grayscale (single channel) images
-            pil_images = [Image.fromarray(image.squeeze(), mode="L") for image in images]
+            pil_images = [
+                Image.fromarray(image.squeeze(), mode="L") for image in images
+            ]
         else:
             pil_images = [Image.fromarray(image) for image in images]
 

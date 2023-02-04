@@ -20,7 +20,16 @@ from torch import nn
 
 _kernels = {
     "linear": [1 / 8, 3 / 8, 3 / 8, 1 / 8],
-    "cubic": [-0.01171875, -0.03515625, 0.11328125, 0.43359375, 0.43359375, 0.11328125, -0.03515625, -0.01171875],
+    "cubic": [
+        -0.01171875,
+        -0.03515625,
+        0.11328125,
+        0.43359375,
+        0.43359375,
+        0.11328125,
+        -0.03515625,
+        -0.01171875,
+    ],
     "lanczos3": [
         0.003689131001010537,
         0.015056144446134567,
@@ -48,7 +57,9 @@ class Downsample1d(nn.Module):
 
     def forward(self, hidden_states):
         hidden_states = F.pad(hidden_states, (self.pad,) * 2, self.pad_mode)
-        weight = hidden_states.new_zeros([hidden_states.shape[1], hidden_states.shape[1], self.kernel.shape[0]])
+        weight = hidden_states.new_zeros(
+            [hidden_states.shape[1], hidden_states.shape[1], self.kernel.shape[0]]
+        )
         indices = torch.arange(hidden_states.shape[1], device=hidden_states.device)
         weight[indices, indices] = self.kernel.to(weight)
         return F.conv1d(hidden_states, weight, stride=2)
@@ -64,10 +75,14 @@ class Upsample1d(nn.Module):
 
     def forward(self, hidden_states):
         hidden_states = F.pad(hidden_states, ((self.pad + 1) // 2,) * 2, self.pad_mode)
-        weight = hidden_states.new_zeros([hidden_states.shape[1], hidden_states.shape[1], self.kernel.shape[0]])
+        weight = hidden_states.new_zeros(
+            [hidden_states.shape[1], hidden_states.shape[1], self.kernel.shape[0]]
+        )
         indices = torch.arange(hidden_states.shape[1], device=hidden_states.device)
         weight[indices, indices] = self.kernel.to(weight)
-        return F.conv_transpose1d(hidden_states, weight, stride=2, padding=self.pad * 2 + 1)
+        return F.conv_transpose1d(
+            hidden_states, weight, stride=2, padding=self.pad * 2 + 1
+        )
 
 
 class SelfAttention1d(nn.Module):
@@ -108,7 +123,9 @@ class SelfAttention1d(nn.Module):
 
         scale = 1 / math.sqrt(math.sqrt(key_states.shape[-1]))
 
-        attention_scores = torch.matmul(query_states * scale, key_states.transpose(-1, -2) * scale)
+        attention_scores = torch.matmul(
+            query_states * scale, key_states.transpose(-1, -2) * scale
+        )
         attention_probs = torch.softmax(attention_scores, dim=-1)
 
         # compute attention output
@@ -147,7 +164,9 @@ class ResConvBlock(nn.Module):
             self.gelu_2 = nn.GELU()
 
     def forward(self, hidden_states):
-        residual = self.conv_skip(hidden_states) if self.has_conv_skip else hidden_states
+        residual = (
+            self.conv_skip(hidden_states) if self.has_conv_skip else hidden_states
+        )
 
         hidden_states = self.conv_1(hidden_states)
         hidden_states = self.group_norm_1(hidden_states)
@@ -184,7 +203,11 @@ def get_up_block(up_block_type, in_channels, out_channels):
 
 def get_mid_block(mid_block_type, in_channels, mid_channels, out_channels):
     if mid_block_type == "UNetMidBlock1D":
-        return UNetMidBlock1D(in_channels=in_channels, mid_channels=mid_channels, out_channels=out_channels)
+        return UNetMidBlock1D(
+            in_channels=in_channels,
+            mid_channels=mid_channels,
+            out_channels=out_channels,
+        )
     raise ValueError(f"{mid_block_type} does not exist.")
 
 

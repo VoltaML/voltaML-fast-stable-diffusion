@@ -899,7 +899,6 @@ def compile_trt(
     num_images_per_prompt,
     seed=None,
 ):
-
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
     args = parseArgs()
 
@@ -1198,7 +1197,6 @@ def infer_pt(
     num_images_per_prompt,
     seed,
 ):
-
     print("[+] Loading the model")
     model = load_model(model_path)
     print("[+] Model loaded")
@@ -1231,7 +1229,6 @@ def infer_pt(
 
 
 if __name__ == "__main__":
-
     print("[I] Initializing StableDiffusion demo with TensorRT Plugins")
     args = parseArgs()
     if "trt" in args.backend.lower():

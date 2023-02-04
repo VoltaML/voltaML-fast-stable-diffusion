@@ -351,7 +351,6 @@ class Optimizer:
                 and node.o().o(0).o().o().o().o().o().o().op == "Add"
                 and len(node.o().o(0).o().o().o().o().o().inputs[1].values.shape) == 1
             ):
-
                 if node.i().op == "Add":
                     inputTensor = node.inputs[0]  # CLIP
                 else:
@@ -760,7 +759,6 @@ class Optimizer:
                 or (not mha and len(node.inputs[0].inputs) == 0)
             )
         ):
-
             if node.o().op == "Shape":
                 if node.o(1).op == "Shape":
                     num_dynamic_kv = 3 if node.o(2).op == "Shape" else 2

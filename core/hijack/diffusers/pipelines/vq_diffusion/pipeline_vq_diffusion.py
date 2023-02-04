@@ -133,12 +133,15 @@ class VQDiffusionPipeline(DiffusionPipeline):
         elif isinstance(prompt, list):
             batch_size = len(prompt)
         else:
-            raise ValueError(f"`prompt` has to be of type `str` or `list` but is {type(prompt)}")
+            raise ValueError(
+                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
+            )
 
         batch_size = batch_size * num_images_per_prompt
 
         if (callback_steps is None) or (
-            callback_steps is not None and (not isinstance(callback_steps, int) or callback_steps <= 0)
+            callback_steps is not None
+            and (not isinstance(callback_steps, int) or callback_steps <= 0)
         ):
             raise ValueError(
                 f"`callback_steps` has to be a positive integer but is {callback_steps} of type"
@@ -155,7 +158,9 @@ class VQDiffusionPipeline(DiffusionPipeline):
         text_input_ids = text_inputs.input_ids
 
         if text_input_ids.shape[-1] > self.tokenizer.model_max_length:
-            removed_text = self.tokenizer.batch_decode(text_input_ids[:, self.tokenizer.model_max_length :])
+            removed_text = self.tokenizer.batch_decode(
+                text_input_ids[:, self.tokenizer.model_max_length :]
+            )
             logger.warning(
                 "The following part of your input was truncated because CLIP can only handle sequences up to"
                 f" {self.tokenizer.model_max_length} tokens: {removed_text}"
@@ -172,7 +177,9 @@ class VQDiffusionPipeline(DiffusionPipeline):
         text_embeddings = text_embeddings / text_embeddings.norm(dim=-1, keepdim=True)
 
         # duplicate text embeddings for each generation per prompt
-        text_embeddings = text_embeddings.repeat_interleave(num_images_per_prompt, dim=0)
+        text_embeddings = text_embeddings.repeat_interleave(
+            num_images_per_prompt, dim=0
+        )
 
         # get the initial completely masked latents unless the user supplied it
 
@@ -182,8 +189,12 @@ class VQDiffusionPipeline(DiffusionPipeline):
             latents = torch.full(latents_shape, mask_class).to(self.device)
         else:
             if latents.shape != latents_shape:
-                raise ValueError(f"Unexpected latents shape, got {latents.shape}, expected {latents_shape}")
-            if (latents < 0).any() or (latents >= self.transformer.num_vector_embeds).any():
+                raise ValueError(
+                    f"Unexpected latents shape, got {latents.shape}, expected {latents_shape}"
+                )
+            if (latents < 0).any() or (
+                latents >= self.transformer.num_vector_embeds
+            ).any():
                 raise ValueError(
                     "Unexpected latents value(s). All latents be valid embedding indices i.e. in the range 0,"
                     f" {self.transformer.num_vector_embeds - 1} (inclusive)."
@@ -200,7 +211,9 @@ class VQDiffusionPipeline(DiffusionPipeline):
         for i, t in enumerate(self.progress_bar(timesteps_tensor)):
             # predict the un-noised image
             # model_output == `log_p_x_0`
-            model_output = self.transformer(sample, encoder_hidden_states=text_embeddings, timestep=t).sample
+            model_output = self.transformer(
+                sample, encoder_hidden_states=text_embeddings, timestep=t
+            ).sample
 
             model_output = self.truncate(model_output, truncation_rate)
 
@@ -208,15 +221,24 @@ class VQDiffusionPipeline(DiffusionPipeline):
             model_output = model_output.clamp(-70)
 
             # compute the previous noisy sample x_t -> x_t-1
-            sample = self.scheduler.step(model_output, timestep=t, sample=sample, generator=generator).prev_sample
+            sample = self.scheduler.step(
+                model_output, timestep=t, sample=sample, generator=generator
+            ).prev_sample
 
             # call the callback, if provided
             if callback is not None and i % callback_steps == 0:
                 callback(i, t, sample)
 
         embedding_channels = self.vqvae.config.vq_embed_dim
-        embeddings_shape = (batch_size, self.transformer.height, self.transformer.width, embedding_channels)
-        embeddings = self.vqvae.quantize.get_codebook_entry(sample, shape=embeddings_shape)
+        embeddings_shape = (
+            batch_size,
+            self.transformer.height,
+            self.transformer.width,
+            embedding_channels,
+        )
+        embeddings = self.vqvae.quantize.get_codebook_entry(
+            sample, shape=embeddings_shape
+        )
         image = self.vqvae.decode(embeddings, force_not_quantize=True).sample
 
         image = (image / 2 + 0.5).clamp(0, 1)
@@ -230,7 +252,9 @@ class VQDiffusionPipeline(DiffusionPipeline):
 
         return ImagePipelineOutput(images=image)
 
-    def truncate(self, log_p_x_0: torch.FloatTensor, truncation_rate: float) -> torch.FloatTensor:
+    def truncate(
+        self, log_p_x_0: torch.FloatTensor, truncation_rate: float
+    ) -> torch.FloatTensor:
         """
         Truncates log_p_x_0 such that for each column vector, the total cumulative probability is `truncation_rate` The
         lowest probabilities that would increase the cumulative probability above `truncation_rate` are set to zero.

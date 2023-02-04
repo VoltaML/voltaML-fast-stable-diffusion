@@ -59,7 +59,9 @@ class BaseOutput(OrderedDict):
             raise ValueError(f"{self.__class__.__name__} has no fields.")
 
         first_field = getattr(self, class_fields[0].name)
-        other_fields_are_none = all(getattr(self, field.name) is None for field in class_fields[1:])
+        other_fields_are_none = all(
+            getattr(self, field.name) is None for field in class_fields[1:]
+        )
 
         if other_fields_are_none and isinstance(first_field, dict):
             for key, value in first_field.items():
@@ -71,16 +73,24 @@ class BaseOutput(OrderedDict):
                     self[field.name] = v
 
     def __delitem__(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``__delitem__`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``__delitem__`` on a {self.__class__.__name__} instance."
+        )
 
     def setdefault(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``setdefault`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``setdefault`` on a {self.__class__.__name__} instance."
+        )
 
     def pop(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``pop`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``pop`` on a {self.__class__.__name__} instance."
+        )
 
     def update(self, *args, **kwargs):
-        raise Exception(f"You cannot use ``update`` on a {self.__class__.__name__} instance.")
+        raise Exception(
+            f"You cannot use ``update`` on a {self.__class__.__name__} instance."
+        )
 
     def __getitem__(self, k):
         if isinstance(k, str):

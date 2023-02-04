@@ -248,7 +248,9 @@ def enable_explicit_format() -> None:
     handlers = _get_library_root_logger().handlers
 
     for handler in handlers:
-        formatter = logging.Formatter("[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s >> %(message)s")
+        formatter = logging.Formatter(
+            "[%(levelname)s|%(filename)s:%(lineno)s] %(asctime)s >> %(message)s"
+        )
         handler.setFormatter(formatter)
 
 

@@ -87,14 +87,24 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
         if trained_betas is not None:
             self.betas = torch.from_numpy(trained_betas)
         elif beta_schedule == "linear":
-            self.betas = torch.linspace(beta_start, beta_end, num_train_timesteps, dtype=torch.float32)
+            self.betas = torch.linspace(
+                beta_start, beta_end, num_train_timesteps, dtype=torch.float32
+            )
         elif beta_schedule == "scaled_linear":
             # this schedule is very specific to the latent diffusion model.
             self.betas = (
-                torch.linspace(beta_start**0.5, beta_end**0.5, num_train_timesteps, dtype=torch.float32) ** 2
+                torch.linspace(
+                    beta_start**0.5,
+                    beta_end**0.5,
+                    num_train_timesteps,
+                    dtype=torch.float32,
+                )
+                ** 2
             )
         else:
-            raise NotImplementedError(f"{beta_schedule} does is not implemented for {self.__class__}")
+            raise NotImplementedError(
+                f"{beta_schedule} does is not implemented for {self.__class__}"
+            )
 
         self.alphas = 1.0 - self.betas
         self.alphas_cumprod = torch.cumprod(self.alphas, dim=0)
@@ -108,7 +118,9 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
 
         # setable values
         self.num_inference_steps = None
-        timesteps = np.linspace(0, num_train_timesteps - 1, num_train_timesteps, dtype=float)[::-1].copy()
+        timesteps = np.linspace(
+            0, num_train_timesteps - 1, num_train_timesteps, dtype=float
+        )[::-1].copy()
         self.timesteps = torch.from_numpy(timesteps)
         self.derivatives = []
         self.is_scale_input_called = False
@@ -149,14 +161,20 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
             for k in range(order):
                 if current_order == k:
                     continue
-                prod *= (tau - self.sigmas[t - k]) / (self.sigmas[t - current_order] - self.sigmas[t - k])
+                prod *= (tau - self.sigmas[t - k]) / (
+                    self.sigmas[t - current_order] - self.sigmas[t - k]
+                )
             return prod
 
-        integrated_coeff = integrate.quad(lms_derivative, self.sigmas[t], self.sigmas[t + 1], epsrel=1e-4)[0]
+        integrated_coeff = integrate.quad(
+            lms_derivative, self.sigmas[t], self.sigmas[t + 1], epsrel=1e-4
+        )[0]
 
         return integrated_coeff
 
-    def set_timesteps(self, num_inference_steps: int, device: Union[str, torch.device] = None):
+    def set_timesteps(
+        self, num_inference_steps: int, device: Union[str, torch.device] = None
+    ):
         """
         Sets the timesteps used for the diffusion chain. Supporting function to be run before inference.
 
@@ -168,7 +186,9 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
         """
         self.num_inference_steps = num_inference_steps
 
-        timesteps = np.linspace(0, self.config.num_train_timesteps - 1, num_inference_steps, dtype=float)[::-1].copy()
+        timesteps = np.linspace(
+            0, self.config.num_train_timesteps - 1, num_inference_steps, dtype=float
+        )[::-1].copy()
         sigmas = np.array(((1 - self.alphas_cumprod) / self.alphas_cumprod) ** 0.5)
         sigmas = np.interp(timesteps, np.arange(0, len(sigmas)), sigmas)
         sigmas = np.concatenate([sigmas, [0.0]]).astype(np.float32)
@@ -240,17 +260,23 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
 
         # 3. Compute linear multistep coefficients
         order = min(step_index + 1, order)
-        lms_coeffs = [self.get_lms_coefficient(order, step_index, curr_order) for curr_order in range(order)]
+        lms_coeffs = [
+            self.get_lms_coefficient(order, step_index, curr_order)
+            for curr_order in range(order)
+        ]
 
         # 4. Compute previous sample based on the derivatives path
         prev_sample = sample + sum(
-            coeff * derivative for coeff, derivative in zip(lms_coeffs, reversed(self.derivatives))
+            coeff * derivative
+            for coeff, derivative in zip(lms_coeffs, reversed(self.derivatives))
         )
 
         if not return_dict:
             return (prev_sample,)
 
-        return LMSDiscreteSchedulerOutput(prev_sample=prev_sample, pred_original_sample=pred_original_sample)
+        return LMSDiscreteSchedulerOutput(
+            prev_sample=prev_sample, pred_original_sample=pred_original_sample
+        )
 
     def add_noise(
         self,
@@ -259,10 +285,14 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
         timesteps: torch.FloatTensor,
     ) -> torch.FloatTensor:
         # Make sure sigmas and timesteps have the same device and dtype as original_samples
-        self.sigmas = self.sigmas.to(device=original_samples.device, dtype=original_samples.dtype)
+        self.sigmas = self.sigmas.to(
+            device=original_samples.device, dtype=original_samples.dtype
+        )
         if original_samples.device.type == "mps" and torch.is_floating_point(timesteps):
             # mps does not support float64
-            self.timesteps = self.timesteps.to(original_samples.device, dtype=torch.float32)
+            self.timesteps = self.timesteps.to(
+                original_samples.device, dtype=torch.float32
+            )
             timesteps = timesteps.to(original_samples.device, dtype=torch.float32)
         else:
             self.timesteps = self.timesteps.to(original_samples.device)
@@ -270,7 +300,9 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
 
         schedule_timesteps = self.timesteps
 
-        if isinstance(timesteps, torch.IntTensor) or isinstance(timesteps, torch.LongTensor):
+        if isinstance(timesteps, torch.IntTensor) or isinstance(
+            timesteps, torch.LongTensor
+        ):
             deprecate(
                 "timesteps as indices",
                 "0.8.0",
@@ -281,7 +313,9 @@ class LMSDiscreteScheduler(SchedulerMixin, ConfigMixin):
             )
             step_indices = timesteps
         else:
-            step_indices = [(schedule_timesteps == t).nonzero().item() for t in timesteps]
+            step_indices = [
+                (schedule_timesteps == t).nonzero().item() for t in timesteps
+            ]
 
         sigma = self.sigmas[step_indices].flatten()
         while len(sigma.shape) < len(original_samples.shape):

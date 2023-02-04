@@ -83,7 +83,9 @@ class FlaxAttentionBlock(nn.Module):
         attention_probs = nn.softmax(attention_scores, axis=2)
 
         # attend to values
-        hidden_states = jnp.einsum("b i j, b j d -> b i d", attention_probs, value_states)
+        hidden_states = jnp.einsum(
+            "b i j, b j d -> b i d", attention_probs, value_states
+        )
         hidden_states = self.reshape_batch_dim_to_heads(hidden_states)
         hidden_states = self.proj_attn(hidden_states)
         return hidden_states
@@ -115,10 +117,16 @@ class FlaxBasicTransformerBlock(nn.Module):
 
     def setup(self):
         # self attention
-        self.attn1 = FlaxAttentionBlock(self.dim, self.n_heads, self.d_head, self.dropout, dtype=self.dtype)
+        self.attn1 = FlaxAttentionBlock(
+            self.dim, self.n_heads, self.d_head, self.dropout, dtype=self.dtype
+        )
         # cross attention
-        self.attn2 = FlaxAttentionBlock(self.dim, self.n_heads, self.d_head, self.dropout, dtype=self.dtype)
-        self.ff = FlaxGluFeedForward(dim=self.dim, dropout=self.dropout, dtype=self.dtype)
+        self.attn2 = FlaxAttentionBlock(
+            self.dim, self.n_heads, self.d_head, self.dropout, dtype=self.dtype
+        )
+        self.ff = FlaxGluFeedForward(
+            dim=self.dim, dropout=self.dropout, dtype=self.dtype
+        )
         self.norm1 = nn.LayerNorm(epsilon=1e-5, dtype=self.dtype)
         self.norm2 = nn.LayerNorm(epsilon=1e-5, dtype=self.dtype)
         self.norm3 = nn.LayerNorm(epsilon=1e-5, dtype=self.dtype)
@@ -126,12 +134,16 @@ class FlaxBasicTransformerBlock(nn.Module):
     def __call__(self, hidden_states, context, deterministic=True):
         # self attention
         residual = hidden_states
-        hidden_states = self.attn1(self.norm1(hidden_states), deterministic=deterministic)
+        hidden_states = self.attn1(
+            self.norm1(hidden_states), deterministic=deterministic
+        )
         hidden_states = hidden_states + residual
 
         # cross attention
         residual = hidden_states
-        hidden_states = self.attn2(self.norm2(hidden_states), context, deterministic=deterministic)
+        hidden_states = self.attn2(
+            self.norm2(hidden_states), context, deterministic=deterministic
+        )
         hidden_states = hidden_states + residual
 
         # feed forward
@@ -182,7 +194,13 @@ class FlaxTransformer2DModel(nn.Module):
         )
 
         self.transformer_blocks = [
-            FlaxBasicTransformerBlock(inner_dim, self.n_heads, self.d_head, dropout=self.dropout, dtype=self.dtype)
+            FlaxBasicTransformerBlock(
+                inner_dim,
+                self.n_heads,
+                self.d_head,
+                dropout=self.dropout,
+                dtype=self.dtype,
+            )
             for _ in range(self.depth)
         ]
 
@@ -203,7 +221,9 @@ class FlaxTransformer2DModel(nn.Module):
         hidden_states = hidden_states.reshape(batch, height * width, channels)
 
         for transformer_block in self.transformer_blocks:
-            hidden_states = transformer_block(hidden_states, context, deterministic=deterministic)
+            hidden_states = transformer_block(
+                hidden_states, context, deterministic=deterministic
+            )
 
         hidden_states = hidden_states.reshape(batch, height, width, channels)
 

@@ -106,7 +106,9 @@ class EMAModel:
             try:
                 ema_param = ema_params[key]
             except KeyError:
-                ema_param = param.float().clone() if param.ndim == 1 else copy.deepcopy(param)
+                ema_param = (
+                    param.float().clone() if param.ndim == 1 else copy.deepcopy(param)
+                )
                 ema_params[key] = ema_param
 
             if not param.requires_grad:
@@ -114,7 +116,9 @@ class EMAModel:
                 ema_param = ema_params[key]
             else:
                 ema_param.mul_(self.decay)
-                ema_param.add_(param.data.to(dtype=ema_param.dtype), alpha=1 - self.decay)
+                ema_param.add_(
+                    param.data.to(dtype=ema_param.dtype), alpha=1 - self.decay
+                )
 
             ema_state_dict[key] = ema_param
 

@@ -12,7 +12,6 @@ class Notification(Data):
         title: str = "",
         message: str = "",
     ) -> None:
-
         self.severity = severity
         self.title = title
         self.message = message

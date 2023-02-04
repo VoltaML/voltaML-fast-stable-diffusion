@@ -59,7 +59,9 @@ def index_to_log_onehot(x: torch.LongTensor, num_classes: int) -> torch.FloatTen
     return log_x
 
 
-def gumbel_noised(logits: torch.FloatTensor, generator: Optional[torch.Generator]) -> torch.FloatTensor:
+def gumbel_noised(
+    logits: torch.FloatTensor, generator: Optional[torch.Generator]
+) -> torch.FloatTensor:
     """
     Apply gumbel noise to `logits`
     """
@@ -69,14 +71,18 @@ def gumbel_noised(logits: torch.FloatTensor, generator: Optional[torch.Generator
     return noised
 
 
-def alpha_schedules(num_diffusion_timesteps: int, alpha_cum_start=0.99999, alpha_cum_end=0.000009):
+def alpha_schedules(
+    num_diffusion_timesteps: int, alpha_cum_start=0.99999, alpha_cum_end=0.000009
+):
     """
     Cumulative and non-cumulative alpha schedules.
 
     See section 4.1.
     """
     att = (
-        np.arange(0, num_diffusion_timesteps) / (num_diffusion_timesteps - 1) * (alpha_cum_end - alpha_cum_start)
+        np.arange(0, num_diffusion_timesteps)
+        / (num_diffusion_timesteps - 1)
+        * (alpha_cum_end - alpha_cum_start)
         + alpha_cum_start
     )
     att = np.concatenate(([1], att))
@@ -85,14 +91,18 @@ def alpha_schedules(num_diffusion_timesteps: int, alpha_cum_start=0.99999, alpha
     return at, att
 
 
-def gamma_schedules(num_diffusion_timesteps: int, gamma_cum_start=0.000009, gamma_cum_end=0.99999):
+def gamma_schedules(
+    num_diffusion_timesteps: int, gamma_cum_start=0.000009, gamma_cum_end=0.99999
+):
     """
     Cumulative and non-cumulative gamma schedules.
 
     See section 4.1.
     """
     ctt = (
-        np.arange(0, num_diffusion_timesteps) / (num_diffusion_timesteps - 1) * (gamma_cum_end - gamma_cum_start)
+        np.arange(0, num_diffusion_timesteps)
+        / (num_diffusion_timesteps - 1)
+        * (gamma_cum_end - gamma_cum_start)
         + gamma_cum_start
     )
     ctt = np.concatenate(([0], ctt))
@@ -153,8 +163,16 @@ class VQDiffusionScheduler(SchedulerMixin, ConfigMixin):
         # By convention, the index for the mask class is the last class index
         self.mask_class = self.num_embed - 1
 
-        at, att = alpha_schedules(num_train_timesteps, alpha_cum_start=alpha_cum_start, alpha_cum_end=alpha_cum_end)
-        ct, ctt = gamma_schedules(num_train_timesteps, gamma_cum_start=gamma_cum_start, gamma_cum_end=gamma_cum_end)
+        at, att = alpha_schedules(
+            num_train_timesteps,
+            alpha_cum_start=alpha_cum_start,
+            alpha_cum_end=alpha_cum_end,
+        )
+        ct, ctt = gamma_schedules(
+            num_train_timesteps,
+            gamma_cum_start=gamma_cum_start,
+            gamma_cum_end=gamma_cum_end,
+        )
 
         num_non_mask_classes = self.num_embed - 1
         bt = (1 - at - ct) / num_non_mask_classes
@@ -183,9 +201,13 @@ class VQDiffusionScheduler(SchedulerMixin, ConfigMixin):
 
         # setable values
         self.num_inference_steps = None
-        self.timesteps = torch.from_numpy(np.arange(0, num_train_timesteps)[::-1].copy())
+        self.timesteps = torch.from_numpy(
+            np.arange(0, num_train_timesteps)[::-1].copy()
+        )
 
-    def set_timesteps(self, num_inference_steps: int, device: Union[str, torch.device] = None):
+    def set_timesteps(
+        self, num_inference_steps: int, device: Union[str, torch.device] = None
+    ):
         """
         Sets the discrete timesteps used for the diffusion chain. Supporting function to be run before inference.
 
@@ -375,7 +397,12 @@ class VQDiffusionScheduler(SchedulerMixin, ConfigMixin):
         return log_p_x_t_min_1
 
     def log_Q_t_transitioning_to_known_class(
-        self, *, t: torch.int, x_t: torch.LongTensor, log_onehot_x_t: torch.FloatTensor, cumulative: bool
+        self,
+        *,
+        t: torch.int,
+        x_t: torch.LongTensor,
+        log_onehot_x_t: torch.FloatTensor,
+        cumulative: bool
     ):
         """
         Returns the log probabilities of the rows from the (cumulative or non-cumulative) transition matrix for each
@@ -449,7 +476,9 @@ class VQDiffusionScheduler(SchedulerMixin, ConfigMixin):
             #
             # `P(x_t=mask|x_{t-1=mask}) = 1` and 1 will be the value of the last row of the onehot vector
             # if x_t is masked
-            log_onehot_x_t_transitioning_from_masked = log_onehot_x_t[:, -1, :].unsqueeze(1)
+            log_onehot_x_t_transitioning_from_masked = log_onehot_x_t[
+                :, -1, :
+            ].unsqueeze(1)
 
         # `index_to_log_onehot` will add onehot vectors for masked pixels,
         # so the default one hot matrix has one too many rows. See the doc string
@@ -471,11 +500,15 @@ class VQDiffusionScheduler(SchedulerMixin, ConfigMixin):
 
         # The whole column of each masked pixel is `c`
         mask_class_mask = x_t == self.mask_class
-        mask_class_mask = mask_class_mask.unsqueeze(1).expand(-1, self.num_embed - 1, -1)
+        mask_class_mask = mask_class_mask.unsqueeze(1).expand(
+            -1, self.num_embed - 1, -1
+        )
         log_Q_t[mask_class_mask] = c
 
         if not cumulative:
-            log_Q_t = torch.cat((log_Q_t, log_onehot_x_t_transitioning_from_masked), dim=1)
+            log_Q_t = torch.cat(
+                (log_Q_t, log_onehot_x_t_transitioning_from_masked), dim=1
+            )
 
         return log_Q_t
 

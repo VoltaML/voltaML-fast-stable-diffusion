@@ -9,8 +9,12 @@ from transformers.models.clip.modeling_flax_clip import FlaxCLIPVisionModule
 
 
 def jax_cosine_distance(emb_1, emb_2, eps=1e-12):
-    norm_emb_1 = jnp.divide(emb_1.T, jnp.clip(jnp.linalg.norm(emb_1, axis=1), a_min=eps)).T
-    norm_emb_2 = jnp.divide(emb_2.T, jnp.clip(jnp.linalg.norm(emb_2, axis=1), a_min=eps)).T
+    norm_emb_1 = jnp.divide(
+        emb_1.T, jnp.clip(jnp.linalg.norm(emb_1, axis=1), a_min=eps)
+    ).T
+    norm_emb_2 = jnp.divide(
+        emb_2.T, jnp.clip(jnp.linalg.norm(emb_2, axis=1), a_min=eps)
+    ).T
     return jnp.matmul(norm_emb_1, norm_emb_2.T)
 
 
@@ -20,15 +24,25 @@ class FlaxStableDiffusionSafetyCheckerModule(nn.Module):
 
     def setup(self):
         self.vision_model = FlaxCLIPVisionModule(self.config.vision_config)
-        self.visual_projection = nn.Dense(self.config.projection_dim, use_bias=False, dtype=self.dtype)
-
-        self.concept_embeds = self.param("concept_embeds", jax.nn.initializers.ones, (17, self.config.projection_dim))
-        self.special_care_embeds = self.param(
-            "special_care_embeds", jax.nn.initializers.ones, (3, self.config.projection_dim)
+        self.visual_projection = nn.Dense(
+            self.config.projection_dim, use_bias=False, dtype=self.dtype
         )
 
-        self.concept_embeds_weights = self.param("concept_embeds_weights", jax.nn.initializers.ones, (17,))
-        self.special_care_embeds_weights = self.param("special_care_embeds_weights", jax.nn.initializers.ones, (3,))
+        self.concept_embeds = self.param(
+            "concept_embeds", jax.nn.initializers.ones, (17, self.config.projection_dim)
+        )
+        self.special_care_embeds = self.param(
+            "special_care_embeds",
+            jax.nn.initializers.ones,
+            (3, self.config.projection_dim),
+        )
+
+        self.concept_embeds_weights = self.param(
+            "concept_embeds_weights", jax.nn.initializers.ones, (17,)
+        )
+        self.special_care_embeds_weights = self.param(
+            "special_care_embeds_weights", jax.nn.initializers.ones, (3,)
+        )
 
     def __call__(self, clip_input):
         pooled_output = self.vision_model(clip_input)[1]
@@ -41,13 +55,17 @@ class FlaxStableDiffusionSafetyCheckerModule(nn.Module):
         # at the cost of increasing the possibility of filtering benign image inputs
         adjustment = 0.0
 
-        special_scores = special_cos_dist - self.special_care_embeds_weights[None, :] + adjustment
+        special_scores = (
+            special_cos_dist - self.special_care_embeds_weights[None, :] + adjustment
+        )
         special_scores = jnp.round(special_scores, 3)
         is_special_care = jnp.any(special_scores > 0, axis=1, keepdims=True)
         # Use a lower threshold if an image has any special care concept
         special_adjustment = is_special_care * 0.01
 
-        concept_scores = cos_dist - self.concept_embeds_weights[None, :] + special_adjustment
+        concept_scores = (
+            cos_dist - self.concept_embeds_weights[None, :] + special_adjustment
+        )
         concept_scores = jnp.round(concept_scores, 3)
         has_nsfw_concepts = jnp.any(concept_scores > 0, axis=1)
 
@@ -71,9 +89,18 @@ class FlaxStableDiffusionSafetyChecker(FlaxPreTrainedModel):
         if input_shape is None:
             input_shape = (1, 224, 224, 3)
         module = self.module_class(config=config, dtype=dtype, **kwargs)
-        super().__init__(config, module, input_shape=input_shape, seed=seed, dtype=dtype, _do_init=_do_init)
+        super().__init__(
+            config,
+            module,
+            input_shape=input_shape,
+            seed=seed,
+            dtype=dtype,
+            _do_init=_do_init,
+        )
 
-    def init_weights(self, rng: jax.random.PRNGKey, input_shape: Tuple, params: FrozenDict = None) -> FrozenDict:
+    def init_weights(
+        self, rng: jax.random.PRNGKey, input_shape: Tuple, params: FrozenDict = None
+    ) -> FrozenDict:
         # init input tensor
         clip_input = jax.random.normal(rng, input_shape)
 

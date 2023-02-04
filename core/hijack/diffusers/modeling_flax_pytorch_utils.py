@@ -37,6 +37,7 @@ def rename_key(key):
 # PyTorch => Flax #
 #####################
 
+
 # Adapted from https://github.com/huggingface/transformers/blob/c603c80f46881ae18b2ca50770ef65fa4033eacd/src/transformers/modeling_flax_pytorch_utils.py#L69
 # and https://github.com/patil-suraj/stable-diffusion-jax/blob/main/stable_diffusion_jax/convert_diffusers_to_jax.py
 def rename_key_and_reshape_tensor(pt_tuple_key, pt_tensor, random_flax_state_dict):
@@ -52,12 +53,18 @@ def rename_key_and_reshape_tensor(pt_tuple_key, pt_tensor, random_flax_state_dic
     ):
         renamed_pt_tuple_key = pt_tuple_key[:-1] + ("scale",)
         return renamed_pt_tuple_key, pt_tensor
-    elif pt_tuple_key[-1] in ["weight", "gamma"] and pt_tuple_key[:-1] + ("scale",) in random_flax_state_dict:
+    elif (
+        pt_tuple_key[-1] in ["weight", "gamma"]
+        and pt_tuple_key[:-1] + ("scale",) in random_flax_state_dict
+    ):
         renamed_pt_tuple_key = pt_tuple_key[:-1] + ("scale",)
         return renamed_pt_tuple_key, pt_tensor
 
     # embedding
-    if pt_tuple_key[-1] == "weight" and pt_tuple_key[:-1] + ("embedding",) in random_flax_state_dict:
+    if (
+        pt_tuple_key[-1] == "weight"
+        and pt_tuple_key[:-1] + ("embedding",) in random_flax_state_dict
+    ):
         pt_tuple_key = pt_tuple_key[:-1] + ("embedding",)
         return renamed_pt_tuple_key, pt_tensor
 
@@ -102,7 +109,9 @@ def convert_pytorch_state_dict_to_flax(pt_state_dict, flax_model, init_key=42):
         pt_tuple_key = tuple(renamed_pt_key.split("."))
 
         # Correctly rename weight parameters
-        flax_key, flax_tensor = rename_key_and_reshape_tensor(pt_tuple_key, pt_tensor, random_flax_state_dict)
+        flax_key, flax_tensor = rename_key_and_reshape_tensor(
+            pt_tuple_key, pt_tensor, random_flax_state_dict
+        )
 
         if flax_key in random_flax_state_dict:
             if flax_tensor.shape != random_flax_state_dict[flax_key].shape:

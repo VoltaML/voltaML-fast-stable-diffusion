@@ -57,7 +57,11 @@ class UNet1DModel(ModelMixin, ConfigMixin):
         freq_shift: int = 0,
         flip_sin_to_cos: bool = True,
         use_timestep_embedding: bool = False,
-        down_block_types: Tuple[str] = ("DownBlock1DNoSkip", "DownBlock1D", "AttnDownBlock1D"),
+        down_block_types: Tuple[str] = (
+            "DownBlock1DNoSkip",
+            "DownBlock1D",
+            "AttnDownBlock1D",
+        ),
         mid_block_type: str = "UNetMidBlock1D",
         up_block_types: Tuple[str] = ("AttnUpBlock1D", "UpBlock1D", "UpBlock1DNoSkip"),
         block_out_channels: Tuple[int] = (32, 32, 64),
@@ -69,11 +73,16 @@ class UNet1DModel(ModelMixin, ConfigMixin):
         # time
         if time_embedding_type == "fourier":
             self.time_proj = GaussianFourierProjection(
-                embedding_size=8, set_W_to_weight=False, log=False, flip_sin_to_cos=flip_sin_to_cos
+                embedding_size=8,
+                set_W_to_weight=False,
+                log=False,
+                flip_sin_to_cos=flip_sin_to_cos,
             )
             timestep_input_dim = 2 * block_out_channels[0]
         elif time_embedding_type == "positional":
-            self.time_proj = Timesteps(block_out_channels[0], flip_sin_to_cos, freq_shift)
+            self.time_proj = Timesteps(
+                block_out_channels[0], flip_sin_to_cos, freq_shift
+            )
             timestep_input_dim = block_out_channels[0]
 
         if use_timestep_embedding:
@@ -114,7 +123,11 @@ class UNet1DModel(ModelMixin, ConfigMixin):
         output_channel = reversed_block_out_channels[0]
         for i, up_block_type in enumerate(up_block_types):
             prev_output_channel = output_channel
-            output_channel = reversed_block_out_channels[i + 1] if i < len(up_block_types) - 1 else out_channels
+            output_channel = (
+                reversed_block_out_channels[i + 1]
+                if i < len(up_block_types) - 1
+                else out_channels
+            )
 
             up_block = get_up_block(
                 up_block_type,
@@ -154,7 +167,9 @@ class UNet1DModel(ModelMixin, ConfigMixin):
         # 2. down
         down_block_res_samples = ()
         for downsample_block in self.down_blocks:
-            sample, res_samples = downsample_block(hidden_states=sample, temb=timestep_embed)
+            sample, res_samples = downsample_block(
+                hidden_states=sample, temb=timestep_embed
+            )
             down_block_res_samples += res_samples
 
         # 3. mid

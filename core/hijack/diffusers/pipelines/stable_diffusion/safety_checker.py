@@ -25,13 +25,21 @@ class StableDiffusionSafetyChecker(PreTrainedModel):
         super().__init__(config)
 
         self.vision_model = CLIPVisionModel(config.vision_config)
-        self.visual_projection = nn.Linear(config.vision_config.hidden_size, config.projection_dim, bias=False)
+        self.visual_projection = nn.Linear(
+            config.vision_config.hidden_size, config.projection_dim, bias=False
+        )
 
-        self.concept_embeds = nn.Parameter(torch.ones(17, config.projection_dim), requires_grad=False)
-        self.special_care_embeds = nn.Parameter(torch.ones(3, config.projection_dim), requires_grad=False)
+        self.concept_embeds = nn.Parameter(
+            torch.ones(17, config.projection_dim), requires_grad=False
+        )
+        self.special_care_embeds = nn.Parameter(
+            torch.ones(3, config.projection_dim), requires_grad=False
+        )
 
         self.concept_embeds_weights = nn.Parameter(torch.ones(17), requires_grad=False)
-        self.special_care_embeds_weights = nn.Parameter(torch.ones(3), requires_grad=False)
+        self.special_care_embeds_weights = nn.Parameter(
+            torch.ones(3), requires_grad=False
+        )
 
     @torch.no_grad()
     def forward(self, clip_input, images):
@@ -39,13 +47,25 @@ class StableDiffusionSafetyChecker(PreTrainedModel):
         image_embeds = self.visual_projection(pooled_output)
 
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloa16
-        special_cos_dist = cosine_distance(image_embeds, self.special_care_embeds).cpu().float().numpy()
-        cos_dist = cosine_distance(image_embeds, self.concept_embeds).cpu().float().numpy()
+        special_cos_dist = (
+            cosine_distance(image_embeds, self.special_care_embeds)
+            .cpu()
+            .float()
+            .numpy()
+        )
+        cos_dist = (
+            cosine_distance(image_embeds, self.concept_embeds).cpu().float().numpy()
+        )
 
         result = []
         batch_size = image_embeds.shape[0]
         for i in range(batch_size):
-            result_img = {"special_scores": {}, "special_care": [], "concept_scores": {}, "bad_concepts": []}
+            result_img = {
+                "special_scores": {},
+                "special_care": [],
+                "concept_scores": {},
+                "bad_concepts": [],
+            }
 
             # increase this value to create a stronger `nfsw` filter
             # at the cost of increasing the possibility of filtering benign images
@@ -54,15 +74,21 @@ class StableDiffusionSafetyChecker(PreTrainedModel):
             for concept_idx in range(len(special_cos_dist[0])):
                 concept_cos = special_cos_dist[i][concept_idx]
                 concept_threshold = self.special_care_embeds_weights[concept_idx].item()
-                result_img["special_scores"][concept_idx] = round(concept_cos - concept_threshold + adjustment, 3)
+                result_img["special_scores"][concept_idx] = round(
+                    concept_cos - concept_threshold + adjustment, 3
+                )
                 if result_img["special_scores"][concept_idx] > 0:
-                    result_img["special_care"].append({concept_idx, result_img["special_scores"][concept_idx]})
+                    result_img["special_care"].append(
+                        {concept_idx, result_img["special_scores"][concept_idx]}
+                    )
                     adjustment = 0.01
 
             for concept_idx in range(len(cos_dist[0])):
                 concept_cos = cos_dist[i][concept_idx]
                 concept_threshold = self.concept_embeds_weights[concept_idx].item()
-                result_img["concept_scores"][concept_idx] = round(concept_cos - concept_threshold + adjustment, 3)
+                result_img["concept_scores"][concept_idx] = round(
+                    concept_cos - concept_threshold + adjustment, 3
+                )
                 if result_img["concept_scores"][concept_idx] > 0:
                     result_img["bad_concepts"].append(concept_idx)
 
@@ -94,11 +120,15 @@ class StableDiffusionSafetyChecker(PreTrainedModel):
         # at the cost of increasing the possibility of filtering benign images
         adjustment = 0.0
 
-        special_scores = special_cos_dist - self.special_care_embeds_weights + adjustment
+        special_scores = (
+            special_cos_dist - self.special_care_embeds_weights + adjustment
+        )
         # special_scores = special_scores.round(decimals=3)
         special_care = torch.any(special_scores > 0, dim=1)
         special_adjustment = special_care * 0.01
-        special_adjustment = special_adjustment.unsqueeze(1).expand(-1, cos_dist.shape[1])
+        special_adjustment = special_adjustment.unsqueeze(1).expand(
+            -1, cos_dist.shape[1]
+        )
 
         concept_scores = (cos_dist - self.concept_embeds_weights) + special_adjustment
         # concept_scores = concept_scores.round(decimals=3)

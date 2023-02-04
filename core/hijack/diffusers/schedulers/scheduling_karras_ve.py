@@ -95,7 +95,9 @@ class KarrasVeScheduler(SchedulerMixin, ConfigMixin):
         self.timesteps: np.IntTensor = None
         self.schedule: torch.FloatTensor = None  # sigma(t_i)
 
-    def scale_model_input(self, sample: torch.FloatTensor, timestep: Optional[int] = None) -> torch.FloatTensor:
+    def scale_model_input(
+        self, sample: torch.FloatTensor, timestep: Optional[int] = None
+    ) -> torch.FloatTensor:
         """
         Ensures interchangeability with schedulers that need to scale the denoising model input depending on the
         current timestep.
@@ -109,7 +111,9 @@ class KarrasVeScheduler(SchedulerMixin, ConfigMixin):
         """
         return sample
 
-    def set_timesteps(self, num_inference_steps: int, device: Union[str, torch.device] = None):
+    def set_timesteps(
+        self, num_inference_steps: int, device: Union[str, torch.device] = None
+    ):
         """
         Sets the continuous timesteps used for the diffusion chain. Supporting function to be run before inference.
 
@@ -124,14 +128,18 @@ class KarrasVeScheduler(SchedulerMixin, ConfigMixin):
         schedule = [
             (
                 self.config.sigma_max**2
-                * (self.config.sigma_min**2 / self.config.sigma_max**2) ** (i / (num_inference_steps - 1))
+                * (self.config.sigma_min**2 / self.config.sigma_max**2)
+                ** (i / (num_inference_steps - 1))
             )
             for i in self.timesteps
         ]
         self.schedule = torch.tensor(schedule, dtype=torch.float32, device=device)
 
     def add_noise_to_input(
-        self, sample: torch.FloatTensor, sigma: float, generator: Optional[torch.Generator] = None
+        self,
+        sample: torch.FloatTensor,
+        sigma: float,
+        generator: Optional[torch.Generator] = None,
     ) -> Tuple[torch.FloatTensor, float]:
         """
         Explicit Langevin-like "churn" step of adding noise to the sample according to a factor gamma_i ≥ 0 to reach a
@@ -145,7 +153,9 @@ class KarrasVeScheduler(SchedulerMixin, ConfigMixin):
             gamma = 0
 
         # sample eps ~ N(0, S_noise^2 * I)
-        eps = self.config.s_noise * torch.randn(sample.shape, generator=generator).to(sample.device)
+        eps = self.config.s_noise * torch.randn(sample.shape, generator=generator).to(
+            sample.device
+        )
         sigma_hat = sigma + gamma * sigma
         sample_hat = sample + ((sigma_hat**2 - sigma**2) ** 0.5 * eps)
 
@@ -186,7 +196,9 @@ class KarrasVeScheduler(SchedulerMixin, ConfigMixin):
             return (sample_prev, derivative)
 
         return KarrasVeOutput(
-            prev_sample=sample_prev, derivative=derivative, pred_original_sample=pred_original_sample
+            prev_sample=sample_prev,
+            derivative=derivative,
+            pred_original_sample=pred_original_sample,
         )
 
     def step_correct(
@@ -217,13 +229,17 @@ class KarrasVeScheduler(SchedulerMixin, ConfigMixin):
         """
         pred_original_sample = sample_prev + sigma_prev * model_output
         derivative_corr = (sample_prev - pred_original_sample) / sigma_prev
-        sample_prev = sample_hat + (sigma_prev - sigma_hat) * (0.5 * derivative + 0.5 * derivative_corr)
+        sample_prev = sample_hat + (sigma_prev - sigma_hat) * (
+            0.5 * derivative + 0.5 * derivative_corr
+        )
 
         if not return_dict:
             return (sample_prev, derivative)
 
         return KarrasVeOutput(
-            prev_sample=sample_prev, derivative=derivative, pred_original_sample=pred_original_sample
+            prev_sample=sample_prev,
+            derivative=derivative,
+            pred_original_sample=pred_original_sample,
         )
 
     def add_noise(self, original_samples, noise, timesteps):
