@@ -6,6 +6,7 @@
         <ImageUpload
           :callback="imageSelectCallback"
           :preview="conf.data.settings.img2img.image"
+          style="margin-bottom: 12px"
         />
 
         <NCard title="Settings">
@@ -301,6 +302,7 @@ import {
   NSlider,
   NSpace,
   NTooltip,
+  useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
 import { useSettings } from "../store/settings";
@@ -308,6 +310,7 @@ import { useState } from "../store/state";
 
 const global = useState();
 const conf = useSettings();
+const messageHandler = useMessage();
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -323,33 +326,39 @@ const imageSelectCallback = (base64Image: string) => {
 };
 
 const generate = () => {
+  if (conf.data.settings.txt2img.seed === null) {
+    messageHandler.error("Please set a seed");
+    return;
+  }
   global.state.generating = true;
-  fetch(`${serverUrl}/api/txt2img/generate`, {
+  fetch(`${serverUrl}/api/img2img/generate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
+        prompt: conf.data.settings.img2img.prompt,
+        image: conf.data.settings.img2img.image,
         id: uuidv4(),
-        prompt: conf.data.settings.txt2img.prompt,
-        negative_prompt: conf.data.settings.txt2img.negativePrompt,
-        width: conf.data.settings.txt2img.width,
-        height: conf.data.settings.txt2img.height,
-        steps: conf.data.settings.txt2img.steps,
-        guidance_scale: conf.data.settings.txt2img.cfgScale,
-        seed: checkSeed(conf.data.settings.txt2img.seed),
-        batch_size: conf.data.settings.txt2img.batchSize,
-        batch_count: conf.data.settings.txt2img.batchCount,
+        negative_prompt: conf.data.settings.img2img.negativePrompt,
+        width: conf.data.settings.img2img.width,
+        height: conf.data.settings.img2img.height,
+        steps: conf.data.settings.img2img.steps,
+        guidance_scale: conf.data.settings.img2img.cfgScale,
+        seed: checkSeed(conf.data.settings.img2img.seed),
+        batch_size: conf.data.settings.img2img.batchSize,
+        batch_count: conf.data.settings.img2img.batchCount,
+        strength: conf.data.settings.img2img.denoisingStrength,
       },
       model: conf.data.settings.model,
-      scheduler: conf.data.settings.txt2img.sampler,
+      scheduler: conf.data.settings.img2img.sampler,
     }),
   })
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
-        global.state.txt2img.currentImage = data.images[0];
+        global.state.txt2img.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
@@ -357,6 +366,7 @@ const generate = () => {
     })
     .catch((err) => {
       global.state.generating = false;
+      messageHandler.error(err);
       console.log(err);
     });
 };

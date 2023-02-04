@@ -1,7 +1,7 @@
 import gc
 import logging
 import os
-from typing import Callable, List, Optional
+from typing import List
 
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
@@ -19,14 +19,11 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
+from core.functions import img2img_callback, txt2img_callback
 from core.inference.unet_tracer import TracedUNet, get_traced_unet
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, PyTorchModelType, Txt2ImgQueueEntry
-from core.utils import (
-    convert_image_to_base64,
-    convert_images_to_base64_grid,
-    convert_to_image,
-)
+from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
 
@@ -40,7 +37,6 @@ class PyTorchInferenceModel:
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
         device: str = "cuda",
-        callback: Optional[Callable[[int, int, torch.Tensor], None]] = None,
         callback_steps: int = 10,
     ) -> None:
         # HuggingFace
@@ -52,7 +48,6 @@ class PyTorchInferenceModel:
         self.device: str = device
 
         # Callbacks
-        self.callback: Optional[Callable[[int, int, torch.Tensor], None]] = callback
         self.callback_steps: int = callback_steps
 
         # Components
@@ -132,7 +127,7 @@ class PyTorchInferenceModel:
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
-                callback=self.callback,
+                callback=txt2img_callback,
                 callback_steps=1,
                 num_images_per_prompt=job.data.batch_size,
             )
@@ -173,18 +168,21 @@ class PyTorchInferenceModel:
 
         change_scheduler(model=self.model, scheduler=job.scheduler)
 
+        input_image = convert_to_image(job.data.image)
+        input_image = resize(input_image, job.data.height, job.data.width)
+
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
             data = self.model(
                 prompt=job.data.prompt,
-                image=convert_to_image(job.data.image),
+                image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
-                callback=self.callback,
+                callback=img2img_callback,
                 strength=job.data.strength,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
@@ -202,7 +200,7 @@ class PyTorchInferenceModel:
                     "progress": 0,
                     "current_step": 0,
                     "total_steps": 0,
-                    "images": [convert_image_to_base64(i) for i in total_images],
+                    "image": convert_images_to_base64_grid(total_images),
                 },
             )
         )

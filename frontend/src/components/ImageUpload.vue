@@ -5,7 +5,7 @@
     </div>
 
     <NSpace inline justify="space-between" align="center" style="width: 100%">
-      <p>{{ image.width }}x{{ image.height }}</p>
+      <p>{{ width }}x{{ height }}</p>
       <label for="file-upload">
         <span class="file-upload">Select image</span>
       </label>
@@ -22,7 +22,7 @@
 
 <script lang="ts" setup>
 import { NCard, NSpace } from "naive-ui";
-import { computed, type PropType } from "vue";
+import { ref, type PropType } from "vue";
 
 const props = defineProps({
   callback: {
@@ -32,6 +32,9 @@ const props = defineProps({
     type: String,
   },
 });
+
+const width = ref(0);
+const height = ref(0);
 
 function previewImage(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -44,20 +47,17 @@ function previewImage(event: Event) {
         if (props.callback) {
           props.callback(s);
         }
+        const img = new Image();
+        img.src = s;
+        img.onload = () => {
+          width.value = img.width;
+          height.value = img.height;
+        };
       }
     };
     reader.readAsDataURL(input.files[0]);
   }
 }
-
-const image = computed(() => {
-  const img = new Image();
-  if (!props.preview) {
-    return img;
-  }
-  img.src = props.preview;
-  return img;
-});
 </script>
 
 <style scoped>

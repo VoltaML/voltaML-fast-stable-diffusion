@@ -6,7 +6,7 @@ export default defineConfig({
 	lang: "en-US",
 	appearance: "dark",
 	lastUpdated: true,
-	base: "/voltaML-fast-stable-diffusion/voltaML-fast-stable-diffusion/",
+	base: "/voltaML-fast-stable-diffusion/",
 	themeConfig: {
 		editLink: {
 			pattern:

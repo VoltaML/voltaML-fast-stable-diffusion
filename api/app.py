@@ -66,12 +66,7 @@ async def validation_exception_handler(request: Request, _: RequestValidationErr
 
 
 # Origins that are allowed to access the API
-origins = [
-    "http://localhost:5173",
-    "https://localhost:5173",
-    "http://127.0.0.1:5003",
-    "https://127.0.0.1:5003",
-]
+origins = ["*"]
 
 # Allow CORS for specified origins
 app.add_middleware(

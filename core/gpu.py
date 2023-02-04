@@ -13,7 +13,6 @@ from api.websockets.notification import Notification
 from core import shared
 from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import DimensionError
-from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
 from core.png_metadata import save_images
 from core.queue import Queue
@@ -153,7 +152,6 @@ class GPU:
                 pt_model = PyTorchInferenceModel(
                     model_id=model,
                     device=self.cuda_id,
-                    callback=pytorch_callback,
                     callback_steps=shared.image_decode_steps,
                 )
                 pt_model.optimize()
@@ -185,7 +183,9 @@ class GPU:
             ]
 
             shared.current_model = model
-            shared.current_steps = job.data.steps
+            shared.current_steps = (
+                job.data.steps * job.data.batch_count * job.data.batch_size
+            )
 
             if isinstance(model, PyTorchInferenceModel):
                 logger.debug("Generating with PyTorch")
@@ -236,7 +236,9 @@ class GPU:
             ]
 
             shared.current_model = model
-            shared.current_steps = job.data.steps
+            shared.current_steps = (
+                job.data.steps * job.data.batch_count * job.data.batch_size
+            )
 
             if isinstance(model, PyTorchInferenceModel):
                 logger.debug("Generating with PyTorch")

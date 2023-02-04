@@ -1,3 +1,4 @@
+import re
 from typing import List
 
 from fastapi import APIRouter, HTTPException
@@ -15,15 +16,14 @@ router = APIRouter(tags=["img2img"])
 async def img2img_job(job: Img2ImgQueueEntry):
     "Generate images from text"
 
-    i = Image.open(
-        "outputs/txt2img/1girl blonde hoodie/055f74ef-41c4-4eec-a461-56952c250480.png"
-    )
-
-    job.data.image = convert_image_to_base64(i)
+    pattern = re.compile(r"data:image\/[\w]+;base64,")
 
     img = job.data.image
+    if isinstance(img, bytes):
+        img = img.decode("utf-8")
+
     if isinstance(img, str):
-        img = img.replace("data:image/png;base64,", "")
+        img = re.sub(pattern, "", img)
     job.data.image = img
 
     try:

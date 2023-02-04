@@ -99,7 +99,7 @@ class Cluster:
             if job.model in gpu.loaded_models.keys():
                 useful_gpus.append(gpu)
 
-        logger.debug(f"Useful GPUs for this job: {useful_gpus}")
+        logger.debug(f"Useful GPUs for this job: {[i.gpu_id for i in useful_gpus]}")
 
         if len(useful_gpus) == 0:
             websocket_manager.broadcast_sync(

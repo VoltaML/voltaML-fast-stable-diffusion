@@ -53,6 +53,16 @@ export function processWebSocket(
       global.state.total_steps = message.data.total_steps;
       break;
     }
+    case "img2img": {
+      console.log(message.data);
+      global.state.img2img.currentImage = message.data.image
+        ? message.data.image
+        : global.state.img2img.currentImage;
+      global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
+      global.state.total_steps = message.data.total_steps;
+      break;
+    }
     case "notification": {
       message.data.timeout = message.data.timeout || 5000;
 

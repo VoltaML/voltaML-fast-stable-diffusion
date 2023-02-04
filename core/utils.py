@@ -95,3 +95,9 @@ def convert_images_to_base64_grid(images: List[Image.Image]) -> str:
     "Convert a list of images to a list of base64 strings"
 
     return convert_image_to_base64(image_grid(images))
+
+
+def resize(image: Image.Image, w: int, h: int):
+    "Preprocess an image for the img2img procedure"
+
+    return image.resize((w, h), resample=Image.LANCZOS)

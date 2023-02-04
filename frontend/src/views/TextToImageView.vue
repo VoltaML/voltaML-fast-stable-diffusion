@@ -269,7 +269,7 @@ import {
   NSlider,
   NSpace,
   NTooltip,
-  useNotification,
+  useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
 import { useSettings } from "../store/settings";
@@ -277,7 +277,7 @@ import { useState } from "../store/state";
 
 const global = useState();
 const conf = useSettings();
-const notification = useNotification();
+const messageHandler = useMessage();
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -290,10 +290,7 @@ const checkSeed = (seed: number) => {
 
 const generate = () => {
   if (conf.data.settings.txt2img.seed === null) {
-    notification.error({
-      title: "Seed is not set",
-      description: "Please set a seed.",
-    });
+    messageHandler.error("Please set a seed");
     return;
   }
   global.state.generating = true;
@@ -333,6 +330,7 @@ const generate = () => {
     })
     .catch((err) => {
       global.state.generating = false;
+      messageHandler.error(err);
       console.log(err);
     });
 };
