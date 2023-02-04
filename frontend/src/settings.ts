@@ -1,41 +1,28 @@
 export enum Sampler {
-  EULER_A = "Euler A",
-  EULER = "Euler",
-  DDIM = "DDIM",
-  HEUN = "Heun",
-  DPMDISCRETE = "DPM Discrete",
-  DPM_A = "DPM A",
-  LMS = "LMS",
-  PNDM = "PNDM",
-  DPMPP_SDE_A = "DPMPP SDE A",
-  DPMPP_2M = "DPMPP 2M",
-}
-
-export enum KDiffusionSampler {
-  EULER_A = "sample_euler_ancestral",
-  EULER = "sample_euler",
-  LMS = "sample_lms",
-  HEUN = "sample_heun",
-  DPM2 = "sample_dpm_2",
-  DPM2_A = "sample_dpm_2_ancestral",
-  DPMPP_2S_A = "sample_dpmpp_2s_ancestral",
-  DPMPP_2M = "sample_dpmpp_2m",
-  DPMPP_SDE = "sample_dpmpp_sde",
-  DPM_FAST = "sample_dpm_fast",
-  DPM_ADAPTIVE = "sample_dpm_adaptive",
+  DDIM = 1,
+  DDPM = 2,
+  PNDM = 3,
+  LMSD = 4,
+  EULER = 5,
+  HEUN = 6,
+  EULER_A = 7,
+  DPM_2M = 8,
+  DPM_2S = 9,
+  DPM_SDE = 10,
+  DPM_2S_A_KARRAS = 11,
+  DEIS = 12,
 }
 
 export interface SettingsInterface {
   $schema: string;
   backend: "PyTorch" | "TensorRT";
-  useKarrasSigmas: 1 | 0;
   model: string;
   txt2img: {
     width: number;
     height: number;
     seed: number;
     cfgScale: number;
-    sampler: Sampler | KDiffusionSampler;
+    sampler: Sampler;
     prompt: string;
     negativePrompt: string;
     steps: number;
@@ -47,7 +34,7 @@ export interface SettingsInterface {
     height: number;
     seed: number;
     cfgScale: number;
-    sampler: Sampler | KDiffusionSampler;
+    sampler: Sampler;
     prompt: string;
     negativePrompt: string;
     steps: number;
@@ -64,14 +51,13 @@ export const defaultNegativePrompt =
 const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_settings.json",
   backend: "PyTorch",
-  useKarrasSigmas: 1,
   model: "none",
   txt2img: {
     width: 512,
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: KDiffusionSampler.EULER_A,
+    sampler: Sampler.EULER_A,
     prompt: "",
     steps: 25,
     batchCount: 1,
@@ -83,7 +69,7 @@ const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: KDiffusionSampler.EULER_A,
+    sampler: Sampler.EULER_A,
     prompt: "",
     steps: 25,
     batchCount: 1,

@@ -49,25 +49,6 @@
                 v-model:value="conf.data.settings.img2img.sampler"
                 style="flex-grow: 1"
               />
-
-              <div style="width: 32px"></div>
-
-              <NTooltip :max-width="600">
-                <template #trigger>
-                  <p style="margin-right: 12px; width: 150px">Karras sigmas</p>
-                </template>
-                If Karras sigmas should be used. Same as using ...Karras sampler
-                in A111
-              </NTooltip>
-
-              <NSelect
-                :options="[
-                  { label: 'No', value: 0 },
-                  { label: 'Yes', value: 1 },
-                ]"
-                v-model:value="conf.data.settings.useKarrasSigmas"
-                style="flex-grow: 1"
-              />
             </div>
 
             <!-- Dimensions -->
@@ -361,8 +342,6 @@ const generate = () => {
       },
       model: conf.data.settings.model,
       scheduler: conf.data.settings.txt2img.sampler,
-      use_karras_sigmas:
-        conf.data.settings.useKarrasSigmas === 1 ? true : false,
     }),
   })
     .then((res) => {

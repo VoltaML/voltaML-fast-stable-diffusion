@@ -99,6 +99,8 @@ class Cluster:
             if job.model in gpu.loaded_models.keys():
                 useful_gpus.append(gpu)
 
+        logger.debug(f"Useful GPUs for this job: {useful_gpus}")
+
         if len(useful_gpus) == 0:
             websocket_manager.broadcast_sync(
                 Notification(
@@ -108,6 +110,7 @@ class Cluster:
                 )
             )
 
+            logger.debug("Model not loaded on any GPU. Raising error")
             raise ModelNotLoadedError("Model not loaded on any GPU.")
 
         best_gpu: GPU = useful_gpus[0]
@@ -118,6 +121,8 @@ class Cluster:
 
             if len(best_gpu.queue.jobs) > len(gpu.queue.jobs):
                 best_gpu = gpu
+
+        logger.debug(f"Best GPU for this job: {best_gpu.gpu_id}")
 
         try:
             return await best_gpu.generate(job)

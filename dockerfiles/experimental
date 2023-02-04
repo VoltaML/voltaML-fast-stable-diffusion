@@ -23,8 +23,9 @@ ENV LOG_LEVEL=INFO
 ENV TENSORRT_ENGINE_PATH="/workspace/voltaML-fast-stable-diffusion/engine"
 
 # Prepare the environment
-WORKDIR /workspace/voltaML-fast-stable-diffusion
+WORKDIR /workspace
+RUN git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion.git -b experimental --single-branch
 
-CMD [ "git", "clone", "https://github.com/VoltaML/voltaML-fast-stable-diffusion.git", "-b", "experimental" ]
+WORKDIR /workspace/voltaML-fast-stable-diffusion
 
 ENTRYPOINT [ "bash" ]

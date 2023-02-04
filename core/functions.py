@@ -12,7 +12,7 @@ from api.websockets.data import Data
 from core import shared
 from core.errors import InferenceInterruptedError
 from core.types import ImageMetadata
-from core.utils import convert_image_to_base64
+from core.utils import convert_images_to_base64_grid
 
 logger = logging.getLogger(__name__)
 
@@ -50,10 +50,8 @@ def pytorch_callback(step: int, _timestep: int, tensor: torch.Tensor):
         shared.interrupt = False
         raise InferenceInterruptedError
 
-    print(tensor.shape)
-
     send_image = step % shared.image_decode_steps == 0
-    images: List[str] = []
+    images: List[Image.Image] = []
 
     if send_image:
         for i in range(tensor.shape[0]):
@@ -61,7 +59,7 @@ def pytorch_callback(step: int, _timestep: int, tensor: torch.Tensor):
             decoded_rgb = torch.clamp((decoded_rgb + 1.0) / 2.0, min=0.0, max=1.0)
             decoded_rgb = 255.0 * np.moveaxis(decoded_rgb.cpu().numpy(), 0, 2)
             decoded_rgb = decoded_rgb.astype(np.uint8)
-            images.append(convert_image_to_base64(Image.fromarray(decoded_rgb)))
+            images.append(Image.fromarray(decoded_rgb))
 
     websocket_manager.broadcast_sync(
         data=Data(
@@ -70,7 +68,7 @@ def pytorch_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 "progress": int((step / shared.current_steps) * 100),
                 "current_step": step,
                 "total_steps": shared.current_steps,
-                "images": images,
+                "image": convert_images_to_base64_grid(images) if send_image else "",
             },
         )
     )

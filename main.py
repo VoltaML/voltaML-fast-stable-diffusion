@@ -93,28 +93,28 @@ def checks():
             logger.error("Please run the script from a virtual environment")
             sys.exit(1)
 
-        # Install more user friendly logging
-        if not is_installed("coloredlogs"):
-            subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "coloredlogs",
-                ]
-            )
+    # Install more user friendly logging
+    if not is_installed("coloredlogs"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "coloredlogs",
+            ]
+        )
 
-        if not is_installed("packaging"):
-            subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "packaging",
-                ]
-            )
+    if not is_installed("packaging"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "packaging",
+            ]
+        )
 
     # Inject coloredlogs
     from coloredlogs import install as coloredlogs_install

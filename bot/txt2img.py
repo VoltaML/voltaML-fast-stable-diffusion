@@ -70,7 +70,6 @@ class Inference(Cog):
         scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
-        use_karras_sigmas: bool = True,
     ):
         "Generate an image from prompt"
 
@@ -118,7 +117,6 @@ class Inference(Cog):
             "model": model,
             "scheduler": scheduler.value,
             "backend": backend,
-            "use_karras_sigmas": use_karras_sigmas,
             "save_image": False,
         }
 
@@ -192,7 +190,6 @@ class Inference(Cog):
         scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
-        use_karras_sigmas: bool = True,
     ):
         "Generate an image from prompt"
 
@@ -240,7 +237,6 @@ class Inference(Cog):
             "model": model.value,
             "scheduler": scheduler.value,
             "backend": backend,
-            "use_karras_sigmas": use_karras_sigmas,
             "save_image": False,
         }
 

@@ -5,6 +5,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 
 import torch
+from diffusers.schedulers import KarrasDiffusionSchedulers
 from PIL import Image
 
 from api import websocket_manager
@@ -14,7 +15,7 @@ from core.convert.convert import load_pipeline_from_original_stable_diffusion_ck
 from core.errors import DimensionError
 from core.functions import pytorch_callback
 from core.inference.pytorch import PyTorchInferenceModel
-from core.png_metadata import save_image
+from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
 from core.utils import run_in_thread_async
@@ -205,7 +206,9 @@ class GPU:
                 seed=job.data.seed,
                 output_dir="output",
                 num_of_infer_steps=job.data.steps,
-                scheduler=job.scheduler,
+                scheduler=job.scheduler
+                if job.scheduler
+                else KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
             )
             self.memory_cleanup()
             return images
@@ -220,8 +223,7 @@ class GPU:
         assert images is not None
 
         if job.save_image:
-            for image in images:
-                save_image(image, job)
+            save_images(images, job)
 
         return images
 
@@ -269,8 +271,7 @@ class GPU:
         assert images is not None
 
         if job.save_image:
-            for image in images:
-                save_image(image, job)
+            save_images(images, job)
 
         return images
 

@@ -41,7 +41,7 @@ from core.schedulers import change_scheduler
 from core.trt.models import CLIP, VAE, UNet
 from core.trt.utilities import TRT_LOGGER, Engine, save_image
 from core.types import Txt2ImgQueueEntry
-from core.utils import convert_image_to_base64
+from core.utils import convert_images_to_base64_grid
 
 
 def parseArgs():
@@ -880,7 +880,7 @@ class DemoDiffusion:
                             "progress": 0,
                             "current_step": 0,
                             "total_steps": 0,
-                            "image": convert_image_to_base64(imgs[0]),
+                            "image": convert_images_to_base64_grid(imgs),
                         },
                     )
                 )

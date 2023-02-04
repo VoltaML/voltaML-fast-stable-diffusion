@@ -1,7 +1,7 @@
 import logging
 from os import makedirs
 from pathlib import Path
-from typing import Union
+from typing import List, Union
 
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
@@ -27,7 +27,9 @@ def create_metadata(job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]):
     return metadata
 
 
-def save_image(image: Image.Image, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]):
+def save_images(
+    images: List[Image.Image], job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]
+):
     "Save image to disk"
 
     prompt = (
@@ -46,14 +48,15 @@ def save_image(image: Image.Image, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEnt
         .replace('"', "")
     )
 
-    path = Path(
-        f"outputs/{'txt2img' if isinstance(job, Txt2ImgQueueEntry) else 'img2img'}/{prompt}/{job.data.id}.png"
-    )
-    makedirs(path.parent, exist_ok=True)
+    for i, image in enumerate(images):
+        path = Path(
+            f"outputs/{'txt2img' if isinstance(job, Txt2ImgQueueEntry) else 'img2img'}/{prompt}/{job.data.id}-{i}.png"
+        )
+        makedirs(path.parent, exist_ok=True)
 
-    metadata = create_metadata(job)
+        metadata = create_metadata(job)
 
-    logger.debug(f"Saving image to {path.as_posix()}")
+        logger.debug(f"Saving image to {path.as_posix()}")
 
-    with path.open("wb") as f:
-        image.save(f, pnginfo=metadata)
+        with path.open("wb") as f:
+            image.save(f, pnginfo=metadata)

@@ -21,7 +21,7 @@
             <div class="flex-container">
               <NTooltip :max-width="600">
                 <template #trigger>
-                  <p style="margin-right: 12px; width: 150px">Sampler</p>
+                  <p style="margin-right: 12px; width: 100px">Sampler</p>
                 </template>
                 The sampler is the method used to generate the image. Your
                 result may vary drastically depending on the sampler you choose.
@@ -39,25 +39,6 @@
               <NSelect
                 :options="conf.scheduler_options"
                 v-model:value="conf.data.settings.txt2img.sampler"
-                style="flex-grow: 1"
-              />
-
-              <div style="width: 32px"></div>
-
-              <NTooltip :max-width="600">
-                <template #trigger>
-                  <p style="margin-right: 12px; width: 150px">Karras sigmas</p>
-                </template>
-                If Karras sigmas should be used. Same as using ...Karras sampler
-                in A111
-              </NTooltip>
-
-              <NSelect
-                :options="[
-                  { label: 'No', value: 0 },
-                  { label: 'Yes', value: 1 },
-                ]"
-                v-model:value="conf.data.settings.useKarrasSigmas"
                 style="flex-grow: 1"
               />
             </div>
@@ -208,7 +189,7 @@
             <div class="flex-container">
               <NTooltip :max-width="600">
                 <template #trigger>
-                  <p class="slider-label">Seed</p>
+                  <p style="margin-right: 12px; width: 75px">Seed</p>
                 </template>
                 Seed is a number that represents the starting canvas of your
                 image. If you want to create the same image as your friend, you
@@ -339,14 +320,12 @@ const generate = () => {
       scheduler: conf.data.settings.txt2img.sampler,
       backend: "PyTorch",
       autoload: false,
-      use_karras_sigmas:
-        conf.data.settings.useKarrasSigmas === 1 ? true : false,
     }),
   })
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
-        global.state.txt2img.currentImage = data.images[0];
+        global.state.txt2img.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;

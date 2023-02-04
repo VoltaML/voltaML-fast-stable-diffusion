@@ -12,7 +12,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
     StableDiffusionImg2ImgPipeline,
 )
-from diffusers.schedulers import KarrasDiffusionSchedulers
 from PIL import Image
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -23,7 +22,11 @@ from core.config import config
 from core.inference.unet_tracer import TracedUNet, get_traced_unet
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, PyTorchModelType, Txt2ImgQueueEntry
-from core.utils import convert_image_to_base64, process_image
+from core.utils import (
+    convert_image_to_base64,
+    convert_images_to_base64_grid,
+    convert_to_image,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -80,11 +83,6 @@ class PyTorchInferenceModel:
         assert isinstance(pipe, StableDiffusionPipeline)
         pipe = pipe.to(self.device)
 
-        change_scheduler(
-            model=pipe,
-            scheduler=KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
-            config=pipe.config,
-        )
         return pipe
 
     def unload(self) -> None:
@@ -116,9 +114,11 @@ class PyTorchInferenceModel:
 
         generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
-        change_scheduler(
-            model=self.model, scheduler=job.scheduler, config=self.model.config
-        )
+        if job.scheduler:
+            change_scheduler(
+                model=self.model,
+                scheduler=job.scheduler,
+            )
 
         total_images: List[Image.Image] = []
 
@@ -133,6 +133,8 @@ class PyTorchInferenceModel:
                 output_type="pil",
                 generator=generator,
                 callback=self.callback,
+                callback_steps=1,
+                num_images_per_prompt=job.data.batch_size,
             )
             images: list[Image.Image] = data[0]
 
@@ -145,7 +147,7 @@ class PyTorchInferenceModel:
                     "progress": 0,
                     "current_step": 0,
                     "total_steps": 0,
-                    "images": [convert_image_to_base64(i) for i in total_images],
+                    "image": convert_images_to_base64_grid(total_images),
                 },
             )
         )
@@ -169,16 +171,14 @@ class PyTorchInferenceModel:
 
         generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
-        change_scheduler(
-            model=self.model, scheduler=job.scheduler, config=self.model.config
-        )
+        change_scheduler(model=self.model, scheduler=job.scheduler)
 
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
             data = self.model(
                 prompt=job.data.prompt,
-                image=process_image(job.data.image),
+                image=convert_to_image(job.data.image),
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,

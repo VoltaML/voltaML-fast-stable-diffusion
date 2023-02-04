@@ -1,5 +1,26 @@
-from typing import TYPE_CHECKING, Dict, Union
+from typing import TYPE_CHECKING, Dict, Optional, Union
 
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_depth2img import (
+    StableDiffusionDepth2ImgPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_image_variation import (
+    StableDiffusionImageVariationPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
+    StableDiffusionImg2ImgPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import (
+    StableDiffusionInpaintPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_instruct_pix2pix import (
+    StableDiffusionInstructPix2PixPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale import (
+    StableDiffusionUpscalePipeline,
+)
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 from diffusers.schedulers.scheduling_ddpm import DDPMScheduler
@@ -31,11 +52,28 @@ if TYPE_CHECKING:
 def change_scheduler(
     model: Union[PyTorchModelType, "DemoDiffusion"],
     scheduler: KarrasDiffusionSchedulers,
-    config: Dict,
+    config: Optional[Dict] = None,
 ):
     "Change the scheduler of the model"
 
     new_scheduler = None
+
+    if not isinstance(
+        model,
+        (
+            StableDiffusionDepth2ImgPipeline,
+            StableDiffusionImageVariationPipeline,
+            StableDiffusionImg2ImgPipeline,
+            StableDiffusionInpaintPipeline,
+            StableDiffusionInstructPix2PixPipeline,
+            StableDiffusionPipeline,
+            StableDiffusionUpscalePipeline,
+        ),
+    ):
+        if config is None:
+            raise ValueError("config must be provided for TRT model")
+    else:
+        config = model.scheduler.config  # type: ignore
 
     if scheduler == KarrasDiffusionSchedulers.DDIMScheduler:
         new_scheduler = DDIMScheduler

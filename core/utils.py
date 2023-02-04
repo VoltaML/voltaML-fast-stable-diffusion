@@ -1,14 +1,23 @@
 import asyncio
 import base64
 import logging
+import math
 from io import BytesIO
-from typing import Any, Callable, Coroutine, Dict, Optional, Tuple, Union
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple, Union
 
 from PIL import Image
 
 from core.thread import ThreadWithReturnValue
 
 logger = logging.getLogger(__name__)
+
+
+def get_grid_dimension(length: int) -> Tuple[int, int]:
+    "Generate the dimensions of a grid so that images can be tiled"
+
+    cols = math.ceil(length**0.5)
+    rows = math.ceil(length / cols)
+    return cols, rows
 
 
 def convert_image_to_stream(image: Image.Image) -> BytesIO:
@@ -20,16 +29,17 @@ def convert_image_to_stream(image: Image.Image) -> BytesIO:
     return stream
 
 
-def process_image(image: Union[Image.Image, bytes, str]) -> Image.Image:
+def convert_to_image(image: Union[Image.Image, bytes, str]) -> Image.Image:
     "Converts the image to a PIL Image if it is a base64 string or bytes"
 
     if isinstance(image, str):
         b = convert_base64_to_bytes(image)
         return Image.open(b)
-    elif isinstance(image, bytes):
+
+    if isinstance(image, bytes):
         return Image.open(image)
-    else:
-        return image
+
+    return image
 
 
 def convert_image_to_base64(image: Image.Image) -> str:
@@ -61,3 +71,27 @@ async def run_in_thread_async(
 
     # get the value returned from the thread
     return thread.join()
+
+
+def image_grid(imgs: List[Image.Image]):
+    "Make a grid of images"
+
+    landscape: bool = imgs[0].size[1] >= imgs[0].size[0]
+    dim = get_grid_dimension(len(imgs))
+    if landscape:
+        cols, rows = dim
+    else:
+        rows, cols = dim
+
+    w, h = imgs[0].size
+    grid = Image.new("RGB", size=(cols * w, rows * h))
+
+    for i, img in enumerate(imgs):
+        grid.paste(img, box=(i % cols * w, i // cols * h))
+    return grid
+
+
+def convert_images_to_base64_grid(images: List[Image.Image]) -> str:
+    "Convert a list of images to a list of base64 strings"
+
+    return convert_image_to_base64(image_grid(images))

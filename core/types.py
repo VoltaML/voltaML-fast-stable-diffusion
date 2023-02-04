@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Union
+from typing import Optional, Union
 from uuid import uuid4
 
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
@@ -96,8 +96,7 @@ class Txt2ImgQueueEntry:
 
     data: Txt2imgData
     model: str
-    scheduler: KarrasDiffusionSchedulers
-    use_karras_sigmas: bool = field(default=True)
+    scheduler: Optional[KarrasDiffusionSchedulers] = None
     websocket_id: Union[str, None] = field(default=None)
     save_image: bool = field(default=True)
 
@@ -109,7 +108,6 @@ class Img2ImgQueueEntry:
     data: Img2imgData
     model: str
     scheduler: KarrasDiffusionSchedulers
-    use_karras_sigmas: bool = field(default=True)
     websocket_id: Union[str, None] = field(default=None)
     save_image: bool = field(default=True)
 
