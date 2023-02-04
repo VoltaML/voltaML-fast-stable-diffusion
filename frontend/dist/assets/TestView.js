@@ -1,4 +1,5 @@
-import { C as cB, ap as cNotM, D as cE, a0 as cM, d as defineComponent, E as useConfig, F as useTheme, G as computed, H as useThemeClass, B as h, P as Fragment, b3 as dividerLight, O as ref, o as openBlock, c as createElementBlock, i as createBaseVNode, e as unref, k as createTextVNode, b as createVNode, w as withCtx, Q as NButton, A as _export_sfc } from "./index.js";
+import { I as ImageUpload } from "./ImageUpload.js";
+import { X as cB, a0 as cNotM, $ as cE, Y as cM, d as defineComponent, a1 as useConfig, a2 as useTheme, P as computed, ab as useThemeClass, G as h, R as Fragment, bl as dividerLight, c as createElementBlock, e as createVNode, f as unref, o as openBlock } from "./index.js";
 const style = cB("divider", `
  position: relative;
  display: flex;
@@ -104,58 +105,6 @@ const NDivider = defineComponent({
     );
   }
 });
-const _hoisted_1 = ["src"];
-const _hoisted_2 = { for: "file-upload" };
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "ImageUpload",
-  setup(__props) {
-    let preview = ref("");
-    function previewImage(event) {
-      const input = event.target;
-      if (input.files) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          var _a;
-          const i = (_a = e.target) == null ? void 0 : _a.result;
-          if (i) {
-            preview.value = i.toString();
-          }
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock(Fragment, null, [
-        createBaseVNode("img", {
-          src: unref(preview),
-          style: { "width": "400px", "height": "auto" }
-        }, null, 8, _hoisted_1),
-        createBaseVNode("label", _hoisted_2, [
-          createTextVNode("Hello world"),
-          createVNode(unref(NButton), {
-            type: "warning",
-            ghost: "",
-            bordered: ""
-          }, {
-            default: withCtx(() => [
-              createTextVNode("Upload an Image")
-            ]),
-            _: 1
-          })
-        ]),
-        createBaseVNode("input", {
-          type: "file",
-          accept: "image/*",
-          onChange: previewImage,
-          id: "file-upload",
-          class: "hidden-input"
-        }, null, 32)
-      ], 64);
-    };
-  }
-});
-const ImageUpload_vue_vue_type_style_index_0_scoped_900adde3_lang = "";
-const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-900adde3"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "TestView",
   setup(__props) {

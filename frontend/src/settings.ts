@@ -52,7 +52,7 @@ export const defaultNegativePrompt =
 const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_settings.json",
   backend: "PyTorch",
-  model: "none",
+  model: "none:PyTorch",
   txt2img: {
     width: 512,
     height: 512,

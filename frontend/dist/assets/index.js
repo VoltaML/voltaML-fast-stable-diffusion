@@ -30082,6 +30082,13 @@ const NMessageProvider = defineComponent({
     );
   }
 });
+function useMessage() {
+  const api = inject(messageApiInjectionKey, null);
+  if (api === null) {
+    throwError("use-message", "No outer <n-message-provider /> founded. See prerequisite in https://www.naiveui.com/en-US/os-theme/components/message for more details. If you want to use `useMessage` outside setup, please check https://www.naiveui.com/zh-CN/os-theme/components/message#Q-&-A.");
+  }
+  return api;
+}
 const notificationProviderInjectionKey = createInjectionKey("n-notification-provider");
 const NotificationContainer = defineComponent({
   name: "NotificationContainer",
@@ -32290,7 +32297,7 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$7 = [_hoisted_2$8];
-const Image = defineComponent({
+const Image$1 = defineComponent({
   name: "Image",
   render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$7);
@@ -34308,7 +34315,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
       {
         label: () => h(RouterLink, { to: "/" }, { default: () => "Text to Image" }),
         key: "txt2img",
-        icon: renderIcon(Image)
+        icon: renderIcon(Image$1)
       },
       {
         label: () => h(
@@ -34414,6 +34421,14 @@ function processWebSocket(message, global2, notificationProvider) {
     case "txt2img": {
       console.log(message.data);
       global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "img2img": {
+      console.log(message.data);
+      global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
       global2.state.progress = message.data.progress;
       global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
@@ -34780,7 +34795,7 @@ const defaultNegativePrompt = "(((deformed))), blurry, bad anatomy, disfigured, 
 const defaultSettings = {
   $schema: "./schema/ui_settings.json",
   backend: "PyTorch",
-  model: "none",
+  model: "none:PyTorch",
   txt2img: {
     width: 512,
     height: 512,
@@ -34805,7 +34820,8 @@ const defaultSettings = {
     batchSize: 1,
     negativePrompt: defaultNegativePrompt,
     denoisingStrength: 0.6,
-    resizeMethod: 0
+    resizeMethod: 0,
+    image: ""
   }
 };
 class Settings {
@@ -34879,8 +34895,10 @@ const useSettings = defineStore("settings", () => {
 });
 const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
+  const messageProvider = useMessage();
   const global2 = useState();
   const conf = useSettings();
+  const onConnectedCallbacks = [];
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     autoReconnect: {
       delay: 3e3
@@ -34898,17 +34916,24 @@ const useWebsocket = defineStore("websocket", () => {
       processWebSocket(data, global2, notificationProvider);
     },
     onConnected: () => {
+      messageProvider.success("Connected to server");
+      onConnectedCallbacks.forEach((callback) => callback());
       fetch(`${serverUrl}/api/models/loaded`).then((response) => {
         if (response.status === 200) {
           response.json().then((data) => {
-            if (data.length === 0) {
-              conf.data.settings.model = "none";
+            console.log(data[0].length);
+            if (data[0].length === 0) {
+              conf.data.settings.model = "none:PyTorch";
               return;
             }
             conf.data.settings.model = data[0][0];
           });
         }
       });
+    },
+    onDisconnected: () => {
+      messageProvider.error("Disconnected from server");
+      conf.data.settings.model = "none:PyTorch";
     }
   });
   function ws_text() {
@@ -34941,7 +34966,8 @@ const useWebsocket = defineStore("websocket", () => {
     loading,
     text,
     ws_open: websocket.open,
-    color
+    color,
+    onConnectedCallbacks
   };
 });
 const _hoisted_1$1 = { class: "top-bar" };
@@ -34952,7 +34978,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const websocketState = useWebsocket();
     const global2 = useState();
     const conf = useSettings();
-    const modelsLoading = ref(true);
+    const modelsLoading = ref(false);
     function refreshModels() {
       modelsLoading.value = true;
       fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
@@ -35028,13 +35054,18 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       key: "unload",
       children: [
         {
-          label: "Unload all models",
+          label: "No model selected",
           value: "none:PyTorch"
         }
       ]
     };
     const modelOptions = reactive([defaultOptions]);
-    refreshModels();
+    websocketState.onConnectedCallbacks.push(() => {
+      refreshModels();
+    });
+    if (websocketState.readyState === "OPEN") {
+      refreshModels();
+    }
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NSelect), {
@@ -35043,7 +35074,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           "onUpdate:value": onModelChange,
           loading: modelsLoading.value,
           placeholder: "Select model",
-          "default-value": "none",
+          "default-value": "none:PyTorch",
           value: unref(conf).data.settings.model
         }, null, 8, ["options", "loading", "value"]),
         createVNode(unref(NButton), {
@@ -35103,7 +35134,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_27054ef7_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_174afef2_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -35111,7 +35142,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-27054ef7"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-174afef2"]]);
 const _sfc_main$3 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -35351,7 +35382,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const global2 = useState();
     const conf = useSettings();
-    const notification = useNotification();
+    const messageHandler = useMessage();
     const checkSeed = (seed) => {
       if (seed === -1) {
         seed = Math.floor(Math.random() * 999999999);
@@ -35360,10 +35391,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
     const generate = () => {
       if (conf.data.settings.txt2img.seed === null) {
-        notification.error({
-          title: "Seed is not set",
-          description: "Please set a seed."
-        });
+        messageHandler.error("Please set a seed");
         return;
       }
       global2.state.generating = true;
@@ -35400,6 +35428,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         });
       }).catch((err) => {
         global2.state.generating = false;
+        messageHandler.error(err);
         console.log(err);
       });
     };
@@ -35675,12 +35704,12 @@ const router = createRouter({
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Result.js","assets/Tabs.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/Result.js"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Result.js"] : void 0)
     },
     {
       path: "/download",
@@ -35705,12 +35734,12 @@ const router = createRouter({
     {
       path: "/test",
       name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/TestView.css"] : void 0)
+      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/ImageUpload.js","assets/ImageUpload.css"] : void 0)
     },
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/Tabs.js","assets/ImageBrowserView.css"] : void 0)
     }
   ]
 });
@@ -35721,145 +35750,146 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  c$1 as $,
-  _export_sfc as A,
-  h as B,
-  cB as C,
-  cE as D,
-  useConfig as E,
-  useTheme as F,
-  computed as G,
-  useThemeClass as H,
-  NBaseIcon as I,
-  InfoIcon as J,
-  ErrorIcon as K,
-  resultLight$1 as L,
-  createKey as M,
+  cE as $,
+  popScopeId as A,
+  _export_sfc as B,
+  NIcon as C,
+  ref as D,
+  useSsrAdapter as E,
+  cssrAnchorMetaName$1 as F,
+  h as G,
+  c as H,
+  isSymbol as I,
+  isObject as J,
+  root$1 as K,
+  createInjectionKey as L,
+  inject as M,
   NGi as N,
-  ref as O,
-  Fragment as P,
-  NButton as Q,
-  NProgress as R,
-  SuccessIcon as S,
-  useFormItem as T,
-  useMergedState as U,
-  provide as V,
-  WarningIcon as W,
-  toRef as X,
-  createInjectionKey as Y,
-  call as Z,
+  throwError as O,
+  computed as P,
+  mergeProps as Q,
+  Fragment as R,
+  NBaseIcon as S,
+  AddIcon as T,
+  render$1 as U,
+  NBaseClose as V,
+  omit as W,
+  cB as X,
+  cM as Y,
+  c$1 as Z,
   _sfc_main$1 as _,
   useSettings as a,
-  ErrorIcon$1 as a$,
-  cM as a0,
-  iconSwitchTransition as a1,
-  insideModal as a2,
-  insidePopover as a3,
-  inject as a4,
-  useMemo as a5,
-  checkboxLight$1 as a6,
-  useRtl as a7,
-  createId as a8,
-  NIconSwitchTransition as a9,
-  flatten$2 as aA,
-  getSlot$1 as aB,
-  depx as aC,
-  formatLength as aD,
-  NScrollbar as aE,
-  onBeforeUnmount as aF,
-  off as aG,
-  ChevronDownIcon as aH,
-  NDropdown as aI,
-  pxfy as aJ,
-  get as aK,
-  NBaseLoading as aL,
-  ChevronRightIcon as aM,
-  onUnmounted as aN,
-  VVirtualList as aO,
-  VResizeObserver as aP,
-  warn$2 as aQ,
-  repeat as aR,
-  NEmpty as aS,
-  cssrAnchorMetaName as aT,
-  beforeNextFrameOnce as aU,
-  fadeInScaleUpTransition as aV,
-  Transition as aW,
-  dataTableLight$1 as aX,
-  stepsLight$1 as aY,
-  throwError as aZ,
-  FinishedIcon as a_,
-  on as aa,
-  popselectLight$1 as ab,
-  watch as ac,
-  NInternalSelectMenu as ad,
-  keysOf as ae,
-  createTreeMate as af,
-  happensIn as ag,
-  nextTick as ah,
-  createTmOptions as ai,
-  keep as aj,
-  createRefSetter as ak,
-  mergeEventHandlers as al,
-  omit as am,
-  NPopover as an,
-  popoverBaseProps as ao,
-  cNotM as ap,
-  useLocale as aq,
-  watchEffect as ar,
-  resolveSlot as as,
-  useAdjustedTo as at,
-  paginationLight$1 as au,
-  ellipsisLight$1 as av,
-  onDeactivated as aw,
-  mergeProps as ax,
-  radioLight$1 as ay,
-  resolveWrappedSlot as az,
-  createVNode as b,
-  reactive as b0,
-  NTag as b1,
-  NIcon as b2,
-  dividerLight$1 as b3,
-  useSsrAdapter as b4,
-  cssrAnchorMetaName$1 as b5,
-  c as b6,
-  isSymbol as b7,
-  isObject as b8,
-  root$1 as b9,
-  useCompitable as ba,
-  descriptionsLight$1 as bb,
-  AddIcon as bc,
-  render$1 as bd,
-  NBaseClose as be,
-  onFontsReady as bf,
-  tabsLight$1 as bg,
-  withDirectives as bh,
-  vShow as bi,
-  TransitionGroup as bj,
-  cloneVNode as bk,
-  renderList as bl,
-  toDisplayString as bm,
+  off as a$,
+  cNotM as a0,
+  useConfig as a1,
+  useTheme as a2,
+  useCompitable as a3,
+  flatten$2 as a4,
+  useMergedState as a5,
+  watch as a6,
+  provide as a7,
+  toRef as a8,
+  onFontsReady as a9,
+  useRtl as aA,
+  createId as aB,
+  NIconSwitchTransition as aC,
+  on as aD,
+  popselectLight$1 as aE,
+  NInternalSelectMenu as aF,
+  keysOf as aG,
+  createTreeMate as aH,
+  happensIn as aI,
+  createTmOptions as aJ,
+  keep as aK,
+  createRefSetter as aL,
+  mergeEventHandlers as aM,
+  NPopover as aN,
+  popoverBaseProps as aO,
+  useLocale as aP,
+  resolveSlot as aQ,
+  useAdjustedTo as aR,
+  paginationLight$1 as aS,
+  ellipsisLight$1 as aT,
+  onDeactivated as aU,
+  radioLight$1 as aV,
+  getSlot$1 as aW,
+  depx as aX,
+  formatLength as aY,
+  NScrollbar as aZ,
+  onBeforeUnmount as a_,
+  watchEffect as aa,
+  useThemeClass as ab,
+  resolveWrappedSlot as ac,
+  VResizeObserver as ad,
+  tabsLight$1 as ae,
+  call as af,
+  nextTick as ag,
+  createKey as ah,
+  withDirectives as ai,
+  vShow as aj,
+  TransitionGroup as ak,
+  cloneVNode as al,
+  InfoIcon as am,
+  SuccessIcon as an,
+  WarningIcon as ao,
+  ErrorIcon as ap,
+  resultLight$1 as aq,
+  toDisplayString as ar,
+  NButton as as,
+  NProgress as at,
+  useFormItem as au,
+  iconSwitchTransition as av,
+  insideModal as aw,
+  insidePopover as ax,
+  useMemo as ay,
+  checkboxLight$1 as az,
+  useMessage as b,
+  ChevronDownIcon as b0,
+  NDropdown as b1,
+  pxfy as b2,
+  get as b3,
+  NBaseLoading as b4,
+  ChevronRightIcon as b5,
+  onUnmounted as b6,
+  VVirtualList as b7,
+  warn$2 as b8,
+  repeat as b9,
+  NEmpty as ba,
+  cssrAnchorMetaName as bb,
+  beforeNextFrameOnce as bc,
+  fadeInScaleUpTransition as bd,
+  Transition as be,
+  dataTableLight$1 as bf,
+  stepsLight$1 as bg,
+  FinishedIcon as bh,
+  ErrorIcon$1 as bi,
+  reactive as bj,
+  NTag as bk,
+  dividerLight$1 as bl,
+  descriptionsLight$1 as bm,
+  renderList as bn,
   createElementBlock as c,
   defineComponent as d,
-  unref as e,
-  NCard as f,
-  NSpace as g,
-  NInput as h,
-  createBaseVNode as i,
-  NTooltip as j,
-  createTextVNode as k,
-  NSelect as l,
-  NSlider as m,
-  NInputNumber as n,
+  createVNode as e,
+  unref as f,
+  NCard as g,
+  NSpace as h,
+  NInput as i,
+  createBaseVNode as j,
+  NTooltip as k,
+  createTextVNode as l,
+  NSelect as m,
+  NSlider as n,
   openBlock as o,
-  NImageGroup as p,
-  createBlock as q,
-  NImage as r,
-  createCommentVNode as s,
-  NGrid as t,
+  NInputNumber as p,
+  NImageGroup as q,
+  createBlock as r,
+  NImage as s,
+  createCommentVNode as t,
   useState as u,
-  serverUrl as v,
+  NGrid as v,
   withCtx as w,
-  v4 as x,
-  pushScopeId as y,
-  popScopeId as z
+  serverUrl as x,
+  v4 as y,
+  pushScopeId as z
 };

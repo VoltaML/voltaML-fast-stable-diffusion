@@ -4,7 +4,7 @@ import {
   type WebSocketMessage,
 } from "@/websockets/websockets";
 import { useWebSocket } from "@vueuse/core";
-import { useNotification } from "naive-ui";
+import { useMessage, useNotification } from "naive-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useState } from "../store/state";
@@ -12,8 +12,12 @@ import { useSettings } from "./settings";
 
 export const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
+  const messageProvider = useMessage();
   const global = useState();
   const conf = useSettings();
+
+  const onConnectedCallbacks: (() => void)[] = [];
+
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     autoReconnect: {
       delay: 3000,
@@ -31,17 +35,24 @@ export const useWebsocket = defineStore("websocket", () => {
       processWebSocket(data, global, notificationProvider);
     },
     onConnected: () => {
+      messageProvider.success("Connected to server");
+      onConnectedCallbacks.forEach((callback) => callback());
       fetch(`${serverUrl}/api/models/loaded`).then((response) => {
         if (response.status === 200) {
           response.json().then((data) => {
-            if (data.length === 0) {
-              conf.data.settings.model = "none";
+            console.log(data[0].length);
+            if (data[0].length === 0) {
+              conf.data.settings.model = "none:PyTorch";
               return;
             }
             conf.data.settings.model = data[0][0];
           });
         }
       });
+    },
+    onDisconnected: () => {
+      messageProvider.error("Disconnected from server");
+      conf.data.settings.model = "none:PyTorch";
     },
   });
 
@@ -79,5 +90,6 @@ export const useWebsocket = defineStore("websocket", () => {
     text,
     ws_open: websocket.open,
     color,
+    onConnectedCallbacks,
   };
 });

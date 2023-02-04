@@ -6,7 +6,7 @@
       @update:value="onModelChange"
       :loading="modelsLoading"
       placeholder="Select model"
-      default-value="none"
+      default-value="none:PyTorch"
       :value="conf.data.settings.model"
     />
     <NButton quaternary circle type="default" @click="refreshModels">
@@ -58,7 +58,7 @@ import { useState } from "../store/state";
 const websocketState = useWebsocket();
 const global = useState();
 const conf = useSettings();
-const modelsLoading = ref(true);
+const modelsLoading = ref(false);
 
 function refreshModels() {
   modelsLoading.value = true;
@@ -153,14 +153,19 @@ const defaultOptions: SelectGroupOption = {
   key: "unload",
   children: [
     {
-      label: "Unload all models",
+      label: "No model selected",
       value: "none:PyTorch",
     },
   ],
 };
 const modelOptions: Array<SelectGroupOption> = reactive([defaultOptions]);
 
-refreshModels();
+websocketState.onConnectedCallbacks.push(() => {
+  refreshModels();
+});
+if (websocketState.readyState === "OPEN") {
+  refreshModels();
+}
 </script>
 
 <style scoped>

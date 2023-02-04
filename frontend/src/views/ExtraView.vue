@@ -1,7 +1,7 @@
 <template>
-  <NResult status="info" title="Extra" description="Work in progress" />
+  <WIP />
 </template>
 
 <script lang="ts" setup>
-import { NResult } from "naive-ui";
+import WIP from "@/components/WIP.vue";
 </script>
