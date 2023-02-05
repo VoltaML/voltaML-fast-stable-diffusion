@@ -6,29 +6,59 @@ from typing import List, Union
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
-from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
+from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Txt2ImgQueueEntry
 
 logger = logging.getLogger(__name__)
 
 
-def create_metadata(job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]):
+def create_metadata(
+    job: Union[
+        Txt2ImgQueueEntry,
+        Img2ImgQueueEntry,
+        InpaintQueueEntry,
+    ]
+):
     "Return image with metadata burned into it"
 
+    data = job.data
     metadata = PngInfo()
-    metadata.add_text("prompt", job.data.prompt)
-    metadata.add_text("negative_prompt", job.data.negative_prompt)
-    metadata.add_text("width", str(job.data.width))
-    metadata.add_text("height", str(job.data.height))
-    metadata.add_text("steps", str(job.data.steps))
-    metadata.add_text("guidance_scale", str(job.data.guidance_scale))
-    metadata.add_text("seed", str(job.data.seed))
+
+    def write_metadata(key: str):
+        metadata.add_text(key, data.__dict__.get(key, ""))
+
+    for i in [
+        "prompt",
+        "negative_prompt",
+        "width",
+        "height",
+        "steps",
+        "guidance_scale",
+        "seed",
+        "strength",
+    ]:
+        write_metadata(i)
+
+    procedure = ""
+    if isinstance(job, Txt2ImgQueueEntry):
+        procedure = "txt2img"
+    elif isinstance(job, Img2ImgQueueEntry):
+        procedure = "img2img"
+    elif isinstance(job, InpaintQueueEntry):
+        procedure = "inpaint"
+
+    metadata.add_text("procedure", procedure)
     metadata.add_text("model", job.model)
 
     return metadata
 
 
 def save_images(
-    images: List[Image.Image], job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]
+    images: List[Image.Image],
+    job: Union[
+        Txt2ImgQueueEntry,
+        Img2ImgQueueEntry,
+        InpaintQueueEntry,
+    ],
 ):
     "Save image to disk"
 

@@ -326,7 +326,7 @@ const imageSelectCallback = (base64Image: string) => {
 };
 
 const generate = () => {
-  if (conf.data.settings.txt2img.seed === null) {
+  if (conf.data.settings.img2img.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
@@ -358,7 +358,7 @@ const generate = () => {
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
-        global.state.txt2img.images = data.images;
+        global.state.img2img.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
