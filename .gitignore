@@ -175,7 +175,8 @@ unet.engine
 testing/
 *.ipynb
 
-
+# Docs
+docs/.vitepress/dist
 
 #project specific
 /engine

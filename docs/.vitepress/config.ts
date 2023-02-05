@@ -38,6 +38,16 @@ export default defineConfig({
 				text: "API",
 				items: [{ text: "API", link: "/api/" }],
 			},
+			{
+				text: "Developers",
+				items: [
+					{ text: "PyTorch", link: "/developers/pytorch" },
+					{
+						text: "Frontend",
+						link: "/developers/frontend",
+					},
+				],
+			},
 		],
 	},
 });
