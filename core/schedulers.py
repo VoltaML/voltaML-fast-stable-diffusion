@@ -46,11 +46,11 @@ from diffusers.schedulers.scheduling_pndm import PNDMScheduler
 from core.types import PyTorchModelType
 
 if TYPE_CHECKING:
-    from core.inference.volta_accelerate import DemoDiffusion
+    from core.inference.volta_accelerate import TRTModel
 
 
 def change_scheduler(
-    model: Union[PyTorchModelType, "DemoDiffusion"],
+    model: Union[PyTorchModelType, "TRTModel"],
     scheduler: KarrasDiffusionSchedulers,
     config: Optional[Dict] = None,
 ):

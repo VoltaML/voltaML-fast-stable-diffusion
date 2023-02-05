@@ -7,6 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 import torch
+from diffusers import UNet2DConditionModel
 
 if TYPE_CHECKING:
     from core.types import PyTorchModelType
@@ -103,10 +104,10 @@ class UNet2DConditionOutput:
 class TracedUNet(torch.nn.Module):
     "UNet model optimized with JIT tracing"
 
-    def __init__(self, unet_traced, pipe: "PyTorchModelType"):
+    def __init__(self, unet_traced, untraced_unet: UNet2DConditionModel):
         super().__init__()
-        self.in_channels = pipe.unet.in_channels  # type: ignore
-        self.device = pipe.unet.device  # type: ignore
+        self.in_channels = untraced_unet.in_channels
+        self.device = untraced_unet.device
         self.unet_traced = unet_traced
 
     def forward(self, latent_model_input, t, encoder_hidden_states):
@@ -116,7 +117,9 @@ class TracedUNet(torch.nn.Module):
         return UNet2DConditionOutput(sample=sample)
 
 
-def get_traced_unet(model_id: str, pipe: "PyTorchModelType") -> Optional[TracedUNet]:
+def get_traced_unet(
+    model_id: str, untraced_unet: UNet2DConditionModel
+) -> Optional[TracedUNet]:
     "Get a traced UNet model"
 
     author, model_name = model_id.split("/")
@@ -125,8 +128,8 @@ def get_traced_unet(model_id: str, pipe: "PyTorchModelType") -> Optional[TracedU
     if path.exists():
         unet_traced = torch.jit.load(str(path))  # type: ignore
         unet_traced.eval()  # type: ignore
-        unet = TracedUNet(unet_traced, pipe)
-        unet.to(dtype=torch.float16, device=pipe.device)  # type: ignore
+        unet = TracedUNet(unet_traced, untraced_unet)
+        unet.to(dtype=torch.float16, device=untraced_unet.device)  # type: ignore
         return unet
     else:
         return None

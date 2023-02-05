@@ -91,6 +91,24 @@ class Img2imgData:
 
 
 @dataclass
+class InpaintData:
+    "Dataclass for the data of an img2img request"
+
+    prompt: str
+    image: Union[bytes, str]
+    mask_image: Union[bytes, str]
+    id: str = field(default_factory=lambda: uuid4().hex)
+    negative_prompt: str = field(default="")
+    width: int = field(default=512)
+    height: int = field(default=512)
+    steps: int = field(default=25)
+    guidance_scale: float = field(default=7)
+    seed: int = field(default=0)
+    batch_size: int = 1
+    batch_count: int = 1
+
+
+@dataclass
 class Txt2ImgQueueEntry:
     "Dataclass for a text to image queue entry"
 
@@ -103,6 +121,28 @@ class Txt2ImgQueueEntry:
 
 @dataclass
 class Img2ImgQueueEntry:
+    "Dataclass for an image to image queue entry"
+
+    data: Img2imgData
+    model: str
+    scheduler: KarrasDiffusionSchedulers
+    websocket_id: Union[str, None] = field(default=None)
+    save_image: bool = field(default=True)
+
+
+@dataclass
+class InpaintQueueEntry:
+    "Dataclass for an image to image queue entry"
+
+    data: InpaintData
+    model: str
+    scheduler: KarrasDiffusionSchedulers
+    websocket_id: Union[str, None] = field(default=None)
+    save_image: bool = field(default=True)
+
+
+@dataclass
+class ImageVariationsQueueEntry:
     "Dataclass for an image to image queue entry"
 
     data: Img2imgData

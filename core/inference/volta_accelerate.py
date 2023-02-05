@@ -189,7 +189,7 @@ def parseArgs():
     return parser.parse_args()
 
 
-class DemoDiffusion:
+class TRTModel:
     """
     Application showcasing the acceleration of Stable Diffusion v1.4 pipeline using NVidia TensorRT w/ Plugins.
     """
@@ -937,7 +937,7 @@ def compile_trt(
     trt.init_libnvinfer_plugins(TRT_LOGGER, "")
 
     # Initialize demo
-    demo = DemoDiffusion(
+    demo = TRTModel(
         model_path=args.model_path,
         denoising_steps=args.denoising_steps,
         denoising_fp16=(args.denoising_prec == "fp16"),
@@ -993,7 +993,7 @@ def load_trt(model, prompt, img_height, img_width, num_inference_steps):
     trt.init_libnvinfer_plugins(TRT_LOGGER, "")
 
     # Initialize demo
-    trt_model = DemoDiffusion(
+    trt_model = TRTModel(
         model_path=model,
         denoising_steps=num_inference_steps,
         denoising_fp16=(args.denoising_prec == "fp16"),

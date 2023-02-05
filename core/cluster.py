@@ -10,7 +10,7 @@ from core import shared
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.gpu import GPU
 from core.inference.functions import download_model
-from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
+from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Txt2ImgQueueEntry
 from core.utils import run_in_thread_async
 
 logger = logging.getLogger(__name__)
@@ -85,7 +85,7 @@ class Cluster:
         return models
 
     async def generate(
-        self, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]
+        self, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry]
     ) -> Tuple[List[Image.Image], float]:
         "Generate images from the queue"
 

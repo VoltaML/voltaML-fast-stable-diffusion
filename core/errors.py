@@ -10,9 +10,5 @@ class ModelNotLoadedError(Exception):
     "Raised when the model is blocked from being loaded automatically"
 
 
-class BadSchedulerError(Exception):
-    "Raised when the scheduler is not of a proper type"
-
-
 class InferenceInterruptedError(Exception):
     "Raised when the model is interrupted"

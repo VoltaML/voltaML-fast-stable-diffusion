@@ -13,14 +13,14 @@ from api.websockets.notification import Notification
 from core import shared
 from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import DimensionError
-from core.inference.pytorch import PyTorchInferenceModel
+from core.inference.pytorch import PyTorchModel
 from core.png_metadata import save_images
 from core.queue import Queue
-from core.types import Img2ImgQueueEntry, Txt2ImgQueueEntry
+from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Txt2ImgQueueEntry
 from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
-    from core.inference.volta_accelerate import DemoDiffusion
+    from core.inference.volta_accelerate import TRTModel
 
 logger = logging.getLogger(__name__)
 
@@ -31,9 +31,7 @@ class GPU:
     def __init__(self, torch_gpu_id: int) -> None:
         self.gpu_id = torch_gpu_id
         self.queue: Queue = Queue()
-        self.loaded_models: Dict[
-            str, Union["DemoDiffusion", PyTorchInferenceModel]
-        ] = {}
+        self.loaded_models: Dict[str, Union["TRTModel", PyTorchModel]] = {}
 
     @property
     def cuda_id(self) -> str:
@@ -51,7 +49,9 @@ class GPU:
         "Returns the amount of used VRAM on the GPU in MB."
         return torch.cuda.memory_allocated(self.gpu_id) / 1024**2
 
-    async def generate(self, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry]):
+    async def generate(
+        self, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry]
+    ):
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")
@@ -68,6 +68,8 @@ class GPU:
                 images = await self.txt2img(job)
             elif isinstance(job, Img2ImgQueueEntry):
                 images = await self.img2img(job)
+            elif isinstance(job, InpaintQueueEntry):
+                images = await self.inpaint(job)
         except Exception as err:  # pylint: disable=broad-except
             self.queue.mark_finished()
             raise err
@@ -97,7 +99,7 @@ class GPU:
                     Notification(
                         "info",
                         "Model already loaded",
-                        f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchInferenceModel) else 'TensorRT'} backend",
+                        f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchModel) else 'TensorRT'} backend",
                     )
                 )
                 return
@@ -113,9 +115,9 @@ class GPU:
                     )
                 )
 
-                from core.inference.volta_accelerate import DemoDiffusion
+                from core.inference.volta_accelerate import TRTModel
 
-                trt_model = DemoDiffusion(
+                trt_model = TRTModel(
                     model_path=model,
                     denoising_steps=25,
                     denoising_fp16=True,
@@ -149,12 +151,11 @@ class GPU:
                 )
 
                 start_time = time.time()
-                pt_model = PyTorchInferenceModel(
+                pt_model = PyTorchModel(
                     model_id=model,
                     device=self.cuda_id,
                     callback_steps=shared.image_decode_steps,
                 )
-                pt_model.optimize()
                 self.loaded_models[model] = pt_model
                 logger.info(f"Finished loading in {time.time() - start_time:.2f}s")
 
@@ -178,16 +179,14 @@ class GPU:
         "Generate an image(s) from a prompt"
 
         def thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["DemoDiffusion", PyTorchInferenceModel] = self.loaded_models[
-                job.model
-            ]
+            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
 
-            shared.current_model = model
             shared.current_steps = (
                 job.data.steps * job.data.batch_count * job.data.batch_size
             )
+            shared.current_done_steps = 0
 
-            if isinstance(model, PyTorchInferenceModel):
+            if isinstance(model, PyTorchModel):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.txt2img(job)
                 self.memory_cleanup()
@@ -231,37 +230,53 @@ class GPU:
         "Run an image2image job"
 
         def thread_call(job: Img2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["DemoDiffusion", PyTorchInferenceModel] = self.loaded_models[
-                job.model
-            ]
+            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
 
-            shared.current_model = model
             shared.current_steps = (
                 job.data.steps * job.data.batch_count * job.data.batch_size
             )
+            shared.current_done_steps = 0
 
-            if isinstance(model, PyTorchInferenceModel):
+            if isinstance(model, PyTorchModel):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.img2img(job)
                 self.memory_cleanup()
                 return images
 
-            logger.debug("Generating with TensorRT")
-            images: List[Image.Image]
+            raise NotImplementedError("Image2Image with TensorRT is not implemented")
 
-            _, images = model.infer(
-                [job.data.prompt],
-                [job.data.negative_prompt],
-                job.data.height,
-                job.data.width,
-                guidance_scale=job.data.guidance_scale,
-                verbose=False,
-                output_dir="output",
-                num_of_infer_steps=job.data.steps,
-                scheduler=job.scheduler,
+        images: Optional[List[Image.Image]]
+        error: Optional[Exception]
+        images, error = await run_in_thread_async(func=thread_call, args=(job,))
+
+        if error is not None:
+            raise error
+
+        assert images is not None
+
+        if job.save_image:
+            save_images(images, job)
+
+        return images
+
+    async def inpaint(self, job):
+        "Run an inpainting job"
+
+        def thread_call(job: InpaintQueueEntry) -> List[Image.Image]:
+            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
+
+            shared.current_steps = (
+                job.data.steps * job.data.batch_count * job.data.batch_size
             )
-            self.memory_cleanup()
-            return images
+            shared.current_done_steps = 0
+
+            if isinstance(model, PyTorchModel):
+                logger.debug("Generating with PyTorch")
+                images: List[Image.Image] = model.inpaint(job)
+                self.memory_cleanup()
+                return images
+
+            raise NotImplementedError("Inpainting is not supported with TensorRT")
 
         images: Optional[List[Image.Image]]
         error: Optional[Exception]
@@ -293,13 +308,13 @@ class GPU:
         if model_type in self.loaded_models:
             model = self.loaded_models[model_type]
 
-            if isinstance(model, PyTorchInferenceModel):
+            if isinstance(model, PyTorchModel):
                 logger.debug(f"Unloading PyTorch model: {model_type}")
                 model.unload()
             else:
-                from core.inference.volta_accelerate import DemoDiffusion
+                from core.inference.volta_accelerate import TRTModel
 
-                assert isinstance(model, DemoDiffusion)
+                assert isinstance(model, TRTModel)
                 logger.debug(f"Unloading TensorRT model: {model_type}")
                 model.teardown()
 
@@ -348,9 +363,9 @@ class GPU:
         "Convert a model to a TensorRT model"
 
         def call():
-            from core.inference.volta_accelerate import DemoDiffusion
+            from core.inference.volta_accelerate import TRTModel
 
-            trt_model = DemoDiffusion(
+            trt_model = TRTModel(
                 model_path=model,
                 denoising_steps=25,
                 denoising_fp16=True,

@@ -2,6 +2,7 @@ import asyncio
 import base64
 import logging
 import math
+import re
 from io import BytesIO
 from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple, Union
 
@@ -101,3 +102,18 @@ def resize(image: Image.Image, w: int, h: int):
     "Preprocess an image for the img2img procedure"
 
     return image.resize((w, h), resample=Image.LANCZOS)
+
+
+def convert_bytes_to_image_stream(data: bytes) -> str:
+    "Convert a base64 string to a PIL Image"
+
+    pattern = re.compile(r"data:image\/[\w]+;base64,")
+
+    img = data
+    if isinstance(img, bytes):
+        img = img.decode("utf-8")
+
+    if isinstance(img, str):
+        img = re.sub(pattern, "", img)
+
+    return img

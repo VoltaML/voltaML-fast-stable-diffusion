@@ -295,7 +295,7 @@ const generate = () => {
   }
   global.state.generating = true;
 
-  fetch(`${serverUrl}/api/txt2img/generate`, {
+  fetch(`${serverUrl}/api/generate/txt2img`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",

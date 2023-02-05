@@ -52,8 +52,10 @@ def txt2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
         data=Data(
             data_type="txt2img",
             data={
-                "progress": int((step / shared.current_steps) * 100),
-                "current_step": step,
+                "progress": int(
+                    (shared.current_done_steps / shared.current_steps) * 100
+                ),
+                "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
                 "image": convert_images_to_base64_grid(images) if send_image else "",
             },
@@ -70,8 +72,30 @@ def img2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
         data=Data(
             data_type="img2img",
             data={
-                "progress": int((step / shared.current_steps) * 100),
-                "current_step": step,
+                "progress": int(
+                    (shared.current_done_steps / shared.current_steps) * 100
+                ),
+                "current_step": shared.current_done_steps,
+                "total_steps": shared.current_steps,
+                "image": convert_images_to_base64_grid(images) if send_image else "",
+            },
+        )
+    )
+
+
+def inpaint_callback(step: int, _timestep: int, tensor: torch.Tensor):
+    "Callback for inpaint with progress and partial image"
+
+    images, send_image = pytorch_callback(step, _timestep, tensor)
+
+    websocket_manager.broadcast_sync(
+        data=Data(
+            data_type="inpaint",
+            data={
+                "progress": int(
+                    (shared.current_done_steps / shared.current_steps) * 100
+                ),
+                "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
                 "image": convert_images_to_base64_grid(images) if send_image else "",
             },
@@ -86,6 +110,7 @@ def pytorch_callback(step: int, _timestep: int, tensor: torch.Tensor):
         shared.interrupt = False
         raise InferenceInterruptedError
 
+    shared.current_done_steps += 1
     send_image = step % shared.image_decode_steps == 0
     images: List[Image.Image] = []
 

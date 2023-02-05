@@ -24,7 +24,7 @@ async def dream_call(payload: Dict):
     async def call():
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                "http://localhost:5003/api/txt2img/generate", json=payload
+                "http://localhost:5003/api/generate/txt2img", json=payload
             ) as response:
                 status = response.status
                 response = await response.json()
