@@ -55,7 +55,7 @@ class Inference(Cog):
         self.queue_number = 0
         await ctx.send("✅ Queue reset!")
 
-    @commands.hybrid_command(name="dream")
+    @commands.hybrid_command(name="dream-unsupported")
     async def dream_unsupported(
         self,
         ctx: Context,
@@ -66,7 +66,6 @@ class Inference(Cog):
         steps: Literal[25, 30, 50] = 30,
         aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
         seed: Optional[int] = None,
-        backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
         scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
@@ -116,7 +115,6 @@ class Inference(Cog):
             },
             "model": model,
             "scheduler": scheduler.value,
-            "backend": backend,
             "save_image": False,
         }
 
@@ -175,7 +173,7 @@ class Inference(Cog):
 
         logging.info(f"Finished task {prompt} for {str(ctx.author)}")
 
-    @commands.hybrid_command(name="dream-unsupported")
+    @commands.hybrid_command(name="dream")
     async def dream(
         self,
         ctx: Context,
@@ -186,7 +184,6 @@ class Inference(Cog):
         steps: Literal[25, 30, 50] = 30,
         aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
         seed: Optional[int] = None,
-        backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
         scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         use_default_negative_prompt: bool = True,
         verbose: bool = False,
@@ -236,7 +233,6 @@ class Inference(Cog):
             },
             "model": model.value,
             "scheduler": scheduler.value,
-            "backend": backend,
             "save_image": False,
         }
 
