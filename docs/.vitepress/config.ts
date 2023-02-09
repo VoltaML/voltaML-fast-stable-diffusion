@@ -23,7 +23,13 @@ export default defineConfig({
 				text: "Introduction",
 				items: [
 					{ text: "Introduction", link: "/" },
-					{ text: "Installation", link: "/installation" },
+				],
+			},
+			{
+				text: "Installation",
+				items: [
+					{ text: "Windows", link: "/installation/windows" },
+					{ text: "Linux", link: "/installation/linux" },
 				],
 			},
 			{
@@ -48,6 +54,20 @@ export default defineConfig({
 					},
 				],
 			},
+			{
+				text: "Troubleshooting",
+				items: [
+					{ text: "Linux", link: "/troubleshooting/linux" },
+					{
+						text: "Windows",
+						link: "/troubleshooting/windows",
+					},
+					{
+						text: "Docker",
+						link: "/troubleshooting/docker",
+					},
+				],
+			}
 		],
 	},
 });

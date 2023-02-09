@@ -24,6 +24,11 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5003, 5173],
 
+	"mounts": [
+		"source=${localEnv:HOME}/.cache/huggingface,target=/root/.cache/huggingface,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached"
+	],
+
 	// Use 'postCreateCommand' to run commands after the container is created.
 	// "postCreateCommand": "pip3 install --user -r requirements.txt",
 

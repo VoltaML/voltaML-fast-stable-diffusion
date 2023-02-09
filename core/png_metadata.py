@@ -24,7 +24,7 @@ def create_metadata(
     metadata = PngInfo()
 
     def write_metadata(key: str):
-        metadata.add_text(key, data.__dict__.get(key, ""))
+        metadata.add_text(key, str(data.__dict__.get(key, "")))
 
     for i in [
         "prompt",
