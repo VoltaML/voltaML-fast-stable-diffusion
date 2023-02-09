@@ -24375,12 +24375,6 @@ const self$r = (vars) => {
     fontWeight: fontWeightStrong
   };
 };
-const dividerLight = {
-  name: "Divider",
-  common: commonLight,
-  self: self$r
-};
-const dividerLight$1 = dividerLight;
 const dividerDark = {
   name: "Divider",
   common: commonDark,
@@ -34921,7 +34915,9 @@ const useWebsocket = defineStore("websocket", () => {
       fetch(`${serverUrl}/api/models/loaded`).then((response) => {
         if (response.status === 200) {
           response.json().then((data) => {
-            console.log(data[0].length);
+            console.log(
+              "Loaded models on the backend: " + data[0].length.toString()
+            );
             if (data[0].length === 0) {
               conf.data.settings.model = "none:PyTorch";
               return;
@@ -35395,7 +35391,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         return;
       }
       global2.state.generating = true;
-      fetch(`${serverUrl}/api/txt2img/generate`, {
+      fetch(`${serverUrl}/api/generate/txt2img`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -35704,7 +35700,7 @@ const router = createRouter({
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Result.js","assets/Tabs.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Result.js","assets/Tabs.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
@@ -35734,7 +35730,7 @@ const router = createRouter({
     {
       path: "/test",
       name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/ImageUpload.js","assets/ImageUpload.css"] : void 0)
+      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/TestView.css"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -35750,46 +35746,46 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  cE as $,
-  popScopeId as A,
-  _export_sfc as B,
-  NIcon as C,
-  ref as D,
-  useSsrAdapter as E,
-  cssrAnchorMetaName$1 as F,
-  h as G,
-  c as H,
-  isSymbol as I,
-  isObject as J,
-  root$1 as K,
-  createInjectionKey as L,
-  inject as M,
-  NGi as N,
-  throwError as O,
-  computed as P,
-  mergeProps as Q,
-  Fragment as R,
-  NBaseIcon as S,
-  AddIcon as T,
-  render$1 as U,
-  NBaseClose as V,
-  omit as W,
-  cB as X,
-  cM as Y,
-  c$1 as Z,
-  _sfc_main$1 as _,
-  useSettings as a,
+  c$1 as $,
+  createCommentVNode as A,
+  NGrid as B,
+  serverUrl as C,
+  v4 as D,
+  NIcon as E,
+  useSsrAdapter as F,
+  cssrAnchorMetaName$1 as G,
+  h as H,
+  c as I,
+  isSymbol as J,
+  isObject as K,
+  root$1 as L,
+  createInjectionKey as M,
+  NSpace as N,
+  inject as O,
+  throwError as P,
+  computed as Q,
+  mergeProps as R,
+  Fragment as S,
+  NBaseIcon as T,
+  AddIcon as U,
+  render$1 as V,
+  NBaseClose as W,
+  omit as X,
+  cB as Y,
+  cM as Z,
+  _export_sfc as _,
+  createBaseVNode as a,
   off as a$,
-  cNotM as a0,
-  useConfig as a1,
-  useTheme as a2,
-  useCompitable as a3,
-  flatten$2 as a4,
-  useMergedState as a5,
-  watch as a6,
-  provide as a7,
-  toRef as a8,
-  onFontsReady as a9,
+  cE as a0,
+  cNotM as a1,
+  useConfig as a2,
+  useTheme as a3,
+  useCompitable as a4,
+  flatten$2 as a5,
+  useMergedState as a6,
+  watch as a7,
+  provide as a8,
+  toRef as a9,
   useRtl as aA,
   createId as aB,
   NIconSwitchTransition as aC,
@@ -35817,24 +35813,24 @@ export {
   formatLength as aY,
   NScrollbar as aZ,
   onBeforeUnmount as a_,
-  watchEffect as aa,
-  useThemeClass as ab,
-  resolveWrappedSlot as ac,
-  VResizeObserver as ad,
-  tabsLight$1 as ae,
-  call as af,
-  nextTick as ag,
-  createKey as ah,
-  withDirectives as ai,
-  vShow as aj,
-  TransitionGroup as ak,
-  cloneVNode as al,
-  InfoIcon as am,
-  SuccessIcon as an,
-  WarningIcon as ao,
-  ErrorIcon as ap,
-  resultLight$1 as aq,
-  toDisplayString as ar,
+  onFontsReady as aa,
+  watchEffect as ab,
+  useThemeClass as ac,
+  resolveWrappedSlot as ad,
+  VResizeObserver as ae,
+  tabsLight$1 as af,
+  call as ag,
+  nextTick as ah,
+  createKey as ai,
+  withDirectives as aj,
+  vShow as ak,
+  TransitionGroup as al,
+  cloneVNode as am,
+  InfoIcon as an,
+  SuccessIcon as ao,
+  WarningIcon as ap,
+  ErrorIcon as aq,
+  resultLight$1 as ar,
   NButton as as,
   NProgress as at,
   useFormItem as au,
@@ -35843,7 +35839,7 @@ export {
   insidePopover as ax,
   useMemo as ay,
   checkboxLight$1 as az,
-  useMessage as b,
+  createVNode as b,
   ChevronDownIcon as b0,
   NDropdown as b1,
   pxfy as b2,
@@ -35865,31 +35861,31 @@ export {
   ErrorIcon$1 as bi,
   reactive as bj,
   NTag as bk,
-  dividerLight$1 as bl,
+  normalizeStyle as bl,
   descriptionsLight$1 as bm,
   renderList as bn,
-  createElementBlock as c,
+  createBlock as c,
   defineComponent as d,
-  createVNode as e,
-  unref as f,
-  NCard as g,
-  NSpace as h,
-  NInput as i,
-  createBaseVNode as j,
-  NTooltip as k,
-  createTextVNode as l,
-  NSelect as m,
-  NSlider as n,
+  NCard as e,
+  popScopeId as f,
+  useState as g,
+  useSettings as h,
+  useMessage as i,
+  createElementBlock as j,
+  NGi as k,
+  NInput as l,
+  NTooltip as m,
+  createTextVNode as n,
   openBlock as o,
-  NInputNumber as p,
-  NImageGroup as q,
-  createBlock as r,
-  NImage as s,
-  createCommentVNode as t,
-  useState as u,
-  NGrid as v,
+  pushScopeId as p,
+  NSelect as q,
+  ref as r,
+  NSlider as s,
+  toDisplayString as t,
+  unref as u,
+  NInputNumber as v,
   withCtx as w,
-  serverUrl as x,
-  v4 as y,
-  pushScopeId as z
+  _sfc_main$1 as x,
+  NImageGroup as y,
+  NImage as z
 };

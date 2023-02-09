@@ -40,7 +40,9 @@ export const useWebsocket = defineStore("websocket", () => {
       fetch(`${serverUrl}/api/models/loaded`).then((response) => {
         if (response.status === 200) {
           response.json().then((data) => {
-            console.log(data[0].length);
+            console.log(
+              "Loaded models on the backend: " + data[0].length.toString()
+            );
             if (data[0].length === 0) {
               conf.data.settings.model = "none:PyTorch";
               return;

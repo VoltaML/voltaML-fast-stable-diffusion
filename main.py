@@ -63,7 +63,7 @@ Path("converted").mkdir(exist_ok=True)
 def is_root():
     "Check if user has elevated privileges"
     try:
-        is_admin = os.getuid() == 0
+        is_admin = os.getuid() == 0  # type: ignore
     except AttributeError:
         import ctypes
 

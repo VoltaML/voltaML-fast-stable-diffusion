@@ -1,4 +1,4 @@
-import { B as _export_sfc, c as createElementBlock, o as openBlock, j as createBaseVNode } from "./index.js";
+import { _ as _export_sfc, j as createElementBlock, o as openBlock, a as createBaseVNode } from "./index.js";
 const _sfc_main = {};
 const _hoisted_1 = { class: "about" };
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("h1", null, "This is an about page", -1);

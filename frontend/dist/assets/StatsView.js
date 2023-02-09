@@ -1,4 +1,4 @@
-import { d as defineComponent, r as createBlock, f as unref, o as openBlock, at as NProgress } from "./index.js";
+import { d as defineComponent, c as createBlock, u as unref, o as openBlock, at as NProgress } from "./index.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "StatsView",
   setup(__props) {
