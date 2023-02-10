@@ -214,40 +214,10 @@
       <NGi>
         <GenerateSection :generate="generate" />
 
-        <NCard title="Output" hoverable>
-          <div
-            style="
-              height: 70vh;
-              width: 100%;
-              display: flex;
-              justify-content: center;
-            "
-          >
-            <NImageGroup
-              style="
-                max-width: 100%;
-                max-height: 70vh;
-                width: 100%;
-                height: 100%;
-              "
-            >
-              <NImage
-                v-if="global.state.txt2img.currentImage"
-                :src="`data:image/png;base64,${global.state.txt2img.currentImage}`"
-                :img-props="{
-                  style: 'max-width: 100%; max-height: 70vh; width: 100%',
-                }"
-                style="
-                  max-width: 100%;
-                  max-height: 70vh;
-                  width: 100%;
-                  height: 100%;
-                "
-                object-fit="contain"
-              />
-            </NImageGroup>
-          </div>
-        </NCard>
+        <ImageOutput
+          :current-image="global.state.txt2img.currentImage"
+          :images="global.state.txt2img.images"
+        />
       </NGi>
     </NGrid>
   </div>
@@ -256,13 +226,12 @@
 <script setup lang="ts">
 import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
+import ImageOutput from "@/components/ImageOutput.vue";
 import { serverUrl } from "@/env";
 import {
   NCard,
   NGi,
   NGrid,
-  NImage,
-  NImageGroup,
   NInput,
   NInputNumber,
   NSelect,

@@ -1,3 +1,4 @@
+import copy
 import logging
 from os import makedirs
 from pathlib import Path
@@ -22,17 +23,20 @@ def create_metadata(
         Img2ImgQueueEntry,
         InpaintQueueEntry,
         ImageVariationsQueueEntry,
-    ]
+    ],
+    index: int,
 ):
     "Return image with metadata burned into it"
 
-    data = job.data
+    data = copy.copy(job.data)
     metadata = PngInfo()
+
+    data.seed = str(job.data.seed) + (f"({index})" if index > 0 else "")  # type: ignore Overwrite for sequencialy generated images
 
     def write_metadata(key: str):
         metadata.add_text(key, str(data.__dict__.get(key, "")))
 
-    for i in [
+    for key in [
         "prompt",
         "negative_prompt",
         "width",
@@ -42,7 +46,7 @@ def create_metadata(
         "seed",
         "strength",
     ]:
-        write_metadata(i)
+        write_metadata(key)
 
     procedure = ""
     if isinstance(job, Txt2ImgQueueEntry):
@@ -103,7 +107,7 @@ def save_images(
         )
         makedirs(path.parent, exist_ok=True)
 
-        metadata = create_metadata(job)
+        metadata = create_metadata(job, i)
 
         logger.debug(f"Saving image to {path.as_posix()}")
 

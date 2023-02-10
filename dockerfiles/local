@@ -45,4 +45,4 @@ ENV TENSORRT_ENGINE_PATH="/workspace/voltaML-fast-stable-diffusion/engine"
 
 # Run the server
 RUN chmod +x start.sh
-ENTRYPOINT ["bash", "./start.sh"]
+ENTRYPOINT ["bash", "./scripts/start.sh"]
