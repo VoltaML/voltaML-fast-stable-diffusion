@@ -16,7 +16,12 @@ from core.errors import DimensionError
 from core.inference.pytorch import PyTorchModel
 from core.png_metadata import save_images
 from core.queue import Queue
-from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Txt2ImgQueueEntry
+from core.types import (
+    ImageVariationsQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Txt2ImgQueueEntry,
+)
 from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
@@ -50,14 +55,21 @@ class GPU:
         return torch.cuda.memory_allocated(self.gpu_id) / 1024**2
 
     async def generate(
-        self, job: Union[Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry]
+        self,
+        job: Union[
+            Txt2ImgQueueEntry,
+            Img2ImgQueueEntry,
+            InpaintQueueEntry,
+            ImageVariationsQueueEntry,
+        ],
     ):
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")
 
-        if job.data.width % 8 != 0 or job.data.height % 8 != 0:
-            raise DimensionError("Width and height must be divisible by 8")
+        if not isinstance(job, ImageVariationsQueueEntry):
+            if job.data.width % 8 != 0 or job.data.height % 8 != 0:
+                raise DimensionError("Width and height must be divisible by 8")
 
         await self.queue.wait_for_turn(job.data.id)
 
@@ -70,6 +82,8 @@ class GPU:
                 images = await self.img2img(job)
             elif isinstance(job, InpaintQueueEntry):
                 images = await self.inpaint(job)
+            elif isinstance(job, ImageVariationsQueueEntry):
+                images = await self.image_variations(job)
         except Exception as err:  # pylint: disable=broad-except
             self.queue.mark_finished()
             raise err
@@ -181,9 +195,7 @@ class GPU:
         def thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
             model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
 
-            shared.current_steps = (
-                job.data.steps * job.data.batch_count * job.data.batch_size
-            )
+            shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
 
             if isinstance(model, PyTorchModel):
@@ -232,9 +244,7 @@ class GPU:
         def thread_call(job: Img2ImgQueueEntry) -> List[Image.Image]:
             model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
 
-            shared.current_steps = (
-                job.data.steps * job.data.batch_count * job.data.batch_size
-            )
+            shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
 
             if isinstance(model, PyTorchModel):
@@ -259,15 +269,13 @@ class GPU:
 
         return images
 
-    async def inpaint(self, job):
+    async def inpaint(self, job: InpaintQueueEntry):
         "Run an inpainting job"
 
         def thread_call(job: InpaintQueueEntry) -> List[Image.Image]:
             model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
 
-            shared.current_steps = (
-                job.data.steps * job.data.batch_count * job.data.batch_size
-            )
+            shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
 
             if isinstance(model, PyTorchModel):
@@ -277,6 +285,39 @@ class GPU:
                 return images
 
             raise NotImplementedError("Inpainting is not supported with TensorRT")
+
+        images: Optional[List[Image.Image]]
+        error: Optional[Exception]
+        images, error = await run_in_thread_async(func=thread_call, args=(job,))
+
+        if error is not None:
+            raise error
+
+        assert images is not None
+
+        if job.save_image:
+            save_images(images, job)
+
+        return images
+
+    async def image_variations(self, job: ImageVariationsQueueEntry):
+        "Run an inpainting job"
+
+        def thread_call(job: ImageVariationsQueueEntry) -> List[Image.Image]:
+            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
+
+            shared.current_steps = job.data.steps * job.data.batch_count
+            shared.current_done_steps = 0
+
+            if isinstance(model, PyTorchModel):
+                logger.debug("Generating with PyTorch")
+                images: List[Image.Image] = model.image_variations(job)
+                self.memory_cleanup()
+                return images
+
+            raise NotImplementedError(
+                "Image variations are not supported with TensorRT"
+            )
 
         images: Optional[List[Image.Image]]
         error: Optional[Exception]

@@ -26,7 +26,12 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
-from core.functions import img2img_callback, inpaint_callback, txt2img_callback
+from core.functions import (
+    image_variations_callback,
+    img2img_callback,
+    inpaint_callback,
+    txt2img_callback,
+)
 from core.inference.unet_tracer import TracedUNet, get_traced_unet
 from core.schedulers import change_scheduler
 from core.types import (
@@ -126,11 +131,14 @@ class PyTorchModel:
         gc.collect()
 
     def check_image_encoder(self) -> CLIPVisionModelWithProjection:
+        "Check if the image encoder is loaded, if not load it"
+
         if self.image_encoder is None:
             encoder = CLIPVisionModelWithProjection.from_pretrained(
                 self.model_id,
                 cache_dir=config.cache_dir,
                 torch_dtype=torch.float32 if self.use_f32 else torch.float16,
+                subfolder="image_encoder",
             )
             assert isinstance(encoder, CLIPVisionModelWithProjection)
             encoder = encoder.to(self.device)
@@ -333,7 +341,6 @@ class PyTorchModel:
         change_scheduler(model=pipe, scheduler=job.scheduler)
 
         input_image = convert_to_image(job.data.image)
-        input_image = resize(input_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
 
@@ -344,7 +351,7 @@ class PyTorchModel:
                 guidance_scale=job.data.guidance_scale,
                 output_type="pil",
                 generator=generator,
-                callback=inpaint_callback,
+                callback=image_variations_callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
             )

@@ -6,7 +6,12 @@ from typing import List, Union
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
-from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Txt2ImgQueueEntry
+from core.types import (
+    ImageVariationsQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Txt2ImgQueueEntry,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -16,6 +21,7 @@ def create_metadata(
         Txt2ImgQueueEntry,
         Img2ImgQueueEntry,
         InpaintQueueEntry,
+        ImageVariationsQueueEntry,
     ]
 ):
     "Return image with metadata burned into it"
@@ -45,6 +51,8 @@ def create_metadata(
         procedure = "img2img"
     elif isinstance(job, InpaintQueueEntry):
         procedure = "inpaint"
+    elif isinstance(job, ImageVariationsQueueEntry):
+        procedure = "image_variations"
 
     metadata.add_text("procedure", procedure)
     metadata.add_text("model", job.model)
@@ -58,25 +66,36 @@ def save_images(
         Txt2ImgQueueEntry,
         Img2ImgQueueEntry,
         InpaintQueueEntry,
+        ImageVariationsQueueEntry,
     ],
 ):
     "Save image to disk"
 
-    prompt = (
-        job.data.prompt[:30]
-        .strip()
-        .replace(",", "")
-        .replace("(", "")
-        .replace(")", "")
-        .replace("[", "")
-        .replace("]", "")
-        .replace("?", "")
-        .replace("!", "")
-        .replace(":", "")
-        .replace(";", "")
-        .replace("'", "")
-        .replace('"', "")
-    )
+    if isinstance(
+        job,
+        (
+            Txt2ImgQueueEntry,
+            Img2ImgQueueEntry,
+            InpaintQueueEntry,
+        ),
+    ):
+        prompt = (
+            job.data.prompt[:30]
+            .strip()
+            .replace(",", "")
+            .replace("(", "")
+            .replace(")", "")
+            .replace("[", "")
+            .replace("]", "")
+            .replace("?", "")
+            .replace("!", "")
+            .replace(":", "")
+            .replace(";", "")
+            .replace("'", "")
+            .replace('"', "")
+        )
+    else:
+        prompt = ""
 
     for i, image in enumerate(images):
         path = Path(

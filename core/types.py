@@ -109,6 +109,20 @@ class InpaintData:
 
 
 @dataclass
+class ImageVariationsData:
+    "Dataclass for the data of an img2img request"
+
+    image: Union[bytes, str]
+    id: str = field(default_factory=lambda: uuid4().hex)
+    steps: int = field(default=25)
+    guidance_scale: float = field(default=7)
+    seed: int = field(default=0)
+    batch_size: int = 1
+    batch_count: int = 1
+    strength: float = 0.6
+
+
+@dataclass
 class Txt2ImgQueueEntry:
     "Dataclass for a text to image queue entry"
 
@@ -145,7 +159,7 @@ class InpaintQueueEntry:
 class ImageVariationsQueueEntry:
     "Dataclass for an image to image queue entry"
 
-    data: Img2imgData
+    data: ImageVariationsData
     model: str
     scheduler: KarrasDiffusionSchedulers
     websocket_id: Union[str, None] = field(default=None)

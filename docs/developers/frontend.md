@@ -1,4 +1,4 @@
-# WebUI
+# Frontend
 
 This is the documentation for setting up the WebUI for local development.
 

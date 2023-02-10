@@ -27,6 +27,12 @@
     <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/master/LICENSE">
       <img src="https://img.shields.io/github/license/VoltaML/voltaML-fast-stable-diffusion.svg" alt="license" />
     </a>
+    <a href="https://github.com/voltaML/voltaML-fast-stable-diffusion/tree/experimental">
+      <img src="https://img.shields.io/github/commit-activity/m/VoltaML/voltaML-fast-stable-diffusion/experimental?label=commit%20activity%20-%20experimental" alt="commit activity on experimental" />
+    </a>
+    <a href="https://github.com/voltaML/voltaML-fast-stable-diffusion/tree/experimental">
+      <img src="https://img.shields.io/github/last-commit/VoltaMl/voltaML-fast-stable-diffusion/experimental?label=last%20commit%20-%20experimental" alt="latest activity on experimental" />
+    </a>
   </p>
   <a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
     
@@ -65,7 +71,9 @@
 ## Screenshots
 
 <div align="center"> 
-  <img src="https://placehold.co/600x400?text=Frontend+Still+In+Development" alt="screenshot" />
+  <img src="docs/static/frontend/frontend-txt2img.webp" alt="screenshot" />
+  <img src="docs/static/frontend/frontend-img2img.webp" alt="screenshot" />
+  <img src="docs/static/frontend/frontend-browser.webp" alt="screenshot" />
 </div>
 
 ## Tech Stack

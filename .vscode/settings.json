@@ -1,4 +1,16 @@
 {
 	"python.linting.pylintEnabled": true,
-	"python.linting.enabled": true
+	"python.linting.enabled": true,
+	"grammarly.selectors": [
+		{
+			"language": "markdown",
+			"scheme": "file",
+			"pattern": "docs/index.md"
+		},
+		{
+			"language": "markdown",
+			"scheme": "file",
+			"pattern": "docs/developers/documentation.md"
+		}
+	]
 }

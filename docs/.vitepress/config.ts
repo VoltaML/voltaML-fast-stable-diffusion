@@ -17,13 +17,15 @@ export default defineConfig({
 				icon: "github",
 				link: "https://github.com/voltaML/voltaML-fast-stable-diffusion",
 			},
+			{
+				icon: "discord",
+				link: "https://discord.gg/pY5SVyHmWm",
+			},
 		],
 		sidebar: [
 			{
 				text: "Introduction",
-				items: [
-					{ text: "Introduction", link: "/" },
-				],
+				items: [{ text: "Introduction", link: "/" }],
 			},
 			{
 				text: "Installation",
@@ -52,6 +54,10 @@ export default defineConfig({
 						text: "Frontend",
 						link: "/developers/frontend",
 					},
+					{
+						text: "Documentation",
+						link: "/developers/documentation",
+					},
 				],
 			},
 			{
@@ -67,7 +73,12 @@ export default defineConfig({
 						link: "/troubleshooting/docker",
 					},
 				],
-			}
+			},
 		],
+		algolia: {
+			appId: "8WLJEL7XVD",
+			apiKey: "19809754944322d77cacde9bc57875aa",
+			indexName: "VoltaML docs",
+		},
 	},
 });

@@ -103,6 +103,26 @@ def inpaint_callback(step: int, _timestep: int, tensor: torch.Tensor):
     )
 
 
+def image_variations_callback(step: int, _timestep: int, tensor: torch.Tensor):
+    "Callback for image variations with progress and partial image"
+
+    images, send_image = pytorch_callback(step, _timestep, tensor)
+
+    websocket_manager.broadcast_sync(
+        data=Data(
+            data_type="image_variations",
+            data={
+                "progress": int(
+                    (shared.current_done_steps / shared.current_steps) * 100
+                ),
+                "current_step": shared.current_done_steps,
+                "total_steps": shared.current_steps,
+                "image": convert_images_to_base64_grid(images) if send_image else "",
+            },
+        )
+    )
+
+
 def pytorch_callback(step: int, _timestep: int, tensor: torch.Tensor):
     "Send a websocket message to the client with the progress percentage and partial image"
 
