@@ -40,14 +40,14 @@ The below benchmarks have been done for generating a 512x512 image, batch size o
 ## UI Preview
 
 **Text to image**
-<img src="static/frontend/frontend-txt2img.webp" alt="screenshot" />
+![Text2Image](/static/frontend/frontend-txt2img.webp)
 
 <hr>
 
 **Image to image**
-<img src="static/frontend/frontend-img2img.webp" alt="screenshot" />
+![Image2Image](static/frontend/frontend-img2img.webp)
 
 <hr>
 
 **Image Browser**
-<img src="static/frontend/frontend-browser.webp" alt="screenshot" />
+![ImageBrowser](/static/frontend/frontend-browser.webp)
