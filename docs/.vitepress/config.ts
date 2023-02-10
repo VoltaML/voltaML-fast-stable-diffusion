@@ -76,9 +76,9 @@ export default defineConfig({
 			},
 		],
 		algolia: {
-			appId: "8WLJEL7XVD",
-			apiKey: "19809754944322d77cacde9bc57875aa",
-			indexName: "VoltaML docs",
+			appId: "M9XJK5W9ML",
+			apiKey: "8447ad2a43b65f2c280b8c883c76dc3f",
+			indexName: "voltaml-fast-stable-diffusion",
 		},
 	},
 });
