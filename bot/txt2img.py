@@ -182,7 +182,9 @@ class Inference(Cog):
         negative_prompt: str = "",
         guidance_scale: float = 7.0,
         steps: Literal[25, 30, 50] = 30,
-        aspect_ratio: Literal["16:9", "9:16", "1:1"] = "1:1",
+        resolution: Literal[
+            "512x512", "1024x1024", "512x912", "912x912", "1920x1080", "1080x1920"
+        ] = "512x512",
         seed: Optional[int] = None,
         scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         use_default_negative_prompt: bool = True,
@@ -203,18 +205,7 @@ class Inference(Cog):
         if seed is None:
             seed = random.randint(0, 1000000)
 
-        if aspect_ratio == "16:9":
-            width = 680
-            height = 384
-        elif aspect_ratio == "9:16":
-            width = 384
-            height = 680
-        # elif aspect_ratio == "civitai":
-        #     width = 512
-        #     height = 704
-        else:
-            width = 512
-            height = 512
+        width, height = [int(i) for i in resolution.split("x")]
 
         payload = {
             "data": {
@@ -266,7 +257,7 @@ class Inference(Cog):
                 )
                 embed.add_field(name="Guidance Scale", value=guidance_scale)
                 embed.add_field(name="Steps", value=steps)
-                embed.add_field(name="Aspect Ratio", value=aspect_ratio)
+                embed.add_field(name="Resolution", value=resolution)
 
                 await message.edit(embed=embed)
 
