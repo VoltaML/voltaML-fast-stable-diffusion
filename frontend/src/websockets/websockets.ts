@@ -44,7 +44,6 @@ export function processWebSocket(
       break;
     }
     case "txt2img": {
-      console.log(message.data);
       global.state.txt2img.currentImage = message.data.image
         ? message.data.image
         : global.state.txt2img.currentImage;
@@ -54,10 +53,27 @@ export function processWebSocket(
       break;
     }
     case "img2img": {
-      console.log(message.data);
       global.state.img2img.currentImage = message.data.image
         ? message.data.image
         : global.state.img2img.currentImage;
+      global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
+      global.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "image_variations": {
+      global.state.imageVariations.currentImage = message.data.image
+        ? message.data.image
+        : global.state.imageVariations.currentImage;
+      global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
+      global.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "inpaint": {
+      global.state.inpaint.currentImage = message.data.image
+        ? message.data.image
+        : global.state.inpaint.currentImage;
       global.state.progress = message.data.progress;
       global.state.current_step = message.data.current_step;
       global.state.total_steps = message.data.total_steps;

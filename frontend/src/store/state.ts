@@ -14,6 +14,14 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
+  inpaint: {
+    currentImage: string;
+    images: string[];
+  };
+  imageVariations: {
+    currentImage: string;
+    images: string[];
+  };
   current_step: number;
   total_steps: number;
   imageBrowser: {
@@ -33,6 +41,14 @@ export const useState = defineStore("state", () => {
       currentImage: "",
     },
     img2img: {
+      images: [],
+      currentImage: "",
+    },
+    inpainting: {
+      images: [],
+      currentImage: "",
+    },
+    imageVariations: {
       images: [],
       currentImage: "",
     },

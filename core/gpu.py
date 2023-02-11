@@ -13,7 +13,7 @@ from api.websockets.notification import Notification
 from core import shared
 from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import DimensionError
-from core.inference.pytorch import PyTorchModel
+from core.inference.pytorch import PyTorchStableDiffusion
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
@@ -36,7 +36,7 @@ class GPU:
     def __init__(self, torch_gpu_id: int) -> None:
         self.gpu_id = torch_gpu_id
         self.queue: Queue = Queue()
-        self.loaded_models: Dict[str, Union["TRTModel", PyTorchModel]] = {}
+        self.loaded_models: Dict[str, Union["TRTModel", PyTorchStableDiffusion]] = {}
 
     @property
     def cuda_id(self) -> str:
@@ -113,7 +113,7 @@ class GPU:
                     Notification(
                         "info",
                         "Model already loaded",
-                        f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchModel) else 'TensorRT'} backend",
+                        f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchStableDiffusion) else 'TensorRT'} backend",
                     )
                 )
                 return
@@ -165,7 +165,7 @@ class GPU:
                 )
 
                 start_time = time.time()
-                pt_model = PyTorchModel(
+                pt_model = PyTorchStableDiffusion(
                     model_id=model,
                     device=self.cuda_id,
                     callback_steps=shared.image_decode_steps,
@@ -193,12 +193,14 @@ class GPU:
         "Generate an image(s) from a prompt"
 
         def thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
+            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
+                job.model
+            ]
 
             shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
 
-            if isinstance(model, PyTorchModel):
+            if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.txt2img(job)
                 self.memory_cleanup()
@@ -242,12 +244,14 @@ class GPU:
         "Run an image2image job"
 
         def thread_call(job: Img2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
+            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
+                job.model
+            ]
 
             shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
 
-            if isinstance(model, PyTorchModel):
+            if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.img2img(job)
                 self.memory_cleanup()
@@ -273,12 +277,14 @@ class GPU:
         "Run an inpainting job"
 
         def thread_call(job: InpaintQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
+            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
+                job.model
+            ]
 
             shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
 
-            if isinstance(model, PyTorchModel):
+            if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.inpaint(job)
                 self.memory_cleanup()
@@ -304,12 +310,14 @@ class GPU:
         "Run an inpainting job"
 
         def thread_call(job: ImageVariationsQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchModel] = self.loaded_models[job.model]
+            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
+                job.model
+            ]
 
             shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
 
-            if isinstance(model, PyTorchModel):
+            if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.image_variations(job)
                 self.memory_cleanup()
@@ -349,7 +357,7 @@ class GPU:
         if model_type in self.loaded_models:
             model = self.loaded_models[model_type]
 
-            if isinstance(model, PyTorchModel):
+            if isinstance(model, PyTorchStableDiffusion):
                 logger.debug(f"Unloading PyTorch model: {model_type}")
                 model.unload()
             else:

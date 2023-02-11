@@ -44,6 +44,28 @@ export interface SettingsInterface {
     denoisingStrength: number;
     image: string;
   };
+  imageVariations: {
+    image: string;
+    steps: number;
+    cfgScale: number;
+    seed: number;
+    batchCount: number;
+    batchSize: number;
+    sampler: Sampler;
+  };
+  inpainting: {
+    prompt: string;
+    negativePrompt: string;
+    image: string;
+    maskImage: string;
+    width: number;
+    height: number;
+    steps: number;
+    cfgScale: number;
+    seed: number;
+    batchCount: number;
+    batchSize: number;
+  };
 }
 
 export const defaultNegativePrompt =
@@ -79,6 +101,28 @@ const defaultSettings: SettingsInterface = {
     denoisingStrength: 0.6,
     resizeMethod: 0,
     image: "",
+  },
+  imageVariations: {
+    batchCount: 1,
+    batchSize: 1,
+    cfgScale: 7,
+    image: "",
+    seed: -1,
+    sampler: Sampler.EULER_A,
+    steps: 25,
+  },
+  inpainting: {
+    prompt: "",
+    negativePrompt: defaultNegativePrompt,
+    image: "",
+    maskImage: "",
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfgScale: 7,
+    seed: -1,
+    batchCount: 1,
+    batchSize: 1,
   },
 };
 

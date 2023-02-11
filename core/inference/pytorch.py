@@ -19,6 +19,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint impo
     StableDiffusionInpaintPipeline,
 )
 from PIL import Image
+from torchvision import transforms
 from transformers import CLIPVisionModelWithProjection
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -45,7 +46,7 @@ from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 logger = logging.getLogger(__name__)
 
 
-class PyTorchModel:
+class PyTorchStableDiffusion:
     "High level model wrapper for PyTorch models"
 
     def __init__(
@@ -134,8 +135,9 @@ class PyTorchModel:
         "Check if the image encoder is loaded, if not load it"
 
         if self.image_encoder is None:
+            logger.info("Loading image encoder...")
             encoder = CLIPVisionModelWithProjection.from_pretrained(
-                self.model_id,
+                "lambdalabs/sd-image-variations-diffusers",
                 cache_dir=config.cache_dir,
                 torch_dtype=torch.float32 if self.use_f32 else torch.float16,
                 subfolder="image_encoder",
@@ -147,11 +149,23 @@ class PyTorchModel:
         else:
             return self.image_encoder
 
+    def cleanup_old_components(self, keep_variations: bool = False) -> None:
+        "Cleanup old components"
+
+        if not keep_variations:
+            self.image_encoder = None
+
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+        gc.collect()
+
     def txt2img(
         self,
         job: Txt2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generate an image from a prompt"
+
+        self.cleanup_old_components()
 
         pipe = StableDiffusionPipeline(
             vae=self.vae,
@@ -209,6 +223,8 @@ class PyTorchModel:
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
+        self.cleanup_old_components()
+
         pipe = StableDiffusionImg2ImgPipeline(
             vae=self.vae,
             unet=self.unet,  # type: ignore
@@ -265,6 +281,8 @@ class PyTorchModel:
 
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
+
+        self.cleanup_old_components()
 
         pipe = StableDiffusionInpaintPipeline(
             vae=self.vae,
@@ -326,6 +344,8 @@ class PyTorchModel:
     def image_variations(self, job: ImageVariationsQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
+        self.cleanup_old_components(keep_variations=True)
+
         pipe = StableDiffusionImageVariationPipeline(
             vae=self.vae,
             unet=self.unet,  # type: ignore
@@ -342,11 +362,27 @@ class PyTorchModel:
 
         input_image = convert_to_image(job.data.image)
 
+        tform = transforms.Compose(
+            [
+                transforms.ToTensor(),
+                transforms.Resize(
+                    (224, 224),
+                    interpolation=transforms.InterpolationMode.BICUBIC,
+                    antialias=False,
+                ),
+                transforms.Normalize(
+                    [0.48145466, 0.4578275, 0.40821073],
+                    [0.26862954, 0.26130258, 0.27577711],
+                ),
+            ]
+        )
+        inp = tform(input_image).to(pipe.device).unsqueeze(0)  # type: ignore
+
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
             data = pipe(
-                image=input_image,
+                image=inp,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 output_type="pil",
@@ -395,9 +431,6 @@ class PyTorchModel:
             logger.info("Optimization: Enabled traced UNet")
         except ValueError:
             logger.info("Optimization: Traced UNet not available")
-
-        # self.model.vae.enable_vae_slicing()  # type: ignore
-        # logger.info("Optimization: Enabled VAE slicing")
 
         logger.info("Optimization complete")
 

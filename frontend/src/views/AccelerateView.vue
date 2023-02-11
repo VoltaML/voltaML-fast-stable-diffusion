@@ -1,5 +1,10 @@
 <!-- eslint-disable vue/multi-word-component-names -->
 <template>
+  <NAlert
+    style="width: 100%; margin-bottom: 12px"
+    type="warning"
+    title="Does not work yet"
+  />
   <NCard title="Acceleration progress">
     <NSpace vertical justify="center">
       <NSteps :current="1">
@@ -35,6 +40,7 @@
 import { modelData, tagColor, type Model } from "@/core/models";
 import { Home, Menu } from "@vicons/ionicons5";
 import {
+  NAlert,
   NButton,
   NCard,
   NDataTable,

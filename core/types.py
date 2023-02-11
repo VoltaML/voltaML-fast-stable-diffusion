@@ -119,7 +119,6 @@ class ImageVariationsData:
     seed: int = field(default=0)
     batch_size: int = 1
     batch_count: int = 1
-    strength: float = 0.6
 
 
 @dataclass

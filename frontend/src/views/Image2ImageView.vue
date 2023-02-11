@@ -4,7 +4,7 @@
       <Img2Img />
     </NTabPane>
     <NTabPane name="Image variations">
-      <WIP />
+      <ImageVariations />
     </NTabPane>
     <NTabPane name="Inpaint">
       <WIP />
@@ -22,6 +22,7 @@
 </template>
 
 <script lang="ts" setup>
+import ImageVariations from "@/components/ImageVariations.vue";
 import Img2Img from "@/components/Img2Img.vue";
 import WIP from "@/components/WIP.vue";
 import { NTabPane, NTabs } from "naive-ui";
