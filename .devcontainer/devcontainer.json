@@ -3,15 +3,11 @@
 {
 	"name": "Python 3",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "mcr.microsoft.com/devcontainers/python:0-3.10",
+	"image": "nvcr.io/nvidia/tensorrt:22.11-py3",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"nodeGypDependencies": true,
 			"version": "18"
-		},
-		"ghcr.io/devcontainers/features/nvidia-cuda:1": {
-			"cudaVersion": "11.8",
-			"cudnnVersion": "8.6.0.163"
 		},
 		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {}
 	},
@@ -24,13 +20,20 @@
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5003, 5173],
 
+	"remoteEnv": {
+		"HUGGINGFACE_TOKEN": "${localEnv:HUGGINGFACE_TOKEN}",
+		"CUDA_MODULE_LOADING": "LAZY",
+		"PLUGIN_LIBS": "external/libinfer/libnvinfer_plugin.so"
+	},
+
 	"mounts": [
 		"source=${localEnv:HOME}/.cache/huggingface,target=/root/.cache/huggingface,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/engine,target=/workspaces/voltaML/engine,type=bind,consistency=cached"
 	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	// "postCreateCommand": "pip3 install --user -r requirements.txt",
+	"postCreateCommand": "yarn install && cd frontend && yarn install && cd ..",
 
 	// Configure tool-specific properties.
 	// "customizations": {},

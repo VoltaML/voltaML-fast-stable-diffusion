@@ -1,1 +1,1 @@
-docker compose run --service-ports voltaml bash start.sh
+docker compose run voltaml bash scripts/start.sh

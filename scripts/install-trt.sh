@@ -1,8 +1,5 @@
-# Install TensorRT pip package
-pip install --upgrade tensorrt==8.5.2.2
-
 # Clone the repo
-cd /workspace
+cd /workspaces
 git clone https://github.com/NVIDIA/TensorRT.git --branch 8.5.2 --single-branch
 cd TensorRT
 git submodule update --init --recursive

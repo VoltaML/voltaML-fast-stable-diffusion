@@ -1,12 +1,13 @@
 # syntax = docker/dockerfile:experimental
 FROM nvcr.io/nvidia/tensorrt:22.11-py3
 
+ENV DEBIAN_FRONTEND=noninteractive
+
 # Install latest pip and TensorRT
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install --upgrade pip
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install --upgrade tensorrt==8.5.2.2
 
 # Clone the TensorRT repository
-RUN git clone https://github.com/NVIDIA/TensorRT.git --branch 8.5.2 --single-branch \
+RUN git clone https://github.com/NVIDIA/TensorRT.git --single-branch \
     && cd TensorRT/ \
     && git submodule update --init --recursive
 
@@ -44,5 +45,5 @@ ENV LOG_LEVEL=INFO
 ENV TENSORRT_ENGINE_PATH="/workspace/voltaML-fast-stable-diffusion/engine"
 
 # Run the server
-RUN chmod +x start.sh
+RUN chmod +x scripts/start.sh
 ENTRYPOINT ["bash", "./scripts/start.sh"]

@@ -9,7 +9,6 @@ frontend/
 node_modules/
 onnx/
 outputs/
-scripts/
 static/
 traced_unet/
 venv/
