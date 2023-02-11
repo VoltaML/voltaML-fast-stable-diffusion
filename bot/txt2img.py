@@ -183,7 +183,15 @@ class Inference(Cog):
         guidance_scale: float = 7.0,
         steps: Literal[25, 30, 50] = 30,
         resolution: Literal[
-            "512x512", "1024x1024", "512x912", "912x912", "1920x1080", "1080x1920"
+            "512x512",
+            "1024x1024",
+            "512x912",
+            "912x912",
+            "1920x1080",
+            "1080x1920",
+            "1280:720",
+            "720:1280",
+            "768x768",
         ] = "512x512",
         seed: Optional[int] = None,
         scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
