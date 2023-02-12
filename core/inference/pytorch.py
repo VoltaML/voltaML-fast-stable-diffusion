@@ -55,7 +55,6 @@ class PyTorchStableDiffusion:
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
         device: str = "cuda",
-        callback_steps: int = 10,
     ) -> None:
         # HuggingFace
         self.model_id: str = model_id
@@ -64,9 +63,6 @@ class PyTorchStableDiffusion:
         # Hardware
         self.use_f32: bool = use_f32
         self.device: str = device
-
-        # Callbacks
-        self.callback_steps: int = callback_steps
 
         # Components
         self.vae: AutoencoderKL
@@ -199,7 +195,6 @@ class PyTorchStableDiffusion:
                 output_type="pil",
                 generator=generator,
                 callback=txt2img_callback,
-                callback_steps=1,
                 num_images_per_prompt=job.data.batch_size,
             )
             images: list[Image.Image] = data[0]
@@ -331,7 +326,7 @@ class PyTorchStableDiffusion:
 
         websocket_manager.broadcast_sync(
             data=Data(
-                data_type="inpaint",
+                data_type="inpainting",
                 data={
                     "progress": 0,
                     "current_step": 0,

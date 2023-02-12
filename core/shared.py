@@ -9,5 +9,4 @@ current_model: Union["TRTModel", "PyTorchStableDiffusion", None] = None
 current_steps: int = 50
 current_done_steps: int = 0
 asyncio_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
-image_decode_steps: int = 5
 interrupt: bool = False

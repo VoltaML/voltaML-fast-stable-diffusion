@@ -30,7 +30,6 @@ export const useWebsocket = defineStore("websocket", () => {
       if (event.data === "pong") {
         return;
       }
-      console.info(event.data);
       const data = JSON.parse(event.data) as WebSocketMessage;
       processWebSocket(data, global, notificationProvider);
     },

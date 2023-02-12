@@ -168,7 +168,6 @@ class GPU:
                 pt_model = PyTorchStableDiffusion(
                     model_id=model,
                     device=self.cuda_id,
-                    callback_steps=shared.image_decode_steps,
                 )
                 self.loaded_models[model] = pt_model
                 logger.info(f"Finished loading in {time.time() - start_time:.2f}s")

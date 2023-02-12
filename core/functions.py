@@ -1,6 +1,7 @@
 import logging
+import time
 from pathlib import Path
-from typing import List
+from typing import List, Tuple
 
 import numpy as np
 import torch
@@ -15,6 +16,8 @@ from core.types import ImageMetadata
 from core.utils import convert_images_to_base64_grid
 
 logger = logging.getLogger(__name__)
+
+last_image_time = time.time()
 
 
 def cheap_approximation(sample: torch.Tensor):
@@ -90,7 +93,7 @@ def inpaint_callback(step: int, _timestep: int, tensor: torch.Tensor):
 
     websocket_manager.broadcast_sync(
         data=Data(
-            data_type="inpaint",
+            data_type="inpainting",
             data={
                 "progress": int(
                     (shared.current_done_steps / shared.current_steps) * 100
@@ -123,18 +126,23 @@ def image_variations_callback(step: int, _timestep: int, tensor: torch.Tensor):
     )
 
 
-def pytorch_callback(step: int, _timestep: int, tensor: torch.Tensor):
+def pytorch_callback(
+    _step: int, _timestep: int, tensor: torch.Tensor
+) -> Tuple[list[Image.Image], bool]:
     "Send a websocket message to the client with the progress percentage and partial image"
+
+    global last_image_time  # pylint: disable=global-statement
 
     if shared.interrupt:
         shared.interrupt = False
         raise InferenceInterruptedError
 
     shared.current_done_steps += 1
-    send_image = step % shared.image_decode_steps == 0
+    send_image: bool = time.time() - last_image_time > 2
     images: List[Image.Image] = []
 
     if send_image:
+        last_image_time = time.time()
         for i in range(tensor.shape[0]):
             decoded_rgb = cheap_approximation(tensor[i])
             decoded_rgb = torch.clamp((decoded_rgb + 1.0) / 2.0, min=0.0, max=1.0)
