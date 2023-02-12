@@ -128,7 +128,7 @@ def image_variations_callback(step: int, _timestep: int, tensor: torch.Tensor):
 
 def pytorch_callback(
     _step: int, _timestep: int, tensor: torch.Tensor
-) -> Tuple[list[Image.Image], bool]:
+) -> Tuple[List[Image.Image], bool]:
     "Send a websocket message to the client with the progress percentage and partial image"
 
     global last_image_time  # pylint: disable=global-statement
