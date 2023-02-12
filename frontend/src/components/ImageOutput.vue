@@ -3,7 +3,11 @@
     <div style="width: 100%; display: flex; justify-content: center">
       <NImage
         v-if="displayedImage"
-        :src="`data:image/png;base64,${displayedImage}`"
+        :src="
+          displayedImage.startsWith('data:image/png')
+            ? displayedImage.toString()
+            : `data:image/png;base64,${displayedImage}`
+        "
         :img-props="{
           style: 'max-width: 100%; max-height: 70vh; width: 100%',
         }"

@@ -3,11 +3,9 @@ import logging
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
-from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, RedirectResponse
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
-from starlette import status
 
 from api import websocket_manager
 from api.routes import general, generate, hardware, models, outputs, static, test, ws
@@ -40,19 +38,6 @@ async def startup_event():
 
     shared.asyncio_loop = asyncio.get_event_loop()
     asyncio.create_task(websocket_manager.sync_loop())
-
-
-@app.exception_handler(RequestValidationError)
-async def validation_exception_handler(request: Request, _: RequestValidationError):
-    "Show more info about validation errors"
-
-    logging.error(
-        f"url: {request.url}, params: {request.query_params}, body: {await request.body()}"
-    )
-    content = {"status_code": 10422, "data": None}
-    return JSONResponse(
-        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
-    )
 
 
 # Origins that are allowed to access the API

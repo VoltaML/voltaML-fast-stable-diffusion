@@ -65,6 +65,7 @@ export interface SettingsInterface {
     seed: number;
     batchCount: number;
     batchSize: number;
+    sampler: Sampler;
   };
 }
 
@@ -123,6 +124,7 @@ const defaultSettings: SettingsInterface = {
     seed: -1,
     batchCount: 1,
     batchSize: 1,
+    sampler: Sampler.EULER_A,
   },
 };
 

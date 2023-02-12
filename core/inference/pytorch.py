@@ -18,7 +18,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img impo
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import (
     StableDiffusionInpaintPipeline,
 )
-from PIL import Image
+from PIL import Image, ImageOps
 from torchvision import transforms
 from transformers import CLIPVisionModelWithProjection
 from transformers.models.clip.modeling_clip import CLIPTextModel
@@ -299,11 +299,13 @@ class PyTorchStableDiffusion:
 
         change_scheduler(model=pipe, scheduler=job.scheduler)
 
-        input_image = convert_to_image(job.data.image)
+        input_image = convert_to_image(job.data.image).convert("RGB")
         input_image = resize(input_image, job.data.width, job.data.height)
 
-        input_mask_image = convert_to_image(job.data.mask_image)
+        input_mask_image = convert_to_image(job.data.mask_image).convert("RGB")
+        input_mask_image = ImageOps.invert(input_mask_image)
         input_mask_image = resize(input_mask_image, job.data.height, job.data.width)
+        input_mask_image.save("mask.png")
 
         total_images: List[Image.Image] = []
 
@@ -399,7 +401,7 @@ class PyTorchStableDiffusion:
 
         websocket_manager.broadcast_sync(
             data=Data(
-                data_type="inpaint",
+                data_type="image_variations",
                 data={
                     "progress": 0,
                     "current_step": 0,

@@ -1,19 +1,29 @@
 <template>
   <NCard title="Input image">
-    <div class="image-container">
-      <div :style="{ width: width, height: height }">
-        <VueDrawingCanvas
-          :width="width"
-          :height="height"
-          :backgroundImage="preview"
-          :lineWidth="strokeWidth"
-          color="black"
-          ref="canvas"
-        />
-      </div>
+    <div class="image-container" ref="imageContainer">
+      <VueDrawingCanvas
+        v-model:image="image"
+        :width="width"
+        :height="height"
+        :backgroundImage="preview"
+        :lineWidth="strokeWidth"
+        strokeType="dash"
+        lineCap="round"
+        lineJoin="round"
+        :fillShape="false"
+        :eraser="eraser"
+        color="black"
+        ref="canvas"
+        saveAs="png"
+      />
     </div>
 
-    <NSpace inline justify="space-between" align="center" style="width: 100%">
+    <NSpace
+      inline
+      justify="space-between"
+      align="center"
+      style="width: 100%; margin-top: 12px"
+    >
       <div style="display: inline-flex; align-items: center">
         <NButton class="utility-button" @click="undo">
           <NIcon>
@@ -23,6 +33,25 @@
         <NButton class="utility-button" @click="redo">
           <NIcon>
             <ArrowRedoSharp />
+          </NIcon>
+        </NButton>
+        <NButton class="utility-button" @click="toggleEraser">
+          <NIcon v-if="eraser">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              fill="currentColor"
+              class="bi bi-eraser"
+              viewBox="0 0 16 16"
+            >
+              <path
+                d="M8.086 2.207a2 2 0 0 1 2.828 0l3.879 3.879a2 2 0 0 1 0 2.828l-5.5 5.5A2 2 0 0 1 7.879 15H5.12a2 2 0 0 1-1.414-.586l-2.5-2.5a2 2 0 0 1 0-2.828l6.879-6.879zm2.121.707a1 1 0 0 0-1.414 0L4.16 7.547l5.293 5.293 4.633-4.633a1 1 0 0 0 0-1.414l-3.879-3.879zM8.746 13.547 3.453 8.254 1.914 9.793a1 1 0 0 0 0 1.414l2.5 2.5a1 1 0 0 0 .707.293H7.88a1 1 0 0 0 .707-.293l.16-.16z"
+              />
+            </svg>
+          </NIcon>
+          <NIcon v-else>
+            <BrushSharp />
           </NIcon>
         </NButton>
         <NButton class="utility-button" @click="clearCanvas">
@@ -37,7 +66,6 @@
           :step="1"
           style="width: 100px; margin: 0 8px"
         />
-        <p>{{ width }}x{{ height }}</p>
       </div>
       <label for="file-upload">
         <span class="file-upload">Select image</span>
@@ -57,6 +85,7 @@
 import {
   ArrowRedoSharp,
   ArrowUndoSharp,
+  BrushSharp,
   TrashBinSharp,
 } from "@vicons/ionicons5";
 import { NButton, NCard, NIcon, NSlider, NSpace } from "naive-ui";
@@ -69,8 +98,10 @@ const width = ref(512);
 const height = ref(512);
 
 const strokeWidth = ref(10);
-
+const eraser = ref(false);
 const preview = ref("");
+
+const imageContainer = ref<HTMLElement>();
 
 function previewImage(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -84,8 +115,32 @@ function previewImage(event: Event) {
         const img = new Image();
         img.src = s;
         img.onload = () => {
-          width.value = img.width;
-          height.value = img.height;
+          const containerWidth = imageContainer.value?.clientWidth;
+
+          // Scale to fit container
+          const containerScaledWidth = containerWidth || img.width;
+          const containerScaledHeight =
+            (img.height * containerScaledWidth) / containerScaledWidth;
+
+          // Scale to fit into 70vh of the screen
+          const screenHeight = window.innerHeight;
+          const screenHeightScaledHeight =
+            (containerScaledHeight * 0.7 * screenHeight) /
+            containerScaledHeight;
+
+          // Scale width to keep aspect ratio
+          const screenHeightScaledWidth =
+            (img.width * screenHeightScaledHeight) / img.height;
+
+          // Select smaller of the two to fit into the container
+          if (containerScaledWidth < screenHeightScaledWidth) {
+            width.value = containerScaledWidth;
+            height.value = containerScaledHeight;
+          } else {
+            width.value = screenHeightScaledWidth;
+            height.value = screenHeightScaledHeight;
+          }
+
           canvas.value?.redraw(false);
         };
       }
@@ -105,6 +160,14 @@ function undo() {
 function redo() {
   canvas.value?.redo();
 }
+
+function toggleEraser() {
+  console.log(eraser.value);
+  eraser.value = !eraser.value;
+  console.log(eraser.value);
+}
+
+const image = ref("");
 </script>
 
 <style scoped>

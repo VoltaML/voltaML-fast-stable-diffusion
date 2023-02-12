@@ -58,7 +58,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
     }
 
 
-@router.post("/inpaint")
+@router.post("/inpainting")
 async def inpaint_job(job: InpaintQueueEntry):
     "Inpaint image with prompt"
 

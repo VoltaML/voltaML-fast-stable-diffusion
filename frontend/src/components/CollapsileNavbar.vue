@@ -7,9 +7,9 @@
         :collapsed-width="64"
         :width="240"
         :collapsed="collapsed"
+        show-trigger
         @collapse="collapsed = true"
         @expand="collapsed = false"
-        style="height: 100%"
       >
         <NSpace vertical justify="space-between" style="height: 100%">
           <n-menu
@@ -109,6 +109,6 @@ let collapsed = ref(true);
   top: 0;
   left: 0;
   height: 100%;
-  z-index: 1000;
+  z-index: 1;
 }
 </style>

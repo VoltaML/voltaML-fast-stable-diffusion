@@ -14,7 +14,7 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
-  inpaint: {
+  inpainting: {
     currentImage: string;
     images: string[];
   };
