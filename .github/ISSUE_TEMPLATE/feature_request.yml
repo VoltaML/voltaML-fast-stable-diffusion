@@ -35,7 +35,7 @@ body:
       label: Validations
       description: Before submitting the issue, please make sure you do the following
       options:
-        - label: Read the [docs](https://stax124.github.io/voltaML-fast-stable-diffusion/).
+        - label: Read the [docs](https://voltaml.github.io/voltaML-fast-stable-diffusion/).
           required: true
         - label: Check that there isn't already an issue that asks for the same feature to avoid creating a duplicate.
           required: true
