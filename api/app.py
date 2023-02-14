@@ -1,5 +1,6 @@
 import asyncio
 import logging
+import mimetypes
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
@@ -23,6 +24,9 @@ async def log_request(request: Request):
 app = FastAPI(
     docs_url="/api/docs", redoc_url="/api/redoc", dependencies=[Depends(log_request)]
 )
+
+mimetypes.init()
+mimetypes.add_type("application/javascript", ".js")
 
 
 @app.exception_handler(404)

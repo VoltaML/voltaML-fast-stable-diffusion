@@ -165,6 +165,28 @@ class ImageVariationsQueueEntry:
     save_image: bool = field(default=True)
 
 
+@dataclass
+class BuildRequest:
+    "Dataclass for requesting a build of an engine"
+
+    model_id: str
+    subfolder: str = ""
+    hf_token: str = ""
+    fp16: bool = True
+    verbose: bool = True
+    opt_image_height: int = 512
+    opt_image_width: int = 512
+    max_batch_size: int = 1
+    onnx_opset: int = 16
+    build_static_batch: bool = False
+    build_dynamic_shape: bool = True
+    build_preview_features: bool = False
+    force_engine_build: bool = False
+    force_onnx_export: bool = False
+    force_onnx_optimize: bool = False
+    onnx_minimal_optimization: bool = False
+
+
 PyTorchModelType = Union[
     StableDiffusionDepth2ImgPipeline,
     StableDiffusionImageVariationPipeline,

@@ -38,8 +38,8 @@ import onnx
 from api import websocket_manager
 from api.websockets import Data, Notification
 from core.schedulers import change_scheduler
-from core.trt.models import CLIP, VAE, UNet
-from core.trt.utilities import TRT_LOGGER, Engine, save_image
+from core.tensorrt.models import CLIP, VAE, UNet
+from core.tensorrt.utilities import TRT_LOGGER, Engine, save_image
 from core.types import Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid
 

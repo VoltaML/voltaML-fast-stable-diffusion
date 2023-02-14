@@ -1,6 +1,7 @@
 {
     "exclude": [
         "core/hijack/diffusers/",
-        "venv/"
+        "venv/",
+        "core/submodules/"
     ]
 }
