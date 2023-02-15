@@ -1,7 +1,7 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-	"name": "Python 3",
+	"name": "VoltaML Dev Container",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
 	"image": "nvcr.io/nvidia/tensorrt:22.11-py3",
 	"features": {
@@ -22,8 +22,7 @@
 
 	"remoteEnv": {
 		"HUGGINGFACE_TOKEN": "${localEnv:HUGGINGFACE_TOKEN}",
-		"CUDA_MODULE_LOADING": "LAZY",
-		"PLUGIN_LIBS": "external/libinfer/libnvinfer_plugin.so"
+		"CUDA_MODULE_LOADING": "LAZY"
 	},
 
 	"mounts": [

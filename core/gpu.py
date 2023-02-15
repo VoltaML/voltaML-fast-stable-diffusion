@@ -16,6 +16,7 @@ from core.inference.pytorch import PyTorchStableDiffusion
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
+    BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -324,5 +325,21 @@ class GPU:
             del trt_model
 
         _, err = await run_in_thread_async(func=call)
+        if err is not None:
+            raise err
+
+    async def build_engine(self, request: BuildRequest):
+        "Build a TensorRT engine from a request"
+
+        # TODO: Lock the GPU while building the engine, with propper checks in the cluster load balancer
+
+        from .inference.tensorrt import TensorRTModel
+
+        def build():
+            model = TensorRTModel(model_id="", use_f32=False)
+            model.generate_engine(request=request)
+
+        _, err = await run_in_thread_async(func=build)
+
         if err is not None:
             raise err

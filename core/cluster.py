@@ -11,6 +11,7 @@ from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.gpu import GPU
 from core.inference.functions import download_model
 from core.types import (
+    BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -161,6 +162,20 @@ class Cluster:
                 best_gpu = gpu
 
         await best_gpu.convert_from_checkpoint(checkpoint_path, is_sd2=is_sd2)
+
+    async def build_engine(self, req: BuildRequest):
+        "Build a TensorRT engine"
+
+        best_gpu: GPU = self.gpus[0]
+        for gpu in self.gpus:
+            if best_gpu is None:
+                best_gpu = gpu
+                continue
+
+            if len(best_gpu.queue.jobs) > len(gpu.queue.jobs):
+                best_gpu = gpu
+
+        await best_gpu.build_engine(req)
 
     async def unload(self, model: str, gpu_id: int):
         "Unload a model from a GPU"

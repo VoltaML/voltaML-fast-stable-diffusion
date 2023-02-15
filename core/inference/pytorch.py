@@ -64,7 +64,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         # Components
         self.vae: AutoencoderKL
-        self.unet: UNet2DConditionModel | TracedUNet
+        self.unet: Union[UNet2DConditionModel, TracedUNet]
         self.text_encoder: CLIPTextModel
         self.tokenizer: CLIPTokenizer
         self.scheduler: Any
