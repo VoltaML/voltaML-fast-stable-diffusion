@@ -1,7 +1,7 @@
 import gc
 import logging
 import os
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
@@ -33,6 +33,7 @@ from core.functions import (
     inpaint_callback,
     txt2img_callback,
 )
+from core.inference.base_model import InferenceModel
 from core.inference.unet_tracer import TracedUNet, get_traced_unet
 from core.schedulers import change_scheduler
 from core.types import (
@@ -46,7 +47,7 @@ from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 logger = logging.getLogger(__name__)
 
 
-class PyTorchStableDiffusion:
+class PyTorchStableDiffusion(InferenceModel):
     "High level model wrapper for PyTorch models"
 
     def __init__(
@@ -56,13 +57,10 @@ class PyTorchStableDiffusion:
         use_f32: bool = False,
         device: str = "cuda",
     ) -> None:
-        # HuggingFace
-        self.model_id: str = model_id
-        self.auth: str = auth_token
+        super().__init__(model_id, use_f32, device)
 
-        # Hardware
-        self.use_f32: bool = use_f32
-        self.device: str = device
+        # HuggingFace
+        self.auth: str = auth_token
 
         # Components
         self.vae: AutoencoderKL
@@ -176,10 +174,10 @@ class PyTorchStableDiffusion:
 
         generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
-        if job.scheduler:
+        if job.data.scheduler:
             change_scheduler(
                 model=pipe,
-                scheduler=job.scheduler,
+                scheduler=job.data.scheduler,
             )
 
         total_images: List[Image.Image] = []
@@ -233,7 +231,7 @@ class PyTorchStableDiffusion:
 
         generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.scheduler)
+        change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
@@ -292,7 +290,7 @@ class PyTorchStableDiffusion:
 
         generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.scheduler)
+        change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
         input_image = convert_to_image(job.data.image).convert("RGB")
         input_image = resize(input_image, job.data.width, job.data.height)
@@ -355,7 +353,7 @@ class PyTorchStableDiffusion:
 
         generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.scheduler)
+        change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
         input_image = convert_to_image(job.data.image)
 
@@ -439,3 +437,27 @@ class PyTorchStableDiffusion:
             self.unet = traced_unet
         else:
             raise ValueError(f"Traced U-Net model with id {model_id} does not exist.")
+
+    def generate(
+        self,
+        job: Union[
+            Txt2ImgQueueEntry,
+            Img2ImgQueueEntry,
+            InpaintQueueEntry,
+            ImageVariationsQueueEntry,
+        ],
+    ):
+        "Generate images from the queue"
+
+        logging.info(f"Adding job {job.data.id} to queue")
+
+        if isinstance(job, Txt2ImgQueueEntry):
+            images = self.txt2img(job)
+        elif isinstance(job, Img2ImgQueueEntry):
+            images = self.img2img(job)
+        elif isinstance(job, InpaintQueueEntry):
+            images = self.inpaint(job)
+        elif isinstance(job, ImageVariationsQueueEntry):
+            images = self.image_variations(job)
+
+        return images

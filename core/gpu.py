@@ -5,7 +5,6 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
 
 import torch
-from diffusers.schedulers import KarrasDiffusionSchedulers
 from PIL import Image
 
 from api import websocket_manager
@@ -65,25 +64,64 @@ class GPU:
     ):
         "Generate images from the queue"
 
+        def generate_thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
+            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
+                job.model
+            ]
+
+            shared.current_steps = job.data.steps * job.data.batch_count
+            shared.current_done_steps = 0
+
+            if isinstance(model, PyTorchStableDiffusion):
+                logger.debug("Generating with PyTorch")
+                images: List[Image.Image] = model.generate(job)
+                self.memory_cleanup()
+                return images
+
+            logger.debug("Generating with TensorRT")
+            images: List[Image.Image]
+
+            _, images = model.infer(
+                [job.data.prompt],
+                [job.data.negative_prompt],
+                job.data.height,
+                job.data.width,
+                guidance_scale=job.data.guidance_scale,
+                verbose=False,
+                seed=job.data.seed,
+                output_dir="output",
+                num_of_infer_steps=job.data.steps,
+                scheduler=job.data.scheduler,
+            )
+            self.memory_cleanup()
+            return images
+
         logging.info(f"Adding job {job.data.id} to queue")
 
+        # Check width and height passed by the user
         if not isinstance(job, ImageVariationsQueueEntry):
             if job.data.width % 8 != 0 or job.data.height % 8 != 0:
                 raise DimensionError("Width and height must be divisible by 8")
 
+        # Wait for turn
         await self.queue.wait_for_turn(job.data.id)
 
         start_time = time.time()
 
         try:
-            if isinstance(job, Txt2ImgQueueEntry):
-                images = await self.txt2img(job)
-            elif isinstance(job, Img2ImgQueueEntry):
-                images = await self.img2img(job)
-            elif isinstance(job, InpaintQueueEntry):
-                images = await self.inpaint(job)
-            elif isinstance(job, ImageVariationsQueueEntry):
-                images = await self.image_variations(job)
+            images: Optional[List[Image.Image]]
+            error: Optional[Exception]
+            images, error = await run_in_thread_async(
+                func=generate_thread_call, args=(job,)
+            )
+
+            if error is not None:
+                raise error
+
+            assert images is not None
+
+            if job.save_image:
+                save_images(images, job)
         except Exception as err:  # pylint: disable=broad-except
             self.queue.mark_finished()
             raise err
@@ -187,158 +225,6 @@ class GPU:
     def loaded_models_list(self) -> list:
         "Return a list of loaded models"
         return list(self.loaded_models.keys())
-
-    async def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
-        "Generate an image(s) from a prompt"
-
-        def thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.txt2img(job)
-                self.memory_cleanup()
-                return images
-
-            logger.debug("Generating with TensorRT")
-            images: List[Image.Image]
-
-            _, images = model.infer(
-                [job.data.prompt],
-                [job.data.negative_prompt],
-                job.data.height,
-                job.data.width,
-                guidance_scale=job.data.guidance_scale,
-                verbose=False,
-                seed=job.data.seed,
-                output_dir="output",
-                num_of_infer_steps=job.data.steps,
-                scheduler=job.scheduler
-                if job.scheduler
-                else KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
-            )
-            self.memory_cleanup()
-            return images
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
-
-    async def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
-        "Run an image2image job"
-
-        def thread_call(job: Img2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.img2img(job)
-                self.memory_cleanup()
-                return images
-
-            raise NotImplementedError("Image2Image with TensorRT is not implemented")
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
-
-    async def inpaint(self, job: InpaintQueueEntry):
-        "Run an inpainting job"
-
-        def thread_call(job: InpaintQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.inpaint(job)
-                self.memory_cleanup()
-                return images
-
-            raise NotImplementedError("Inpainting is not supported with TensorRT")
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
-
-    async def image_variations(self, job: ImageVariationsQueueEntry):
-        "Run an inpainting job"
-
-        def thread_call(job: ImageVariationsQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.image_variations(job)
-                self.memory_cleanup()
-                return images
-
-            raise NotImplementedError(
-                "Image variations are not supported with TensorRT"
-            )
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
 
     def memory_cleanup(self):
         "Release all unused memory"

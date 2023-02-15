@@ -1,5 +1,7 @@
 from abc import ABC, abstractmethod
 
+from core.types import Job
+
 
 class InferenceModel(ABC):
     "Base class for all models that will be used in the API"
@@ -16,3 +18,7 @@ class InferenceModel(ABC):
     @abstractmethod
     def unload(self):
         "Unloads the model from the memory"
+
+    @abstractmethod
+    def generate(self, job: Job) -> Job:
+        "Generates the output of the model"

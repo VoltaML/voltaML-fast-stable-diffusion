@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Union
+from typing import Any, Union
 from uuid import uuid4
 
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
@@ -25,6 +25,16 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale impo
     StableDiffusionUpscalePipeline,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
+
+
+@dataclass
+class Job:
+    "Base class for all jobs"
+
+    data: Any
+    model: str
+    websocket_id: Union[str, None] = field(default=None)
+    save_image: bool = field(default=True)
 
 
 @dataclass
@@ -61,6 +71,7 @@ class Txt2imgData:
     "Dataclass for the data of a txt2img request"
 
     prompt: str
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -78,6 +89,7 @@ class Img2imgData:
 
     prompt: str
     image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -97,6 +109,7 @@ class InpaintData:
     prompt: str
     image: Union[bytes, str]
     mask_image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -113,6 +126,7 @@ class ImageVariationsData:
     "Dataclass for the data of an img2img request"
 
     image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
@@ -122,47 +136,31 @@ class ImageVariationsData:
 
 
 @dataclass
-class Txt2ImgQueueEntry:
+class Txt2ImgQueueEntry(Job):
     "Dataclass for a text to image queue entry"
 
     data: Txt2imgData
-    model: str
-    scheduler: Optional[KarrasDiffusionSchedulers] = None
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
 
 
 @dataclass
-class Img2ImgQueueEntry:
+class Img2ImgQueueEntry(Job):
     "Dataclass for an image to image queue entry"
 
     data: Img2imgData
-    model: str
-    scheduler: KarrasDiffusionSchedulers
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
 
 
 @dataclass
-class InpaintQueueEntry:
+class InpaintQueueEntry(Job):
     "Dataclass for an image to image queue entry"
 
     data: InpaintData
-    model: str
-    scheduler: KarrasDiffusionSchedulers
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
 
 
 @dataclass
-class ImageVariationsQueueEntry:
+class ImageVariationsQueueEntry(Job):
     "Dataclass for an image to image queue entry"
 
     data: ImageVariationsData
-    model: str
-    scheduler: KarrasDiffusionSchedulers
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
 
 
 @dataclass
