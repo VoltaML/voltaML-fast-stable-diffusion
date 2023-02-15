@@ -1,6 +1,5 @@
 # Original: https://github.com/ddPn08/Lsmith
 # Modified by: Stax124
-
 import gc
 import json
 import os
@@ -13,10 +12,13 @@ import numpy as np
 import tensorrt as trt
 import torch
 from cuda import cudart
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 from PIL import Image
 from polygraphy import cuda
 from tqdm import tqdm
 from transformers import CLIPTokenizer
+
+from core.schedulers import change_scheduler
 
 from ..runner import BaseRunner
 from ..utilities import TRT_LOGGER, Engine
@@ -60,22 +62,6 @@ def get_timesteps(
         t_start = max(num_inference_steps - init_timestep, 0)
         timesteps = scheduler.timesteps[t_start:].to(device)
         return timesteps, num_inference_steps - t_start
-
-
-def get_scheduler(scheduler_id: str):
-    schedulers = {
-        "ddim": diffusers.DDIMScheduler,
-        "deis": diffusers.DEISMultistepScheduler,
-        "dpm2": diffusers.KDPM2DiscreteScheduler,
-        "dpm2-a": diffusers.KDPM2AncestralDiscreteScheduler,
-        "euler_a": diffusers.EulerAncestralDiscreteScheduler,
-        "euler": diffusers.EulerDiscreteScheduler,
-        "heun": diffusers.DPMSolverMultistepScheduler,
-        "dpm++": diffusers.DPMSolverMultistepScheduler,
-        "dpm": diffusers.DPMSolverMultistepScheduler,
-        "pndm": diffusers.PNDMScheduler,
-    }
-    return schedulers[scheduler_id]
 
 
 def preprocess_image(image: Image.Image, height: int, width: int) -> torch.Tensor:
@@ -224,7 +210,7 @@ class TensorRTDiffusionRunner(BaseRunner):
         negative_prompt: str = "",
         batch_size=1,
         batch_count=1,
-        scheduler_id: str = "euler_a",
+        scheduler_id: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
         steps=28,
         scale=28,
         image_height=512,
@@ -237,13 +223,18 @@ class TensorRTDiffusionRunner(BaseRunner):
         self.wait_loading()
 
         if self.scheduler_id != scheduler_id:
-            Scheduler = get_scheduler(scheduler_id)
+            scheduler = change_scheduler(
+                scheduler=scheduler_id, config=self.meta, autoload=False, model=None
+            )
+
+            assert scheduler is not None
+
             try:
-                self.scheduler = Scheduler.from_pretrained(
-                    self.model_id, subfolder="scheduler"
+                self.scheduler = scheduler.from_pretrained(
+                    self.model_id, subfolder="scheduler"  # type: ignore
                 )
             except Exception:  # pylint: disable=broad-except
-                self.scheduler = Scheduler.from_config(
+                self.scheduler = scheduler.from_config(
                     {
                         "num_train_timesteps": 1000,
                         "beta_start": 0.00085,
@@ -366,7 +357,14 @@ class TensorRTDiffusionRunner(BaseRunner):
                         noise_pred_text - noise_pred_uncond
                     )
 
-                    if scheduler_id in ["deis", "dpm2", "heun", "dpm++", "dpm", "pndm"]:
+                    if scheduler_id in [
+                        KarrasDiffusionSchedulers.DEISMultistepScheduler,
+                        KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+                        KarrasDiffusionSchedulers.HeunDiscreteScheduler,
+                        KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler,
+                        KarrasDiffusionSchedulers.DDPMScheduler,
+                        KarrasDiffusionSchedulers.PNDMScheduler,
+                    ]:
                         latents = self.scheduler.step(  # type: ignore
                             model_output=noise_pred, timestep=timestep, sample=latents
                         ).prev_sample

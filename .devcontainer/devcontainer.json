@@ -36,7 +36,38 @@
 	"postCreateCommand": "yarn install && cd frontend && yarn install && cd ..",
 
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"dbaeumer.vscode-eslint",
+				"github.copilot-nightly",
+				"ecmel.vscode-html-css",
+				"ms-python.isort",
+				"ms-vscode.vscode-typescript-next",
+				"esbenp.prettier-vscode",
+				"ms-python.vscode-pylance",
+				"vue.volar"
+			],
+			"settings": {
+				"[javascript]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[python]": {
+					"editor.defaultFormatter": "ms-python.python"
+				},
+				"editor.bracketPairColorization.enabled": true,
+				"editor.defaultFormatter": "esbenp.prettier-vscode",
+				"python.analysis.inlayHints.functionReturnTypes": true,
+				"python.analysis.inlayHints.variableTypes": true,
+				"python.analysis.typeCheckingMode": "basic",
+				"python.formatting.provider": "black",
+				"python.languageServer": "Pylance",
+				"telemetry.telemetryLevel": "off",
+				"editor.formatOnSave": true
+			}
+		}
+	},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root"

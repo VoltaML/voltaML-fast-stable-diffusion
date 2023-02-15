@@ -1,3 +1,5 @@
+from core.types import Job
+
 from .base_model import InferenceModel
 
 
@@ -14,3 +16,6 @@ class TensorRTModel(InferenceModel):
 
     def unload(self):
         "Unloads the model from the memory"
+
+    def generate(self, job: Job):
+        "Generates the output for the given job"

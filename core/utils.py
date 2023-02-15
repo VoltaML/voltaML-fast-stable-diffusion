@@ -110,10 +110,7 @@ def convert_bytes_to_image_stream(data: bytes) -> str:
     pattern = re.compile(r"data:image\/[\w]+;base64,")
 
     img = data
-    if isinstance(img, bytes):
-        img = img.decode("utf-8")
-
-    if isinstance(img, str):
-        img = re.sub(pattern, "", img)
+    img = img.decode("utf-8")
+    img = re.sub(pattern, "", img)
 
     return img

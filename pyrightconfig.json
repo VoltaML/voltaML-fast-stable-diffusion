@@ -2,6 +2,7 @@
     "exclude": [
         "core/hijack/diffusers/",
         "venv/",
-        "core/submodules/"
+        "core/submodules/",
+        "typings/"
     ]
 }

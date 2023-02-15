@@ -1,7 +1,7 @@
 from dataclasses import dataclass, field
 
-from diffusers.schedulers import KarrasDiffusionSchedulers
-from diffusers.utils import DIFFUSERS_CACHE
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
+from diffusers.utils.constants import DIFFUSERS_CACHE
 
 
 @dataclass

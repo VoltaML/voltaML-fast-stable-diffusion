@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, Optional, Union
+from typing import Dict, Optional
 
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
@@ -21,7 +21,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_instruct_pix
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale import (
     StableDiffusionUpscalePipeline,
 )
-from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.schedulers.scheduling_ddim import DDIMScheduler
 from diffusers.schedulers.scheduling_ddpm import DDPMScheduler
 from diffusers.schedulers.scheduling_deis_multistep import DEISMultistepScheduler
@@ -42,17 +41,16 @@ from diffusers.schedulers.scheduling_k_dpm_2_ancestral_discrete import (
 from diffusers.schedulers.scheduling_k_dpm_2_discrete import KDPM2DiscreteScheduler
 from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
 from diffusers.schedulers.scheduling_pndm import PNDMScheduler
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import PyTorchModelType
 
-if TYPE_CHECKING:
-    from core.inference.volta_accelerate import TRTModel
-
 
 def change_scheduler(
-    model: Union[PyTorchModelType, "TRTModel"],
+    model: Optional[PyTorchModelType],
     scheduler: KarrasDiffusionSchedulers,
     config: Optional[Dict] = None,
+    autoload: bool = True,
 ):
     "Change the scheduler of the model"
 
@@ -102,4 +100,7 @@ def change_scheduler(
     else:
         new_scheduler = model.scheduler  # type: ignore
 
-    model.scheduler = new_scheduler.from_config(config=config)  # type: ignore
+    if autoload:
+        model.scheduler = new_scheduler.from_config(config=config)  # type: ignore
+    else:
+        return new_scheduler

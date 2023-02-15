@@ -24,7 +24,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_instruct_pix
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale import (
     StableDiffusionUpscalePipeline,
 )
-from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 
 @dataclass

@@ -106,3 +106,10 @@ async def image_variations_job(job: ImageVariationsQueueEntry):
         "time": time,
         "images": [convert_image_to_base64(i) for i in images],
     }
+
+
+@router.post("/generate-engine")
+async def generate_engine(engine: str):
+    "Generate a TensorRT engine from a local model"
+
+    return {"message": "Not implemented yet"}

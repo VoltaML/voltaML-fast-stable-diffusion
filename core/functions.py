@@ -5,7 +5,7 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
-from diffusers.utils import PIL_INTERPOLATION
+from diffusers.utils.pil_utils import PIL_INTERPOLATION
 from PIL import Image
 
 from api import websocket_manager
