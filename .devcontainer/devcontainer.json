@@ -3,7 +3,7 @@
 {
 	"name": "VoltaML Dev Container",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "nvcr.io/nvidia/tensorrt:22.11-py3",
+	"image": "nvcr.io/nvidia/tensorrt:23.01-py3",
 	"features": {
 		"ghcr.io/devcontainers/features/node:1": {
 			"nodeGypDependencies": true,
