@@ -1,5 +1,5 @@
 --extra-index-url https://pypi.ngc.nvidia.com
---extra-index-url https://download.pytorch.org/whl/cu116
+--extra-index-url https://download.pytorch.org/whl/cu117
 colored
 coloredlogs
 cuda-python==11.8.1
