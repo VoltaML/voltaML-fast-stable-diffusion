@@ -9,9 +9,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_depth2img import (
     StableDiffusionDepth2ImgPipeline,
 )
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_image_variation import (
-    StableDiffusionImageVariationPipeline,
-)
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
     StableDiffusionImg2ImgPipeline,
 )
@@ -187,7 +184,6 @@ class BuildRequest:
 
 PyTorchModelType = Union[
     StableDiffusionDepth2ImgPipeline,
-    StableDiffusionImageVariationPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
     StableDiffusionInstructPix2PixPipeline,

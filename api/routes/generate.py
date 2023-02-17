@@ -6,6 +6,7 @@ from PIL import Image
 from core.errors import ModelNotLoadedError
 from core.shared_dependent import cluster
 from core.types import (
+    BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -109,7 +110,18 @@ async def image_variations_job(job: ImageVariationsQueueEntry):
 
 
 @router.post("/generate-engine")
-async def generate_engine(engine: str):
+async def generate_engine(request: BuildRequest):
     "Generate a TensorRT engine from a local model"
 
-    return {"message": "Not implemented yet"}
+    await cluster.build_engine(request)
+
+    return {"message": "Success"}
+
+
+@router.post("/to-fp16")
+async def to_fp16(model: str):
+    "Cast a model to Float16 and save it"
+
+    await cluster.to_fp16(model)
+
+    return {"message": "Success"}

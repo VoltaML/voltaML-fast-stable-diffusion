@@ -336,10 +336,28 @@ class GPU:
         from .inference.tensorrt import TensorRTModel
 
         def build():
-            model = TensorRTModel(model_id="", use_f32=False)
+            model = TensorRTModel(model_id=request.model_id, use_f32=False)
             model.generate_engine(request=request)
 
-        _, err = await run_in_thread_async(func=build)
+        data, err = await run_in_thread_async(func=build)
+
+        print(f"Engine built: data:{data}, err:{err}")
+
+        if err is not None:
+            raise err
+
+    async def to_fp16(self, model: str):
+        "Convert a model to FP16"
+
+        def call():
+            pt_model = PyTorchStableDiffusion(
+                model_id=model,
+                device=self.cuda_id,
+            )
+
+            pt_model.save(path="converted/" + model)
+
+        _, err = await run_in_thread_async(func=call)
 
         if err is not None:
             raise err

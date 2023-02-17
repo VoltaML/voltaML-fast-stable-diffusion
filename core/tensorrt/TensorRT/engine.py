@@ -140,19 +140,14 @@ class EngineBuilder:
             os.path.basename(model_id) if os.path.isabs(model_id) else model_id,
         )
 
-    def build(self, generator=False, on_end=lambda: ()):
+    def build(self):
         engine_dir = os.path.join(self.model_dir, "engine")
         onnx_dir = os.path.join(self.model_dir, "onnx")
         os.makedirs(engine_dir, exist_ok=True)
         os.makedirs(onnx_dir, exist_ok=True)
-        for i, (model_name, model_data) in enumerate(self.models.items()):
-            if generator:
-                yield json.dumps(
-                    {
-                        "message": f"Building {model_name}...",
-                        "progress": i / len(self.models.keys()),
-                    }
-                )
+        print(f"Building models: {self.models.keys()}")
+        print(f"items: {self.models.items()}")
+        for model_name, model_data in self.models.items():
             engine = build_engine(
                 model_name,
                 engine_dir,
@@ -188,4 +183,3 @@ class EngineBuilder:
             os.path.join(self.model_dir, "model_index.json"), mode="w", encoding="utf-8"
         ) as f:
             f.write(txt)
-        on_end()

@@ -1,7 +1,12 @@
+import logging
+
 from core.tensorrt.TensorRT.engine import EngineBuilder
 from core.types import BuildRequest, Job
 
 from .base_model import InferenceModel
+
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
 
 
 class TensorRTModel(InferenceModel):
@@ -42,4 +47,6 @@ class TensorRTModel(InferenceModel):
             onnx_minimal_optimization=request.onnx_minimal_optimization,
         )
 
+        print(builder)
         builder.build()
+        print("Builder finished")

@@ -9,9 +9,6 @@ from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_image_variation import (
-    StableDiffusionImageVariationPipeline,
-)
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
     StableDiffusionImg2ImgPipeline,
 )
@@ -20,7 +17,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint impo
 )
 from PIL import Image, ImageOps
 from torchvision import transforms
-from transformers import CLIPVisionModelWithProjection
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
@@ -71,7 +67,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.feature_extractor: Any
         self.requires_safety_checker: bool
         self.safety_checker: Any
-        self.image_encoder: Optional[CLIPVisionModelWithProjection] = None
 
         self.load()
 
@@ -124,24 +119,6 @@ class PyTorchStableDiffusion(InferenceModel):
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
         gc.collect()
-
-    def check_image_encoder(self) -> CLIPVisionModelWithProjection:
-        "Check if the image encoder is loaded, if not load it"
-
-        if self.image_encoder is None:
-            logger.info("Loading image encoder...")
-            encoder = CLIPVisionModelWithProjection.from_pretrained(
-                "lambdalabs/sd-image-variations-diffusers",
-                cache_dir=config.cache_dir,
-                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
-                subfolder="image_encoder",
-            )
-            assert isinstance(encoder, CLIPVisionModelWithProjection)
-            encoder = encoder.to(self.device)
-            assert isinstance(encoder, CLIPVisionModelWithProjection)
-            return encoder
-        else:
-            return self.image_encoder
 
     def cleanup_old_components(self, keep_variations: bool = False) -> None:
         "Cleanup old components"
@@ -336,76 +313,6 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def image_variations(self, job: ImageVariationsQueueEntry) -> List[Image.Image]:
-        "Generate an image from an image"
-
-        self.cleanup_old_components(keep_variations=True)
-
-        pipe = StableDiffusionImageVariationPipeline(
-            vae=self.vae,
-            unet=self.unet,  # type: ignore
-            scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
-            safety_checker=self.safety_checker,
-            image_encoder=self.check_image_encoder(),
-        )
-
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
-
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
-
-        input_image = convert_to_image(job.data.image)
-
-        tform = transforms.Compose(
-            [
-                transforms.ToTensor(),
-                transforms.Resize(
-                    (224, 224),
-                    interpolation=transforms.InterpolationMode.BICUBIC,
-                    antialias=False,
-                ),
-                transforms.Normalize(
-                    [0.48145466, 0.4578275, 0.40821073],
-                    [0.26862954, 0.26130258, 0.27577711],
-                ),
-            ]
-        )
-        inp = tform(input_image).to(pipe.device).unsqueeze(0)  # type: ignore
-
-        total_images: List[Image.Image] = []
-
-        for _ in range(job.data.batch_count):
-            data = pipe(
-                image=inp,
-                num_inference_steps=job.data.steps,
-                guidance_scale=job.data.guidance_scale,
-                output_type="pil",
-                generator=generator,
-                callback=image_variations_callback,
-                return_dict=False,
-                num_images_per_prompt=job.data.batch_size,
-            )
-
-            images = data[0]
-            assert isinstance(images, List)
-
-            total_images.extend(images)
-
-        websocket_manager.broadcast_sync(
-            data=Data(
-                data_type="image_variations",
-                data={
-                    "progress": 0,
-                    "current_step": 0,
-                    "total_steps": 0,
-                    "image": convert_images_to_base64_grid(total_images),
-                },
-            )
-        )
-
-        return total_images
-
     def optimize(self, pipe: StableDiffusionPipeline) -> None:
         "Optimize the model for inference"
 
@@ -444,7 +351,6 @@ class PyTorchStableDiffusion(InferenceModel):
             Txt2ImgQueueEntry,
             Img2ImgQueueEntry,
             InpaintQueueEntry,
-            ImageVariationsQueueEntry,
         ],
     ):
         "Generate images from the queue"
@@ -457,7 +363,19 @@ class PyTorchStableDiffusion(InferenceModel):
             images = self.img2img(job)
         elif isinstance(job, InpaintQueueEntry):
             images = self.inpaint(job)
-        elif isinstance(job, ImageVariationsQueueEntry):
-            images = self.image_variations(job)
 
         return images
+
+    def save(self, path: str = "converted"):
+        pipe = StableDiffusionPipeline(
+            vae=self.vae,
+            unet=self.unet,  # type: ignore
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            feature_extractor=self.feature_extractor,
+            requires_safety_checker=self.requires_safety_checker,
+            safety_checker=self.safety_checker,
+        )
+
+        pipe.save_pretrained(path)
