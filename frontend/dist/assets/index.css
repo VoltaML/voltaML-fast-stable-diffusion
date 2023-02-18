@@ -4,7 +4,7 @@
   top: 0;
   left: 0;
   height: 100%;
-  z-index: 1000;
+  z-index: 1;
 }
 
 .progress-container[data-v-174afef2] {
@@ -52,6 +52,13 @@
 .highlight {
   color: #63e2b7;
 }
+
+/* .bottom-images {
+  height: 100px;
+  width: 100px;
+  margin: 5px;
+  object-fit: contain;
+} */
 body {
   min-height: 100vh;
   margin-left: 64px;
@@ -60,7 +67,7 @@ body {
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
-  font-size: 15px;
+  font-size: 18px;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;

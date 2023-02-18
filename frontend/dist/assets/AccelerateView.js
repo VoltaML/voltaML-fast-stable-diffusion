@@ -1,4 +1,5 @@
-import { d as defineComponent, H as h, a2 as useConfig, au as useFormItem, r as ref, Q as computed, a6 as useMergedState, a8 as provide, a9 as toRef, M as createInjectionKey, ag as call, $ as c, Y as cB, a0 as cE, Z as cM, av as iconSwitchTransition, aw as insideModal, ax as insidePopover, O as inject, ay as useMemo, a3 as useTheme, az as checkboxLight, aA as useRtl, ai as createKey, ac as useThemeClass, aB as createId, aC as NIconSwitchTransition, aD as on, aE as popselectLight, a7 as watch, aF as NInternalSelectMenu, aG as keysOf, aH as createTreeMate, aI as happensIn, ah as nextTick, aJ as createTmOptions, aK as keep, aL as createRefSetter, aM as mergeEventHandlers, X as omit, aN as NPopover, aO as popoverBaseProps, a1 as cNotM, aP as useLocale, ab as watchEffect, aQ as resolveSlot, l as NInput, q as NSelect, S as Fragment, T as NBaseIcon, aR as useAdjustedTo, aS as paginationLight, aT as ellipsisLight, aU as onDeactivated, m as NTooltip, R as mergeProps, aV as radioLight, ad as resolveWrappedSlot, a5 as flatten$1, aW as getSlot, aX as depx, aY as formatLength, as as NButton, aZ as NScrollbar, a_ as onBeforeUnmount, a$ as off, b0 as ChevronDownIcon, b1 as NDropdown, b2 as pxfy, b3 as get, b4 as NBaseLoading, b5 as ChevronRightIcon, b6 as onUnmounted, b7 as VVirtualList, ae as VResizeObserver, b8 as warn, b9 as repeat, ba as NEmpty, bb as cssrAnchorMetaName, bc as beforeNextFrameOnce, bd as fadeInScaleUpTransition, be as Transition, bf as dataTableLight, bg as stepsLight, P as throwError, bh as FinishedIcon, bi as ErrorIcon, o as openBlock, j as createElementBlock, a as createBaseVNode, bj as reactive, b as createVNode, w as withCtx, u as unref, bk as NTag, N as NSpace, z as NImage, e as NCard, E as NIcon, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, G as h, a1 as useConfig, aB as useFormItem, r as ref, Q as computed, a5 as useMergedState, a7 as provide, a8 as toRef, M as createInjectionKey, af as call, Z as c, X as cB, $ as cE, Y as cM, aC as iconSwitchTransition, aD as insideModal, aE as insidePopover, O as inject, aF as useMemo, a2 as useTheme, aG as checkboxLight, ar as useRtl, ah as createKey, ab as useThemeClass, aH as createId, aI as NIconSwitchTransition, aJ as on, aK as popselectLight, a6 as watch, aL as NInternalSelectMenu, aM as keysOf, aN as createTreeMate, aO as happensIn, ag as nextTick, aP as createTmOptions, aQ as keep, aR as createRefSetter, aS as mergeEventHandlers, W as omit, aT as NPopover, aU as popoverBaseProps, a0 as cNotM, aV as useLocale, aa as watchEffect, as as resolveSlot, A as NInput, n as NSelect, F as Fragment, S as NBaseIcon, aW as useAdjustedTo, aX as paginationLight, aY as ellipsisLight, aZ as onDeactivated, l as NTooltip, R as mergeProps, a_ as radioLight, ac as resolveWrappedSlot, a4 as flatten$1, a$ as getSlot, b0 as depx, b1 as formatLength, B as NButton, b2 as NScrollbar, b3 as onBeforeUnmount, b4 as off, b5 as ChevronDownIcon, b6 as NDropdown, b7 as pxfy, b8 as get, b9 as NBaseLoading, ba as ChevronRightIcon, bb as onUnmounted, bc as VVirtualList, ad as VResizeObserver, bd as warn, be as repeat, bf as NEmpty, bg as cssrAnchorMetaName, bh as beforeNextFrameOnce, bi as fadeInScaleUpTransition, bj as Transition, bk as dataTableLight, bl as stepsLight, P as throwError, bm as FinishedIcon, bn as ErrorIcon, o as openBlock, j as createElementBlock, a as createBaseVNode, bo as reactive, b as createVNode, u as unref, w as withCtx, bp as NTag, N as NSpace, bq as NImage, e as NCard, C as NIcon, _ as _export_sfc } from "./index.js";
+import { N as NAlert } from "./Alert.js";
 function smallerSize(size) {
   switch (size) {
     case "tiny":
@@ -6174,6 +6175,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const pagination = reactive({ pageSize: 10 });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
+        createVNode(unref(NAlert), {
+          style: { "width": "100%", "margin-bottom": "12px" },
+          type: "warning",
+          title: "Does not work yet"
+        }),
         createVNode(unref(NCard), { title: "Acceleration progress" }, {
           default: withCtx(() => [
             createVNode(unref(NSpace), {
@@ -6225,8 +6231,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const AccelerateView_vue_vue_type_style_index_0_scoped_da45f49a_lang = "";
-const AccelerateView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-da45f49a"]]);
+const AccelerateView_vue_vue_type_style_index_0_scoped_52712678_lang = "";
+const AccelerateView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-52712678"]]);
 export {
   AccelerateView as default
 };
