@@ -1,4 +1,4 @@
-import { d as defineComponent, g as useState, r as ref, j as createElementBlock, b as createVNode, w as withCtx, u as unref, a as createBaseVNode, S as Fragment, o as openBlock, l as NInput, as as NButton, n as createTextVNode, N as NSpace, C as serverUrl } from "./index.js";
+import { d as defineComponent, g as useState, r as ref, j as createElementBlock, b as createVNode, w as withCtx, u as unref, a as createBaseVNode, F as Fragment, o as openBlock, A as NInput, B as NButton, m as createTextVNode, N as NSpace, y as serverUrl } from "./index.js";
 import { N as NResult } from "./Result.js";
 const _hoisted_1 = { style: { "height": "50vh", "display": "inline-flex", "justify-content": "center", "width": "100%" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({

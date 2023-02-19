@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, j as createElementBlock, a as createBaseVNode, c as createBlock, w as withCtx, b as createVNode, u as unref, E as NIcon } from "./index.js";
+import { d as defineComponent, o as openBlock, j as createElementBlock, a as createBaseVNode, c as createBlock, w as withCtx, b as createVNode, u as unref, C as NIcon } from "./index.js";
 import { N as NResult } from "./Result.js";
 const _hoisted_1 = {
   xmlns: "http://www.w3.org/2000/svg",
