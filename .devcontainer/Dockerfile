@@ -1,4 +1,3 @@
-# syntax = docker/dockerfile:experimental
 FROM nvidia/cuda:11.8.0-cudnn8-devel-ubuntu20.04 as tensorrt
 
 ENV DEBIAN_FRONTEND=noninteractive
@@ -51,27 +50,18 @@ RUN cd  /usr/local/cuda-11.8/targets/x86_64-linux/lib/ \
     && ln -s libcublas.so.11 libcublas.so.12 \
     && ln -s libcublasLt.so.11 libcublasLt.so.12
 
+ENV LD_LIBRARY_PATH /usr/local/cuda-11.8/targets/x86_64-linux/lib:$LD_LIBRARY_PATH
 
 WORKDIR /app
 
 COPY --from=tensorrt /TensorRT/build/out/libnvinfer_plugin.so.8 /app/lib/trt/lib/libnvinfer_plugin.so
 
-RUN apt update && apt install python3.10 python3-pip -y
+COPY .. /app
 
-RUN pip install --upgrade pip
+RUN pwd && ls -al && sleep 30
 
-COPY requirements /app/requirements
+RUN cd frontend && yarn install && yarn build
 
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/api.txt
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/tensorrt.txt
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/pytorch.txt
+RUN pip3 install requirements/tensorrt.txt
 
-COPY . /app
-
-RUN --mount=type=cache,mode=0755,target=/app/frontend/node_modules cd frontend && yarn install && yarn build
-
-ENV LD_LIBRARY_PATH /app/lib/trt/lib/:/usr/local/cuda-11.8/targets/x86_64-linux/lib/:$LD_LIBRARY_PATH
-
-# Run the server
-RUN chmod +x scripts/start.sh
-ENTRYPOINT ["bash", "./scripts/start.sh"]
+ENTRYPOINT [ "python", "main.py" ]

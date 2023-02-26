@@ -139,6 +139,10 @@ def checks():
     # Install pytorch and api requirements
     install_pytorch()
 
+    from core import shared
+
+    shared.hf_token = args.token
+
 
 if __name__ == "__main__":
     print("Starting the API...")

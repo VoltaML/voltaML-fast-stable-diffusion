@@ -90,9 +90,10 @@ class Engine:
             network_from_onnx_path(onnx_path),
             config=CreateConfig(
                 fp16=fp16,
-                max_workspace_size=7000000000,
+                max_workspace_size=7500000000,
                 profiles=[p],
                 preview_features=preview_features,
+                profiling_verbosity=trt.ProfilingVerbosity.VERBOSE,
             ),
         )
         save_engine(engine, path=self.engine_path)

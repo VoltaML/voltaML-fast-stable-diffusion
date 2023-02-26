@@ -85,11 +85,3 @@ async def convert_from_checkpoint(path: str, is_sd2: bool = False):
 
     await cluster.convert_from_checkpoint(path, is_sd2)
     return {"message": "Model converted"}
-
-
-@router.post("/accelerate")
-async def accelerate_model(model: str):
-    "Accelerate a model"
-
-    await cluster.accelerate(model)
-    return {"message": "Model accelerated"}

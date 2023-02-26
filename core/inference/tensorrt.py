@@ -31,8 +31,6 @@ class TensorRTModel(InferenceModel):
 
         builder = EngineBuilder(
             model_id=request.model_id,
-            hf_token=request.hf_token,
-            fp16=request.fp16,
             verbose=request.verbose,
             opt_image_height=request.opt_image_height,
             opt_image_width=request.opt_image_width,

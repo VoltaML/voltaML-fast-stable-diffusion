@@ -3,9 +3,9 @@
 colored
 coloredlogs
 cuda-python==11.8.1
-diffusers>=0.12.1
+diffusers==0.12.1
 scipy
-transformers>=4.26.1
+transformers==4.24.0
 accelerate
 ftfy
 tqdm

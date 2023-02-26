@@ -88,8 +88,6 @@ class EngineBuilder:
     def __init__(
         self,
         model_id: str,
-        hf_token="",
-        fp16=False,
         verbose=False,
         opt_image_height=512,
         opt_image_width=512,
@@ -104,8 +102,6 @@ class EngineBuilder:
         onnx_minimal_optimization=False,
     ):
         self.device = "cuda"
-        self.hf_token = hf_token
-        self.fp16 = fp16
         self.verbose = verbose
         self.opt_image_height = opt_image_height
         self.opt_image_width = opt_image_width
@@ -120,15 +116,12 @@ class EngineBuilder:
         self.models = {
             "unet": UNet(
                 model_id,
-                hf_token=hf_token,
-                fp16=fp16,
                 device=self.device,
                 verbose=verbose,
                 max_batch_size=max_batch_size,
             ),
             "vae": VAE(
                 model_id,
-                hf_token=hf_token,
                 device=self.device,
                 verbose=verbose,
                 max_batch_size=max_batch_size,
@@ -171,7 +164,7 @@ class EngineBuilder:
                 "unet": self.models["unet"].model_id,
                 "vae": self.models["vae"].model_id,
             },
-            "denoising_prec": "fp16" if self.fp16 else "fp32",
+            "denoising_prec": "fp16",
             "opt_image_height": self.opt_image_height,
             "opt_image_width": self.opt_image_width,
             "onnx_opset": self.onnx_opset,

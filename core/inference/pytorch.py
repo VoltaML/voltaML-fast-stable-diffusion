@@ -1,7 +1,7 @@
 import gc
 import logging
 import os
-from typing import Any, List, Optional, Union
+from typing import Any, List, Union
 
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
@@ -16,28 +16,17 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint impo
     StableDiffusionInpaintPipeline,
 )
 from PIL import Image, ImageOps
-from torchvision import transforms
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
-from core.functions import (
-    image_variations_callback,
-    img2img_callback,
-    inpaint_callback,
-    txt2img_callback,
-)
+from core.functions import img2img_callback, inpaint_callback, txt2img_callback
 from core.inference.base_model import InferenceModel
 from core.inference.unet_tracer import TracedUNet, get_traced_unet
 from core.schedulers import change_scheduler
-from core.types import (
-    ImageVariationsQueueEntry,
-    Img2ImgQueueEntry,
-    InpaintQueueEntry,
-    Txt2ImgQueueEntry,
-)
+from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)

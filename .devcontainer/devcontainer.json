@@ -3,14 +3,7 @@
 {
 	"name": "VoltaML Dev Container",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "nvcr.io/nvidia/tensorrt:23.01-py3",
-	"features": {
-		"ghcr.io/devcontainers/features/node:1": {
-			"nodeGypDependencies": true,
-			"version": "18"
-		},
-		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {}
-	},
+	"build": { "dockerfile": "Dockerfile" },
 
 	"runArgs": ["--gpus=all", "--ipc=host", "--privileged"],
 
@@ -22,8 +15,7 @@
 
 	"remoteEnv": {
 		"HUGGINGFACE_TOKEN": "${localEnv:HUGGINGFACE_TOKEN}",
-		"CUDA_MODULE_LOADING": "LAZY",
-		"LD_LIBRARY_PATH": "/workspaces/voltaML/external/libinfer:${containerEnv:LD_LIBRARY_PATH}"
+		"CUDA_MODULE_LOADING": "LAZY"
 	},
 
 	"mounts": [

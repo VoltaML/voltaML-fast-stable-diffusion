@@ -4,7 +4,6 @@
 converted/
 docs/
 engine/
-frontend/
 !frontend/dist/
 node_modules/
 onnx/
@@ -19,7 +18,6 @@ venv/
 build.sh
 docker-compose.yml
 Dockerfile
-package.json
 pyproject.toml
 test.ipynb
 yarn.lock

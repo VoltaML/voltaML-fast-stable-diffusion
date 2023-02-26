@@ -349,6 +349,16 @@ class TRTModel:
             )
             onnx.save(onnx_opt_graph, onnx_opt_path)
 
+            print(
+                obj.get_input_profile(
+                    opt_batch_size,
+                    opt_image_height,
+                    opt_image_width,
+                    static_batch=static_batch,
+                    static_shape=static_shape,
+                )
+            )
+
             # Build engine
             engine.build(
                 onnx_opt_path,

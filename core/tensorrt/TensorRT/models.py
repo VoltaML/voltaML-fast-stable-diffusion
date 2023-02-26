@@ -4,12 +4,15 @@
 import torch
 from transformers import CLIPTextModel
 
+from core import shared
 from core.submodules.diffusers.src.diffusers.models import (
     AutoencoderKL,
     UNet2DConditionModel,
 )
 
 from .. import models
+
+hf_token = shared.hf_token
 
 
 class CLIP(models.CLIP):
@@ -18,10 +21,8 @@ class CLIP(models.CLIP):
     def __init__(
         self,
         model_id: str,
-        hf_token="",
         text_maxlen=77,
         embedding_dim=768,
-        fp16=False,
         device="cuda",
         verbose=True,
         max_batch_size=16,
@@ -30,7 +31,7 @@ class CLIP(models.CLIP):
             hf_token=hf_token,
             text_maxlen=text_maxlen,
             embedding_dim=embedding_dim,
-            fp16=fp16,
+            fp16=True,
             device=device,
             verbose=verbose,
             max_batch_size=max_batch_size,
@@ -52,30 +53,32 @@ class UNet(models.UNet):
     def __init__(
         self,
         model_id: str,
-        hf_token="",
         text_maxlen=77,
         embedding_dim=768,
-        fp16=False,
         device="cuda",
         verbose=True,
         max_batch_size=16,
+        revision=None,
     ):
         super().__init__(
             hf_token=hf_token,
             text_maxlen=text_maxlen,
             embedding_dim=embedding_dim,
-            fp16=fp16,
+            fp16=True,
             device=device,
             verbose=verbose,
             max_batch_size=max_batch_size,
         )
         self.model_id = model_id
+        self.revision = revision
 
     def get_model(self):
         "Return the loaded model"
 
         model_opts = (
-            {"revision": "fp16", "torch_dtype": torch.float16} if self.fp16 else {}
+            {"revision": self.revision, "torch_dtype": torch.float16}
+            if self.fp16
+            else {}
         )
         model = UNet2DConditionModel.from_pretrained(
             self.model_id, subfolder="unet", use_auth_token=self.hf_token, **model_opts
@@ -92,10 +95,8 @@ class VAE(models.VAE):
     def __init__(
         self,
         model_id: str,
-        hf_token="",
         text_maxlen=77,
         embedding_dim=768,
-        fp16=False,
         device="cuda",
         verbose=True,
         max_batch_size=16,
@@ -104,7 +105,7 @@ class VAE(models.VAE):
             hf_token=hf_token,
             text_maxlen=text_maxlen,
             embedding_dim=embedding_dim,
-            fp16=fp16,
+            fp16=True,
             device=device,
             verbose=verbose,
             max_batch_size=max_batch_size,

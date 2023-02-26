@@ -187,6 +187,9 @@ class GPU:
                     opt_batch_size=1,
                     opt_image_height=512,
                     opt_image_width=512,
+                    enable_preview=True,
+                    static_batch=True,
+                    static_shape=True,
                 )
                 logger.debug("Loading modules")
                 trt_model.loadModules()
@@ -335,7 +338,31 @@ class GPU:
 
         from .inference.tensorrt import TensorRTModel
 
+        # from .inference.volta_accelerate import TRTModel
+
         def build():
+            # trt_model = TRTModel(
+            #     model_path=request.model_id,
+            #     denoising_steps=25,
+            #     denoising_fp16=True,
+            #     hf_token=os.environ["HUGGINGFACE_TOKEN"],
+            #     verbose=True,
+            #     nvtx_profile=True,
+            #     max_batch_size=9,
+            # )
+
+            # trt_model.buildOnlyEngines(
+            #     engine_dir="engine/" + request.model_id,
+            #     onnx_dir="onnx",
+            #     onnx_opset=16,
+            #     opt_batch_size=1,
+            #     opt_image_height=512,
+            #     opt_image_width=512,
+            #     static_batch=True,
+            #     static_shape=True,
+            #     enable_preview=True,
+            # )
+
             model = TensorRTModel(model_id=request.model_id, use_f32=False)
             model.generate_engine(request=request)
 
