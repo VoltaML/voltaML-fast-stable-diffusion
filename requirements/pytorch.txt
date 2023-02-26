@@ -1,17 +1,15 @@
 --extra-index-url https://pypi.ngc.nvidia.com
---extra-index-url https://download.pytorch.org/whl/cu117
 colored
 coloredlogs
-cuda-python==11.8.1
-diffusers==0.12.1
+diffusers
 scipy
-transformers==4.24.0
+transformers
 accelerate
 ftfy
 tqdm
 OmegaConf
 accelerate
-torch==1.13.1+cu117
+torch
 torchvision
 pynvml
 k-diffusion

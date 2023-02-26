@@ -3,12 +3,12 @@
 {
 	"name": "VoltaML Dev Container",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"build": { "dockerfile": "Dockerfile" },
+	"image": "voltaml/volta_diffusion_webui:local",
 
-	"runArgs": ["--gpus=all", "--ipc=host", "--privileged"],
+	"runArgs": ["--gpus=all", "--ipc=host"],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5003, 5173],
@@ -20,12 +20,11 @@
 
 	"mounts": [
 		"source=${localEnv:HOME}/.cache/huggingface,target=/root/.cache/huggingface,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/engine,target=/workspaces/voltaML/engine,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached"
 	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "yarn install && cd frontend && yarn install && cd ..",
+	// "postCreateCommand": "yarn install && cd frontend && yarn install && cd ..",
 
 	// Configure tool-specific properties.
 	"customizations": {

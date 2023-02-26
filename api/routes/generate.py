@@ -118,6 +118,15 @@ async def generate_engine(request: BuildRequest):
     return {"message": "Success"}
 
 
+@router.post("/generate-aitemplate")
+async def generate_aitemplate(model_id: str):
+    "Generate a TensorRT engine from a local model"
+
+    await cluster.build_aitemplate(model_id)
+
+    return {"message": "Success"}
+
+
 @router.post("/to-fp16")
 async def to_fp16(model: str):
     "Cast a model to Float16 and save it"

@@ -331,7 +331,7 @@ class GPU:
         if err is not None:
             raise err
 
-    async def build_engine(self, request: BuildRequest):
+    async def build_trt_engine(self, request: BuildRequest):
         "Build a TensorRT engine from a request"
 
         # TODO: Lock the GPU while building the engine, with propper checks in the cluster load balancer
@@ -372,6 +372,18 @@ class GPU:
 
         if err is not None:
             raise err
+
+    async def build_aitemplate_engine(self, model_id: str):
+        def build():
+            from core.aitemplate.scripts.compile import compile_diffusers
+
+            compile_diffusers(model_id)
+
+        data, err = await run_in_thread_async(func=build)
+        if err is not None:
+            raise err
+
+        print(f"Engine built: data:{data}, err:{err}")
 
     async def to_fp16(self, model: str):
         "Convert a model to FP16"

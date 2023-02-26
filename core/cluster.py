@@ -162,8 +162,17 @@ class Cluster:
         best_gpu: GPU = await self.least_loaded_gpu()
 
         logger.debug(f"Building engine for {req.model_id} on GPU {best_gpu.gpu_id}...")
-        await best_gpu.build_engine(req)
+        await best_gpu.build_trt_engine(req)
         logger.debug(f"Engine built for {req.model_id} on GPU {best_gpu.gpu_id}.")
+
+    async def build_aitemplate(self, model_id: str):
+        "Build an AI Template"
+
+        best_gpu: GPU = await self.least_loaded_gpu()
+
+        logger.debug(f"Building AI Template for {model_id} on GPU {best_gpu.gpu_id}...")
+        await best_gpu.build_aitemplate_engine(model_id)
+        logger.debug(f"AI Template built for {model_id} on GPU {best_gpu.gpu_id}.")
 
     async def unload(self, model: str, gpu_id: int):
         "Unload a model from a GPU"
