@@ -6,6 +6,7 @@ from PIL import Image
 from core.errors import ModelNotLoadedError
 from core.shared_dependent import cluster
 from core.types import (
+    AITemplateBuildRequest,
     BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
@@ -119,10 +120,10 @@ async def generate_engine(request: BuildRequest):
 
 
 @router.post("/generate-aitemplate")
-async def generate_aitemplate(model_id: str):
+async def generate_aitemplate(request: AITemplateBuildRequest):
     "Generate a TensorRT engine from a local model"
 
-    await cluster.build_aitemplate(model_id)
+    await cluster.build_aitemplate(request)
 
     return {"message": "Success"}
 

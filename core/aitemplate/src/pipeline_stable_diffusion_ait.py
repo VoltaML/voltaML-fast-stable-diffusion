@@ -13,9 +13,10 @@
 #  limitations under the License.
 #
 import inspect
+import logging
 import os
 import warnings
-from typing import List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 import torch
 from aitemplate.compiler import Model
@@ -71,6 +72,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
         requires_safety_checker: bool = True,
+        **kwargs,
     ):
         super().__init__(
             vae=vae,
@@ -83,7 +85,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             requires_safety_checker=requires_safety_checker,
         )
 
-        workdir = "tmp/"
+        workdir = kwargs.get("directory", "tmp/")
         self.clip_ait_exe = self.init_ait_module(
             model_name="CLIPTextModel", workdir=workdir
         )
@@ -93,6 +95,33 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         self.vae_ait_exe = self.init_ait_module(
             model_name="AutoencoderKL", workdir=workdir
         )
+
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.requires_safety_checker: bool
+        self.feature_extractor: CLIPFeatureExtractor
+
+        self.vae: AutoencoderKL
+        self.text_encoder: CLIPTextModel
+        self.tokenizer: CLIPTokenizer
+        self.unet: UNet2DConditionModel
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.feature_extractor: CLIPFeatureExtractor
+
+    def init_from_loaded(
+        self,
+        clip_ait_exe: Model,
+        unet_ait_exe: Model,
+        vae_ait_exe: Model,
+        safety_checker: StableDiffusionSafetyChecker,
+        requires_safety_checker: bool,
+        feature_extractor: CLIPFeatureExtractor,
+    ):
+        self.clip_ait_exe = clip_ait_exe
+        self.unet_ait_exe = unet_ait_exe
+        self.vae_ait_exe = vae_ait_exe
+        self.safety_checker = safety_checker
+        self.requires_safety_checker = requires_safety_checker
+        self.feature_extractor = feature_extractor
 
     def init_ait_module(
         self,
@@ -154,16 +183,17 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt: Union[str, List[str]],
-        height: Optional[int] = 512,
-        width: Optional[int] = 512,
-        num_inference_steps: Optional[int] = 50,
-        guidance_scale: Optional[float] = 7.5,
+        height: int = 512,
+        width: int = 512,
+        num_inference_steps: int = 50,
+        guidance_scale: float = 7.5,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         **kwargs,
     ):
         r"""
@@ -212,6 +242,8 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
+
+        self.scheduler: LMSDiscreteScheduler
 
         if "torch_device" in kwargs:
             device = kwargs.pop("torch_device")
@@ -296,10 +328,15 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         # for 1-to-1 results reproducibility with the CompVis implementation.
         # However this currently doesn't work in `mps`.
         latents_device = "cpu" if self.device.type == "mps" else self.device
-        latents_shape = (batch_size, self.unet.in_channels, height // 8, width // 8)
+        latents_shape = (
+            batch_size,
+            self.unet.in_channels,
+            height // 8,
+            width // 8,
+        )  # 4 is the number of channels (self.unet.in_channels)
         if latents is None:
-            latents = torch.randn(
-                latents_shape,
+            latents = torch.randn(  # type: ignore
+                latents_shape,  # type: ignore
                 generator=generator,
                 device=latents_device,
             )
@@ -308,7 +345,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                 raise ValueError(
                     f"Unexpected latents shape, got {latents.shape}, expected {latents_shape}"
                 )
-        latents = latents.to(self.device)
+        latents = latents.to(self.device)  # type: ignore
 
         # set timesteps
         accepts_offset = "offset" in set(
@@ -320,7 +357,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
         self.scheduler.set_timesteps(num_inference_steps, **extra_set_kwargs)
 
-        latents = latents * self.scheduler.init_noise_sigma
+        latents = latents * self.scheduler.init_noise_sigma  # type: ignore
 
         # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
         # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
@@ -342,9 +379,11 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         for i, t in enumerate(self.progress_bar(self.scheduler.timesteps)):
             # expand the latents if we are doing classifier free guidance
             latent_model_input = (
-                torch.cat([latents] * 2) if do_classifier_free_guidance else latents
+                torch.cat([latents] * 2)  # type: ignore
+                if do_classifier_free_guidance
+                else latents
             )
-            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)
+            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
             if isinstance(self.scheduler, LMSDiscreteScheduler):
                 sigma = self.scheduler.sigmas[i]
@@ -366,15 +405,18 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             # compute the previous noisy sample x_t -> x_t-1
             if isinstance(self.scheduler, LMSDiscreteScheduler):
                 latents = self.scheduler.step(
-                    noise_pred, i, latents, **extra_step_kwargs
-                ).prev_sample
+                    noise_pred, i, latents, **extra_step_kwargs  # type: ignore
+                ).prev_sample  # type: ignore
             else:
                 latents = self.scheduler.step(
                     noise_pred, t, latents, **extra_step_kwargs
                 ).prev_sample
 
+            if callback is not None:
+                callback(i, t, noise_pred)
+
         # scale and decode the image latents with vae
-        latents = 1 / 0.18215 * latents
+        latents = 1 / 0.18215 * latents  # type: ignore
         image = self.vae_inference(latents)
 
         image = (image / 2 + 0.5).clamp(0, 1)

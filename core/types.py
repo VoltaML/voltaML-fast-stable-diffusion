@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Union
+from typing import Any, Literal, Union
 from uuid import uuid4
 
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
@@ -22,6 +22,8 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale impo
     StableDiffusionUpscalePipeline,
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
+
+InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate"]
 
 
 @dataclass
@@ -190,3 +192,13 @@ PyTorchModelType = Union[
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 ]
+
+
+@dataclass
+class AITemplateBuildRequest:
+    "Dataclass for requesting a build of an engine"
+
+    model_id: str
+    width: int = field(default=512)
+    height: int = field(default=512)
+    batch_size: int = field(default=1)

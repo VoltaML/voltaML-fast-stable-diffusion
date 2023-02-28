@@ -1,7 +1,9 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
+
+from huggingface_hub.file_download import repo_folder_name
 
 from core.config import config
 
@@ -75,3 +77,40 @@ class CachedModelList:
         "List both PyTorch and TensorRT models"
 
         return self.pytorch() + self.tensorrt()
+
+
+def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
+    "Return the name of the folder where the diffusers model is stored"
+
+    return os.path.join(
+        config.cache_dir, repo_folder_name(repo_id=repo_id, repo_type=repo_type)
+    )
+
+
+def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
+    "Return the current ref of the diffusers model"
+
+    snapshots = os.listdir(os.path.join(path, "snapshots"))
+    ref = ""
+
+    with open(os.path.join(path, "refs", revision), "r", encoding="utf-8") as f:
+        ref = f.read().strip().split(":")[0]
+
+    for snapshot in snapshots:
+        if ref.startswith(snapshot):
+            return snapshot
+
+
+def list_cached_model_folders(repo_id: str, full_path: bool = False):
+    "List all the folders in the cached model"
+
+    storage = diffusers_storage_name(repo_id)
+    ref = current_diffusers_ref(storage)
+
+    if full_path:
+        return [
+            os.path.join(storage, "snapshots", ref, folder)  # type: ignore
+            for folder in os.listdir(os.path.join(storage, "snapshots", ref))  # type: ignore
+        ]
+    else:
+        return os.listdir(os.path.join(storage, "snapshots", ref))  # type: ignore

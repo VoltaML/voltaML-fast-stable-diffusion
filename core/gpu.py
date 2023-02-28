@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import torch
 from PIL import Image
@@ -12,20 +12,25 @@ from api.websockets.notification import Notification
 from core import shared
 from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import DimensionError
+from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
+    AITemplateBuildRequest,
     BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
+    InferenceBackend,
     InpaintQueueEntry,
+    Job,
     Txt2ImgQueueEntry,
 )
 from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
-    from core.inference.volta_accelerate import TRTModel
+    from core.tensorrt.volta_accelerate import TRTModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +41,9 @@ class GPU:
     def __init__(self, torch_gpu_id: int) -> None:
         self.gpu_id = torch_gpu_id
         self.queue: Queue = Queue()
-        self.loaded_models: Dict[str, Union["TRTModel", PyTorchStableDiffusion]] = {}
+        self.loaded_models: Dict[
+            str, Union["TRTModel", PyTorchStableDiffusion, "AITemplateStableDiffusion"]
+        ] = {}
 
     @property
     def cuda_id(self) -> str:
@@ -65,10 +72,10 @@ class GPU:
     ):
         "Generate images from the queue"
 
-        def generate_thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
+        def generate_thread_call(job: Job) -> List[Image.Image]:
+            model: Union[
+                "TRTModel", PyTorchStableDiffusion, AITemplateStableDiffusion
+            ] = self.loaded_models[job.model]
 
             shared.current_steps = job.data.steps * job.data.batch_count
             shared.current_done_steps = 0
@@ -78,24 +85,29 @@ class GPU:
                 images: List[Image.Image] = model.generate(job)
                 self.memory_cleanup()
                 return images
+            elif isinstance(model, AITemplateStableDiffusion):
+                logger.debug("Generating with AITemplate")
+                images: List[Image.Image] = model.generate(job)
+                self.memory_cleanup()
+                return images
+            else:
+                logger.debug("Generating with TensorRT")
+                images: List[Image.Image]
 
-            logger.debug("Generating with TensorRT")
-            images: List[Image.Image]
-
-            _, images = model.infer(
-                [job.data.prompt],
-                [job.data.negative_prompt],
-                job.data.height,
-                job.data.width,
-                guidance_scale=job.data.guidance_scale,
-                verbose=False,
-                seed=job.data.seed,
-                output_dir="output",
-                num_of_infer_steps=job.data.steps,
-                scheduler=job.data.scheduler,
-            )
-            self.memory_cleanup()
-            return images
+                _, images = model.infer(
+                    [job.data.prompt],
+                    [job.data.negative_prompt],
+                    job.data.height,
+                    job.data.width,
+                    guidance_scale=job.data.guidance_scale,
+                    verbose=False,
+                    seed=job.data.seed,
+                    output_dir="output",
+                    num_of_infer_steps=job.data.steps,
+                    scheduler=job.data.scheduler,
+                )
+                self.memory_cleanup()
+                return images
 
         logging.info(f"Adding job {job.data.id} to queue")
 
@@ -136,7 +148,7 @@ class GPU:
     async def load_model(
         self,
         model: str,
-        backend: Literal["PyTorch", "TensorRT"],
+        backend: InferenceBackend,
     ):
         "Load a model into memory"
 
@@ -144,7 +156,7 @@ class GPU:
 
         def thread_call(
             model: str,
-            backend: Literal["PyTorch", "TensorRT"],
+            backend: InferenceBackend,
         ):
             if model in [self.loaded_models]:
                 logger.debug(f"{model} is already loaded")
@@ -157,6 +169,8 @@ class GPU:
                 )
                 return
 
+            start_time = time.time()
+
             if backend == "TensorRT":
                 logger.debug("Selecting TensorRT")
 
@@ -168,7 +182,7 @@ class GPU:
                     )
                 )
 
-                from core.inference.volta_accelerate import TRTModel
+                from core.tensorrt.volta_accelerate import TRTModel
 
                 trt_model = TRTModel(
                     model_path=model,
@@ -195,6 +209,24 @@ class GPU:
                 trt_model.loadModules()
                 self.loaded_models[model] = trt_model
                 logger.debug("Loading done")
+
+            elif backend == "AITemplate":
+                logger.debug("Selecting AITemplate")
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "info",
+                        "AITemplate",
+                        f"Loading {model} into memory, this may take a while",
+                    )
+                )
+
+                pt_model = AITemplateStableDiffusion(
+                    model_id=model,
+                    device="cuda",
+                )
+                self.loaded_models[model] = pt_model
+
             else:
                 logger.debug("Selecting PyTorch")
 
@@ -206,13 +238,13 @@ class GPU:
                     )
                 )
 
-                start_time = time.time()
                 pt_model = PyTorchStableDiffusion(
                     model_id=model,
                     device=self.cuda_id,
                 )
                 self.loaded_models[model] = pt_model
-                logger.info(f"Finished loading in {time.time() - start_time:.2f}s")
+
+            logger.info(f"Finished loading in {time.time() - start_time:.2f}s")
 
             websocket_manager.broadcast_sync(
                 Notification(
@@ -249,8 +281,11 @@ class GPU:
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug(f"Unloading PyTorch model: {model_type}")
                 model.unload()
+            elif isinstance(model, AITemplateStableDiffusion):
+                logger.debug(f"Unloading AITemplate model: {model_type}")
+                model.unload()
             else:
-                from core.inference.volta_accelerate import TRTModel
+                from core.tensorrt.volta_accelerate import TRTModel
 
                 assert isinstance(model, TRTModel)
                 logger.debug(f"Unloading TensorRT model: {model_type}")
@@ -301,7 +336,7 @@ class GPU:
         "Convert a model to a TensorRT model"
 
         def call():
-            from core.inference.volta_accelerate import TRTModel
+            from core.tensorrt.volta_accelerate import TRTModel
 
             trt_model = TRTModel(
                 model_path=model,
@@ -334,35 +369,9 @@ class GPU:
     async def build_trt_engine(self, request: BuildRequest):
         "Build a TensorRT engine from a request"
 
-        # TODO: Lock the GPU while building the engine, with propper checks in the cluster load balancer
-
         from .inference.tensorrt import TensorRTModel
 
-        # from .inference.volta_accelerate import TRTModel
-
         def build():
-            # trt_model = TRTModel(
-            #     model_path=request.model_id,
-            #     denoising_steps=25,
-            #     denoising_fp16=True,
-            #     hf_token=os.environ["HUGGINGFACE_TOKEN"],
-            #     verbose=True,
-            #     nvtx_profile=True,
-            #     max_batch_size=9,
-            # )
-
-            # trt_model.buildOnlyEngines(
-            #     engine_dir="engine/" + request.model_id,
-            #     onnx_dir="onnx",
-            #     onnx_opset=16,
-            #     opt_batch_size=1,
-            #     opt_image_height=512,
-            #     opt_image_width=512,
-            #     static_batch=True,
-            #     static_shape=True,
-            #     enable_preview=True,
-            # )
-
             model = TensorRTModel(model_id=request.model_id, use_f32=False)
             model.generate_engine(request=request)
 
@@ -373,17 +382,24 @@ class GPU:
         if err is not None:
             raise err
 
-    async def build_aitemplate_engine(self, model_id: str):
+    async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
+        "Convert a model to a AITemplate engine"
+
         def build():
             from core.aitemplate.scripts.compile import compile_diffusers
 
-            compile_diffusers(model_id)
+            compile_diffusers(
+                batch_size=request.batch_size,
+                local_dir=request.model_id,
+                height=request.height,
+                width=request.width,
+            )
 
-        data, err = await run_in_thread_async(func=build)
+        _, err = await run_in_thread_async(func=build)
         if err is not None:
             raise err
 
-        print(f"Engine built: data:{data}, err:{err}")
+        logger.info("AITemplate engine successfully built")
 
     async def to_fp16(self, model: str):
         "Convert a model to FP16"

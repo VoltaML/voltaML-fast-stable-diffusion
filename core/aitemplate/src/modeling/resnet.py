@@ -12,12 +12,14 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+from typing import Optional
+
 from aitemplate.compiler import ops
 from aitemplate.frontend import nn
 
 
 def get_shape(x):
-    shape = [it.value() for it in x._attrs["shape"]]
+    shape = [it.value() for it in x._attrs["shape"]]  # pylint: disable=protected-access
     return shape
 
 
@@ -60,6 +62,7 @@ class Upsample2D(nn.Module):
     def forward(self, x):
         assert get_shape(x)[-1] == self.channels
         if self.use_conv_transpose:
+            assert self.conv is not None
             return self.conv(x)
 
         x = nn.Upsampling2d(scale_factor=2.0, mode="nearest")(x)
@@ -67,8 +70,10 @@ class Upsample2D(nn.Module):
         # TODO(Suraj, Patrick) - clean up after weight dicts are correctly renamed
         if self.use_conv:
             if self.name == "conv":
+                assert self.conv is not None
                 x = self.conv(x)
             else:
+                assert self.Conv2d_0 is not None
                 x = self.Conv2d_0(x)
 
         return x
@@ -126,7 +131,7 @@ class ResnetBlock2D(nn.Module):
         out_channels=None,
         conv_shortcut=False,
         dropout=0.0,
-        temb_channels=512,
+        temb_channels: Optional[int] = 512,
         groups=32,
         groups_out=None,
         pre_norm=True,
@@ -178,7 +183,7 @@ class ResnetBlock2D(nn.Module):
             affine=True,
             use_swish=True,
         )
-        self.dropout = nn.Dropout(dropout)
+        self.dropout = nn.Dropout(dropout)  # type: ignore
         self.conv2 = nn.Conv2dBias(
             out_channels, out_channels, kernel_size=3, stride=1, padding=1
         )
@@ -209,15 +214,18 @@ class ResnetBlock2D(nn.Module):
         # hidden_states = self.nonlinearity(hidden_states)
 
         if self.upsample is not None:
-            x = self.upsample(x)
-            hidden_states = self.upsample(hidden_states)
+            x = self.upsample(x)  # pylint: disable=not-callable
+            hidden_states = self.upsample(hidden_states)  # pylint: disable=not-callable
         elif self.downsample is not None:
-            x = self.downsample(x)
-            hidden_states = self.downsample(hidden_states)
+            x = self.downsample(x)  # pylint: disable=not-callable
+            hidden_states = self.downsample(  # pylint: disable=not-callable
+                hidden_states
+            )
 
         hidden_states = self.conv1(hidden_states)
 
         if temb is not None:
+            assert self.time_emb_proj is not None
             temb = self.time_emb_proj(ops.silu(temb))
             bs, dim = get_shape(temb)
             temb = ops.reshape()(temb, [bs, 1, 1, dim])

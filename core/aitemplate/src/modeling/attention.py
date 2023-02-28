@@ -20,8 +20,7 @@ Implementations are translated from https://github.com/huggingface/diffusers/blo
 from typing import Optional
 
 from aitemplate.compiler.ops import reshape
-
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 
 
 class AttentionBlock(nn.Module):
@@ -89,9 +88,9 @@ class AttentionBlock(nn.Module):
 
         batch, hw, channel = hidden_states.shape()
         if (
-            batch.value() != self.batch_size
-            or hw.value() != self.width * self.height
-            or channel.value() != self.channels
+            batch.value() != self.batch_size  # type: ignore
+            or hw.value() != self.width * self.height  # type: ignore
+            or channel.value() != self.channels  # type: ignore
         ):
             raise RuntimeError(
                 "nchw params do not match! "

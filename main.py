@@ -5,9 +5,6 @@ import sys
 from argparse import ArgumentParser
 from pathlib import Path
 
-os.environ["TORCH_CUDNN_V8_API_ENABLED"] = "1"
-os.environ["CUDA_MODULE_LOADING"] = "LAZY"
-
 from core.install_requirements import (  # pylint: disable=wrong-import-position
     commit_hash,
     create_environment,
@@ -54,6 +51,7 @@ logging.getLogger("xformers").setLevel(logging.ERROR)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
 # Create necessary folders
+Path("data/aitemplate").mkdir(exist_ok=True, parents=True)
 Path("engine").mkdir(exist_ok=True)
 Path("onnx").mkdir(exist_ok=True)
 Path("traced_unet").mkdir(exist_ok=True)

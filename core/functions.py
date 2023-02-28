@@ -35,11 +35,11 @@ def cheap_approximation(sample: torch.Tensor):
                 [-0.184, -0.271, -0.473],
             ]
         )
-        .to(torch.float16)
-        .to(sample.device)
+        .to(torch.float32)
+        .to("cpu")
     )
 
-    cast_sample = sample.to(torch.float16).to(sample.device)
+    cast_sample = sample.to(torch.float32).to("cpu")
 
     x_sample = torch.einsum("lxy,lr -> rxy", cast_sample, coefs)
 

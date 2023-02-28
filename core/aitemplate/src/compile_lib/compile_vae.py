@@ -75,12 +75,15 @@ def map_vae_params(ait_module, pt_module, batch_size, seq_len):
 
 def compile_vae(
     pt_mod,
-    batch_size=1,
-    height=64,
-    width=64,
-    use_fp16_acc=False,
-    convert_conv_to_gemm=False,
+    dump_dir: str = "./tmp",
+    batch_size: int = 1,
+    height: int = 64,
+    width: int = 64,
+    use_fp16_acc: bool = False,
+    convert_conv_to_gemm: bool = False,
 ):
+    "Compile VAE to AIT format"
+
     in_channels = 3
     out_channels = 3
     down_block_types = [
@@ -133,7 +136,7 @@ def compile_vae(
     compile_model(
         Y,
         target,
-        "./tmp",
+        dump_dir,
         "AutoencoderKL",
         constants=params_ait,
     )

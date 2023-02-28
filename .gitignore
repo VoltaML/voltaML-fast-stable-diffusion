@@ -74,3 +74,6 @@ docs/.vitepress/dist
 /typings
 external
 /tmp
+
+# Ignore for black
+core/submodules

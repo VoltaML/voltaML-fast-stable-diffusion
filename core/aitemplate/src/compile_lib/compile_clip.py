@@ -77,15 +77,18 @@ def map_clip_params(pt_mod, batch_size, seqlen, depth):
 
 def compile_clip(
     pt_mod,
-    batch_size=1,
-    seqlen=64,
-    dim=768,
-    num_heads=12,
-    depth=12,
-    use_fp16_acc=False,
-    convert_conv_to_gemm=False,
+    dump_dir: str = "./tmp",
+    batch_size: int = 1,
+    seqlen: int = 64,
+    dim: int = 768,
+    num_heads: int = 12,
+    depth: int = 12,
+    use_fp16_acc: bool = False,
+    convert_conv_to_gemm: bool = False,
     act_layer="gelu",
 ):
+    "Compile CLIP to AIT"
+
     mask_seq = 0
     causal = True
 
@@ -116,4 +119,4 @@ def compile_clip(
     target = detect_target(
         use_fp16_acc=use_fp16_acc, convert_conv_to_gemm=convert_conv_to_gemm
     )
-    compile_model(Y, target, "./tmp", "CLIPTextModel", constants=params_ait)
+    compile_model(Y, target, dump_dir, "CLIPTextModel", constants=params_ait)

@@ -30,7 +30,7 @@ def run(
     pipe = StableDiffusionAITPipeline.from_pretrained(
         local_dir,
         scheduler=EulerDiscreteScheduler.from_pretrained(
-            local_dir, subfolder="scheduler"
+            local_dir, subfolder="scheduler"  # type: ignore
         ),
         revision="fp16",
         torch_dtype=torch.float16,

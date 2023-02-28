@@ -15,11 +15,11 @@
 import math
 
 from aitemplate.compiler import ops
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 
 
 def get_shape(x):
-    shape = [it.value() for it in x._attrs["shape"]]
+    shape = [it.value() for it in x._attrs["shape"]]  # pylint: disable=protected-access
     return shape
 
 
@@ -44,7 +44,7 @@ def get_timestep_embedding(
     half_dim = embedding_dim // 2
 
     exponent = (-math.log(max_period)) * Tensor(
-        shape=[half_dim], dtype="float16", name="arange"
+        shape=[half_dim], dtype="float16", name="arange"  # type: ignore
     )
 
     exponent = exponent * (1.0 / (half_dim - downscale_freq_shift))
@@ -70,7 +70,7 @@ def get_timestep_embedding(
 
 
 class TimestepEmbedding(nn.Module):
-    def __init__(self, channel: int, time_embed_dim: int, act_fn: str = "silu"):
+    def __init__(self, channel: int, time_embed_dim: int, _act_fn: str = "silu"):
         super().__init__()
 
         self.linear_1 = nn.Linear(channel, time_embed_dim, specialization="swish")

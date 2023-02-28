@@ -17,7 +17,7 @@ from typing import Optional, Tuple, Union
 from aitemplate.frontend import nn
 
 from .embeddings import TimestepEmbedding, Timesteps
-from .unet_blocks import get_down_block, get_up_block, UNetMidBlock2DCrossAttn
+from .unet_blocks import UNetMidBlock2DCrossAttn, get_down_block, get_up_block
 
 
 class UNet2DConditionModel(nn.Module):
@@ -60,19 +60,19 @@ class UNet2DConditionModel(nn.Module):
         center_input_sample: bool = False,
         flip_sin_to_cos: bool = True,
         freq_shift: int = 0,
-        down_block_types: Tuple[str] = (
+        down_block_types: Tuple[str] = (  # type: ignore
             "CrossAttnDownBlock2D",
             "CrossAttnDownBlock2D",
             "CrossAttnDownBlock2D",
             "DownBlock2D",
         ),
-        up_block_types: Tuple[str] = (
+        up_block_types: Tuple[str] = (  # type: ignore
             "UpBlock2D",
             "CrossAttnUpBlock2D",
             "CrossAttnUpBlock2D",
             "CrossAttnUpBlock2D",
         ),
-        block_out_channels: Tuple[int] = (320, 640, 1280, 1280),
+        block_out_channels: Tuple[int] = (320, 640, 1280, 1280),  # type: ignore
         layers_per_block: int = 2,
         downsample_padding: int = 1,
         mid_block_scale_factor: float = 1,
@@ -121,6 +121,7 @@ class UNet2DConditionModel(nn.Module):
                 attn_num_head_channels=attention_head_dim[i],
                 downsample_padding=downsample_padding,
             )
+            assert down_block is not None
             self.down_blocks.append(down_block)
 
         # mid
@@ -227,9 +228,9 @@ class UNet2DConditionModel(nn.Module):
 
         # 5. up
         for upsample_block in self.up_blocks:
-            res_samples = down_block_res_samples[-len(upsample_block.resnets) :]
+            res_samples = down_block_res_samples[-len(upsample_block.resnets) :]  # type: ignore
             down_block_res_samples = down_block_res_samples[
-                : -len(upsample_block.resnets)
+                : -len(upsample_block.resnets)  # type: ignore
             ]
 
             if (

@@ -16,7 +16,7 @@ from inspect import isfunction
 from typing import Optional
 
 from aitemplate.compiler import ops
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 from aitemplate.testing import detect_target
 
 # pylint: disable=W0102
@@ -61,7 +61,7 @@ class CrossAttention(nn.Module):
         self.to_k_weight = nn.Parameter(shape=[inner_dim, context_dim], dtype=dtype)
         self.to_v_weight = nn.Parameter(shape=[inner_dim, context_dim], dtype=dtype)
         self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, query_dim), nn.Dropout(dropout)
+            nn.Linear(inner_dim, query_dim), nn.Dropout(dropout)  # type: ignore
         )
 
     def forward(self, x, context=None, mask=None, residual=None):
@@ -71,17 +71,17 @@ class CrossAttention(nn.Module):
         layout = "20314" if USE_CUDA else "m2n3"
 
         bs, seqlen, _ = get_shape(x)
-        q = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(
+        q = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(  # type: ignore
             ops.reshape()(x, [bs * seqlen, -1]), self.to_q_weight.tensor()
         )
         context = default(context, x)
 
         seqlen = get_shape(context)[1]
-        k = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(
-            ops.reshape()(context, [bs * seqlen, -1]), self.to_k_weight.tensor()
+        k = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(  # type: ignore
+            ops.reshape()(context, [bs * seqlen, -1]), self.to_k_weight.tensor()  # type: ignore
         )
-        v = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(
-            ops.reshape()(context, [bs * seqlen, -1]), self.to_v_weight.tensor()
+        v = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(  # type: ignore
+            ops.reshape()(context, [bs * seqlen, -1]), self.to_v_weight.tensor()  # type: ignore
         )
 
         if USE_CUDA:
@@ -131,13 +131,13 @@ class FeedForward(nn.Module):
         )
 
         self.net = nn.Sequential(
-            project_in, nn.Dropout(dropout), nn.Linear(inner_dim, dim_out)
+            project_in, nn.Dropout(dropout), nn.Linear(inner_dim, dim_out)  # type: ignore
         )
 
     def forward(self, x, residual=None):
         shape = ops.size()(x)
         x = self.net(x)
-        x = ops.reshape()(x, shape)
+        x = ops.reshape()(x, shape)  # type: ignore
         if residual is not None:
             return x + residual
         else:
@@ -506,7 +506,7 @@ class CLIPEncoder(nn.Module):
         hidden_states = inputs_embeds
         for _, encoder_layer in enumerate(self.layers):
             if output_hidden_states:
-                encoder_states = encoder_states + (hidden_states,)
+                encoder_states = encoder_states + (hidden_states,)  # type: ignore
             layer_outputs = encoder_layer(hidden_states)
             hidden_states = layer_outputs
 
@@ -551,7 +551,7 @@ class CLIPTextEmbeddings(nn.Module):
 
         embeddings = inputs_embeds + position_embeddings
 
-        embeddings = ops.reshape()(embeddings, [input_shape[0], input_shape[1], -1])
+        embeddings = ops.reshape()(embeddings, [input_shape[0], input_shape[1], -1])  # type: ignore
 
         return embeddings
 

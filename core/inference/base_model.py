@@ -1,4 +1,7 @@
 from abc import ABC, abstractmethod
+from typing import List
+
+from PIL import Image
 
 from core.types import Job
 
@@ -20,5 +23,5 @@ class InferenceModel(ABC):
         "Unloads the model from the memory"
 
     @abstractmethod
-    def generate(self, job: Job) -> Job:
+    def generate(self, job: Job) -> List[Image.Image]:
         "Generates the output of the model"

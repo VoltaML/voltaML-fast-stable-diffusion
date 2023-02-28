@@ -1,5 +1,7 @@
 from dataclasses import dataclass, field
+from typing import Literal
 
+from dataclasses_json import DataClassJsonMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 from diffusers.utils.constants import DIFFUSERS_CACHE
 
@@ -8,25 +10,72 @@ from diffusers.utils.constants import DIFFUSERS_CACHE
 class Txt2ImgConfig:
     "Configuration for the text to image pipeline"
 
-    model_id: str = "andite/anything-v4.0"
-    scheduler: KarrasDiffusionSchedulers = (
-        KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler
-    )
+    width: int = 512
+    height: int = 512
+    seed: int = -1
+    cfgScale: int = 7
+    sampler: int = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler.value
+    prompt: str = ""
+    negative_prompt: str = ""
+    steps: int = 25
+    batchCount: int = 1
+    batchSize: int = 1
 
 
 @dataclass
 class Img2ImgConfig:
     "Configuration for the image to image pipeline"
 
-    model_id: str = "andite/anything-v4.0"
-    scheduler: KarrasDiffusionSchedulers = (
-        KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler
-    )
+    width: int = 512
+    height: int = 512
+    seed: int = -1
+    cfgScale: int = 7
+    sampler: int = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler.value
+    prompt: str = ""
+    negative_prompt: str = ""
+    steps: int = 25
+    batchCount: int = 1
+    batchSize: int = 1
+    resizeMethod: int = 0
+    denoisingStrength: float = 0.6
 
 
 @dataclass
-class Configuration:
+class ImageVariations:
+    "Configuration for the image variations pipeline"
+
+    batchCount: int = 1
+    batchSize: int = 1
+    cfgScale: int = 7
+    seed: int = -1
+    sampler: int = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler.value
+    steps: int = 25
+
+
+@dataclass
+class Inpainting:
+    "Configuration for the inpainting pipeline"
+
+    prompt: str = ""
+    negative_prompt: str = ""
+    width: int = 512
+    height: int = 512
+    steps: int = 25
+    cfgScale: int = 7
+    seed: int = -1
+    batchCount: int = 1
+    batchSize: int = 1
+    sampler: int = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler.value
+
+
+@dataclass
+class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"
 
+    backend: Literal["PyTorch", "TensorRT", "AITemplate"] = "PyTorch"
+    model: str = "none:PyTorch"
     txt2img: Txt2ImgConfig = field(default=Txt2ImgConfig())
+    img2img: Img2ImgConfig = field(default=Img2ImgConfig())
+    imageVariations: ImageVariations = field(default=ImageVariations())
+    inpainting: Inpainting = field(default=Inpainting())
     cache_dir: str = field(default=DIFFUSERS_CACHE)

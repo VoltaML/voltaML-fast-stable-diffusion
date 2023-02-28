@@ -13,6 +13,7 @@
 #  limitations under the License.
 #
 import logging
+import os
 
 import torch
 from aitemplate.testing import detect_target
@@ -50,6 +51,8 @@ def compile_diffusers(
     ww = width // 8
     hh = height // 8
 
+    dump_dir = os.path.join("data", "aitemplate", local_dir)
+
     # CLIP
     compile_clip(
         pipe.text_encoder,  # type: ignore
@@ -60,6 +63,7 @@ def compile_diffusers(
         num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
         dim=pipe.text_encoder.config.hidden_size,  # type: ignore
         act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
+        dump_dir=dump_dir,
     )
     # UNet
     compile_unet(
@@ -71,6 +75,7 @@ def compile_diffusers(
         convert_conv_to_gemm=convert_conv_to_gemm,
         hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
         attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
+        dump_dir=dump_dir,
     )
     # VAE
     compile_vae(
@@ -80,4 +85,5 @@ def compile_diffusers(
         height=hh,
         use_fp16_acc=use_fp16_acc,
         convert_conv_to_gemm=convert_conv_to_gemm,
+        dump_dir=dump_dir,
     )

@@ -19,16 +19,13 @@ import os
 from typing import List, Optional, Union
 
 import numpy as np
-
 import PIL
+import PIL.Image
 import torch
 from aitemplate.compiler import Model
-
 from diffusers import (
     AutoencoderKL,
-    DDIMScheduler,
     LMSDiscreteScheduler,
-    PNDMScheduler,
     StableDiffusionImg2ImgPipeline,
     UNet2DConditionModel,
 )
@@ -36,6 +33,7 @@ from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
     StableDiffusionSafetyChecker,
 )
+from diffusers.schedulers import KarrasDiffusionSchedulers
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 
@@ -83,7 +81,7 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
         unet: UNet2DConditionModel,
-        scheduler: Union[DDIMScheduler, PNDMScheduler, LMSDiscreteScheduler],
+        scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
         requires_safety_checker: bool = True,
@@ -120,6 +118,17 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             model_name="AutoencoderKL", workdir=workdir
         )
 
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.requires_safety_checker: bool
+        self.feature_extractor: CLIPFeatureExtractor
+
+        self.vae: AutoencoderKL
+        self.text_encoder: CLIPTextModel
+        self.tokenizer: CLIPTokenizer
+        self.unet: UNet2DConditionModel
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.feature_extractor: CLIPFeatureExtractor
+
     def init_ait_module(
         self,
         model_name,
@@ -143,7 +152,7 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         num_ouputs = len(exe_module.get_output_name_to_index_map())
         for i in range(num_ouputs):
             shape = exe_module.get_output_maximum_shape(i)
-            ys.append(torch.empty(shape).cuda().half())
+            ys.append(torch.empty(shape).cuda().half())  # type: ignore
         exe_module.run_with_tensors(inputs, ys, graph_mode=False)
         noise_pred = ys[0].permute((0, 3, 1, 2)).float()
         return noise_pred
@@ -182,8 +191,8 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         prompt: Union[str, List[str]],
         init_image: Union[torch.FloatTensor, PIL.Image.Image],
         strength: float = 0.8,
-        num_inference_steps: Optional[int] = 50,
-        guidance_scale: Optional[float] = 7.5,
+        num_inference_steps: int = 50,
+        guidance_scale: float = 7.5,
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
         output_type: Optional[str] = "pil",
@@ -233,6 +242,9 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
+
+        self.scheduler: LMSDiscreteScheduler
+
         if isinstance(prompt, str):
             batch_size = 1
         elif isinstance(prompt, list):
@@ -260,10 +272,10 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         self.scheduler.set_timesteps(num_inference_steps, **extra_set_kwargs)
 
         if isinstance(init_image, PIL.Image.Image):
-            init_image = preprocess(init_image)
+            init_image = preprocess(init_image)  # type: ignore
 
         # encode the init image into latents and scale the latents
-        init_latent_dist = self.vae.encode(init_image.to(self.device)).latent_dist
+        init_latent_dist = self.vae.encode(init_image.to(self.device)).latent_dist  # type: ignore
         init_latents = init_latent_dist.sample(generator=generator)
         init_latents = 0.18215 * init_latents
 
@@ -286,7 +298,7 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
 
         # add noise to latents using the timesteps
         noise = torch.randn(init_latents.shape, generator=generator, device=self.device)
-        init_latents = self.scheduler.add_noise(init_latents, noise, timesteps).to(
+        init_latents = self.scheduler.add_noise(init_latents, noise, timesteps).to(  # type: ignore
             self.device
         )
 
@@ -367,8 +379,8 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             # compute the previous noisy sample x_t -> x_t-1
             if isinstance(self.scheduler, LMSDiscreteScheduler):
                 latents = self.scheduler.step(
-                    noise_pred, t_index, latents, **extra_step_kwargs
-                ).prev_sample
+                    noise_pred, t_index, latents, **extra_step_kwargs  # type: ignore
+                ).prev_sample  # type: ignore
             else:
                 latents = self.scheduler.step(
                     noise_pred, t, latents, **extra_step_kwargs

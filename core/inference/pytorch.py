@@ -26,7 +26,7 @@ from core.functions import img2img_callback, inpaint_callback, txt2img_callback
 from core.inference.base_model import InferenceModel
 from core.inference.unet_tracer import TracedUNet, get_traced_unet
 from core.schedulers import change_scheduler
-from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Txt2ImgQueueEntry
+from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Job, Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -56,6 +56,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.feature_extractor: Any
         self.requires_safety_checker: bool
         self.safety_checker: Any
+        self.image_encoder: Any
 
         self.load()
 
@@ -77,7 +78,7 @@ class PyTorchStableDiffusion(InferenceModel):
         logger.debug(f"Loaded {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
         assert isinstance(pipe, StableDiffusionPipeline)
-        pipe = pipe.to(self.device)
+        pipe.to(self.device)
 
         self.optimize(pipe)
 
@@ -336,11 +337,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
     def generate(
         self,
-        job: Union[
-            Txt2ImgQueueEntry,
-            Img2ImgQueueEntry,
-            InpaintQueueEntry,
-        ],
+        job: Job,
     ):
         "Generate images from the queue"
 
@@ -352,6 +349,8 @@ class PyTorchStableDiffusion(InferenceModel):
             images = self.img2img(job)
         elif isinstance(job, InpaintQueueEntry):
             images = self.inpaint(job)
+        else:
+            raise ValueError("Invalid job type for this pipeline")
 
         return images
 

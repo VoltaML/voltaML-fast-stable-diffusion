@@ -49,16 +49,17 @@ def map_unet_params(pt_mod, dim):
 
 def compile_unet(  # pylint: disable=dangerous-default-value
     pt_mod,
-    batch_size=2,
-    height=64,
-    width=64,
-    dim=320,
-    hidden_dim=1024,
-    use_fp16_acc=False,
-    convert_conv_to_gemm=False,
+    dump_dir: str = "./tmp",
+    batch_size: int = 2,
+    height: int = 64,
+    width: int = 64,
+    dim: int = 320,
+    hidden_dim: int = 1024,
+    use_fp16_acc: bool = False,
+    convert_conv_to_gemm: bool = False,
     attention_head_dim=[5, 10, 20, 20],  # noqa: B006
 ):
-    "Compile UNet2DConditionModel to AIT"
+    "Compile UNet to AIT"
 
     ait_mod = ait_UNet2DConditionModel(
         sample_size=64,
@@ -85,4 +86,4 @@ def compile_unet(  # pylint: disable=dangerous-default-value
     target = detect_target(
         use_fp16_acc=use_fp16_acc, convert_conv_to_gemm=convert_conv_to_gemm
     )
-    compile_model(Y, target, "./tmp", "UNet2DConditionModel", constants=params_ait)
+    compile_model(Y, target, dump_dir, "UNet2DConditionModel", constants=params_ait)

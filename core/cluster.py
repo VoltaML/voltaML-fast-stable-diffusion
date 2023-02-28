@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from PIL import Image
@@ -11,9 +11,11 @@ from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.gpu import GPU
 from core.inference.functions import download_model
 from core.types import (
+    AITemplateBuildRequest,
     BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
+    InferenceBackend,
     InpaintQueueEntry,
     Txt2ImgQueueEntry,
 )
@@ -44,7 +46,7 @@ class Cluster:
     async def load_model(
         self,
         model: str,
-        backend: Literal["PyTorch", "TensorRT"],
+        backend: InferenceBackend,
         preferred_gpu: Optional[int] = None,
     ):
         "Load a model onto the cluster. Chooses the least loaded GPU by default."
@@ -165,14 +167,18 @@ class Cluster:
         await best_gpu.build_trt_engine(req)
         logger.debug(f"Engine built for {req.model_id} on GPU {best_gpu.gpu_id}.")
 
-    async def build_aitemplate(self, model_id: str):
+    async def build_aitemplate(self, request: AITemplateBuildRequest):
         "Build an AI Template"
 
         best_gpu: GPU = await self.least_loaded_gpu()
 
-        logger.debug(f"Building AI Template for {model_id} on GPU {best_gpu.gpu_id}...")
-        await best_gpu.build_aitemplate_engine(model_id)
-        logger.debug(f"AI Template built for {model_id} on GPU {best_gpu.gpu_id}.")
+        logger.debug(
+            f"Building AI Template for {request.model_id} on GPU {best_gpu.gpu_id}..."
+        )
+        await best_gpu.build_aitemplate_engine(request)
+        logger.debug(
+            f"AI Template built for {request.model_id} on GPU {best_gpu.gpu_id}."
+        )
 
     async def unload(self, model: str, gpu_id: int):
         "Unload a model from a GPU"
