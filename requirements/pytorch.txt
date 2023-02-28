@@ -1,6 +1,7 @@
 --extra-index-url https://pypi.ngc.nvidia.com
 colored
 coloredlogs
+dataclasses-json
 diffusers
 scipy
 transformers
