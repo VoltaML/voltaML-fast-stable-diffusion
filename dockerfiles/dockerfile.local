@@ -16,12 +16,14 @@ RUN npm i -g yarn
 WORKDIR /app
 
 RUN apt update && apt install python3.10 python3-pip -y
+RUN apt install time -y
 
 RUN pip install --upgrade pip
 
 COPY requirements /app/requirements
 
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/api.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install torch==1.13.1 torchvision
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/pytorch.txt
 
 COPY . /app

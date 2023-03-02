@@ -1,1 +1,1 @@
-docker compose run --service-ports --entrypoint bash voltaml
+docker compose run --service-ports voltaml

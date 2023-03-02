@@ -1,23 +1,36 @@
+# Git & Configuration files
 .git/
 .github/
 .vscode/
-converted/
-docs/
-engine/
-!frontend/dist/
-node_modules/
-onnx/
-outputs/
-static/
-traced_unet/
-venv/
-.dockerignore
 .env
 .gitignore
 .pylintrc
-build.sh
-docker-compose.yml
-Dockerfile
 pyproject.toml
-test.ipynb
+
+# User generated files
+/converted
+/data
+/engine
+/onnx
+/traced_unet
+
+# Documentation
+docs/
 yarn.lock
+
+# Frontend
+!frontend/dist/
+node_modules/
+
+# Static files
+static/
+
+# Python
+/venv
+
+# Docker
+.dockerignore
+docker-compose.yml
+
+# Jupyter
+*.ipynb

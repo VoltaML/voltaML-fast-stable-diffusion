@@ -2,13 +2,12 @@ version: "3.7"
 
 services:
   voltaml:
-    image: voltaml/volta_diffusion_webui:local
+    image: stax124/volta_diffusion_webui:local
     environment:
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - /home/kubuntu/tmp/engine:/workspace/voltaML-fast-stable-diffusion/engine
-      - /home/kubuntu/tmp/outputs:/workspace/voltaML-fast-stable-diffusion/outputs
+      - /home/kubuntu/tmp/data:/workspace/voltaML-fast-stable-diffusion/data
       - /home/kubuntu/.cache/huggingface:/root/.cache/huggingface
     ports:
       - "5003:5003"
