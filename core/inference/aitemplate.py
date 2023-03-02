@@ -58,6 +58,9 @@ class AITemplateStableDiffusion(InferenceModel):
             clip_ait_exe=None,
             unet_ait_exe=None,
             vae_ait_exe=None,
+            safety_checker=None,
+            requires_safety_checker=False,
+            feature_extractor=None,
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
         pipe.to(self.device)

@@ -7,7 +7,7 @@ services:
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - /home/kubuntu/tmp/data:/workspace/voltaML-fast-stable-diffusion/data
+      - /home/kubuntu/tmp/data:/app/data
       - /home/kubuntu/.cache/huggingface:/root/.cache/huggingface
     ports:
       - "5003:5003"
