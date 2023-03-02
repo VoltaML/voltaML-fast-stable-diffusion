@@ -13,6 +13,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets.data import Data
+from core.files import get_full_model_path
 from core.functions import txt2img_callback
 from core.inference.base_model import InferenceModel
 from core.schedulers import change_scheduler
@@ -51,9 +52,12 @@ class AITemplateStableDiffusion(InferenceModel):
         )
 
         pipe = StableDiffusionAITPipeline.from_pretrained(
-            self.model_id,
+            get_full_model_path(self.model_id),
             torch_dtype=torch.float16,
             directory=os.path.join("data", "aitemplate", self.model_id),
+            clip_ait_exe=None,
+            unet_ait_exe=None,
+            vae_ait_exe=None,
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
         pipe.to(self.device)
@@ -111,6 +115,7 @@ class AITemplateStableDiffusion(InferenceModel):
         with torch.autocast(self.device):  # type: ignore
             pipe = StableDiffusionAITPipeline(
                 vae=self.vae,
+                directory=os.path.join("data", "aitemplate", self.model_id),
                 text_encoder=self.text_encoder,
                 tokenizer=self.tokenizer,
                 scheduler=self.scheduler,
@@ -118,6 +123,9 @@ class AITemplateStableDiffusion(InferenceModel):
                 requires_safety_checker=self.requires_safety_checker,
                 unet=self.unet,
                 feature_extractor=self.feature_extractor,
+                clip_ait_exe=self.clip_ait_exe,
+                unet_ait_exe=self.unet_ait_exe,
+                vae_ait_exe=self.vae_ait_exe,
             )
 
             generator = torch.Generator("cuda").manual_seed(job.data.seed)

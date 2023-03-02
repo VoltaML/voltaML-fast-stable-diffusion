@@ -123,6 +123,13 @@ export function processWebSocket(
         content: message.data.message,
         duration: message.data.timeout,
       });
+      break;
+    }
+    case "aitemplate_compile": {
+      global.state.aitBuildStep = {
+        ...global.state.aitBuildStep,
+        ...message.data,
+      };
     }
   }
 }

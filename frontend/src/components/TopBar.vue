@@ -8,6 +8,8 @@
       placeholder="Select model"
       default-value="none:PyTorch"
       :value="conf.data.settings.model"
+      :consistent-menu-width="false"
+      filterable
     />
     <NButton quaternary circle type="default" @click="refreshModels">
       <template #icon>
@@ -81,21 +83,43 @@ function refreshModels() {
         children: [],
       };
 
+      const aitemplatesGroup: SelectGroupOption = {
+        type: "group",
+        label: "AITemplate",
+        key: "aitemplate",
+        children: [],
+      };
+
       data.forEach((item) => {
         if (item.backend === "PyTorch") {
           pytorchGroup.children?.push({
             label: item.name,
             value: item.path + ":" + item.backend,
+            style: item.valid
+              ? "color: #eb7028"
+              : "text-decoration: line-through",
           });
         } else if (item.backend === "TensorRT") {
           tensorrtGroup.children?.push({
             label: item.name,
             value: item.path + ":" + item.backend,
+            style: item.valid
+              ? "color: #28eb6c"
+              : "text-decoration: line-through",
+          });
+        } else if (item.backend === "AITemplate") {
+          aitemplatesGroup.children?.push({
+            label: item.name,
+            value: item.path + ":" + item.backend,
+            style: item.valid
+              ? "color: #48bdf0"
+              : "text-decoration: line-through",
           });
         }
       });
 
       modelOptions.push(tensorrtGroup);
+      modelOptions.push(aitemplatesGroup);
       modelOptions.push(pytorchGroup);
       modelOptions.push(defaultOptions);
 
@@ -108,11 +132,11 @@ async function onModelChange(value: string) {
   const model = value.split(":")[0];
   const x = value.split(":")[1];
 
-  if (x !== "PyTorch" && x !== "TensorRT") {
+  if (x !== "PyTorch" && x !== "TensorRT" && x !== "AITemplate") {
     throw new Error("Invalid backend");
   }
 
-  const backend: "PyTorch" | "TensorRT" = x;
+  const backend: "PyTorch" | "TensorRT" | "AITemplate" = x;
 
   await fetch(`${serverUrl}/api/models/unload-all`, {
     method: "POST",

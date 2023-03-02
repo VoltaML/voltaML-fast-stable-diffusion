@@ -1,6 +1,7 @@
 import importlib.metadata
 import importlib.util
 import logging
+import platform
 import subprocess
 import sys
 from pathlib import Path
@@ -81,6 +82,41 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
 def install_pytorch():
     "Install necessary requirements for inference"
 
+    # Install pytorch
+    if platform.system() == "Windows":
+        if not is_installed("torch", version="==1.13.1+cu117") or not is_installed(
+            "torchvision"
+        ):
+            logger.info("Installing PyTorch")
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "torch==1.13.1",
+                    "torchvision",
+                    "--extra-index-url",
+                    "https://download.pytorch.org/whl/cu117",
+                ]
+            )
+    else:
+        if not is_installed("torch", version="==1.13.1") or not is_installed(
+            "torchvision"
+        ):
+            logger.info("Installing PyTorch")
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "torch==1.13.1",
+                    "torchvision",
+                ]
+            )
+
+    # Install other requirements
     install_requirements("requirements/pytorch.txt")
     install_requirements("requirements/api.txt")
 

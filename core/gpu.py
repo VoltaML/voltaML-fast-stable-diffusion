@@ -109,8 +109,6 @@ class GPU:
                 self.memory_cleanup()
                 return images
 
-        logging.info(f"Adding job {job.data.id} to queue")
-
         # Check width and height passed by the user
         if not isinstance(job, ImageVariationsQueueEntry):
             if job.data.width % 8 != 0 or job.data.height % 8 != 0:
@@ -250,7 +248,7 @@ class GPU:
                 Notification(
                     "success",
                     "Model loaded",
-                    f"{model} loaded with {'PyTorch' if backend == 'PyTorch' else 'TensorRT'} backend",
+                    f"{model} loaded with {backend} backend",
                 )
             )
 
@@ -410,7 +408,7 @@ class GPU:
                 device=self.cuda_id,
             )
 
-            pt_model.save(path="converted/" + model)
+            pt_model.save(path="converted/" + model.split("/")[-1])
 
         _, err = await run_in_thread_async(func=call)
 

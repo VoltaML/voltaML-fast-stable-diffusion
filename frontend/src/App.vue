@@ -42,7 +42,7 @@ const glob = useState();
 
 const overrides: GlobalThemeOverrides = {
   common: {
-    fontSize: "16",
+    fontSize: "14",
     fontWeight: "600",
   },
 };

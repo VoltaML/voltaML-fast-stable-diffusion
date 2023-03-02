@@ -55,3 +55,11 @@ class WebSocketManager:
 
         for connection in self.active_connections:
             self.to_run.append(connection.send_json(data.to_json()))
+
+    async def close_all(self):
+        "Closes all active websocket connections"
+
+        for connection in self.active_connections:
+            await connection.close(reason="Server shutdown")
+
+        self.active_connections = []

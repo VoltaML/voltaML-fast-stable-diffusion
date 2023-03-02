@@ -33,6 +33,8 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
+logger = logging.getLogger(__name__)
+
 
 class StableDiffusionAITPipeline(StableDiffusionPipeline):
     r"""
@@ -71,8 +73,11 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
+        directory: str,
+        clip_ait_exe: Optional[Model],
+        unet_ait_exe: Optional[Model],
+        vae_ait_exe: Optional[Model],
         requires_safety_checker: bool = True,
-        **kwargs,
     ):
         super().__init__(
             vae=vae,
@@ -85,16 +90,28 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             requires_safety_checker=requires_safety_checker,
         )
 
-        workdir = kwargs.get("directory", "tmp/")
-        self.clip_ait_exe = self.init_ait_module(
-            model_name="CLIPTextModel", workdir=workdir
-        )
-        self.unet_ait_exe = self.init_ait_module(
-            model_name="UNet2DConditionModel", workdir=workdir
-        )
-        self.vae_ait_exe = self.init_ait_module(
-            model_name="AutoencoderKL", workdir=workdir
-        )
+        logger.debug(f"AIT workdir: {directory}")
+
+        if clip_ait_exe is None:
+            self.clip_ait_exe = self.init_ait_module(
+                model_name="CLIPTextModel", workdir=directory
+            )
+        else:
+            self.clip_ait_exe = clip_ait_exe
+
+        if unet_ait_exe is None:
+            self.unet_ait_exe = self.init_ait_module(
+                model_name="UNet2DConditionModel", workdir=directory
+            )
+        else:
+            self.unet_ait_exe = unet_ait_exe
+
+        if vae_ait_exe is None:
+            self.vae_ait_exe = self.init_ait_module(
+                model_name="AutoencoderKL", workdir=directory
+            )
+        else:
+            self.vae_ait_exe = vae_ait_exe
 
         self.safety_checker: StableDiffusionSafetyChecker
         self.requires_safety_checker: bool
@@ -107,21 +124,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         self.safety_checker: StableDiffusionSafetyChecker
         self.feature_extractor: CLIPFeatureExtractor
 
-    def init_from_loaded(
-        self,
-        clip_ait_exe: Model,
-        unet_ait_exe: Model,
-        vae_ait_exe: Model,
-        safety_checker: StableDiffusionSafetyChecker,
-        requires_safety_checker: bool,
-        feature_extractor: CLIPFeatureExtractor,
-    ):
-        self.clip_ait_exe = clip_ait_exe
-        self.unet_ait_exe = unet_ait_exe
-        self.vae_ait_exe = vae_ait_exe
-        self.safety_checker = safety_checker
-        self.requires_safety_checker = requires_safety_checker
-        self.feature_extractor = feature_extractor
+        self.scheduler: LMSDiscreteScheduler
 
     def init_ait_module(
         self,

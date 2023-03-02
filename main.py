@@ -52,10 +52,9 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
 # Create necessary folders
 Path("data/aitemplate").mkdir(exist_ok=True, parents=True)
+Path("data/models").mkdir(exist_ok=True)
 Path("engine").mkdir(exist_ok=True)
 Path("onnx").mkdir(exist_ok=True)
-Path("traced_unet").mkdir(exist_ok=True)
-Path("converted").mkdir(exist_ok=True)
 
 
 def is_root():
@@ -127,9 +126,20 @@ def checks():
         )
 
     # Inject coloredlogs
-    from coloredlogs import install as coloredlogs_install
+    import coloredlogs
 
-    coloredlogs_install(level=args.log_level)
+    coloredlogs.DEFAULT_LEVEL_STYLES = {
+        **coloredlogs.DEFAULT_LEVEL_STYLES,
+        "info": {"color": "magenta", "bright": True},
+        "error": {"color": "red", "bright": True, "bold": True},
+        "warning": {"color": "yellow", "bright": True, "bold": True},
+    }
+
+    coloredlogs.install(
+        level=args.log_level,
+        fmt="%(asctime)s | %(name)s | %(levelname)s » %(message)s",
+        datefmt="%H:%M:%S",
+    )
 
     # Check if we are up to date with the latest release
     version_check(commit_hash())

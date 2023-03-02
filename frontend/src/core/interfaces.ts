@@ -18,4 +18,5 @@ export interface ModelEntry {
   name: string;
   path: number;
   backend: "TensorRT" | "PyTorch";
+  valid: boolean;
 }

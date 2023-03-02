@@ -17,7 +17,7 @@ thread_pool = ThreadPoolExecutor()
 def txt2img() -> List[Dict[str, Any]]:
     "List all generated images"
 
-    path = Path("outputs/txt2img")
+    path = Path("data/outputs/txt2img")
 
     if not path.exists():
         return []
@@ -33,7 +33,7 @@ def txt2img() -> List[Dict[str, Any]]:
 def img2img() -> List[str]:
     "List all generated images"
 
-    path = Path("outputs/img2img")
+    path = Path("data/outputs/img2img")
 
     if not path.exists():
         return []
@@ -45,7 +45,7 @@ def img2img() -> List[str]:
 def extra() -> List[str]:
     "List all generated images"
 
-    path = Path("outputs/extra")
+    path = Path("data/outputs/extra")
 
     if not path.exists():
         return []

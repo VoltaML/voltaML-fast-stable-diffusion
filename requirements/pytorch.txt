@@ -9,9 +9,6 @@ accelerate
 ftfy
 tqdm
 OmegaConf
-accelerate
-torch
-torchvision
 pynvml
 k-diffusion
 safetensors

@@ -22,6 +22,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
+from core.files import get_full_model_path
 from core.functions import img2img_callback, inpaint_callback, txt2img_callback
 from core.inference.base_model import InferenceModel
 from core.inference.unet_tracer import TracedUNet, get_traced_unet
@@ -66,7 +67,7 @@ class PyTorchStableDiffusion(InferenceModel):
         logger.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
         pipe = StableDiffusionPipeline.from_pretrained(
-            pretrained_model_name_or_path=self.model_id,
+            pretrained_model_name_or_path=get_full_model_path(self.model_id),
             torch_dtype=torch.float32 if self.use_f32 else torch.float16,
             use_auth_token=self.auth,
             safety_checker=None,
@@ -103,8 +104,10 @@ class PyTorchStableDiffusion(InferenceModel):
             self.feature_extractor,
             self.requires_safety_checker,
             self.safety_checker,
-            self.image_encoder,
         )
+
+        if self.__dict__.get("image_encoder"):
+            del self.image_encoder
 
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
