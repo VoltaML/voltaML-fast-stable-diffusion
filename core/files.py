@@ -243,8 +243,8 @@ def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
 def get_full_model_path(repo_id: str, revision: str = "main") -> Path:
     "Return the path to the actual model"
 
-    # Replace -- with / and remove the [dim] part
-    repo_id = repo_id.replace("--", "/").split("[")[0]
+    # Replace -- with / and remove the __dim part
+    repo_id = repo_id.replace("--", "/").split("__")[0]
     repo_path = Path(repo_id)
 
     # 1. Check for the exact path

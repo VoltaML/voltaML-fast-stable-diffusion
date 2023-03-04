@@ -8,8 +8,43 @@ export interface WebSocketMessage {
 }
 
 function progressForward(
+  progress: number,
+  global: Store<
+    "state",
+    _UnwrapAll<
+      Pick<
+        {
+          state: StateInterface;
+        },
+        "state"
+      >
+    >,
+    Pick<
+      {
+        state: StateInterface;
+      },
+      never
+    >,
+    Pick<
+      {
+        state: StateInterface;
+      },
+      never
+    >
+  >
+) {
+  if (progress === 0) {
+    return 0;
+  } else if (global.state.progress <= progress) {
+    return progress;
+  } else {
+    return global.state.progress;
+  }
+}
+
+function currentStepForward(
   currentStep: number,
-  g: Store<
+  global: Store<
     "state",
     _UnwrapAll<
       Pick<
@@ -35,10 +70,10 @@ function progressForward(
 ) {
   if (currentStep === 0) {
     return 0;
-  } else if (g.state.current_step < currentStep) {
+  } else if (global.state.current_step <= currentStep) {
     return currentStep;
   } else {
-    return g.state.progress;
+    return global.state.current_step;
   }
 }
 
@@ -83,8 +118,12 @@ export function processWebSocket(
         ? message.data.image
         : global.state.txt2img.currentImage;
       global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = message.data.current_step;
+      global.state.current_step = currentStepForward(
+        message.data.current_step,
+        global
+      );
       global.state.total_steps = message.data.total_steps;
+      console.log(message.data.progress);
       break;
     }
     case "img2img": {
@@ -92,7 +131,10 @@ export function processWebSocket(
         ? message.data.image
         : global.state.img2img.currentImage;
       global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = message.data.current_step;
+      global.state.current_step = currentStepForward(
+        message.data.current_step,
+        global
+      );
       global.state.total_steps = message.data.total_steps;
       break;
     }
@@ -101,7 +143,10 @@ export function processWebSocket(
         ? message.data.image
         : global.state.imageVariations.currentImage;
       global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = message.data.current_step;
+      global.state.current_step = currentStepForward(
+        message.data.current_step,
+        global
+      );
       global.state.total_steps = message.data.total_steps;
       break;
     }
@@ -110,7 +155,10 @@ export function processWebSocket(
         ? message.data.image
         : global.state.inpainting.currentImage;
       global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = message.data.current_step;
+      global.state.current_step = currentStepForward(
+        message.data.current_step,
+        global
+      );
       global.state.total_steps = message.data.total_steps;
       break;
     }

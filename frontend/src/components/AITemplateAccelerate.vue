@@ -102,6 +102,8 @@
         style="margin-top: 16px; padding: 0 92px"
         type="success"
         ghost
+        :loading="building"
+        :disabled="building || modelOptions.length === 0"
         @click="accelerate"
         >Accelerate</NButton
       >
@@ -122,9 +124,12 @@ import {
   NSpace,
   NStep,
   NSteps,
+  useMessage,
   type SelectOption,
 } from "naive-ui";
 import { reactive, ref } from "vue";
+
+const message = useMessage();
 
 const state = useState();
 const width = ref(512);
@@ -132,6 +137,8 @@ const height = ref(512);
 const batchSize = ref(1);
 const model = ref("");
 const modelOptions: Array<SelectOption> = reactive([]);
+
+const building = ref(false);
 
 fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
   res.json().then((data: Array<ModelEntry>) => {
@@ -155,6 +162,7 @@ fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
 });
 
 const accelerate = async () => {
+  building.value = true;
   await fetch(`${serverUrl}/api/generate/generate-aitemplate`, {
     method: "POST",
     headers: {
@@ -166,6 +174,13 @@ const accelerate = async () => {
       height: height.value,
       batch_ize: batchSize.value,
     }),
-  });
+  })
+    .then(() => {
+      building.value = false;
+    })
+    .catch(() => {
+      building.value = false;
+      message.error("Failed to accelerate, check the console for more info.");
+    });
 };
 </script>

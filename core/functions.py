@@ -5,11 +5,11 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
-from api import websocket_manager
-from api.websockets.data import Data
 from diffusers.utils.pil_utils import PIL_INTERPOLATION
 from PIL import Image
 
+from api import websocket_manager
+from api.websockets.data import Data
 from core import shared
 from core.errors import InferenceInterruptedError
 from core.types import ImageMetadata
@@ -50,6 +50,10 @@ def txt2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
     "Callback for txt2img with progress and partial image"
 
     images, send_image = pytorch_callback(step, _timestep, tensor)
+
+    logger.warning(
+        f"{shared.current_done_steps=} | {shared.current_steps=} | {int((shared.current_done_steps / shared.current_steps) * 100)}"
+    )
 
     websocket_manager.broadcast_sync(
         data=Data(

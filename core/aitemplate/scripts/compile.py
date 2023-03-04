@@ -65,7 +65,7 @@ def compile_diffusers(
     dump_dir = os.path.join(
         "data",
         "aitemplate",
-        local_dir.replace("/", "--") + f"[{width}x{height}x{batch_size}]",
+        local_dir.replace("/", "--") + f"__{width}x{height}x{batch_size}",
     )
 
     websocket_manager.broadcast_sync(
