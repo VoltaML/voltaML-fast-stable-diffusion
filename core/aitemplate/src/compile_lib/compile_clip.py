@@ -119,4 +119,10 @@ def compile_clip(
     target = detect_target(
         use_fp16_acc=use_fp16_acc, convert_conv_to_gemm=convert_conv_to_gemm
     )
-    compile_model(Y, target, dump_dir, "CLIPTextModel", constants=params_ait)
+    compile_model(
+        Y,
+        target,
+        dump_dir,
+        "CLIPTextModel",
+        constants=params_ait,
+    )

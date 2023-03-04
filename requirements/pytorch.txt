@@ -2,7 +2,7 @@
 colored
 coloredlogs
 dataclasses-json
-diffusers
+diffusers==0.13.1
 scipy
 transformers
 accelerate
@@ -13,4 +13,3 @@ pynvml
 k-diffusion
 safetensors
 pytorch-lightning
-xformers==0.0.16

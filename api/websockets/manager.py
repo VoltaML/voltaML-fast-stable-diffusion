@@ -6,6 +6,7 @@ from typing import Coroutine, List, Optional
 from fastapi import WebSocket
 
 from api.websockets.data import Data
+from core.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -26,7 +27,7 @@ class WebSocketManager:
                 await task
                 self.to_run.remove(task)
 
-            await asyncio.sleep(0.1)
+            await asyncio.sleep(config.api.websocket_sync_interval)
 
     async def connect(self, websocket: WebSocket):
         "Accepts a new websocket connection and adds it to the list of active connections"

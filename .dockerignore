@@ -17,10 +17,10 @@ pyproject.toml
 # Documentation
 docs/
 yarn.lock
+node_modules/
 
 # Frontend
 !frontend/dist/
-node_modules/
 
 # Static files
 static/
@@ -34,3 +34,6 @@ docker-compose.yml
 
 # Jupyter
 *.ipynb
+
+# TensorRT
+/lib/trt/lib/*

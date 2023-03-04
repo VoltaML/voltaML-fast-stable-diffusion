@@ -1,7 +1,7 @@
 import gc
 import logging
 import os
-from typing import Any, List
+from typing import TYPE_CHECKING, Any, List
 
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
@@ -19,6 +19,11 @@ from core.inference.base_model import InferenceModel
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, Job, Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
+
+if TYPE_CHECKING:
+    from core.aitemplate.src.pipeline_stable_diffusion_ait import (
+        StableDiffusionAITPipeline,
+    )
 
 logger = logging.getLogger(__name__)
 
@@ -64,6 +69,7 @@ class AITemplateStableDiffusion(InferenceModel):
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
         pipe.to(self.device)
+        self.optimize(pipe)
 
         self.vae = pipe.vae  # type: ignore
         self.unet = pipe.unet  # type: ignore
@@ -95,6 +101,23 @@ class AITemplateStableDiffusion(InferenceModel):
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
         gc.collect()
+
+    def optimize(self, pipe: "StableDiffusionAITPipeline") -> None:
+        "Optimize the model for inference"
+
+        logger.info("Optimizing model")
+
+        try:
+            pipe.enable_xformers_memory_efficient_attention()
+            logger.info("Optimization: Enabled xformers memory efficient attention")
+        except ModuleNotFoundError:
+            logger.info(
+                "Optimization: xformers not available, enabling attention slicing instead"
+            )
+            pipe.enable_attention_slicing()
+            logger.info("Optimization: Enabled attention slicing")
+
+        logger.info("Optimization complete")
 
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")

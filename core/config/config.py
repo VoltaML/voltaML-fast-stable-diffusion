@@ -1,3 +1,4 @@
+import multiprocessing
 from dataclasses import dataclass, field
 from typing import Literal
 
@@ -69,6 +70,20 @@ class Inpainting:
 
 
 @dataclass
+class APIConfig:
+    "Configuration for the API"
+
+    websocket_sync_interval = 0.02
+
+
+@dataclass
+class InferenceConfig:
+    "Configuration for model inference and acceleration"
+
+    num_threads: int = field(default=min(multiprocessing.cpu_count() - 1, 8))
+
+
+@dataclass
 class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"
 
@@ -76,6 +91,8 @@ class Configuration(DataClassJsonMixin):
     model: str = "none:PyTorch"
     txt2img: Txt2ImgConfig = field(default=Txt2ImgConfig())
     img2img: Img2ImgConfig = field(default=Img2ImgConfig())
+    api: APIConfig = field(default=APIConfig())
+    inference: InferenceConfig = field(default=InferenceConfig())
     imageVariations: ImageVariations = field(default=ImageVariations())
     inpainting: Inpainting = field(default=Inpainting())
     cache_dir: str = field(default=DIFFUSERS_CACHE)

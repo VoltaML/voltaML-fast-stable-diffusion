@@ -2,33 +2,26 @@ FROM stax124/aitemplate:latest
 
 ENV DEBIAN_FRONTEND=noninteractive
 
-RUN apt update \
-    && apt install software-properties-common -y \
-    && add-apt-repository ppa:deadsnakes/ppa -y \
-    && apt install curl -y
-
+RUN apt update && apt install curl -y
 RUN curl -sL https://deb.nodesource.com/setup_18.x | bash
 
 RUN apt install nodejs -y
 
 RUN npm i -g yarn
+RUN apt install time git -y
+RUN pip install --upgrade pip
 
 WORKDIR /app
-
-RUN apt update && apt install python3.10 python3-pip -y
-RUN apt install time -y
-
-RUN pip install --upgrade pip
 
 COPY requirements /app/requirements
 
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/api.txt
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install torch==1.13.1 torchvision
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/pytorch.txt
 
 COPY . /app
 
 RUN --mount=type=cache,mode=0755,target=/app/frontend/node_modules cd frontend && yarn install && yarn build
+RUN rm -rf frontend/node_modules
 
 # Run the server
 RUN chmod +x scripts/start.sh

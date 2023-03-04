@@ -100,10 +100,19 @@ def install_pytorch():
                     "https://download.pytorch.org/whl/cu117",
                 ]
             )
+
+            logger.info("Installing xFormers")
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "xformers",
+                ]
+            )
     else:
-        if not is_installed("torch", version="==1.13.1") or not is_installed(
-            "torchvision"
-        ):
+        if not is_installed("torch") or not is_installed("torchvision"):
             logger.info("Installing PyTorch")
             subprocess.check_call(
                 [

@@ -165,7 +165,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
             )
-            images: list[Image.Image] = data[0]
+
+            images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
 

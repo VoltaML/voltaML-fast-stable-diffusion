@@ -22,6 +22,7 @@ from diffusers import StableDiffusionPipeline
 
 from api import websocket_manager
 from api.websockets import Data, Notification
+from core.config import config
 from core.files import get_full_model_path
 
 from ..src.compile_lib.compile_clip import compile_clip
@@ -74,6 +75,8 @@ def compile_diffusers(
             message=f"Compiling {local_dir} to AITemplate format",
         )
     )
+
+    os.environ["NUM_BUILDERS"] = str(config.inference.num_threads)
 
     # UNet
     websocket_manager.broadcast_sync(
@@ -193,8 +196,11 @@ def compile_diffusers(
                 if file != "test.so":
                     os.remove(os.path.join(root, file))
 
-        # Clean profiler
-        shutil.rmtree(os.path.join(dump_dir, "profiler"))
+        # Clean profiler (sometimes not present)
+        try:
+            shutil.rmtree(os.path.join(dump_dir, "profiler"))
+        except FileNotFoundError:
+            pass
 
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"cleanup": "finish"})
