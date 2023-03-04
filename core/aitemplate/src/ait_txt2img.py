@@ -336,7 +336,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             self.unet.in_channels,
             height // 8,
             width // 8,
-        )  # 4 is the number of channels (self.unet.in_channels)
+        )
         if latents is None:
             latents = torch.randn(  # type: ignore
                 latents_shape,  # type: ignore
@@ -416,7 +416,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                 ).prev_sample
 
             if callback is not None:
-                callback(i, t, noise_pred)
+                callback(i, t, latents)  # type: ignore
 
         # scale and decode the image latents with vae
         latents = 1 / 0.18215 * latents  # type: ignore
@@ -425,23 +425,28 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         image = (image / 2 + 0.5).clamp(0, 1)
         image = image.cpu().permute(0, 2, 3, 1).numpy()
 
-        # run safety checker
-        if self.safety_checker is not None:
-            safety_checker_input = self.feature_extractor(
-                self.numpy_to_pil(image), return_tensors="pt"
-            ).to(self.device)
-            image, has_nsfw_concept = self.safety_checker(
-                images=image, clip_input=safety_checker_input.pixel_values
-            )
-        else:
-            has_nsfw_concept = None
-
         if output_type == "pil":
             image = self.numpy_to_pil(image)
+
+            # run safety checker
+            if self.safety_checker is not None:
+                safety_checker_input = self.feature_extractor(
+                    self.numpy_to_pil(image), return_tensors="pt"
+                ).to(self.device)
+                image, has_nsfw_concept = self.safety_checker(
+                    images=image, clip_input=safety_checker_input.pixel_values
+                )
+            else:
+                has_nsfw_concept = None
+        elif output_type == "latent":
+            image = latents
+            has_nsfw_concept = None
+        else:
+            raise ValueError(f"Invalid output_type {output_type}")
 
         if not return_dict:
             return (image, has_nsfw_concept)
 
         return StableDiffusionPipelineOutput(
-            images=image, nsfw_content_detected=has_nsfw_concept
+            images=image, nsfw_content_detected=has_nsfw_concept  # type: ignore
         )

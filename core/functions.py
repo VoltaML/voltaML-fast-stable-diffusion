@@ -5,11 +5,11 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
+from api import websocket_manager
+from api.websockets.data import Data
 from diffusers.utils.pil_utils import PIL_INTERPOLATION
 from PIL import Image
 
-from api import websocket_manager
-from api.websockets.data import Data
 from core import shared
 from core.errors import InferenceInterruptedError
 from core.types import ImageMetadata

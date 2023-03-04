@@ -21,9 +21,7 @@ from core.types import Img2ImgQueueEntry, Job, Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 if TYPE_CHECKING:
-    from core.aitemplate.src.pipeline_stable_diffusion_ait import (
-        StableDiffusionAITPipeline,
-    )
+    from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -52,9 +50,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self.load()
 
     def load(self):
-        from core.aitemplate.src.pipeline_stable_diffusion_ait import (
-            StableDiffusionAITPipeline,
-        )
+        from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
         pipe = StableDiffusionAITPipeline.from_pretrained(
             get_full_model_path(self.model_id),
@@ -134,9 +130,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
         "Generates images from text"
 
-        from core.aitemplate.src.pipeline_stable_diffusion_ait import (
-            StableDiffusionAITPipeline,
-        )
+        from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
         with torch.autocast(self.device):  # type: ignore
             pipe = StableDiffusionAITPipeline(
@@ -177,7 +171,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     callback=txt2img_callback,
                     num_images_per_prompt=job.data.batch_size,
                 )
-                images: list[Image.Image] = data[0]
+                images: list[Image.Image] = data[0]  # type: ignore
 
                 total_images.extend(images)
 
@@ -198,9 +192,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generates images from images"
 
-        from core.aitemplate.src.pipeline_stable_diffusion_img2img_ait import (
-            StableDiffusionImg2ImgAITPipeline,
-        )
+        from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
 
         with torch.autocast(self.device):  # type: ignore
             pipe = StableDiffusionImg2ImgAITPipeline(

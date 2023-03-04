@@ -19,9 +19,7 @@ import torch
 from aitemplate.testing.benchmark_pt import benchmark_torch_function
 from PIL import Image
 
-from ..src.pipeline_stable_diffusion_img2img_ait import (
-    StableDiffusionImg2ImgAITPipeline,
-)
+from ..src.ait_img2img import StableDiffusionImg2ImgAITPipeline
 
 
 def run(

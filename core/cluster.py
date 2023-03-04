@@ -151,6 +151,17 @@ class Cluster:
 
             return ([], 0.0)
 
+        except Exception as e:  # pylint: disable=broad-except
+            await websocket_manager.broadcast(
+                Notification(
+                    "error",
+                    "Inference error",
+                    f"An error occurred during inference: {type(e).__name__}, please check the terminal for more details",
+                )
+            )
+
+            raise e
+
     async def convert_from_checkpoint(self, checkpoint_path: str, is_sd2: bool):
         "Convert a checkpoint to a proper model structure that can be loaded"
 

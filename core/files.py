@@ -98,9 +98,11 @@ class CachedModelList:
 
         for model in os.listdir(self.aitemplate_path):
             logger.debug(f"Found model {model}")
+            model_name = model.replace("--", "/")
+
             models.append(
                 {
-                    "name": model.replace("--", "/"),
+                    "name": model_name,
                     "path": model,
                     "backend": "AITemplate",
                     "valid": is_valid_aitemplate_model(
@@ -241,7 +243,8 @@ def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
 def get_full_model_path(repo_id: str, revision: str = "main") -> Path:
     "Return the path to the actual model"
 
-    repo_id = repo_id.replace("--", "/")
+    # Replace -- with / and remove the [dim] part
+    repo_id = repo_id.replace("--", "/").split("[")[0]
     repo_path = Path(repo_id)
 
     # 1. Check for the exact path

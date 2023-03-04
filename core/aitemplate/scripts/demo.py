@@ -17,7 +17,7 @@ import torch
 from aitemplate.testing.benchmark_pt import benchmark_torch_function
 from diffusers import EulerDiscreteScheduler
 
-from ..src.pipeline_stable_diffusion_ait import StableDiffusionAITPipeline
+from ..src.ait_txt2img import StableDiffusionAITPipeline
 
 
 def run(
