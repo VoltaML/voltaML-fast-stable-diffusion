@@ -358,6 +358,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
+
 const _withScopeId$1 = (n) => (pushScopeId("data-v-a1e97e18"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
@@ -718,6 +719,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
+
 const Img2Img_vue_vue_type_style_index_0_scoped_a1e97e18_lang = "";
 const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-a1e97e18"]]);
 const _withScopeId = (n) => (pushScopeId("data-v-ba9c9a75"), n = n(), popScopeId(), n);
@@ -1255,6 +1257,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
+
 const Inpainting_vue_vue_type_style_index_0_scoped_ba9c9a75_lang = "";
 const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-ba9c9a75"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
