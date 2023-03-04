@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Optional
 
 import torch
-from diffusers import UNet2DConditionModel
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
 
 if TYPE_CHECKING:
     from core.types import PyTorchModelType

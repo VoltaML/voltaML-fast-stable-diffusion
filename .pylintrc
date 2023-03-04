@@ -1,6 +1,8 @@
 [MASTER]
 init-hook="import sys; sys.path.insert(0, '.')"
-ignore=code/diffusers
+ignore=
+    code/submodules,
+    typings
 disable=
     C0114, # Missing module docstring
     W1203, # Use lazy % formatting in logging functions

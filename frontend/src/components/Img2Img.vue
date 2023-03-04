@@ -319,9 +319,9 @@ const generate = () => {
         batch_size: conf.data.settings.img2img.batchSize,
         batch_count: conf.data.settings.img2img.batchCount,
         strength: conf.data.settings.img2img.denoisingStrength,
+        scheduler: conf.data.settings.img2img.sampler,
       },
       model: conf.data.settings.model,
-      scheduler: conf.data.settings.img2img.sampler,
     }),
   })
     .then((res) => {

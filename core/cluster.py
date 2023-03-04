@@ -1,5 +1,5 @@
 import logging
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from PIL import Image
@@ -11,8 +11,11 @@ from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.gpu import GPU
 from core.inference.functions import download_model
 from core.types import (
+    AITemplateBuildRequest,
+    BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
+    InferenceBackend,
     InpaintQueueEntry,
     Txt2ImgQueueEntry,
 )
@@ -43,7 +46,7 @@ class Cluster:
     async def load_model(
         self,
         model: str,
-        backend: Literal["PyTorch", "TensorRT"],
+        backend: InferenceBackend,
         preferred_gpu: Optional[int] = None,
     ):
         "Load a model onto the cluster. Chooses the least loaded GPU by default."
@@ -148,19 +151,45 @@ class Cluster:
 
             return ([], 0.0)
 
+        except Exception as e:  # pylint: disable=broad-except
+            await websocket_manager.broadcast(
+                Notification(
+                    "error",
+                    "Inference error",
+                    f"An error occurred during inference: {type(e).__name__}, please check the terminal for more details",
+                )
+            )
+
+            raise e
+
     async def convert_from_checkpoint(self, checkpoint_path: str, is_sd2: bool):
         "Convert a checkpoint to a proper model structure that can be loaded"
 
-        best_gpu: GPU = self.gpus[0]
-        for gpu in self.gpus:
-            if best_gpu is None:
-                best_gpu = gpu
-                continue
-
-            if len(best_gpu.queue.jobs) > len(gpu.queue.jobs):
-                best_gpu = gpu
+        best_gpu: GPU = await self.least_loaded_gpu()
 
         await best_gpu.convert_from_checkpoint(checkpoint_path, is_sd2=is_sd2)
+
+    async def build_engine(self, req: BuildRequest):
+        "Build a TensorRT engine"
+
+        best_gpu: GPU = await self.least_loaded_gpu()
+
+        logger.debug(f"Building engine for {req.model_id} on GPU {best_gpu.gpu_id}...")
+        await best_gpu.build_trt_engine(req)
+        logger.debug(f"Engine built for {req.model_id} on GPU {best_gpu.gpu_id}.")
+
+    async def build_aitemplate(self, request: AITemplateBuildRequest):
+        "Build an AI Template"
+
+        best_gpu: GPU = await self.least_loaded_gpu()
+
+        logger.debug(
+            f"Building AI Template for {request.model_id} on GPU {best_gpu.gpu_id}..."
+        )
+        await best_gpu.build_aitemplate_engine(request)
+        logger.debug(
+            f"AI Template built for {request.model_id} on GPU {best_gpu.gpu_id}."
+        )
 
     async def unload(self, model: str, gpu_id: int):
         "Unload a model from a GPU"
@@ -168,17 +197,8 @@ class Cluster:
         gpu: GPU = [i for i in self.gpus if i.gpu_id == gpu_id][0]
         await gpu.unload(model)
 
-    async def accelerate(self, model: str):
-        "Accelerate a model on a GPU"
+    async def to_fp16(self, model: str):
+        "Convert a model to FP16"
 
-        # Pick a totaly unoccupied GPU
-        unused_gpus: List[GPU] = [i for i in self.gpus if len(i.queue.jobs) == 0]
-
-        if len(unused_gpus) == 0:
-            raise ValueError("No unused GPUs")
-
-        unused_gpus = sorted(unused_gpus, key=lambda x: x.vram_free(), reverse=True)
-        gpu = unused_gpus[0]
-
-        logger.debug(f"Accelerating {model} on GPU {gpu.gpu_id}...")
-        await gpu.accelerate(model)
+        gpu: GPU = await self.least_loaded_gpu()
+        await gpu.to_fp16(model)

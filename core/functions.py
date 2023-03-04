@@ -5,11 +5,11 @@ from typing import List, Tuple
 
 import numpy as np
 import torch
-from diffusers.utils import PIL_INTERPOLATION
-from PIL import Image
-
 from api import websocket_manager
 from api.websockets.data import Data
+from diffusers.utils.pil_utils import PIL_INTERPOLATION
+from PIL import Image
+
 from core import shared
 from core.errors import InferenceInterruptedError
 from core.types import ImageMetadata
@@ -35,11 +35,11 @@ def cheap_approximation(sample: torch.Tensor):
                 [-0.184, -0.271, -0.473],
             ]
         )
-        .to(torch.float16)
-        .to(sample.device)
+        .to(torch.float32)
+        .to("cpu")
     )
 
-    cast_sample = sample.to(torch.float16).to(sample.device)
+    cast_sample = sample.to(torch.float32).to("cpu")
 
     x_sample = torch.einsum("lxy,lr -> rxy", cast_sample, coefs)
 

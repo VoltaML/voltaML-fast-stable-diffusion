@@ -1,5 +1,5 @@
 <template>
-  <NConfigProvider :theme="darkTheme">
+  <NConfigProvider :theme="darkTheme" :theme-overrides="overrides">
     <NNotificationProvider placement="bottom-right">
       <NMessageProvider>
         <CollapsileNavbarVue />
@@ -31,6 +31,7 @@ import {
   NMessageProvider,
   NNotificationProvider,
   darkTheme,
+  type GlobalThemeOverrides,
 } from "naive-ui";
 import CollapsileNavbarVue from "./components/CollapsileNavbar.vue";
 import TopBarVue from "./components/TopBar.vue";
@@ -38,4 +39,11 @@ import routerContainerVue from "./router/router-container.vue";
 import { useState } from "./store/state";
 
 const glob = useState();
+
+const overrides: GlobalThemeOverrides = {
+  common: {
+    fontSize: "14",
+    fontWeight: "600",
+  },
+};
 </script>

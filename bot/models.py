@@ -5,7 +5,7 @@ from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
-from core.types import SupportedModel
+from core.types import InferenceBackend, SupportedModel
 
 if TYPE_CHECKING:
     from bot.bot import ModularBot
@@ -65,7 +65,7 @@ class Models(Cog):
         ctx: Context,
         model: SupportedModel,
         device: str = "cuda",
-        backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
+        backend: InferenceBackend = "PyTorch",
     ) -> None:
         "Load a model"
 
@@ -91,7 +91,7 @@ class Models(Cog):
         ctx: Context,
         model: str,
         device: str = "cuda",
-        backend: Literal["PyTorch", "TensorRT"] = "PyTorch",
+        backend: InferenceBackend = "PyTorch",
     ) -> None:
         "Load a model"
 

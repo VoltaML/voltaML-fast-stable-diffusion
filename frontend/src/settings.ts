@@ -15,7 +15,7 @@ export enum Sampler {
 
 export interface SettingsInterface {
   $schema: string;
-  backend: "PyTorch" | "TensorRT";
+  backend: "PyTorch" | "TensorRT" | "AITemplate";
   model: string;
   txt2img: {
     width: number;

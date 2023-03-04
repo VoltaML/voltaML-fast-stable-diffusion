@@ -38,8 +38,8 @@ import onnx
 from api import websocket_manager
 from api.websockets import Data, Notification
 from core.schedulers import change_scheduler
-from core.trt.models import CLIP, VAE, UNet
-from core.trt.utilities import TRT_LOGGER, Engine, save_image
+from core.tensorrt.models import CLIP, VAE, UNet
+from core.tensorrt.utilities import TRT_LOGGER, Engine, save_image
 from core.types import Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid
 
@@ -348,6 +348,16 @@ class TRTModel:
                 onnx.load(onnx_path), minimal_optimization=minimal_optimization
             )
             onnx.save(onnx_opt_graph, onnx_opt_path)
+
+            print(
+                obj.get_input_profile(
+                    opt_batch_size,
+                    opt_image_height,
+                    opt_image_width,
+                    static_batch=static_batch,
+                    static_shape=static_shape,
+                )
+            )
 
             # Build engine
             engine.build(

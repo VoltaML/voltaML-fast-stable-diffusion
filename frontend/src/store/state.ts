@@ -1,11 +1,18 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
 import type { imgData, imgMetadata } from "../core/interfaces";
+type StepProgress = "error" | "process" | "wait" | "finish";
 
 export interface StateInterface {
   progress: number;
   generating: boolean;
   downloading: boolean;
+  aitBuildStep: {
+    unet: StepProgress;
+    clip: StepProgress;
+    vae: StepProgress;
+    cleanup: StepProgress;
+  };
   txt2img: {
     currentImage: string;
     images: string[];
@@ -36,6 +43,12 @@ export const useState = defineStore("state", () => {
     progress: 0,
     generating: false,
     downloading: false,
+    aitBuildStep: {
+      unet: "wait",
+      clip: "wait",
+      vae: "wait",
+      cleanup: "wait",
+    },
     txt2img: {
       images: [],
       currentImage: "",

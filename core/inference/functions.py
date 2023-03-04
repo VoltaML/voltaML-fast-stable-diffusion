@@ -5,15 +5,15 @@ from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
-from diffusers.utils import (
+from diffusers.utils.constants import (
     CONFIG_NAME,
     DIFFUSERS_CACHE,
-    HF_HUB_OFFLINE,
     HUGGINGFACE_CO_RESOLVE_ENDPOINT,
     ONNX_WEIGHTS_NAME,
     WEIGHTS_NAME,
-    is_safetensors_available,
 )
+from diffusers.utils.hub_utils import HF_HUB_OFFLINE
+from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download

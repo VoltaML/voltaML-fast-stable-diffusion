@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Optional, Union
+from typing import Any, Literal, Union
 from uuid import uuid4
 
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
@@ -8,9 +8,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 )
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_depth2img import (
     StableDiffusionDepth2ImgPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_image_variation import (
-    StableDiffusionImageVariationPipeline,
 )
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
     StableDiffusionImg2ImgPipeline,
@@ -24,7 +21,19 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_instruct_pix
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale import (
     StableDiffusionUpscalePipeline,
 )
-from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
+
+InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate"]
+
+
+@dataclass
+class Job:
+    "Base class for all jobs"
+
+    data: Any
+    model: str
+    websocket_id: Union[str, None] = field(default=None)
+    save_image: bool = field(default=True)
 
 
 @dataclass
@@ -61,6 +70,7 @@ class Txt2imgData:
     "Dataclass for the data of a txt2img request"
 
     prompt: str
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -78,6 +88,7 @@ class Img2imgData:
 
     prompt: str
     image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -97,6 +108,7 @@ class InpaintData:
     prompt: str
     image: Union[bytes, str]
     mask_image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -113,6 +125,7 @@ class ImageVariationsData:
     "Dataclass for the data of an img2img request"
 
     image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
     id: str = field(default_factory=lambda: uuid4().hex)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
@@ -122,55 +135,70 @@ class ImageVariationsData:
 
 
 @dataclass
-class Txt2ImgQueueEntry:
+class Txt2ImgQueueEntry(Job):
     "Dataclass for a text to image queue entry"
 
     data: Txt2imgData
-    model: str
-    scheduler: Optional[KarrasDiffusionSchedulers] = None
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
 
 
 @dataclass
-class Img2ImgQueueEntry:
+class Img2ImgQueueEntry(Job):
     "Dataclass for an image to image queue entry"
 
     data: Img2imgData
-    model: str
-    scheduler: KarrasDiffusionSchedulers
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
 
 
 @dataclass
-class InpaintQueueEntry:
+class InpaintQueueEntry(Job):
     "Dataclass for an image to image queue entry"
 
     data: InpaintData
-    model: str
-    scheduler: KarrasDiffusionSchedulers
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
 
 
 @dataclass
-class ImageVariationsQueueEntry:
+class ImageVariationsQueueEntry(Job):
     "Dataclass for an image to image queue entry"
 
     data: ImageVariationsData
-    model: str
-    scheduler: KarrasDiffusionSchedulers
-    websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
+
+
+@dataclass
+class BuildRequest:
+    "Dataclass for requesting a build of an engine"
+
+    model_id: str
+    subfolder: str = ""
+    hf_token: str = ""
+    fp16: bool = True
+    verbose: bool = True
+    opt_image_height: int = 512
+    opt_image_width: int = 512
+    max_batch_size: int = 1
+    onnx_opset: int = 16
+    build_static_batch: bool = False
+    build_dynamic_shape: bool = True
+    build_preview_features: bool = False
+    force_engine_build: bool = False
+    force_onnx_export: bool = False
+    force_onnx_optimize: bool = False
+    onnx_minimal_optimization: bool = False
 
 
 PyTorchModelType = Union[
     StableDiffusionDepth2ImgPipeline,
-    StableDiffusionImageVariationPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
     StableDiffusionInstructPix2PixPipeline,
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 ]
+
+
+@dataclass
+class AITemplateBuildRequest:
+    "Dataclass for requesting a build of an engine"
+
+    model_id: str
+    width: int = field(default=512)
+    height: int = field(default=512)
+    batch_size: int = field(default=1)

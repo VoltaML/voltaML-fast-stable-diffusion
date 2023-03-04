@@ -126,5 +126,3 @@ if __name__ == "__main__":
         from_safetensors=args.from_safetensors,
     )
     pipe.save_pretrained(args.dump_path, safe_serialization=args.to_safetensors)
-
-# python core/convert/convert.py --dump_path /c/Users/Admin/.cache/huggingface/diffusers/models--test-test --checkpoint_path /c/Users/Admin/AI/stable-diffusion-webui/models/Stable-diffusion/aihMegamerge_anythingInkpunk.safetensors --from_safetensors --original_config_file v1-inference.yaml --extract_ema

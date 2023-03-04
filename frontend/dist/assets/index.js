@@ -147,8 +147,8 @@ const remove = (arr, el) => {
     arr.splice(i, 1);
   }
 };
-const hasOwnProperty$c = Object.prototype.hasOwnProperty;
-const hasOwn = (val, key) => hasOwnProperty$c.call(val, key);
+const hasOwnProperty$d = Object.prototype.hasOwnProperty;
+const hasOwn = (val, key) => hasOwnProperty$d.call(val, key);
 const isArray$3 = Array.isArray;
 const isMap = (val) => toTypeString(val) === "[object Map]";
 const isSet = (val) => toTypeString(val) === "[object Set]";
@@ -198,8 +198,12 @@ const def = (obj, key, value) => {
     value
   });
 };
-const toNumber = (val) => {
+const looseToNumber = (val) => {
   const n = parseFloat(val);
+  return isNaN(n) ? val : n;
+};
+const toNumber = (val) => {
+  const n = isString$1(val) ? Number(val) : NaN;
   return isNaN(n) ? val : n;
 };
 let _globalThis;
@@ -210,7 +214,7 @@ let activeEffectScope;
 class EffectScope {
   constructor(detached = false) {
     this.detached = detached;
-    this.active = true;
+    this._active = true;
     this.effects = [];
     this.cleanups = [];
     this.parent = activeEffectScope;
@@ -218,8 +222,11 @@ class EffectScope {
       this.index = (activeEffectScope.scopes || (activeEffectScope.scopes = [])).push(this) - 1;
     }
   }
+  get active() {
+    return this._active;
+  }
   run(fn) {
-    if (this.active) {
+    if (this._active) {
       const currentEffectScope = activeEffectScope;
       try {
         activeEffectScope = this;
@@ -244,7 +251,7 @@ class EffectScope {
     activeEffectScope = this.parent;
   }
   stop(fromParent) {
-    if (this.active) {
+    if (this._active) {
       let i, l;
       for (i = 0, l = this.effects.length; i < l; i++) {
         this.effects[i].stop();
@@ -265,7 +272,7 @@ class EffectScope {
         }
       }
       this.parent = void 0;
-      this.active = false;
+      this._active = false;
     }
   }
 }
@@ -437,7 +444,7 @@ function trigger$1(target, type, key, newValue, oldValue, oldTarget) {
   if (type === "clear") {
     deps = [...depsMap.values()];
   } else if (key === "length" && isArray$3(target)) {
-    const newLength = toNumber(newValue);
+    const newLength = Number(newValue);
     depsMap.forEach((dep, key2) => {
       if (key2 === "length" || key2 >= newLength) {
         deps.push(dep);
@@ -513,6 +520,10 @@ function triggerEffect(effect, debuggerEventExtraInfo) {
     }
   }
 }
+function getDepFromReactive(object, key) {
+  var _a2;
+  return (_a2 = targetMap.get(object)) === null || _a2 === void 0 ? void 0 : _a2.get(key);
+}
 const isNonTrackableKeys = /* @__PURE__ */ makeMap(`__proto__,__v_isRef,__isVue`);
 const builtInSymbols = new Set(
   /* @__PURE__ */ Object.getOwnPropertyNames(Symbol).filter((key) => key !== "arguments" && key !== "caller").map((key) => Symbol[key]).filter(isSymbol$1)
@@ -547,6 +558,11 @@ function createArrayInstrumentations() {
   });
   return instrumentations;
 }
+function hasOwnProperty$c(key) {
+  const obj = toRaw(this);
+  track(obj, "has", key);
+  return obj.hasOwnProperty(key);
+}
 function createGetter(isReadonly2 = false, shallow = false) {
   return function get2(target, key, receiver) {
     if (key === "__v_isReactive") {
@@ -559,8 +575,13 @@ function createGetter(isReadonly2 = false, shallow = false) {
       return target;
     }
     const targetIsArray = isArray$3(target);
-    if (!isReadonly2 && targetIsArray && hasOwn(arrayInstrumentations, key)) {
-      return Reflect.get(arrayInstrumentations, key, receiver);
+    if (!isReadonly2) {
+      if (targetIsArray && hasOwn(arrayInstrumentations, key)) {
+        return Reflect.get(arrayInstrumentations, key, receiver);
+      }
+      if (key === "hasOwnProperty") {
+        return hasOwnProperty$c;
+      }
     }
     const res = Reflect.get(target, key, receiver);
     if (isSymbol$1(key) ? builtInSymbols.has(key) : isNonTrackableKeys(key)) {
@@ -581,7 +602,7 @@ function createGetter(isReadonly2 = false, shallow = false) {
     return res;
   };
 }
-const set = /* @__PURE__ */ createSetter();
+const set$1 = /* @__PURE__ */ createSetter();
 const shallowSet = /* @__PURE__ */ createSetter(true);
 function createSetter(shallow = false) {
   return function set2(target, key, value, receiver) {
@@ -620,7 +641,7 @@ function deleteProperty(target, key) {
   }
   return result;
 }
-function has(target, key) {
+function has$1(target, key) {
   const result = Reflect.has(target, key);
   if (!isSymbol$1(key) || !builtInSymbols.has(key)) {
     track(target, "has", key);
@@ -633,9 +654,9 @@ function ownKeys(target) {
 }
 const mutableHandlers = {
   get: get$1,
-  set,
+  set: set$1,
   deleteProperty,
-  has,
+  has: has$1,
   ownKeys
 };
 const readonlyHandlers = {
@@ -653,7 +674,7 @@ const shallowReactiveHandlers = /* @__PURE__ */ extend({}, mutableHandlers, {
 });
 const toShallow = (value) => value;
 const getProto = (v) => Reflect.getPrototypeOf(v);
-function get$1$1(target, key, isReadonly2 = false, isShallow2 = false) {
+function get$2(target, key, isReadonly2 = false, isShallow2 = false) {
   target = target[
     "__v_raw"
     /* ReactiveFlags.RAW */
@@ -676,7 +697,7 @@ function get$1$1(target, key, isReadonly2 = false, isShallow2 = false) {
     target.get(key);
   }
 }
-function has$1(key, isReadonly2 = false) {
+function has(key, isReadonly2 = false) {
   const target = this[
     "__v_raw"
     /* ReactiveFlags.RAW */
@@ -710,7 +731,7 @@ function add(value) {
   }
   return this;
 }
-function set$1(key, value) {
+function set(key, value) {
   value = toRaw(value);
   const target = toRaw(this);
   const { has: has2, get: get2 } = getProto(target);
@@ -804,41 +825,41 @@ function createReadonlyMethod(type) {
 function createInstrumentations() {
   const mutableInstrumentations2 = {
     get(key) {
-      return get$1$1(this, key);
+      return get$2(this, key);
     },
     get size() {
       return size$1(this);
     },
-    has: has$1,
+    has,
     add,
-    set: set$1,
+    set,
     delete: deleteEntry,
     clear,
     forEach: createForEach(false, false)
   };
   const shallowInstrumentations2 = {
     get(key) {
-      return get$1$1(this, key, false, true);
+      return get$2(this, key, false, true);
     },
     get size() {
       return size$1(this);
     },
-    has: has$1,
+    has,
     add,
-    set: set$1,
+    set,
     delete: deleteEntry,
     clear,
     forEach: createForEach(false, true)
   };
   const readonlyInstrumentations2 = {
     get(key) {
-      return get$1$1(this, key, true);
+      return get$2(this, key, true);
     },
     get size() {
       return size$1(this, true);
     },
     has(key) {
-      return has$1.call(this, key, true);
+      return has.call(this, key, true);
     },
     add: createReadonlyMethod(
       "add"
@@ -860,13 +881,13 @@ function createInstrumentations() {
   };
   const shallowReadonlyInstrumentations2 = {
     get(key) {
-      return get$1$1(this, key, true, true);
+      return get$2(this, key, true, true);
     },
     get size() {
       return size$1(this, true);
     },
     has(key) {
-      return has$1.call(this, key, true);
+      return has.call(this, key, true);
     },
     add: createReadonlyMethod(
       "add"
@@ -1034,9 +1055,10 @@ function trackRefValue(ref2) {
 }
 function triggerRefValue(ref2, newVal) {
   ref2 = toRaw(ref2);
-  if (ref2.dep) {
+  const dep = ref2.dep;
+  if (dep) {
     {
-      triggerEffects(ref2.dep);
+      triggerEffects(dep);
     }
   }
 }
@@ -1115,6 +1137,9 @@ class ObjectRefImpl {
   }
   set value(newVal) {
     this._object[this._key] = newVal;
+  }
+  get dep() {
+    return getDepFromReactive(toRaw(this._object), this._key);
   }
 }
 function toRef(object, key, defaultValue) {
@@ -1351,7 +1376,7 @@ function flushJobs(seen2) {
     }
   }
 }
-function emit$1(instance, event, ...rawArgs) {
+function emit(instance, event, ...rawArgs) {
   if (instance.isUnmounted)
     return;
   const props = instance.vnode.props || EMPTY_OBJ;
@@ -1365,7 +1390,7 @@ function emit$1(instance, event, ...rawArgs) {
       args = rawArgs.map((a) => isString$1(a) ? a.trim() : a);
     }
     if (number) {
-      args = rawArgs.map(toNumber);
+      args = rawArgs.map(looseToNumber);
     }
   }
   let handlerName;
@@ -1482,7 +1507,7 @@ function withCtx(fn, ctx2 = currentRenderingInstance, isNonScopedSlot) {
 function markAttrsAccessed() {
 }
 function renderComponentRoot(instance) {
-  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit, render: render12, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
+  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit: emit2, render: render12, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
   let result;
   let fallthroughAttrs;
   const prev = setCurrentRenderingInstance(instance);
@@ -1501,8 +1526,8 @@ function renderComponentRoot(instance) {
           return attrs;
         },
         slots,
-        emit
-      } : { attrs, slots, emit }) : render13(
+        emit: emit2
+      } : { attrs, slots, emit: emit2 }) : render13(
         props,
         null
         /* we know it doesn't need it */
@@ -1670,7 +1695,7 @@ function watch(source, cb, options) {
   return doWatch(source, cb, options);
 }
 function doWatch(source, cb, { immediate, deep, flush, onTrack, onTrigger } = EMPTY_OBJ) {
-  const instance = currentInstance;
+  const instance = getCurrentScope() === (currentInstance === null || currentInstance === void 0 ? void 0 : currentInstance.scope) ? currentInstance : null;
   let getter;
   let forceTrigger = false;
   let isMultiSource = false;
@@ -3120,8 +3145,8 @@ function validatePropName(key) {
   return false;
 }
 function getType(ctor) {
-  const match2 = ctor && ctor.toString().match(/^\s*function (\w+)/);
-  return match2 ? match2[1] : ctor === null ? "null" : "";
+  const match2 = ctor && ctor.toString().match(/^\s*(function|class) (\w+)/);
+  return match2 ? match2[2] : ctor === null ? "null" : "";
 }
 function isSameType(a, b) {
   return getType(a) === getType(b);
@@ -3236,7 +3261,7 @@ function createAppContext() {
     emitsCache: /* @__PURE__ */ new WeakMap()
   };
 }
-let uid = 0;
+let uid$1 = 0;
 function createAppAPI(render12, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
@@ -3249,7 +3274,7 @@ function createAppAPI(render12, hydrate) {
     const installedPlugins = /* @__PURE__ */ new Set();
     let isMounted2 = false;
     const app2 = context.app = {
-      _uid: uid++,
+      _uid: uid$1++,
       _component: rootComponent,
       _props: rootProps,
       _container: null,
@@ -3509,6 +3534,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     if (dirs) {
       invokeDirectiveHook(vnode, null, parentComponent, "created");
     }
+    setScopeId(el, vnode, vnode.scopeId, slotScopeIds, parentComponent);
     if (props) {
       for (const key in props) {
         if (key !== "value" && !isReservedProp(key)) {
@@ -3522,7 +3548,6 @@ function baseCreateRenderer(options, createHydrationFns) {
         invokeVNodeHook(vnodeHook, parentComponent, vnode);
       }
     }
-    setScopeId(el, vnode, vnode.scopeId, slotScopeIds, parentComponent);
     if (dirs) {
       invokeDirectiveHook(vnode, null, parentComponent, "beforeMount");
     }
@@ -4677,7 +4702,8 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
     ssFallback: vnode.ssFallback && cloneVNode(vnode.ssFallback),
     el: vnode.el,
     anchor: vnode.anchor,
-    ctx: vnode.ctx
+    ctx: vnode.ctx,
+    ce: vnode.ce
   };
   return cloned;
 }
@@ -4782,12 +4808,12 @@ function invokeVNodeHook(hook, instance, vnode, prevVNode = null) {
   ]);
 }
 const emptyAppContext = createAppContext();
-let uid$1 = 0;
+let uid = 0;
 function createComponentInstance(vnode, parent, suspense) {
   const type = vnode.type;
   const appContext = (parent ? parent.appContext : vnode.appContext) || emptyAppContext;
   const instance = {
-    uid: uid$1++,
+    uid: uid++,
     vnode,
     type,
     parent,
@@ -4860,7 +4886,7 @@ function createComponentInstance(vnode, parent, suspense) {
     instance.ctx = { _: instance };
   }
   instance.root = parent ? parent.root : instance;
-  instance.emit = emit$1.bind(null, instance);
+  instance.emit = emit.bind(null, instance);
   if (vnode.ce) {
     vnode.ce(instance);
   }
@@ -5040,7 +5066,7 @@ const useSSRContext = () => {
     return ctx2;
   }
 };
-const version = "3.2.45";
+const version = "3.2.47";
 const svgNS = "http://www.w3.org/2000/svg";
 const doc = typeof document !== "undefined" ? document : null;
 const templateContainer = doc && /* @__PURE__ */ doc.createElement("template");
@@ -5124,15 +5150,15 @@ function patchStyle(el, prev, next) {
   const style2 = el.style;
   const isCssString = isString$1(next);
   if (next && !isCssString) {
-    for (const key in next) {
-      setStyle(style2, key, next[key]);
-    }
     if (prev && !isString$1(prev)) {
       for (const key in prev) {
         if (next[key] == null) {
           setStyle(style2, key, "");
         }
       }
+    }
+    for (const key in next) {
+      setStyle(style2, key, next[key]);
     }
   } else {
     const currentDisplay = style2.display;
@@ -5658,6 +5684,8 @@ const TransitionGroupImpl = {
     };
   }
 };
+const removeMode = (props) => delete props.mode;
+/* @__PURE__ */ removeMode(TransitionGroupImpl.props);
 const TransitionGroup = TransitionGroupImpl;
 function callPendingCbs(c2) {
   const el = c2.el;
@@ -5771,7 +5799,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.29
+  * pinia v2.0.30
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -34501,13 +34529,14 @@ function useIntervalFn(cb, interval = 1e3, options = {}) {
     clean();
   }
   function resume() {
-    if (unref(interval) <= 0)
+    const intervalValue = resolveUnref(interval);
+    if (intervalValue <= 0)
       return;
     isActive.value = true;
     if (immediateCallback)
       cb();
     clean();
-    timer = setInterval(cb, resolveUnref(interval));
+    timer = setInterval(cb, intervalValue);
   }
   if (immediate && isClient)
     resume();
@@ -34687,7 +34716,7 @@ function useWebSocket(url, options = {}) {
     return true;
   };
   const _init = () => {
-    if (explicitlyClosed)
+    if (explicitlyClosed || typeof urlRef.value === "undefined")
       return;
     const ws = new WebSocket(urlRef.value, protocols);
     wsRef.value = ws;
@@ -35201,8 +35230,17 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     const glob = useState();
+    const overrides = {
+      common: {
+        fontSize: "16",
+        fontWeight: "600"
+      }
+    };
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NConfigProvider), { theme: unref(darkTheme) }, {
+      return openBlock(), createBlock(unref(NConfigProvider), {
+        theme: unref(darkTheme),
+        "theme-overrides": overrides
+      }, {
         default: withCtx(() => [
           createVNode(unref(NNotificationProvider), { placement: "bottom-right" }, {
             default: withCtx(() => [
@@ -35524,10 +35562,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             guidance_scale: conf.data.settings.txt2img.cfgScale,
             seed: checkSeed(conf.data.settings.txt2img.seed),
             batch_size: conf.data.settings.txt2img.batchSize,
-            batch_count: conf.data.settings.txt2img.batchCount
+            batch_count: conf.data.settings.txt2img.batchCount,
+            scheduler: conf.data.settings.txt2img.sampler
           },
           model: conf.data.settings.model,
-          scheduler: conf.data.settings.txt2img.sampler,
           backend: "PyTorch",
           autoload: false
         })

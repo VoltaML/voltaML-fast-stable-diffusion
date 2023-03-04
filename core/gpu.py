@@ -2,10 +2,9 @@ import logging
 import os
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import torch
-from diffusers.schedulers import KarrasDiffusionSchedulers
 from PIL import Image
 
 from api import websocket_manager
@@ -13,19 +12,25 @@ from api.websockets.notification import Notification
 from core import shared
 from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import DimensionError
+from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
+    AITemplateBuildRequest,
+    BuildRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
+    InferenceBackend,
     InpaintQueueEntry,
+    Job,
     Txt2ImgQueueEntry,
 )
 from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
-    from core.inference.volta_accelerate import TRTModel
+    from core.tensorrt.volta_accelerate import TRTModel
+
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +41,9 @@ class GPU:
     def __init__(self, torch_gpu_id: int) -> None:
         self.gpu_id = torch_gpu_id
         self.queue: Queue = Queue()
-        self.loaded_models: Dict[str, Union["TRTModel", PyTorchStableDiffusion]] = {}
+        self.loaded_models: Dict[
+            str, Union["TRTModel", PyTorchStableDiffusion, "AITemplateStableDiffusion"]
+        ] = {}
 
     @property
     def cuda_id(self) -> str:
@@ -65,25 +72,67 @@ class GPU:
     ):
         "Generate images from the queue"
 
-        logging.info(f"Adding job {job.data.id} to queue")
+        def generate_thread_call(job: Job) -> List[Image.Image]:
+            model: Union[
+                "TRTModel", PyTorchStableDiffusion, AITemplateStableDiffusion
+            ] = self.loaded_models[job.model]
 
+            shared.current_steps = job.data.steps * job.data.batch_count
+            shared.current_done_steps = 0
+
+            if isinstance(model, PyTorchStableDiffusion):
+                logger.debug("Generating with PyTorch")
+                images: List[Image.Image] = model.generate(job)
+                self.memory_cleanup()
+                return images
+            elif isinstance(model, AITemplateStableDiffusion):
+                logger.debug("Generating with AITemplate")
+                images: List[Image.Image] = model.generate(job)
+                self.memory_cleanup()
+                return images
+            else:
+                logger.debug("Generating with TensorRT")
+                images: List[Image.Image]
+
+                _, images = model.infer(
+                    [job.data.prompt],
+                    [job.data.negative_prompt],
+                    job.data.height,
+                    job.data.width,
+                    guidance_scale=job.data.guidance_scale,
+                    verbose=False,
+                    seed=job.data.seed,
+                    output_dir="output",
+                    num_of_infer_steps=job.data.steps,
+                    scheduler=job.data.scheduler,
+                )
+                self.memory_cleanup()
+                return images
+
+        # Check width and height passed by the user
         if not isinstance(job, ImageVariationsQueueEntry):
             if job.data.width % 8 != 0 or job.data.height % 8 != 0:
                 raise DimensionError("Width and height must be divisible by 8")
 
+        # Wait for turn
         await self.queue.wait_for_turn(job.data.id)
 
         start_time = time.time()
 
         try:
-            if isinstance(job, Txt2ImgQueueEntry):
-                images = await self.txt2img(job)
-            elif isinstance(job, Img2ImgQueueEntry):
-                images = await self.img2img(job)
-            elif isinstance(job, InpaintQueueEntry):
-                images = await self.inpaint(job)
-            elif isinstance(job, ImageVariationsQueueEntry):
-                images = await self.image_variations(job)
+            images: Optional[List[Image.Image]]
+            error: Optional[Exception]
+            images, error = await run_in_thread_async(
+                func=generate_thread_call, args=(job,)
+            )
+
+            if error is not None:
+                raise error
+
+            assert images is not None
+
+            if job.save_image:
+                save_images(images, job)
         except Exception as err:  # pylint: disable=broad-except
             self.queue.mark_finished()
             raise err
@@ -97,7 +146,7 @@ class GPU:
     async def load_model(
         self,
         model: str,
-        backend: Literal["PyTorch", "TensorRT"],
+        backend: InferenceBackend,
     ):
         "Load a model into memory"
 
@@ -105,7 +154,7 @@ class GPU:
 
         def thread_call(
             model: str,
-            backend: Literal["PyTorch", "TensorRT"],
+            backend: InferenceBackend,
         ):
             if model in [self.loaded_models]:
                 logger.debug(f"{model} is already loaded")
@@ -118,6 +167,8 @@ class GPU:
                 )
                 return
 
+            start_time = time.time()
+
             if backend == "TensorRT":
                 logger.debug("Selecting TensorRT")
 
@@ -129,7 +180,7 @@ class GPU:
                     )
                 )
 
-                from core.inference.volta_accelerate import TRTModel
+                from core.tensorrt.volta_accelerate import TRTModel
 
                 trt_model = TRTModel(
                     model_path=model,
@@ -148,11 +199,32 @@ class GPU:
                     opt_batch_size=1,
                     opt_image_height=512,
                     opt_image_width=512,
+                    enable_preview=True,
+                    static_batch=True,
+                    static_shape=True,
                 )
                 logger.debug("Loading modules")
                 trt_model.loadModules()
                 self.loaded_models[model] = trt_model
                 logger.debug("Loading done")
+
+            elif backend == "AITemplate":
+                logger.debug("Selecting AITemplate")
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "info",
+                        "AITemplate",
+                        f"Loading {model} into memory, this may take a while",
+                    )
+                )
+
+                pt_model = AITemplateStableDiffusion(
+                    model_id=model,
+                    device="cuda",
+                )
+                self.loaded_models[model] = pt_model
+
             else:
                 logger.debug("Selecting PyTorch")
 
@@ -164,19 +236,19 @@ class GPU:
                     )
                 )
 
-                start_time = time.time()
                 pt_model = PyTorchStableDiffusion(
                     model_id=model,
                     device=self.cuda_id,
                 )
                 self.loaded_models[model] = pt_model
-                logger.info(f"Finished loading in {time.time() - start_time:.2f}s")
+
+            logger.info(f"Finished loading in {time.time() - start_time:.2f}s")
 
             websocket_manager.broadcast_sync(
                 Notification(
                     "success",
                     "Model loaded",
-                    f"{model} loaded with {'PyTorch' if backend == 'PyTorch' else 'TensorRT'} backend",
+                    f"{model} loaded with {backend} backend",
                 )
             )
 
@@ -187,158 +259,6 @@ class GPU:
     def loaded_models_list(self) -> list:
         "Return a list of loaded models"
         return list(self.loaded_models.keys())
-
-    async def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
-        "Generate an image(s) from a prompt"
-
-        def thread_call(job: Txt2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.txt2img(job)
-                self.memory_cleanup()
-                return images
-
-            logger.debug("Generating with TensorRT")
-            images: List[Image.Image]
-
-            _, images = model.infer(
-                [job.data.prompt],
-                [job.data.negative_prompt],
-                job.data.height,
-                job.data.width,
-                guidance_scale=job.data.guidance_scale,
-                verbose=False,
-                seed=job.data.seed,
-                output_dir="output",
-                num_of_infer_steps=job.data.steps,
-                scheduler=job.scheduler
-                if job.scheduler
-                else KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
-            )
-            self.memory_cleanup()
-            return images
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
-
-    async def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
-        "Run an image2image job"
-
-        def thread_call(job: Img2ImgQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.img2img(job)
-                self.memory_cleanup()
-                return images
-
-            raise NotImplementedError("Image2Image with TensorRT is not implemented")
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
-
-    async def inpaint(self, job: InpaintQueueEntry):
-        "Run an inpainting job"
-
-        def thread_call(job: InpaintQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.inpaint(job)
-                self.memory_cleanup()
-                return images
-
-            raise NotImplementedError("Inpainting is not supported with TensorRT")
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
-
-    async def image_variations(self, job: ImageVariationsQueueEntry):
-        "Run an inpainting job"
-
-        def thread_call(job: ImageVariationsQueueEntry) -> List[Image.Image]:
-            model: Union["TRTModel", PyTorchStableDiffusion] = self.loaded_models[
-                job.model
-            ]
-
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
-
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.image_variations(job)
-                self.memory_cleanup()
-                return images
-
-            raise NotImplementedError(
-                "Image variations are not supported with TensorRT"
-            )
-
-        images: Optional[List[Image.Image]]
-        error: Optional[Exception]
-        images, error = await run_in_thread_async(func=thread_call, args=(job,))
-
-        if error is not None:
-            raise error
-
-        assert images is not None
-
-        if job.save_image:
-            save_images(images, job)
-
-        return images
 
     def memory_cleanup(self):
         "Release all unused memory"
@@ -359,8 +279,11 @@ class GPU:
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug(f"Unloading PyTorch model: {model_type}")
                 model.unload()
+            elif isinstance(model, AITemplateStableDiffusion):
+                logger.debug(f"Unloading AITemplate model: {model_type}")
+                model.unload()
             else:
-                from core.inference.volta_accelerate import TRTModel
+                from core.tensorrt.volta_accelerate import TRTModel
 
                 assert isinstance(model, TRTModel)
                 logger.debug(f"Unloading TensorRT model: {model_type}")
@@ -411,7 +334,7 @@ class GPU:
         "Convert a model to a TensorRT model"
 
         def call():
-            from core.inference.volta_accelerate import TRTModel
+            from core.tensorrt.volta_accelerate import TRTModel
 
             trt_model = TRTModel(
                 model_path=model,
@@ -438,5 +361,56 @@ class GPU:
             del trt_model
 
         _, err = await run_in_thread_async(func=call)
+        if err is not None:
+            raise err
+
+    async def build_trt_engine(self, request: BuildRequest):
+        "Build a TensorRT engine from a request"
+
+        from .inference.tensorrt import TensorRTModel
+
+        def build():
+            model = TensorRTModel(model_id=request.model_id, use_f32=False)
+            model.generate_engine(request=request)
+
+        data, err = await run_in_thread_async(func=build)
+
+        print(f"Engine built: data:{data}, err:{err}")
+
+        if err is not None:
+            raise err
+
+    async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
+        "Convert a model to a AITemplate engine"
+
+        def build():
+            from core.aitemplate.scripts.compile import compile_diffusers
+
+            compile_diffusers(
+                batch_size=request.batch_size,
+                local_dir=request.model_id,
+                height=request.height,
+                width=request.width,
+            )
+
+        _, err = await run_in_thread_async(func=build)
+        if err is not None:
+            raise err
+
+        logger.info("AITemplate engine successfully built")
+
+    async def to_fp16(self, model: str):
+        "Convert a model to FP16"
+
+        def call():
+            pt_model = PyTorchStableDiffusion(
+                model_id=model,
+                device=self.cuda_id,
+            )
+
+            pt_model.save(path="converted/" + model.split("/")[-1])
+
+        _, err = await run_in_thread_async(func=call)
+
         if err is not None:
             raise err

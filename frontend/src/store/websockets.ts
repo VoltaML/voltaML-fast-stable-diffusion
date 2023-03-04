@@ -19,9 +19,6 @@ export const useWebsocket = defineStore("websocket", () => {
   const onConnectedCallbacks: (() => void)[] = [];
 
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
-    autoReconnect: {
-      delay: 3000,
-    },
     heartbeat: {
       message: "ping",
       interval: 30000,

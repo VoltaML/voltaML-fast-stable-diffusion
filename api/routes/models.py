@@ -1,11 +1,12 @@
 import logging
 import traceback
-from typing import Literal, Optional
+from typing import Optional
 
 import torch
 from fastapi import APIRouter, HTTPException
 
 from core.shared_dependent import cached_model_list, cluster
+from core.types import InferenceBackend
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
@@ -29,7 +30,7 @@ async def list_avaliable_models():
 @router.post("/load")
 async def load_model(
     model: str,
-    backend: Literal["PyTorch", "TensorRT"],
+    backend: InferenceBackend,
     preferred_gpu: Optional[int] = None,
 ):
     "Loads a model into memory"
@@ -85,11 +86,3 @@ async def convert_from_checkpoint(path: str, is_sd2: bool = False):
 
     await cluster.convert_from_checkpoint(path, is_sd2)
     return {"message": "Model converted"}
-
-
-@router.post("/accelerate")
-async def accelerate_model(model: str):
-    "Accelerate a model"
-
-    await cluster.accelerate(model)
-    return {"message": "Model accelerated"}

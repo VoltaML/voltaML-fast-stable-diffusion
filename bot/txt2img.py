@@ -6,7 +6,7 @@ from uuid import uuid4
 
 import aiohttp
 import discord
-from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 from discord import File
 from discord.ext import commands
 from discord.ext.commands import Cog, Context

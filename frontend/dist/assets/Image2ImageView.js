@@ -138,10 +138,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             guidance_scale: conf.data.settings.imageVariations.cfgScale,
             seed: checkSeed(conf.data.settings.imageVariations.seed),
             batch_size: conf.data.settings.imageVariations.batchSize,
-            batch_count: conf.data.settings.imageVariations.batchCount
+            batch_count: conf.data.settings.imageVariations.batchCount,
+            scheduler: conf.data.settings.imageVariations.sampler
           },
-          model: conf.data.settings.model,
-          scheduler: conf.data.settings.imageVariations.sampler
+          model: conf.data.settings.model
         })
       }).then((res) => {
         global.state.generating = false;
@@ -358,7 +358,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-57bf425f"), n = n(), popScopeId(), n);
+
+const _withScopeId$1 = (n) => (pushScopeId("data-v-a1e97e18"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -425,10 +426,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             seed: checkSeed(conf.data.settings.img2img.seed),
             batch_size: conf.data.settings.img2img.batchSize,
             batch_count: conf.data.settings.img2img.batchCount,
-            strength: conf.data.settings.img2img.denoisingStrength
+            strength: conf.data.settings.img2img.denoisingStrength,
+            scheduler: conf.data.settings.img2img.sampler
           },
-          model: conf.data.settings.model,
-          scheduler: conf.data.settings.img2img.sampler
+          model: conf.data.settings.model
         })
       }).then((res) => {
         global.state.generating = false;
@@ -718,9 +719,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_57bf425f_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-57bf425f"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-6ee012bb"), n = n(), popScopeId(), n);
+
+const Img2Img_vue_vue_type_style_index_0_scoped_a1e97e18_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-a1e97e18"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-ba9c9a75"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -797,10 +799,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             guidance_scale: conf.data.settings.inpainting.cfgScale,
             seed: checkSeed(conf.data.settings.inpainting.seed),
             batch_size: conf.data.settings.inpainting.batchSize,
-            batch_count: conf.data.settings.inpainting.batchCount
+            batch_count: conf.data.settings.inpainting.batchCount,
+            scheduler: conf.data.settings.inpainting.sampler
           },
-          model: conf.data.settings.model,
-          scheduler: conf.data.settings.inpainting.sampler
+          model: conf.data.settings.model
         })
       }).then((res) => {
         global.state.generating = false;
@@ -1255,8 +1257,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_6ee012bb_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-6ee012bb"]]);
+
+const Inpainting_vue_vue_type_style_index_0_scoped_ba9c9a75_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-ba9c9a75"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

@@ -242,9 +242,9 @@ const generate = () => {
         seed: checkSeed(conf.data.settings.imageVariations.seed),
         batch_size: conf.data.settings.imageVariations.batchSize,
         batch_count: conf.data.settings.imageVariations.batchCount,
+        scheduler: conf.data.settings.imageVariations.sampler,
       },
       model: conf.data.settings.model,
-      scheduler: conf.data.settings.imageVariations.sampler,
     }),
   })
     .then((res) => {

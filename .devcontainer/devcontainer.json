@@ -1,42 +1,64 @@
 // For format details, see https://aka.ms/devcontainer.json. For config options, see the
 // README at: https://github.com/devcontainers/templates/tree/main/src/python
 {
-	"name": "Python 3",
+	"name": "VoltaML Dev Container",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "nvcr.io/nvidia/tensorrt:22.11-py3",
-	"features": {
-		"ghcr.io/devcontainers/features/node:1": {
-			"nodeGypDependencies": true,
-			"version": "18"
-		},
-		"ghcr.io/rocker-org/devcontainer-features/apt-packages:1": {}
-	},
+	"image": "stax124/volta_diffusion_webui:local",
 
 	"runArgs": ["--gpus=all", "--ipc=host"],
 
 	// Features to add to the dev container. More info: https://containers.dev/features.
-	// "features": {},
+	"features": {},
 
 	// Use 'forwardPorts' to make a list of ports inside the container available locally.
 	"forwardPorts": [5003, 5173],
 
 	"remoteEnv": {
 		"HUGGINGFACE_TOKEN": "${localEnv:HUGGINGFACE_TOKEN}",
-		"CUDA_MODULE_LOADING": "LAZY",
-		"PLUGIN_LIBS": "external/libinfer/libnvinfer_plugin.so"
+		"CUDA_MODULE_LOADING": "LAZY"
 	},
 
 	"mounts": [
 		"source=${localEnv:HOME}/.cache/huggingface,target=/root/.cache/huggingface,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached",
-		"source=${localEnv:HOME}/engine,target=/workspaces/voltaML/engine,type=bind,consistency=cached"
+		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached"
 	],
 
 	// Use 'postCreateCommand' to run commands after the container is created.
-	"postCreateCommand": "yarn install && cd frontend && yarn install && cd ..",
+	// "postCreateCommand": "yarn install && cd frontend && yarn install && cd ..",
 
 	// Configure tool-specific properties.
-	// "customizations": {},
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"dbaeumer.vscode-eslint",
+				"github.copilot-nightly",
+				"ecmel.vscode-html-css",
+				"ms-python.isort",
+				"ms-vscode.vscode-typescript-next",
+				"esbenp.prettier-vscode",
+				"ms-python.vscode-pylance",
+				"vue.volar"
+			],
+			"settings": {
+				"[javascript]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[python]": {
+					"editor.defaultFormatter": "ms-python.python"
+				},
+				"editor.bracketPairColorization.enabled": true,
+				"editor.defaultFormatter": "esbenp.prettier-vscode",
+				"python.analysis.inlayHints.functionReturnTypes": true,
+				"python.analysis.inlayHints.variableTypes": true,
+				"python.analysis.typeCheckingMode": "basic",
+				"python.formatting.provider": "black",
+				"python.languageServer": "Pylance",
+				"telemetry.telemetryLevel": "off",
+				"editor.formatOnSave": true
+			}
+		}
+	},
 
 	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
 	"remoteUser": "root"

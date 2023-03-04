@@ -103,7 +103,7 @@ def save_images(
 
     for i, image in enumerate(images):
         path = Path(
-            f"outputs/{'txt2img' if isinstance(job, Txt2ImgQueueEntry) else 'img2img'}/{prompt}/{job.data.id}-{i}.png"
+            f"data/outputs/{'txt2img' if isinstance(job, Txt2ImgQueueEntry) else 'img2img'}/{prompt}/{job.data.id}-{i}.png"
         )
         makedirs(path.parent, exist_ok=True)
 

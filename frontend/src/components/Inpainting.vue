@@ -387,9 +387,9 @@ const generate = () => {
         seed: checkSeed(conf.data.settings.inpainting.seed),
         batch_size: conf.data.settings.inpainting.batchSize,
         batch_count: conf.data.settings.inpainting.batchCount,
+        scheduler: conf.data.settings.inpainting.sampler,
       },
       model: conf.data.settings.model,
-      scheduler: conf.data.settings.inpainting.sampler,
     }),
   })
     .then((res) => {
