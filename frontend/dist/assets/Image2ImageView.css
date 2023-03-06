@@ -55,7 +55,6 @@
   object-fit: contain;
   overflow: hidden;
 }
-
 .image-container[data-v-a1e97e18] {
   height: 70vh;
   width: 100%;
@@ -89,7 +88,6 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-
 .file-upload[data-v-ba9c9a75]:focus:not(:focus-visible):not(.focus-visible) {
   box-shadow: none;
   outline: none;
@@ -104,7 +102,6 @@
   color: rgba(255, 255, 255, 0.8);
   cursor: default;
 }
-
 .image-container[data-v-ba9c9a75] {
   width: 100%;
   display: flex;
