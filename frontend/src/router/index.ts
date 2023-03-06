@@ -30,11 +30,6 @@ const router = createRouter({
       component: () => import("../views/AboutView.vue"),
     },
     {
-      path: "/stats",
-      name: "stats",
-      component: () => import("../views/StatsView.vue"),
-    },
-    {
       path: "/accelerate",
       name: "accelerate",
       component: () => import("../views/AccelerateView.vue"),
@@ -43,6 +38,16 @@ const router = createRouter({
       path: "/test",
       name: "test",
       component: () => import("../views/TestView.vue"),
+    },
+    {
+      path: "/convert",
+      name: "convert",
+      component: () => import("../views/ConvertView.vue"),
+    },
+    {
+      path: "/settings",
+      name: "settings",
+      component: () => import("../views/SettingsView.vue"),
     },
     {
       path: "/imageBrowser",

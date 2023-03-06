@@ -2,6 +2,8 @@ import logging
 from typing import Dict, List, Optional, Tuple, Union
 
 import torch
+from gpustat import GPUStat
+from gpustat.core import GPUStatCollection
 from PIL import Image
 
 from api import websocket_manager
@@ -202,3 +204,8 @@ class Cluster:
 
         gpu: GPU = await self.least_loaded_gpu()
         await gpu.to_fp16(model)
+
+    async def stats(self) -> List[GPUStat]:
+        "Return the GPU utilization"
+
+        return [i.entry for i in GPUStatCollection.new_query().gpus]

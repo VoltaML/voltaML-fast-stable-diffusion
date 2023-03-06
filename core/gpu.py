@@ -221,7 +221,7 @@ class GPU:
 
                 pt_model = AITemplateStableDiffusion(
                     model_id=model,
-                    device="cuda",
+                    device=self.cuda_id,
                 )
                 self.loaded_models[model] = pt_model
 

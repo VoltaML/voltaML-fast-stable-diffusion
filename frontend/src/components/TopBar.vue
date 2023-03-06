@@ -32,26 +32,36 @@
         {{ global.state.current_step }} / {{ global.state.total_steps }}
       </NProgress>
     </div>
-    <NSpace inline justify="end" align="center">
+    <div style="display: inline-flex; justify-self: end; align-items: center">
       <NButton
         :type="websocketState.color"
         quaternary
         icon-placement="left"
         :render-icon="syncIcon"
         :loading="websocketState.loading"
-        @click="websocketState.ws_open"
+        @click="startWebsocket(message)"
         >{{ websocketState.text }}</NButton
       >
-    </NSpace>
+      <NButton
+        type="success"
+        quaternary
+        icon-placement="left"
+        :render-icon="perfIcon"
+        style="margin-right: 8px"
+        @click="global.state.perf_drawer.enabled = true"
+        :disabled="global.state.perf_drawer.enabled"
+      ></NButton>
+    </div>
   </div>
 </template>
 
 <script lang="ts" setup>
 import type { ModelEntry } from "@/core/interfaces";
 import { serverUrl } from "@/env";
+import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
-import { ReloadOutline, SyncSharp } from "@vicons/ionicons5";
-import { NButton, NIcon, NProgress, NSelect, NSpace } from "naive-ui";
+import { ReloadOutline, StatsChart, SyncSharp } from "@vicons/ionicons5";
+import { NButton, NIcon, NProgress, NSelect, useMessage } from "naive-ui";
 import type { SelectGroupOption } from "naive-ui/es/select/src/interface";
 import { h, reactive, ref } from "vue";
 import { useSettings } from "../store/settings";
@@ -171,6 +181,10 @@ const syncIcon = () => {
   return h(SyncSharp);
 };
 
+const perfIcon = () => {
+  return h(StatsChart);
+};
+
 const defaultOptions: SelectGroupOption = {
   type: "group",
   label: "Unload",
@@ -190,6 +204,9 @@ websocketState.onConnectedCallbacks.push(() => {
 if (websocketState.readyState === "OPEN") {
   refreshModels();
 }
+
+const message = useMessage();
+startWebsocket(message);
 </script>
 
 <style scoped>

@@ -23,6 +23,7 @@ export const useWebsocket = defineStore("websocket", () => {
       message: "ping",
       interval: 30000,
     },
+    immediate: false,
     onMessage: (ws: WebSocket, event: MessageEvent) => {
       if (event.data === "pong") {
         return;

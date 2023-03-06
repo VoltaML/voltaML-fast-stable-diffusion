@@ -3,6 +3,20 @@ import { reactive } from "vue";
 import type { imgData, imgMetadata } from "../core/interfaces";
 type StepProgress = "error" | "process" | "wait" | "finish";
 
+export interface GPU {
+  index: number;
+  uuid: string;
+  name: string;
+  temperature: number;
+  fan_speed: number;
+  utilization: number;
+  power_draw: number;
+  power_limit: number;
+  memory_used: number;
+  memory_total: number;
+  memory_usage: number;
+}
+
 export interface StateInterface {
   progress: number;
   generating: boolean;
@@ -35,7 +49,10 @@ export interface StateInterface {
     currentImage: imgData;
     currentImageMetadata: imgMetadata;
   };
-  drawer_content: string;
+  perf_drawer: {
+    enabled: boolean;
+    gpus: GPU[];
+  };
 }
 
 export const useState = defineStore("state", () => {
@@ -83,7 +100,10 @@ export const useState = defineStore("state", () => {
         model: "",
       },
     },
-    drawer_content: "Empty",
+    perf_drawer: {
+      enabled: false,
+      gpus: [],
+    },
   });
   return { state };
 });

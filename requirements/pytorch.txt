@@ -13,3 +13,4 @@ pynvml
 k-diffusion
 safetensors
 pytorch-lightning
+gpustat

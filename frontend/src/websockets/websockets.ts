@@ -106,7 +106,6 @@ export function processWebSocket(
 ): void {
   switch (message.type) {
     case "test": {
-      console.log(message.data);
       break;
     }
     case "progress": {
@@ -123,7 +122,6 @@ export function processWebSocket(
         global
       );
       global.state.total_steps = message.data.total_steps;
-      console.log(message.data.progress);
       break;
     }
     case "img2img": {
@@ -178,6 +176,14 @@ export function processWebSocket(
         ...global.state.aitBuildStep,
         ...message.data,
       };
+      break;
+    }
+    case "cluster_stats": {
+      global.state.perf_drawer.gpus = message.data;
+      break;
+    }
+    default: {
+      console.log(message);
     }
   }
 }

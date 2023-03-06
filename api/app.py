@@ -44,8 +44,11 @@ async def startup_event():
     "Prepare the event loop for other asynchronous tasks"
 
     shared.asyncio_loop = asyncio.get_event_loop()
+
     asyncio.create_task(websocket_manager.sync_loop())
     logger.info("Started WebSocketManager sync loop")
+    asyncio.create_task(websocket_manager.perf_loop())
+    logger.info("Started WebSocketManager performance monitoring loop")
     logger.info("UI Avaliable at: http://localhost:5003/")
 
 

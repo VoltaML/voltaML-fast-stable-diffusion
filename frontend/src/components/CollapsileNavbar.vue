@@ -29,10 +29,11 @@ import {
   Albums,
   Download,
   Duplicate,
+  GitCompare,
   Image,
   Images,
+  SettingsSharp,
   Speedometer,
-  StatsChart,
   Warning,
 } from "@vicons/ionicons5";
 import type { MenuOption } from "naive-ui";
@@ -89,16 +90,26 @@ const menuOptionsMain: MenuOption[] = [
     icon: renderIcon(Albums),
   },
   {
-    label: () => h(RouterLink, { to: "/stats" }, { default: () => "Stats" }),
-    key: "stats",
-    icon: renderIcon(StatsChart),
+    label: () =>
+      h(RouterLink, { to: "/convert" }, { default: () => "Convert" }),
+    key: "convert",
+    icon: renderIcon(GitCompare),
   },
   {
+    label: () =>
+      h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
+    key: "settings",
+    icon: renderIcon(SettingsSharp),
+  },
+];
+
+if (import.meta.env.DEV) {
+  menuOptionsMain.push({
     label: () => h(RouterLink, { to: "/test" }, { default: () => "Test" }),
     key: "test",
     icon: renderIcon(Warning),
-  },
-];
+  });
+}
 
 let collapsed = ref(true);
 </script>

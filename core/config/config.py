@@ -74,6 +74,7 @@ class APIConfig:
     "Configuration for the API"
 
     websocket_sync_interval = 0.02
+    websocket_perf_interval = 1
 
 
 @dataclass

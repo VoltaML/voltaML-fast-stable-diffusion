@@ -132,119 +132,117 @@ class AITemplateStableDiffusion(InferenceModel):
 
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
-        with torch.autocast(self.device):  # type: ignore
-            pipe = StableDiffusionAITPipeline(
-                vae=self.vae,
-                directory=os.path.join("data", "aitemplate", self.model_id),
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                safety_checker=self.safety_checker,
-                requires_safety_checker=self.requires_safety_checker,
-                unet=self.unet,
-                feature_extractor=self.feature_extractor,
-                clip_ait_exe=self.clip_ait_exe,
-                unet_ait_exe=self.unet_ait_exe,
-                vae_ait_exe=self.vae_ait_exe,
+        pipe = StableDiffusionAITPipeline(
+            vae=self.vae,
+            directory=os.path.join("data", "aitemplate", self.model_id),
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            safety_checker=self.safety_checker,
+            requires_safety_checker=self.requires_safety_checker,
+            unet=self.unet,
+            feature_extractor=self.feature_extractor,
+            clip_ait_exe=self.clip_ait_exe,
+            unet_ait_exe=self.unet_ait_exe,
+            vae_ait_exe=self.vae_ait_exe,
+        )
+
+        generator = torch.Generator(self.device).manual_seed(job.data.seed)
+
+        if job.data.scheduler:
+            change_scheduler(
+                model=pipe,
+                scheduler=job.data.scheduler,
             )
 
-            generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        total_images: List[Image.Image] = []
 
-            if job.data.scheduler:
-                change_scheduler(
-                    model=pipe,
-                    scheduler=job.data.scheduler,
-                )
-
-            total_images: List[Image.Image] = []
-
-            for _ in range(job.data.batch_count):
-                data = pipe(
-                    prompt=job.data.prompt,
-                    height=job.data.height,
-                    width=job.data.width,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=txt2img_callback,
-                    num_images_per_prompt=job.data.batch_size,
-                )
-                images: list[Image.Image] = data[0]  # type: ignore
-
-                total_images.extend(images)
-
-            websocket_manager.broadcast_sync(
-                data=Data(
-                    data_type="txt2img",
-                    data={
-                        "progress": 0,
-                        "current_step": 0,
-                        "total_steps": 0,
-                        "image": convert_images_to_base64_grid(total_images),
-                    },
-                )
+        for _ in range(job.data.batch_count):
+            data = pipe(
+                prompt=job.data.prompt,
+                height=job.data.height,
+                width=job.data.width,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=txt2img_callback,
+                num_images_per_prompt=job.data.batch_size,
             )
+            images: list[Image.Image] = data[0]  # type: ignore
 
-            return total_images
+            total_images.extend(images)
+
+        websocket_manager.broadcast_sync(
+            data=Data(
+                data_type="txt2img",
+                data={
+                    "progress": 0,
+                    "current_step": 0,
+                    "total_steps": 0,
+                    "image": convert_images_to_base64_grid(total_images),
+                },
+            )
+        )
+
+        return total_images
 
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generates images from images"
 
         from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
 
-        with torch.autocast(self.device):  # type: ignore
-            pipe = StableDiffusionImg2ImgAITPipeline(
-                vae=self.vae,
-                unet=self.unet,  # type: ignore
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                feature_extractor=self.feature_extractor,
-                requires_safety_checker=self.requires_safety_checker,
-                safety_checker=self.safety_checker,
+        pipe = StableDiffusionImg2ImgAITPipeline(
+            vae=self.vae,
+            unet=self.unet,  # type: ignore
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            feature_extractor=self.feature_extractor,
+            requires_safety_checker=self.requires_safety_checker,
+            safety_checker=self.safety_checker,
+        )
+
+        generator = torch.Generator(self.device).manual_seed(job.data.seed)
+
+        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+
+        input_image = convert_to_image(job.data.image)
+        input_image = resize(input_image, job.data.width, job.data.height)
+
+        total_images: List[Image.Image] = []
+
+        for _ in range(job.data.batch_count):
+            data = pipe(
+                prompt=job.data.prompt,
+                init_image=input_image,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                # negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                # callback=img2img_callback,
+                strength=job.data.strength,
+                return_dict=False,
+                # num_images_per_prompt=job.data.batch_size,
             )
 
-            generator = torch.Generator("cuda").manual_seed(job.data.seed)
+            images = data[0]
+            assert isinstance(images, List)
 
-            change_scheduler(model=pipe, scheduler=job.data.scheduler)
+            total_images.extend(images)
 
-            input_image = convert_to_image(job.data.image)
-            input_image = resize(input_image, job.data.width, job.data.height)
-
-            total_images: List[Image.Image] = []
-
-            for _ in range(job.data.batch_count):
-                data = pipe(
-                    prompt=job.data.prompt,
-                    init_image=input_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    # negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    # callback=img2img_callback,
-                    strength=job.data.strength,
-                    return_dict=False,
-                    # num_images_per_prompt=job.data.batch_size,
-                )
-
-                images = data[0]
-                assert isinstance(images, List)
-
-                total_images.extend(images)
-
-            websocket_manager.broadcast_sync(
-                data=Data(
-                    data_type="img2img",
-                    data={
-                        "progress": 0,
-                        "current_step": 0,
-                        "total_steps": 0,
-                        "image": convert_images_to_base64_grid(total_images),
-                    },
-                )
+        websocket_manager.broadcast_sync(
+            data=Data(
+                data_type="img2img",
+                data={
+                    "progress": 0,
+                    "current_step": 0,
+                    "total_steps": 0,
+                    "image": convert_images_to_base64_grid(total_images),
+                },
             )
+        )
 
-            return total_images
+        return total_images
