@@ -51,10 +51,6 @@ def txt2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
 
     images, send_image = pytorch_callback(step, _timestep, tensor)
 
-    logger.warning(
-        f"{shared.current_done_steps=} | {shared.current_steps=} | {int((shared.current_done_steps / shared.current_steps) * 100)}"
-    )
-
     websocket_manager.broadcast_sync(
         data=Data(
             data_type="txt2img",
