@@ -1,6 +1,6 @@
 # API
 
-Documentation can be found on http://localhost:5003/api/docs
+Documentation can be found on `http://localhost:5003/api/docs`
 
 ## Basic structure
 
