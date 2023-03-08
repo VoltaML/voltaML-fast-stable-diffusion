@@ -30,8 +30,8 @@ export default defineConfig({
 			{
 				text: "Installation",
 				items: [
-					{ text: "Windows", link: "/installation/windows" },
-					{ text: "Linux", link: "/installation/linux" },
+					{ text: "Docker", link: "/installation/docker" },
+					{ text: "Local", link: "/installation/local" },
 				],
 			},
 			{

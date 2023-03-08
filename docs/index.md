@@ -8,7 +8,7 @@ Stable Diffusion WebUI and API accelerated by <a href="https://developer.nvidia.
 
 **This documentation should walk you through the installation process, your first generated image, setting up the project to your liking and accelerating models with TensorRT.**
 
-**There is also a dedicated section to the Discord bot, API and a section for **developers and collaborators.\*\*\*\*
+There is also a dedicated section to the **Discord bot, API** and a section for **developers and collaborators.**
 
 ## Main features
 
@@ -28,14 +28,15 @@ Old data, in need of rerun - observed speedup should be approximately 2.5x
 
 The below benchmarks have been done for generating a 512x512 image, batch size of one (measured in it/s).
 
-| GPU         | PyTorch | xFormers | TensorRT |
-| ----------- | ------- | -------- | -------- |
-| RTX 4090    | 19      | 40       | 87       |
-| RTX 2080 Ti | 8       | No data  | 26.2     |
-| RTX 3050    | 4.6     | 5.7      | 12.5     |
-| A100        | 15.1    | 27.5     | 62.8     |
-| A10         | 8.8     | 15.6     | 29.2     |
-| T4          | 4.3     | 5.5      | 11.4     |
+| GPU         | PyTorch | xFormers | TensorRT | AITemplate |
+| ----------- | ------- | -------- | -------- | ---------- |
+| RTX 4090    | 19      | 40       | 87       | No data    |
+| RTX 2080 Ti | 8       | No data  | 26.2     | No data    |
+| RTX 3050    | 4.6     | 5.7      | 12.5     | 10.15      |
+| RTX 3060 Ti | No data | 10.50    | No data  | 19.46      |
+| A100        | 15.1    | 27.5     | 62.8     | No data    |
+| A10         | 8.8     | 15.6     | 29.2     | No data    |
+| T4          | 4.3     | 5.5      | 11.4     | No data    |
 
 ## UI Preview
 
