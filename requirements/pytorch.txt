@@ -2,7 +2,7 @@
 colored
 coloredlogs
 dataclasses-json
-diffusers==0.13.1
+diffusers==0.14.0
 scipy
 transformers
 accelerate

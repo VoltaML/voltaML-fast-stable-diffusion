@@ -73,10 +73,10 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
-        directory: str,
-        clip_ait_exe: Optional[Model],
-        unet_ait_exe: Optional[Model],
-        vae_ait_exe: Optional[Model],
+        directory: str = "",
+        clip_ait_exe: Optional[Model] = None,
+        unet_ait_exe: Optional[Model] = None,
+        vae_ait_exe: Optional[Model] = None,
         requires_safety_checker: bool = True,
     ):
         super().__init__(

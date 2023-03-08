@@ -14,7 +14,7 @@
     <NButton
       type="primary"
       bordered
-      @click="downloadModel"
+      @click="downloadModel(customModel)"
       :loading="conf.state.downloading"
       :disabled="conf.state.downloading || customModel === ''"
       secondary
@@ -30,15 +30,14 @@
       width: 100%;
     "
   >
-    <NCard>
-      <NDataTable
-        :columns="columnsRef"
-        :data="dataRef"
-        :pagination="pagination"
-        :bordered="true"
-        :remote="true"
-        style="padding-bottom: 24px"
-    /></NCard>
+    <NDataTable
+      :columns="columnsRef"
+      :data="dataRef"
+      :pagination="pagination"
+      :bordered="true"
+      :remote="true"
+      style="padding-bottom: 24px"
+    />
   </div>
 </template>
 
@@ -48,13 +47,13 @@ import { serverUrl } from "@/env";
 import { Home, Menu } from "@vicons/ionicons5";
 import {
   NButton,
-  NCard,
   NDataTable,
   NDropdown,
   NIcon,
   NInput,
   NSpace,
   NTag,
+  useMessage,
   type DataTableColumns,
 } from "naive-ui";
 import type {
@@ -63,24 +62,29 @@ import type {
   FilterOptionValue,
 } from "naive-ui/es/data-table/src/interface";
 import type { DropdownMixedOption } from "naive-ui/es/dropdown/src/interface";
-import { h, reactive, ref, type Component } from "vue";
+import { h, reactive, ref, type Component, type Ref } from "vue";
 import { useState } from "../store/state";
 const conf = useState();
+const message = useMessage();
 
 const customModel = ref("");
 
-function downloadModel() {
+function downloadModel(model: Ref<string> | string) {
   const url = new URL(`${serverUrl}/api/models/download`);
-  url.searchParams.append("model", customModel.value);
+  const modelName = typeof model === "string" ? model : model.value;
+  url.searchParams.append("model", modelName);
   console.log(url);
   conf.state.downloading = true;
   customModel.value = "";
+  message.info(`Downloading model: ${modelName}`);
   fetch(url, { method: "POST" })
     .then(() => {
       conf.state.downloading = false;
+      message.success(`Downloaded model: ${modelName}`);
     })
     .catch(() => {
       conf.state.downloading = false;
+      message.error(`Failed to download model: ${modelName}`);
     });
 }
 
@@ -193,8 +197,9 @@ const columns: DataTableColumns<Model> = [
           round: true,
           block: true,
           bordered: false,
+          disabled: conf.state.downloading,
           onClick: () => {
-            console.log("Download", row.name);
+            downloadModel(row.huggingface_id);
           },
         },
         { default: () => "Download" }
