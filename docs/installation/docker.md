@@ -10,7 +10,7 @@
 ### 1. Clone the repository
 
 ```bash
-git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion/tree/experimental -b experimental --single-branch
+git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion -b experimental --single-branch
 ```
 
 ### 2. Edit the `docker-compose.yml` file
