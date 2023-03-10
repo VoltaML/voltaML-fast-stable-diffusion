@@ -50,6 +50,9 @@ You can also add the following line to your `~/.bashrc` file to make the variabl
 If you are using Linux, you might need to install `python3-virtualenv` package.
 <br><br>
 `sudo apt install python3-virtualenv`
+
+For Windows users, run this command:
+`pip install virtualenv`
 :::
 ::: warning
 If you are running Linux, you might need to use `python3` instead of `python`.
