@@ -8,6 +8,7 @@ from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
 from core.types import (
+    ControlNetQueueEntry,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -23,6 +24,7 @@ def create_metadata(
         Img2ImgQueueEntry,
         InpaintQueueEntry,
         ImageVariationsQueueEntry,
+        ControlNetQueueEntry,
     ],
     index: int,
 ):
@@ -57,6 +59,8 @@ def create_metadata(
         procedure = "inpaint"
     elif isinstance(job, ImageVariationsQueueEntry):
         procedure = "image_variations"
+    elif isinstance(job, ControlNetQueueEntry):
+        procedure = "control_net"
 
     metadata.add_text("procedure", procedure)
     metadata.add_text("model", job.model)
@@ -71,6 +75,7 @@ def save_images(
         Img2ImgQueueEntry,
         InpaintQueueEntry,
         ImageVariationsQueueEntry,
+        ControlNetQueueEntry,
     ],
 ):
     "Save image to disk"

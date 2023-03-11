@@ -26,7 +26,7 @@ import routerContainerVue from "./router/router-container.vue";
 
 const overrides: GlobalThemeOverrides = {
   common: {
-    fontSize: "14",
+    fontSize: "10",
     fontWeight: "600",
   },
 };

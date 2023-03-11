@@ -97,3 +97,4 @@ class Configuration(DataClassJsonMixin):
     imageVariations: ImageVariations = field(default=ImageVariations())
     inpainting: Inpainting = field(default=Inpainting())
     cache_dir: str = field(default=DIFFUSERS_CACHE)
+    low_vram: bool = False

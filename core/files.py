@@ -144,6 +144,7 @@ def is_valid_diffusers_model(model_path: Union[str, Path]):
         if not os.path.exists(path / folder):
             logger.debug(f"Folder {path / folder} not found: model is not valid")
             is_valid = False
+            break
 
         # Check if there is at least one .bin file in the folder
         has_binaries = True

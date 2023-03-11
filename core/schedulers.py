@@ -1,43 +1,27 @@
 from typing import Dict, Optional
 
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
-    StableDiffusionPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_depth2img import (
-    StableDiffusionDepth2ImgPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
-    StableDiffusionImg2ImgPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import (
-    StableDiffusionInpaintPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_instruct_pix2pix import (
-    StableDiffusionInstructPix2PixPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale import (
-    StableDiffusionUpscalePipeline,
-)
-from diffusers.schedulers.scheduling_ddim import DDIMScheduler
-from diffusers.schedulers.scheduling_ddpm import DDPMScheduler
-from diffusers.schedulers.scheduling_deis_multistep import DEISMultistepScheduler
-from diffusers.schedulers.scheduling_dpmsolver_multistep import (
+from diffusers import (
+    DDIMScheduler,
+    DDPMScheduler,
+    DEISMultistepScheduler,
     DPMSolverMultistepScheduler,
-)
-from diffusers.schedulers.scheduling_dpmsolver_singlestep import (
     DPMSolverSinglestepScheduler,
-)
-from diffusers.schedulers.scheduling_euler_ancestral_discrete import (
     EulerAncestralDiscreteScheduler,
-)
-from diffusers.schedulers.scheduling_euler_discrete import EulerDiscreteScheduler
-from diffusers.schedulers.scheduling_heun_discrete import HeunDiscreteScheduler
-from diffusers.schedulers.scheduling_k_dpm_2_ancestral_discrete import (
+    EulerDiscreteScheduler,
+    HeunDiscreteScheduler,
     KDPM2AncestralDiscreteScheduler,
+    KDPM2DiscreteScheduler,
+    LMSDiscreteScheduler,
+    PNDMScheduler,
+    StableDiffusionControlNetPipeline,
+    StableDiffusionDepth2ImgPipeline,
+    StableDiffusionImg2ImgPipeline,
+    StableDiffusionInpaintPipeline,
+    StableDiffusionInstructPix2PixPipeline,
+    StableDiffusionPipeline,
+    StableDiffusionUpscalePipeline,
+    UniPCMultistepScheduler,
 )
-from diffusers.schedulers.scheduling_k_dpm_2_discrete import KDPM2DiscreteScheduler
-from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
-from diffusers.schedulers.scheduling_pndm import PNDMScheduler
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import PyTorchModelType
@@ -62,6 +46,7 @@ def change_scheduler(
             StableDiffusionInstructPix2PixPipeline,
             StableDiffusionPipeline,
             StableDiffusionUpscalePipeline,
+            StableDiffusionControlNetPipeline,
         ),
     ):
         if config is None:
@@ -93,6 +78,8 @@ def change_scheduler(
         new_scheduler = DPMSolverSinglestepScheduler
     elif scheduler == KarrasDiffusionSchedulers.DPMSolverMultistepScheduler:
         new_scheduler = DPMSolverMultistepScheduler
+    elif scheduler == KarrasDiffusionSchedulers.UniPCMultistepScheduler:
+        new_scheduler = UniPCMultistepScheduler
     else:
         new_scheduler = model.scheduler  # type: ignore
 

@@ -14,7 +14,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets.data import Data
 from core.files import get_full_model_path
-from core.functions import txt2img_callback
+from core.functions import optimize_model, txt2img_callback
 from core.inference.base_model import InferenceModel
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, Job, Txt2ImgQueueEntry
@@ -65,7 +65,7 @@ class AITemplateStableDiffusion(InferenceModel):
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
         pipe.to(self.device)
-        self.optimize(pipe)
+        optimize_model(pipe)
 
         self.vae = pipe.vae  # type: ignore
         self.unet = pipe.unet  # type: ignore
@@ -97,23 +97,6 @@ class AITemplateStableDiffusion(InferenceModel):
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
         gc.collect()
-
-    def optimize(self, pipe: "StableDiffusionAITPipeline") -> None:
-        "Optimize the model for inference"
-
-        logger.info("Optimizing model")
-
-        try:
-            pipe.enable_xformers_memory_efficient_attention()
-            logger.info("Optimization: Enabled xformers memory efficient attention")
-        except ModuleNotFoundError:
-            logger.info(
-                "Optimization: xformers not available, enabling attention slicing instead"
-            )
-            pipe.enable_attention_slicing()
-            logger.info("Optimization: Enabled attention slicing")
-
-        logger.info("Optimization complete")
 
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")

@@ -160,6 +160,18 @@ export function processWebSocket(
       global.state.total_steps = message.data.total_steps;
       break;
     }
+    case "controlnet": {
+      global.state.controlnet.currentImage = message.data.image
+        ? message.data.image
+        : global.state.controlnet.currentImage;
+      global.state.progress = progressForward(message.data.progress, global);
+      global.state.current_step = currentStepForward(
+        message.data.current_step,
+        global
+      );
+      global.state.total_steps = message.data.total_steps;
+      break;
+    }
     case "notification": {
       message.data.timeout = message.data.timeout || 5000;
 

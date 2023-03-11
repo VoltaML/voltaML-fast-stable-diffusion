@@ -1,18 +1,21 @@
 import logging
 import time
 from pathlib import Path
-from typing import List, Tuple
+from typing import Dict, List, Tuple
 
 import numpy as np
 import torch
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
 from diffusers.utils.pil_utils import PIL_INTERPOLATION
 from PIL import Image
 
 from api import websocket_manager
 from api.websockets.data import Data
 from core import shared
+from core.config import config
 from core.errors import InferenceInterruptedError
-from core.types import ImageMetadata
 from core.utils import convert_images_to_base64_grid
 
 logger = logging.getLogger(__name__)
@@ -126,6 +129,26 @@ def image_variations_callback(step: int, _timestep: int, tensor: torch.Tensor):
     )
 
 
+def controlnet_callback(step: int, _timestep: int, tensor: torch.Tensor):
+    "Callback for controlnet with progress and partial image"
+
+    images, send_image = pytorch_callback(step, _timestep, tensor)
+
+    websocket_manager.broadcast_sync(
+        data=Data(
+            data_type="controlnet",
+            data={
+                "progress": int(
+                    (shared.current_done_steps / shared.current_steps) * 100
+                ),
+                "current_step": shared.current_done_steps,
+                "total_steps": shared.current_steps,
+                "image": convert_images_to_base64_grid(images) if send_image else "",
+            },
+        )
+    )
+
+
 def pytorch_callback(
     _step: int, _timestep: int, tensor: torch.Tensor
 ) -> Tuple[List[Image.Image], bool]:
@@ -153,37 +176,39 @@ def pytorch_callback(
     return images, send_image
 
 
-def image_meta_from_file(path: Path) -> ImageMetadata:
+def optimize_model(pipe: StableDiffusionPipeline) -> None:
+    "Optimize the model for inference"
+
+    logger.info("Optimizing model")
+
+    try:
+        pipe.enable_xformers_memory_efficient_attention()
+        logger.info("Optimization: Enabled xformers memory efficient attention")
+    except ModuleNotFoundError:
+        logger.info(
+            "Optimization: xformers not available, enabling attention slicing instead"
+        )
+        pipe.enable_attention_slicing()
+        logger.info("Optimization: Enabled attention slicing")
+
+    if config.low_vram:
+        pipe.enable_model_cpu_offload()
+        logger.info("Optimization: Enabled model CPU offload")
+
+    # pipe.enable_vae_tiling()
+    # logger.info("Optimization: Enabled VAE tiling")
+
+    logger.info("Optimization complete")
+
+
+def image_meta_from_file(path: Path) -> Dict[str, str]:
     "Return image metadata from a file"
 
     with path.open("rb") as f:
         image = Image.open(f)
         text = image.text  # type: ignore
 
-        try:
-            metadata = ImageMetadata(
-                prompt=text["prompt"],
-                negative_prompt=text["negative_prompt"],
-                height=int(text["height"]),
-                width=int(text["width"]),
-                seed=text["seed"],
-                guidance_scale=float(text["guidance_scale"]),
-                steps=int(text["steps"]),
-                model=text["model"],
-            )
-        except KeyError:
-            metadata = ImageMetadata(
-                prompt="",
-                negative_prompt="",
-                height=0,
-                width=0,
-                seed="",
-                guidance_scale=0.0,
-                steps=0,
-                model="",
-            )
-
-    return metadata
+        return text
 
 
 def preprocess_image(image):

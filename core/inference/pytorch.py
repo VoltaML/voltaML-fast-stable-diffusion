@@ -1,19 +1,17 @@
 import gc
 import logging
 import os
-from typing import Any, List, Union
+from typing import Any, List, Optional
 
 import torch
-from diffusers.models.autoencoder_kl import AutoencoderKL
-from diffusers.models.unet_2d_condition import UNet2DConditionModel
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
-    StableDiffusionPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
+from diffusers import (
+    AutoencoderKL,
+    ControlNetModel,
+    StableDiffusionControlNetPipeline,
     StableDiffusionImg2ImgPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import (
     StableDiffusionInpaintPipeline,
+    StableDiffusionPipeline,
+    UNet2DConditionModel,
 )
 from PIL import Image, ImageOps
 from transformers.models.clip.modeling_clip import CLIPTextModel
@@ -22,12 +20,25 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
+from core.controlnet import image_to_controlnet_input
 from core.files import get_full_model_path
-from core.functions import img2img_callback, inpaint_callback, txt2img_callback
+from core.functions import (
+    controlnet_callback,
+    img2img_callback,
+    inpaint_callback,
+    optimize_model,
+    txt2img_callback,
+)
 from core.inference.base_model import InferenceModel
-from core.inference.unet_tracer import TracedUNet, get_traced_unet
 from core.schedulers import change_scheduler
-from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Job, Txt2ImgQueueEntry
+from core.types import (
+    ControlNetMode,
+    ControlNetQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Job,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -50,7 +61,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         # Components
         self.vae: AutoencoderKL
-        self.unet: Union[UNet2DConditionModel, TracedUNet]
+        self.unet: UNet2DConditionModel
         self.text_encoder: CLIPTextModel
         self.tokenizer: CLIPTokenizer
         self.scheduler: Any
@@ -58,6 +69,9 @@ class PyTorchStableDiffusion(InferenceModel):
         self.requires_safety_checker: bool
         self.safety_checker: Any
         self.image_encoder: Any
+        self.controlnet: Optional[ControlNetModel]
+
+        self.current_controlnet: ControlNetMode = ControlNetMode.NONE
 
         self.load()
 
@@ -81,7 +95,7 @@ class PyTorchStableDiffusion(InferenceModel):
         assert isinstance(pipe, StableDiffusionPipeline)
         pipe.to(self.device)
 
-        self.optimize(pipe)
+        optimize_model(pipe)
 
         self.vae = pipe.vae  # type: ignore
         self.unet = pipe.unet  # type: ignore
@@ -91,6 +105,15 @@ class PyTorchStableDiffusion(InferenceModel):
         self.feature_extractor = pipe.feature_extractor  # type: ignore
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
+
+        self.cleanup()
+
+    def cleanup(self) -> None:
+        "Cleanup the GPU memory"
+
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+        gc.collect()
 
     def unload(self) -> None:
         "Unload the model from memory"
@@ -106,22 +129,50 @@ class PyTorchStableDiffusion(InferenceModel):
             self.safety_checker,
         )
 
-        if self.__dict__.get("image_encoder"):
-            del self.image_encoder
+        if hasattr(self, "image_encoder"):
+            if self.image_encoder is not None:
+                del self.image_encoder
 
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-        gc.collect()
+        if hasattr(self, "controlnet"):
+            if self.controlnet is not None:
+                del self.controlnet
 
-    def cleanup_old_components(self, keep_variations: bool = False) -> None:
+        self.cleanup()
+
+    def manage_optional_components(
+        self,
+        *,
+        variations: bool = False,
+        target_controlnet: ControlNetMode = ControlNetMode.NONE,
+    ) -> None:
         "Cleanup old components"
 
-        if not keep_variations:
+        if not variations:
             self.image_encoder = None
 
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-        gc.collect()
+        if self.current_controlnet != target_controlnet:
+            # Cleanup old controlnet
+            self.controlnet = None
+            self.cleanup()
+
+            if target_controlnet == ControlNetMode.NONE:
+                return
+
+            # Load new controlnet if needed
+            cn = ControlNetModel.from_pretrained(
+                target_controlnet.value,
+                resume_download=True,
+                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
+                use_auth_token=self.auth,
+                cache_dir=config.cache_dir,
+            )
+
+            assert isinstance(cn, ControlNetModel)
+            cn.to(self.device)
+            self.controlnet = cn
+
+        # Clean memory
+        self.cleanup()
 
     def txt2img(
         self,
@@ -129,7 +180,7 @@ class PyTorchStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generate an image from a prompt"
 
-        self.cleanup_old_components()
+        self.manage_optional_components()
 
         pipe = StableDiffusionPipeline(
             vae=self.vae,
@@ -187,7 +238,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        self.cleanup_old_components()
+        self.manage_optional_components()
 
         pipe = StableDiffusionImg2ImgPipeline(
             vae=self.vae,
@@ -246,7 +297,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        self.cleanup_old_components()
+        self.manage_optional_components()
 
         pipe = StableDiffusionInpaintPipeline(
             vae=self.vae,
@@ -307,37 +358,71 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def optimize(self, pipe: StableDiffusionPipeline) -> None:
-        "Optimize the model for inference"
+    def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
+        "Generate an image from an image and controlnet conditioning"
 
-        logger.info("Optimizing model")
+        self.manage_optional_components(target_controlnet=job.data.controlnet)
 
-        try:
-            pipe.enable_xformers_memory_efficient_attention()
-            logger.info("Optimization: Enabled xformers memory efficient attention")
-        except ModuleNotFoundError:
-            logger.info(
-                "Optimization: xformers not available, enabling attention slicing instead"
+        assert self.controlnet is not None
+
+        pipe = StableDiffusionControlNetPipeline(
+            controlnet=self.controlnet,
+            feature_extractor=self.feature_extractor,
+            requires_safety_checker=self.requires_safety_checker,
+            safety_checker=self.safety_checker,
+            scheduler=self.scheduler,
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            unet=self.unet,
+            vae=self.vae,
+        )
+
+        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+
+        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+
+        input_image = convert_to_image(job.data.image)
+        input_image = resize(input_image, job.data.width, job.data.height)
+
+        input_image = image_to_controlnet_input(input_image, job.data)
+
+        total_images: List[Image.Image] = [input_image]
+
+        for _ in range(job.data.batch_count):
+            data = pipe(
+                prompt=job.data.prompt,
+                image=input_image,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=controlnet_callback,
+                return_dict=False,
+                num_images_per_prompt=job.data.batch_size,
+                controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,
+                height=job.data.height,
+                width=job.data.width,
             )
-            pipe.enable_attention_slicing()
-            logger.info("Optimization: Enabled attention slicing")
 
-        try:
-            self.enable_traced_unet(self.model_id, pipe.unet)  # type: ignore
-            logger.info("Optimization: Enabled traced UNet")
-        except ValueError:
-            logger.info("Optimization: Traced UNet not available")
+            images = data[0]
+            assert isinstance(images, List)
 
-        logger.info("Optimization complete")
+            total_images.extend(images)  # type: ignore
 
-    def enable_traced_unet(self, model_id: str, unet: UNet2DConditionModel):
-        "Loads a precomputed JIT traced U-Net model."
+        websocket_manager.broadcast_sync(
+            data=Data(
+                data_type="controlnet",
+                data={
+                    "progress": 0,
+                    "current_step": 0,
+                    "total_steps": 0,
+                    "image": convert_images_to_base64_grid(total_images),
+                },
+            )
+        )
 
-        traced_unet = get_traced_unet(model_id=model_id, untraced_unet=unet)
-        if traced_unet is not None:
-            self.unet = traced_unet
-        else:
-            raise ValueError(f"Traced U-Net model with id {model_id} does not exist.")
+        return total_images
 
     def generate(
         self,
@@ -353,12 +438,18 @@ class PyTorchStableDiffusion(InferenceModel):
             images = self.img2img(job)
         elif isinstance(job, InpaintQueueEntry):
             images = self.inpaint(job)
+        elif isinstance(job, ControlNetQueueEntry):
+            images = self.controlnet2img(job)
         else:
             raise ValueError("Invalid job type for this pipeline")
 
+        # Clean memory and return images
+        self.cleanup()
         return images
 
     def save(self, path: str = "converted"):
+        "Dump current pipeline to specified path"
+
         pipe = StableDiffusionPipeline(
             vae=self.vae,
             unet=self.unet,  # type: ignore

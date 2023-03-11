@@ -19,6 +19,7 @@ from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
     BuildRequest,
+    ControlNetQueueEntry,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
@@ -30,7 +31,6 @@ from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
     from core.tensorrt.volta_accelerate import TRTModel
-
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +68,7 @@ class GPU:
             Img2ImgQueueEntry,
             InpaintQueueEntry,
             ImageVariationsQueueEntry,
+            ControlNetQueueEntry,
         ],
     ):
         "Generate images from the queue"
@@ -152,7 +153,7 @@ class GPU:
 
         logger.debug(f"Loading {model} with {backend} backend")
 
-        def thread_call(
+        async def thread_call(
             model: str,
             backend: InferenceBackend,
         ):

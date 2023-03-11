@@ -48,38 +48,13 @@
     </NGi>
     <NGi span="3">
       <NDescriptions bordered>
-        <NDescriptionsItem label="File" content-style="max-width: 100px">
-          {{ global.state.imageBrowser.currentImage.path.split("/").pop() }}
-        </NDescriptionsItem>
-        <NDescriptionsItem label="Model" content-style="max-width: 100px">
-          {{ global.state.imageBrowser.currentImageMetadata.model }}
-        </NDescriptionsItem>
-        <NDescriptionsItem label="Seed" content-style="max-width: 100px">
-          {{ global.state.imageBrowser.currentImageMetadata.seed }}
-        </NDescriptionsItem>
-        <NDescriptionsItem label="Prompt" content-style="max-width: 100px">
-          {{ global.state.imageBrowser.currentImageMetadata.prompt }}
-        </NDescriptionsItem>
         <NDescriptionsItem
-          label="Negative Prompt"
+          :label="key.toString()"
           content-style="max-width: 100px"
+          v-for="(item, key) of global.state.imageBrowser.currentImageMetadata"
+          v-bind:key="item.toString()"
         >
-          {{ global.state.imageBrowser.currentImageMetadata.negative_prompt }}
-        </NDescriptionsItem>
-        <NDescriptionsItem label="Steps" content-style="max-width: 100px">
-          {{ global.state.imageBrowser.currentImageMetadata.steps }}
-        </NDescriptionsItem>
-        <NDescriptionsItem label="Width" content-style="max-width: 100px">
-          {{ global.state.imageBrowser.currentImageMetadata.width }}
-        </NDescriptionsItem>
-        <NDescriptionsItem label="Height" content-style="max-width: 100px">
-          {{ global.state.imageBrowser.currentImageMetadata.height }}
-        </NDescriptionsItem>
-        <NDescriptionsItem
-          label="Guidance Scale"
-          content-style="max-width: 100px"
-        >
-          {{ global.state.imageBrowser.currentImageMetadata.guidance_scale }}
+          {{ item }}
         </NDescriptionsItem>
       </NDescriptions>
     </NGi>

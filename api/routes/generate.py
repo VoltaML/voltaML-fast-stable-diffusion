@@ -1,3 +1,4 @@
+import logging
 from typing import List
 
 from fastapi import APIRouter, HTTPException
@@ -8,6 +9,7 @@ from core.shared_dependent import cluster
 from core.types import (
     AITemplateBuildRequest,
     BuildRequest,
+    ControlNetQueueEntry,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -16,6 +18,7 @@ from core.types import (
 from core.utils import convert_bytes_to_image_stream, convert_image_to_base64
 
 router = APIRouter(tags=["txt2img"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/txt2img")
@@ -89,6 +92,29 @@ async def inpaint_job(job: InpaintQueueEntry):
 
 @router.post("/image_variations")
 async def image_variations_job(job: ImageVariationsQueueEntry):
+    "Generate variations of the image"
+
+    image_bytes = job.data.image
+    assert isinstance(image_bytes, bytes)
+    job.data.image = convert_bytes_to_image_stream(image_bytes)
+
+    try:
+        images: List[Image.Image]
+        time: float
+        images, time = await cluster.generate(job)
+    except ModelNotLoadedError:
+        raise HTTPException(  # pylint: disable=raise-missing-from
+            status_code=400, detail="Model is not loaded"
+        )
+
+    return {
+        "time": time,
+        "images": [convert_image_to_base64(i) for i in images],
+    }
+
+
+@router.post("/controlnet")
+async def controlnet_job(job: ControlNetQueueEntry):
     "Generate variations of the image"
 
     image_bytes = job.data.image

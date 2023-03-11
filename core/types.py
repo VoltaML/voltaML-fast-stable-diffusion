@@ -3,22 +3,13 @@ from enum import Enum
 from typing import Any, Literal, Union
 from uuid import uuid4
 
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
-    StableDiffusionPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_depth2img import (
+from diffusers import (
+    StableDiffusionControlNetPipeline,
     StableDiffusionDepth2ImgPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
     StableDiffusionImg2ImgPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import (
     StableDiffusionInpaintPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_instruct_pix2pix import (
     StableDiffusionInstructPix2PixPipeline,
-)
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_upscale import (
+    StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
@@ -36,20 +27,6 @@ class Job:
     save_image: bool = field(default=True)
 
 
-@dataclass
-class ImageMetadata:
-    "Metadata written to the image when it is saved"
-
-    prompt: str
-    negative_prompt: str
-    width: int
-    height: int
-    steps: int
-    guidance_scale: float
-    seed: str
-    model: str
-
-
 class SupportedModel(Enum):
     "Enum of models supported by the API"
 
@@ -65,6 +42,20 @@ class SupportedModel(Enum):
     AnythingV4 = "andite/anything-v4.0"
 
 
+class ControlNetMode(Enum):
+    "Enum of modes for the control net"
+
+    CANNY = "lllyasviel/sd-controlnet-canny"
+    DEPTH = "lllyasviel/sd-controlnet-depth"
+    HED = "lllyasviel/sd-controlnet-hed"
+    MLSD = "lllyasviel/sd-controlnet-mlsd"
+    NORMAL = "lllyasviel/sd-controlnet-normal"
+    OPENPOSE = "lllyasviel/sd-controlnet_openpose"
+    SCRIBBLE = "lllyasviel/sd-controlnet_scribble"
+    SEGMENTATION = "lllyasviel/sd-controlnet_seg"
+    NONE = "none"
+
+
 @dataclass
 class Txt2imgData:
     "Dataclass for the data of a txt2img request"
@@ -78,8 +69,8 @@ class Txt2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     seed: int = field(default=0)
-    batch_size: int = 1
-    batch_count: int = 1
+    batch_size: int = field(default=1)
+    batch_count: int = field(default=1)
 
 
 @dataclass
@@ -96,9 +87,9 @@ class Img2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     seed: int = field(default=0)
-    batch_size: int = 1
-    batch_count: int = 1
-    strength: float = 0.6
+    batch_size: int = field(default=1)
+    batch_count: int = field(default=1)
+    strength: float = field(default=0.6)
 
 
 @dataclass
@@ -116,8 +107,8 @@ class InpaintData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     seed: int = field(default=0)
-    batch_size: int = 1
-    batch_count: int = 1
+    batch_size: int = field(default=1)
+    batch_count: int = field(default=1)
 
 
 @dataclass
@@ -130,8 +121,35 @@ class ImageVariationsData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     seed: int = field(default=0)
-    batch_size: int = 1
-    batch_count: int = 1
+    batch_size: int = field(default=1)
+    batch_count: int = field(default=1)
+
+
+@dataclass
+class ControlNetData:
+    "Dataclass for the data of a control net request"
+
+    prompt: str
+    image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
+    controlnet: ControlNetMode
+    id: str = field(default_factory=lambda: uuid4().hex)
+    negative_prompt: str = field(default="")
+    width: int = field(default=512)
+    height: int = field(default=512)
+    steps: int = field(default=25)
+    guidance_scale: float = field(default=7)
+    seed: int = field(default=0)
+    batch_size: int = field(default=1)
+    batch_count: int = field(default=1)
+    controlnet_conditioning_scale: float = field(default=1.0)
+    detection_resolution: int = field(default=512)
+
+    canny_low_threshold: int = field(default=100)
+    canny_high_threshold: int = field(default=200)
+
+    mlsd_thr_v: float = field(default=0.1)
+    mlsd_thr_d: float = field(default=0.1)
 
 
 @dataclass
@@ -163,6 +181,13 @@ class ImageVariationsQueueEntry(Job):
 
 
 @dataclass
+class ControlNetQueueEntry(Job):
+    "Dataclass for a control net queue entry"
+
+    data: ControlNetData
+
+
+@dataclass
 class BuildRequest:
     "Dataclass for requesting a build of an engine"
 
@@ -191,6 +216,7 @@ PyTorchModelType = Union[
     StableDiffusionInstructPix2PixPipeline,
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
+    StableDiffusionControlNetPipeline,
 ]
 
 

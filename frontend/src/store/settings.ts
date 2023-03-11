@@ -1,3 +1,4 @@
+import { ControlNetType } from "@/core/interfaces";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { defineStore } from "pinia";
 import { computed, reactive } from "vue";
@@ -24,39 +25,81 @@ function getSchedulerOptions() {
       value: 4,
     },
     {
-      label: "Euler",
+      label: "EulerDiscrete",
       value: 5,
     },
     {
-      label: "Heun",
+      label: "HeunDiscrete",
       value: 6,
     },
     {
-      label: "Euler A",
+      label: "EulerAncestralDiscrete",
       value: 7,
     },
     {
-      label: "DPM++ 2M",
+      label: "DPMSolverMultistep",
       value: 8,
     },
     {
-      label: "DPM++ 2S",
+      label: "DPMSolverSinglestep",
       value: 9,
     },
     {
-      label: "DPM++ SDE",
+      label: "KDPM2Discrete",
       value: 10,
     },
     {
-      label: "DPM++ 2S A Karras",
+      label: "KDPM2AncestralDiscrete",
       value: 11,
     },
     {
-      label: "DEIS",
+      label: "DEISMultistep",
       value: 12,
+    },
+    {
+      label: "UniPCMultistep",
+      value: 13,
     },
   ];
   return scheduler_options;
+}
+
+function getControlNetOptions() {
+  const controlnet_options: SelectMixedOption[] = [
+    {
+      label: "Canny",
+      value: ControlNetType.CANNY,
+    },
+    {
+      label: "Depth",
+      value: ControlNetType.DEPTH,
+    },
+    {
+      label: "HED",
+      value: ControlNetType.HED,
+    },
+    {
+      label: "MLSD",
+      value: ControlNetType.MLSD,
+    },
+    {
+      label: "Normal",
+      value: ControlNetType.NORMAL,
+    },
+    {
+      label: "OpenPose",
+      value: ControlNetType.OPENPOSE,
+    },
+    {
+      label: "Scribble",
+      value: ControlNetType.SCRIBBLE,
+    },
+    {
+      label: "Segmentation",
+      value: ControlNetType.SEGMENTATION,
+    },
+  ];
+  return controlnet_options;
 }
 
 export const useSettings = defineStore("settings", () => {
@@ -64,6 +107,9 @@ export const useSettings = defineStore("settings", () => {
   const scheduler_options = computed(() => {
     return getSchedulerOptions();
   });
+  const controlnet_options = computed(() => {
+    return getControlNetOptions();
+  });
 
-  return { data, scheduler_options };
+  return { data, scheduler_options, controlnet_options };
 });

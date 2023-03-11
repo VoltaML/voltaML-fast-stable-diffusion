@@ -6,7 +6,6 @@ from typing import Any, Dict, List
 from fastapi import APIRouter, HTTPException
 
 from core.functions import image_meta_from_file
-from core.types import ImageMetadata
 
 router = APIRouter(tags=["output"])
 
@@ -54,7 +53,7 @@ def extra() -> List[str]:
 
 
 @router.get("/data")
-async def txt2img_data(filename: str) -> ImageMetadata:
+async def txt2img_data(filename: str) -> Dict[str, str]:
     "Get a generated image metadata"
 
     path = Path(filename)

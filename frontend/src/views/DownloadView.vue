@@ -1,35 +1,35 @@
 <template>
-  <NSpace
-    justify="end"
-    inline
-    align="center"
-    class="install"
-    style="width: 100%; margin: 8px"
-  >
-    <NInput
-      v-model:value="customModel"
-      placeholder="Custom model"
-      style="width: 350px"
-    />
-    <NButton
-      type="primary"
-      bordered
-      @click="downloadModel(customModel)"
-      :loading="conf.state.downloading"
-      :disabled="conf.state.downloading || customModel === ''"
-      secondary
-      style="margin-right: 16px"
-      >Install</NButton
+  <NCard style="margin: 12px 12px" title="Custom model" segmented>
+    <div
+      style="
+        width: 100%;
+        display: inline-flex;
+        justify-content: space-between;
+        align-items: center;
+      "
     >
-  </NSpace>
-  <div
-    style="
-      height: 50vh;
-      display: inline-flex;
-      justify-content: center;
-      width: 100%;
-    "
-  >
+      <div>Install custom models from Hugging Face</div>
+      <div style="display: inline-flex; align-items: center">
+        <NInput
+          v-model:value="customModel"
+          placeholder="andite/anything-v4.0"
+          style="width: 350px"
+        />
+        <NButton
+          type="primary"
+          bordered
+          @click="downloadModel(customModel)"
+          :loading="conf.state.downloading"
+          :disabled="conf.state.downloading || customModel === ''"
+          secondary
+          style="margin-right: 16px; margin-left: 4px"
+          >Install</NButton
+        >
+      </div>
+    </div>
+  </NCard>
+
+  <NCard title="Currated models" style="margin: 12px" segmented>
     <NDataTable
       :columns="columnsRef"
       :data="dataRef"
@@ -38,7 +38,7 @@
       :remote="true"
       style="padding-bottom: 24px"
     />
-  </div>
+  </NCard>
 </template>
 
 <script lang="ts" setup>
@@ -47,6 +47,7 @@ import { serverUrl } from "@/env";
 import { Home, Menu } from "@vicons/ionicons5";
 import {
   NButton,
+  NCard,
   NDataTable,
   NDropdown,
   NIcon,

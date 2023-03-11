@@ -4,9 +4,12 @@ import mimetypes
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, Request
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from starlette import status
+from starlette.responses import JSONResponse
 
 from api import websocket_manager
 from api.routes import general, generate, hardware, models, outputs, static, test, ws
@@ -30,6 +33,21 @@ app = FastAPI(
 
 mimetypes.init()
 mimetypes.add_type("application/javascript", ".js")
+
+
+@app.exception_handler(RequestValidationError)
+async def validation_exception_handler(_request: Request, exc: RequestValidationError):
+    "Output validation errors into debug log for debugging purposes"
+
+    logger.debug(exc)
+    content = {
+        "status_code": 10422,
+        "message": f"{exc}".replace("\n", " ").replace("   ", " "),
+        "data": None,
+    }
+    return JSONResponse(
+        content=content, status_code=status.HTTP_422_UNPROCESSABLE_ENTITY
+    )
 
 
 @app.exception_handler(404)

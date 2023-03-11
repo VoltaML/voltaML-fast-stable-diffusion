@@ -1,16 +1,19 @@
+import { ControlNetType } from "./core/interfaces";
+
 export enum Sampler {
   DDIM = 1,
   DDPM = 2,
   PNDM = 3,
   LMSD = 4,
-  EULER = 5,
-  HEUN = 6,
-  EULER_A = 7,
-  DPM_2M = 8,
-  DPM_2S = 9,
-  DPM_SDE = 10,
-  DPM_2S_A_KARRAS = 11,
-  DEIS = 12,
+  EulerDiscrete = 5,
+  HeunDiscrete = 6,
+  EulerAncestralDiscrete = 7,
+  DPMSolverMultistep = 8,
+  DPMSolverSinglestep = 9,
+  KDPM2Discrete = 10,
+  KDPM2AncestralDiscrete = 11,
+  DEISMultistep = 12,
+  UniPCMultistep = 13,
 }
 
 export interface SettingsInterface {
@@ -67,6 +70,22 @@ export interface SettingsInterface {
     batchSize: number;
     sampler: Sampler;
   };
+  controlnet: {
+    prompt: string;
+    image: string;
+    sampler: Sampler;
+    controlnet: ControlNetType;
+    negativePrompt: string;
+    width: number;
+    height: number;
+    steps: number;
+    cfgScale: number;
+    seed: number;
+    batchSize: number;
+    batchCount: number;
+    controlnetConditioningScale: number;
+    detectionResolution: number;
+  };
 }
 
 export const defaultNegativePrompt =
@@ -81,7 +100,7 @@ const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: Sampler.EULER_A,
+    sampler: Sampler.EulerAncestralDiscrete,
     prompt: "",
     steps: 25,
     batchCount: 1,
@@ -93,7 +112,7 @@ const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: Sampler.EULER_A,
+    sampler: Sampler.EulerAncestralDiscrete,
     prompt: "",
     steps: 25,
     batchCount: 1,
@@ -109,7 +128,7 @@ const defaultSettings: SettingsInterface = {
     cfgScale: 7,
     image: "",
     seed: -1,
-    sampler: Sampler.EULER_A,
+    sampler: Sampler.EulerAncestralDiscrete,
     steps: 25,
   },
   inpainting: {
@@ -124,7 +143,23 @@ const defaultSettings: SettingsInterface = {
     seed: -1,
     batchCount: 1,
     batchSize: 1,
-    sampler: Sampler.EULER_A,
+    sampler: Sampler.EulerAncestralDiscrete,
+  },
+  controlnet: {
+    prompt: "",
+    image: "",
+    sampler: Sampler.EulerAncestralDiscrete,
+    controlnet: ControlNetType.CANNY,
+    negativePrompt: defaultNegativePrompt,
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfgScale: 7,
+    seed: -1,
+    batchSize: 1,
+    batchCount: 1,
+    controlnetConditioningScale: 1,
+    detectionResolution: 512,
   },
 };
 

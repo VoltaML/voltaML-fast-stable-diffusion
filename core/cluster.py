@@ -15,6 +15,7 @@ from core.inference.functions import download_model
 from core.types import (
     AITemplateBuildRequest,
     BuildRequest,
+    ControlNetQueueEntry,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
@@ -101,6 +102,7 @@ class Cluster:
             Img2ImgQueueEntry,
             InpaintQueueEntry,
             ImageVariationsQueueEntry,
+            ControlNetQueueEntry,
         ],
     ) -> Tuple[List[Image.Image], float]:
         "Generate images from the queue"

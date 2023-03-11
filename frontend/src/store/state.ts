@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
-import type { imgData, imgMetadata } from "../core/interfaces";
+import type { imgData } from "../core/interfaces";
 type StepProgress = "error" | "process" | "wait" | "finish";
 
 export interface GPU {
@@ -43,11 +43,15 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
+  controlnet: {
+    currentImage: string;
+    images: string[];
+  };
   current_step: number;
   total_steps: number;
   imageBrowser: {
     currentImage: imgData;
-    currentImageMetadata: imgMetadata;
+    currentImageMetadata: Map<string, string>;
   };
   perf_drawer: {
     enabled: boolean;
@@ -82,6 +86,10 @@ export const useState = defineStore("state", () => {
       images: [],
       currentImage: "",
     },
+    controlnet: {
+      images: [],
+      currentImage: "",
+    },
     current_step: 0,
     total_steps: 0,
     imageBrowser: {
@@ -89,16 +97,7 @@ export const useState = defineStore("state", () => {
         path: "",
         time: 0,
       },
-      currentImageMetadata: {
-        prompt: "",
-        negative_prompt: "",
-        width: 0,
-        height: 0,
-        steps: 0,
-        guidance_scale: 0,
-        seed: "",
-        model: "",
-      },
+      currentImageMetadata: new Map(),
     },
     perf_drawer: {
       enabled: false,

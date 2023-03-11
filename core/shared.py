@@ -1,4 +1,5 @@
 import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from typing import TYPE_CHECKING, Union
 
 if TYPE_CHECKING:
@@ -11,3 +12,4 @@ current_done_steps: int = 0
 asyncio_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 interrupt: bool = False
 hf_token = ""
+threadpool = ThreadPoolExecutor(max_workers=1)

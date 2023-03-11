@@ -30,6 +30,7 @@ parser.add_argument(
     type=str,
 )
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
+parser.add_argument("--low-vram", action="store_true", help="Use low VRAM mode")
 args = parser.parse_args()
 
 
@@ -147,9 +148,22 @@ def checks():
     # Install pytorch and api requirements
     install_pytorch()
 
+    # Save the token to config
     from core import shared
 
     shared.hf_token = args.token
+
+    # Create the diffusers cache folder
+    from diffusers.utils import DIFFUSERS_CACHE
+
+    Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
+
+    # Config
+    from core.config import config
+
+    config.low_vram = True if args.low_vram else bool(os.environ.get("LOW_VRAM", False))
+    if config.low_vram:
+        logger.warning("Using low VRAM mode")
 
 
 if __name__ == "__main__":

@@ -7,7 +7,7 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-skip_requirements = ["cuda-python"]
+skip_requirements = ["cuda-python", "opencv-contrib-python-headless"]
 logger = logging.getLogger(__name__)
 
 
