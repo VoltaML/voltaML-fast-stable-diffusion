@@ -60,7 +60,7 @@ async def run_in_thread_async(
     func: Union[Callable[..., Any], Coroutine[Any, Any, Any]],
     args: Optional[Tuple] = None,
     kwarkgs: Optional[Dict] = None,
-) -> Tuple[Union[Any, None], Union[Exception, None]]:
+) -> Any:
     "Run a function in a separate thread"
 
     thread = ThreadWithReturnValue(target=func, args=args, kwargs=kwarkgs)
@@ -71,7 +71,12 @@ async def run_in_thread_async(
         await asyncio.sleep(0.1)
 
     # get the value returned from the thread
-    return thread.join()
+    value, exc = thread.join()
+
+    if exc:
+        raise exc
+
+    return value
 
 
 def image_grid(imgs: List[Image.Image]):

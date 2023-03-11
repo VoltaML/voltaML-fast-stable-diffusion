@@ -38,11 +38,17 @@ class ThreadWithReturnValue(Thread):
         if target is not None:  # type: ignore
             with torch.no_grad():
                 if isinstance(target, Callable):
+                    logger.debug(
+                        "Executing coroutine %s in %s", target.__name__, self.name
+                    )
                     try:
                         self._return = target(*self._args, **self._kwargs)  # type: ignore
                     except Exception as err:  # pylint: disable=broad-except
                         self._err = err
                 else:
+                    logger.debug(
+                        "Executing coroutine %s in %s", target.__name__, self.name
+                    )
                     try:
                         if asyncio_loop:
                             self._return = ensure_future(

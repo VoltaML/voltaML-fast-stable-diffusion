@@ -122,13 +122,7 @@ class GPU:
 
         try:
             images: Optional[List[Image.Image]]
-            error: Optional[Exception]
-            images, error = await run_in_thread_async(
-                func=generate_thread_call, args=(job,)
-            )
-
-            if error is not None:
-                raise error
+            images = await run_in_thread_async(func=generate_thread_call, args=(job,))
 
             assert images is not None
 
@@ -153,7 +147,7 @@ class GPU:
 
         logger.debug(f"Loading {model} with {backend} backend")
 
-        async def thread_call(
+        def load_model_thread_call(
             model: str,
             backend: InferenceBackend,
         ):
@@ -253,9 +247,7 @@ class GPU:
                 )
             )
 
-        _, err = await run_in_thread_async(func=thread_call, args=(model, backend))
-        if err:
-            raise err
+        await run_in_thread_async(func=load_model_thread_call, args=(model, backend))
 
     def loaded_models_list(self) -> list:
         "Return a list of loaded models"
@@ -309,13 +301,13 @@ class GPU:
 
         from_safetensors = ".safetensors" in checkpoint
 
-        def call(**kwargs):
+        def convert_from_ckpt_thread_call(**kwargs):
             save_path = kwargs.pop("dump_path")
             pipe = load_pipeline_from_original_stable_diffusion_ckpt(**kwargs)
             pipe.save_pretrained(save_path, safe_serialization=True)
 
-        _, err = await run_in_thread_async(
-            func=call,
+        await run_in_thread_async(
+            func=convert_from_ckpt_thread_call,
             kwarkgs={
                 "checkpoint_path": checkpoint,
                 "device": self.cuda_id,
@@ -328,13 +320,10 @@ class GPU:
             },
         )
 
-        if err is not None:
-            raise err
-
     async def accelerate(self, model: str):
         "Convert a model to a TensorRT model"
 
-        def call():
+        def trt_accelerate_thread_call():
             from core.tensorrt.volta_accelerate import TRTModel
 
             trt_model = TRTModel(
@@ -361,30 +350,24 @@ class GPU:
             trt_model.teardown()
             del trt_model
 
-        _, err = await run_in_thread_async(func=call)
-        if err is not None:
-            raise err
+        await run_in_thread_async(func=trt_accelerate_thread_call)
 
     async def build_trt_engine(self, request: BuildRequest):
         "Build a TensorRT engine from a request"
 
         from .inference.tensorrt import TensorRTModel
 
-        def build():
+        def trt_build_thread_call():
             model = TensorRTModel(model_id=request.model_id, use_f32=False)
             model.generate_engine(request=request)
 
-        data, err = await run_in_thread_async(func=build)
-
-        print(f"Engine built: data:{data}, err:{err}")
-
-        if err is not None:
-            raise err
+        await run_in_thread_async(func=trt_build_thread_call)
+        logger.info("TensorRT engine successfully built")
 
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
         "Convert a model to a AITemplate engine"
 
-        def build():
+        def ait_build_thread_call():
             from core.aitemplate.scripts.compile import compile_diffusers
 
             compile_diffusers(
@@ -394,16 +377,14 @@ class GPU:
                 width=request.width,
             )
 
-        _, err = await run_in_thread_async(func=build)
-        if err is not None:
-            raise err
+        await run_in_thread_async(func=ait_build_thread_call)
 
         logger.info("AITemplate engine successfully built")
 
     async def to_fp16(self, model: str):
         "Convert a model to FP16"
 
-        def call():
+        def model_to_f16_thread_call():
             pt_model = PyTorchStableDiffusion(
                 model_id=model,
                 device=self.cuda_id,
@@ -411,7 +392,4 @@ class GPU:
 
             pt_model.save(path="converted/" + model.split("/")[-1])
 
-        _, err = await run_in_thread_async(func=call)
-
-        if err is not None:
-            raise err
+        await run_in_thread_async(func=model_to_f16_thread_call)

@@ -76,7 +76,7 @@ async def cleanup():
 async def download_model(model: str):
     "Download a model to the cache"
 
-    await cluster.download_model(model)
+    await cluster.download_huggingface_model(model)
     return {"message": "Model downloaded"}
 
 

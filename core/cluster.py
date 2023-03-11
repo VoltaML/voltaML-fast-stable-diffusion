@@ -78,13 +78,10 @@ class Cluster:
                 )
             )
 
-    async def download_model(self, model: str):
+    async def download_huggingface_model(self, model: str):
         "Download a model from the internet."
 
-        _, err = await run_in_thread_async(download_model, args=(model,))
-
-        if err:
-            raise err
+        await run_in_thread_async(download_model, args=(model,))
 
     async def loaded_models(self) -> Dict[int, List[str]]:
         "Return a list of all loaded models."
