@@ -72,10 +72,6 @@ def is_root():
 
 def main():
     "Run the API"
-    import torch.backends.cudnn
-
-    # Benchmark a few fucntions to find the best configuration
-    torch.backends.cudnn.benchmark = True
 
     if args.ngrok:
         import nest_asyncio
