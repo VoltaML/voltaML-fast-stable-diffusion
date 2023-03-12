@@ -34582,8 +34582,15 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const serverUrl = "http://localhost:5003";
-const webSocketUrl = "ws://localhost:5003";
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+  new_uri = "wss:";
+} else {
+  new_uri = "ws:";
+}
+const serverUrl = loc.protocol + "//" + loc.host;
+const webSocketUrl = new_uri + "//" + loc.host;
 function progressForward(progress, global2) {
   if (progress === 0) {
     return 0;
