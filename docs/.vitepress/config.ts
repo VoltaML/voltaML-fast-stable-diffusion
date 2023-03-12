@@ -31,7 +31,7 @@ export default defineConfig({
 				text: "Installation",
 				items: [
 					{ text: "Docker", link: "/installation/docker" },
-					{ text: "Local", link: "/installation/local" },
+					{ text: "Local", link: "/developers/pytorch" },
 				],
 			},
 			{
