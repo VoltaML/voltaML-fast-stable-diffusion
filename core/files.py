@@ -36,14 +36,18 @@ class CachedModelList:
                 continue
 
             name: str = "/".join(model_name.split("--")[1:3])
-            models.append(
-                {
-                    "name": name,
-                    "path": name,
-                    "backend": "PyTorch",
-                    "valid": is_valid_diffusers_model(get_full_model_path(name)),
-                }
-            )
+            try:
+                models.append(
+                    {
+                        "name": name,
+                        "path": name,
+                        "backend": "PyTorch",
+                        "valid": is_valid_diffusers_model(get_full_model_path(name)),
+                    }
+                )
+            except ValueError:
+                logger.debug(f"Invalid model {name}, skipping...")
+                continue
 
         # Localy stored models
         logger.debug(
@@ -229,6 +233,9 @@ def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
 
 def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
     "Return the current ref of the diffusers model"
+
+    if not os.path.exists(os.path.join(path, "refs", revision)):
+        return None
 
     snapshots = os.listdir(os.path.join(path, "snapshots"))
     ref = ""

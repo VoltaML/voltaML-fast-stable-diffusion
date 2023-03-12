@@ -27,7 +27,7 @@ export enum ControlNetType {
   HED = "lllyasviel/sd-controlnet-hed",
   MLSD = "lllyasviel/sd-controlnet-mlsd",
   NORMAL = "lllyasviel/sd-controlnet-normal",
-  OPENPOSE = "lllyasviel/sd-controlnet_openpose",
-  SCRIBBLE = "lllyasviel/sd-controlnet_scribble",
-  SEGMENTATION = "lllyasviel/sd-controlnet_seg",
+  OPENPOSE = "lllyasviel/sd-controlnet-openpose",
+  SCRIBBLE = "lllyasviel/sd-controlnet-scribble",
+  SEGMENTATION = "lllyasviel/sd-controlnet-seg",
 }

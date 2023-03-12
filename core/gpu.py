@@ -1,4 +1,5 @@
 import logging
+import multiprocessing
 import os
 import time
 from pathlib import Path
@@ -10,6 +11,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
+from core.config import config
 from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import DimensionError
 from core.inference.aitemplate import AITemplateStableDiffusion
@@ -367,6 +369,15 @@ class GPU:
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
         "Convert a model to a AITemplate engine"
 
+        # Set the number of threads to use and keep them within boundaries of the system
+        if request.threads:
+            if request.threads < 1:
+                request.threads = 1
+            elif request.threads > multiprocessing.cpu_count():
+                request.threads = multiprocessing.cpu_count()
+            else:
+                config.inference.num_threads = request.threads
+
         def ait_build_thread_call():
             from core.aitemplate.scripts.compile import compile_diffusers
 
@@ -376,6 +387,8 @@ class GPU:
                 height=request.height,
                 width=request.width,
             )
+
+            self.memory_cleanup()
 
         await run_in_thread_async(func=ait_build_thread_call)
 

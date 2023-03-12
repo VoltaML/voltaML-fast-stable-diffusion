@@ -34487,6 +34487,10 @@ const useState = defineStore("state", () => {
       images: [],
       currentImage: ""
     },
+    controlnet: {
+      images: [],
+      currentImage: ""
+    },
     current_step: 0,
     total_steps: 0,
     imageBrowser: {
@@ -34494,16 +34498,7 @@ const useState = defineStore("state", () => {
         path: "",
         time: 0
       },
-      currentImageMetadata: {
-        prompt: "",
-        negative_prompt: "",
-        width: 0,
-        height: 0,
-        steps: 0,
-        guidance_scale: 0,
-        seed: "",
-        model: ""
-      }
+      currentImageMetadata: /* @__PURE__ */ new Map()
     },
     perf_drawer: {
       enabled: false,
@@ -34648,6 +34643,16 @@ function processWebSocket(message, global2, notificationProvider) {
     }
     case "inpainting": {
       global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "controlnet": {
+      global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
       global2.state.progress = progressForward(message.data.progress, global2);
       global2.state.current_step = currentStepForward(
         message.data.current_step,
@@ -34994,6 +34999,17 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
+var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
+  ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
+  ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
+  ControlNetType2["HED"] = "lllyasviel/sd-controlnet-hed";
+  ControlNetType2["MLSD"] = "lllyasviel/sd-controlnet-mlsd";
+  ControlNetType2["NORMAL"] = "lllyasviel/sd-controlnet-normal";
+  ControlNetType2["OPENPOSE"] = "lllyasviel/sd-controlnet-openpose";
+  ControlNetType2["SCRIBBLE"] = "lllyasviel/sd-controlnet-scribble";
+  ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
+  return ControlNetType2;
+})(ControlNetType || {});
 const defaultNegativePrompt = "(((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing, broken legs censor, censored, censor_bar, multiple breasts, (mutated hands and fingers:1.5), (long body :1.3), (mutation, poorly drawn :1.2), black-white, bad anatomy, liquid body, liquidtongue, disfigured, malformed, mutated, anatomical nonsense, text font ui, error, malformed hands, long neck, blurred, lowers, low res, bad anatomy, bad proportions, bad shadow, uncoordinated body, unnatural body, fused breasts, bad breasts, huge breasts, poorly drawn breasts, extra breasts, liquid breasts, heavy breasts, missingbreasts, huge haunch, huge thighs, huge calf, bad hands, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, fusedears, bad ears, poorly drawn ears, extra ears, liquid ears, heavy ears, missing ears, old photo, low res, black and white, black and white filter, colorless";
 const defaultSettings = {
   $schema: "./schema/ui_settings.json",
@@ -35048,7 +35064,23 @@ const defaultSettings = {
     batchCount: 1,
     batchSize: 1,
     sampler: 7
-    /* EULER_A */
+    /* EulerAncestralDiscrete */
+  },
+  controlnet: {
+    prompt: "",
+    image: "",
+    sampler: 7,
+    controlnet: ControlNetType.CANNY,
+    negativePrompt: defaultNegativePrompt,
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfgScale: 7,
+    seed: -1,
+    batchSize: 1,
+    batchCount: 1,
+    controlnetConditioningScale: 1,
+    detectionResolution: 512
   }
 };
 class Settings {
@@ -35079,46 +35111,90 @@ function getSchedulerOptions() {
       value: 4
     },
     {
-      label: "Euler",
+      label: "EulerDiscrete",
       value: 5
     },
     {
-      label: "Heun",
+      label: "HeunDiscrete",
       value: 6
     },
     {
-      label: "Euler A",
+      label: "EulerAncestralDiscrete",
       value: 7
     },
     {
-      label: "DPM++ 2M",
+      label: "DPMSolverMultistep",
       value: 8
     },
     {
-      label: "DPM++ 2S",
+      label: "DPMSolverSinglestep",
       value: 9
     },
     {
-      label: "DPM++ SDE",
+      label: "KDPM2Discrete",
       value: 10
     },
     {
-      label: "DPM++ 2S A Karras",
+      label: "KDPM2AncestralDiscrete",
       value: 11
     },
     {
-      label: "DEIS",
+      label: "DEISMultistep",
       value: 12
+    },
+    {
+      label: "UniPCMultistep",
+      value: 13
     }
   ];
   return scheduler_options;
+}
+function getControlNetOptions() {
+  const controlnet_options = [
+    {
+      label: "Canny",
+      value: ControlNetType.CANNY
+    },
+    {
+      label: "Depth",
+      value: ControlNetType.DEPTH
+    },
+    {
+      label: "HED",
+      value: ControlNetType.HED
+    },
+    {
+      label: "MLSD",
+      value: ControlNetType.MLSD
+    },
+    {
+      label: "Normal",
+      value: ControlNetType.NORMAL
+    },
+    {
+      label: "OpenPose",
+      value: ControlNetType.OPENPOSE
+    },
+    {
+      label: "Scribble",
+      value: ControlNetType.SCRIBBLE
+    },
+    {
+      label: "Segmentation",
+      value: ControlNetType.SEGMENTATION
+    }
+  ];
+  return controlnet_options;
 }
 const useSettings = defineStore("settings", () => {
   const data = reactive(new Settings({}));
   const scheduler_options = computed(() => {
     return getSchedulerOptions();
   });
-  return { data, scheduler_options };
+  const controlnet_options = computed(() => {
+    return getControlNetOptions();
+  });
+  return { data, scheduler_options, controlnet_options };
 });
 const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
@@ -35426,7 +35502,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const overrides = {
       common: {
-        fontSize: "14",
+        fontSize: "10",
         fontWeight: "600"
       }
     };
@@ -36060,7 +36136,7 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  NGrid as $,
+  ImageOutput as $,
   createBaseVNode as A,
   createBlock as B,
   withCtx as C,
@@ -36078,22 +36154,22 @@ export {
   useSettings as O,
   useMessage as P,
   NGi as Q,
-  NTooltip as R,
+  NInput as R,
   SuccessIcon as S,
-  createTextVNode as T,
-  NSelect as U,
-  NSlider as V,
+  NTooltip as T,
+  createTextVNode as U,
+  NSelect as V,
   WarningIcon as W,
-  NInputNumber as X,
-  _sfc_main$2 as Y,
-  ImageOutput as Z,
+  NSlider as X,
+  NInputNumber as Y,
+  _sfc_main$2 as Z,
   _export_sfc as _,
   commonVars$a as a,
   depx as a$,
-  Fragment as a0,
+  NGrid as a0,
   serverUrl as a1,
   v4 as a2,
-  NInput as a3,
+  Fragment as a3,
   NButton as a4,
   NIcon as a5,
   resultLight$1 as a6,

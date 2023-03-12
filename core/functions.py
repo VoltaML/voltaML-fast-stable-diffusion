@@ -195,6 +195,9 @@ def optimize_model(pipe: StableDiffusionPipeline) -> None:
         pipe.enable_model_cpu_offload()
         logger.info("Optimization: Enabled model CPU offload")
 
+    pipe.enable_vae_slicing()
+    logger.info("Optimization: Enabled VAE slicing")
+
     # pipe.enable_vae_tiling()
     # logger.info("Optimization: Enabled VAE tiling")
 

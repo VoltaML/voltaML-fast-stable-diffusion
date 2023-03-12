@@ -1,12 +1,12 @@
 
-.img-slider[data-v-6bd478f3] {
+.img-slider[data-v-ad1dc77f] {
   aspect-ratio: 1/1;
   height: 182px;
   width: auto;
 }
-.img-container[data-v-6bd478f3]:not(:last-child) {
+.img-container[data-v-ad1dc77f]:not(:last-child) {
   margin-right: 6px;
 }
-.img-container[data-v-6bd478f3] {
+.img-container[data-v-ad1dc77f] {
   cursor: pointer;
 }

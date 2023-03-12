@@ -168,6 +168,14 @@ class PyTorchStableDiffusion(InferenceModel):
             )
 
             assert isinstance(cn, ControlNetModel)
+            try:
+                cn.enable_xformers_memory_efficient_attention()
+                logger.info("Optimization: Enabled xformers memory efficient attention")
+            except ModuleNotFoundError:
+                logger.info(
+                    "Optimization: xformers not available, enabling attention slicing instead"
+                )
+
             cn.to(self.device)
             self.controlnet = cn
 

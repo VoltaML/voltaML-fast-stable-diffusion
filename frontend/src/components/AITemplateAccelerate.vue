@@ -86,6 +86,26 @@
         />
       </div>
 
+      <!-- CPU Threads -->
+      <div class="flex-container">
+        <p class="slider-label">CPU Threads (affects RAM usage)</p>
+        <NSlider
+          v-model:value="threads"
+          :step="1"
+          :min="1"
+          :max="64"
+          style="margin-right: 12px"
+        />
+        <NInputNumber
+          v-model:value="threads"
+          size="small"
+          style="min-width: 96px; width: 96px"
+          :step="1"
+          :min="1"
+          :max="64"
+        />
+      </div>
+
       <!-- Model select -->
       <div class="flex-container">
         <p class="slider-label">Model</p>
@@ -136,6 +156,7 @@ const width = ref(512);
 const height = ref(512);
 const batchSize = ref(1);
 const model = ref("");
+const threads = ref(8);
 const modelOptions: Array<SelectOption> = reactive([]);
 
 const building = ref(false);
@@ -172,7 +193,8 @@ const accelerate = async () => {
       model_id: model.value,
       width: width.value,
       height: height.value,
-      batch_ize: batchSize.value,
+      batch_size: batchSize.value,
+      threads: threads.value,
     }),
   })
     .then(() => {

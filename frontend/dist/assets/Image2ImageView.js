@@ -1,5 +1,5 @@
-import { c as commonLight, a as commonVars, b as composite, d as changeColor, e as cB, f as cE, g as cM, h as fadeInHeightExpandTransition, i as c, j as defineComponent, u as useConfig, k as useTheme, l as useRtl, m as computed, n as useThemeClass, r as ref, o as h, p as mergeProps, N as NBaseClose, q as resolveSlot, s as resolveWrappedSlot, t as NFadeInExpandTransition, v as getMargin, w as createKey, x as NBaseIcon, E as ErrorIcon, W as WarningIcon, I as InfoIcon, S as SuccessIcon, y as openBlock, z as createElementBlock, A as createBaseVNode, B as createBlock, C as withCtx, D as createVNode, F as toDisplayString, G as unref, H as NSpace, J as NCard, K as pushScopeId, L as popScopeId, _ as _export_sfc, M as useState, O as useSettings, P as useMessage, Q as NGi, R as NTooltip, T as createTextVNode, U as NSelect, V as NSlider, X as NInputNumber, Y as _sfc_main$5, Z as ImageOutput, $ as NGrid, a0 as Fragment, a1 as serverUrl, a2 as v4, a3 as NInput, a4 as NButton, a5 as NIcon } from "./index.js";
-import { _ as _sfc_main$6 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
+import { c as commonLight, a as commonVars, b as composite, d as changeColor, e as cB, f as cE, g as cM, h as fadeInHeightExpandTransition, i as c, j as defineComponent, u as useConfig, k as useTheme, l as useRtl, m as computed, n as useThemeClass, r as ref, o as h, p as mergeProps, N as NBaseClose, q as resolveSlot, s as resolveWrappedSlot, t as NFadeInExpandTransition, v as getMargin, w as createKey, x as NBaseIcon, E as ErrorIcon, W as WarningIcon, I as InfoIcon, S as SuccessIcon, y as openBlock, z as createElementBlock, A as createBaseVNode, B as createBlock, C as withCtx, D as createVNode, F as toDisplayString, G as unref, H as NSpace, J as NCard, K as pushScopeId, L as popScopeId, _ as _export_sfc, M as useState, O as useSettings, P as useMessage, Q as NGi, R as NInput, T as NTooltip, U as createTextVNode, V as NSelect, X as NSlider, Y as NInputNumber, Z as _sfc_main$6, $ as ImageOutput, a0 as NGrid, a1 as serverUrl, a2 as v4, a3 as Fragment, a4 as NButton, a5 as NIcon } from "./index.js";
+import { _ as _sfc_main$7 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
 import { N as NTabPane, a as NTabs } from "./Tabs.js";
 const self = (vars) => {
   const { lineHeight, borderRadius, fontWeightStrong, baseColor, dividerColor, actionColor, textColor1, textColor2, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, warningColor, errorColor, fontSize } = vars;
@@ -298,12 +298,12 @@ const NAlert = defineComponent({
     });
   }
 });
-const _hoisted_1$7 = {
+const _hoisted_1$8 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M48 399.26C48 335.19 62.44 284 90.91 247c34.38-44.67 88.68-68.77 161.56-71.75V72L464 252L252.47 432V329.35c-44.25 1.19-77.66 7.58-104.27 19.84c-28.75 13.25-49.6 33.05-72.08 58.7L48 440z",
@@ -313,10 +313,32 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$7 = [_hoisted_2$7];
+const _hoisted_3$8 = [_hoisted_2$8];
 const ArrowRedoSharp = defineComponent({
   name: "ArrowRedoSharp",
   render: function render(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$8);
+  }
+});
+const _hoisted_1$7 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M464 440l-28.12-32.11c-22.48-25.65-43.33-45.45-72.08-58.7c-26.61-12.26-60-18.65-104.27-19.84V432L48 252L259.53 72v103.21c72.88 3 127.18 27.08 161.56 71.75C449.56 284 464 335.19 464 399.26z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$7 = [_hoisted_2$7];
+const ArrowUndoSharp = defineComponent({
+  name: "ArrowUndoSharp",
+  render: function render2(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$7);
   }
 });
@@ -328,18 +350,28 @@ const _hoisted_1$6 = {
 const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M464 440l-28.12-32.11c-22.48-25.65-43.33-45.45-72.08-58.7c-26.61-12.26-60-18.65-104.27-19.84V432L48 252L259.53 72v103.21c72.88 3 127.18 27.08 161.56 71.75C449.56 284 464 335.19 464 399.26z",
+    d: "M480 96l-64-64l-244 260l64 64z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = [_hoisted_2$6];
-const ArrowUndoSharp = defineComponent({
-  name: "ArrowUndoSharp",
-  render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$6);
+const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M142 320c-36.52 0-66 30.63-66 68.57c0 25.43-31 45.72-44 45.72C52.24 462.17 86.78 480 120 480c48.62 0 88-40.91 88-91.43c0-37.94-29.48-68.57-66-68.57z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$5 = [_hoisted_2$6, _hoisted_3$6];
+const BrushSharp = defineComponent({
+  name: "BrushSharp",
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_4$5);
   }
 });
 const _hoisted_1$5 = {
@@ -350,8 +382,8 @@ const _hoisted_1$5 = {
 const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M480 96l-64-64l-244 260l64 64z",
-    fill: "currentColor"
+    fill: "none",
+    d: "M337.46 240L312 214.54l-56 56l-56-56L174.54 240l56 56l-56 56L200 377.46l56-56l56 56L337.46 352l-56-56l56-56z"
   },
   null,
   -1
@@ -360,28 +392,6 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M142 320c-36.52 0-66 30.63-66 68.57c0 25.43-31 45.72-44 45.72C52.24 462.17 86.78 480 120 480c48.62 0 88-40.91 88-91.43c0-37.94-29.48-68.57-66-68.57z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$4 = [_hoisted_2$5, _hoisted_3$5];
-const BrushSharp = defineComponent({
-  name: "BrushSharp",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_4$4);
-  }
-});
-const _hoisted_1$4 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
     fill: "none",
     d: "M337.46 240L312 214.54l-56 56l-56-56L174.54 240l56 56l-56 56L200 377.46l56-56l56 56L337.46 352l-56-56l56-56z"
   },
@@ -389,17 +399,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    fill: "none",
-    d: "M337.46 240L312 214.54l-56 56l-56-56L174.54 240l56 56l-56 56L200 377.46l56-56l56 56L337.46 352l-56-56l56-56z"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M64 160l29.74 282.51A24 24 0 0 0 117.61 464h276.78a24 24 0 0 0 23.87-21.49L448 160zm248 217.46l-56-56l-56 56L174.54 352l56-56l-56-56L200 214.54l56 56l56-56L337.46 240l-56 56l56 56z",
@@ -409,7 +409,7 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   "rect",
   {
     x: "32",
@@ -424,20 +424,20 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$3 = [_hoisted_2$4, _hoisted_3$4, _hoisted_4$3, _hoisted_5$3];
+const _hoisted_6$4 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$4, _hoisted_5$4];
 const TrashBinSharp = defineComponent({
   name: "TrashBinSharp",
   render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$3);
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$4);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-19b3e0b6"), n = n(), popScopeId(), n);
-const _hoisted_1$3 = { class: "image-container" };
-const _hoisted_2$3 = ["src"];
-const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("label", { for: "file-upload" }, [
+const _withScopeId$3 = (n) => (pushScopeId("data-v-19b3e0b6"), n = n(), popScopeId(), n);
+const _hoisted_1$4 = { class: "image-container" };
+const _hoisted_2$4 = ["src"];
+const _hoisted_3$4 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("label", { for: "file-upload" }, [
   /* @__PURE__ */ createBaseVNode("span", { class: "file-upload" }, "Select image")
 ], -1));
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "ImageUpload",
   props: {
     callback: {
@@ -477,11 +477,11 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NCard), { title: "Input image" }, {
         default: withCtx(() => [
-          createBaseVNode("div", _hoisted_1$3, [
+          createBaseVNode("div", _hoisted_1$4, [
             createBaseVNode("img", {
               src: _ctx.$props.preview,
               style: { "width": "400px", "height": "auto" }
-            }, null, 8, _hoisted_2$3)
+            }, null, 8, _hoisted_2$4)
           ]),
           createVNode(unref(NSpace), {
             inline: "",
@@ -491,7 +491,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           }, {
             default: withCtx(() => [
               createBaseVNode("p", null, toDisplayString(width.value) + "x" + toDisplayString(height.value), 1),
-              _hoisted_3$3
+              _hoisted_3$4
             ]),
             _: 1
           }),
@@ -509,7 +509,426 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   }
 });
 const ImageUpload_vue_vue_type_style_index_0_scoped_19b3e0b6_lang = "";
-const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-19b3e0b6"]]);
+const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-19b3e0b6"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-9ef89a4a"), n = n(), popScopeId(), n);
+const _hoisted_1$3 = { style: { "margin": "0 12px" } };
+const _hoisted_2$3 = { class: "flex-container" };
+const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
+const _hoisted_4$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using Euler A for the best results (but it also takes more time). ", -1));
+const _hoisted_5$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("a", {
+  target: "_blank",
+  href: "https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
+}, "Learn more", -1));
+const _hoisted_6$3 = { class: "flex-container" };
+const _hoisted_7$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "ControlNet", -1));
+const _hoisted_8$3 = { class: "flex-container" };
+const _hoisted_9$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1));
+const _hoisted_10$3 = { class: "flex-container" };
+const _hoisted_11$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1));
+const _hoisted_12$3 = { class: "flex-container" };
+const _hoisted_13$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
+const _hoisted_14$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1));
+const _hoisted_15$3 = { class: "flex-container" };
+const _hoisted_16$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1));
+const _hoisted_17$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1));
+const _hoisted_18$3 = { class: "flex-container" };
+const _hoisted_19$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Count", -1));
+const _hoisted_20$2 = { class: "flex-container" };
+const _hoisted_21$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1));
+const _hoisted_22$2 = { class: "flex-container" };
+const _hoisted_23$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "ControlNet Conditioning Scale", -1));
+const _hoisted_24$2 = { class: "flex-container" };
+const _hoisted_25$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Detection resolution", -1));
+const _hoisted_26 = { class: "flex-container" };
+const _hoisted_27 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Seed", -1));
+const _hoisted_28 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1));
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+  __name: "ControlNet",
+  setup(__props) {
+    const global = useState();
+    const conf = useSettings();
+    const messageHandler = useMessage();
+    const checkSeed = (seed) => {
+      if (seed === -1) {
+        seed = Math.floor(Math.random() * 999999999);
+      }
+      return seed;
+    };
+    const imageSelectCallback = (base64Image) => {
+      conf.data.settings.controlnet.image = base64Image;
+    };
+    const generate = () => {
+      if (conf.data.settings.controlnet.seed === null) {
+        messageHandler.error("Please set a seed");
+        return;
+      }
+      global.state.generating = true;
+      fetch(`${serverUrl}/api/generate/controlnet`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+          data: {
+            prompt: conf.data.settings.controlnet.prompt,
+            image: conf.data.settings.controlnet.image,
+            id: v4(),
+            negative_prompt: conf.data.settings.controlnet.negativePrompt,
+            width: conf.data.settings.controlnet.width,
+            height: conf.data.settings.controlnet.height,
+            steps: conf.data.settings.controlnet.steps,
+            guidance_scale: conf.data.settings.controlnet.cfgScale,
+            seed: checkSeed(conf.data.settings.controlnet.seed),
+            batch_size: conf.data.settings.controlnet.batchSize,
+            batch_count: conf.data.settings.controlnet.batchCount,
+            controlnet: conf.data.settings.controlnet.controlnet,
+            controlnet_conditioning_scale: conf.data.settings.controlnet.controlnetConditioningScale,
+            detection_resolution: conf.data.settings.controlnet.detectionResolution,
+            scheduler: conf.data.settings.controlnet.sampler,
+            canny_low_threshold: 100,
+            canny_high_threshold: 200,
+            mlsd_thr_v: 0.1,
+            mlsd_thr_d: 0.1
+          },
+          model: conf.data.settings.model
+        })
+      }).then((res) => {
+        global.state.generating = false;
+        console.log(res);
+        res.json().then((data) => {
+          console.log(data.images.length);
+          global.state.controlnet.images = data.images;
+          global.state.progress = 0;
+          global.state.total_steps = 0;
+          global.state.current_step = 0;
+        });
+      }).catch((err) => {
+        global.state.generating = false;
+        messageHandler.error(err);
+        console.log(err);
+      });
+    };
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1$3, [
+        createVNode(unref(NGrid), {
+          cols: "1 850:2",
+          "x-gap": "12"
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NGi), null, {
+              default: withCtx(() => [
+                createVNode(ImageUpload, {
+                  callback: imageSelectCallback,
+                  preview: unref(conf).data.settings.controlnet.image,
+                  style: { "margin-bottom": "12px" }
+                }, null, 8, ["preview"]),
+                createVNode(unref(NCard), { title: "Settings" }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NSpace), {
+                      vertical: "",
+                      class: "left-container"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NInput), {
+                          value: unref(conf).data.settings.controlnet.prompt,
+                          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.controlnet.prompt = $event),
+                          type: "textarea",
+                          placeholder: "Prompt"
+                        }, null, 8, ["value"]),
+                        createVNode(unref(NInput), {
+                          value: unref(conf).data.settings.controlnet.negativePrompt,
+                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.controlnet.negativePrompt = $event),
+                          type: "textarea",
+                          placeholder: "Negative prompt"
+                        }, null, 8, ["value"]),
+                        createBaseVNode("div", _hoisted_2$3, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_3$3
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" The sampler is the method used to generate the image. Your result may vary drastically depending on the sampler you choose. "),
+                              _hoisted_4$3,
+                              _hoisted_5$3
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSelect), {
+                            options: unref(conf).scheduler_options,
+                            value: unref(conf).data.settings.controlnet.sampler,
+                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.controlnet.sampler = $event),
+                            style: { "flex-grow": "1" }
+                          }, null, 8, ["options", "value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_6$3, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_7$3
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" TODO ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSelect), {
+                            options: unref(conf).controlnet_options,
+                            value: unref(conf).data.settings.controlnet.controlnet,
+                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.controlnet.controlnet = $event),
+                            style: { "flex-grow": "1" }
+                          }, null, 8, ["options", "value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_8$3, [
+                          _hoisted_9$3,
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.width,
+                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.controlnet.width = $event),
+                            min: 128,
+                            max: 2048,
+                            step: 8,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.width,
+                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.controlnet.width = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            step: 8,
+                            min: 128,
+                            max: 2048
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_10$3, [
+                          _hoisted_11$3,
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.height,
+                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.controlnet.height = $event),
+                            min: 128,
+                            max: 2048,
+                            step: 8,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.height,
+                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.controlnet.height = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            step: 8,
+                            min: 128,
+                            max: 2048
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_12$3, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_13$3
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
+                              _hoisted_14$3
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.steps,
+                            "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.controlnet.steps = $event),
+                            min: 5,
+                            max: 300,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.steps,
+                            "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.controlnet.steps = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            min: 5,
+                            max: 300
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_15$3, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_16$3
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(' Guidance scale indicates how much should model stay close to the prompt. Higher values might be exactly what you want, but generated images might have some artefacts. Lower values indicates that model can "dream" about this prompt more. '),
+                              _hoisted_17$3
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.cfgScale,
+                            "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.controlnet.cfgScale = $event),
+                            min: 1,
+                            max: 30,
+                            step: 0.5,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value", "step"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.cfgScale,
+                            "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.controlnet.cfgScale = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            min: 1,
+                            max: 30,
+                            step: 0.5
+                          }, null, 8, ["value", "step"])
+                        ]),
+                        createBaseVNode("div", _hoisted_18$3, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_19$2
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Number of images to generate after each other. ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.batchCount,
+                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.controlnet.batchCount = $event),
+                            min: 1,
+                            max: 9,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.batchCount,
+                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.controlnet.batchCount = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            min: 1,
+                            max: 9
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_20$2, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_21$2
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Number of images to generate in paralel. ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.batchSize,
+                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.controlnet.batchSize = $event),
+                            min: 1,
+                            max: 9,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.batchSize,
+                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.controlnet.batchSize = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            min: 1,
+                            max: 9
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_22$2, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_23$2
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" How much should the ControlNet affect the image. ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.controlnetConditioningScale,
+                            "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(conf).data.settings.controlnet.controlnetConditioningScale = $event),
+                            min: 0.1,
+                            max: 2,
+                            style: { "margin-right": "12px" },
+                            step: 0.025
+                          }, null, 8, ["value", "min", "step"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.controlnetConditioningScale,
+                            "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.controlnet.controlnetConditioningScale = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            min: 0.1,
+                            max: 2,
+                            step: 0.025
+                          }, null, 8, ["value", "min", "step"])
+                        ]),
+                        createBaseVNode("div", _hoisted_24$2, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_25$1
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" What resolution to use for the image processing. This process does not affect the final result but can affect the quality of the ControlNet processing. ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.controlnet.detectionResolution,
+                            "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(conf).data.settings.controlnet.detectionResolution = $event),
+                            min: 128,
+                            max: 2048,
+                            style: { "margin-right": "12px" },
+                            step: 8
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.detectionResolution,
+                            "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.controlnet.detectionResolution = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" },
+                            min: 128,
+                            max: 2048,
+                            step: 8
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_26, [
+                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            trigger: withCtx(() => [
+                              _hoisted_27
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
+                              _hoisted_28
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.controlnet.seed,
+                            "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(conf).data.settings.controlnet.seed = $event),
+                            size: "small",
+                            min: -1,
+                            max: 999999999,
+                            style: { "flex-grow": "1" }
+                          }, null, 8, ["value"])
+                        ])
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NGi), null, {
+              default: withCtx(() => [
+                createVNode(_sfc_main$6, { generate }),
+                createVNode(ImageOutput, {
+                  "current-image": unref(global).state.controlnet.currentImage,
+                  images: unref(global).state.controlnet.images
+                }, null, 8, ["current-image", "images"])
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        })
+      ]);
+    };
+  }
+});
+const ControlNet_vue_vue_type_style_index_0_scoped_9ef89a4a_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-9ef89a4a"]]);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1);
@@ -769,7 +1188,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(NGi), null, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$5, { generate }),
+                  createVNode(_sfc_main$6, { generate }),
                   createVNode(ImageOutput, {
                     "current-image": unref(global).state.imageVariations.currentImage,
                     images: unref(global).state.imageVariations.images
@@ -1130,7 +1549,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$5, { generate }),
+                createVNode(_sfc_main$6, { generate }),
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.img2img.currentImage,
                   images: unref(global).state.img2img.images
@@ -2242,7 +2661,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$5, { generate }),
+                createVNode(_sfc_main$6, { generate }),
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.inpainting.currentImage,
                   images: unref(global).state.inpainting.images
@@ -2271,6 +2690,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
+          createVNode(unref(NTabPane), { name: "ControlNet" }, {
+            default: withCtx(() => [
+              createVNode(ControlNet)
+            ]),
+            _: 1
+          }),
           createVNode(unref(NTabPane), { name: "Inpainting" }, {
             default: withCtx(() => [
               createVNode(Inpainting)
@@ -2285,19 +2710,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           createVNode(unref(NTabPane), { name: "SD Upscale" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$6)
+              createVNode(_sfc_main$7)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Depth to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$6)
+              createVNode(_sfc_main$7)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Pix to Pix" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$6)
+              createVNode(_sfc_main$7)
             ]),
             _: 1
           })

@@ -1,4 +1,4 @@
-import { e as cB, g as cM, i as c, f as cE, aB as iconSwitchTransition, aj as cNotM, j as defineComponent, u as useConfig, l as useRtl, k as useTheme, ao as provide, o as h, al as flatten, a_ as getSlot, ad as createInjectionKey, bm as stepsLight, ae as inject, af as throwError, m as computed, n as useThemeClass, s as resolveWrappedSlot, q as resolveSlot, aH as NIconSwitchTransition, w as createKey, au as call, x as NBaseIcon, bn as FinishedIcon, bo as ErrorIcon, P as useMessage, M as useState, r as ref, bk as reactive, a1 as serverUrl, y as openBlock, z as createElementBlock, D as createVNode, C as withCtx, G as unref, H as NSpace, J as NCard, A as createBaseVNode, V as NSlider, X as NInputNumber, U as NSelect, a4 as NButton, T as createTextVNode, B as createBlock } from "./index.js";
+import { e as cB, g as cM, i as c, f as cE, aB as iconSwitchTransition, aj as cNotM, j as defineComponent, u as useConfig, l as useRtl, k as useTheme, ao as provide, o as h, al as flatten, a_ as getSlot, ad as createInjectionKey, bm as stepsLight, ae as inject, af as throwError, m as computed, n as useThemeClass, s as resolveWrappedSlot, q as resolveSlot, aH as NIconSwitchTransition, w as createKey, au as call, x as NBaseIcon, bn as FinishedIcon, bo as ErrorIcon, P as useMessage, M as useState, r as ref, bk as reactive, a1 as serverUrl, y as openBlock, z as createElementBlock, D as createVNode, C as withCtx, G as unref, H as NSpace, J as NCard, A as createBaseVNode, X as NSlider, Y as NInputNumber, V as NSelect, a4 as NButton, U as createTextVNode, B as createBlock } from "./index.js";
 import { N as NTabPane, a as NTabs } from "./Tabs.js";
 const style = cB("steps", `
  width: 100%;
@@ -290,7 +290,9 @@ const _hoisted_5 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" 
 const _hoisted_6 = { class: "flex-container" };
 const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
 const _hoisted_8 = { class: "flex-container" };
-const _hoisted_9 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
+const _hoisted_9 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CPU Threads (affects RAM usage)", -1);
+const _hoisted_10 = { class: "flex-container" };
+const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "AITemplateAccelerate",
   setup(__props) {
@@ -300,6 +302,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const height = ref(512);
     const batchSize = ref(1);
     const model = ref("");
+    const threads = ref(8);
     const modelOptions = reactive([]);
     const building = ref(false);
     fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
@@ -330,7 +333,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           model_id: model.value,
           width: width.value,
           height: height.value,
-          batch_ize: batchSize.value
+          batch_size: batchSize.value,
+          threads: threads.value
         })
       }).then(() => {
         building.value = false;
@@ -443,9 +447,29 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             ]),
             createBaseVNode("div", _hoisted_8, [
               _hoisted_9,
+              createVNode(unref(NSlider), {
+                value: threads.value,
+                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => threads.value = $event),
+                step: 1,
+                min: 1,
+                max: 64,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: threads.value,
+                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => threads.value = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" },
+                step: 1,
+                min: 1,
+                max: 64
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_10, [
+              _hoisted_11,
               createVNode(unref(NSelect), {
                 value: model.value,
-                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => model.value = $event),
+                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => model.value = $event),
                 options: modelOptions,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])

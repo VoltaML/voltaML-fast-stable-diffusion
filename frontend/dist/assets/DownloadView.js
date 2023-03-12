@@ -1,4 +1,4 @@
-import { j as defineComponent, o as h, u as useConfig, aA as useFormItem, r as ref, m as computed, am as useMergedState, ao as provide, ap as toRef, ad as createInjectionKey, au as call, i as c, e as cB, f as cE, g as cM, aB as iconSwitchTransition, aC as insideModal, aD as insidePopover, ae as inject, aE as useMemo, k as useTheme, aF as checkboxLight, l as useRtl, w as createKey, n as useThemeClass, aG as createId, aH as NIconSwitchTransition, aI as on, aJ as popselectLight, an as watch, aK as NInternalSelectMenu, aL as keysOf, aM as createTreeMate, aN as happensIn, av as nextTick, aO as createTmOptions, aP as keep, aQ as createRefSetter, aR as mergeEventHandlers, ai as omit, aS as NPopover, aT as popoverBaseProps, aj as cNotM, aU as useLocale, ar as watchEffect, q as resolveSlot, a3 as NInput, U as NSelect, a0 as Fragment, x as NBaseIcon, aV as useAdjustedTo, aW as paginationLight, aX as ellipsisLight, aY as onDeactivated, R as NTooltip, p as mergeProps, aZ as radioLight, s as resolveWrappedSlot, al as flatten$1, a_ as getSlot, a$ as depx, b0 as formatLength, a4 as NButton, b1 as NScrollbar, b2 as onBeforeUnmount, b3 as off, b4 as ChevronDownIcon, b5 as NDropdown, b6 as pxfy, b7 as get, b8 as NBaseLoading, b9 as ChevronRightIcon, ba as onUnmounted, bb as VVirtualList, as as VResizeObserver, bc as warn, bd as cssrAnchorMetaName, be as repeat, bf as NEmpty, bg as beforeNextFrameOnce, bh as fadeInScaleUpTransition, bi as Transition, bj as dataTableLight, y as openBlock, z as createElementBlock, A as createBaseVNode, M as useState, bk as reactive, D as createVNode, C as withCtx, G as unref, bl as NTag, H as NSpace, T as createTextVNode, J as NCard, a1 as serverUrl, a5 as NIcon, _ as _export_sfc } from "./index.js";
+import { j as defineComponent, o as h, u as useConfig, aA as useFormItem, r as ref, m as computed, am as useMergedState, ao as provide, ap as toRef, ad as createInjectionKey, au as call, i as c, e as cB, f as cE, g as cM, aB as iconSwitchTransition, aC as insideModal, aD as insidePopover, ae as inject, aE as useMemo, k as useTheme, aF as checkboxLight, l as useRtl, w as createKey, n as useThemeClass, aG as createId, aH as NIconSwitchTransition, aI as on, aJ as popselectLight, an as watch, aK as NInternalSelectMenu, aL as keysOf, aM as createTreeMate, aN as happensIn, av as nextTick, aO as createTmOptions, aP as keep, aQ as createRefSetter, aR as mergeEventHandlers, ai as omit, aS as NPopover, aT as popoverBaseProps, aj as cNotM, aU as useLocale, ar as watchEffect, q as resolveSlot, R as NInput, V as NSelect, a3 as Fragment, x as NBaseIcon, aV as useAdjustedTo, aW as paginationLight, aX as ellipsisLight, aY as onDeactivated, T as NTooltip, p as mergeProps, aZ as radioLight, s as resolveWrappedSlot, al as flatten$1, a_ as getSlot, a$ as depx, b0 as formatLength, a4 as NButton, b1 as NScrollbar, b2 as onBeforeUnmount, b3 as off, b4 as ChevronDownIcon, b5 as NDropdown, b6 as pxfy, b7 as get, b8 as NBaseLoading, b9 as ChevronRightIcon, ba as onUnmounted, bb as VVirtualList, as as VResizeObserver, bc as warn, bd as cssrAnchorMetaName, be as repeat, bf as NEmpty, bg as beforeNextFrameOnce, bh as fadeInScaleUpTransition, bi as Transition, bj as dataTableLight, y as openBlock, z as createElementBlock, A as createBaseVNode, M as useState, P as useMessage, bk as reactive, D as createVNode, C as withCtx, G as unref, a1 as serverUrl, bl as NTag, H as NSpace, U as createTextVNode, J as NCard, a5 as NIcon, K as pushScopeId, L as popScopeId, _ as _export_sfc } from "./index.js";
 function smallerSize(size) {
   switch (size) {
     case "tiny":
@@ -5591,7 +5591,7 @@ const _hoisted_1$2 = {
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M261.56 101.28a8 8 0 0 0-11.06 0L66.4 277.15a8 8 0 0 0-2.47 5.79L63.9 448a32 32 0 0 0 32 32H192a16 16 0 0 0 16-16V328a8 8 0 0 1 8-8h80a8 8 0 0 1 8 8v136a16 16 0 0 0 16 16h96.06a32 32 0 0 0 32-32V282.94a8 8 0 0 0-2.47-5.79z",
@@ -5601,7 +5601,7 @@ const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M490.91 244.15l-74.8-71.56V64a16 16 0 0 0-16-16h-48a16 16 0 0 0-16 16v32l-57.92-55.38C272.77 35.14 264.71 32 256 32c-8.68 0-16.72 3.14-22.14 8.63l-212.7 203.5c-6.22 6-7 15.87-1.34 22.37A16 16 0 0 0 43 267.56L250.5 69.28a8 8 0 0 1 11.06 0l207.52 198.28a16 16 0 0 0 22.59-.44c6.14-6.36 5.63-16.86-.76-22.97z",
@@ -5611,7 +5611,7 @@ const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$1 = [_hoisted_2$1, _hoisted_3$1];
+const _hoisted_4$1 = [_hoisted_2$2, _hoisted_3$2];
 const Home = defineComponent({
   name: "Home",
   render: function render(_ctx, _cache) {
@@ -5623,7 +5623,7 @@ const _hoisted_1$1 = {
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -5637,7 +5637,7 @@ const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -5665,7 +5665,7 @@ const _hoisted_4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5 = [_hoisted_2, _hoisted_3, _hoisted_4];
+const _hoisted_5 = [_hoisted_2$1, _hoisted_3$1, _hoisted_4];
 const Menu = defineComponent({
   name: "Menu",
   render: function render2(_ctx, _cache) {
@@ -5744,22 +5744,30 @@ const modelData = [
     example_image_url: "https://huggingface.co/nitrosocke/redshift-diffusion/resolve/main/images/redshift-diffusion-samples-01s.jpg"
   }
 ];
-const _hoisted_1 = { style: { "height": "50vh", "display": "inline-flex", "justify-content": "center", "width": "100%" } };
+const _withScopeId = (n) => (pushScopeId("data-v-48ef3a29"), n = n(), popScopeId(), n);
+const _hoisted_1 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
+const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
+const _hoisted_3 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "DownloadView",
   setup(__props) {
     const conf = useState();
+    const message = useMessage();
     const customModel = ref("");
-    function downloadModel() {
+    function downloadModel(model) {
       const url = new URL(`${serverUrl}/api/models/download`);
-      url.searchParams.append("model", customModel.value);
+      const modelName = typeof model === "string" ? model : model.value;
+      url.searchParams.append("model", modelName);
       console.log(url);
       conf.state.downloading = true;
       customModel.value = "";
+      message.info(`Downloading model: ${modelName}`);
       fetch(url, { method: "POST" }).then(() => {
         conf.state.downloading = false;
+        message.success(`Downloaded model: ${modelName}`);
       }).catch(() => {
         conf.state.downloading = false;
+        message.error(`Failed to download model: ${modelName}`);
       });
     }
     const tagsFilterOptions = () => {
@@ -5859,8 +5867,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               round: true,
               block: true,
               bordered: false,
+              disabled: conf.state.downloading,
               onClick: () => {
-                console.log("Download", row.name);
+                downloadModel(row.huggingface_id);
               }
             },
             { default: () => "Download" }
@@ -5890,58 +5899,63 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const pagination = reactive({ pageSize: 10 });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        createVNode(unref(NSpace), {
-          justify: "end",
-          inline: "",
-          align: "center",
-          class: "install",
-          style: { "width": "100%", "margin": "8px" }
+        createVNode(unref(NCard), {
+          style: { "margin": "12px 12px" },
+          title: "Custom model",
+          segmented: ""
         }, {
           default: withCtx(() => [
-            createVNode(unref(NInput), {
-              value: customModel.value,
-              "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
-              placeholder: "Custom model",
-              style: { "width": "350px" }
-            }, null, 8, ["value"]),
-            createVNode(unref(NButton), {
-              type: "primary",
-              bordered: "",
-              onClick: downloadModel,
-              loading: unref(conf).state.downloading,
-              disabled: unref(conf).state.downloading || customModel.value === "",
-              secondary: "",
-              style: { "margin-right": "16px" }
-            }, {
-              default: withCtx(() => [
-                createTextVNode("Install")
-              ]),
-              _: 1
-            }, 8, ["loading", "disabled"])
+            createBaseVNode("div", _hoisted_1, [
+              _hoisted_2,
+              createBaseVNode("div", _hoisted_3, [
+                createVNode(unref(NInput), {
+                  value: customModel.value,
+                  "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
+                  placeholder: "andite/anything-v4.0",
+                  style: { "width": "350px" }
+                }, null, 8, ["value"]),
+                createVNode(unref(NButton), {
+                  type: "primary",
+                  bordered: "",
+                  onClick: _cache[1] || (_cache[1] = ($event) => downloadModel(customModel.value)),
+                  loading: unref(conf).state.downloading,
+                  disabled: unref(conf).state.downloading || customModel.value === "",
+                  secondary: "",
+                  style: { "margin-right": "16px", "margin-left": "4px" }
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Install")
+                  ]),
+                  _: 1
+                }, 8, ["loading", "disabled"])
+              ])
+            ])
           ]),
           _: 1
         }),
-        createBaseVNode("div", _hoisted_1, [
-          createVNode(unref(NCard), null, {
-            default: withCtx(() => [
-              createVNode(unref(NDataTable), {
-                columns: columnsRef,
-                data: dataRef,
-                pagination,
-                bordered: true,
-                remote: true,
-                style: { "padding-bottom": "24px" }
-              }, null, 8, ["columns", "data", "pagination"])
-            ]),
-            _: 1
-          })
-        ])
+        createVNode(unref(NCard), {
+          title: "Currated models",
+          style: { "margin": "12px" },
+          segmented: ""
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NDataTable), {
+              columns: columnsRef,
+              data: dataRef,
+              pagination,
+              bordered: true,
+              remote: true,
+              style: { "padding-bottom": "24px" }
+            }, null, 8, ["columns", "data", "pagination"])
+          ]),
+          _: 1
+        })
       ], 64);
     };
   }
 });
-const DownloadView_vue_vue_type_style_index_0_scoped_253aac59_lang = "";
-const DownloadView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-253aac59"]]);
+const DownloadView_vue_vue_type_style_index_0_scoped_48ef3a29_lang = "";
+const DownloadView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-48ef3a29"]]);
 export {
   DownloadView as default
 };

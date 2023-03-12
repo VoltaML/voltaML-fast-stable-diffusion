@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Literal, Union
+from typing import Any, Literal, Optional, Union
 from uuid import uuid4
 
 from diffusers import (
@@ -50,9 +50,9 @@ class ControlNetMode(Enum):
     HED = "lllyasviel/sd-controlnet-hed"
     MLSD = "lllyasviel/sd-controlnet-mlsd"
     NORMAL = "lllyasviel/sd-controlnet-normal"
-    OPENPOSE = "lllyasviel/sd-controlnet_openpose"
-    SCRIBBLE = "lllyasviel/sd-controlnet_scribble"
-    SEGMENTATION = "lllyasviel/sd-controlnet_seg"
+    OPENPOSE = "lllyasviel/sd-controlnet-openpose"
+    SCRIBBLE = "lllyasviel/sd-controlnet-scribble"
+    SEGMENTATION = "lllyasviel/sd-controlnet-seg"
     NONE = "none"
 
 
@@ -228,3 +228,4 @@ class AITemplateBuildRequest:
     width: int = field(default=512)
     height: int = field(default=512)
     batch_size: int = field(default=1)
+    threads: Optional[int] = field(default=None)

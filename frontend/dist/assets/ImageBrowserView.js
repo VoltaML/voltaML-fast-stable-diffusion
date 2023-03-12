@@ -1,4 +1,4 @@
-import { i as c, e as cB, aj as cNotM, g as cM, f as cE, aC as insideModal, aD as insidePopover, j as defineComponent, u as useConfig, k as useTheme, m as computed, n as useThemeClass, ak as useCompitable, al as flatten, o as h, a_ as getSlot, bp as descriptionsLight, w as createKey, r as ref, b1 as NScrollbar$1, M as useState, bk as reactive, a1 as serverUrl, B as createBlock, C as withCtx, G as unref, y as openBlock, D as createVNode, bq as NImage, br as createCommentVNode, Q as NGi, A as createBaseVNode, J as NCard, z as createElementBlock, bs as renderList, a0 as Fragment, T as createTextVNode, F as toDisplayString, $ as NGrid, _ as _export_sfc } from "./index.js";
+import { i as c, e as cB, aj as cNotM, g as cM, f as cE, aC as insideModal, aD as insidePopover, j as defineComponent, u as useConfig, k as useTheme, m as computed, n as useThemeClass, ak as useCompitable, al as flatten, o as h, a_ as getSlot, bp as descriptionsLight, w as createKey, r as ref, b1 as NScrollbar$1, M as useState, bk as reactive, a1 as serverUrl, B as createBlock, C as withCtx, G as unref, y as openBlock, D as createVNode, bq as NImage, br as createCommentVNode, Q as NGi, A as createBaseVNode, J as NCard, z as createElementBlock, bs as renderList, a3 as Fragment, a0 as NGrid, U as createTextVNode, F as toDisplayString, _ as _export_sfc } from "./index.js";
 import { a as NTabs, N as NTabPane } from "./Tabs.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
@@ -409,87 +409,18 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NDescriptions), { bordered: "" }, {
                 default: withCtx(() => [
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "File",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImage.path.split("/").pop()), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Model",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.model), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Seed",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.seed), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Prompt",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.prompt), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Negative Prompt",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.negative_prompt), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Steps",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.steps), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Width",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.width), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Height",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.height), 1)
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NDescriptionsItem), {
-                    label: "Guidance Scale",
-                    "content-style": "max-width: 100px"
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode(toDisplayString(unref(global).state.imageBrowser.currentImageMetadata.guidance_scale), 1)
-                    ]),
-                    _: 1
-                  })
+                  (openBlock(true), createElementBlock(Fragment, null, renderList(unref(global).state.imageBrowser.currentImageMetadata, (item, key) => {
+                    return openBlock(), createBlock(unref(NDescriptionsItem), {
+                      label: key.toString(),
+                      "content-style": "max-width: 100px",
+                      key: item.toString()
+                    }, {
+                      default: withCtx(() => [
+                        createTextVNode(toDisplayString(item), 1)
+                      ]),
+                      _: 2
+                    }, 1032, ["label"]);
+                  }), 128))
                 ]),
                 _: 1
               })
@@ -502,8 +433,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_6bd478f3_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-6bd478f3"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_ad1dc77f_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-ad1dc77f"]]);
 export {
   ImageBrowserView as default
 };
