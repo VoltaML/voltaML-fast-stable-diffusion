@@ -38,7 +38,8 @@
 				"ms-vscode.vscode-typescript-next",
 				"esbenp.prettier-vscode",
 				"ms-python.vscode-pylance",
-				"vue.volar"
+				"vue.volar",
+				"christian-kohler.path-intellisense"
 			],
 			"settings": {
 				"[javascript]": {
