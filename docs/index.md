@@ -1,54 +1,29 @@
-# Welcome to VoltaML
+---
+layout: home
 
-::: info
-Documentation is still a work in progress, if you have any questions, feel free to join our [Discord server](https://discord.gg/pY5SVyHmWm) or open an issue on GitHub.
-:::
+hero:
+  name: VoltaML
+  text: Advanced Stable Diffusion WebUI
+  tagline: Easy to use, yet feature rich WebUI with easy installation.
+  image:
+    src: /volta-rounded.webp
+    alt: VoltaML
+  actions:
+    - theme: brand
+      text: Get Started
+      link: /introduction
+    - theme: alt
+      text: View on GitHub
+      link: https://github.com/voltaML/voltaML-fast-stable-diffusion
 
-Stable Diffusion WebUI and API accelerated by <a href="https://developer.nvidia.com/tensorrt">TensorRT</a>
-
-**This documentation should walk you through the installation process, your first generated image, setting up the project to your liking and accelerating models with TensorRT.**
-
-There is also a dedicated section to the **Discord bot, API** and a section for **developers and collaborators.**
-
-## Main features
-
-- Easy install with Docker
-- Clean and simple Web UI
-- Supports PyTorch as well as TensorRT for the fastest inference
-- Support for Windows and Linux (TRT is not officially supported on Windows if running locally)
-- xFormers support
-- GPU cluster support with load balancing
-- Discord bot
-
-## Speed comparison
-
-::: warning
-Old data, in need of rerun - observed speedup should be approximately 2.5x
-:::
-
-The below benchmarks have been done for generating a 512x512 image, batch size of one (measured in it/s).
-
-| GPU         | PyTorch | xFormers | TensorRT | AITemplate |
-| ----------- | ------- | -------- | -------- | ---------- |
-| RTX 4090    | 19      | 40       | 87       | No data    |
-| RTX 2080 Ti | 8       | No data  | 26.2     | No data    |
-| RTX 3050    | 4.6     | 5.7      | 12.5     | 10.15      |
-| RTX 3060 Ti | No data | 10.50    | No data  | 19.46      |
-| A100        | 15.1    | 27.5     | 62.8     | No data    |
-| A10         | 8.8     | 15.6     | 29.2     | No data    |
-| T4          | 4.3     | 5.5      | 11.4     | No data    |
-
-## UI Preview
-
-**Text to image**
-![Text2Image](/static/frontend/frontend-txt2img.webp)
-
-<hr>
-
-**Image to image**
-![Image2Image](static/frontend/frontend-img2img.webp)
-
-<hr>
-
-**Image Browser**
-![ImageBrowser](/static/frontend/frontend-browser.webp)
+features:
+  - icon: ⭐
+    title: Modern and elegant
+    details: Modern UI designed with functionality in mind.
+  - icon: 🐳
+    title: Easy installation with Docker
+    details: Docker makes it easy to install and run VoltaML in a few minutes.
+  - icon: 🚀
+    title: Model acceleration
+    details: Speed up your models with AITemplate. Save your time and mo
+---

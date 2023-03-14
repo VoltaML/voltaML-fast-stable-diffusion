@@ -8,7 +8,7 @@ This is a guide to running this project with PyTorch only configuration.
 - **Graphics card:** NVIDIA GPU with CUDA support
 - **Driver version:** 515+
 
-If you are running on Linux, you will need to install CUDA by following the instructions [here](https://developer.nvidia.com/cuda-11-7-0-download-archive).
+If you are running on Linux, you will need to install CUDA by following the instructions [here](https://developer.nvidia.com/cuda-11-7-0-download-archive) or if you are on Ubuntu, in the `Software & Updates` manager.
 
 ## Running locally
 
@@ -50,8 +50,10 @@ You can also add the following line to your `~/.bashrc` file to make the variabl
 If you are using Linux, you might need to install `python3-virtualenv` package.
 <br><br>
 `sudo apt install python3-virtualenv`
+<br><br>
 
 For Windows users, run this command:
+<br><br>
 `pip install virtualenv`
 :::
 ::: warning

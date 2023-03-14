@@ -1,5 +1,7 @@
 # Docker
 
+This is the easiest setup possible that should just work. Docker provides reproducible environments and makes it easy to run the application on any system.
+
 ## Requirements
 
 - **Operating system:** Windows or Linux
@@ -21,7 +23,7 @@ volumes:
   - YYY/.cache/huggingface:/root/.cache/huggingface
 ```
 
-where `XXX` is the path to the directory where you want to store the data and `YYY` is the path to your home directory (C:\Users\YOUR_USERNAME).
+where `XXX` is the path to the directory where you want to store all the data (converted models, outputs) and `YYY` is the path to your home directory (`C:\Users\YOUR_USERNAME` or `/home/USER`).
 
 ### 3. Edit the `.env` file
 

@@ -2,13 +2,13 @@ version: "3.7"
 
 services:
   voltaml:
-    image: stax124/volta_diffusion_webui:local
+    image: stax124/volta:experimental
     environment:
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
     volumes:
-      - /home/kubuntu/tmp/data:/app/data
-      - /home/kubuntu/.cache/huggingface:/root/.cache/huggingface
+      - XXX:/app/data # XXX is the path to the folder where all the outputs will be saved
+      - YYY/.cache/huggingface:/root/.cache/huggingface # YYY is path to your home folder (you may need to change the YYY/.cache/huggingface to YYY\.cache\huggingface on Windows)
     ports:
       - "5003:5003"
     deploy:

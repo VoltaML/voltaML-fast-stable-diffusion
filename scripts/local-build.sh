@@ -1,3 +1,3 @@
-docker build -t voltaml_local -f ./dockerfiles/dockerfile.local . \
-&& docker tag voltaml_local:latest stax124/volta_diffusion_webui:local \
+docker build -t volta -f ./dockerfiles/dockerfile.local . \
+&& docker tag volta:latest stax124/volta:experimental \
 && docker rmi $(docker images --filter "dangling=true" -q --no-trunc)

@@ -3,7 +3,7 @@
 {
 	"name": "VoltaML Dev Container",
 	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
-	"image": "stax124/volta_diffusion_webui:local",
+	"image": "stax124/volta:experimental",
 
 	"runArgs": ["--gpus=all", "--ipc=host"],
 

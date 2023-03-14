@@ -54,6 +54,7 @@ node_modules/
 docs/.vitepress/cache
 
 # Environments
+.env
 .venv
 env/
 venv/
