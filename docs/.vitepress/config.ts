@@ -103,4 +103,9 @@ export default defineConfig({
 		},
 	},
 	cleanUrls: true,
+	ignoreDeadLinks: "localhostLinks",
+	markdown: {
+		theme: "one-dark-pro",
+		lineNumbers: true,
+	},
 });

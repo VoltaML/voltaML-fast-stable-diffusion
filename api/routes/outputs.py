@@ -29,7 +29,7 @@ def txt2img() -> List[Dict[str, Any]]:
 
 
 @router.get("/img2img")
-def img2img() -> List[str]:
+def img2img() -> List[Dict[str, Any]]:
     "List all generated images"
 
     path = Path("data/outputs/img2img")
@@ -37,11 +37,15 @@ def img2img() -> List[str]:
     if not path.exists():
         return []
 
-    return [x.as_posix() for x in path.rglob("**/*.png")]
+    data: List[Dict[str, Any]] = []
+    for i in path.rglob("**/*.png"):
+        data.append({"path": i.as_posix(), "time": os.path.getmtime(i)})
+
+    return data
 
 
 @router.get("/extra")
-def extra() -> List[str]:
+def extra() -> List[Dict[str, Any]]:
     "List all generated images"
 
     path = Path("data/outputs/extra")
@@ -49,7 +53,11 @@ def extra() -> List[str]:
     if not path.exists():
         return []
 
-    return [x.as_posix() for x in path.rglob("**/*.png")]
+    data: List[Dict[str, Any]] = []
+    for i in path.rglob("**/*.png"):
+        data.append({"path": i.as_posix(), "time": os.path.getmtime(i)})
+
+    return data
 
 
 @router.get("/data")
