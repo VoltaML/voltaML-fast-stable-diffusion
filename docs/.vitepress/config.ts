@@ -57,7 +57,13 @@ export default defineConfig({
 			},
 			{
 				text: "Bot",
-				items: [{ text: "Bot", link: "/bot/" }],
+				items: [
+					{ text: "Setup", link: "/bot/setup" },
+					{
+						text: "Commands",
+						link: "/bot/commands",
+					},
+				],
 				collapsed: false,
 			},
 			{

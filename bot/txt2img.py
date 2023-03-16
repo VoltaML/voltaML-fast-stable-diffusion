@@ -11,6 +11,7 @@ from discord import File
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
+from core.config import config
 from core.types import SupportedModel
 from core.utils import convert_base64_to_bytes
 
@@ -112,9 +113,9 @@ class Inference(Cog):
                 "seed": seed,
                 "batch_size": 1,
                 "batch_count": 1,
+                "scheduler": scheduler.value,
             },
             "model": model,
-            "scheduler": scheduler.value,
             "save_image": False,
         }
 
@@ -194,9 +195,9 @@ class Inference(Cog):
             "768x768",
         ] = "512x512",
         seed: Optional[int] = None,
-        scheduler: KarrasDiffusionSchedulers = KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler,
-        use_default_negative_prompt: bool = True,
-        verbose: bool = False,
+        scheduler: KarrasDiffusionSchedulers = config.bot.default_scheduler,
+        use_default_negative_prompt: bool = config.bot.use_default_negative_prompt,
+        verbose: bool = config.bot.verbose,
     ):
         "Generate an image from prompt"
 
@@ -229,9 +230,9 @@ class Inference(Cog):
                 "seed": seed,
                 "batch_size": 1,
                 "batch_count": 1,
+                "scheduler": scheduler.value,
             },
             "model": model.value,
-            "scheduler": scheduler.value,
             "save_image": False,
         }
 

@@ -3,6 +3,7 @@
         "core/hijack/diffusers/",
         "venv/",
         "core/submodules/",
-        "typings/"
+        "typings/",
+        "core/tensorrt"
     ]
 }

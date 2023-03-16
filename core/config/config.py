@@ -42,7 +42,7 @@ class Img2ImgConfig:
 
 
 @dataclass
-class ImageVariations:
+class ImageVariationsConfig:
     "Configuration for the image variations pipeline"
 
     batchCount: int = 1
@@ -54,7 +54,7 @@ class ImageVariations:
 
 
 @dataclass
-class Inpainting:
+class InpaintingConfig:
     "Configuration for the inpainting pipeline"
 
     prompt: str = ""
@@ -78,10 +78,21 @@ class APIConfig:
 
 
 @dataclass
-class InferenceConfig:
+class AITemplateConfig:
     "Configuration for model inference and acceleration"
 
     num_threads: int = field(default=min(multiprocessing.cpu_count() - 1, 8))
+
+
+@dataclass
+class BotConfig:
+    "Configuration for the bot"
+
+    default_scheduler: KarrasDiffusionSchedulers = (
+        KarrasDiffusionSchedulers.UniPCMultistepScheduler
+    )
+    verbose: bool = False
+    use_default_negative_prompt: bool = True
 
 
 @dataclass
@@ -93,8 +104,9 @@ class Configuration(DataClassJsonMixin):
     txt2img: Txt2ImgConfig = field(default=Txt2ImgConfig())
     img2img: Img2ImgConfig = field(default=Img2ImgConfig())
     api: APIConfig = field(default=APIConfig())
-    inference: InferenceConfig = field(default=InferenceConfig())
-    imageVariations: ImageVariations = field(default=ImageVariations())
-    inpainting: Inpainting = field(default=Inpainting())
+    aitemplate: AITemplateConfig = field(default=AITemplateConfig())
+    imageVariations: ImageVariationsConfig = field(default=ImageVariationsConfig())
+    inpainting: InpaintingConfig = field(default=InpaintingConfig())
+    bot: BotConfig = field(default=BotConfig())
     cache_dir: str = field(default=DIFFUSERS_CACHE)
     low_vram: bool = False

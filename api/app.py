@@ -1,8 +1,10 @@
 import asyncio
 import logging
 import mimetypes
+import os
 from pathlib import Path
 
+from api_analytics.fastapi import Analytics
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
@@ -89,6 +91,14 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+# Enable FastAPI Analytics if key is provided
+key = os.getenv("FASTAPI_ANALYTICS_KEY")
+if key:
+    app.add_middleware(Analytics, api_key=key)
+    logger.info("Enabled FastAPI Analytics")
+else:
+    logger.info("No FastAPI Analytics key provided, skipping")
 
 # Mount routers
 app.include_router(static.router)

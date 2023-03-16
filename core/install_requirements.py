@@ -7,7 +7,11 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-skip_requirements = ["cuda-python", "opencv-contrib-python-headless"]
+skip_requirements = [
+    "cuda-python",
+    "opencv-contrib-python-headless",
+    "fastapi-analytics",
+]
 logger = logging.getLogger(__name__)
 
 

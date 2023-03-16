@@ -6,6 +6,9 @@ services:
     environment:
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
+      - FASTAPI_ANALYTICS_KEY=${FASTAPI_ANALYTICS_KEY}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
+      - EXTRA_ARGS=${EXTRA_ARGS}
     volumes:
       - XXX:/app/data # XXX is the path to the folder where all the outputs will be saved
       - YYY/.cache/huggingface:/root/.cache/huggingface # YYY is path to your home folder (you may need to change the YYY/.cache/huggingface to YYY\.cache\huggingface on Windows)

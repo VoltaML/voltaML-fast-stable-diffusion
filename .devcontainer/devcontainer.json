@@ -15,7 +15,8 @@
 
 	"remoteEnv": {
 		"HUGGINGFACE_TOKEN": "${localEnv:HUGGINGFACE_TOKEN}",
-		"CUDA_MODULE_LOADING": "LAZY"
+		"CUDA_MODULE_LOADING": "LAZY",
+		"DISCORD_BOT_TOKEN": "${localEnv:DISCORD_BOT_TOKEN}"
 	},
 
 	"mounts": [

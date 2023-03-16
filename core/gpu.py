@@ -376,7 +376,7 @@ class GPU:
             elif request.threads > multiprocessing.cpu_count():
                 request.threads = multiprocessing.cpu_count()
             else:
-                config.inference.num_threads = request.threads
+                config.aitemplate.num_threads = request.threads
 
         def ait_build_thread_call():
             from core.aitemplate.scripts.compile import compile_diffusers

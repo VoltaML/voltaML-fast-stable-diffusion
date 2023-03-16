@@ -76,7 +76,7 @@ def compile_diffusers(
         )
     )
 
-    os.environ["NUM_BUILDERS"] = str(config.inference.num_threads)
+    os.environ["NUM_BUILDERS"] = str(config.aitemplate.num_threads)
 
     # UNet
     websocket_manager.broadcast_sync(

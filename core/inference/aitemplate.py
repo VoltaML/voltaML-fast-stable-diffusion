@@ -1,7 +1,7 @@
 import gc
 import logging
 import os
-from typing import TYPE_CHECKING, Any, List
+from typing import Any, List
 
 import torch
 from diffusers.models.autoencoder_kl import AutoencoderKL
@@ -14,14 +14,12 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets.data import Data
 from core.files import get_full_model_path
-from core.functions import optimize_model, txt2img_callback
+from core.functions import optimize_model
 from core.inference.base_model import InferenceModel
+from core.inference_callbacks import txt2img_callback
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, Job, Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
-
-if TYPE_CHECKING:
-    from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -67,14 +65,14 @@ class AITemplateStableDiffusion(InferenceModel):
         pipe.to(self.device)
         optimize_model(pipe)
 
-        self.vae = pipe.vae  # type: ignore
-        self.unet = pipe.unet  # type: ignore
-        self.text_encoder = pipe.text_encoder  # type: ignore
-        self.tokenizer = pipe.tokenizer  # type: ignore
-        self.scheduler = pipe.scheduler  # type: ignore
+        self.vae = pipe.vae
+        self.unet = pipe.unet
+        self.text_encoder = pipe.text_encoder
+        self.tokenizer = pipe.tokenizer
+        self.scheduler = pipe.scheduler
         self.requires_safety_checker = False
-        self.safety_checker = pipe.safety_checker  # type: ignore
-        self.feature_extractor = pipe.feature_extractor  # type: ignore
+        self.safety_checker = pipe.safety_checker
+        self.feature_extractor = pipe.feature_extractor
 
         self.clip_ait_exe = pipe.clip_ait_exe
         self.unet_ait_exe = pipe.unet_ait_exe

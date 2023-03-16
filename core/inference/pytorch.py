@@ -22,14 +22,14 @@ from api.websockets import Data
 from core.config import config
 from core.controlnet import image_to_controlnet_input
 from core.files import get_full_model_path
-from core.functions import (
+from core.functions import optimize_model
+from core.inference.base_model import InferenceModel
+from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
     inpaint_callback,
-    optimize_model,
     txt2img_callback,
 )
-from core.inference.base_model import InferenceModel
 from core.schedulers import change_scheduler
 from core.types import (
     ControlNetMode,

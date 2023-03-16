@@ -1,7 +1,9 @@
 import logging
 import os
+import shlex
 import subprocess
 import sys
+import threading
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -14,7 +16,32 @@ from core.install_requirements import (  # pylint: disable=wrong-import-position
     version_check,
 )
 
-parser = ArgumentParser()
+app_args = sys.argv[1:]
+extra_args = os.getenv("EXTRA_ARGS")
+
+if extra_args:
+    app_args.extend(shlex.split(extra_args))
+
+parser = ArgumentParser(
+    prog="VoltaML Fast Stable Diffusion",
+    epilog="""
+VoltaML Fast Stable Diffusion - Accelerated Stable Diffusion inference
+Copyright (C) 2023-present Stax124
+
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
+
+This program is distributed in the hope that it will be useful,
+but WITHOUT ANY WARRANTY; without even the implied warranty of
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
+
+You should have received a copy of the GNU General Public License
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+""",
+)
 parser.add_argument(
     "--log-level",
     default="INFO",
@@ -23,26 +50,25 @@ parser.add_argument(
 )
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
-parser.add_argument(
-    "--token",
-    help="Token to use for the API",
-    default=os.environ["HUGGINGFACE_TOKEN"],
-    type=str,
-)
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
 parser.add_argument("--low-vram", action="store_true", help="Use low VRAM mode")
-args = parser.parse_args()
-
-
-# Apply the token
-os.environ["HUGGINGFACE_TOKEN"] = args.token
+parser.add_argument(
+    "--bot", action="store_true", help="Run in tandem with the Discord bot"
+)
+args = parser.parse_args(args=app_args)
 
 logging.basicConfig(level=args.log_level)
 logger = logging.getLogger(__name__)
 
-if not args.token:
+if not os.getenv("HUGGINGFACE_TOKEN"):
     logger.error(
-        "No token provided. Please provide a token with --token or set the HUGGINGFACE_TOKEN environment variable"
+        "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
+    )
+    sys.exit(1)
+
+if not os.getenv("DISCORD_BOT_TOKEN"):
+    logger.error(
+        "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
     )
     sys.exit(1)
 
@@ -73,6 +99,7 @@ def is_root():
 def main():
     "Run the API"
 
+    # Attach ngrok if requested
     if args.ngrok:
         import nest_asyncio
         from pyngrok import ngrok
@@ -81,6 +108,20 @@ def main():
         logger.info(f"Public URL: {ngrok_tunnel.public_url}")
         nest_asyncio.apply()
 
+    # Start the bot if requested
+    if args.bot:
+
+        def bot_call():
+            from bot.bot import ModularBot
+
+            bot = ModularBot()
+            bot.run(os.environ["DISCORD_BOT_TOKEN"])
+
+        bot_thread = threading.Thread(target=bot_call)
+        bot_thread.daemon = True
+        bot_thread.start()
+
+    # Start the API
     from uvicorn import run as uvicorn_run
 
     from api.app import app as api_app
@@ -147,7 +188,7 @@ def checks():
     # Save the token to config
     from core import shared
 
-    shared.hf_token = args.token
+    shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
 
     # Create the diffusers cache folder
     from diffusers.utils import DIFFUSERS_CACHE

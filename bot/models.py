@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, List, Literal
+from typing import TYPE_CHECKING, Dict, List
 
 import discord
 from aiohttp import ClientSession
