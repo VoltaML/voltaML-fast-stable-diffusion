@@ -88,7 +88,7 @@ def install_pytorch():
 
     # Install pytorch
     if platform.system() == "Windows":
-        if not is_installed("torch", version="==1.13.1+cu117") or not is_installed(
+        if not is_installed("torch", version="==2.0.0+cu118") or not is_installed(
             "torchvision"
         ):
             logger.info("Installing PyTorch")
@@ -98,10 +98,10 @@ def install_pytorch():
                     "-m",
                     "pip",
                     "install",
-                    "torch==1.13.1",
+                    "torch==2.0.0+cu118",
                     "torchvision",
                     "--extra-index-url",
-                    "https://download.pytorch.org/whl/cu117",
+                    "https://download.pytorch.org/whl/cu118",
                 ]
             )
 
@@ -124,7 +124,7 @@ def install_pytorch():
                     "-m",
                     "pip",
                     "install",
-                    "torch==1.13.1",
+                    "torch==2.0.0",
                     "torchvision",
                 ]
             )

@@ -53,7 +53,7 @@
 - [About the Project](#about-the-project)
   - [Screenshots](#screenshots)
   - [Tech Stack](#tech-stack)
-  - [Features](#features)
+  - [Main features](#main-features)
   - [Speed comparison](#speed-comparison)
   - [Installation](#installation)
 - [Contributing](#contributing)
@@ -112,15 +112,17 @@
   </ul>
 </details>
 
-## Features
+## Main features
 
 - Easy install with Docker
 - Clean and simple Web UI
-- Supports PyTorch as well as TensorRT for fastest inference
-- Support for Windows and Linux (TRT is not officialy supported on Windows if running locally)
-- xFormers support
-- GPU cluster support with load balancing
+- Supports PyTorch as well as AITemplat for inference
+- Support for Windows and Linux
+- xFormers supported out of the box
+- GPU cluster load balancing
 - Discord bot
+- Documented API
+- Clean source code that should be easy to understand
 
 ## Speed comparison
 
@@ -130,7 +132,7 @@ The below benchmarks have been done for generating a 512x512 image, batch size 1
 | ---------- | --- | ---- | ---- | ---- | ---- | ------ | ---- |
 | PyTorch    | 4.3 | 8.8  | 15.1 | 19   | 11   | 8      | 4.1  |
 | xFormers   | 5.5 | 15.6 | 27.5 | 28   | 15.7 | N/A    | 5.1  |
-| AITemplate | N/A | 23   | N/A  | N/A  | N/A  | N/A    | 9.7  |
+| AITemplate | N/A | 23   | N/A  | N/A  | N/A  | N/A    | 10.2 |
 
 ## Installation
 

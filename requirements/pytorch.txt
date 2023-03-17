@@ -2,7 +2,7 @@
 colored
 coloredlogs
 dataclasses-json
-diffusers==0.14.0
+diffusers>=0.14.0
 scipy
 transformers
 accelerate
@@ -14,6 +14,5 @@ k-diffusion
 safetensors
 pytorch-lightning
 gpustat
-xformers
 opencv-contrib-python-headless
 controlnet_aux

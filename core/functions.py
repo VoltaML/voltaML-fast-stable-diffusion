@@ -2,6 +2,7 @@ import logging
 from pathlib import Path
 from typing import Dict
 
+from diffusers.models.cross_attention import AttnProcessor2_0
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
@@ -34,8 +35,9 @@ def optimize_model(pipe: StableDiffusionPipeline) -> None:
     pipe.enable_vae_slicing()
     logger.info("Optimization: Enabled VAE slicing")
 
-    # pipe.enable_vae_tiling()
-    # logger.info("Optimization: Enabled VAE tiling")
+    # Force SDPA
+    pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
+    logger.info("Optimization: Enabled SDPA")
 
     logger.info("Optimization complete")
 
