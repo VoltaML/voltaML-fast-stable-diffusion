@@ -15,7 +15,13 @@ This is the easiest setup possible that should just work. Docker provides reprod
 git clone https://github.com/VoltaML/voltaML-fast-stable-diffusion -b experimental --single-branch
 ```
 
-### 2. Edit the `docker-compose.yml` file
+### 2. Get inside the directory
+
+```bash
+cd voltaML-fast-stable-diffusion
+```
+
+### 3. Edit the `docker-compose.yml` file
 
 ```yaml
 volumes:
@@ -25,14 +31,14 @@ volumes:
 
 where `XXX` is the path to the directory where you want to store all the data (converted models, outputs) and `YYY` is the path to your home directory (`C:\Users\YOUR_USERNAME` or `/home/USER`).
 
-### 3. Edit the `.env` file
+### 4. Edit the `.env` file
 
 ```bash
 HUGGINGFACE_TOKEN=PLACE_YOUR_TOKEN_HERE
 LOG_LEVEL=INFO # INFO, DEBUG, WARNING, ERROR
 ```
 
-### 4. Run the container
+### 5. Run the container
 
 ```bash
 docker compose run --service-ports voltaml

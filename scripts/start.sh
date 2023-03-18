@@ -1,2 +1,2 @@
 #!/bin/bash
-python3 main.py --log-level=${LOG_LEVEL}
+python3 main.py --log-level=${LOG_LEVEL} --host
