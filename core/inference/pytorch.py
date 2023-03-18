@@ -7,8 +7,6 @@ from diffusers import (
     AutoencoderKL,
     ControlNetModel,
     StableDiffusionControlNetPipeline,
-    StableDiffusionImg2ImgPipeline,
-    StableDiffusionInpaintPipeline,
     StableDiffusionPipeline,
     UNet2DConditionModel,
 )
@@ -23,6 +21,7 @@ from core.controlnet import image_to_controlnet_input
 from core.files import get_full_model_path
 from core.functions import optimize_model
 from core.inference.base_model import InferenceModel
+from core.inference.LPW_SD import StableDiffusionLongPromptWeightingPipeline
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
@@ -81,7 +80,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         logger.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
-        pipe = StableDiffusionPipeline.from_pretrained(
+        pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(
             pretrained_model_name_or_path=get_full_model_path(self.model_id),
             torch_dtype=torch.float32 if self.use_f32 else torch.float16,
             use_auth_token=self.auth,
@@ -93,7 +92,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         logger.debug(f"Loaded {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
-        assert isinstance(pipe, StableDiffusionPipeline)
+        assert isinstance(pipe, StableDiffusionLongPromptWeightingPipeline)
         pipe.to(self.device)
 
         optimize_model(pipe)
@@ -184,14 +183,13 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.manage_optional_components()
 
-        pipe = StableDiffusionPipeline(
+        pipe = StableDiffusionLongPromptWeightingPipeline(
             vae=self.vae,
             unet=self.unet,  # type: ignore
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
             feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
             safety_checker=self.safety_checker,
         )
 
@@ -206,7 +204,7 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            data = pipe(
+            data = pipe.text2img(
                 prompt=job.data.prompt,
                 height=job.data.height,
                 width=job.data.width,
@@ -242,14 +240,13 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.manage_optional_components()
 
-        pipe = StableDiffusionImg2ImgPipeline(
+        pipe = StableDiffusionLongPromptWeightingPipeline(
             vae=self.vae,
             unet=self.unet,  # type: ignore
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
             feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
             safety_checker=self.safety_checker,
         )
 
@@ -263,7 +260,7 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            data = pipe(
+            data = pipe.img2img(
                 prompt=job.data.prompt,
                 image=input_image,
                 num_inference_steps=job.data.steps,
@@ -276,6 +273,9 @@ class PyTorchStableDiffusion(InferenceModel):
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
             )
+
+            if not data:
+                raise ValueError("No data returned from pipeline")
 
             images = data[0]
             assert isinstance(images, List)
@@ -301,14 +301,13 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.manage_optional_components()
 
-        pipe = StableDiffusionInpaintPipeline(
+        pipe = StableDiffusionLongPromptWeightingPipeline(
             vae=self.vae,
             unet=self.unet,  # type: ignore
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
             feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
             safety_checker=self.safety_checker,
         )
 
@@ -327,7 +326,7 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            data = pipe(
+            data = pipe.inpaint(
                 prompt=job.data.prompt,
                 image=input_image,
                 mask_image=input_mask_image,
@@ -340,6 +339,9 @@ class PyTorchStableDiffusion(InferenceModel):
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
             )
+
+            if not data:
+                raise ValueError("No data returned from pipeline")
 
             images = data[0]
             assert isinstance(images, List)
