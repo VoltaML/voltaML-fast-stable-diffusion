@@ -10,8 +10,8 @@ services:
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
       - EXTRA_ARGS=${EXTRA_ARGS}
     volumes:
-      - /home/kubuntu/Coding/voltaML/tmpdata:/app/data # XXX is the path to the folder where all the outputs will be saved
-      - /home/kubuntu/Coding/voltaML/tmpcache:/root/.cache/huggingface # YYY is path to your home folder (you may need to change the YYY/.cache/huggingface to YYY\.cache\huggingface on Windows)
+      - XXX:/app/data # XXX is the path to the folder where all the outputs will be saved
+      - YYY/.cache/huggingface:/root/.cache/huggingface # YYY is path to your home folder (you may need to change the YYY/.cache/huggingface to YYY\.cache\huggingface on Windows)
     ports:
       - "5003:5003"
     deploy:

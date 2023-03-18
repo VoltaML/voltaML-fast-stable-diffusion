@@ -66,11 +66,12 @@ if not os.getenv("HUGGINGFACE_TOKEN"):
     )
     sys.exit(1)
 
-if not os.getenv("DISCORD_BOT_TOKEN"):
-    logger.error(
-        "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
-    )
-    sys.exit(1)
+if args.bot:
+    if not os.getenv("DISCORD_BOT_TOKEN"):
+        logger.error(
+            "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
+        )
+        sys.exit(1)
 
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
