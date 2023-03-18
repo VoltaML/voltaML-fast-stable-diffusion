@@ -75,7 +75,6 @@ if args.bot:
 
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
-logging.getLogger("xformers").setLevel(logging.ERROR)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 
 # Create necessary folders

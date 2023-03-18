@@ -7,11 +7,11 @@ import sys
 from pathlib import Path
 from typing import Optional
 
-skip_requirements = [
-    "cuda-python",
-    "opencv-contrib-python-headless",
-    "fastapi-analytics",
-]
+renamed_requirements = {
+    "opencv-python-headless": "cv2",
+    "fastapi-analytics": "api_analytics",
+    "cuda-python": "cuda",
+}
 logger = logging.getLogger(__name__)
 
 
@@ -53,15 +53,19 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
 
         try:
             for requirement in requirements:
-                if (
-                    requirement.startswith("#")
-                    or requirement.startswith("--")
-                    or requirement in skip_requirements
-                ):
+                if requirement.startswith("#") or requirement.startswith("--"):
                     continue
 
+                if requirement in renamed_requirements:
+                    logger.debug(
+                        f"Requirement {requirement} is renamed to {renamed_requirements[requirement]}"
+                    )
+                    requirement_name = renamed_requirements[requirement]
+                else:
+                    requirement_name = requirement
+
                 logger.debug(f"Checking requirement: {requirement}")
-                fixed_name = requirement.replace("-", "_").lower()
+                fixed_name = requirement_name.replace("-", "_").lower()
                 if not is_installed(fixed_name, requirements[requirement]):
                     logger.debug(f"Requirement {requirement} is not installed")
                     raise ImportError
@@ -102,17 +106,6 @@ def install_pytorch():
                     "torchvision",
                     "--extra-index-url",
                     "https://download.pytorch.org/whl/cu118",
-                ]
-            )
-
-            logger.info("Installing xFormers")
-            subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "xformers",
                 ]
             )
     else:
