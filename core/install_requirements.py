@@ -8,7 +8,7 @@ from pathlib import Path
 from typing import Optional
 
 renamed_requirements = {
-    "opencv-python-headless": "cv2",
+    "opencv-contrib-python-headless": "cv2",
     "fastapi-analytics": "api_analytics",
     "cuda-python": "cuda",
 }
@@ -67,7 +67,7 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                 logger.debug(f"Checking requirement: {requirement}")
                 fixed_name = requirement_name.replace("-", "_").lower()
                 if not is_installed(fixed_name, requirements[requirement]):
-                    logger.debug(f"Requirement {requirement} is not installed")
+                    logger.debug(f"Requirement {requirement_name} is not installed")
                     raise ImportError
 
         except ImportError:

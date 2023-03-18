@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - experimental
+    paths:
+      - "**.md"
+      - "docs/.vitepress/*"
 
 jobs:
   deploy:

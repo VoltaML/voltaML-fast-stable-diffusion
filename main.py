@@ -80,8 +80,8 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 # Create necessary folders
 Path("data/aitemplate").mkdir(exist_ok=True, parents=True)
 Path("data/models").mkdir(exist_ok=True)
+Path("data/outputs").mkdir(exist_ok=True)
 Path("engine").mkdir(exist_ok=True)
-Path("onnx").mkdir(exist_ok=True)
 
 
 def is_root():

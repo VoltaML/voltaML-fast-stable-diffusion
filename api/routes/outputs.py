@@ -1,3 +1,4 @@
+import logging
 import os
 from concurrent.futures import ThreadPoolExecutor
 from pathlib import Path
@@ -8,8 +9,8 @@ from fastapi import APIRouter, HTTPException
 from core.functions import image_meta_from_file
 
 router = APIRouter(tags=["output"])
-
 thread_pool = ThreadPoolExecutor()
+logger = logging.getLogger(__name__)
 
 
 @router.get("/txt2img")
@@ -61,10 +62,16 @@ def extra() -> List[Dict[str, Any]]:
 
 
 @router.get("/data")
-async def txt2img_data(filename: str) -> Dict[str, str]:
+async def image_data(filename: str) -> Dict[str, str]:
     "Get a generated image metadata"
 
     path = Path(filename)
+    path_str = path.as_posix()
+
+    # CodeQl: Path Traversal fix
+    if not path_str.startswith("data/outputs"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
     if not path.exists():
         raise HTTPException(status_code=404, detail="File not found")
 
