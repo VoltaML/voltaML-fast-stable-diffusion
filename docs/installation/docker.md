@@ -1,5 +1,9 @@
 # Docker
 
+::: warning
+This setup will require WSL2 on Windows. If you installed WSL or Docker before it was released, you will need to switch manually to WSL2.
+:::
+
 This is the easiest setup possible that should just work. Docker provides reproducible environments and makes it easy to run the application on any system.
 
 ## Requirements
