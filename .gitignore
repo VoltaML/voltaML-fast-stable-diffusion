@@ -49,6 +49,9 @@ traced_unet/
 onnx
 converted
 
+# Docker
+test.docker-compose.yml
+
 # Docs
 node_modules/
 docs/.vitepress/cache
