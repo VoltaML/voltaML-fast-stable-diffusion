@@ -383,7 +383,7 @@ class GPU:
 
             compile_diffusers(
                 batch_size=request.batch_size,
-                local_dir=request.model_id,
+                local_dir_or_id=request.model_id,
                 height=request.height,
                 width=request.width,
             )

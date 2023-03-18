@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import gc
 import logging
 import os
 import shutil
@@ -33,7 +34,7 @@ logger = logging.getLogger(__name__)
 
 
 def compile_diffusers(
-    local_dir: str,
+    local_dir_or_id: str,
     width: int = 512,
     height: int = 512,
     batch_size: int = 1,
@@ -48,7 +49,7 @@ def compile_diffusers(
         convert_conv_to_gemm = False
 
     pipe = StableDiffusionPipeline.from_pretrained(
-        get_full_model_path(local_dir),
+        get_full_model_path(local_dir_or_id),
         revision="fp16",
         torch_dtype=torch.float16,
     )
@@ -65,14 +66,14 @@ def compile_diffusers(
     dump_dir = os.path.join(
         "data",
         "aitemplate",
-        local_dir.replace("/", "--") + f"__{width}x{height}x{batch_size}",
+        local_dir_or_id.replace("/", "--") + f"__{width}x{height}x{batch_size}",
     )
 
     websocket_manager.broadcast_sync(
         Notification(
             severity="info",
             title="AITemplate",
-            message=f"Compiling {local_dir} to AITemplate format",
+            message=f"Compiling {local_dir_or_id} to AITemplate format",
         )
     )
 
@@ -220,10 +221,15 @@ def compile_diffusers(
         )
         raise e
 
+    del pipe
+    torch.cuda.empty_cache()
+    torch.cuda.ipc_collect()
+    gc.collect()
+
     websocket_manager.broadcast_sync(
         Notification(
             severity="success",
             title="AITemplate",
-            message=f"Successfully compiled {local_dir} to AITemplate format",
+            message=f"Successfully compiled {local_dir_or_id} to AITemplate format",
         )
     )

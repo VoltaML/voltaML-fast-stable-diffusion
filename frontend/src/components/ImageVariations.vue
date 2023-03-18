@@ -161,7 +161,7 @@
                 v-model:value="conf.data.settings.imageVariations.seed"
                 size="small"
                 :min="-1"
-                :max="999999999"
+                :max="999_999_999_999"
                 style="flex-grow: 1"
               />
             </div>
@@ -216,7 +216,7 @@ const imageSelectCallback = (base64Image: string) => {
 const checkSeed = (seed: number) => {
   // If -1 create random seed
   if (seed === -1) {
-    seed = Math.floor(Math.random() * 999999999);
+    seed = Math.floor(Math.random() * 999_999_999_999);
   }
 
   return seed;

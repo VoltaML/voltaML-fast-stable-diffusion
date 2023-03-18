@@ -1,4 +1,3 @@
-import gc
 import logging
 import os
 from typing import Any, List
@@ -92,9 +91,7 @@ class AITemplateStableDiffusion(InferenceModel):
             self.vae_ait_exe,
         )
 
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-        gc.collect()
+        self.cleanup()
 
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
@@ -105,6 +102,8 @@ class AITemplateStableDiffusion(InferenceModel):
             images = self.img2img(job)
         else:
             raise ValueError("Invalid job type for this model")
+
+        self.cleanup()
 
         return images
 

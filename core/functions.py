@@ -18,16 +18,6 @@ def optimize_model(pipe: StableDiffusionPipeline) -> None:
 
     logger.info("Optimizing model")
 
-    try:
-        pipe.enable_xformers_memory_efficient_attention()
-        logger.info("Optimization: Enabled xformers memory efficient attention")
-    except ModuleNotFoundError:
-        logger.info(
-            "Optimization: xformers not available, enabling attention slicing instead"
-        )
-        pipe.enable_attention_slicing()
-        logger.info("Optimization: Enabled attention slicing")
-
     if config.low_vram:
         pipe.enable_model_cpu_offload()
         logger.info("Optimization: Enabled model CPU offload")

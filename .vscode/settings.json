@@ -12,5 +12,8 @@
 			"scheme": "file",
 			"pattern": "docs/developers/documentation.md"
 		}
-	]
+	],
+	"python.testing.pytestArgs": ["."],
+	"python.testing.unittestEnabled": false,
+	"python.testing.pytestEnabled": true
 }

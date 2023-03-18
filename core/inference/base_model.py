@@ -1,6 +1,8 @@
+import gc
 from abc import ABC, abstractmethod
 from typing import List
 
+import torch
 from PIL import Image
 
 from core.types import Job
@@ -25,3 +27,10 @@ class InferenceModel(ABC):
     @abstractmethod
     def generate(self, job: Job) -> List[Image.Image]:
         "Generates the output of the model"
+
+    def cleanup(self) -> None:
+        "Cleanup the GPU memory"
+
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+        gc.collect()

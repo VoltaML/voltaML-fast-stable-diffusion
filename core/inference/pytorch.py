@@ -1,4 +1,3 @@
-import gc
 import logging
 import os
 from typing import Any, List, Optional
@@ -53,6 +52,7 @@ class PyTorchStableDiffusion(InferenceModel):
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         use_f32: bool = False,
         device: str = "cuda",
+        autoload: bool = True,
     ) -> None:
         super().__init__(model_id, use_f32, device)
 
@@ -73,7 +73,8 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.current_controlnet: ControlNetMode = ControlNetMode.NONE
 
-        self.load()
+        if autoload:
+            self.load()
 
     def load(self):
         "Load the model from HuggingFace"
@@ -107,13 +108,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.safety_checker = pipe.safety_checker  # type: ignore
 
         self.cleanup()
-
-    def cleanup(self) -> None:
-        "Cleanup the GPU memory"
-
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-        gc.collect()
 
     def unload(self) -> None:
         "Unload the model from memory"
