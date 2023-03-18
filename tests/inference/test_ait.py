@@ -1,9 +1,13 @@
 import pytest
 from diffusers.schedulers import KarrasDiffusionSchedulers
 
-from core.aitemplate.scripts.compile import compile_diffusers
-from core.inference.aitemplate import AITemplateStableDiffusion
 from core.types import Txt2imgData, Txt2ImgQueueEntry
+
+try:
+    from core.aitemplate.scripts.compile import compile_diffusers
+    from core.inference.aitemplate import AITemplateStableDiffusion
+except ModuleNotFoundError:
+    pytest.skip("Skipping aitemplate tests, ait not installed", allow_module_level=True)
 
 
 @pytest.mark.slow
