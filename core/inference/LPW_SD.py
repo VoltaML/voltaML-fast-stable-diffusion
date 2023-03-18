@@ -214,7 +214,7 @@ def get_unweighted_text_embeddings(
     it should be split into chunks and sent to the text encoder individually.
     """
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
-    logger.warning(f"max_embeddings_multiples: {max_embeddings_multiples}")
+
     if max_embeddings_multiples > 1:
         text_embeddings = []
         for i in range(max_embeddings_multiples):
