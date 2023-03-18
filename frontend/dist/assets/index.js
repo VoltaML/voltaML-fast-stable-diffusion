@@ -23,15 +23,15 @@ var __publicField = (obj, key, value) => {
       }
     }
   }).observe(document, { childList: true, subtree: true });
-  function getFetchOpts(script) {
+  function getFetchOpts(link) {
     const fetchOpts = {};
-    if (script.integrity)
-      fetchOpts.integrity = script.integrity;
-    if (script.referrerpolicy)
-      fetchOpts.referrerPolicy = script.referrerpolicy;
-    if (script.crossorigin === "use-credentials")
+    if (link.integrity)
+      fetchOpts.integrity = link.integrity;
+    if (link.referrerPolicy)
+      fetchOpts.referrerPolicy = link.referrerPolicy;
+    if (link.crossOrigin === "use-credentials")
       fetchOpts.credentials = "include";
-    else if (script.crossorigin === "anonymous")
+    else if (link.crossOrigin === "anonymous")
       fetchOpts.credentials = "omit";
     else
       fetchOpts.credentials = "same-origin";
@@ -5799,7 +5799,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.30
+  * pinia v2.0.33
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -5925,12 +5925,6 @@ function createOptionsStore(id, options, pinia2, hot) {
     }, {}));
   }
   store = createSetupStore(id, setup, options, pinia2, hot, true);
-  store.$reset = function $reset() {
-    const newState = state ? state() : {};
-    this.$patch(($state) => {
-      assign$1($state, newState);
-    });
-  };
   return store;
 }
 function createSetupStore($id, setup, options = {}, pinia2, hot, isOptionsStore) {
@@ -5981,7 +5975,16 @@ function createSetupStore($id, setup, options = {}, pinia2, hot, isOptionsStore)
     isSyncListening = true;
     triggerSubscriptions(subscriptions, subscriptionMutation, pinia2.state.value[$id]);
   }
-  const $reset = noop$2;
+  const $reset = isOptionsStore ? function $reset2() {
+    const { state } = options;
+    const newState = state ? state() : {};
+    this.$patch(($state) => {
+      assign$1($state, newState);
+    });
+  } : (
+    /* istanbul ignore next */
+    noop$2
+  );
   function $dispose() {
     scope.stop();
     subscriptions = [];
@@ -34360,7 +34363,7 @@ function extractChangingRecords(to, from) {
 }
 const _hoisted_1$4 = { class: "navbar" };
 const _sfc_main$7 = /* @__PURE__ */ defineComponent({
-  __name: "CollapsileNavbar",
+  __name: "CollapsibleNavbar",
   setup(__props) {
     function renderIcon(icon) {
       return () => h(NIcon, null, { default: () => h(icon) });
@@ -34419,8 +34422,9 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$4, [
         createVNode(unref(NLayout), {
-          style: { "height": "100%" },
-          "has-sider": ""
+          style: { "height": "100%", "overflow": "visible" },
+          "has-sider": "",
+          "content-style": "overflow: visible"
         }, {
           default: withCtx(() => [
             createVNode(unref(NLayoutSider), {
@@ -34431,13 +34435,14 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               collapsed: unref(collapsed),
               "show-trigger": "",
               onCollapse: _cache[0] || (_cache[0] = ($event) => isRef(collapsed) ? collapsed.value = true : collapsed = true),
-              onExpand: _cache[1] || (_cache[1] = ($event) => isRef(collapsed) ? collapsed.value = false : collapsed = false)
+              onExpand: _cache[1] || (_cache[1] = ($event) => isRef(collapsed) ? collapsed.value = false : collapsed = false),
+              style: { "overflow": "visible", "overflow-x": "visible" }
             }, {
               default: withCtx(() => [
                 createVNode(unref(NSpace), {
                   vertical: "",
                   justify: "space-between",
-                  style: { "height": "100%" }
+                  style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" }
                 }, {
                   default: withCtx(() => [
                     createVNode(unref(NMenu), {
@@ -34459,7 +34464,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const CollapsileNavbar_vue_vue_type_style_index_0_lang = "";
+const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
 const useState = defineStore("state", () => {
   const state = reactive({
     progress: 0,
@@ -34766,9 +34771,6 @@ function unrefElement(elRef) {
   return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
 }
 const defaultWindow = isClient ? window : void 0;
-isClient ? window.document : void 0;
-isClient ? window.navigator : void 0;
-isClient ? window.location : void 0;
 function useEventListener(...args) {
   let target;
   let events2;
@@ -34791,16 +34793,16 @@ function useEventListener(...args) {
     cleanups.forEach((fn) => fn());
     cleanups.length = 0;
   };
-  const register = (el, event, listener) => {
-    el.addEventListener(event, listener, options);
-    return () => el.removeEventListener(event, listener, options);
+  const register = (el, event, listener, options2) => {
+    el.addEventListener(event, listener, options2);
+    return () => el.removeEventListener(event, listener, options2);
   };
-  const stopWatch = watch(() => unrefElement(target), (el) => {
+  const stopWatch = watch(() => [unrefElement(target), resolveUnref(options)], ([el, options2]) => {
     cleanup();
     if (!el)
       return;
     cleanups.push(...events2.flatMap((event) => {
-      return listeners.map((listener) => register(el, event, listener));
+      return listeners.map((listener) => register(el, event, listener, options2));
     }));
   }, { immediate: true, flush: "post" });
   const stop = () => {
@@ -34813,7 +34815,6 @@ function useEventListener(...args) {
 const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 const globalKey = "__vueuse_ssr_handlers__";
 _global[globalKey] = _global[globalKey] || {};
-_global[globalKey];
 var SwipeDirection;
 (function(SwipeDirection2) {
   SwipeDirection2["UP"] = "UP";
@@ -35793,7 +35794,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const messageHandler = useMessage();
     const checkSeed = (seed) => {
       if (seed === -1) {
-        seed = Math.floor(Math.random() * 999999999);
+        seed = Math.floor(Math.random() * 999999999999);
       }
       return seed;
     };
@@ -36051,7 +36052,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.txt2img.seed = $event),
                             size: "small",
                             min: -1,
-                            max: 999999999,
+                            max: 999999999999,
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
                         ])
@@ -36172,100 +36173,100 @@ export {
   _sfc_main$2 as Z,
   _export_sfc as _,
   commonVars$a as a,
-  depx as a$,
+  beforeNextFrameOnce as a$,
   NGrid as a0,
   serverUrl as a1,
   v4 as a2,
   Fragment as a3,
   NButton as a4,
   NIcon as a5,
-  resultLight$1 as a6,
-  useSsrAdapter as a7,
-  cssrAnchorMetaName$1 as a8,
-  c as a9,
-  useFormItem as aA,
-  iconSwitchTransition as aB,
-  insideModal as aC,
-  insidePopover as aD,
-  useMemo as aE,
-  checkboxLight$1 as aF,
-  createId as aG,
-  NIconSwitchTransition as aH,
-  on as aI,
-  popselectLight$1 as aJ,
-  NInternalSelectMenu as aK,
-  keysOf as aL,
-  createTreeMate as aM,
-  happensIn as aN,
-  createTmOptions as aO,
-  keep as aP,
-  createRefSetter as aQ,
-  mergeEventHandlers as aR,
-  NPopover as aS,
-  popoverBaseProps as aT,
-  useLocale as aU,
-  useAdjustedTo as aV,
-  paginationLight$1 as aW,
-  ellipsisLight$1 as aX,
-  onDeactivated as aY,
-  radioLight$1 as aZ,
-  getSlot$1 as a_,
-  isSymbol as aa,
-  isObject as ab,
-  root$1 as ac,
-  createInjectionKey as ad,
-  inject as ae,
-  throwError as af,
-  AddIcon as ag,
-  render$1 as ah,
-  omit as ai,
-  cNotM as aj,
-  useCompitable as ak,
-  flatten$2 as al,
-  useMergedState as am,
-  watch as an,
-  provide as ao,
-  toRef as ap,
-  onFontsReady as aq,
-  watchEffect as ar,
-  VResizeObserver as as,
-  tabsLight$1 as at,
-  call as au,
-  nextTick as av,
-  withDirectives as aw,
-  vShow as ax,
-  TransitionGroup as ay,
-  cloneVNode as az,
+  useFormItem as a6,
+  useMergedState as a7,
+  provide as a8,
+  toRef as a9,
+  useLocale as aA,
+  watchEffect as aB,
+  useAdjustedTo as aC,
+  paginationLight$1 as aD,
+  ellipsisLight$1 as aE,
+  onDeactivated as aF,
+  radioLight$1 as aG,
+  flatten$2 as aH,
+  getSlot$1 as aI,
+  depx as aJ,
+  formatLength as aK,
+  NScrollbar as aL,
+  onBeforeUnmount as aM,
+  off as aN,
+  ChevronDownIcon as aO,
+  NDropdown as aP,
+  pxfy as aQ,
+  get as aR,
+  NBaseLoading as aS,
+  ChevronRightIcon as aT,
+  onUnmounted as aU,
+  VVirtualList as aV,
+  VResizeObserver as aW,
+  warn$2 as aX,
+  cssrAnchorMetaName as aY,
+  repeat as aZ,
+  NEmpty as a_,
+  createInjectionKey as aa,
+  call as ab,
+  iconSwitchTransition as ac,
+  insideModal as ad,
+  insidePopover as ae,
+  inject as af,
+  useMemo as ag,
+  checkboxLight$1 as ah,
+  createId as ai,
+  NIconSwitchTransition as aj,
+  on as ak,
+  popselectLight$1 as al,
+  watch as am,
+  NInternalSelectMenu as an,
+  keysOf as ao,
+  createTreeMate as ap,
+  happensIn as aq,
+  nextTick as ar,
+  createTmOptions as as,
+  keep as at,
+  createRefSetter as au,
+  mergeEventHandlers as av,
+  omit as aw,
+  NPopover as ax,
+  popoverBaseProps as ay,
+  cNotM as az,
   composite as b,
-  formatLength as b0,
-  NScrollbar as b1,
-  onBeforeUnmount as b2,
-  off as b3,
-  ChevronDownIcon as b4,
-  NDropdown as b5,
-  pxfy as b6,
-  get as b7,
-  NBaseLoading as b8,
-  ChevronRightIcon as b9,
-  onUnmounted as ba,
-  VVirtualList as bb,
-  warn$2 as bc,
-  cssrAnchorMetaName as bd,
-  repeat as be,
-  NEmpty as bf,
-  beforeNextFrameOnce as bg,
-  fadeInScaleUpTransition as bh,
-  Transition as bi,
-  dataTableLight$1 as bj,
-  reactive as bk,
-  NTag as bl,
-  stepsLight$1 as bm,
-  FinishedIcon as bn,
-  ErrorIcon$1 as bo,
-  descriptionsLight$1 as bp,
-  NImage as bq,
-  createCommentVNode as br,
-  renderList as bs,
+  fadeInScaleUpTransition as b0,
+  Transition as b1,
+  dataTableLight$1 as b2,
+  reactive as b3,
+  NTag as b4,
+  stepsLight$1 as b5,
+  throwError as b6,
+  FinishedIcon as b7,
+  ErrorIcon$1 as b8,
+  resultLight$1 as b9,
+  useCompitable as ba,
+  descriptionsLight$1 as bb,
+  NImage as bc,
+  createCommentVNode as bd,
+  renderList as be,
+  useSsrAdapter as bf,
+  cssrAnchorMetaName$1 as bg,
+  c as bh,
+  isSymbol as bi,
+  isObject as bj,
+  root$1 as bk,
+  AddIcon as bl,
+  render$1 as bm,
+  onFontsReady as bn,
+  tabsLight$1 as bo,
+  withDirectives as bp,
+  vShow as bq,
+  TransitionGroup as br,
+  cloneVNode as bs,
   commonLight as c,
   changeColor as d,
   cB as e,

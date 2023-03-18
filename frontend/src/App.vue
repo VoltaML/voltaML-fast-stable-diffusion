@@ -19,7 +19,7 @@ import {
   darkTheme,
   type GlobalThemeOverrides,
 } from "naive-ui";
-import CollapsileNavbarVue from "./components/CollapsileNavbar.vue";
+import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
 import PerformanceDrawer from "./components/PerformanceDrawer.vue";
 import TopBarVue from "./components/TopBar.vue";
 import routerContainerVue from "./router/router-container.vue";

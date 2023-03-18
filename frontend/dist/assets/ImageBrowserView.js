@@ -1,4 +1,4 @@
-import { i as c, e as cB, aj as cNotM, g as cM, f as cE, aC as insideModal, aD as insidePopover, j as defineComponent, u as useConfig, k as useTheme, m as computed, n as useThemeClass, ak as useCompitable, al as flatten, o as h, a_ as getSlot, bp as descriptionsLight, w as createKey, r as ref, b1 as NScrollbar$1, M as useState, bk as reactive, a1 as serverUrl, B as createBlock, C as withCtx, G as unref, y as openBlock, D as createVNode, bq as NImage, br as createCommentVNode, Q as NGi, A as createBaseVNode, J as NCard, z as createElementBlock, bs as renderList, a3 as Fragment, a0 as NGrid, U as createTextVNode, F as toDisplayString, _ as _export_sfc } from "./index.js";
+import { i as c, e as cB, az as cNotM, g as cM, f as cE, ad as insideModal, ae as insidePopover, j as defineComponent, u as useConfig, k as useTheme, m as computed, n as useThemeClass, ba as useCompitable, aH as flatten, o as h, aI as getSlot, bb as descriptionsLight, w as createKey, r as ref, aL as NScrollbar$1, M as useState, b3 as reactive, a1 as serverUrl, B as createBlock, C as withCtx, G as unref, y as openBlock, D as createVNode, bc as NImage, bd as createCommentVNode, Q as NGi, A as createBaseVNode, J as NCard, z as createElementBlock, be as renderList, a3 as Fragment, a0 as NGrid, U as createTextVNode, F as toDisplayString, _ as _export_sfc } from "./index.js";
 import { a as NTabs, N as NTabPane } from "./Tabs.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
@@ -304,6 +304,8 @@ const Scrollbar = defineComponent({
 const NScrollbar = Scrollbar;
 const _hoisted_1 = { style: { "height": "100%", "width": "100%" } };
 const _hoisted_2 = ["onClick"];
+const _hoisted_3 = ["onClick"];
+const _hoisted_4 = ["onClick"];
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
@@ -326,12 +328,50 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         global.state.imageBrowser.currentImageMetadata = data;
       });
     }
+    function img2imgClick(i) {
+      global.state.imageBrowser.currentImage = img2imgData[i];
+      console.log(img2imgData[i].path);
+      const url = new URL(`${serverUrl}/api/output/data/`);
+      url.searchParams.append("filename", img2imgData[i].path);
+      console.log(url);
+      fetch(url).then((res) => res.json()).then((data) => {
+        global.state.imageBrowser.currentImageMetadata = data;
+      });
+    }
+    function extraClick(i) {
+      global.state.imageBrowser.currentImage = extraData[i];
+      console.log(extraData[i].path);
+      const url = new URL(`${serverUrl}/api/output/data/`);
+      url.searchParams.append("filename", extraData[i].path);
+      console.log(url);
+      fetch(url).then((res) => res.json()).then((data) => {
+        global.state.imageBrowser.currentImageMetadata = data;
+      });
+    }
     const txt2imgData = reactive([]);
     fetch(`${serverUrl}/api/output/txt2img`).then((res) => res.json()).then((data) => {
       data.forEach((item) => {
         txt2imgData.push(item);
       });
       txt2imgData.sort((a, b) => {
+        return b.time - a.time;
+      });
+    });
+    const img2imgData = reactive([]);
+    fetch(`${serverUrl}/api/output/img2img`).then((res) => res.json()).then((data) => {
+      data.forEach((item) => {
+        img2imgData.push(item);
+      });
+      img2imgData.sort((a, b) => {
+        return b.time - a.time;
+      });
+    });
+    const extraData = reactive([]);
+    fetch(`${serverUrl}/api/output/extra`).then((res) => res.json()).then((data) => {
+      data.forEach((item) => {
+        extraData.push(item);
+      });
+      extraData.sort((a, b) => {
         return b.time - a.time;
       });
     });
@@ -394,7 +434,68 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }),
-                        createVNode(unref(NTabPane), { name: "Img2Img" })
+                        createVNode(unref(NTabPane), {
+                          name: "Img2Img",
+                          style: { "height": "calc(((100vh - 200px) - 53px) - 24px)" }
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(NScrollbar), {
+                              trigger: "hover",
+                              style: { "height": "100%" }
+                            }, {
+                              default: withCtx(() => [
+                                (openBlock(true), createElementBlock(Fragment, null, renderList(img2imgData, (i, index) => {
+                                  return openBlock(), createElementBlock("span", {
+                                    onClick: ($event) => img2imgClick(index),
+                                    key: index,
+                                    class: "img-container"
+                                  }, [
+                                    createVNode(unref(NImage), {
+                                      class: "img-slider",
+                                      src: urlFromPath(i.path),
+                                      lazy: "",
+                                      "preview-disabled": "",
+                                      style: { "justify-content": "center" }
+                                    }, null, 8, ["src"])
+                                  ], 8, _hoisted_3);
+                                }), 128))
+                              ]),
+                              _: 1
+                            })
+                          ]),
+                          _: 1
+                        }),
+                        createVNode(unref(NTabPane), {
+                          name: "Extra",
+                          style: { "height": "calc(((100vh - 200px) - 53px) - 24px)" }
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(NScrollbar), {
+                              trigger: "hover",
+                              style: { "height": "100%" }
+                            }, {
+                              default: withCtx(() => [
+                                (openBlock(true), createElementBlock(Fragment, null, renderList(extraData, (i, index) => {
+                                  return openBlock(), createElementBlock("span", {
+                                    onClick: ($event) => extraClick(index),
+                                    key: index,
+                                    class: "img-container"
+                                  }, [
+                                    createVNode(unref(NImage), {
+                                      class: "img-slider",
+                                      src: urlFromPath(i.path),
+                                      lazy: "",
+                                      "preview-disabled": "",
+                                      style: { "justify-content": "center" }
+                                    }, null, 8, ["src"])
+                                  ], 8, _hoisted_4);
+                                }), 128))
+                              ]),
+                              _: 1
+                            })
+                          ]),
+                          _: 1
+                        })
                       ]),
                       _: 1
                     })
@@ -433,8 +534,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_ad1dc77f_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-ad1dc77f"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_0f01815b_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-0f01815b"]]);
 export {
   ImageBrowserView as default
 };

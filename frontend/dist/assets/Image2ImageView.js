@@ -510,7 +510,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
 });
 const ImageUpload_vue_vue_type_style_index_0_scoped_19b3e0b6_lang = "";
 const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-19b3e0b6"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-9ef89a4a"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-90b128b8"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -550,7 +550,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const messageHandler = useMessage();
     const checkSeed = (seed) => {
       if (seed === -1) {
-        seed = Math.floor(Math.random() * 999999999);
+        seed = Math.floor(Math.random() * 999999999999);
       }
       return seed;
     };
@@ -897,7 +897,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(conf).data.settings.controlnet.seed = $event),
                             size: "small",
                             min: -1,
-                            max: 999999999,
+                            max: 999999999999,
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
                         ])
@@ -927,8 +927,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_9ef89a4a_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-9ef89a4a"]]);
+const ControlNet_vue_vue_type_style_index_0_scoped_90b128b8_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-90b128b8"]]);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1);
@@ -961,7 +961,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
     const checkSeed = (seed) => {
       if (seed === -1) {
-        seed = Math.floor(Math.random() * 999999999);
+        seed = Math.floor(Math.random() * 999999999999);
       }
       return seed;
     };
@@ -1173,7 +1173,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                               "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.imageVariations.seed = $event),
                               size: "small",
                               min: -1,
-                              max: 999999999,
+                              max: 999999999999,
                               style: { "flex-grow": "1" }
                             }, null, 8, ["value"])
                           ])
@@ -1204,7 +1204,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-a1e97e18"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-82ea7dbc"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -1240,7 +1240,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const messageHandler = useMessage();
     const checkSeed = (seed) => {
       if (seed === -1) {
-        seed = Math.floor(Math.random() * 999999999);
+        seed = Math.floor(Math.random() * 999999999999);
       }
       return seed;
     };
@@ -1534,7 +1534,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.img2img.seed = $event),
                             size: "small",
                             min: -1,
-                            max: 999999999,
+                            max: 999999999999,
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
                         ])
@@ -1564,8 +1564,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_a1e97e18_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-a1e97e18"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_82ea7dbc_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-82ea7dbc"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -2141,7 +2141,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-ba9c9a75"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-86bed337"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2189,7 +2189,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const messageHandler = useMessage();
     const checkSeed = (seed) => {
       if (seed === -1) {
-        seed = Math.floor(Math.random() * 999999999);
+        seed = Math.floor(Math.random() * 999999999999);
       }
       return seed;
     };
@@ -2646,7 +2646,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.inpainting.seed = $event),
                             size: "small",
                             min: -1,
-                            max: 999999999,
+                            max: 999999999999,
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
                         ])
@@ -2676,8 +2676,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_ba9c9a75_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-ba9c9a75"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_86bed337_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-86bed337"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

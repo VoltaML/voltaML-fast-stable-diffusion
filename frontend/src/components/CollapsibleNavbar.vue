@@ -1,6 +1,10 @@
 <template>
   <div class="navbar">
-    <n-layout style="height: 100%" has-sider>
+    <n-layout
+      style="height: 100%; overflow: visible"
+      has-sider
+      content-style="overflow: visible"
+    >
       <n-layout-sider
         bordered
         collapse-mode="width"
@@ -10,8 +14,13 @@
         show-trigger
         @collapse="collapsed = true"
         @expand="collapsed = false"
+        style="overflow: visible; overflow-x: visible"
       >
-        <NSpace vertical justify="space-between" style="height: 100%">
+        <NSpace
+          vertical
+          justify="space-between"
+          style="height: 100%; overflow: visible; overflow-x: visible"
+        >
           <n-menu
             :collapsed="collapsed"
             :collapsed-width="64"
