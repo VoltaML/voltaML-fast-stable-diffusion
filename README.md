@@ -9,6 +9,12 @@
   
   
   <p>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docker_build_main.yml">
+      <img src="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docker_build_main.yml/badge.svg" alt="docker build" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docs.yml">
+      <img src="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docs.yml/badge.svg" alt="docs" />
+    </a>
     <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/graphs/contributors">
       <img src="https://img.shields.io/github/contributors/VoltaML/voltaML-fast-stable-diffusion" alt="contributors" />
     </a>
@@ -128,11 +134,11 @@
 
 The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
-| GPU (it/s) | T4  | A10  | A100 | 4090 | 3090 | 2080Ti | 3050 |
-| ---------- | --- | ---- | ---- | ---- | ---- | ------ | ---- |
-| PyTorch    | 4.3 | 8.8  | 15.1 | 19   | 11   | 8      | 4.1  |
-| xFormers   | 5.5 | 15.6 | 27.5 | 28   | 15.7 | N/A    | 5.1  |
-| AITemplate | N/A | 23   | N/A  | N/A  | N/A  | N/A    | 10.2 |
+| GPU (it/s) | T4  | A10  | A100 | 4090 | 4080 | 3090 | 2080Ti | 3050 |
+| ---------- | --- | ---- | ---- | ---- | ---- | ---- | ------ | ---- |
+| PyTorch    | 4.3 | 8.8  | 15.1 | 19   | 15.5 | 11   | 8      | 4.1  |
+| xFormers   | 5.5 | 15.6 | 27.5 | 28   | 20.2 | 15.7 | N/A    | 5.1  |
+| AITemplate | N/A | 23   | N/A  | N/A  | 40.5 | N/A  | N/A    | 10.2 |
 
 ## Installation
 
