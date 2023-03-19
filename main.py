@@ -96,7 +96,7 @@ def is_root():
     return is_admin
 
 
-def main():
+def main(testing: bool = False):
     "Run the API"
 
     # Attach ngrok if requested
@@ -127,7 +127,9 @@ def main():
     from api.app import app as api_app
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
-    uvicorn_run(api_app, host=host, port=5003)
+
+    if not testing:
+        uvicorn_run(api_app, host=host, port=5003)
 
 
 def checks():

@@ -124,10 +124,24 @@
         ghost
         :loading="building"
         :disabled="building || modelOptions.length === 0"
-        @click="accelerate"
+        @click="showUnloadModal = true"
         >Accelerate</NButton
       >
     </NSpace>
+
+    <NModal
+      v-model:show="showUnloadModal"
+      preset="dialog"
+      title="Unload other models"
+      width="400px"
+      :closable="false"
+      :show-close="false"
+      content="Acceleration can be done with the other models loaded as well, but it will take a lot of resources. It is recommended to unload the other models before accelerating. Do you want to unload the other models?"
+      positive-text="Unload models"
+      negative-text="Keep models"
+      @positive-click="accelerateUnload"
+      @negative-click="accelerate"
+    />
   </div>
 </template>
 
@@ -139,6 +153,7 @@ import {
   NButton,
   NCard,
   NInputNumber,
+  NModal,
   NSelect,
   NSlider,
   NSpace,
@@ -160,6 +175,7 @@ const threads = ref(8);
 const modelOptions: Array<SelectOption> = reactive([]);
 
 const building = ref(false);
+const showUnloadModal = ref(false);
 
 fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
   res.json().then((data: Array<ModelEntry>) => {
@@ -181,6 +197,20 @@ fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
     }
   });
 });
+
+const accelerateUnload = async () => {
+  try {
+    await fetch(`${serverUrl}/api/models/unload-all`, {
+      method: "POST",
+    });
+
+    showUnloadModal.value = false;
+    await accelerate();
+  } catch {
+    showUnloadModal.value = false;
+    message.error("Failed to unload, check the console for more info.");
+  }
+};
 
 const accelerate = async () => {
   building.value = true;

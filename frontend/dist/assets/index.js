@@ -7799,6 +7799,7 @@ function useKeyboard(options = {}, enabledRef) {
 const internalSelectionMenuInjectionKey = createInjectionKey("n-internal-select-menu");
 const internalSelectionMenuBodyInjectionKey = createInjectionKey("n-internal-select-menu-body");
 const modalBodyInjectionKey = createInjectionKey("n-modal-body");
+const modalInjectionKey = createInjectionKey("n-modal");
 const drawerBodyInjectionKey = createInjectionKey("n-drawer-body");
 const drawerInjectionKey = createInjectionKey("n-drawer");
 const popoverBodyInjectionKey = createInjectionKey("n-popover-body");
@@ -21518,6 +21519,7 @@ const cardBaseProps = {
     default: "div"
   }
 };
+const cardBasePropKeys = keysOf(cardBaseProps);
 const cardProps = Object.assign(Object.assign({}, useTheme.props), cardBaseProps);
 const NCard = defineComponent({
   name: "Card",
@@ -24370,6 +24372,15 @@ const self$t = (vars) => {
     titleFontWeight: fontWeightStrong
   });
 };
+const dialogLight = createTheme({
+  name: "Dialog",
+  common: commonLight,
+  peers: {
+    Button: buttonLight$1
+  },
+  self: self$t
+});
+const dialogLight$1 = dialogLight;
 const dialogDark = {
   name: "Dialog",
   common: commonDark,
@@ -24387,6 +24398,17 @@ const self$s = (vars) => {
     boxShadow: boxShadow3
   };
 };
+const modalLight = createTheme({
+  name: "Modal",
+  common: commonLight,
+  peers: {
+    Scrollbar: scrollbarLight$1,
+    Dialog: dialogLight$1,
+    Card: cardLight$1
+  },
+  self: self$s
+});
+const modalLight$1 = modalLight;
 const modalDark = {
   name: "Modal",
   common: commonDark,
@@ -36243,30 +36265,54 @@ export {
   dataTableLight$1 as b2,
   reactive as b3,
   NTag as b4,
-  stepsLight$1 as b5,
-  throwError as b6,
-  FinishedIcon as b7,
-  ErrorIcon$1 as b8,
-  resultLight$1 as b9,
-  useCompitable as ba,
-  descriptionsLight$1 as bb,
-  NImage as bc,
-  createCommentVNode as bd,
-  renderList as be,
-  useSsrAdapter as bf,
-  cssrAnchorMetaName$1 as bg,
-  c as bh,
-  isSymbol as bi,
-  isObject as bj,
-  root$1 as bk,
-  AddIcon as bl,
-  render$1 as bm,
-  onFontsReady as bn,
-  tabsLight$1 as bo,
-  withDirectives as bp,
-  vShow as bq,
-  TransitionGroup as br,
-  cloneVNode as bs,
+  isBrowser$2 as b5,
+  readonly as b6,
+  hasInstance as b7,
+  onBeforeMount as b8,
+  asModal as b9,
+  ErrorIcon$1 as bA,
+  resultLight$1 as bB,
+  useCompitable as bC,
+  descriptionsLight$1 as bD,
+  NImage as bE,
+  createCommentVNode as bF,
+  renderList as bG,
+  useSsrAdapter as bH,
+  cssrAnchorMetaName$1 as bI,
+  c as bJ,
+  isSymbol as bK,
+  isObject as bL,
+  root$1 as bM,
+  AddIcon as bN,
+  onFontsReady as bO,
+  tabsLight$1 as bP,
+  TransitionGroup as bQ,
+  dialogLight$1 as ba,
+  render$1 as bb,
+  cardBaseProps as bc,
+  useLockHtmlScroll as bd,
+  getFirstSlotVNode as be,
+  cloneVNode as bf,
+  withDirectives as bg,
+  vShow as bh,
+  FocusTrap as bi,
+  clickoutside$1 as bj,
+  cardBasePropKeys as bk,
+  modalInjectionKey as bl,
+  modalBodyInjectionKey as bm,
+  drawerBodyInjectionKey as bn,
+  popoverBodyInjectionKey as bo,
+  fadeInTransition as bp,
+  isMounted as bq,
+  useIsComposing as br,
+  zindexable$1 as bs,
+  LazyTeleport as bt,
+  modalLight$1 as bu,
+  getPreciseEventTarget as bv,
+  eventEffectNotPerformed as bw,
+  stepsLight$1 as bx,
+  throwError as by,
+  FinishedIcon as bz,
   commonLight as c,
   changeColor as d,
   cB as e,
