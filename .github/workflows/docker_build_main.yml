@@ -21,6 +21,5 @@ jobs:
       - name: Build and push
         uses: docker/build-push-action@v4
         with:
-          file: dockerfiles/dockefile
           push: true
           tags: stax124/volta:latest
