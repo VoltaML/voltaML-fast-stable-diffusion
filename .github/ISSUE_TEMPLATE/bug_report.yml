@@ -29,6 +29,17 @@ body:
       placeholder: Expected behavior
     validations:
       required: true
+  - type: dropdown
+    attributes:
+      label: Branch
+      description: What branch are you using. If you don't know, it is probably Main.
+      multiple: false
+      options:
+        - "Main"
+        - "Experimental"
+        - "Other"
+    validations:
+      required: true
   - type: textarea
     id: system-info
     attributes:

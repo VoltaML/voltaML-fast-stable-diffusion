@@ -2,7 +2,8 @@ version: "3.7"
 
 services:
   voltaml:
-    image: stax124/volta:experimental
+    image: stax124/volta:latest
+    pull_policy: always
     environment:
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
