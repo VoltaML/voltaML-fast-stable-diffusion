@@ -8,7 +8,7 @@ This is a guide to running this project with PyTorch only configuration.
 - **Graphics card:** NVIDIA GPU with CUDA support
 - **Driver version:** 515+
 
-If you are running on Linux, you will need to install CUDA by following the instructions [here](https://developer.nvidia.com/cuda-11-7-0-download-archive) or if you are on Ubuntu, in the `Software & Updates` manager.
+If you are running on Linux, you will need to install CUDA by following the instructions [here](https://developer.nvidia.com/cuda-11-8-0-download-archive) or if you are on Ubuntu, in the `Software & Updates` manager.
 
 ## Running locally
 
@@ -26,7 +26,19 @@ cd voltaML-fast-stable-diffusion
 
 ### 3. Set up environmental variables
 
-<br>
+Required variables:
+
+- `HUGGINGFACE_TOKEN`
+
+Optional variables:
+
+- `DISCORD_BOT_TOKEN`
+- `FASTAPI_ANALYTICS_KEY`
+- `LOG_LEVEL`
+
+Refer to the [.env](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/experimental/.env) file to see supported values with links and guides on how to obtain them.
+
+<hr>
 
 #### Windows
 
@@ -34,17 +46,19 @@ Please read [this guide](https://www.architectryan.com/2018/08/31/how-to-change-
 
 Variables that are stored there are persistent and will be available after restarting your computer.
 
+<hr>
+
 #### Linux
 
 ```bash
-export HUGGINGFACE_TOKEN=YOUR_HUGGINGFACE_TOKEN
+export VARIABLE_NAME=VARIABLE_VALUE
 ```
 
-::: tip
-You can also add the following line to your `~/.bashrc` file to make the variable persistent.
+::: tip PERSISTANCE
+You can also add the following line to your `~/.bashrc` file to make the variable persistent (or `~/.zshrc` if you are using ZSH).
 :::
 
-### 4. Run the `main.py` file
+### 4. Create virtual environment to keep dependencies isolated
 
 ::: warning
 If you are using Linux, you might need to install `python3-virtualenv` package.
@@ -56,17 +70,14 @@ For Windows users, run this command:
 <br><br>
 `pip install virtualenv`
 :::
+
 ::: warning
 If you are running Linux, you might need to use `python3` instead of `python`.
 :::
 
 ```bash
-python main.py
+python -m virtualenv venv
 ```
-
-::: tip
-If you are debugging the code, you can use the `--log-level=DEBUG` flag to see more detailed logs.
-:::
 
 ### 5. Activate Virtual environment
 
@@ -88,7 +99,11 @@ or
 source venv/bin/activate
 ```
 
-### 6. Rerun the `main.py` file (it will install dependencies automatically)
+### 6. Run the `main.py` file (it will install dependencies automatically)
+
+::: warning
+If you are running Linux, you might need to use `python3` instead of `python`.
+:::
 
 ```bash
 python main.py
@@ -97,4 +112,7 @@ python main.py
 ### 7. Access the API documentation to see if everything is working
 
 You should now see that the WebUI is running on `http://localhost:5003/`.
-There is an interactive documentation for the API available at `http://localhost:5003/api/docs`.
+
+<hr>
+
+There is also an interactive documentation for the API available at `http://localhost:5003/api/docs`.

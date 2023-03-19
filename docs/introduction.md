@@ -64,7 +64,8 @@ The below benchmarks have been done for generating a 512x512 image, batch size o
 
 | GPU         | PyTorch | xFormers | AITemplate |
 | ----------- | ------- | -------- | ---------- |
-| RTX 4090    | 19      | 40       | No data    |
+| RTX 4090    | 19      | 39       | 60         |
+| RTX 4080    | 15.53   | 20.21    | 40.51      |
 | RTX 2080 Ti | 8       | No data  | No data    |
 | RTX 3050    | 4.6     | 5.7      | 10.15      |
 | RTX 3060 Ti | No data | 10.50    | 19.46      |

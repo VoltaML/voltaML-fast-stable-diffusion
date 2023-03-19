@@ -13,7 +13,7 @@ export default defineConfig({
 			{
 				rel: "shortcut icon",
 				type: "image/x-icon",
-				href: "favicon.ico",
+				href: "/voltaML-fast-stable-diffusion/favicon.ico",
 			},
 		],
 	],
@@ -48,6 +48,7 @@ export default defineConfig({
 				items: [
 					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Local", link: "/developers/pytorch" },
+					{ text: "Old", link: "/installation/old" },
 				],
 				collapsed: false,
 			},
