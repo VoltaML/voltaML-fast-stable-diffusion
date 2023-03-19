@@ -1,0 +1,8 @@
+requests
+fastapi
+websockets
+uvicorn
+coloredlogs
+pyngrok
+nest_asyncio
+fastapi-analytics

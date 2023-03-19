@@ -1,0 +1,12 @@
+
+.img-slider[data-v-0f01815b] {
+  aspect-ratio: 1/1;
+  height: 182px;
+  width: auto;
+}
+.img-container[data-v-0f01815b]:not(:last-child) {
+  margin-right: 6px;
+}
+.img-container[data-v-0f01815b] {
+  cursor: pointer;
+}

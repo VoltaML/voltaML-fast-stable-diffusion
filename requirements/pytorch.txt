@@ -1,0 +1,18 @@
+--extra-index-url https://pypi.ngc.nvidia.com
+colored
+coloredlogs
+dataclasses-json
+diffusers>=0.14.0
+scipy
+transformers
+accelerate
+ftfy
+tqdm
+OmegaConf
+pynvml
+k-diffusion
+safetensors
+pytorch-lightning
+gpustat
+opencv-contrib-python-headless
+controlnet_aux

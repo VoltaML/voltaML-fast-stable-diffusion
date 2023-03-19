@@ -1,0 +1,4 @@
+httpx
+pytest
+pytest-optional-tests
+pytest-cov

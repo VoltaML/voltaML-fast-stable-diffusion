@@ -1,0 +1,66 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/python
+{
+	"name": "VoltaML Dev Container",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "stax124/volta:experimental",
+
+	"runArgs": ["--gpus=all", "--ipc=host"],
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	"forwardPorts": [5003, 5173],
+
+	"remoteEnv": {
+		"HUGGINGFACE_TOKEN": "${localEnv:HUGGINGFACE_TOKEN}",
+		"DISCORD_BOT_TOKEN": "${localEnv:DISCORD_BOT_TOKEN}"
+	},
+
+	"mounts": [
+		"source=${localEnv:HOME}/.cache/huggingface,target=/root/.cache/huggingface,type=bind,consistency=cached",
+		"source=${localEnv:HOME}/.cache/pip,target=/root/.cache/pip,type=bind,consistency=cached"
+	],
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	// "postCreateCommand": "yarn install && cd frontend && yarn install && cd ..",
+
+	// Configure tool-specific properties.
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"ms-python.python",
+				"dbaeumer.vscode-eslint",
+				"github.copilot-nightly",
+				"ecmel.vscode-html-css",
+				"ms-python.isort",
+				"ms-vscode.vscode-typescript-next",
+				"esbenp.prettier-vscode",
+				"ms-python.vscode-pylance",
+				"vue.volar",
+				"christian-kohler.path-intellisense"
+			],
+			"settings": {
+				"[javascript]": {
+					"editor.defaultFormatter": "esbenp.prettier-vscode"
+				},
+				"[python]": {
+					"editor.defaultFormatter": "ms-python.python"
+				},
+				"editor.bracketPairColorization.enabled": true,
+				"editor.defaultFormatter": "esbenp.prettier-vscode",
+				"python.analysis.inlayHints.functionReturnTypes": true,
+				"python.analysis.inlayHints.variableTypes": true,
+				"python.analysis.typeCheckingMode": "basic",
+				"python.formatting.provider": "black",
+				"python.languageServer": "Pylance",
+				"telemetry.telemetryLevel": "off",
+				"editor.formatOnSave": true
+			}
+		}
+	},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	"remoteUser": "root"
+}

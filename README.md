@@ -1,86 +1,168 @@
-<p align="center">
-  <img width="1000" height="500" src="https://user-images.githubusercontent.com/107309002/207094372-9aacc79e-7731-41ea-8d77-29d5ce75167f.png">
-</p>
-
-<h1 align="center">🔥 🔥 voltaML-fast-stable-diffusion webUI 🔥 🔥 </h1>
-
-###
-
 <div align="center">
-<a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
+
+  <img src="static/volta-rounded.svg" alt="logo" width="200" height="auto" />
+  <h1>VoltaML - Fast Stable Diffusion</h1>
+  
+  <p><b>
+    Stable Diffusion WebUI and API accelerated by <a href="https://github.com/facebookincubator/AITemplate">AITemplate</a> 
+  </b></p>
+  
+  
+  <p>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/graphs/contributors">
+      <img src="https://img.shields.io/github/contributors/VoltaML/voltaML-fast-stable-diffusion" alt="contributors" />
+    </a>
+    <a href="">
+      <img src="https://img.shields.io/github/last-commit/VoltaML/voltaML-fast-stable-diffusion" alt="last update" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/network/members">
+      <img src="https://img.shields.io/github/forks/VoltaML/voltaML-fast-stable-diffusion" alt="forks" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/stargazers">
+      <img src="https://img.shields.io/github/stars/VoltaML/voltaML-fast-stable-diffusion" alt="stars" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/">
+      <img src="https://img.shields.io/github/issues/VoltaML/voltaML-fast-stable-diffusion" alt="open issues" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/master/LICENSE">
+      <img src="https://img.shields.io/github/license/VoltaML/voltaML-fast-stable-diffusion.svg" alt="license" />
+    </a>
+    <a href="https://github.com/voltaML/voltaML-fast-stable-diffusion/tree/experimental">
+      <img src="https://img.shields.io/github/commit-activity/m/VoltaML/voltaML-fast-stable-diffusion/experimental?label=commit%20activity%20-%20experimental" alt="commit activity on experimental" />
+    </a>
+    <a href="https://github.com/voltaML/voltaML-fast-stable-diffusion/tree/experimental">
+      <img src="https://img.shields.io/github/last-commit/VoltaMl/voltaML-fast-stable-diffusion/experimental?label=last%20commit%20-%20experimental" alt="latest activity on experimental" />
+    </a>
+  </p>
+  <a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
+    
+  <h4>
+      <a href="https://stax124.github.io/voltaML-fast-stable-diffusion/">Documentation</a>
+    <span> · </span>
+      <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Report Bug</a>
+    <span> · </span>
+      <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Request Feature</a>
+  </h4>
+
 </div>
 
-Lightweight library to accelerate Stable-Diffusion, Dreambooth into fastest inference models with **WebUI single click or single line of code**.
+<br />
 
-<h1 align="center"> Setup webUI </h3>
+<h1> Table of Contents</h1>
 
-![Screenshot from 2022-12-12 11-19-09](https://user-images.githubusercontent.com/107309002/206970939-f827f7b9-6966-41c1-a2aa-3ed18e73d399.png)
+- [About the Project](#about-the-project)
+  - [Screenshots](#screenshots)
+  - [Tech Stack](#tech-stack)
+  - [Main features](#main-features)
+  - [Speed comparison](#speed-comparison)
+  - [Installation](#installation)
+- [Contributing](#contributing)
+  - [Code of Conduct](#code-of-conduct)
+- [License](#license)
+- [Contact](#contact)
 
-![Screenshot from 2022-12-12 11-36-37](https://user-images.githubusercontent.com/107309002/206972269-1223c567-3df8-41c5-a7b3-f31e544b98aa.png)
+# About the Project
 
-#### Docker setup (if required)
+## Screenshots
 
-Setup docker on Ubuntu using [these intructions](https://docs.docker.com/engine/install/ubuntu/).
+<div align="center"> 
+  <img src="docs/static/frontend/frontend-txt2img.webp" alt="screenshot" />
+  <img src="docs/static/frontend/frontend-img2img.webp" alt="screenshot" />
+  <img src="docs/static/frontend/frontend-browser.webp" alt="screenshot" />
+</div>
 
-Setup docker on Windows using [these intructions](https://docs.docker.com/desktop/install/windows-install/)
+## Tech Stack
 
-### Launch voltaML container
+<details>
+  <summary>Client</summary>
+  <ul>
+    <li><a href="https://www.typescriptlang.org/">Typescript</a></li>
+    <li><a href="https://vuejs.org/">Vue.js</a></li>
+    <li><a href="https://www.naiveui.com/en-US/dark">NaiveUI</a></li>
+    <li><a href="https://ionic.io/ionicons">Ionicons</a></li>
+  </ul>
+</details>
 
-Download the [docker-compose.yml](https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/main/docker-compose.yml) file from this repo.
+<details>
+  <summary>API</summary>
+  <ul>
+    <li><a href="https://www.python.org/">Python</a></li>
+    <li><a href="https://fastapi.tiangolo.com/">FastAPI</a></li>
+    <li><a href="https://pytorch.org/">PyTorch</a></li>
+    <li><a href="https://github.com/facebookincubator/AITemplate">AITemplate</a></li>
+    <li><a href="https://github.com/facebookresearch/xformers">xFormers</a></li>
+    <li><a href="https://websockets.readthedocs.io/en/stable/">WebSockets</a></li>
+  </ul>
+</details>
 
-⚠️ Linux: Open it in a text editor and change the path of the output folder. It was configured for Windows only.
+<details>
+<summary>Discord Bot</summary>
+  <ul>
+    <li><a href="https://github.com/Rapptz/discord.py">Discord.py</a></li>
+  </ul>
+</details>
 
-```yaml
-output:
-  driver: local
-  driver_opts:
-    type: none
-    device: C:\voltaml\output # this line
-    o: bind
-```
+<details>
+<summary>DevOps</summary>
+  <ul>
+    <li><a href="https://www.docker.com/">Docker</a></li>
+    <li><a href="https://github.com/features/actions">GitHub Actions</a></li>
+    <li><a href="https://pages.github.com/">GitHub Pages</a></li>
+    <li><a href="https://vitepress.vuejs.org/">VitePress</a></li>
+  </ul>
+</details>
 
-**Then, open a terminal in that folder and run the following command**
+## Main features
 
-#### Linux
+- Easy install with Docker
+- Clean and simple Web UI
+- Supports PyTorch as well as AITemplat for inference
+- Support for Windows and Linux
+- xFormers supported out of the box
+- GPU cluster load balancing
+- Discord bot
+- Documented API
+- Clean source code that should be easy to understand
 
-```
-sudo docker-compose up
-```
-
-#### Windows
-
-```
-docker-compose up
-```
-
-### How to use webUI
-
-1.  Once you launch the container, a flask app will run and copy/paste the url to run the webUI on your local host.
-    ![Screenshot from 2022-12-12 12-36-01](https://user-images.githubusercontent.com/107309002/206982082-ee498781-9e6d-4b80-a652-2e4e29a2835e.png)
-
-2.  There are two backends to run the SD on, PyTorch and TensorRT (fastest version by NVIDIA).
-3.  To run on PyTorch inference, you have to select the model, the model will be downloaded (which will take a few mins) into the container and the inference will be displayed. Downloaded models will be shown as below
-    ![download_sd](https://user-images.githubusercontent.com/107309002/206983689-5f40f446-426b-45b7-88fa-db224099dd8e.png)
-4.  To run TensoRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. <br/>
-    ![Screenshot from 2022-12-12 13-17-23](https://user-images.githubusercontent.com/107309002/206989892-6f04dbdf-312b-41b3-bb69-684610659fae.png)
-5.  Once acceleration is done, the model will show up in your TensorRT drop down menu.
-6.  Switch your backend to TensorRT, select the model and enjoy the fastest outputs 🚀🚀
-
-## Benchmark
+## Speed comparison
 
 The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
-| Model                    | T4 (it/s)     | A10 (it/s) | A100 (it/s) | 4090 (it/s) | 3090 (it/s) | 2080Ti (it/s) |
-| ------------------------ | ------------- | ---------- | ----------- | ----------- | ----------- | ------------- |
-| PyTorch                  | 4.3           | 8.8        | 15.1        | 19          | 11          | 8             |
-| Flash attention xformers | 5.5           | 15.6       | 27.5        | 28          | 15.7        | N/A           |
-| AITemplate               | Not supported | 26.7       | 55          | 60          | N/A         | Not supported |
-| VoltaML(TRT-Flash)       | 11.4          | 29.2       | 62.8        | 85          | 44.7        | 26.2          |
+| GPU (it/s) | T4  | A10  | A100 | 4090 | 3090 | 2080Ti | 3050 |
+| ---------- | --- | ---- | ---- | ---- | ---- | ------ | ---- |
+| PyTorch    | 4.3 | 8.8  | 15.1 | 19   | 11   | 8      | 4.1  |
+| xFormers   | 5.5 | 15.6 | 27.5 | 28   | 15.7 | N/A    | 5.1  |
+| AITemplate | N/A | 23   | N/A  | N/A  | N/A  | N/A    | 10.2 |
 
-### ⚠️ ‼️ Warnings/Caveats
+## Installation
 
-**This is v0.1 of the product. Things might break. A lot of improvements are on the way, so please bear with us.**
+Please see the [documentation](https://voltaml.github.io/voltaML-fast-stable-diffusion/installation/docker.html) for installation instructions.
 
-1. This will only work for NVIDIA GPUs with compute capability > 7.5.
-2. Cards with less than 12GB VRAM will have issues with acceleration, due to high memory required for the conversions. We're working on resolving these in our next release.
-3. While the model is accelerating, **no other functionality will work since the GPU will be fully occupied**
+# Contributing
+
+<a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=VoltaML/voltaML-fast-stable-diffusion" />
+</a>
+
+Contributions are always welcome!
+
+See `contributing.md` for ways to get started.
+
+## Code of Conduct
+
+Please read the [Code of Conduct](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/master/CODE_OF_CONDUCT.md)
+
+# License
+
+Distributed under the <b>GPL v3</b>. See [License](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/experimental/License) for more information.
+
+# Contact
+
+Feel free to contact us on discord: https://discord.gg/pY5SVyHmWm
+
+Project Link: [https://github.com/VoltaML/voltaML-fast-stable-diffusion](https://github.com/VoltaML/voltaML-fast-stable-diffusion)
+
+<hr>
+<p align="center">
+  Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a>
+</p>

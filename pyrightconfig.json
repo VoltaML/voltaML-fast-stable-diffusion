@@ -1,0 +1,9 @@
+{
+    "exclude": [
+        "core/hijack/diffusers/",
+        "venv/",
+        "core/submodules/",
+        "typings/",
+        "core/tensorrt"
+    ]
+}

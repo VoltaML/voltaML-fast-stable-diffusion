@@ -1,1 +1,0 @@
-docker build -t voltaml -f ./Dockerfile . && docker rmi $(docker images --filter "dangling=true" -q --no-trunc)
