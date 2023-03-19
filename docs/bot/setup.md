@@ -1,6 +1,6 @@
 # Setup
 
-Discord bot is already setup and prepared for you with the [Docker](/installation/docker) installation. If you are using the [manual installation](/installation/manual) you will need to setup the bot yourself.
+Discord bot is already setup and prepared for you with the [Docker](/installation/docker) installation. If you are using the [manual installation](/developers/pytorch) you will need to setup the bot yourself.
 
 ## Requirements
 

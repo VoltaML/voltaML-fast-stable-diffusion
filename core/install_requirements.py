@@ -252,7 +252,10 @@ def version_check(commit: str):
         else:
             print("Not a git clone, can't perform version check.")
     except Exception as e:  # pylint: disable=broad-except
-        print("version check failed", e)
+        logger.debug(f"Version check failed: {e}")
+        logger.info(
+            "No git repo found, assuming that we are in containerized environment"
+        )
 
 
 def is_up_to_date():

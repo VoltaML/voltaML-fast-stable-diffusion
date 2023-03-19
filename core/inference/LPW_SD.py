@@ -4,7 +4,6 @@ import inspect
 import re
 from typing import Callable, List, Optional, Union
 
-import diffusers
 import numpy as np
 import PIL
 import torch
@@ -15,7 +14,6 @@ from diffusers.pipelines.stable_diffusion import (
     StableDiffusionSafetyChecker,
 )
 from diffusers.utils import PIL_INTERPOLATION, logging
-from packaging import version
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 # ------------------------------------------------------------------------------
@@ -502,10 +500,16 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         for module in self.unet.modules():  # type: ignore
             if (
                 hasattr(module, "_hf_hook")
-                and hasattr(module._hf_hook, "execution_device")
-                and module._hf_hook.execution_device is not None
+                and hasattr(
+                    module._hf_hook,  # pylint: disable=protected-access
+                    "execution_device",
+                )
+                and module._hf_hook.execution_device  # pylint: disable=protected-access
+                is not None
             ):
-                return torch.device(module._hf_hook.execution_device)
+                return torch.device(
+                    module._hf_hook.execution_device  # pylint: disable=protected-access
+                )
         return self.device
 
     def _encode_prompt(

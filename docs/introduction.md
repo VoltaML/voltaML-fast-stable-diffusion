@@ -1,5 +1,9 @@
 # Welcome to VoltaML
 
+<h2 align="center" style="border-bottom: 1px solid var(--vp-c-divider); padding-bottom: 24px;">
+Made with ❤️ by <a href="https://github.com/Stax124" target="_blank">Stax124</a>
+</h2>
+
 ::: info
 Documentation is still a work in progress, if you have any questions, feel free to join our [Discord server](https://discord.gg/pY5SVyHmWm) or open an issue on GitHub.
 :::
@@ -21,6 +25,38 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 - Discord bot
 - Documented API
 - Clean source code that should be easy to understand
+
+## Feature availability
+
+- ✅ Feature available and supported
+- ❌ Feature not available yet
+- 🚧 Feature is in the development or testing phase
+
+| Feature          | PyTorch | AITemplate | Long Weighted Prompt (PyTorch Only) |
+| ---------------- | ------- | ---------- | ----------------------------------- |
+| Txt2Img          | ✅      | ✅         | ✅                                  |
+| Img2Img          | ✅      | 🚧         | ✅                                  |
+| ControlNet       | ✅      | ❌         | ❌                                  |
+| Inpainting       | ✅      | 🚧         | ✅                                  |
+| Image Variations | ❌      | ❌         | ❌                                  |
+| SD Upscale       | ❌      | ❌         | ❌                                  |
+| Depth2Img        | ❌      | ❌         | ❌                                  |
+| Pix2Pix          | ❌      | ❌         | ❌                                  |
+
+| Feature                   | Availability |
+| ------------------------- | ------------ |
+| Discord bot               | ✅           |
+| Real-ESRGAN               | ❌           |
+| Latent Upscale            | ❌           |
+| Documentation             | ✅           |
+| Image Browser             | ✅           |
+| Model Conversion          | 🚧           |
+| Model Training            | ❌           |
+| Confiruration             | 🚧           |
+| Multi-GPU                 | ✅           |
+| MultiModel API            | ✅           |
+| MultiModel UI             | ❌           |
+| UI Performance monitoring | ✅           |
 
 ## Speed comparison
 

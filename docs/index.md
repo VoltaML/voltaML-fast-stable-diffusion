@@ -4,7 +4,7 @@ layout: home
 hero:
   name: VoltaML
   text: Advanced Stable Diffusion WebUI
-  tagline: Easy to use, yet feature rich WebUI with easy installation.
+  tagline: Easy to use, yet feature-rich WebUI with easy installation.
   image:
     src: /volta-rounded.webp
     alt: VoltaML

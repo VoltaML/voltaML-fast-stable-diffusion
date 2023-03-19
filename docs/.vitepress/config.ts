@@ -7,6 +7,16 @@ export default defineConfig({
 	appearance: "dark",
 	lastUpdated: true,
 	base: "/voltaML-fast-stable-diffusion/",
+	head: [
+		[
+			"link",
+			{
+				rel: "shortcut icon",
+				type: "image/x-icon",
+				href: "favicon.ico",
+			},
+		],
+	],
 	themeConfig: {
 		nav: [
 			{ text: "Home", link: "/" },
