@@ -1137,6 +1137,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
+        width: int = 512,
+        height: int = 512,
     ):
         r"""
         Function for inpaint.
@@ -1193,6 +1195,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback_steps (`int`, *optional*, defaults to 1):
                 The frequency at which the `callback` function will be called. If not specified, the callback will be
                 called at every step.
+            width (`int`, *optional*, defaults to 512):
+                The width of the generated image.
+            height (`int`, *optional*, defaults to 512):
+                The height of the generated image.
         Returns:
             [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] or `tuple`:
             [`~pipelines.stable_diffusion.StableDiffusionPipelineOutput`] if `return_dict` is True, otherwise a `tuple.
@@ -1217,4 +1223,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
+            width=width,
+            height=height,
         )

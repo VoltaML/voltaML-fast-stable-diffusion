@@ -321,7 +321,6 @@ class PyTorchStableDiffusion(InferenceModel):
         input_mask_image = convert_to_image(job.data.mask_image).convert("RGB")
         input_mask_image = ImageOps.invert(input_mask_image)
         input_mask_image = resize(input_mask_image, job.data.width, job.data.height)
-        input_mask_image.save("mask.png")
 
         total_images: List[Image.Image] = []
 
