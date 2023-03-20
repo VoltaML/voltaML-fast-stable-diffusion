@@ -10,6 +10,9 @@ from diffusers import (
     StableDiffusionPipeline,
     UNet2DConditionModel,
 )
+from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
+    load_pipeline_from_original_stable_diffusion_ckpt,
+)
 from PIL import Image, ImageOps
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -80,19 +83,31 @@ class PyTorchStableDiffusion(InferenceModel):
 
         logger.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
-        pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(
-            pretrained_model_name_or_path=get_full_model_path(self.model_id),
-            torch_dtype=torch.float32 if self.use_f32 else torch.float16,
-            use_auth_token=self.auth,
-            safety_checker=None,
-            requires_safety_checker=False,
-            feature_extractor=None,
-            cache_dir=config.cache_dir,
-        )
+        if ".ckpt" in self.model_id or ".safetensors" in self.model_id:
+            use_safetensors = ".safetensors" in self.model_id
+            if use_safetensors:
+                logger.info("Loading model as safetensors")
+            else:
+                logger.info("Loading model as checkpoint")
+
+            pipe = load_pipeline_from_original_stable_diffusion_ckpt(
+                checkpoint_path=self.model_id,
+                from_safetensors=use_safetensors,
+            )
+        else:
+            pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(
+                pretrained_model_name_or_path=get_full_model_path(self.model_id),
+                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
+                use_auth_token=self.auth,
+                safety_checker=None,
+                requires_safety_checker=False,
+                feature_extractor=None,
+                cache_dir=config.cache_dir,
+            )
+            assert isinstance(pipe, StableDiffusionLongPromptWeightingPipeline)
 
         logger.debug(f"Loaded {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
-        assert isinstance(pipe, StableDiffusionLongPromptWeightingPipeline)
         pipe.to(self.device)
 
         optimize_model(pipe)

@@ -16,7 +16,7 @@ from core.install_requirements import (  # pylint: disable=wrong-import-position
     version_check,
 )
 
-app_args = sys.argv[1:]
+app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]
 extra_args = os.getenv("EXTRA_ARGS")
 
 if extra_args:

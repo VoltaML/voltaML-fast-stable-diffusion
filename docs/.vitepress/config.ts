@@ -55,6 +55,7 @@ export default defineConfig({
 			{
 				text: "WebUI",
 				items: [
+					{ text: "Models", link: "/webui/models" },
 					{ text: "Text to Image", link: "/webui/txt2img" },
 					{ text: "Image to Image", link: "/webui/img2img" },
 					{ text: "Extra", link: "/webui/extra" },

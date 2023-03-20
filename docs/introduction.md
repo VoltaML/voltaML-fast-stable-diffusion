@@ -47,35 +47,37 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 | Depth2Img        | ❌      | ❌         | ❌                                  |
 | Pix2Pix          | ❌      | ❌         | ❌                                  |
 
-| Feature                   | Availability |
-| ------------------------- | ------------ |
-| Discord bot               | ✅           |
-| Real-ESRGAN               | ❌           |
-| Latent Upscale            | ❌           |
-| Documentation             | ✅           |
-| Image Browser             | ✅           |
-| Model Conversion          | 🚧           |
-| Model Training            | ❌           |
-| Confiruration             | 🚧           |
-| Multi-GPU                 | ✅           |
-| MultiModel API            | ✅           |
-| MultiModel UI             | ❌           |
-| UI Performance monitoring | ✅           |
+| Feature                         | Availability |
+| ------------------------------- | ------------ |
+| Discord bot                     | ✅           |
+| Real-ESRGAN                     | ❌           |
+| Latent Upscale                  | ❌           |
+| Documentation                   | ✅           |
+| Image Browser                   | ✅           |
+| Model Conversion                | 🚧           |
+| Model Training                  | ❌           |
+| Confiruration                   | 🚧           |
+| Multi-GPU                       | ✅           |
+| MultiModel API                  | ✅           |
+| MultiModel UI                   | ❌           |
+| UI Performance monitoring       | ✅           |
+| Loading from CKPT / Safetensors | ✅           |
 
 ## Speed comparison
 
 The below benchmarks have been done for generating a 512x512 image, batch size of one, measured in it/s.
 
-| GPU         | PyTorch | xFormers | AITemplate |
-| ----------- | ------- | -------- | ---------- |
-| RTX 4090    | 19      | 39       | 60         |
-| RTX 4080    | 15.53   | 20.21    | 40.51      |
-| RTX 2080 Ti | 8       | No data  | No data    |
-| RTX 3050    | 4.6     | 5.7      | 10.15      |
-| RTX 3060 Ti | No data | 10.50    | 19.46      |
-| A100        | 15.1    | 27.5     | No data    |
-| A10         | 8.8     | 15.6     | 23.5       |
-| T4          | 4.3     | 5.5      | No data    |
+| GPU             | PyTorch | SPDA    | AITemplate |
+| --------------- | ------- | ------- | ---------- |
+| RTX 4090        | 19      | 39      | 60         |
+| RTX 4080        | 15.53   | 20.21   | 40.51      |
+| RTX 3070 Laptop | No data | 9.8     | 16.8       |
+| RTX 2080 Ti     | 8       | No data | No data    |
+| RTX 3050        | 4.6     | 5.7     | 10.15      |
+| RTX 3060 Ti     | No data | 10.50   | 19.46      |
+| A100            | 15.1    | 27.5    | No data    |
+| A10             | 8.8     | 15.6    | 23.5       |
+| T4              | 4.3     | 5.5     | No data    |
 
 ## UI Preview
 

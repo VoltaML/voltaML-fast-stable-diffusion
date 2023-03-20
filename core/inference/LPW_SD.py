@@ -7,7 +7,7 @@ from typing import Callable, List, Optional, Union
 import numpy as np
 import PIL
 import torch
-from diffusers import SchedulerMixin, StableDiffusionPipeline
+from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipeline
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
@@ -479,6 +479,15 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             requires_safety_checker=requires_safety_checker,
         )
         self.__init__additional__()
+
+        self.vae: AutoencoderKL
+        self.text_encoder: CLIPTextModel
+        self.tokenizer: CLIPTokenizer
+        self.unet: UNet2DConditionModel
+        self.scheduler: LMSDiscreteScheduler
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.feature_extractor: CLIPFeatureExtractor
+        self.requires_safety_checker: bool
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):

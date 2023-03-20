@@ -56,16 +56,37 @@ class CachedModelList:
         for model_name in os.listdir(self.checkpoint_converted_path):
             logger.debug(f"Found model {model_name}")
 
-            models.append(
-                {
-                    "name": model_name,
-                    "path": str(self.checkpoint_converted_path.joinpath(model_name)),
-                    "backend": "PyTorch",
-                    "valid": is_valid_diffusers_model(
-                        self.checkpoint_converted_path.joinpath(model_name)
-                    ),
-                }
-            )
+            if self.checkpoint_converted_path.joinpath(model_name).is_dir():
+                # Assuming that model is in Diffusers format
+                models.append(
+                    {
+                        "name": model_name,
+                        "path": str(
+                            self.checkpoint_converted_path.joinpath(model_name)
+                        ),
+                        "backend": "PyTorch",
+                        "valid": is_valid_diffusers_model(
+                            self.checkpoint_converted_path.joinpath(model_name)
+                        ),
+                    }
+                )
+            elif ".safetensors" in model_name or ".ckpt" in model_name:
+                # Assuming that model is in Checkpoint / Safetensors format
+                models.append(
+                    {
+                        "name": model_name,
+                        "path": str(
+                            self.checkpoint_converted_path.joinpath(model_name)
+                        ),
+                        "backend": "PyTorch",
+                        "valid": True,
+                    }
+                )
+            else:
+                # Junk file, notify user
+                logger.debug(
+                    f"Found junk file {model_name} in {self.checkpoint_converted_path}, skipping..."
+                )
 
         return models
 

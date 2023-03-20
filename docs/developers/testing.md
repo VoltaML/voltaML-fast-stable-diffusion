@@ -34,8 +34,6 @@ Or you can run all tests (including slow ones like AIT model compilation)
 yarn test:full
 ```
 
-If you do not have yarn / npm installed, you can also copy-paste these commands from ``
-
 ## Running tests manually
 
 To run tests manually, open the `package.json` file. It should include a JSON like object like this:
