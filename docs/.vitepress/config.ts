@@ -94,6 +94,10 @@ export default defineConfig({
 						text: "Documentation",
 						link: "/developers/documentation",
 					},
+					{
+						text: "Testing",
+						link: "/developers/testing",
+					},
 				],
 				collapsed: false,
 			},

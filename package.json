@@ -13,7 +13,7 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "test": "pytest",
-    "test:full": "pytest --run-optional-tests=slow --cov=core"
+    "test": "pytest -x",
+    "test:full": "pytest --run-optional-tests=slow --cov=core -x"
   }
 }

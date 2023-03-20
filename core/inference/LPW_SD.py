@@ -145,7 +145,7 @@ def get_prompts_with_weights(
         text_weight = []
         for word, weight in texts_and_weights:
             # tokenize and discard the starting and the ending token
-            token = pipe.tokenizer(word).input_ids[1:-1]  # type: ignore
+            token = pipe.tokenizer(word, max_length=max_length, truncation=True).input_ids[1:-1]  # type: ignore
             text_token += token
             # copy the weight by length of token
             text_weight += [weight] * len(token)
