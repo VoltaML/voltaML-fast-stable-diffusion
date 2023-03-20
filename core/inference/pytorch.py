@@ -320,8 +320,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         input_mask_image = convert_to_image(job.data.mask_image).convert("RGB")
         input_mask_image = ImageOps.invert(input_mask_image)
-        input_mask_image = resize(input_mask_image, job.data.height, job.data.width)
-        input_mask_image.save("mask.png")
+        input_mask_image = resize(input_mask_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
 
@@ -338,6 +337,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 callback=inpaint_callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
+                width=job.data.width,
+                height=job.data.height,
             )
 
             if not data:
