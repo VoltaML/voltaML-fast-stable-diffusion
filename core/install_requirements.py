@@ -109,7 +109,9 @@ def install_pytorch():
                 ]
             )
     else:
-        if not is_installed("torch") or not is_installed("torchvision"):
+        if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
+            "torchvision", "==0.15.1+cu118"
+        ):
             logger.info("Installing PyTorch")
             subprocess.check_call(
                 [
@@ -119,6 +121,8 @@ def install_pytorch():
                     "install",
                     "torch==2.0.0",
                     "torchvision",
+                    "--extra-index-url",
+                    "https://download.pytorch.org/whl/cu118",
                 ]
             )
 

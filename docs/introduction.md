@@ -4,6 +4,10 @@
 Made with ❤️ by <a href="https://github.com/Stax124" target="_blank">Stax124</a>
 </h2>
 
+::: danger IMPORTANT
+For all Pull Requests, please make sure to target the `experimental` branch. The `main` branch is only used for releases (or in some situations, issues and PRs with high priority - marked as `Fast-Forward`).
+:::
+
 ::: info
 Documentation is still a work in progress, if you have any questions, feel free to join our [Discord server](https://discord.gg/pY5SVyHmWm) or open an issue on GitHub.
 :::
