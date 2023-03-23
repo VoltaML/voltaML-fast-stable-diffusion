@@ -11,7 +11,7 @@ from diffusers import (
     UNet2DConditionModel,
 )
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
-    load_pipeline_from_original_stable_diffusion_ckpt,
+    download_from_original_stable_diffusion_ckpt,
 )
 from PIL import Image, ImageOps
 from transformers.models.clip.modeling_clip import CLIPTextModel
@@ -90,10 +90,13 @@ class PyTorchStableDiffusion(InferenceModel):
             else:
                 logger.info("Loading model as checkpoint")
 
-            pipe = load_pipeline_from_original_stable_diffusion_ckpt(
+            pipe = download_from_original_stable_diffusion_ckpt(
                 checkpoint_path=self.model_id,
                 from_safetensors=use_safetensors,
             )
+            pipe.requires_safety_checker = False  # type: ignore
+            pipe.safety_checker = None  # type: ignore
+            pipe.feature_extractor = None  # type: ignore
         else:
             pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(
                 pretrained_model_name_or_path=get_full_model_path(self.model_id),
@@ -108,7 +111,9 @@ class PyTorchStableDiffusion(InferenceModel):
 
         logger.debug(f"Loaded {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
-        pipe.to(self.device)
+        pipe.to(
+            self.device, torch_dtype=torch.float32 if self.use_f32 else torch.float16
+        )
 
         optimize_model(pipe)
 

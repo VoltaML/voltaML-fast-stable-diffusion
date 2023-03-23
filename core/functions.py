@@ -2,7 +2,7 @@ import logging
 from pathlib import Path
 from typing import Dict
 
-from diffusers.models.cross_attention import AttnProcessor2_0
+from diffusers.models.attention_processor import AttnProcessor2_0
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )

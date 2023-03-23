@@ -4,6 +4,7 @@ import shlex
 import subprocess
 import sys
 import threading
+import warnings
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -16,12 +17,14 @@ from core.install_requirements import (  # pylint: disable=wrong-import-position
     version_check,
 )
 
+# Handle arguments passed to the script
 app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]
 extra_args = os.getenv("EXTRA_ARGS")
 
 if extra_args:
     app_args.extend(shlex.split(extra_args))
 
+# Parse arguments
 parser = ArgumentParser(
     prog="VoltaML Fast Stable Diffusion",
     epilog="""
@@ -60,6 +63,7 @@ args = parser.parse_args(args=app_args)
 logging.basicConfig(level=args.log_level)
 logger = logging.getLogger(__name__)
 
+# Check tokens
 if not os.getenv("HUGGINGFACE_TOKEN"):
     logger.error(
         "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
@@ -83,9 +87,13 @@ Path("data/models").mkdir(exist_ok=True)
 Path("data/outputs").mkdir(exist_ok=True)
 Path("engine").mkdir(exist_ok=True)
 
+# Suppress some annoying warnings
+warnings.filterwarnings("ignore", category=UserWarning)
+
 
 def is_root():
     "Check if user has elevated privileges"
+
     try:
         is_admin = os.getuid() == 0  # type: ignore
     except AttributeError:

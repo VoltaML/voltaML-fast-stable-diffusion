@@ -50,9 +50,7 @@ class CachedModelList:
                 continue
 
         # Localy stored models
-        logger.debug(
-            f"Looking for converted models in {self.checkpoint_converted_path}"
-        )
+        logger.debug(f"Looking for local models in {self.checkpoint_converted_path}")
         for model_name in os.listdir(self.checkpoint_converted_path):
             logger.debug(f"Found model {model_name}")
 
@@ -61,9 +59,7 @@ class CachedModelList:
                 models.append(
                     {
                         "name": model_name,
-                        "path": str(
-                            self.checkpoint_converted_path.joinpath(model_name)
-                        ),
+                        "path": model_name,
                         "backend": "PyTorch",
                         "valid": is_valid_diffusers_model(
                             self.checkpoint_converted_path.joinpath(model_name)
@@ -278,12 +274,18 @@ def get_full_model_path(repo_id: str, revision: str = "main") -> Path:
 
     # 1. Check for the exact path
     if repo_path.exists():
+        logger.debug(f"Found model in {repo_path}")
         return repo_path
 
     # 2. Check if model is stored in local storage
     alt_path = Path("data/models") / repo_id
     if alt_path.exists():
+        logger.debug(f"Found model in {alt_path}")
         return alt_path
+
+    logger.debug(
+        f"Model not found in {repo_path} or {alt_path}, checking diffusers cache..."
+    )
 
     # 3. Check if model is stored in diffusers cache
     storage = diffusers_storage_name(repo_id)

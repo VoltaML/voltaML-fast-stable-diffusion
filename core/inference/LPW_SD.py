@@ -41,7 +41,7 @@ re_attention = re.compile(
 
 
 def parse_prompt_attention(text):
-    """
+    r"""
     Parses a string with attention tokens and returns a list of pairs: text and its associated weight.
     Accepted tokens are:
       (abc) - increases attention to abc by a multiplier of 1.1
@@ -513,11 +513,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     module._hf_hook,  # pylint: disable=protected-access
                     "execution_device",
                 )
-                and module._hf_hook.execution_device  # pylint: disable=protected-access
+                and module._hf_hook.execution_device  # pylint: disable=protected-access # type: ignore
                 is not None
             ):
                 return torch.device(
-                    module._hf_hook.execution_device  # pylint: disable=protected-access
+                    module._hf_hook.execution_device  # pylint: disable=protected-access # type: ignore
                 )
         return self.device
 
@@ -686,11 +686,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if device.type == "mps":
                     # randn does not work reproducibly on mps
                     latents = torch.randn(
-                        shape, generator=generator, device="cpu", dtype=dtype
+                        shape, generator=generator, device="cpu", dtype=dtype  # type: ignore
                     ).to(device)
                 else:
                     latents = torch.randn(
-                        shape, generator=generator, device=device, dtype=dtype
+                        shape, generator=generator, device=device, dtype=dtype  # type: ignore
                     )
             else:
                 if latents.shape != shape:
@@ -903,15 +903,15 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # compute the previous noisy sample x_t -> x_t-1
             latents = self.scheduler.step(  # type: ignore
-                noise_pred, t, latents, **extra_step_kwargs
-            ).prev_sample
+                noise_pred, t, latents, **extra_step_kwargs  # type: ignore
+            ).prev_sample  # type: ignore
 
             if mask is not None:
                 # masking
                 init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                    init_latents_orig, noise, torch.tensor([t])
+                    init_latents_orig, noise, torch.tensor([t])  # type: ignore
                 )
-                latents = (init_latents_proper * mask) + (latents * (1 - mask))
+                latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
 
             # call the callback, if provided
             if i % callback_steps == 0:

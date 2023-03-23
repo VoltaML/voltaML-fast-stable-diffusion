@@ -196,6 +196,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         latents: Optional[torch.FloatTensor] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
+        num_images_per_prompt: int = 1,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         **kwargs,
     ):
@@ -260,10 +261,30 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                 device = "cuda" if torch.cuda.is_available() else "cpu"
             self.to(device)
 
+        if num_images_per_prompt == 1:
+            assert isinstance(
+                prompt, str
+            ), "When `num_images_per_prompt` is 1, `prompt` has to be of type `str`."
+        else:
+            if isinstance(prompt, str):
+                prompt = [prompt] * num_images_per_prompt
+            elif isinstance(prompt, list):
+                assert (
+                    len(prompt) == num_images_per_prompt
+                ), "When `num_images_per_prompt` is > 1, `prompt` has to be a list of length `num_images_per_prompt`."
+
+            if negative_prompt is not None:
+                if isinstance(negative_prompt, str):
+                    negative_prompt = [negative_prompt] * num_images_per_prompt
+                elif isinstance(negative_prompt, list):
+                    assert (
+                        len(negative_prompt) == num_images_per_prompt
+                    ), "When `num_images_per_prompt` is > 1, `negative_prompt` has to be a list of length `num_images_per_prompt`."
+
         if isinstance(prompt, str):
-            batch_size = 1
+            num_images_per_prompt = 1
         elif isinstance(prompt, list):
-            batch_size = len(prompt)
+            num_images_per_prompt = len(prompt)
         else:
             raise ValueError(
                 f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
@@ -293,7 +314,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             uncond_tokens: List[str]
             max_length = text_input.input_ids.shape[-1]
             if negative_prompt is None:
-                uncond_tokens = [""] * batch_size
+                uncond_tokens = [""] * num_images_per_prompt
             elif type(prompt) is not type(negative_prompt):
                 raise TypeError(
                     f"`negative_prompt` should be the same type to `prompt`, but got {type(negative_prompt)} !="
@@ -301,10 +322,10 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                 )
             elif isinstance(negative_prompt, str):
                 uncond_tokens = [negative_prompt]
-            elif batch_size != len(negative_prompt):
+            elif num_images_per_prompt != len(negative_prompt):
                 raise ValueError(
                     f"`negative_prompt`: {negative_prompt} has batch size {len(negative_prompt)}, but `prompt`:"
-                    f" {prompt} has batch size {batch_size}. Please make sure that passed `negative_prompt` matches"
+                    f" {prompt} has batch size {num_images_per_prompt}. Please make sure that passed `negative_prompt` matches"
                     " the batch size of `prompt`."
                 )
             else:
@@ -332,7 +353,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         # However this currently doesn't work in `mps`.
         latents_device = "cpu" if self.device.type == "mps" else self.device
         latents_shape = (
-            batch_size,
+            num_images_per_prompt,
             self.unet.in_channels,
             height // 8,
             width // 8,

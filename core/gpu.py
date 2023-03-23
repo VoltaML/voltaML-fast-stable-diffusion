@@ -6,13 +6,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import torch
+from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
+    download_from_original_stable_diffusion_ckpt,
+)
 from PIL import Image
 
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
 from core.errors import DimensionError
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.pytorch import PyTorchStableDiffusion
@@ -305,7 +307,7 @@ class GPU:
 
         def convert_from_ckpt_thread_call(**kwargs):
             save_path = kwargs.pop("dump_path")
-            pipe = load_pipeline_from_original_stable_diffusion_ckpt(**kwargs)
+            pipe = download_from_original_stable_diffusion_ckpt(**kwargs)
             pipe.save_pretrained(save_path, safe_serialization=True)
 
         await run_in_thread_async(
