@@ -4,7 +4,7 @@ from asyncio import AbstractEventLoop
 from typing import Coroutine, List, Optional
 
 from fastapi import WebSocket
-from psutil._pslinux import NoSuchProcess
+from psutil import NoSuchProcess
 
 from api.websockets.data import Data
 from core.config import config
