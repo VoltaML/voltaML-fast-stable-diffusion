@@ -28,7 +28,7 @@ class WebSocketManager:
                 await task
                 self.to_run.remove(task)
 
-            await asyncio.sleep(config.api.websocket_sync_interval)
+            await asyncio.sleep(config.api.websocketSyncInterval)
 
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
@@ -60,11 +60,11 @@ class WebSocketManager:
                     )
 
                 await self.broadcast(Data(data_type="cluster_stats", data=data))
-                await asyncio.sleep(config.api.websocket_perf_interval)
+                await asyncio.sleep(config.api.websocketPerfInterval)
 
             except NoSuchProcess:
                 logger.debug("HW Stat - No such process, sleeping...")
-                await asyncio.sleep(config.api.websocket_perf_interval)
+                await asyncio.sleep(config.api.websocketPerfInterval)
 
     async def connect(self, websocket: WebSocket):
         "Accepts a new websocket connection and adds it to the list of active connections"

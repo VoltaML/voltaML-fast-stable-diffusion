@@ -510,7 +510,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
 });
 const ImageUpload_vue_vue_type_style_index_0_scoped_19b3e0b6_lang = "";
 const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-19b3e0b6"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-90b128b8"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-f7a9fbaf"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -642,7 +642,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           placeholder: "Negative prompt"
                         }, null, 8, ["value"]),
                         createBaseVNode("div", _hoisted_2$3, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_3$3
                             ]),
@@ -661,7 +661,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["options", "value"])
                         ]),
                         createBaseVNode("div", _hoisted_6$3, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_7$3
                             ]),
@@ -718,7 +718,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_12$3, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_13$3
                             ]),
@@ -745,7 +745,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_15$3, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_16$3
                             ]),
@@ -774,7 +774,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_18$3, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_19$2
                             ]),
@@ -800,7 +800,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_20$2, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_21$2
                             ]),
@@ -826,7 +826,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_22$2, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_23$2
                             ]),
@@ -854,7 +854,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value", "min", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_24$2, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_25$1
                             ]),
@@ -882,7 +882,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_26, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_27
                             ]),
@@ -927,8 +927,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_90b128b8_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-90b128b8"]]);
+const ControlNet_vue_vue_type_style_index_0_scoped_f7a9fbaf_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-f7a9fbaf"]]);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1);
@@ -1031,7 +1031,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       }, {
                         default: withCtx(() => [
                           createBaseVNode("div", _hoisted_2$2, [
-                            createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_3$2
                               ]),
@@ -1050,7 +1050,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             }, null, 8, ["options", "value"])
                           ]),
                           createBaseVNode("div", _hoisted_6$2, [
-                            createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_7$2
                               ]),
@@ -1077,7 +1077,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             }, null, 8, ["value"])
                           ]),
                           createBaseVNode("div", _hoisted_9$2, [
-                            createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_10$2
                               ]),
@@ -1106,7 +1106,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             }, null, 8, ["value", "step"])
                           ]),
                           createBaseVNode("div", _hoisted_12$2, [
-                            createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_13$2
                               ]),
@@ -1132,7 +1132,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             }, null, 8, ["value"])
                           ]),
                           createBaseVNode("div", _hoisted_14$2, [
-                            createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_15$2
                               ]),
@@ -1158,7 +1158,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             }, null, 8, ["value"])
                           ]),
                           createBaseVNode("div", _hoisted_16$2, [
-                            createVNode(unref(NTooltip), { "max-width": 600 }, {
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_17$2
                               ]),
@@ -1204,7 +1204,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-82ea7dbc"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-f90fb51f"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -1324,7 +1324,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           placeholder: "Negative prompt"
                         }, null, 8, ["value"]),
                         createBaseVNode("div", _hoisted_2$1, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_3$1
                             ]),
@@ -1383,7 +1383,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_10$1, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_11$1
                             ]),
@@ -1410,7 +1410,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_13$1, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_14$1
                             ]),
@@ -1439,7 +1439,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_16$1, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_17$1
                             ]),
@@ -1465,7 +1465,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_18$1, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_19$1
                             ]),
@@ -1491,7 +1491,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_20$1, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_21$1
                             ]),
@@ -1519,7 +1519,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value", "min", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_22$1, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_23$1
                             ]),
@@ -1564,8 +1564,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_82ea7dbc_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-82ea7dbc"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_f90fb51f_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-f90fb51f"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -2141,7 +2141,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-86bed337"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-91095481"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2464,7 +2464,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           placeholder: "Negative prompt"
                         }, null, 8, ["value"]),
                         createBaseVNode("div", _hoisted_5, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_6
                             ]),
@@ -2523,7 +2523,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_13, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_14
                             ]),
@@ -2550,7 +2550,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_16, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_17
                             ]),
@@ -2579,7 +2579,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_19, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_20
                             ]),
@@ -2605,7 +2605,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_21, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_22
                             ]),
@@ -2631,7 +2631,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_23, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_24
                             ]),
@@ -2676,8 +2676,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_86bed337_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-86bed337"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_91095481_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-91095481"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

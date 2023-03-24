@@ -105,7 +105,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 safety_checker=None,
                 requires_safety_checker=False,
                 feature_extractor=None,
-                cache_dir=config.cache_dir,
+                cache_dir=config.api.cache_dir,
             )
             assert isinstance(pipe, StableDiffusionLongPromptWeightingPipeline)
 
@@ -177,7 +177,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 resume_download=True,
                 torch_dtype=torch.float32 if self.use_f32 else torch.float16,
                 use_auth_token=self.auth,
-                cache_dir=config.cache_dir,
+                cache_dir=config.api.cache_dir,
             )
 
             assert isinstance(cn, ControlNetModel)

@@ -1,4 +1,5 @@
 import { ControlNetType } from "./core/interfaces";
+import { serverUrl } from "./env";
 
 export enum Sampler {
   DDIM = 1,
@@ -21,29 +22,28 @@ export interface SettingsInterface {
   backend: "PyTorch" | "TensorRT" | "AITemplate";
   model: string;
   txt2img: {
+    prompt: string;
+    negativePrompt: string;
     width: number;
     height: number;
     seed: number;
     cfgScale: number;
     sampler: Sampler;
-    prompt: string;
-    negativePrompt: string;
     steps: number;
     batchCount: number;
     batchSize: number;
   };
   img2img: {
+    prompt: string;
+    negativePrompt: string;
     width: number;
     height: number;
     seed: number;
     cfgScale: number;
     sampler: Sampler;
-    prompt: string;
-    negativePrompt: string;
     steps: number;
     batchCount: number;
     batchSize: number;
-    resizeMethod: number;
     denoisingStrength: number;
     image: string;
   };
@@ -59,39 +59,50 @@ export interface SettingsInterface {
   inpainting: {
     prompt: string;
     negativePrompt: string;
-    image: string;
-    maskImage: string;
     width: number;
     height: number;
-    steps: number;
-    cfgScale: number;
     seed: number;
+    cfgScale: number;
+    steps: number;
     batchCount: number;
     batchSize: number;
     sampler: Sampler;
+    image: string;
+    maskImage: string;
   };
   controlnet: {
     prompt: string;
-    image: string;
-    sampler: Sampler;
-    controlnet: ControlNetType;
     negativePrompt: string;
     width: number;
     height: number;
-    steps: number;
-    cfgScale: number;
     seed: number;
-    batchSize: number;
+    cfgScale: number;
+    steps: number;
     batchCount: number;
+    batchSize: number;
+    sampler: Sampler;
+    controlnet: ControlNetType;
     controlnetConditioningScale: number;
     detectionResolution: number;
+    image: string;
+  };
+  api: {
+    websocketSyncInterval: number;
+    websocketPerfInterval: number;
+    cache_dir: string;
+    lowVRAM: boolean;
+  };
+  aitemplate: {
+    numThreads: number;
+  };
+  bot: {
+    defaultScheduler: Sampler;
+    verbose: boolean;
+    userDefaultNegativePrompt: boolean;
   };
 }
 
-export const defaultNegativePrompt =
-  "(((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing, broken legs censor, censored, censor_bar, multiple breasts, (mutated hands and fingers:1.5), (long body :1.3), (mutation, poorly drawn :1.2), black-white, bad anatomy, liquid body, liquidtongue, disfigured, malformed, mutated, anatomical nonsense, text font ui, error, malformed hands, long neck, blurred, lowers, low res, bad anatomy, bad proportions, bad shadow, uncoordinated body, unnatural body, fused breasts, bad breasts, huge breasts, poorly drawn breasts, extra breasts, liquid breasts, heavy breasts, missingbreasts, huge haunch, huge thighs, huge calf, bad hands, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, fusedears, bad ears, poorly drawn ears, extra ears, liquid ears, heavy ears, missing ears, old photo, low res, black and white, black and white filter, colorless";
-
-const defaultSettings: SettingsInterface = {
+export const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_settings.json",
   backend: "PyTorch",
   model: "none:PyTorch",
@@ -100,26 +111,25 @@ const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: Sampler.EulerAncestralDiscrete,
+    sampler: Sampler.UniPCMultistep,
     prompt: "",
     steps: 25,
     batchCount: 1,
     batchSize: 1,
-    negativePrompt: defaultNegativePrompt,
+    negativePrompt: "",
   },
   img2img: {
     width: 512,
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: Sampler.EulerAncestralDiscrete,
+    sampler: Sampler.UniPCMultistep,
     prompt: "",
     steps: 25,
     batchCount: 1,
     batchSize: 1,
-    negativePrompt: defaultNegativePrompt,
+    negativePrompt: "",
     denoisingStrength: 0.6,
-    resizeMethod: 0,
     image: "",
   },
   imageVariations: {
@@ -128,12 +138,12 @@ const defaultSettings: SettingsInterface = {
     cfgScale: 7,
     image: "",
     seed: -1,
-    sampler: Sampler.EulerAncestralDiscrete,
+    sampler: Sampler.UniPCMultistep,
     steps: 25,
   },
   inpainting: {
     prompt: "",
-    negativePrompt: defaultNegativePrompt,
+    negativePrompt: "",
     image: "",
     maskImage: "",
     width: 512,
@@ -143,14 +153,14 @@ const defaultSettings: SettingsInterface = {
     seed: -1,
     batchCount: 1,
     batchSize: 1,
-    sampler: Sampler.EulerAncestralDiscrete,
+    sampler: Sampler.UniPCMultistep,
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: Sampler.EulerAncestralDiscrete,
+    sampler: Sampler.UniPCMultistep,
     controlnet: ControlNetType.CANNY,
-    negativePrompt: defaultNegativePrompt,
+    negativePrompt: "",
     width: 512,
     height: 512,
     steps: 25,
@@ -161,7 +171,37 @@ const defaultSettings: SettingsInterface = {
     controlnetConditioningScale: 1,
     detectionResolution: 512,
   },
+  api: {
+    websocketSyncInterval: 0.02,
+    websocketPerfInterval: 1,
+    cache_dir: "",
+    lowVRAM: false,
+  },
+  aitemplate: {
+    numThreads: 8,
+  },
+  bot: {
+    defaultScheduler: Sampler.UniPCMultistep,
+    verbose: false,
+    userDefaultNegativePrompt: true,
+  },
 };
+
+let rSettings: SettingsInterface = JSON.parse(JSON.stringify(defaultSettings));
+
+try {
+  const req = new XMLHttpRequest();
+  req.open("GET", `${serverUrl}/api/settings`, false);
+  req.send();
+
+  console.log("Recieved settings:", req.responseText);
+  rSettings = JSON.parse(req.responseText);
+} catch (e) {
+  console.error(e);
+}
+
+console.log("Settings:", rSettings);
+export const recievedSettings = rSettings;
 
 export class Settings {
   public settings: SettingsInterface;

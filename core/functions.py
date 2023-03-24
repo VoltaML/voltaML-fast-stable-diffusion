@@ -18,7 +18,7 @@ def optimize_model(pipe: StableDiffusionPipeline) -> None:
 
     logger.info("Optimizing model")
 
-    if config.low_vram:
+    if config.api.lowVRAM:
         pipe.enable_model_cpu_offload()
         logger.info("Optimization: Enabled model CPU offload")
 

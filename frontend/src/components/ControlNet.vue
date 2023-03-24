@@ -25,7 +25,7 @@
 
             <!-- Sampler -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p style="margin-right: 12px; width: 150px">Sampler</p>
                 </template>
@@ -51,7 +51,7 @@
 
             <!-- ControlNet mode -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p style="margin-right: 12px; width: 150px">ControlNet</p>
                 </template>
@@ -105,7 +105,7 @@
 
             <!-- Steps -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Steps</p>
                 </template>
@@ -134,7 +134,7 @@
 
             <!-- CFG Scale -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">CFG Scale</p>
                 </template>
@@ -165,7 +165,7 @@
 
             <!-- Number of images -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Batch Count</p>
                 </template>
@@ -186,7 +186,7 @@
               />
             </div>
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Batch Size</p>
                 </template>
@@ -209,7 +209,7 @@
 
             <!-- ControlNet Conditioning Scale -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">ControlNet Conditioning Scale</p>
                 </template>
@@ -238,7 +238,7 @@
 
             <!-- Detection resolution -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Detection resolution</p>
                 </template>
@@ -269,7 +269,7 @@
 
             <!-- Seed -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Seed</p>
                 </template>

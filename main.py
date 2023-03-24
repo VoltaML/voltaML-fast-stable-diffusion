@@ -208,8 +208,10 @@ def checks():
     # Config
     from core.config import config
 
-    config.low_vram = True if args.low_vram else bool(os.environ.get("LOW_VRAM", False))
-    if config.low_vram:
+    config.api.lowVRAM = (
+        True if args.low_vram else bool(os.environ.get("LOW_VRAM", False))
+    )
+    if config.api.lowVRAM:
         logger.warning("Using low VRAM mode")
 
 

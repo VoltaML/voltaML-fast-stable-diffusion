@@ -14,7 +14,17 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from api import websocket_manager
-from api.routes import general, generate, hardware, models, outputs, static, test, ws
+from api.routes import (
+    general,
+    generate,
+    hardware,
+    models,
+    outputs,
+    settings,
+    static,
+    test,
+    ws,
+)
 from core import shared
 
 logger = logging.getLogger(__name__)
@@ -101,6 +111,7 @@ else:
     logger.info("No FastAPI Analytics key provided, skipping")
 
 # Mount routers
+## HTTP
 app.include_router(static.router)
 app.include_router(test.router, prefix="/api/test")
 app.include_router(generate.router, prefix="/api/generate")
@@ -108,6 +119,9 @@ app.include_router(hardware.router, prefix="/api/hardware")
 app.include_router(models.router, prefix="/api/models")
 app.include_router(outputs.router, prefix="/api/output")
 app.include_router(general.router, prefix="/api/general")
+app.include_router(settings.router, prefix="/api/settings")
+
+## WebSockets
 app.include_router(ws.router, prefix="/api/websockets")
 
 # Mount static files (css, js, images, etc.)

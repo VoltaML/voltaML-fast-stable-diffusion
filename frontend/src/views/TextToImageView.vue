@@ -19,7 +19,7 @@
 
             <!-- Sampler -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p style="margin-right: 12px; width: 100px">Sampler</p>
                 </template>
@@ -83,7 +83,7 @@
 
             <!-- Steps -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Steps</p>
                 </template>
@@ -112,7 +112,7 @@
 
             <!-- CFG Scale -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">CFG Scale</p>
                 </template>
@@ -143,7 +143,7 @@
 
             <!-- Number of images -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Batch Count</p>
                 </template>
@@ -164,7 +164,7 @@
               />
             </div>
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Batch Size</p>
                 </template>
@@ -187,7 +187,7 @@
 
             <!-- Seed -->
             <div class="flex-container">
-              <NTooltip :max-width="600">
+              <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p style="margin-right: 12px; width: 75px">Seed</p>
                 </template>

@@ -2,9 +2,14 @@ import { ControlNetType } from "@/core/interfaces";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { defineStore } from "pinia";
 import { computed, reactive } from "vue";
-import { Settings } from "../settings";
+import {
+  Settings,
+  defaultSettings as defaultSettingsTemplate,
+  recievedSettings,
+  type SettingsInterface,
+} from "../settings";
 
-function getSchedulerOptions() {
+export function getSchedulerOptions() {
   // Create key, value pairs for scheduler options depending on if the backend is PyTorch(KDiffusionSampler) or TensorRT(Sampler)
 
   const scheduler_options: SelectMixedOption[] = [
@@ -102,8 +107,10 @@ function getControlNetOptions() {
   return controlnet_options;
 }
 
+const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
+
 export const useSettings = defineStore("settings", () => {
-  const data = reactive(new Settings({}));
+  const data = reactive(new Settings(recievedSettings));
   const scheduler_options = computed(() => {
     return getSchedulerOptions();
   });
@@ -111,5 +118,19 @@ export const useSettings = defineStore("settings", () => {
     return getControlNetOptions();
   });
 
-  return { data, scheduler_options, controlnet_options };
+  function resetSettings() {
+    console.log("Resetting settings to default");
+    Object.assign(defaultSettings, defaultSettingsTemplate);
+  }
+
+  // Deep copy default settings
+  const defaultSettings: SettingsInterface = reactive(deepcopiedSettings);
+
+  return {
+    data,
+    scheduler_options,
+    controlnet_options,
+    defaultSettings,
+    resetSettings,
+  };
 });

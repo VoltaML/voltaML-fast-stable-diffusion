@@ -14,7 +14,7 @@ class CachedModelList:
     "List of models downloaded for PyTorch and (or) converted to TRT"
 
     def __init__(self):
-        self.pytorch_path = Path(config.cache_dir)
+        self.pytorch_path = Path(config.api.cache_dir)
         self.checkpoint_converted_path = Path("data/models")
         self.tensorrt_engine_path = Path(
             os.environ.get("TENSORRT_ENGINE_PATH", "engine")
@@ -244,7 +244,7 @@ def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
     "Return the name of the folder where the diffusers model is stored"
 
     return os.path.join(
-        config.cache_dir, repo_folder_name(repo_id=repo_id, repo_type=repo_type)
+        config.api.cache_dir, repo_folder_name(repo_id=repo_id, repo_type=repo_type)
     )
 
 

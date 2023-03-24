@@ -25399,6 +25399,12 @@ const self$o = (vars) => {
   const { heightSmall, heightMedium, heightLarge, textColor1, errorColor, warningColor, lineHeight: lineHeight2, textColor3 } = vars;
   return Object.assign(Object.assign({}, commonVariables$5), { blankHeightSmall: heightSmall, blankHeightMedium: heightMedium, blankHeightLarge: heightLarge, lineHeight: lineHeight2, labelTextColor: textColor1, asteriskColor: errorColor, feedbackTextColorError: errorColor, feedbackTextColorWarning: warningColor, feedbackTextColor: textColor3 });
 };
+const formLight = {
+  name: "Form",
+  common: commonLight,
+  self: self$o
+};
+const formLight$1 = formLight;
 const formItemDark = {
   name: "Form",
   common: commonDark,
@@ -35040,7 +35046,6 @@ var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
   return ControlNetType2;
 })(ControlNetType || {});
-const defaultNegativePrompt = "(((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing, broken legs censor, censored, censor_bar, multiple breasts, (mutated hands and fingers:1.5), (long body :1.3), (mutation, poorly drawn :1.2), black-white, bad anatomy, liquid body, liquidtongue, disfigured, malformed, mutated, anatomical nonsense, text font ui, error, malformed hands, long neck, blurred, lowers, low res, bad anatomy, bad proportions, bad shadow, uncoordinated body, unnatural body, fused breasts, bad breasts, huge breasts, poorly drawn breasts, extra breasts, liquid breasts, heavy breasts, missingbreasts, huge haunch, huge thighs, huge calf, bad hands, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, fusedears, bad ears, poorly drawn ears, extra ears, liquid ears, heavy ears, missing ears, old photo, low res, black and white, black and white filter, colorless";
 const defaultSettings = {
   $schema: "./schema/ui_settings.json",
   backend: "PyTorch",
@@ -35050,26 +35055,25 @@ const defaultSettings = {
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: 7,
+    sampler: 13,
     prompt: "",
     steps: 25,
     batchCount: 1,
     batchSize: 1,
-    negativePrompt: defaultNegativePrompt
+    negativePrompt: ""
   },
   img2img: {
     width: 512,
     height: 512,
     seed: -1,
     cfgScale: 7,
-    sampler: 7,
+    sampler: 13,
     prompt: "",
     steps: 25,
     batchCount: 1,
     batchSize: 1,
-    negativePrompt: defaultNegativePrompt,
+    negativePrompt: "",
     denoisingStrength: 0.6,
-    resizeMethod: 0,
     image: ""
   },
   imageVariations: {
@@ -35078,12 +35082,12 @@ const defaultSettings = {
     cfgScale: 7,
     image: "",
     seed: -1,
-    sampler: 7,
+    sampler: 13,
     steps: 25
   },
   inpainting: {
     prompt: "",
-    negativePrompt: defaultNegativePrompt,
+    negativePrompt: "",
     image: "",
     maskImage: "",
     width: 512,
@@ -35093,15 +35097,15 @@ const defaultSettings = {
     seed: -1,
     batchCount: 1,
     batchSize: 1,
-    sampler: 7
-    /* EulerAncestralDiscrete */
+    sampler: 13
+    /* UniPCMultistep */
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: 7,
+    sampler: 13,
     controlnet: ControlNetType.CANNY,
-    negativePrompt: defaultNegativePrompt,
+    negativePrompt: "",
     width: 512,
     height: 512,
     steps: 25,
@@ -35111,8 +35115,34 @@ const defaultSettings = {
     batchCount: 1,
     controlnetConditioningScale: 1,
     detectionResolution: 512
+  },
+  api: {
+    websocketSyncInterval: 0.02,
+    websocketPerfInterval: 1,
+    cache_dir: "",
+    lowVRAM: false
+  },
+  aitemplate: {
+    numThreads: 8
+  },
+  bot: {
+    defaultScheduler: 13,
+    verbose: false,
+    userDefaultNegativePrompt: true
   }
 };
+let rSettings = JSON.parse(JSON.stringify(defaultSettings));
+try {
+  const req = new XMLHttpRequest();
+  req.open("GET", `${serverUrl}/api/settings`, false);
+  req.send();
+  console.log("Recieved settings:", req.responseText);
+  rSettings = JSON.parse(req.responseText);
+} catch (e) {
+  console.error(e);
+}
+console.log("Settings:", rSettings);
+const recievedSettings = rSettings;
 class Settings {
   constructor(settings_override) {
     __publicField(this, "settings");
@@ -35216,15 +35246,27 @@ function getControlNetOptions() {
   ];
   return controlnet_options;
 }
+const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
 const useSettings = defineStore("settings", () => {
-  const data = reactive(new Settings({}));
+  const data = reactive(new Settings(recievedSettings));
   const scheduler_options = computed(() => {
     return getSchedulerOptions();
   });
   const controlnet_options = computed(() => {
     return getControlNetOptions();
   });
-  return { data, scheduler_options, controlnet_options };
+  function resetSettings() {
+    console.log("Resetting settings to default");
+    Object.assign(defaultSettings$1, defaultSettings);
+  }
+  const defaultSettings$1 = reactive(deepcopiedSettings);
+  return {
+    data,
+    scheduler_options,
+    controlnet_options,
+    defaultSettings: defaultSettings$1,
+    resetSettings
+  };
 });
 const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
@@ -35892,7 +35934,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           placeholder: "Negative prompt"
                         }, null, 8, ["value"]),
                         createBaseVNode("div", _hoisted_2, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_3
                             ]),
@@ -35951,7 +35993,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_10, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_11
                             ]),
@@ -35978,7 +36020,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_13, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_14
                             ]),
@@ -36007,7 +36049,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_16, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_17
                             ]),
@@ -36033,7 +36075,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_18, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_19
                             ]),
@@ -36059,7 +36101,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_20, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_21
                             ]),
@@ -36150,7 +36192,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Tabs.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -36272,21 +36314,29 @@ export {
   asModal as b9,
   ErrorIcon$1 as bA,
   resultLight$1 as bB,
-  useCompitable as bC,
-  descriptionsLight$1 as bD,
-  NImage as bE,
-  createCommentVNode as bF,
-  renderList as bG,
-  useSsrAdapter as bH,
-  cssrAnchorMetaName$1 as bI,
-  c as bJ,
-  isSymbol as bK,
-  isObject as bL,
-  root$1 as bM,
-  AddIcon as bN,
-  onFontsReady as bO,
-  tabsLight$1 as bP,
-  TransitionGroup as bQ,
+  getCurrentInstance as bC,
+  formLight$1 as bD,
+  commonVariables$m as bE,
+  formItemInjectionKey as bF,
+  onMounted as bG,
+  commonVars$1 as bH,
+  isSlotEmpty as bI,
+  defaultSettings as bJ,
+  useCompitable as bK,
+  descriptionsLight$1 as bL,
+  NImage as bM,
+  createCommentVNode as bN,
+  renderList as bO,
+  useSsrAdapter as bP,
+  cssrAnchorMetaName$1 as bQ,
+  c as bR,
+  isSymbol as bS,
+  isObject as bT,
+  root$1 as bU,
+  AddIcon as bV,
+  onFontsReady as bW,
+  tabsLight$1 as bX,
+  TransitionGroup as bY,
   dialogLight$1 as ba,
   render$1 as bb,
   cardBaseProps as bc,

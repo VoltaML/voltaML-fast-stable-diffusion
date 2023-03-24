@@ -1,0 +1,1 @@
+<template>Bot Settings</template>
