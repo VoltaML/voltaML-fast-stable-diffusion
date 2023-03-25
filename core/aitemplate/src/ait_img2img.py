@@ -15,8 +15,9 @@
 
 # flakes8: noqa
 import inspect
+import logging
 import os
-from typing import List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 import numpy as np
 import PIL
@@ -35,6 +36,8 @@ from diffusers.pipelines.stable_diffusion import (
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+
+logger = logging.getLogger(__name__)
 
 
 def preprocess(image):
@@ -84,6 +87,10 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
+        directory: str = "",
+        clip_ait_exe: Optional[Model] = None,
+        unet_ait_exe: Optional[Model] = None,
+        vae_ait_exe: Optional[Model] = None,
         requires_safety_checker: bool = True,
     ):
         super().__init__(
@@ -96,27 +103,29 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             feature_extractor=feature_extractor,
             requires_safety_checker=requires_safety_checker,
         )
-        # scheduler = scheduler.set_format("pt")
-        self.register_modules(
-            vae=vae,
-            text_encoder=text_encoder,
-            tokenizer=tokenizer,
-            unet=unet,
-            scheduler=scheduler,
-            safety_checker=safety_checker,
-            feature_extractor=feature_extractor,
-        )
 
-        workdir = "tmp/"
-        self.clip_ait_exe = self.init_ait_module(
-            model_name="CLIPTextModel", workdir=workdir
-        )
-        self.unet_ait_exe = self.init_ait_module(
-            model_name="UNet2DConditionModel", workdir=workdir
-        )
-        self.vae_ait_exe = self.init_ait_module(
-            model_name="AutoencoderKL", workdir=workdir
-        )
+        logger.debug(f"AIT workdir: {directory}")
+
+        if clip_ait_exe is None:
+            self.clip_ait_exe = self.init_ait_module(
+                model_name="CLIPTextModel", workdir=directory
+            )
+        else:
+            self.clip_ait_exe = clip_ait_exe
+
+        if unet_ait_exe is None:
+            self.unet_ait_exe = self.init_ait_module(
+                model_name="UNet2DConditionModel", workdir=directory
+            )
+        else:
+            self.unet_ait_exe = unet_ait_exe
+
+        if vae_ait_exe is None:
+            self.vae_ait_exe = self.init_ait_module(
+                model_name="AutoencoderKL", workdir=directory
+            )
+        else:
+            self.vae_ait_exe = vae_ait_exe
 
         self.safety_checker: StableDiffusionSafetyChecker
         self.requires_safety_checker: bool
@@ -128,6 +137,8 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         self.unet: UNet2DConditionModel
         self.safety_checker: StableDiffusionSafetyChecker
         self.feature_extractor: CLIPFeatureExtractor
+
+        self.scheduler: LMSDiscreteScheduler
 
     def init_ait_module(
         self,
@@ -193,10 +204,13 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         strength: float = 0.8,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
+        negative_prompt: Optional[Union[str, List[str]]] = None,
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
+        num_images_per_prompt: int = 1,
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -222,6 +236,9 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
                 Paper](https://arxiv.org/pdf/2205.11487.pdf). Guidance scale is enabled by setting `guidance_scale >
                 1`. Higher guidance scale encourages to generate images that are closely linked to the text `prompt`,
                 usually at the expense of lower image quality.
+            negative_prompt (`str` or `List[str]`, *optional*):
+                The prompt or prompts not to guide the image generation. Ignored when not using guidance (i.e., ignored
+                if `guidance_scale` is less than `1`).
             eta (`float`, *optional*, defaults to 0.0):
                 Corresponds to parameter eta (η) in the DDIM paper: https://arxiv.org/abs/2010.02502. Only applies to
                 [`schedulers.DDIMScheduler`], will be ignored for others.
@@ -243,12 +260,30 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             (nsfw) content, according to the `safety_checker`.
         """
 
-        self.scheduler: LMSDiscreteScheduler
+        if num_images_per_prompt == 1:
+            assert isinstance(
+                prompt, str
+            ), "When `num_images_per_prompt` is 1, `prompt` has to be of type `str`."
+        else:
+            if isinstance(prompt, str):
+                prompt = [prompt] * num_images_per_prompt
+            elif isinstance(prompt, list):
+                assert (
+                    len(prompt) == num_images_per_prompt
+                ), "When `num_images_per_prompt` is > 1, `prompt` has to be a list of length `num_images_per_prompt`."
+
+            if negative_prompt is not None:
+                if isinstance(negative_prompt, str):
+                    negative_prompt = [negative_prompt] * num_images_per_prompt
+                elif isinstance(negative_prompt, list):
+                    assert (
+                        len(negative_prompt) == num_images_per_prompt
+                    ), "When `num_images_per_prompt` is > 1, `negative_prompt` has to be a list of length `num_images_per_prompt`."
 
         if isinstance(prompt, str):
-            batch_size = 1
+            num_images_per_prompt = 1
         elif isinstance(prompt, list):
-            batch_size = len(prompt)
+            num_images_per_prompt = len(prompt)
         else:
             raise ValueError(
                 f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
@@ -274,27 +309,29 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         if isinstance(init_image, PIL.Image.Image):
             init_image = preprocess(init_image)  # type: ignore
 
+        # convert to correct dtype and push to right device
+        init_image = init_image.to(self.device, dtype=self.unet.dtype)  # type: ignore
         # encode the init image into latents and scale the latents
-        init_latent_dist = self.vae.encode(init_image.to(self.device)).latent_dist  # type: ignore
+        init_latent_dist = self.vae.encode(init_image).latent_dist  # type: ignore
         init_latents = init_latent_dist.sample(generator=generator)
         init_latents = 0.18215 * init_latents
 
-        # expand init_latents for batch_size
-        init_latents = torch.cat([init_latents] * batch_size)
+        # expand init_latents for num_images_per_prompt
+        init_latents = torch.cat([init_latents] * num_images_per_prompt)
 
         # get the original timestep using init_timestep
         init_timestep = int(num_inference_steps * strength) + offset
         init_timestep = min(init_timestep, num_inference_steps)
         if isinstance(self.scheduler, LMSDiscreteScheduler):
             timesteps = torch.tensor(
-                [num_inference_steps - init_timestep] * batch_size,
+                [num_inference_steps - init_timestep] * num_images_per_prompt,
                 device=self.device,
             ).to(dtype=torch.long)
         else:
             timesteps = self.scheduler.timesteps[-init_timestep]
-            timesteps = torch.tensor([timesteps] * batch_size, device=self.device).to(
-                dtype=torch.long
-            )
+            timesteps = torch.tensor(
+                [timesteps] * num_images_per_prompt, device=self.device
+            ).to(dtype=torch.long)
 
         # add noise to latents using the timesteps
         noise = torch.randn(init_latents.shape, generator=generator, device=self.device)
@@ -318,11 +355,30 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         do_classifier_free_guidance = guidance_scale > 1.0
         # get unconditional embeddings for classifier free guidance
         if do_classifier_free_guidance:
+            uncond_tokens: List[str]
             max_length = text_input.input_ids.shape[-1]
+            if negative_prompt is None:
+                uncond_tokens = [""] * num_images_per_prompt
+            elif type(prompt) is not type(negative_prompt):
+                raise TypeError(
+                    f"`negative_prompt` should be the same type to `prompt`, but got {type(negative_prompt)} !="
+                    f" {type(prompt)}."
+                )
+            elif isinstance(negative_prompt, str):
+                uncond_tokens = [negative_prompt]
+            elif num_images_per_prompt != len(negative_prompt):
+                raise ValueError(
+                    f"`negative_prompt`: {negative_prompt} has batch size {len(negative_prompt)}, but `prompt`:"
+                    f" {prompt} has batch size {num_images_per_prompt}. Please make sure that passed `negative_prompt` matches"
+                    " the batch size of `prompt`."
+                )
+            else:
+                uncond_tokens = negative_prompt
             uncond_input = self.tokenizer(
-                [""] * batch_size,
+                uncond_tokens,
                 padding="max_length",
                 max_length=max_length,
+                truncation=True,
                 return_tensors="pt",
             )
             uncond_embeddings = self.clip_inference(
@@ -344,6 +400,12 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         extra_step_kwargs = {}
         if accepts_eta:
             extra_step_kwargs["eta"] = eta
+
+        accepts_generator = "generator" in set(
+            inspect.signature(self.scheduler.step).parameters.keys()
+        )
+        if accepts_generator:
+            extra_step_kwargs["generator"] = generator
 
         latents = init_latents
 
@@ -386,6 +448,9 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
                     noise_pred, t, latents, **extra_step_kwargs
                 ).prev_sample
 
+            if callback is not None:
+                callback(i, t, latents)  # type: ignore
+
         # scale and decode the image latents with vae
         latents = 1 / 0.18215 * latents
         image = self.vae_inference(latents)
@@ -393,23 +458,28 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         image = (image / 2 + 0.5).clamp(0, 1)
         image = image.cpu().permute(0, 2, 3, 1).numpy()
 
-        # run safety checker
-        if self.safety_checker is not None:
-            safety_checker_input = self.feature_extractor(
-                self.numpy_to_pil(image), return_tensors="pt"
-            ).to(self.device)
-            image, has_nsfw_concept = self.safety_checker(
-                images=image, clip_input=safety_checker_input.pixel_values
-            )
-        else:
-            has_nsfw_concept = None
-
         if output_type == "pil":
             image = self.numpy_to_pil(image)
+
+            # run safety checker
+            if self.safety_checker is not None:
+                safety_checker_input = self.feature_extractor(
+                    self.numpy_to_pil(image), return_tensors="pt"
+                ).to(self.device)
+                image, has_nsfw_concept = self.safety_checker(
+                    images=image, clip_input=safety_checker_input.pixel_values
+                )
+            else:
+                has_nsfw_concept = None
+        elif output_type == "latent":
+            image = latents
+            has_nsfw_concept = None
+        else:
+            raise ValueError(f"Invalid output_type {output_type}")
 
         if not return_dict:
             return (image, has_nsfw_concept)
 
         return StableDiffusionPipelineOutput(
-            images=image, nsfw_content_detected=has_nsfw_concept
+            images=image, nsfw_content_detected=has_nsfw_concept  # type: ignore
         )

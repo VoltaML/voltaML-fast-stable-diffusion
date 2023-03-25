@@ -15,7 +15,7 @@ from api.websockets.data import Data
 from core.files import get_full_model_path
 from core.functions import optimize_model
 from core.inference.base_model import InferenceModel
-from core.inference_callbacks import txt2img_callback
+from core.inference_callbacks import img2img_callback, txt2img_callback
 from core.schedulers import change_scheduler
 from core.types import Img2ImgQueueEntry, Job, Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
@@ -175,13 +175,17 @@ class AITemplateStableDiffusion(InferenceModel):
 
         pipe = StableDiffusionImg2ImgAITPipeline(
             vae=self.vae,
-            unet=self.unet,  # type: ignore
+            directory=os.path.join("data", "aitemplate", self.model_id),
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
             safety_checker=self.safety_checker,
+            requires_safety_checker=self.requires_safety_checker,
+            unet=self.unet,
+            feature_extractor=self.feature_extractor,
+            clip_ait_exe=self.clip_ait_exe,
+            unet_ait_exe=self.unet_ait_exe,
+            vae_ait_exe=self.vae_ait_exe,
         )
 
         generator = torch.Generator(self.device).manual_seed(job.data.seed)
@@ -199,13 +203,13 @@ class AITemplateStableDiffusion(InferenceModel):
                 init_image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                # negative_prompt=job.data.negative_prompt,
+                negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
-                # callback=img2img_callback,
+                callback=img2img_callback,
                 strength=job.data.strength,
                 return_dict=False,
-                # num_images_per_prompt=job.data.batch_size,
+                num_images_per_prompt=job.data.batch_size,
             )
 
             images = data[0]
