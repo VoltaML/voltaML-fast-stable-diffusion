@@ -17,13 +17,12 @@ sudo apt-get update
 
 # Install CUDA and Python
 sudo apt install -y python3.10 python3.10-venv build-essential cuda
-nano ~/.bashrc
 
 # Add required paths and env vars to .bashrc
 echo "" >> ~/.bashrc
 echo export CUDA_HOME="/usr/local/cuda-12.1" >> ~/.bashrc
-echo export LD_LIBRARY_PATH=/lib/wsl/lib:$LD_LIBRARY_PATH >> ~/.bashrc
-echo export PATH="$PATH:$CUDA_HOME/bin" >> ~/.bashrc
+echo export LD_LIBRARY_PATH=/lib/wsl/lib:\$LD_LIBRARY_PATH >> ~/.bashrc
+echo export PATH="\$PATH:\$CUDA_HOME/bin" >> ~/.bashrc
 echo export HUGGINGFACE_TOKEN=$hftoken >> ~/.bashrc
 
 # Reload .bashrc
