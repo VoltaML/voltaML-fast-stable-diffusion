@@ -13,7 +13,7 @@ This guide will walk you through the process of installing the application local
 ### Run Automated Setup Script
 
 ```bash
-curl -fsSLO https://bills-reports-blame-nasty.trycloudflare.com/scripts/wsl-install.sh
+curl -fsSLO https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/scripts/wsl-install.sh
 chmod +x wsl-install.sh
 . wsl-install.sh
 ```
