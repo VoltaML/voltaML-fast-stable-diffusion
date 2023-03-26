@@ -39,7 +39,7 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 | Feature          | PyTorch | AITemplate | Long Weighted Prompt (PyTorch Only) |
 | ---------------- | ------- | ---------- | ----------------------------------- |
 | Txt2Img          | ✅      | ✅         | ✅                                  |
-| Img2Img          | ✅      | 🚧         | ✅                                  |
+| Img2Img          | ✅      | ✅         | ✅                                  |
 | ControlNet       | ✅      | ❌         | ❌                                  |
 | Inpainting       | ✅      | 🚧         | ✅                                  |
 | Image Variations | ❌      | ❌         | ❌                                  |
@@ -50,13 +50,13 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 | Feature                         | Availability |
 | ------------------------------- | ------------ |
 | Discord bot                     | ✅           |
-| Real-ESRGAN                     | ❌           |
+| Real-ESRGAN                     | 🚧           |
 | Latent Upscale                  | ❌           |
 | Documentation                   | ✅           |
 | Image Browser                   | ✅           |
 | Model Conversion                | 🚧           |
 | Model Training                  | ❌           |
-| Confiruration                   | 🚧           |
+| Confiruration                   | ✅           |
 | Multi-GPU                       | ✅           |
 | MultiModel API                  | ✅           |
 | MultiModel UI                   | ❌           |
