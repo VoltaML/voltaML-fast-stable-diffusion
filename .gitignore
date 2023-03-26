@@ -78,7 +78,7 @@ docs/.vitepress/dist
 external
 /tmp
 /data
-/config.json
+/data/settings.json
 
 # Ignore for black
 core/submodules

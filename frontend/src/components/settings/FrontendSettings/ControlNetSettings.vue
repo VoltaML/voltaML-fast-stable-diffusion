@@ -22,16 +22,19 @@
       <NFormItem label="CFG Scale">
         <NInputNumber
           v-model:value="settings.defaultSettings.controlnet.cfgScale"
+          :step="0.1"
         />
       </NFormItem>
       <NFormItem label="Height">
         <NInputNumber
           v-model:value="settings.defaultSettings.controlnet.height"
+          :step="8"
         />
       </NFormItem>
       <NFormItem label="Width">
         <NInputNumber
           v-model:value="settings.defaultSettings.controlnet.width"
+          :step="8"
         />
       </NFormItem>
       <NFormItem label="Sampler">
@@ -49,6 +52,7 @@
       <NFormItem label="Seed">
         <NInputNumber
           v-model:value="settings.defaultSettings.controlnet.seed"
+          :min="-1"
         />
       </NFormItem>
       <NFormItem label="Steps">
@@ -61,6 +65,7 @@
           v-model:value="
             settings.defaultSettings.controlnet.controlnetConditioningScale
           "
+          :step="0.1"
         />
       </NFormItem>
       <NFormItem label="Detection Resolution">
@@ -68,6 +73,7 @@
           v-model:value="
             settings.defaultSettings.controlnet.detectionResolution
           "
+          :step="8"
         />
       </NFormItem>
     </NForm>

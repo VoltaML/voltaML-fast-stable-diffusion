@@ -8,6 +8,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.data import Data
 from core import shared
+from core.config import config
 from core.errors import InferenceInterruptedError
 from core.utils import convert_images_to_base64_grid
 
@@ -152,7 +153,7 @@ def pytorch_callback(
         raise InferenceInterruptedError
 
     shared.current_done_steps += 1
-    send_image: bool = time.time() - last_image_time > 2
+    send_image: bool = time.time() - last_image_time > config.api.imagePreviewDelay
     images: List[Image.Image] = []
 
     if send_image:

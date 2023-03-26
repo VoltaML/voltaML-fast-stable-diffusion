@@ -96,10 +96,11 @@ class ControlNetConfig:
 class APIConfig:
     "Configuration for the API"
 
-    websocketSyncInterval = 0.02
-    websocketPerfInterval = 1
+    websocketSyncInterval: float = 0.02
+    websocketPerfInterval: float = 1.0
     cache_dir: str = field(default=DIFFUSERS_CACHE)
     lowVRAM: bool = False
+    imagePreviewDelay: float = 2.0
 
 
 @dataclass
@@ -137,26 +138,26 @@ class Configuration(DataClassJsonMixin):
 def save_config(config: Configuration):
     "Save the configuration to a file"
 
-    logger.info("Saving configuration to config.json")
+    logger.info("Saving configuration to data/settings.json")
 
-    with open("config.json", "w", encoding="utf-8") as f:
+    with open("data/settings.json", "w", encoding="utf-8") as f:
         f.write(config.to_json(ensure_ascii=False, indent=4))
 
 
 def load_config():
     "Load the configuration from a file"
 
-    logger.info("Loading configuration from config.json")
+    logger.info("Loading configuration from data/settings.json")
 
     try:
-        with open("config.json", "r", encoding="utf-8") as f:
+        with open("data/settings.json", "r", encoding="utf-8") as f:
             config = Configuration.from_json(f.read())
-            logger.info("Configuration loaded from config.json")
+            logger.info("Configuration loaded from data/settings.json")
             return config
 
     except FileNotFoundError:
-        logger.info("config.json not found, creating a new one")
+        logger.info("data/settings.json not found, creating a new one")
         config = Configuration()
         save_config(config)
-        logger.info("Configuration saved to config.json")
+        logger.info("Configuration saved to data/settings.json")
         return config

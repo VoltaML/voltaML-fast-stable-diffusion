@@ -22,16 +22,19 @@
       <NFormItem label="CFG Scale">
         <NInputNumber
           v-model:value="settings.defaultSettings.inpainting.cfgScale"
+          :step="0.1"
         />
       </NFormItem>
       <NFormItem label="Height">
         <NInputNumber
           v-model:value="settings.defaultSettings.inpainting.height"
+          :step="8"
         />
       </NFormItem>
       <NFormItem label="Width">
         <NInputNumber
           v-model:value="settings.defaultSettings.inpainting.width"
+          :step="8"
         />
       </NFormItem>
       <NFormItem label="Sampler">
@@ -43,6 +46,7 @@
       <NFormItem label="Seed">
         <NInputNumber
           v-model:value="settings.defaultSettings.inpainting.seed"
+          :min="-1"
         />
       </NFormItem>
       <NFormItem label="Steps">

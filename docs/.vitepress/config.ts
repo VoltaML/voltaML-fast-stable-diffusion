@@ -79,6 +79,18 @@ export default defineConfig({
 				collapsed: false,
 			},
 			{
+				text: "Experimental",
+				items: [
+					{ text: "xFormers", link: "/experimental/xformers" },
+					{ text: "Settings", link: "/experimental/settings" },
+					{
+						text: "Safetensors/CKPT support",
+						link: "/experimental/checkpoints",
+					},
+				],
+				collapsed: false,
+			},
+			{
 				text: "API",
 				items: [{ text: "API", link: "/api/" }],
 				collapsed: false,

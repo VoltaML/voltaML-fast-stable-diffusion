@@ -25,11 +25,14 @@ def optimize_model(pipe: StableDiffusionPipeline) -> None:
     pipe.enable_vae_slicing()
     logger.info("Optimization: Enabled VAE slicing")
 
-    # Force SDPA
-    pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
-    logger.info("Optimization: Enabled SDPA")
+    try:
+        pipe.enable_xformers_memory_efficient_attention()
+        logger.info("Optimization: Enabled xFormers memory efficient attention")
+    except ModuleNotFoundError:
+        pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
+        logger.info("Optimization: Enabled SDPA, because xformers is not installed")
 
-    logger.info("Optimization complete")
+        logger.info("Optimization complete")
 
 
 def image_meta_from_file(path: Path) -> Dict[str, str]:

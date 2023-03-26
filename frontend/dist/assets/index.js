@@ -35047,7 +35047,7 @@ var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   return ControlNetType2;
 })(ControlNetType || {});
 const defaultSettings = {
-  $schema: "./schema/ui_settings.json",
+  $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: "none:PyTorch",
   txt2img: {
@@ -35120,7 +35120,8 @@ const defaultSettings = {
     websocketSyncInterval: 0.02,
     websocketPerfInterval: 1,
     cache_dir: "",
-    lowVRAM: false
+    lowVRAM: false,
+    imagePreviewDelay: 2
   },
   aitemplate: {
     numThreads: 8

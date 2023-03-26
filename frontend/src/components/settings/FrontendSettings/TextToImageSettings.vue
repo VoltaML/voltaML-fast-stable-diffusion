@@ -22,13 +22,20 @@
       <NFormItem label="CFG Scale">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.cfgScale"
+          :step="0.1"
         />
       </NFormItem>
       <NFormItem label="Height">
-        <NInputNumber v-model:value="settings.defaultSettings.txt2img.height" />
+        <NInputNumber
+          v-model:value="settings.defaultSettings.txt2img.height"
+          :step="8"
+        />
       </NFormItem>
       <NFormItem label="Width">
-        <NInputNumber v-model:value="settings.defaultSettings.txt2img.width" />
+        <NInputNumber
+          v-model:value="settings.defaultSettings.txt2img.width"
+          :step="8"
+        />
       </NFormItem>
       <NFormItem label="Sampler">
         <NSelect
@@ -37,7 +44,10 @@
         />
       </NFormItem>
       <NFormItem label="Seed">
-        <NInputNumber v-model:value="settings.defaultSettings.txt2img.seed" />
+        <NInputNumber
+          v-model:value="settings.defaultSettings.txt2img.seed"
+          :min="-1"
+        />
       </NFormItem>
       <NFormItem label="Steps">
         <NInputNumber v-model:value="settings.defaultSettings.txt2img.steps" />

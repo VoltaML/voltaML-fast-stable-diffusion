@@ -1,1 +1,1 @@
-docker compose run --service-ports voltaml
+docker compose run --service-ports --rm voltaml

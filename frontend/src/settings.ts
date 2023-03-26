@@ -91,6 +91,7 @@ export interface SettingsInterface {
     websocketPerfInterval: number;
     cache_dir: string;
     lowVRAM: boolean;
+    imagePreviewDelay: number;
   };
   aitemplate: {
     numThreads: number;
@@ -103,7 +104,7 @@ export interface SettingsInterface {
 }
 
 export const defaultSettings: SettingsInterface = {
-  $schema: "./schema/ui_settings.json",
+  $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: "none:PyTorch",
   txt2img: {
@@ -176,6 +177,7 @@ export const defaultSettings: SettingsInterface = {
     websocketPerfInterval: 1,
     cache_dir: "",
     lowVRAM: false,
+    imagePreviewDelay: 2.0,
   },
   aitemplate: {
     numThreads: 8,

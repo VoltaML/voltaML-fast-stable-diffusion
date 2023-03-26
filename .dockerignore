@@ -20,7 +20,7 @@ yarn.lock
 node_modules/
 
 # Frontend
-!frontend/dist/
+frontend/dist/
 
 # Static files
 static/
@@ -34,6 +34,3 @@ docker-compose.yml
 
 # Jupyter
 *.ipynb
-
-# TensorRT
-/lib/trt/lib/*
