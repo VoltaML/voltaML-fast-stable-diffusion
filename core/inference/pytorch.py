@@ -126,7 +126,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
 
-        self.cleanup()
+        self.memory_cleanup()
 
     def unload(self) -> None:
         "Unload the model from memory"
@@ -150,7 +150,7 @@ class PyTorchStableDiffusion(InferenceModel):
             if self.controlnet is not None:
                 del self.controlnet
 
-        self.cleanup()
+        self.memory_cleanup()
 
     def manage_optional_components(
         self,
@@ -166,7 +166,7 @@ class PyTorchStableDiffusion(InferenceModel):
         if self.current_controlnet != target_controlnet:
             # Cleanup old controlnet
             self.controlnet = None
-            self.cleanup()
+            self.memory_cleanup()
 
             if target_controlnet == ControlNetMode.NONE:
                 return
@@ -193,7 +193,7 @@ class PyTorchStableDiffusion(InferenceModel):
             self.controlnet = cn
 
         # Clean memory
-        self.cleanup()
+        self.memory_cleanup()
 
     def txt2img(
         self,
@@ -469,7 +469,7 @@ class PyTorchStableDiffusion(InferenceModel):
             raise ValueError("Invalid job type for this pipeline")
 
         # Clean memory and return images
-        self.cleanup()
+        self.memory_cleanup()
         return images
 
     def save(self, path: str = "converted"):

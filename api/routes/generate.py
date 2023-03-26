@@ -13,6 +13,7 @@ from core.types import (
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
+    RealESRGANQueueEntry,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_bytes_to_image_stream, convert_image_to_base64
@@ -115,6 +116,29 @@ async def image_variations_job(job: ImageVariationsQueueEntry):
 
 @router.post("/controlnet")
 async def controlnet_job(job: ControlNetQueueEntry):
+    "Generate variations of the image"
+
+    image_bytes = job.data.image
+    assert isinstance(image_bytes, bytes)
+    job.data.image = convert_bytes_to_image_stream(image_bytes)
+
+    try:
+        images: List[Image.Image]
+        time: float
+        images, time = await cluster.generate(job)
+    except ModelNotLoadedError:
+        raise HTTPException(  # pylint: disable=raise-missing-from
+            status_code=400, detail="Model is not loaded"
+        )
+
+    return {
+        "time": time,
+        "images": [convert_image_to_base64(i) for i in images],
+    }
+
+
+@router.post("/realesrgan-upscale")
+async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
     "Generate variations of the image"
 
     image_bytes = job.data.image

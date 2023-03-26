@@ -153,6 +153,15 @@ class ControlNetData:
 
 
 @dataclass
+class RealESRGanData:
+    "Dataclass for the data of a real esrgan request"
+
+    image: Union[bytes, str]
+    id: str = field(default_factory=lambda: uuid4().hex)
+    upscale_factor: int = field(default=4)
+
+
+@dataclass
 class Txt2ImgQueueEntry(Job):
     "Dataclass for a text to image queue entry"
 
@@ -185,6 +194,13 @@ class ControlNetQueueEntry(Job):
     "Dataclass for a control net queue entry"
 
     data: ControlNetData
+
+
+@dataclass
+class RealESRGANQueueEntry(Job):
+    "Dataclass for a real esrgan job"
+
+    data: RealESRGanData
 
 
 @dataclass

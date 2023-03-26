@@ -18,6 +18,7 @@ from core.config import config
 from core.errors import DimensionError
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.pytorch import PyTorchStableDiffusion
+from core.inference.real_esrgan import RealESRGAN
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
@@ -29,6 +30,7 @@ from core.types import (
     InferenceBackend,
     InpaintQueueEntry,
     Job,
+    RealESRGANQueueEntry,
     Txt2ImgQueueEntry,
 )
 from core.utils import run_in_thread_async
@@ -46,7 +48,13 @@ class GPU:
         self.gpu_id = torch_gpu_id
         self.queue: Queue = Queue()
         self.loaded_models: Dict[
-            str, Union["TRTModel", PyTorchStableDiffusion, "AITemplateStableDiffusion"]
+            str,
+            Union[
+                "TRTModel",
+                PyTorchStableDiffusion,
+                "AITemplateStableDiffusion",
+                "RealESRGAN",
+            ],
         ] = {}
 
     @property
@@ -73,17 +81,22 @@ class GPU:
             InpaintQueueEntry,
             ImageVariationsQueueEntry,
             ControlNetQueueEntry,
+            RealESRGANQueueEntry,
         ],
     ):
         "Generate images from the queue"
 
         def generate_thread_call(job: Job) -> List[Image.Image]:
             model: Union[
-                "TRTModel", PyTorchStableDiffusion, AITemplateStableDiffusion
+                "TRTModel",
+                PyTorchStableDiffusion,
+                AITemplateStableDiffusion,
+                RealESRGAN,
             ] = self.loaded_models[job.model]
 
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
+            if not isinstance(job, RealESRGANQueueEntry):
+                shared.current_steps = job.data.steps * job.data.batch_count
+                shared.current_done_steps = 0
 
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
@@ -95,7 +108,17 @@ class GPU:
                 images: List[Image.Image] = model.generate(job)
                 self.memory_cleanup()
                 return images
+            elif isinstance(model, RealESRGAN):
+                logger.debug("Generating with RealESRGAN")
+                assert isinstance(
+                    job, RealESRGANQueueEntry
+                ), "Job must be RealESRGANJob"
+                images: List[Image.Image] = model.generate(job)
+                self.memory_cleanup()
+                return images
             else:
+                assert not isinstance(job, RealESRGANQueueEntry)
+
                 logger.debug("Generating with TensorRT")
                 images: List[Image.Image]
 
@@ -115,7 +138,7 @@ class GPU:
                 return images
 
         # Check width and height passed by the user
-        if not isinstance(job, ImageVariationsQueueEntry):
+        if not isinstance(job, (ImageVariationsQueueEntry, RealESRGANQueueEntry)):
             if job.data.width % 8 != 0 or job.data.height % 8 != 0:
                 raise DimensionError("Width and height must be divisible by 8")
 
@@ -235,10 +258,22 @@ class GPU:
                     )
                 )
 
-                pt_model = PyTorchStableDiffusion(
-                    model_id=model,
-                    device=self.cuda_id,
-                )
+                if model in [
+                    "RealESRGAN_x4plus",
+                    "RealESRNet_x4plus",
+                    "RealESRGAN_x4plus_anime_6B",
+                    "RealESRGAN_x2plus",
+                    "RealESR-general-x4v3",
+                ]:
+                    pt_model = RealESRGAN(
+                        model_name=model,
+                    )
+
+                else:
+                    pt_model = PyTorchStableDiffusion(
+                        model_id=model,
+                        device=self.cuda_id,
+                    )
                 self.loaded_models[model] = pt_model
 
             logger.info(f"Finished loading in {time.time() - start_time:.2f}s")

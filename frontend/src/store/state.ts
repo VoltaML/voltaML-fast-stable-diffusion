@@ -47,6 +47,10 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
+  realesrgan: {
+    currentImage: string;
+    images: string[];
+  };
   current_step: number;
   total_steps: number;
   imageBrowser: {
@@ -87,6 +91,10 @@ export const useState = defineStore("state", () => {
       currentImage: "",
     },
     controlnet: {
+      images: [],
+      currentImage: "",
+    },
+    realesrgan: {
       images: [],
       currentImage: "",
     },

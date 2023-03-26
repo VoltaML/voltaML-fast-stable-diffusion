@@ -16,3 +16,4 @@ pytorch-lightning
 gpustat
 opencv-contrib-python-headless
 controlnet_aux
+realesrgan

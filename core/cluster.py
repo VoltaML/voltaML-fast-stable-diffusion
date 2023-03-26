@@ -20,6 +20,7 @@ from core.types import (
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
+    RealESRGANQueueEntry,
     Txt2ImgQueueEntry,
 )
 from core.utils import run_in_thread_async
@@ -100,6 +101,7 @@ class Cluster:
             InpaintQueueEntry,
             ImageVariationsQueueEntry,
             ControlNetQueueEntry,
+            RealESRGANQueueEntry,
         ],
     ) -> Tuple[List[Image.Image], float]:
         "Generate images from the queue"

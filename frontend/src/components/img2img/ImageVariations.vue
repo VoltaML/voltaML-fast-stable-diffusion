@@ -1,28 +1,21 @@
 <template>
+  <NAlert
+    style="width: 100%; margin-bottom: 12px"
+    type="warning"
+    title="Does not work yet"
+  />
   <div style="margin: 0 12px">
     <!-- Main -->
     <NGrid cols="1 850:2" x-gap="12">
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="conf.data.settings.img2img.image"
+          :preview="conf.data.settings.imageVariations.image"
           style="margin-bottom: 12px"
         />
 
         <NCard title="Settings">
           <NSpace vertical class="left-container">
-            <!-- Prompt -->
-            <NInput
-              v-model:value="conf.data.settings.img2img.prompt"
-              type="textarea"
-              placeholder="Prompt"
-            />
-            <NInput
-              v-model:value="conf.data.settings.img2img.negativePrompt"
-              type="textarea"
-              placeholder="Negative prompt"
-            />
-
             <!-- Sampler -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -44,46 +37,8 @@
 
               <NSelect
                 :options="conf.scheduler_options"
-                v-model:value="conf.data.settings.img2img.sampler"
+                v-model:value="conf.data.settings.imageVariations.sampler"
                 style="flex-grow: 1"
-              />
-            </div>
-
-            <!-- Dimensions -->
-            <div class="flex-container">
-              <p class="slider-label">Width</p>
-              <NSlider
-                v-model:value="conf.data.settings.img2img.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.img2img.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container">
-              <p class="slider-label">Height</p>
-              <NSlider
-                v-model:value="conf.data.settings.img2img.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.img2img.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
               />
             </div>
 
@@ -102,13 +57,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.steps"
+                v-model:value="conf.data.settings.imageVariations.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.steps"
+                v-model:value="conf.data.settings.imageVariations.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="5"
@@ -131,14 +86,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.cfgScale"
+                v-model:value="conf.data.settings.imageVariations.cfgScale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.cfgScale"
+                v-model:value="conf.data.settings.imageVariations.cfgScale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -156,13 +111,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.batchCount"
+                v-model:value="conf.data.settings.imageVariations.batchCount"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.batchCount"
+                v-model:value="conf.data.settings.imageVariations.batchCount"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -177,43 +132,17 @@
                 Number of images to generate in paralel.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.batchSize"
+                v-model:value="conf.data.settings.imageVariations.batchSize"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.batchSize"
+                v-model:value="conf.data.settings.imageVariations.batchSize"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
                 :max="9"
-              />
-            </div>
-
-            <!-- Denoising Strength -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Denoising Strength</p>
-                </template>
-                Lower values will stick more to the original image, 0.5-0.75 is
-                ideal
-              </NTooltip>
-              <NSlider
-                v-model:value="conf.data.settings.img2img.denoisingStrength"
-                :min="0.1"
-                :max="1"
-                style="margin-right: 12px"
-                :step="0.025"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.img2img.denoisingStrength"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="0.1"
-                :max="1"
-                :step="0.025"
               />
             </div>
 
@@ -229,7 +158,7 @@
                 <b class="highlight">For random seed use -1.</b>
               </NTooltip>
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.seed"
+                v-model:value="conf.data.settings.imageVariations.seed"
                 size="small"
                 :min="-1"
                 :max="999_999_999_999"
@@ -247,25 +176,22 @@
         <GenerateSection :generate="generate" />
 
         <ImageOutput
-          :current-image="global.state.img2img.currentImage"
-          :images="global.state.img2img.images"
+          :current-image="global.state.imageVariations.currentImage"
+          :images="global.state.imageVariations.images"
         />
       </NGi>
     </NGrid>
   </div>
 </template>
 
-<script setup lang="ts">
-import "@/assets/2img.css";
-import GenerateSection from "@/components/GenerateSection.vue";
+<script lang="ts" setup>
 import ImageOutput from "@/components/ImageOutput.vue";
-import ImageUpload from "@/components/ImageUpload.vue";
 import { serverUrl } from "@/env";
 import {
+  NAlert,
   NCard,
   NGi,
   NGrid,
-  NInput,
   NInputNumber,
   NSelect,
   NSlider,
@@ -274,12 +200,18 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { useSettings } from "../store/settings";
-import { useState } from "../store/state";
+import { useSettings } from "../../store/settings";
+import { useState } from "../../store/state";
+import GenerateSection from "../GenerateSection.vue";
+import ImageUpload from "../ImageUpload.vue";
 
 const global = useState();
 const conf = useSettings();
 const messageHandler = useMessage();
+
+const imageSelectCallback = (base64Image: string) => {
+  conf.data.settings.imageVariations.image = base64Image;
+};
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -290,36 +222,27 @@ const checkSeed = (seed: number) => {
   return seed;
 };
 
-const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.img2img.image = base64Image;
-};
-
 const generate = () => {
-  if (conf.data.settings.img2img.seed === null) {
+  if (conf.data.settings.imageVariations.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
   global.state.generating = true;
-  fetch(`${serverUrl}/api/generate/img2img`, {
+  fetch(`${serverUrl}/api/generate/image_variations`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
-        prompt: conf.data.settings.img2img.prompt,
-        image: conf.data.settings.img2img.image,
+        image: conf.data.settings.imageVariations.image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.img2img.negativePrompt,
-        width: conf.data.settings.img2img.width,
-        height: conf.data.settings.img2img.height,
-        steps: conf.data.settings.img2img.steps,
-        guidance_scale: conf.data.settings.img2img.cfgScale,
-        seed: checkSeed(conf.data.settings.img2img.seed),
-        batch_size: conf.data.settings.img2img.batchSize,
-        batch_count: conf.data.settings.img2img.batchCount,
-        strength: conf.data.settings.img2img.denoisingStrength,
-        scheduler: conf.data.settings.img2img.sampler,
+        steps: conf.data.settings.imageVariations.steps,
+        guidance_scale: conf.data.settings.imageVariations.cfgScale,
+        seed: checkSeed(conf.data.settings.imageVariations.seed),
+        batch_size: conf.data.settings.imageVariations.batchSize,
+        batch_count: conf.data.settings.imageVariations.batchCount,
+        scheduler: conf.data.settings.imageVariations.sampler,
       },
       model: conf.data.settings.model,
     }),
@@ -327,7 +250,7 @@ const generate = () => {
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
-        global.state.img2img.images = data.images;
+        global.state.imageVariations.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
@@ -340,18 +263,3 @@ const generate = () => {
     });
 };
 </script>
-<style scoped>
-.image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  overflow: hidden;
-}
-
-.image-container {
-  height: 70vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-</style>

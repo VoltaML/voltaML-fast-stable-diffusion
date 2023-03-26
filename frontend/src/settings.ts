@@ -86,6 +86,11 @@ export interface SettingsInterface {
     detectionResolution: number;
     image: string;
   };
+  realesrgan: {
+    image: string;
+    scaleFactor: number;
+    model: string;
+  };
   api: {
     websocketSyncInterval: number;
     websocketPerfInterval: number;
@@ -171,6 +176,11 @@ export const defaultSettings: SettingsInterface = {
     batchCount: 1,
     controlnetConditioningScale: 1,
     detectionResolution: 512,
+  },
+  realesrgan: {
+    image: "",
+    scaleFactor: 4,
+    model: "RealESRGAN_x4plus_anime_6B",
   },
   api: {
     websocketSyncInterval: 0.02,

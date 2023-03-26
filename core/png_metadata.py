@@ -12,6 +12,7 @@ from core.types import (
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
+    RealESRGANQueueEntry,
     Txt2ImgQueueEntry,
 )
 
@@ -25,6 +26,7 @@ def create_metadata(
         InpaintQueueEntry,
         ImageVariationsQueueEntry,
         ControlNetQueueEntry,
+        RealESRGANQueueEntry,
     ],
     index: int,
 ):
@@ -33,22 +35,29 @@ def create_metadata(
     data = copy.copy(job.data)
     metadata = PngInfo()
 
-    data.seed = str(job.data.seed) + (f"({index})" if index > 0 else "")  # type: ignore Overwrite for sequencialy generated images
+    if not isinstance(job, RealESRGANQueueEntry):
+        data.seed = str(job.data.seed) + (f"({index})" if index > 0 else "")  # type: ignore Overwrite for sequencialy generated images
 
     def write_metadata(key: str):
         metadata.add_text(key, str(data.__dict__.get(key, "")))
 
-    for key in [
-        "prompt",
-        "negative_prompt",
-        "width",
-        "height",
-        "steps",
-        "guidance_scale",
-        "seed",
-        "strength",
-    ]:
-        write_metadata(key)
+    if not isinstance(job, RealESRGANQueueEntry):
+        for key in [
+            "prompt",
+            "negative_prompt",
+            "width",
+            "height",
+            "steps",
+            "guidance_scale",
+            "seed",
+            "strength",
+        ]:
+            write_metadata(key)
+    else:
+        for key in [
+            "upscale_factor",
+        ]:
+            write_metadata(key)
 
     procedure = ""
     if isinstance(job, Txt2ImgQueueEntry):
@@ -61,6 +70,8 @@ def create_metadata(
         procedure = "image_variations"
     elif isinstance(job, ControlNetQueueEntry):
         procedure = "control_net"
+    elif isinstance(job, RealESRGANQueueEntry):
+        procedure = "real_esrgan"
 
     metadata.add_text("procedure", procedure)
     metadata.add_text("model", job.model)
@@ -76,6 +87,7 @@ def save_images(
         InpaintQueueEntry,
         ImageVariationsQueueEntry,
         ControlNetQueueEntry,
+        RealESRGANQueueEntry,
     ],
 ):
     "Save image to disk"
@@ -107,9 +119,14 @@ def save_images(
         prompt = ""
 
     for i, image in enumerate(images):
-        path = Path(
-            f"data/outputs/{'txt2img' if isinstance(job, Txt2ImgQueueEntry) else 'img2img'}/{prompt}/{job.data.id}-{i}.png"
-        )
+        if isinstance(job, RealESRGANQueueEntry):
+            folder = "extra"
+        elif isinstance(job, Txt2ImgQueueEntry):
+            folder = "txt2img"
+        else:
+            folder = "img2img"
+
+        path = Path(f"data/outputs/{folder}/{prompt}/{job.data.id}-{i}.png")
         makedirs(path.parent, exist_ok=True)
 
         metadata = create_metadata(job, i)

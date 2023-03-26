@@ -343,8 +343,8 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { ref } from "vue";
 import VueDrawingCanvas from "vue-drawing-canvas";
-import { useSettings } from "../store/settings";
-import { useState } from "../store/state";
+import { useSettings } from "../../store/settings";
+import { useState } from "../../store/state";
 
 const global = useState();
 const conf = useSettings();

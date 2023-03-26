@@ -28,7 +28,7 @@ class InferenceModel(ABC):
     def generate(self, job: Job) -> List[Image.Image]:
         "Generates the output of the model"
 
-    def cleanup(self) -> None:
+    def memory_cleanup(self) -> None:
         "Cleanup the GPU memory"
 
         torch.cuda.empty_cache()

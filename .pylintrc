@@ -13,7 +13,8 @@ disable=
     consider-using-dict-items,
     import-outside-toplevel,
     invalid-name,
-    relative-beyond-top-level
+    relative-beyond-top-level,
+    no-name-in-module,
 
 [TYPECHECK]
 generated-members=

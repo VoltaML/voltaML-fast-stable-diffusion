@@ -28,4 +28,4 @@ def test_unload(pipe: PyTorchStableDiffusion):
 
 
 def test_cleanup(pipe: PyTorchStableDiffusion):
-    pipe.cleanup()
+    pipe.memory_cleanup()

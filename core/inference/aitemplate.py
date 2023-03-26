@@ -91,7 +91,7 @@ class AITemplateStableDiffusion(InferenceModel):
             self.vae_ait_exe,
         )
 
-        self.cleanup()
+        self.memory_cleanup()
 
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
@@ -103,7 +103,7 @@ class AITemplateStableDiffusion(InferenceModel):
         else:
             raise ValueError("Invalid job type for this model")
 
-        self.cleanup()
+        self.memory_cleanup()
 
         return images
 

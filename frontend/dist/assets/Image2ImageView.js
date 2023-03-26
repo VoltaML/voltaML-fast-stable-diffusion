@@ -1,5 +1,6 @@
-import { c as commonLight, a as commonVars, b as composite, d as changeColor, e as cB, f as cE, g as cM, h as fadeInHeightExpandTransition, i as c, j as defineComponent, u as useConfig, k as useTheme, l as useRtl, m as computed, n as useThemeClass, r as ref, o as h, p as mergeProps, N as NBaseClose, q as resolveSlot, s as resolveWrappedSlot, t as NFadeInExpandTransition, v as getMargin, w as createKey, x as NBaseIcon, E as ErrorIcon, W as WarningIcon, I as InfoIcon, S as SuccessIcon, y as openBlock, z as createElementBlock, A as createBaseVNode, B as createBlock, C as withCtx, D as createVNode, F as toDisplayString, G as unref, H as NSpace, J as NCard, K as pushScopeId, L as popScopeId, _ as _export_sfc, M as useState, O as useSettings, P as useMessage, Q as NGi, R as NInput, T as NTooltip, U as createTextVNode, V as NSelect, X as NSlider, Y as NInputNumber, Z as _sfc_main$6, $ as ImageOutput, a0 as NGrid, a1 as serverUrl, a2 as v4, a3 as Fragment, a4 as NButton, a5 as NIcon } from "./index.js";
-import { _ as _sfc_main$7 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
+import { c as commonLight, a as commonVars, b as composite, d as changeColor, e as cB, f as cE, g as cM, h as fadeInHeightExpandTransition, i as c, j as defineComponent, u as useConfig, k as useTheme, l as useRtl, m as computed, n as useThemeClass, r as ref, o as h, p as mergeProps, N as NBaseClose, q as resolveSlot, s as resolveWrappedSlot, t as NFadeInExpandTransition, v as getMargin, w as createKey, x as NBaseIcon, E as ErrorIcon, W as WarningIcon, I as InfoIcon, S as SuccessIcon, y as openBlock, z as createElementBlock, A as createBaseVNode, B as useState, C as useSettings, D as useMessage, F as createVNode, G as withCtx, H as unref, J as NGi, K as NCard, L as NSpace, M as NInput, O as NTooltip, P as createTextVNode, Q as NSelect, R as NSlider, T as NInputNumber, _ as _sfc_main$5, U as ImageOutput, V as NGrid, X as serverUrl, Y as v4, Z as pushScopeId, $ as popScopeId, a0 as _export_sfc, a1 as Fragment, a2 as NButton, a3 as NIcon, a4 as createBlock, a5 as toDisplayString } from "./index.js";
+import { I as ImageUpload } from "./ImageUpload.js";
+import { _ as _sfc_main$6 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
 import { N as NTabPane, a as NTabs } from "./Tabs.js";
 const self = (vars) => {
   const { lineHeight, borderRadius, fontWeightStrong, baseColor, dividerColor, actionColor, textColor1, textColor2, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, warningColor, errorColor, fontSize } = vars;
@@ -298,12 +299,12 @@ const NAlert = defineComponent({
     });
   }
 });
-const _hoisted_1$8 = {
+const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M48 399.26C48 335.19 62.44 284 90.91 247c34.38-44.67 88.68-68.77 161.56-71.75V72L464 252L252.47 432V329.35c-44.25 1.19-77.66 7.58-104.27 19.84c-28.75 13.25-49.6 33.05-72.08 58.7L48 440z",
@@ -313,32 +314,10 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$8 = [_hoisted_2$8];
+const _hoisted_3$7 = [_hoisted_2$7];
 const ArrowRedoSharp = defineComponent({
   name: "ArrowRedoSharp",
   render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$8);
-  }
-});
-const _hoisted_1$7 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M464 440l-28.12-32.11c-22.48-25.65-43.33-45.45-72.08-58.7c-26.61-12.26-60-18.65-104.27-19.84V432L48 252L259.53 72v103.21c72.88 3 127.18 27.08 161.56 71.75C449.56 284 464 335.19 464 399.26z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$7 = [_hoisted_2$7];
-const ArrowUndoSharp = defineComponent({
-  name: "ArrowUndoSharp",
-  render: function render2(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$7);
   }
 });
@@ -350,28 +329,18 @@ const _hoisted_1$6 = {
 const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M480 96l-64-64l-244 260l64 64z",
+    d: "M464 440l-28.12-32.11c-22.48-25.65-43.33-45.45-72.08-58.7c-26.61-12.26-60-18.65-104.27-19.84V432L48 252L259.53 72v103.21c72.88 3 127.18 27.08 161.56 71.75C449.56 284 464 335.19 464 399.26z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M142 320c-36.52 0-66 30.63-66 68.57c0 25.43-31 45.72-44 45.72C52.24 462.17 86.78 480 120 480c48.62 0 88-40.91 88-91.43c0-37.94-29.48-68.57-66-68.57z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$5 = [_hoisted_2$6, _hoisted_3$6];
-const BrushSharp = defineComponent({
-  name: "BrushSharp",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_4$5);
+const _hoisted_3$6 = [_hoisted_2$6];
+const ArrowUndoSharp = defineComponent({
+  name: "ArrowUndoSharp",
+  render: function render2(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$6);
   }
 });
 const _hoisted_1$5 = {
@@ -382,6 +351,38 @@ const _hoisted_1$5 = {
 const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
+    d: "M480 96l-64-64l-244 260l64 64z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M142 320c-36.52 0-66 30.63-66 68.57c0 25.43-31 45.72-44 45.72C52.24 462.17 86.78 480 120 480c48.62 0 88-40.91 88-91.43c0-37.94-29.48-68.57-66-68.57z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$5 = [_hoisted_2$5, _hoisted_3$5];
+const BrushSharp = defineComponent({
+  name: "BrushSharp",
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_4$5);
+  }
+});
+const _hoisted_1$4 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
     fill: "none",
     d: "M337.46 240L312 214.54l-56 56l-56-56L174.54 240l56 56l-56 56L200 377.46l56-56l56 56L337.46 352l-56-56l56-56z"
   },
@@ -389,7 +390,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -424,93 +425,14 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$4 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$4, _hoisted_5$4];
+const _hoisted_6$4 = [_hoisted_2$4, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
 const TrashBinSharp = defineComponent({
   name: "TrashBinSharp",
   render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$4);
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-19b3e0b6"), n = n(), popScopeId(), n);
-const _hoisted_1$4 = { class: "image-container" };
-const _hoisted_2$4 = ["src"];
-const _hoisted_3$4 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("label", { for: "file-upload" }, [
-  /* @__PURE__ */ createBaseVNode("span", { class: "file-upload" }, "Select image")
-], -1));
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
-  __name: "ImageUpload",
-  props: {
-    callback: {
-      type: Object
-    },
-    preview: {
-      type: String
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const width = ref(0);
-    const height = ref(0);
-    function previewImage(event) {
-      const input = event.target;
-      if (input.files) {
-        const reader = new FileReader();
-        reader.onload = (e) => {
-          var _a;
-          const i = (_a = e.target) == null ? void 0 : _a.result;
-          if (i) {
-            const s = i.toString();
-            if (props.callback) {
-              props.callback(s);
-            }
-            const img = new Image();
-            img.src = s;
-            img.onload = () => {
-              width.value = img.width;
-              height.value = img.height;
-            };
-          }
-        };
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { title: "Input image" }, {
-        default: withCtx(() => [
-          createBaseVNode("div", _hoisted_1$4, [
-            createBaseVNode("img", {
-              src: _ctx.$props.preview,
-              style: { "width": "400px", "height": "auto" }
-            }, null, 8, _hoisted_2$4)
-          ]),
-          createVNode(unref(NSpace), {
-            inline: "",
-            justify: "space-between",
-            align: "center",
-            style: { "width": "100%" }
-          }, {
-            default: withCtx(() => [
-              createBaseVNode("p", null, toDisplayString(width.value) + "x" + toDisplayString(height.value), 1),
-              _hoisted_3$4
-            ]),
-            _: 1
-          }),
-          createBaseVNode("input", {
-            type: "file",
-            accept: "image/*",
-            onChange: previewImage,
-            id: "file-upload",
-            class: "hidden-input"
-          }, null, 32)
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const ImageUpload_vue_vue_type_style_index_0_scoped_19b3e0b6_lang = "";
-const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-19b3e0b6"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-f7a9fbaf"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-75077df3"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -912,7 +834,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$6, { generate }),
+                createVNode(_sfc_main$5, { generate }),
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.controlnet.currentImage,
                   images: unref(global).state.controlnet.images
@@ -927,8 +849,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_f7a9fbaf_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-f7a9fbaf"]]);
+const ControlNet_vue_vue_type_style_index_0_scoped_75077df3_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-75077df3"]]);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1);
@@ -1188,7 +1110,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(NGi), null, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$6, { generate }),
+                  createVNode(_sfc_main$5, { generate }),
                   createVNode(ImageOutput, {
                     "current-image": unref(global).state.imageVariations.currentImage,
                     images: unref(global).state.imageVariations.images
@@ -1204,7 +1126,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-f90fb51f"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-83d5b847"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -1549,7 +1471,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$6, { generate }),
+                createVNode(_sfc_main$5, { generate }),
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.img2img.currentImage,
                   images: unref(global).state.img2img.images
@@ -1564,8 +1486,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_f90fb51f_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-f90fb51f"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_83d5b847_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-83d5b847"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -2141,7 +2063,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-91095481"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-40c40f86"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2661,7 +2583,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$6, { generate }),
+                createVNode(_sfc_main$5, { generate }),
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.inpainting.currentImage,
                   images: unref(global).state.inpainting.images
@@ -2676,8 +2598,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_91095481_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-91095481"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_40c40f86_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-40c40f86"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {
@@ -2710,19 +2632,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           createVNode(unref(NTabPane), { name: "SD Upscale" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$7)
+              createVNode(_sfc_main$6)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Depth to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$7)
+              createVNode(_sfc_main$6)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Pix to Pix" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$7)
+              createVNode(_sfc_main$6)
             ]),
             _: 1
           })

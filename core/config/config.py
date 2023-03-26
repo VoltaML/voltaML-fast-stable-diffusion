@@ -93,6 +93,14 @@ class ControlNetConfig:
 
 
 @dataclass
+class RealESRGANConfig:
+    "Configuration for the RealESRGAN upscaler"
+
+    model: str = "RealESRGAN_x4plus_anime_6B"
+    scaleFactor: int = 4
+
+
+@dataclass
 class APIConfig:
     "Configuration for the API"
 

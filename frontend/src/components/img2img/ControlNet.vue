@@ -324,8 +324,8 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { useSettings } from "../store/settings";
-import { useState } from "../store/state";
+import { useSettings } from "../../store/settings";
+import { useState } from "../../store/state";
 
 const global = useState();
 const conf = useSettings();
