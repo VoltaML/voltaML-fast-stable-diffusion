@@ -13,9 +13,10 @@ from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
     StableDiffusionSafetyChecker,
 )
-from core.functions import send_everything_to_cpu, send_to_gpu
 from diffusers.utils import PIL_INTERPOLATION, logging
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+
+from core.functions import send_everything_to_cpu, send_to_gpu
 
 # ------------------------------------------------------------------------------
 
@@ -336,7 +337,9 @@ def get_weighted_text_embeddings(
         no_boseos_middle=no_boseos_middle,  # type: ignore
         chunk_length=pipe.tokenizer.model_max_length,  # type: ignore
     )
-    prompt_tokens = torch.tensor(prompt_tokens, dtype=torch.long, device=pipe.text_encoder.device)
+    prompt_tokens = torch.tensor(
+        prompt_tokens, dtype=torch.long, device=pipe.text_encoder.device  # type: ignore
+    )
     if uncond_prompt is not None:
         uncond_tokens, uncond_weights = pad_tokens_and_weights(
             uncond_tokens,  # type: ignore
@@ -348,7 +351,7 @@ def get_weighted_text_embeddings(
             chunk_length=pipe.tokenizer.model_max_length,  # type: ignore
         )
         uncond_tokens = torch.tensor(
-            uncond_tokens, dtype=torch.long, device=pipe.text_encoder.device
+            uncond_tokens, dtype=torch.long, device=pipe.text_encoder.device  # type: ignore
         )
 
     # get the embeddings
@@ -359,7 +362,7 @@ def get_weighted_text_embeddings(
         no_boseos_middle=no_boseos_middle,
     )
     prompt_weights = torch.tensor(
-        prompt_weights, dtype=text_embeddings.dtype, device=pipe.text_encoder.device
+        prompt_weights, dtype=text_embeddings.dtype, device=pipe.text_encoder.device  # type: ignore
     )
     if uncond_prompt is not None:
         uncond_embeddings = get_unweighted_text_embeddings(
@@ -902,14 +905,14 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 noise_pred = self.unet(  # type: ignore
                     latent_model_input.to(self.unet.device, dtype=self.unet.dtype),
                     t.to(self.unet.device, dtype=self.unet.dtype),
-                    encoder_hidden_states=text_embeddings.to(self.unet.device, dtype=self.unet.dtype)
+                    encoder_hidden_states=text_embeddings.to(
+                        self.unet.device, dtype=self.unet.dtype
+                    ),
                 ).sample
             else:
                 # this probably could have been done better but honestly fuck this
                 noise_pred = self.unet(  # type: ignore
-                    latent_model_input,
-                    t,
-                    encoder_hidden_states=text_embeddings
+                    latent_model_input, t, encoder_hidden_states=text_embeddings
                 ).sample
 
             # perform guidance

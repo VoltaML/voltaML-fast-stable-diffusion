@@ -58,6 +58,9 @@ parser.add_argument("--low-vram", action="store_true", help="Use low VRAM mode")
 parser.add_argument(
     "--bot", action="store_true", help="Run in tandem with the Discord bot"
 )
+parser.add_argument(
+    "-o", "--optimization", help="Optimization level", type=int, default=-1
+)
 args = parser.parse_args(args=app_args)
 
 logging.basicConfig(level=args.log_level)
@@ -208,11 +211,13 @@ def checks():
     # Config
     from core.config import config
 
-    config.api.lowVRAM = (
-        True if args.low_vram else bool(os.environ.get("LOW_VRAM", False))
+    config.api.optLevel = (
+        args.optimization
+        if args.optimization != -1
+        else bool(os.environ.get("OPT_LEVEL", 1))
     )
-    if config.api.lowVRAM:
-        logger.warning("Using low VRAM mode")
+    if config.api.optLevel != 1:
+        logger.warning(f"Using optimization level {args.optimization}")
 
 
 if __name__ == "__main__":
