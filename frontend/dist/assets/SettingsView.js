@@ -1,4 +1,4 @@
-import { af as inject, bD as getCurrentInstance, am as watch, aM as onBeforeUnmount, e as cB, g as cM, i as c, aa as createInjectionKey, j as defineComponent, u as useConfig, k as useTheme, r as ref, o as h, bE as formLight, a8 as provide, ao as keysOf, m as computed, aK as formatLength, aR as get, bF as commonVariables, f as cE, a9 as toRef, ai as createId, bG as formItemInjectionKey, bH as onMounted, n as useThemeClass, b1 as Transition, s as resolveWrappedSlot, w as createKey, aX as warn, c as commonLight, bI as commonVars, d as changeColor, ac as iconSwitchTransition, az as cNotM, a6 as useFormItem, a7 as useMergedState, bJ as isSlotEmpty, aQ as pxfy, aJ as depx, aj as NIconSwitchTransition, aS as NBaseLoading, ab as call, C as useSettings, y as openBlock, a4 as createBlock, G as withCtx, F as createVNode, H as unref, T as NInputNumber, M as NInput, K as NCard, Q as NSelect, a0 as _export_sfc, D as useMessage, a2 as NButton, P as createTextVNode, bK as defaultSettings, X as serverUrl } from "./index.js";
+import { af as inject, bD as getCurrentInstance, am as watch, aM as onBeforeUnmount, e as cB, g as cM, i as c, aa as createInjectionKey, j as defineComponent, u as useConfig, k as useTheme, r as ref, o as h, bE as formLight, a8 as provide, ao as keysOf, m as computed, aK as formatLength, aR as get, bF as commonVariables, f as cE, a9 as toRef, ai as createId, bG as formItemInjectionKey, bH as onMounted, n as useThemeClass, b1 as Transition, s as resolveWrappedSlot, w as createKey, aX as warn, c as commonLight, bI as commonVars, d as changeColor, ac as iconSwitchTransition, az as cNotM, a6 as useFormItem, a7 as useMergedState, bJ as isSlotEmpty, aQ as pxfy, aJ as depx, aj as NIconSwitchTransition, aS as NBaseLoading, ab as call, y as openBlock, z as createElementBlock, A as createBaseVNode, C as useSettings, a4 as createBlock, G as withCtx, F as createVNode, H as unref, T as NInputNumber, M as NInput, Q as NSelect, a3 as NIcon, K as NCard, a0 as _export_sfc, D as useMessage, a2 as NButton, P as createTextVNode, bK as defaultSettings, X as serverUrl } from "./index.js";
 import { N as NTabPane, a as NTabs } from "./Tabs.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
@@ -1826,7 +1826,7 @@ const NFormItem = defineComponent({
             return resolveWrappedSlot($slots.feedback, (children) => {
               var _a;
               const { feedback } = this;
-              const feedbackNodes = children || feedback ? h("div", { key: "__feedback__", class: `${mergedClsPrefix}-form-item-feedback__line` }, children || feedback) : this.renderExplains.length ? (_a = this.renderExplains) === null || _a === void 0 ? void 0 : _a.map(({ key, render }) => h("div", { key, class: `${mergedClsPrefix}-form-item-feedback__line` }, render())) : null;
+              const feedbackNodes = children || feedback ? h("div", { key: "__feedback__", class: `${mergedClsPrefix}-form-item-feedback__line` }, children || feedback) : this.renderExplains.length ? (_a = this.renderExplains) === null || _a === void 0 ? void 0 : _a.map(({ key, render: render2 }) => h("div", { key, class: `${mergedClsPrefix}-form-item-feedback__line` }, render2())) : null;
               return feedbackNodes ? mergedValidationStatus === "warning" ? h("div", { key: "controlled-warning", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--warning` }, feedbackNodes) : mergedValidationStatus === "error" ? h("div", { key: "controlled-error", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--error` }, feedbackNodes) : mergedValidationStatus === "success" ? h("div", { key: "controlled-success", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--success` }, feedbackNodes) : h("div", { key: "controlled-default", class: `${mergedClsPrefix}-form-item-feedback` }, feedbackNodes) : null;
             });
           }
@@ -2200,6 +2200,48 @@ const NSwitch = defineComponent({
     );
   }
 });
+const _hoisted_1$1 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M160 164s1.44-33 33.54-59.46C212.6 88.83 235.49 84.28 256 84c18.73-.23 35.47 2.94 45.48 7.82C318.59 100.2 352 120.6 352 164c0 45.67-29.18 66.37-62.35 89.18S248 298.36 248 324",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "40"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
+  "circle",
+  {
+    cx: "248",
+    cy: "399.99",
+    r: "32",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4 = [_hoisted_2, _hoisted_3];
+const Help = defineComponent({
+  name: "Help",
+  render: function render(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4);
+  }
+});
+const _hoisted_1 = {
+  href: "https://voltaml.github.io/voltaML-fast-stable-diffusion/experimental/optimization",
+  style: { "height": "100%", "align-self": "center", "display": "flex", "align-items": "center", "margin-left": "10px" }
+};
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
@@ -2250,12 +2292,45 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 1
               }),
-              createVNode(unref(NFormItem), { label: "Low VRAM mode" }, {
+              createVNode(unref(NFormItem), {
+                label: "Optimization",
+                style: {}
+              }, {
                 default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.lowVRAM,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.lowVRAM = $event)
-                  }, null, 8, ["value"])
+                  createVNode(unref(NSelect), {
+                    options: [
+                      {
+                        value: 0,
+                        label: "(0) Ultra speed (Traced UNet)"
+                      },
+                      {
+                        value: 1,
+                        label: "(1) Speed"
+                      },
+                      {
+                        value: 2,
+                        label: "(2) Balanced"
+                      },
+                      {
+                        value: 3,
+                        label: "(3) Multi-model VRAM efficient"
+                      },
+                      {
+                        value: 4,
+                        label: "(4) VRAM efficient"
+                      }
+                    ],
+                    value: unref(settings).defaultSettings.api.optLevel,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.optLevel = $event)
+                  }, null, 8, ["options", "value"]),
+                  createBaseVNode("a", _hoisted_1, [
+                    createVNode(unref(NIcon), null, {
+                      default: withCtx(() => [
+                        createVNode(unref(Help))
+                      ]),
+                      _: 1
+                    })
+                  ])
                 ]),
                 _: 1
               })

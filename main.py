@@ -214,10 +214,9 @@ def checks():
     config.api.optLevel = (
         args.optimization
         if args.optimization != -1
-        else bool(os.environ.get("OPT_LEVEL", 1))
+        else int(os.environ.get("OPT_LEVEL", 1))
     )
-    if config.api.optLevel != 1:
-        logger.warning(f"Using optimization level {args.optimization}")
+    logger.info(f"Optimization level set to {config.api.optLevel}")
 
 
 if __name__ == "__main__":

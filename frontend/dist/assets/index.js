@@ -35129,7 +35129,7 @@ const defaultSettings = {
     websocketSyncInterval: 0.02,
     websocketPerfInterval: 1,
     cache_dir: "",
-    lowVRAM: false,
+    optLevel: 1,
     imagePreviewDelay: 2
   },
   aitemplate: {
@@ -35144,7 +35144,7 @@ const defaultSettings = {
 let rSettings = JSON.parse(JSON.stringify(defaultSettings));
 try {
   const req = new XMLHttpRequest();
-  req.open("GET", `${serverUrl}/api/settings`, false);
+  req.open("GET", `${serverUrl}/api/settings/`, false);
   req.send();
   console.log("Recieved settings:", req.responseText);
   rSettings = JSON.parse(req.responseText);
