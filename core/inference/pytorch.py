@@ -106,16 +106,13 @@ class PyTorchStableDiffusion(InferenceModel):
                 requires_safety_checker=False,
                 feature_extractor=None,
                 cache_dir=config.api.cache_dir,
+                low_cpu_mem_usage=True
             )
             assert isinstance(pipe, StableDiffusionLongPromptWeightingPipeline)
 
         logger.debug(f"Loaded {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
-        pipe.to(
-            self.device, torch_dtype=torch.float32 if self.use_f32 else torch.float16
-        )
-
-        optimize_model(pipe)
+        optimize_model(pipe, self.device, self.use_f32)
 
         self.vae = pipe.vae  # type: ignore
         self.unet = pipe.unet  # type: ignore
@@ -125,6 +122,8 @@ class PyTorchStableDiffusion(InferenceModel):
         self.feature_extractor = pipe.feature_extractor  # type: ignore
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
+
+        del pipe
 
         self.memory_cleanup()
 

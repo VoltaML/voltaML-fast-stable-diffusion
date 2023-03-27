@@ -62,7 +62,7 @@ class AITemplateStableDiffusion(InferenceModel):
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
         pipe.to(self.device)
-        optimize_model(pipe)
+        optimize_model(pipe, "cuda", False, 1)
 
         self.vae = pipe.vae
         self.unet = pipe.unet
