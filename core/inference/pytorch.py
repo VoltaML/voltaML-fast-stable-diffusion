@@ -106,7 +106,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 requires_safety_checker=False,
                 feature_extractor=None,
                 cache_dir=config.api.cache_dir,
-                low_cpu_mem_usage=True
+                low_cpu_mem_usage=True,
             )
             assert isinstance(pipe, StableDiffusionLongPromptWeightingPipeline)
 
