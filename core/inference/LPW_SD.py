@@ -16,6 +16,8 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.utils import PIL_INTERPOLATION, logging
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
+from core.functions import send_everything_to_cpu, send_to_gpu
+
 # ------------------------------------------------------------------------------
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
@@ -335,7 +337,9 @@ def get_weighted_text_embeddings(
         no_boseos_middle=no_boseos_middle,  # type: ignore
         chunk_length=pipe.tokenizer.model_max_length,  # type: ignore
     )
-    prompt_tokens = torch.tensor(prompt_tokens, dtype=torch.long, device=pipe.device)
+    prompt_tokens = torch.tensor(
+        prompt_tokens, dtype=torch.long, device=pipe.text_encoder.device  # type: ignore
+    )
     if uncond_prompt is not None:
         uncond_tokens, uncond_weights = pad_tokens_and_weights(
             uncond_tokens,  # type: ignore
@@ -347,7 +351,7 @@ def get_weighted_text_embeddings(
             chunk_length=pipe.tokenizer.model_max_length,  # type: ignore
         )
         uncond_tokens = torch.tensor(
-            uncond_tokens, dtype=torch.long, device=pipe.device
+            uncond_tokens, dtype=torch.long, device=pipe.text_encoder.device  # type: ignore
         )
 
     # get the embeddings
@@ -358,7 +362,7 @@ def get_weighted_text_embeddings(
         no_boseos_middle=no_boseos_middle,
     )
     prompt_weights = torch.tensor(
-        prompt_weights, dtype=text_embeddings.dtype, device=pipe.device
+        prompt_weights, dtype=text_embeddings.dtype, device=pipe.text_encoder.device  # type: ignore
     )
     if uncond_prompt is not None:
         uncond_embeddings = get_unweighted_text_embeddings(
@@ -368,7 +372,7 @@ def get_weighted_text_embeddings(
             no_boseos_middle=no_boseos_middle,
         )
         uncond_weights = torch.tensor(
-            uncond_weights, dtype=uncond_embeddings.dtype, device=pipe.device  # type: ignore
+            uncond_weights, dtype=uncond_embeddings.dtype, device=pipe.text_encoder.device  # type: ignore
         )
 
     # assign weights to the prompts and normalize in the sense of mean
@@ -635,7 +639,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
     def decode_latents(self, latents):
         latents = 1 / 0.18215 * latents
-        image = self.vae.decode(latents).sample  # type: ignore
+        if hasattr(self.vae, "main_device"):
+            send_to_gpu(self.vae, None)
+            image = self.vae.decode(latents.to(self.vae.device, dtype=self.vae.dtype)).sample  # type: ignore
+        else:
+            image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
@@ -690,7 +698,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     ).to(device)
                 else:
                     latents = torch.randn(
-                        shape, generator=generator, device=device, dtype=dtype  # type: ignore
+                        shape, generator=generator, device=generator.device, dtype=dtype  # type: ignore
                     )
             else:
                 if latents.shape != shape:
@@ -703,6 +711,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             latents = latents * self.scheduler.init_noise_sigma  # type: ignore
             return latents, None, None
         else:
+            if hasattr(self.vae, "main_device"):
+                send_to_gpu(self.vae, None)
             init_latent_dist = self.vae.encode(image).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
@@ -842,7 +852,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             do_classifier_free_guidance,
             negative_prompt,
             max_embeddings_multiples,
-        )
+        ).to(device)
         dtype = text_embeddings.dtype
 
         # 4. Preprocess image and mask
@@ -890,9 +900,20 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
             # predict the noise residual
-            noise_pred = self.unet(  # type: ignore
-                latent_model_input, t, encoder_hidden_states=text_embeddings
-            ).sample
+            if hasattr(self.unet, "main_device"):
+                send_to_gpu(self.unet, None)
+                noise_pred = self.unet(  # type: ignore
+                    latent_model_input.to(self.unet.device, dtype=self.unet.dtype),
+                    t.to(self.unet.device, dtype=self.unet.dtype),
+                    encoder_hidden_states=text_embeddings.to(
+                        self.unet.device, dtype=self.unet.dtype
+                    ),
+                ).sample
+            else:
+                # this probably could have been done better but honestly fuck this
+                noise_pred = self.unet(  # type: ignore
+                    latent_model_input, t, encoder_hidden_states=text_embeddings
+                ).sample
 
             # perform guidance
             if do_classifier_free_guidance:
@@ -931,6 +952,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         # 11. Convert to PIL
         if output_type == "pil":
             image = self.numpy_to_pil(image)
+
+        send_everything_to_cpu()
 
         if not return_dict:
             return image, has_nsfw_concept

@@ -16,6 +16,8 @@ async def save_configuration(settings: config.Configuration):
     config.config = settings
     config.save_config(config.config)
 
+    logger.info(f"Optimization level set to {config.config.api.optLevel}")
+
     return {"message": "success"}
 
 

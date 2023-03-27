@@ -95,7 +95,7 @@ export interface SettingsInterface {
     websocketSyncInterval: number;
     websocketPerfInterval: number;
     cache_dir: string;
-    lowVRAM: boolean;
+    optLevel: number;
     imagePreviewDelay: number;
   };
   aitemplate: {
@@ -186,7 +186,7 @@ export const defaultSettings: SettingsInterface = {
     websocketSyncInterval: 0.02,
     websocketPerfInterval: 1,
     cache_dir: "",
-    lowVRAM: false,
+    optLevel: 1,
     imagePreviewDelay: 2.0,
   },
   aitemplate: {
@@ -203,7 +203,7 @@ let rSettings: SettingsInterface = JSON.parse(JSON.stringify(defaultSettings));
 
 try {
   const req = new XMLHttpRequest();
-  req.open("GET", `${serverUrl}/api/settings`, false);
+  req.open("GET", `${serverUrl}/api/settings/`, false);
   req.send();
 
   console.log("Recieved settings:", req.responseText);
