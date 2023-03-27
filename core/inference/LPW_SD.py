@@ -7,7 +7,6 @@ from typing import Callable, List, Optional, Union
 import numpy as np
 import PIL
 import torch
-from torch.amp.autocast_mode import autocast
 from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipeline
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
@@ -213,8 +212,6 @@ def get_unweighted_text_embeddings(
     When the length of tokens is a multiple of the capacity of the text encoder,
     it should be split into chunks and sent to the text encoder individually.
     """
-    if not hasattr(pipe, "sequential"):
-        text_input = text_input.to(pipe.text_encoder.device)
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
 
     if max_embeddings_multiples > 1:

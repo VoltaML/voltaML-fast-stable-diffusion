@@ -278,7 +278,7 @@ def get_full_model_path(repo_id: str, revision: str = "main", model_folder: str 
         return repo_path
 
     # 2. Check if model is stored in local storage
-    alt_path = Path("data/" + model_folder) / repo_id
+    alt_path = Path("data/") / model_folder / repo_id
     if alt_path.exists():
         logger.debug(f"Found model in {alt_path}")
         return alt_path

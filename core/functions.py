@@ -17,7 +17,7 @@ from core.files import get_full_model_path
 logger = logging.getLogger(__name__)
 
 # On a scale of 1 to 5, how much should we focus on speed over vram usage? 1 is speedy, 5 is vram efficient.
-OPTIMIZATION_LEVEL = 5
+OPTIMIZATION_LEVEL = 4
 LOW_RAM = False
 
 # Variables when OPTIMIZATION_LEVEL == 4
@@ -96,14 +96,11 @@ def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool, overrid
     elif OPTIMIZATION_LEVEL == 4:
         pipe.vae.to("cpu")
         pipe.unet.to("cpu")
-        pipe.text_encoder.to("cpu")
-        pipe.text_encoder.register_forward_pre_hook(send_to_gpu)
         pipe.unet.register_forward_pre_hook(send_to_gpu)
         pipe.vae.register_forward_pre_hook(send_to_gpu)
         setattr(pipe.vae, "main_device", True)
         setattr(pipe.unet, "main_device", True)
-        setattr(pipe.text_encoder, "main_device", True)
-        logger.info("Optimization: Offloaded everything to CPU.")
+        logger.info("Optimization: Offloaded VAE & UNet to CPU.")
 
     logger.info("Optimization complete")
     OPTIMIZATION_LEVEL = oldol

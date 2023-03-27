@@ -107,7 +107,7 @@ class APIConfig:
     websocketSyncInterval: float = 0.02
     websocketPerfInterval: float = 1.0
     cache_dir: str = field(default=DIFFUSERS_CACHE)
-    lowVRAM: bool = True
+    lowVRAM: bool = False
     imagePreviewDelay: float = 2.0
 
 
