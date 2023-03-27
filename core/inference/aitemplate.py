@@ -12,6 +12,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets.data import Data
+from core.config import config
 from core.files import get_full_model_path
 from core.functions import optimize_model
 from core.inference.base_model import InferenceModel
@@ -62,7 +63,12 @@ class AITemplateStableDiffusion(InferenceModel):
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
         pipe.to(self.device)
-        optimize_model(pipe, "cuda", False, 1)
+
+        # Disable optLevel for AITemplate models and optimize the model
+        _opt = config.api.optLevel
+        config.api.optLevel = 1
+        optimize_model(pipe, self.device, False)
+        config.api.optLevel = _opt
 
         self.vae = pipe.vae
         self.unet = pipe.unet
