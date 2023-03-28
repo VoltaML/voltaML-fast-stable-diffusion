@@ -9,6 +9,7 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
 from diffusers.utils import is_accelerate_available
+from diffusers.utils.import_utils import is_xformers_available
 from PIL import Image
 
 from core.config import config
@@ -46,13 +47,14 @@ def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool) -> None
     logger.info("Optimization: Enabled channels_last memory format")
 
     # xFormers and SPDA
-    try:
+    if is_xformers_available():
         if config.api.optLevel == 0:
+            logger.info("Optimization: Tracing model")
             pipe.unet = trace_model(pipe.unet)  # type: ignore
+            logger.info("Optimization: Model successfully traced")
         pipe.enable_xformers_memory_efficient_attention()
         logger.info("Optimization: Enabled xFormers memory efficient attention")
-    except ModuleNotFoundError:
-        # Can't trace here, since traced models aren't unet2dconditionals.
+    else:
         pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
         logger.info("Optimization: Enabled SDPA, because xformers is not installed")
 
