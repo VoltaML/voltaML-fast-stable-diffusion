@@ -159,7 +159,7 @@ class Cluster:
                 Notification(
                     "error",
                     "Inference error",
-                    f"An error occurred during inference: {type(e).__name__}, please check the terminal for more details",
+                    f"An error occurred: {type(e).__name__} - {e}",
                 )
             )
 

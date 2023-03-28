@@ -385,6 +385,11 @@ class PyTorchStableDiffusion(InferenceModel):
     def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
+        if config.api.optLevel == 0:
+            raise ValueError(
+                "ControlNet is not available in optLevel 0, please load this model with optLevel 1"
+            )
+
         self.manage_optional_components(target_controlnet=job.data.controlnet)
 
         assert self.controlnet is not None
