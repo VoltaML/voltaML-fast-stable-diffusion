@@ -1,6 +1,6 @@
 import logging
 import multiprocessing
-from dataclasses import dataclass, field
+from dataclasses import Field, dataclass, field, fields
 
 from dataclasses_json import DataClassJsonMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
@@ -150,6 +150,14 @@ def save_config(config: Configuration):
 
     with open("data/settings.json", "w", encoding="utf-8") as f:
         f.write(config.to_json(ensure_ascii=False, indent=4))
+
+
+def update_config(config: Configuration, new_config: Configuration):
+    "Update the configuration with new values instead of overwriting the pointer"
+
+    for cls_field in fields(new_config):
+        assert isinstance(cls_field, Field)
+        setattr(config, cls_field.name, getattr(new_config, cls_field.name))
 
 
 def load_config():

@@ -3,6 +3,7 @@ import logging
 from fastapi import APIRouter
 
 from core import config
+from core.config.config import update_config
 
 router = APIRouter()
 
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 async def save_configuration(settings: config.Configuration):
     "Receive settings from the frontend and save them to the config file"
 
-    config.config = settings
+    update_config(config.config, settings)
     config.save_config(config.config)
 
     logger.info(f"Optimization level set to {config.config.api.optLevel}")
