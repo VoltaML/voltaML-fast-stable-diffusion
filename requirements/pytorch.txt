@@ -15,5 +15,6 @@ safetensors
 pytorch-lightning
 gpustat
 opencv-contrib-python-headless
-controlnet_aux
+git+https://github.com/patrickvonplaten/controlnet_aux
 realesrgan
+timm
