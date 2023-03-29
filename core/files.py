@@ -266,7 +266,7 @@ def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
 
 
 def get_full_model_path(
-    repo_id: str, revision: str = "main", model_folder: str = "models"
+    repo_id: str, revision: str = "main", model_folder: str = "models", force: bool = False
 ) -> Path:
     "Return the path to the actual model"
 
@@ -281,7 +281,7 @@ def get_full_model_path(
 
     # 2. Check if model is stored in local storage
     alt_path = Path("data/") / model_folder / repo_id
-    if alt_path.exists():
+    if alt_path.exists() or force:
         logger.debug(f"Found model in {alt_path}")
         return alt_path
 
