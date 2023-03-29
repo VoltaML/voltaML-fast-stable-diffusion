@@ -43,7 +43,7 @@
   <a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
     
   <h4>
-      <a href="https://stax124.github.io/voltaML-fast-stable-diffusion/">Documentation</a>
+      <a href="https://voltaml.github.io/voltaML-fast-stable-diffusion/">Documentation</a>
     <span> · </span>
       <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Report Bug</a>
     <span> · </span>

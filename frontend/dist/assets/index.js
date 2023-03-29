@@ -34500,6 +34500,7 @@ const useState = defineStore("state", () => {
     downloading: false,
     aitBuildStep: {
       unet: "wait",
+      controlnet_unet: "wait",
       clip: "wait",
       vae: "wait",
       cleanup: "wait"

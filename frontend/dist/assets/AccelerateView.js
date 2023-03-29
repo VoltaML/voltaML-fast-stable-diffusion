@@ -359,7 +359,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
-        createVNode(unref(NCard), { title: "Acceleration progress" }, {
+        createVNode(unref(NCard), { title: "Acceleration progress (around 20 minutes)" }, {
           default: withCtx(() => [
             createVNode(unref(NSpace), {
               vertical: "",
@@ -370,22 +370,22 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => [
                     createVNode(unref(NStep), {
                       title: "UNet",
-                      description: "The 'make a better guess' machine (takes a while)",
                       status: unref(state).state.aitBuildStep.unet
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
+                      title: "ControlNet UNet",
+                      status: unref(state).state.aitBuildStep.controlnet_unet
+                    }, null, 8, ["status"]),
+                    createVNode(unref(NStep), {
                       title: "CLIP",
-                      description: "Text encoder (usually quite fast)",
                       status: unref(state).state.aitBuildStep.clip
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "VAE",
-                      description: "Upscaler (something in between)",
                       status: unref(state).state.aitBuildStep.vae
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "Cleanup",
-                      description: "Get rid of the temporary build files",
                       status: unref(state).state.aitBuildStep.cleanup
                     }, null, 8, ["status"])
                   ]),
