@@ -25,5 +25,5 @@ features:
     details: Docker makes it easy to install and run VoltaML in a few minutes.
   - icon: 🚀
     title: Model acceleration
-    details: Speed up your models with AITemplate. Save your time and mo
+    details: Speed up your models with AITemplate. Save your time and money.
 ---
