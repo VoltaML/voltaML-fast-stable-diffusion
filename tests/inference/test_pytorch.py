@@ -16,10 +16,13 @@ from core.types import (
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_image_to_base64
+from tests.functions import generate_random_image
 
 
 @pytest.fixture(name="pipe")
 def pipe_fixture():
+    "Preloaded pipe that will be shared across all tests"
+
     return PyTorchStableDiffusion("andite/anything-v4.0")
 
 
@@ -37,13 +40,9 @@ def test_txt2img(pipe: PyTorchStableDiffusion):
 
 
 def test_img2img(pipe: PyTorchStableDiffusion):
-    np_image = np.random.randint(0, 255, size=(256, 256, 3), dtype=np.uint8)
-    image = Image.fromarray(np_image)
-    encoded_image = convert_image_to_base64(image)
-
     job = Img2ImgQueueEntry(
         data=Img2imgData(
-            image=encoded_image,
+            image=generate_random_image(),
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
@@ -55,17 +54,13 @@ def test_img2img(pipe: PyTorchStableDiffusion):
 
 
 def test_inpaint(pipe: PyTorchStableDiffusion):
-    np_image = np.random.randint(0, 255, size=(256, 256, 3), dtype=np.uint8)
-    image = Image.fromarray(np_image)
-    encoded_image = convert_image_to_base64(image)
-
     np_mask = np.random.randint(0, 1, size=(256, 256, 3), dtype=np.uint8)
     mask = Image.fromarray(np_mask)
     encoded_mask = convert_image_to_base64(mask)
 
     job = InpaintQueueEntry(
         data=InpaintData(
-            image=encoded_image,
+            image=generate_random_image(),
             prompt="This is a test",
             mask_image=encoded_mask,
             id="test",
@@ -78,13 +73,9 @@ def test_inpaint(pipe: PyTorchStableDiffusion):
 
 
 def test_control_net(pipe: PyTorchStableDiffusion):
-    np_image = np.random.randint(0, 255, size=(256, 256, 3), dtype=np.uint8)
-    image = Image.fromarray(np_image)
-    encoded_image = convert_image_to_base64(image)
-
     job = ControlNetQueueEntry(
         data=ControlNetData(
-            image=encoded_image,
+            image=generate_random_image(),
             prompt="This is a test",
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,

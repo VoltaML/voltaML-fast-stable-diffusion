@@ -17,6 +17,7 @@ import logging
 import os
 import shutil
 import time
+from pathlib import Path
 
 import torch
 from aitemplate.testing import detect_target
@@ -42,6 +43,7 @@ def compile_diffusers(
     batch_size: int = 1,
     use_fp16_acc=True,
     convert_conv_to_gemm=True,
+    invalidate_cache=False,
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
 
@@ -91,17 +93,23 @@ def compile_diffusers(
         )
     )
     try:
-        compile_unet(
-            pipe.unet,  # type: ignore
-            batch_size=batch_size * 2,
-            width=ww,
-            height=hh,
-            use_fp16_acc=use_fp16_acc,
-            convert_conv_to_gemm=convert_conv_to_gemm,
-            hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
-            attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
-            dump_dir=dump_dir,
-        )
+        if (
+            invalidate_cache
+            or not Path(dump_dir).joinpath("UNet2DConditionModel/test.so").exists()
+        ):
+            compile_unet(
+                pipe.unet,  # type: ignore
+                batch_size=batch_size * 2,
+                width=ww,
+                height=hh,
+                use_fp16_acc=use_fp16_acc,
+                convert_conv_to_gemm=convert_conv_to_gemm,
+                hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
+                attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
+                dump_dir=dump_dir,
+            )
+        else:
+            logger.info("UNet already compiled. Skipping...")
 
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"unet": "finish"})
@@ -121,18 +129,30 @@ def compile_diffusers(
         )
         raise e
 
+    # ControlNet UNet
+    websocket_manager.broadcast_sync(
+        Data(data_type="aitemplate_compile", data={"controlnet_unet": "process"})
+    )
     try:
-        compile_controlnet_unet(
-            pipe.unet,  # type: ignore
-            batch_size=batch_size * 2,
-            width=ww,
-            height=hh,
-            use_fp16_acc=use_fp16_acc,
-            convert_conv_to_gemm=convert_conv_to_gemm,
-            hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
-            attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
-            dump_dir=dump_dir,
-        )
+        if (
+            invalidate_cache
+            or not Path(dump_dir)
+            .joinpath("ControlNetUNet2DConditionModel/test.so")
+            .exists()
+        ):
+            compile_controlnet_unet(
+                pipe.unet,  # type: ignore
+                batch_size=batch_size * 2,
+                width=ww,
+                height=hh,
+                use_fp16_acc=use_fp16_acc,
+                convert_conv_to_gemm=convert_conv_to_gemm,
+                hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
+                attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
+                dump_dir=dump_dir,
+            )
+        else:
+            logger.info("ControlNet UNet already compiled. Skipping...")
 
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"controlnet_unet": "finish"})
@@ -157,17 +177,23 @@ def compile_diffusers(
         Data(data_type="aitemplate_compile", data={"clip": "process"})
     )
     try:
-        compile_clip(
-            pipe.text_encoder,  # type: ignore
-            batch_size=batch_size,
-            use_fp16_acc=use_fp16_acc,
-            convert_conv_to_gemm=convert_conv_to_gemm,
-            depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
-            num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
-            dim=pipe.text_encoder.config.hidden_size,  # type: ignore
-            act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
-            dump_dir=dump_dir,
-        )
+        if (
+            invalidate_cache
+            or not Path(dump_dir).joinpath("CLIPTextModel/test.so").exists()
+        ):
+            compile_clip(
+                pipe.text_encoder,  # type: ignore
+                batch_size=batch_size,
+                use_fp16_acc=use_fp16_acc,
+                convert_conv_to_gemm=convert_conv_to_gemm,
+                depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
+                num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
+                dim=pipe.text_encoder.config.hidden_size,  # type: ignore
+                act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
+                dump_dir=dump_dir,
+            )
+        else:
+            logger.info("CLIP already compiled. Skipping...")
 
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"clip": "finish"})
@@ -192,15 +218,21 @@ def compile_diffusers(
         Data(data_type="aitemplate_compile", data={"vae": "process"})
     )
     try:
-        compile_vae(
-            pipe.vae,  # type: ignore
-            batch_size=batch_size,
-            width=ww,
-            height=hh,
-            use_fp16_acc=use_fp16_acc,
-            convert_conv_to_gemm=convert_conv_to_gemm,
-            dump_dir=dump_dir,
-        )
+        if (
+            invalidate_cache
+            or not Path(dump_dir).joinpath("AutoencoderKL/test.so").exists()
+        ):
+            compile_vae(
+                pipe.vae,  # type: ignore
+                batch_size=batch_size,
+                width=ww,
+                height=hh,
+                use_fp16_acc=use_fp16_acc,
+                convert_conv_to_gemm=convert_conv_to_gemm,
+                dump_dir=dump_dir,
+            )
+        else:
+            logger.info("VAE already compiled. Skipping...")
 
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"vae": "finish"})

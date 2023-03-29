@@ -1,7 +1,16 @@
 import pytest
 from diffusers.schedulers import KarrasDiffusionSchedulers
 
-from core.types import Txt2imgData, Txt2ImgQueueEntry
+from core.types import (
+    ControlNetData,
+    ControlNetMode,
+    ControlNetQueueEntry,
+    Img2imgData,
+    Img2ImgQueueEntry,
+    Txt2imgData,
+    Txt2ImgQueueEntry,
+)
+from tests.functions import generate_random_image
 
 try:
     from core.aitemplate.scripts.compile import compile_diffusers
@@ -27,6 +36,35 @@ def test_aitemplate_txt2img(pipe: AITemplateStableDiffusion):
         data=Txt2imgData(
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            id="test",
+        ),
+        model="andite/anything-v4.0",
+    )
+
+    pipe.generate(job)
+
+
+def test_aitemplate_img2img(pipe: AITemplateStableDiffusion):
+    job = Img2ImgQueueEntry(
+        data=Img2imgData(
+            prompt="test",
+            image=generate_random_image(),
+            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            id="test",
+        ),
+        model="andite/anything-v4.0",
+    )
+
+    pipe.generate(job)
+
+
+def test_aitemplate_controlnet(pipe: AITemplateStableDiffusion):
+    job = ControlNetQueueEntry(
+        data=ControlNetData(
+            prompt="test",
+            image=generate_random_image(),
+            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            controlnet=ControlNetMode.CANNY,
             id="test",
         ),
         model="andite/anything-v4.0",
