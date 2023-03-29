@@ -143,6 +143,10 @@ class AITemplateStableDiffusion(InferenceModel):
             self.controlnet = None
             self.memory_cleanup()
 
+            logger.warning(
+                f"C: {self.current_controlnet} T: {target_controlnet} U: {self.current_unet}"
+            )
+
             if target_controlnet == ControlNetMode.NONE:
                 # Load basic unet if requested
 
@@ -202,6 +206,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
             cn.to(self.device)
             self.controlnet = cn
+            self.current_controlnet = target_controlnet
 
         # Clean memory
         self.memory_cleanup()
