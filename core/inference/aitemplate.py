@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, List, Optional
+from typing import Any, List, Literal, Optional
 
 import torch
 from diffusers import ControlNetModel
@@ -16,7 +16,7 @@ from api.websockets.data import Data
 from core.config import config
 from core.controlnet import image_to_controlnet_input
 from core.files import get_full_model_path
-from core.functions import optimize_model
+from core.functions import init_ait_module, optimize_model
 from core.inference.base_model import InferenceModel
 from core.inference_callbacks import (
     controlnet_callback,
@@ -71,13 +71,19 @@ class AITemplateStableDiffusion(InferenceModel):
 
         self.load()
 
+    @property
+    def directory(self) -> str:
+        "Directory where the model is stored"
+
+        return os.path.join("data", "aitemplate", self.model_id)
+
     def load(self):
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
         pipe = StableDiffusionAITPipeline.from_pretrained(
             get_full_model_path(self.model_id),
             torch_dtype=torch.float16,
-            directory=os.path.join("data", "aitemplate", self.model_id),
+            directory=self.directory,
             clip_ait_exe=None,
             unet_ait_exe=None,
             vae_ait_exe=None,
@@ -106,6 +112,8 @@ class AITemplateStableDiffusion(InferenceModel):
         self.clip_ait_exe = pipe.clip_ait_exe
         self.unet_ait_exe = pipe.unet_ait_exe
         self.vae_ait_exe = pipe.vae_ait_exe
+
+        self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
 
     def unload(self):
         del (
@@ -136,7 +144,43 @@ class AITemplateStableDiffusion(InferenceModel):
             self.memory_cleanup()
 
             if target_controlnet == ControlNetMode.NONE:
+                # Load basic unet if requested
+
+                if self.current_unet == "controlnet_unet":
+                    logger.info("Loading basic unet")
+
+                    del self.unet_ait_exe
+
+                    self.memory_cleanup()
+
+                    self.unet_ait_exe = init_ait_module(
+                        model_name="UNet2DConditionModel", workdir=self.directory
+                    )
+                    self.current_unet = (  # pylint: disable=attribute-defined-outside-init
+                        "unet"
+                    )
+
+                    logger.info("Done loading basic unet")
                 return
+            else:
+                # Load controlnet unet if requested
+
+                if self.current_unet == "unet":
+                    logger.info("Loading controlnet unet")
+
+                    del self.unet_ait_exe
+
+                    self.memory_cleanup()
+
+                    self.unet_ait_exe = init_ait_module(
+                        model_name="ControlNetUNet2DConditionModel",
+                        workdir=self.directory,
+                    )
+                    self.current_unet = (  # pylint: disable=attribute-defined-outside-init
+                        "controlnet_unet"
+                    )
+
+                    logger.info("Done loading controlnet unet")
 
             # Load new controlnet if needed
             cn = ControlNetModel.from_pretrained(
@@ -183,9 +227,11 @@ class AITemplateStableDiffusion(InferenceModel):
 
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
+        self.manage_optional_components()
+
         pipe = StableDiffusionAITPipeline(
             vae=self.vae,
-            directory=os.path.join("data", "aitemplate", self.model_id),
+            directory=self.directory,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
@@ -244,9 +290,11 @@ class AITemplateStableDiffusion(InferenceModel):
 
         from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
 
+        self.manage_optional_components()
+
         pipe = StableDiffusionImg2ImgAITPipeline(
             vae=self.vae,
-            directory=os.path.join("data", "aitemplate", self.model_id),
+            directory=self.directory,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
@@ -315,7 +363,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
         pipe = StableDiffusionControlNetAITPipeline(
             vae=self.vae,
-            directory=os.path.join("data", "aitemplate", self.model_id),
+            directory=self.directory,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
@@ -364,7 +412,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
         websocket_manager.broadcast_sync(
             data=Data(
-                data_type="img2img",
+                data_type="controlnet",
                 data={
                     "progress": 0,
                     "current_step": 0,

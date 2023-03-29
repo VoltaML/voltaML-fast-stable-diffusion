@@ -2,7 +2,7 @@ import inspect
 import logging
 import os
 import warnings
-from typing import List, Optional, Union
+from typing import Callable, List, Optional, Union
 
 import numpy as np
 import torch
@@ -181,7 +181,6 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
         for i in range(num_outputs):
             shape = exe_module.get_output_maximum_shape(i)
             ys.append(torch.empty(shape).cuda().half())
-        logger.warning(f"unet inputs: {len(inputs)}")
         exe_module.run_with_tensors(inputs, ys, graph_mode=False)
         noise_pred = ys[0].permute((0, 3, 1, 2)).float()
         return noise_pred
@@ -233,9 +232,9 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
                 image = image.transpose(0, 3, 1, 2)
                 image = torch.from_numpy(image)
             elif isinstance(image[0], torch.Tensor):
-                image = torch.cat(image, dim=0)
+                image = torch.cat(image, dim=0)  # type: ignore
 
-        image_batch_size = image.shape[0]
+        image_batch_size = image.shape[0]  # type: ignore
 
         if image_batch_size == 1:
             repeat_by = batch_size
@@ -243,7 +242,7 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
             # image batch size is the same as prompt batch size
             repeat_by = num_images_per_prompt
 
-        image = image.repeat_interleave(repeat_by, dim=0)
+        image = image.repeat_interleave(repeat_by, dim=0)  # type: ignore
 
         image = image.to(device=device, dtype=dtype)
 
@@ -291,6 +290,7 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
         generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         output_type: Optional[str] = "pil",
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         return_dict: bool = True,
         **kwargs,
     ):
@@ -444,7 +444,7 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
         # import ipdb; ipdb.set_trace()
         if latents is None:
             latents = torch.randn(
-                latents_shape,
+                latents_shape,  # type: ignore
                 generator=generator,
                 device=latents_device,
             ).to(device=latents_device)
@@ -455,71 +455,66 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
                 )
 
         text_embeddings = text_embeddings.to(self.controlnet.dtype)
-        latents = latents.to(device=self.device, dtype=text_embeddings.dtype)
-        latents = latents * self.scheduler.init_noise_sigma
+        latents = latents.to(device=self.device, dtype=text_embeddings.dtype)  # type: ignore
+        latents = latents * self.scheduler.init_noise_sigma  # type: ignore
 
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
         self.scheduler.set_timesteps(num_inference_steps, device=self.device)
-        timesteps = self.scheduler.timesteps
 
-        with self.progress_bar(total=num_inference_steps) as _progress_bar:
-            for _i, t in enumerate(timesteps):
-                # expand the latents if we are doing classifier free guidance
-                latent_model_input = (
-                    torch.cat([latents] * 2) if do_classifier_free_guidance else latents
+        for i, t in enumerate(self.progress_bar(self.scheduler.timesteps)):
+            # expand the latents if we are doing classifier free guidance
+            latent_model_input = (
+                torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
+            )
+            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+
+            down_block_res_samples, mid_block_res_sample = self.controlnet(
+                latent_model_input,
+                t,
+                encoder_hidden_states=text_embeddings,
+                controlnet_cond=init_image,
+                conditioning_scale=controlnet_conditioning_scale,
+                return_dict=False,
+            )
+
+            # predict the noise residual
+            noise_pred = self.unet_inference(
+                latent_model_input,
+                t,
+                text_embeddings,
+                down_block_res_samples[0],
+                down_block_res_samples[1],
+                down_block_res_samples[2],
+                down_block_res_samples[3],
+                down_block_res_samples[4],
+                down_block_res_samples[5],
+                down_block_res_samples[6],
+                down_block_res_samples[7],
+                down_block_res_samples[8],
+                down_block_res_samples[9],
+                down_block_res_samples[10],
+                down_block_res_samples[11],
+                mid_block_res_sample,
+            )
+
+            # perform guidance
+            if do_classifier_free_guidance:
+                noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                noise_pred = noise_pred_uncond + guidance_scale * (
+                    noise_pred_text - noise_pred_uncond
                 )
-                latent_model_input = self.scheduler.scale_model_input(
-                    latent_model_input, t
-                )
 
-                logger.warning(
-                    f"DTypes: {latent_model_input.dtype}, {text_embeddings.dtype}"
-                )
+            # compute the previous noisy sample x_t -> x_t-1
+            latents = self.scheduler.step(
+                noise_pred, t, latents, **extra_step_kwargs  # type: ignore
+            ).prev_sample  # type: ignore
 
-                down_block_res_samples, mid_block_res_sample = self.controlnet(
-                    latent_model_input,
-                    t,
-                    encoder_hidden_states=text_embeddings,
-                    controlnet_cond=init_image,
-                    conditioning_scale=controlnet_conditioning_scale,
-                    return_dict=False,
-                )
-
-                # predict the noise residual
-                noise_pred = self.unet_inference(
-                    latent_model_input,
-                    t,
-                    text_embeddings,
-                    down_block_res_samples[0],
-                    down_block_res_samples[1],
-                    down_block_res_samples[2],
-                    down_block_res_samples[3],
-                    down_block_res_samples[4],
-                    down_block_res_samples[5],
-                    down_block_res_samples[6],
-                    down_block_res_samples[7],
-                    down_block_res_samples[8],
-                    down_block_res_samples[9],
-                    down_block_res_samples[10],
-                    down_block_res_samples[11],
-                    mid_block_res_sample,
-                )
-
-                # perform guidance
-                if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (
-                        noise_pred_text - noise_pred_uncond
-                    )
-
-                # compute the previous noisy sample x_t -> x_t-1
-                latents = self.scheduler.step(
-                    noise_pred, t, latents, **extra_step_kwargs
-                ).prev_sample
+            if callback is not None:
+                callback(i, t, latents)  # type: ignore
 
         # scale and decode the image latents with vae
-        latents = 1 / 0.18215 * latents
+        latents = 1 / 0.18215 * latents  # type: ignore
         init_image = self.vae_inference(latents)
 
         init_image = (init_image / 2 + 0.5).clamp(0, 1)

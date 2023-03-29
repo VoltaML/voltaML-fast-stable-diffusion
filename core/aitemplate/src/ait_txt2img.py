@@ -14,7 +14,6 @@
 #
 import inspect
 import logging
-import os
 from typing import Callable, List, Optional, Union
 
 import torch
@@ -31,6 +30,8 @@ from diffusers.pipelines.stable_diffusion import (
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+
+from core.functions import init_ait_module
 
 logger = logging.getLogger(__name__)
 
@@ -92,21 +93,21 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         logger.debug(f"AIT workdir: {directory}")
 
         if clip_ait_exe is None:
-            self.clip_ait_exe = self.init_ait_module(
+            self.clip_ait_exe = init_ait_module(
                 model_name="CLIPTextModel", workdir=directory
             )
         else:
             self.clip_ait_exe = clip_ait_exe
 
         if unet_ait_exe is None:
-            self.unet_ait_exe = self.init_ait_module(
+            self.unet_ait_exe = init_ait_module(
                 model_name="UNet2DConditionModel", workdir=directory
             )
         else:
             self.unet_ait_exe = unet_ait_exe
 
         if vae_ait_exe is None:
-            self.vae_ait_exe = self.init_ait_module(
+            self.vae_ait_exe = init_ait_module(
                 model_name="AutoencoderKL", workdir=directory
             )
         else:
@@ -124,14 +125,6 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         self.feature_extractor: CLIPFeatureExtractor
 
         self.scheduler: LMSDiscreteScheduler
-
-    def init_ait_module(
-        self,
-        model_name,
-        workdir,
-    ):
-        mod = Model(os.path.join(workdir, model_name, "test.so"))
-        return mod
 
     def unet_inference(self, latent_model_input, timesteps, encoder_hidden_states):
         exe_module = self.unet_ait_exe

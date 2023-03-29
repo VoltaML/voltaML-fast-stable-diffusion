@@ -1,4 +1,5 @@
 import logging
+import os
 from pathlib import Path
 from typing import Dict
 
@@ -183,3 +184,13 @@ def send_to_gpu(module, _):
         gpu_module.to("cpu")
     module.to(_device)
     gpu_module = module
+
+
+def init_ait_module(
+    model_name,
+    workdir,
+):
+    from aitemplate.compiler import Model
+
+    mod = Model(os.path.join(workdir, model_name, "test.so"))
+    return mod
