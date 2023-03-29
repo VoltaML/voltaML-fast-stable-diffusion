@@ -29,6 +29,23 @@ logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
 
+def is_onnx_available():
+    try:
+        import onnx
+        import onnxruntime
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnxscript_available():
+    try:
+        import onnxscript
+        return True
+    except ImportError:
+        return False
+
+
 def load_config(
     pretrained_model_name_or_path: Union[str, os.PathLike],
     return_unused_kwargs=False,

@@ -83,3 +83,5 @@ external
 
 # Ignore for black
 core/submodules
+
+.vscode/
