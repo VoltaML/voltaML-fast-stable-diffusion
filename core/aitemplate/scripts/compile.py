@@ -89,7 +89,13 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(
             data_type="aitemplate_compile",
-            data={"unet": "process", "clip": "wait", "vae": "wait", "cleanup": "wait"},
+            data={
+                "unet": "process",
+                "controlnet_unet": "wait",
+                "clip": "wait",
+                "vae": "wait",
+                "cleanup": "wait",
+            },
         )
     )
     try:

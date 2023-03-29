@@ -1,8 +1,8 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-	title: "VoltaML documentation",
-	description: "VoltaML fast Stable Diffusion",
+	title: "VoltaML",
+	description: "Easy to use, yet feature-rich WebUI",
 	lang: "en-US",
 	appearance: "dark",
 	lastUpdated: true,
@@ -14,6 +14,13 @@ export default defineConfig({
 				rel: "shortcut icon",
 				type: "image/x-icon",
 				href: "/voltaML-fast-stable-diffusion/favicon.ico",
+			},
+		],
+		[
+			"meta",
+			{
+				property: "og:image",
+				content: "/voltaML-fast-stable-diffusion/volta-og-image.webp",
 			},
 		],
 	],
