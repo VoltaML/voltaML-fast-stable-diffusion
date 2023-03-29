@@ -52,6 +52,10 @@
 
 </div>
 
+<hr>
+<h3 align="center">Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a></h3>
+<hr>
+
 <br />
 
 <h1> Table of Contents</h1>
@@ -167,8 +171,3 @@ Distributed under the <b>GPL v3</b>. See [License](https://github.com/VoltaML/vo
 Feel free to contact us on discord: https://discord.gg/pY5SVyHmWm
 
 Project Link: [https://github.com/VoltaML/voltaML-fast-stable-diffusion](https://github.com/VoltaML/voltaML-fast-stable-diffusion)
-
-<hr>
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a>
-</p>
