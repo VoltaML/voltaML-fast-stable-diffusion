@@ -1,8 +1,9 @@
 import logging
 import os
-from typing import Any, List
+from typing import Any, List, Optional
 
 import torch
+from diffusers import ControlNetModel
 from diffusers.models.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from PIL import Image
@@ -13,12 +14,23 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets.data import Data
 from core.config import config
+from core.controlnet import image_to_controlnet_input
 from core.files import get_full_model_path
 from core.functions import optimize_model
 from core.inference.base_model import InferenceModel
-from core.inference_callbacks import img2img_callback, txt2img_callback
+from core.inference_callbacks import (
+    controlnet_callback,
+    img2img_callback,
+    txt2img_callback,
+)
 from core.schedulers import change_scheduler
-from core.types import Img2ImgQueueEntry, Job, Txt2ImgQueueEntry
+from core.types import (
+    ControlNetMode,
+    ControlNetQueueEntry,
+    Img2ImgQueueEntry,
+    Job,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -27,8 +39,17 @@ logger = logging.getLogger(__name__)
 class AITemplateStableDiffusion(InferenceModel):
     "High level wrapper for the AITemplate models"
 
-    def __init__(self, model_id: str, use_f32: bool = False, device: str = "cuda"):
+    def __init__(
+        self,
+        model_id: str,
+        auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
+        use_f32: bool = False,
+        device: str = "cuda",
+    ):
         super().__init__(model_id, use_f32, device)
+
+        # HuggingFace auth token
+        self.auth = auth_token
 
         self.vae: AutoencoderKL
         self.unet: UNet2DConditionModel
@@ -44,6 +65,9 @@ class AITemplateStableDiffusion(InferenceModel):
         self.clip_ait_exe: Model
         self.unet_ait_exe: Model
         self.vae_ait_exe: Model
+
+        self.controlnet: Optional[ControlNetModel] = None
+        self.current_controlnet: ControlNetMode = ControlNetMode.NONE
 
         self.load()
 
@@ -99,6 +123,45 @@ class AITemplateStableDiffusion(InferenceModel):
 
         self.memory_cleanup()
 
+    def manage_optional_components(
+        self,
+        *,
+        target_controlnet: ControlNetMode = ControlNetMode.NONE,
+    ) -> None:
+        "Cleanup old components"
+
+        if self.current_controlnet != target_controlnet:
+            # Cleanup old controlnet
+            self.controlnet = None
+            self.memory_cleanup()
+
+            if target_controlnet == ControlNetMode.NONE:
+                return
+
+            # Load new controlnet if needed
+            cn = ControlNetModel.from_pretrained(
+                target_controlnet.value,
+                resume_download=True,
+                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
+                use_auth_token=self.auth,
+                cache_dir=config.api.cache_dir,
+            )
+
+            assert isinstance(cn, ControlNetModel)
+            try:
+                cn.enable_xformers_memory_efficient_attention()
+                logger.info("Optimization: Enabled xformers memory efficient attention")
+            except ModuleNotFoundError:
+                logger.info(
+                    "Optimization: xformers not available, enabling attention slicing instead"
+                )
+
+            cn.to(self.device)
+            self.controlnet = cn
+
+        # Clean memory
+        self.memory_cleanup()
+
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
 
@@ -106,6 +169,8 @@ class AITemplateStableDiffusion(InferenceModel):
             images = self.txt2img(job)
         elif isinstance(job, Img2ImgQueueEntry):
             images = self.img2img(job)
+        elif isinstance(job, ControlNetQueueEntry):
+            images = self.controlnet2img(job)
         else:
             raise ValueError("Invalid job type for this model")
 
@@ -216,6 +281,80 @@ class AITemplateStableDiffusion(InferenceModel):
                 strength=job.data.strength,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
+            )
+
+            images = data[0]
+            assert isinstance(images, List)
+
+            total_images.extend(images)
+
+        websocket_manager.broadcast_sync(
+            data=Data(
+                data_type="img2img",
+                data={
+                    "progress": 0,
+                    "current_step": 0,
+                    "total_steps": 0,
+                    "image": convert_images_to_base64_grid(total_images),
+                },
+            )
+        )
+
+        return total_images
+
+    def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
+        "Generates images from images"
+
+        self.manage_optional_components(target_controlnet=job.data.controlnet)
+
+        assert self.controlnet is not None
+
+        from core.aitemplate.src.ait_controlnet import (
+            StableDiffusionControlNetAITPipeline,
+        )
+
+        pipe = StableDiffusionControlNetAITPipeline(
+            vae=self.vae,
+            directory=os.path.join("data", "aitemplate", self.model_id),
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            safety_checker=self.safety_checker,
+            requires_safety_checker=self.requires_safety_checker,
+            unet=self.unet,
+            controlnet=self.controlnet,
+            feature_extractor=self.feature_extractor,
+            clip_ait_exe=self.clip_ait_exe,
+            unet_ait_exe=self.unet_ait_exe,
+            vae_ait_exe=self.vae_ait_exe,
+        )
+
+        generator = torch.Generator(self.device).manual_seed(job.data.seed)
+
+        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+
+        input_image = convert_to_image(job.data.image)
+        input_image = resize(input_image, job.data.width, job.data.height)
+
+        input_image = image_to_controlnet_input(input_image, job.data)
+
+        total_images: List[Image.Image] = [input_image]
+
+        for _ in range(job.data.batch_count):
+            data = pipe(
+                prompt=job.data.prompt,
+                image=input_image,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=controlnet_callback,
+                return_dict=False,
+                num_images_per_prompt=job.data.batch_size,
+                controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,
+                height=job.data.height,
+                width=job.data.width,
             )
 
             images = data[0]

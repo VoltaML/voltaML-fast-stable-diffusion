@@ -4,6 +4,7 @@ from typing import Any, Literal, Optional, Union
 from uuid import uuid4
 
 from diffusers import (
+    DiffusionPipeline,
     StableDiffusionControlNetPipeline,
     StableDiffusionDepth2ImgPipeline,
     StableDiffusionImg2ImgPipeline,
@@ -226,6 +227,7 @@ class BuildRequest:
 
 
 PyTorchModelType = Union[
+    DiffusionPipeline,
     StableDiffusionDepth2ImgPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,

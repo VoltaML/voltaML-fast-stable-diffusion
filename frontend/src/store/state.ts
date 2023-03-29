@@ -23,6 +23,7 @@ export interface StateInterface {
   downloading: boolean;
   aitBuildStep: {
     unet: StepProgress;
+    controlnet_unet: StepProgress;
     clip: StepProgress;
     vae: StepProgress;
     cleanup: StepProgress;
@@ -70,6 +71,7 @@ export const useState = defineStore("state", () => {
     downloading: false,
     aitBuildStep: {
       unet: "wait",
+      controlnet_unet: "wait",
       clip: "wait",
       vae: "wait",
       cleanup: "wait",

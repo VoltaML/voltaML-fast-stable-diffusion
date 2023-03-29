@@ -16,6 +16,7 @@ import gc
 import logging
 import os
 import shutil
+import time
 
 import torch
 from aitemplate.testing import detect_target
@@ -27,6 +28,7 @@ from core.config import config
 from core.files import get_full_model_path
 
 from ..src.compile_lib.compile_clip import compile_clip
+from ..src.compile_lib.compile_controlnet_unet import compile_controlnet_unet
 from ..src.compile_lib.compile_unet import compile_unet
 from ..src.compile_lib.compile_vae import compile_vae
 
@@ -42,6 +44,8 @@ def compile_diffusers(
     convert_conv_to_gemm=True,
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
+
+    start_time = time.time()
 
     torch.manual_seed(4896)
 
@@ -107,6 +111,37 @@ def compile_diffusers(
         logger.error(e)
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"unet": "error"})
+        )
+        websocket_manager.broadcast_sync(
+            Notification(
+                severity="error",
+                title="AITemplate",
+                message=f"Error while compiling UNet: {e}",
+            )
+        )
+        raise e
+
+    try:
+        compile_controlnet_unet(
+            pipe.unet,  # type: ignore
+            batch_size=batch_size * 2,
+            width=ww,
+            height=hh,
+            use_fp16_acc=use_fp16_acc,
+            convert_conv_to_gemm=convert_conv_to_gemm,
+            hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
+            attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
+            dump_dir=dump_dir,
+        )
+
+        websocket_manager.broadcast_sync(
+            Data(data_type="aitemplate_compile", data={"controlnet_unet": "finish"})
+        )
+
+    except Exception as e:  # pylint: disable=broad-except
+        logger.error(e)
+        websocket_manager.broadcast_sync(
+            Data(data_type="aitemplate_compile", data={"controlnet_unet": "error"})
         )
         websocket_manager.broadcast_sync(
             Notification(
@@ -226,10 +261,14 @@ def compile_diffusers(
     torch.cuda.ipc_collect()
     gc.collect()
 
+    deltatime = time.time() - start_time
+
     websocket_manager.broadcast_sync(
         Notification(
             severity="success",
             title="AITemplate",
-            message=f"Successfully compiled {local_dir_or_id} to AITemplate format",
+            message=f"Successfully compiled {local_dir_or_id} to AITemplate format in {deltatime:.2f} seconds",
         )
     )
+
+    logger.info(f"Finished compiling in {deltatime:.2f} seconds")
