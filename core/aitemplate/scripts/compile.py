@@ -133,7 +133,6 @@ def compile_diffusers(
                 message=f"Error while compiling UNet: {e}",
             )
         )
-        raise e
 
     # ControlNet UNet
     websocket_manager.broadcast_sync(
