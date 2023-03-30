@@ -3,29 +3,69 @@ import os
 import shutil
 from pathlib import Path
 import inspect
-from typing import Any, List
+from typing import Any, List, Tuple, Type, TypeVar
 
 from tqdm.auto import tqdm
 from PIL import Image
 
-from transformers import CLIPTokenizer
+from accelerate import init_empty_weights, load_checkpoint_and_dispatch
+from accelerate.utils import set_module_tensor_to_device
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
 from diffusers.pipelines.stable_diffusion.pipeline_onnx_stable_diffusion import OnnxStableDiffusionPipeline
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipeline, StableDiffusionPipelineOutput
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipelineOutput
+from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.models.vae import DecoderOutput
 from diffusers import OnnxRuntimeModel
+from safetensors.torch import load_file
 import torch
 from torch.onnx import export
-import onnx # pylint: disable=import-self
+from transformers import CLIPTokenizer, CLIPTextModel, CLIPTokenizerFast
+from transformers.modeling_outputs import BaseModelOutputWithPooling
+import onnx  # pylint: disable=import-self
 from onnxruntime.quantization import quantize_dynamic, QuantType
 
 import numpy as np
 
 from core.inference.base_model import InferenceModel
 from core.files import get_full_model_path
-from core.inference.functions import is_onnx_available, is_onnxscript_available
+from core.inference.functions import is_onnx_available, is_onnxscript_available, is_onnxsim_available
 from core.types import Job, Txt2ImgQueueEntry
 
 logger = logging.getLogger(__name__)
+
+SIMPLIFY_UNET = False
+
+
+class UNet2DConditionWrapper(UNet2DConditionModel):
+    def forward(self, sample, timestep, encoder_hidden_states, class_labels=None, timestep_cond=None, attention_mask=None, cross_attention_kwargs=None, down_block_additional_residuals=None, mid_block_additional_residual=None, return_dict: bool = True) -> Tuple:
+        sample = sample.to(dtype=torch.float16)
+        timestep = timestep.to(dtype=torch.long) # type: ignore
+        encoder_hidden_states = encoder_hidden_states.to(dtype=torch.float16)
+
+        sample = UNet2DConditionModel.forward(
+            self, sample, timestep, encoder_hidden_states, return_dict=True).sample  # type: ignore
+        return (sample.to(dtype=torch.float16),)
+
+
+class CLIPTextModelWrapper(CLIPTextModel):
+    def forward(self, input_ids) -> Tuple:
+        outputs: BaseModelOutputWithPooling = CLIPTextModel.forward(
+            self, input_ids=input_ids, return_dict=True)  # type: ignore
+        return (outputs.last_hidden_state.to(dtype=torch.float32), outputs.pooler_output.to(dtype=torch.float32))
+
+
+class AutoencoderKLWrapper(AutoencoderKL):
+    def encode(self, x) -> Tuple:
+        x = x.to(dtype=torch.float16)
+        outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)
+        return (outputs.latent_dist.sample().to(dtype=torch.float32),)
+
+    def decode(self, z) -> Tuple:
+        z = z.to(dtype=torch.float16)
+        outputs: DecoderOutput = AutoencoderKL.decode(
+            self, z, True) # type: ignore
+        return (outputs.sample.to(dtype=torch.float32),)
 
 
 class OnnxStableDiffusion(InferenceModel):
@@ -68,8 +108,6 @@ class OnnxStableDiffusion(InferenceModel):
 
         self.requires_safety_checker = False
         self.memory_cleanup()
-
-    # Implement later, since there's some bullshit error I don't understand..????
 
     def _setup(self, opset_version: int = 17):
         if is_onnxscript_available():
@@ -146,12 +184,13 @@ class OnnxStableDiffusion(InferenceModel):
         '''
         def onnx_export(
             model,
-            model_args: tuple,
+            model_args: Tuple,
             output_path: Path,
-            ordered_input_names,
-            output_names,
-            dynamic_axes,
-            opset
+            ordered_input_names: List[str],
+            output_names: List[str],
+            dynamic_axes: dict,
+            opset: int,
+            simplify: bool = True
         ):
             output_path.parent.mkdir(parents=True, exist_ok=True)
             export(
@@ -166,145 +205,224 @@ class OnnxStableDiffusion(InferenceModel):
             )
             # quantize
             try:
+                logger.info(
+                    f"Starting quantization process of model {output_path}")
+                in_path = output_path
+                output_path = output_path.with_stem(
+                    output_path.stem + ".quant")
                 quantize_dynamic(
+                    in_path,
                     output_path,
-                    Path(output_path.as_posix() + ".quant"),
                     weight_type=QuantType.QUInt8 if target == "cpu" else QuantType.QInt8,
-                    use_external_data_format=True,
-                    nodes_to_exclude=["InsertedCast_onnx::Conv_250", "InsertedCast_onnx::Conv_737",
-                                      "InsertedCast_sample", "InsertedCast_latent_sample"],
                     per_channel=True,
                     reduce_range=True,
                 )
+                os.remove(in_path)
+                os.rename(output_path, in_path)
+
+                output_path = in_path
+
+                self.memory_cleanup()
             except ValueError:
                 logger.warning("Could not quantize model, skipping.")
 
+            if simplify:
+                if is_onnxsim_available():
+                    try:
+                        from onnxsim import simplify # pylint: disable=import-error
+                        model = onnx.load(str(output_path)) # pylint: disable=no-member
+                        model_opt, check = simplify(model) # type: ignore
+                        if not check:
+                            logger.warning(
+                                f"Could not validate simplified model at path {output_path}")
+                        del model
+                        onnx.save(model_opt, str(output_path)) # pylint: disable=no-member
+                        del model_opt
+                        self.memory_cleanup()
+                    except ValueError:
+                        logger.warning("Could not simplify model, skipping.")
+                else:
+                    logger.warning(
+                        "Onnx-simplifier is not available, skipping simplification process.")
+
+        T = TypeVar("T")
+
+        def load(cls: Type[T], root: Path, checkpoint_name="diffusion_pytorch_model.bin", device=torch.device("cpu"), dtype=None) -> T:
+            with init_empty_weights():
+                model = cls.from_config(  # type: ignore
+                    config_path=root / "config.json",
+                    pretrained_model_name_or_path=root
+                )
+
+            if checkpoint_name.endswith(".safetensors"):
+                state_dict = load_file(root / checkpoint_name, device="cpu")
+                for name, param in state_dict.items():
+                    set_module_tensor_to_device(
+                        model, name, device, value=param, dtype=dtype)
+            else:
+                load_checkpoint_and_dispatch(model, str(
+                    root / checkpoint_name), device_map="auto")
+                model = model.to(dtype=dtype, device=device)
+                model.eval()
+            return model
+
+        def convert_text_encoder(main_folder: Path, output_folder: Path, tokenizer: CLIPTokenizerFast, device: str, opset: int):
+            text_encoder = CLIPTextModelWrapper.from_pretrained(
+                main_folder / "text_encoder").to(dtype=torch.float16, device=device)  # type: ignore
+            text_encoder.eval()
+
+            num_tokens = text_encoder.config.max_position_embeddings
+            text_hidden_size = text_encoder.config.hidden_size
+            max_length = tokenizer.model_max_length
+
+            text_input = tokenizer(
+                "They say the more you want, the less you get...",
+                padding="max_length",
+                max_length=max_length,
+                truncation=True,
+                return_tensors="pt"
+            ).input_ids.to(device=device, dtype=torch.int32)
+            onnx_export(
+                text_encoder,
+                model_args=(text_input,),
+                output_path=output_folder / "text_encoder.onnx",
+                ordered_input_names=["input_ids"],
+                output_names=["last_hidden_state", "pooler_output"],
+                dynamic_axes={
+                    "input_ids": {0: "batch", 1: "sequence"}
+                },
+                opset=opset
+            )
+
+            del text_encoder
+            self.memory_cleanup()
+            return output_folder / "text_encoder.onnx", num_tokens, text_hidden_size
+
+        def convert_unet(main_folder: Path, output_folder: Path, num_tokens: int, text_hidden_size: int, device: str, opset: int) -> Tuple[Path, int]:
+            unet = load(UNet2DConditionWrapper, main_folder / "unet",
+                        device=device, dtype=torch.float16)  # type: ignore
+
+            if isinstance(unet.config.attention_head_dim, int):  # type: ignore
+                # type: ignore pylint: disable=no-member
+                slice_size = unet.config.attention_head_dim // 2
+            else:
+                # type: ignore pylint: disable=no-member
+                slice_size = min(unet.config.attention_head_dim)
+            unet.set_attention_slice(slice_size)
+
+            unet_model_size = 0
+            for param in unet.parameters():
+                unet_model_size += param.nelement() * param.element_size()
+            for buffer in unet.buffers():
+                unet_model_size += buffer.nelement() * buffer.element_size()
+            unet_model_size_mb = unet_model_size / 1024**2
+            needs_collate = unet_model_size_mb > 2000
+
+            in_channels = unet.config["in_channels"]
+            sample_size = unet.config["sample_size"]
+
+            unet_out_path = output_folder
+            if needs_collate:
+                unet_out_path = output_folder / "unet_data"
+                unet_out_path.mkdir(parents=True, exist_ok=True)
+            onnx_export(
+                unet,
+                model_args=(
+                    torch.randn(2, in_channels, sample_size, sample_size +
+                                1).to(device=device, dtype=torch.float32),
+                    torch.randn(2).to(device=device, dtype=torch.float32),
+                    torch.randn(
+                        2, (num_tokens * 3) - 2, text_hidden_size).to(device=device, dtype=torch.float32)
+                ),
+                output_path=unet_out_path / "unet.onnx",
+                ordered_input_names=["sample", "timestep",
+                                     "encoder_hidden_states", "return_dict"],
+                output_names=["out_sample"],
+                dynamic_axes={
+                    "sample": {0: "batch", 1: "channels", 2: "height", 3: "width"},
+                    "timestep": {0: "batch"},
+                    "encoder_hidden_states": {0: "batch", 1: "sequence"}
+                },
+                opset=opset,
+                simplify=SIMPLIFY_UNET
+            )
+            del unet
+            self.memory_cleanup()
+            if needs_collate:
+                unet = onnx.load(str(
+                    (unet_out_path / "unet.onnx").absolute().as_posix()))  # pylint: disable=no-member
+                onnx.save_model(  # pylint: disable=no-member
+                    unet,
+                    str((output_folder / "unet.onnx").absolute().as_posix()),
+                    save_as_external_data=True,
+                    all_tensors_to_one_file=True,
+                    location="unet.pb",
+                    convert_attribute=False
+                )
+
+                del unet
+                self.memory_cleanup()
+                shutil.rmtree(unet_out_path)
+                unet_out_path = output_folder
+            return unet_out_path / "unet.onnx", sample_size
+
+        def convert_vae(main_folder: Path, output_folder: Path, unet_sample_size: int, device: str, opset: int):
+            vae = load(AutoencoderKLWrapper, main_folder / "vae",
+                       device=device, dtype=torch.float16)  # type: ignore
+            vae_in_channels = vae.config["in_channels"]
+            vae_sample_size = vae.config["sample_size"]
+            vae_latent_channels = vae.config["latent_channels"]
+            vae_out_channels = vae.config["out_channels"]
+
+            vae.forward = lambda sample: vae.encode(sample)[0]  # type: ignore
+            onnx_export(
+                vae,
+                model_args=(torch.randn(1, vae_in_channels, vae_sample_size, vae_sample_size).to(
+                    device=device, dtype=torch.float32),),
+                output_path=output_folder / "vae_encoder.onnx",
+                ordered_input_names=["sample"],
+                output_names=["latent_sample"],
+                dynamic_axes={
+                    "sample": {0: "batch", 1: "channels", 2: "height", 3: "width"}
+                },
+                opset=opset
+            )
+
+            vae.forward = vae.decode  # type: ignore
+            onnx_export(
+                vae,
+                model_args=(torch.randn(1, vae_latent_channels, unet_sample_size, unet_sample_size).to(
+                    device=device, dtype=torch.float32),),
+                output_path=output_folder / "vae_decoder.onnx",
+                ordered_input_names=["latent_sample"],
+                output_names=["sample"],
+                dynamic_axes={
+                    "latent_sample": {0: "batch", 1: "channels", 2: "height", 3: "width"}
+                },
+                opset=opset
+            )
+            del vae
+            self.memory_cleanup()
+
+            return output_folder / "vae_encoder.onnx", output_folder / "vae_decoder.onnx", vae_sample_size, vae_out_channels
+
         opset = 17
+        main_folder = get_full_model_path(model_id)
+        output_folder = get_full_model_path(
+            model_id, model_folder="onnx", force=True)
+        device = "cuda" if target == "gpu" else "cpu"
         # register aten::scaled_dot_product_attention
         self._setup(opset)
 
-        dtype = torch.float16
-        output_path = get_full_model_path(
-            model_id, model_folder="onnx", force=True)
-        device = "cuda"
-        pipeline = StableDiffusionPipeline.from_pretrained(
-            pretrained_model_name_or_path=get_full_model_path(model_id), torch_dtype=dtype)
-        pipeline.enable_sequential_cpu_offload()  # type: ignore
-        num_tokens = pipeline.text_encoder.config.max_position_embeddings  # type: ignore
-        text_hidden_size = pipeline.text_encoder.config.hidden_size  # type: ignore
-        text_input = pipeline.tokenizer(  # type: ignore
-            "Text is good",
-            padding="max_length",
-            max_length=pipeline.tokenizer.model_max_length,  # type: ignore
-            truncation=True,
-            return_tensors="pt",
-        )
-        onnx_export(
-            pipeline.text_encoder,  # type: ignore
-            # casting to torch.int32 until the CLIP fix is released: https://github.com/huggingface/transformers/pull/18515/files
-            model_args=(text_input.input_ids.to(
-                device=device, dtype=torch.int32)),
-            output_path=output_path / "text_encoder" / "model.onnx",
-            ordered_input_names=["input_ids"],
-            output_names=["last_hidden_state", "pooler_output"],
-            dynamic_axes={
-                "input_ids": {0: "batch", 1: "sequence"},
-            },
-            opset=opset,
-        )
-        del pipeline.text_encoder  # type: ignore
+        tokenizer = CLIPTokenizerFast.from_pretrained(
+            main_folder / "tokenizer")
+        tokenizer.backend_tokenizer.save(str(output_folder / "tokenizer.json"))
 
-        # UNET
-        # Fix for PyTorch 2.0
-        from diffusers.models.cross_attention import CrossAttnProcessor
-        pipeline.unet.set_attn_processor(CrossAttnProcessor())  # type: ignore
-
-        unet_in_channels = pipeline.unet.config.in_channels  # type: ignore
-        unet_sample_size = pipeline.unet.config.sample_size  # type: ignore
-        unet_path = output_path / "unet" / "model.onnx"
-        onnx_export(
-            pipeline.unet,  # type: ignore
-            model_args=(
-                torch.randn(2, unet_in_channels, unet_sample_size,
-                            unet_sample_size).to(device=device, dtype=dtype),
-                torch.randn(2).to(device=device, dtype=dtype),
-                torch.randn(2, num_tokens, text_hidden_size).to(
-                    device=device, dtype=dtype),
-                False,
-            ),
-            output_path=unet_path,
-            ordered_input_names=["sample", "timestep",
-                                 "encoder_hidden_states", "return_dict"],
-            # has to be different from "sample" for correct tracing
-            output_names=["out_sample"],
-            dynamic_axes={
-                "sample": {0: "batch", 1: "channels", 2: "height", 3: "width"},
-                "timestep": {0: "batch"},
-                "encoder_hidden_states": {0: "batch", 1: "sequence"},
-            },
-            opset=opset
-        )
-        unet_model_path = str(unet_path.absolute().as_posix())
-        unet_dir = os.path.dirname(unet_model_path)
-        unet = onnx.load(unet_model_path)
-        # clean up existing tensor files
-        shutil.rmtree(unet_dir)
-        os.mkdir(unet_dir)
-        # collate external tensor files into one
-        onnx.save_model(
-            unet,
-            unet_model_path,
-            save_as_external_data=True,
-            all_tensors_to_one_file=True,
-            location="weights.pb",
-            convert_attribute=False,
-        )
-        del pipeline.unet  # type: ignore
-
-        # VAE ENCODER
-        vae_encoder = pipeline.vae  # type: ignore
-        vae_in_channels = vae_encoder.config.in_channels
-        vae_sample_size = vae_encoder.config.sample_size
-        # need to get the raw tensor output (sample) from the encoder
-        vae_encoder.forward = lambda sample, return_dict: vae_encoder.encode(
-            sample, return_dict)[0].sample()
-        onnx_export(
-            vae_encoder,
-            model_args=(
-                torch.randn(1, vae_in_channels, vae_sample_size,
-                            vae_sample_size).to(device=device, dtype=dtype),
-                False,
-            ),
-            output_path=output_path / "vae_encoder" / "model.onnx",
-            ordered_input_names=["sample", "return_dict"],
-            output_names=["latent_sample"],
-            dynamic_axes={
-                "sample": {0: "batch", 1: "channels", 2: "height", 3: "width"},
-            },
-            opset=opset,
-        )
-
-        # VAE DECODER
-        vae_decoder = pipeline.vae  # type: ignore
-        vae_latent_channels = vae_decoder.config.latent_channels
-        # forward only through the decoder part
-        vae_decoder.forward = vae_encoder.decode
-        onnx_export(
-            vae_decoder,
-            model_args=(
-                torch.randn(1, vae_latent_channels, unet_sample_size,
-                            unet_sample_size).to(device=device, dtype=dtype),
-                False,
-            ),
-            output_path=output_path / "vae_decoder" / "model.onnx",
-            ordered_input_names=["latent_sample", "return_dict"],
-            output_names=["sample"],
-            dynamic_axes={
-                "latent_sample": {0: "batch", 1: "channels", 2: "height", 3: "width"},
-            },
-            opset=opset,
-        )
-        del pipeline.vae  # type: ignore
+        _, num_tokens, text_hidden_size = convert_text_encoder(
+            main_folder, output_folder, tokenizer, device, opset)
+        _, unet_sample_size = convert_unet(
+            main_folder, output_folder, num_tokens, text_hidden_size, device, opset)
+        convert_vae(main_folder, output_folder, unet_sample_size, device, opset)
 
     # TODO: test me.
     def _encode_prompt(self, prompt: str, num_images_per_prompt: int, do_classifier_free_guidance: bool, negative_prompt: str):
@@ -378,7 +496,7 @@ class OnnxStableDiffusion(InferenceModel):
             extra_step_kwargs["eta"] = eta
 
         timestep_dtype = next(
-            (input.type for input in self.unet.model.get_inputs() # type: ignore
+            (input.type for input in self.unet.model.get_inputs()  # type: ignore
              if input.name == "timestep"), "tensor(float)"
         )
         timestep_dtype = ORT_TO_NP_TYPE[timestep_dtype]
