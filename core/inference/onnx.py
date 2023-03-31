@@ -3,27 +3,24 @@ import os
 import shutil
 from pathlib import Path
 import inspect
-from typing import Any, List, Tuple, Type, TypeVar
+from typing import List, Tuple, Type, TypeVar, Union
 
 from tqdm.auto import tqdm
 from PIL import Image
 
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 from accelerate.utils import set_module_tensor_to_device
+from diffusers import SchedulerMixin
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
-from diffusers.pipelines.stable_diffusion.pipeline_onnx_stable_diffusion import OnnxStableDiffusionPipeline
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.models.vae import DecoderOutput
-from diffusers import OnnxRuntimeModel
-from safetensors.torch import load_file
 import torch
 from torch.onnx import export
-from transformers import CLIPTokenizer, CLIPTextModel, CLIPTokenizerFast
+from transformers import CLIPTextModel, CLIPTokenizerFast
 from transformers.modeling_outputs import BaseModelOutputWithPooling
-import onnx  # pylint: disable=import-self
-from onnxruntime.quantization import quantize_dynamic, QuantType
+from transformers.utils import is_safetensors_available
 
 import numpy as np
 
@@ -38,6 +35,7 @@ SIMPLIFY_UNET = False
 
 
 class UNet2DConditionWrapper(UNet2DConditionModel):
+    "Internal class"
     def forward(self, sample, timestep, encoder_hidden_states, class_labels=None, timestep_cond=None, attention_mask=None, cross_attention_kwargs=None, down_block_additional_residuals=None, mid_block_additional_residual=None, return_dict: bool = True) -> Tuple:
         sample = sample.to(dtype=torch.float16)
         timestep = timestep.to(dtype=torch.long) # type: ignore
@@ -49,6 +47,7 @@ class UNet2DConditionWrapper(UNet2DConditionModel):
 
 
 class CLIPTextModelWrapper(CLIPTextModel):
+    "Internal class"
     def forward(self, input_ids) -> Tuple:
         outputs: BaseModelOutputWithPooling = CLIPTextModel.forward(
             self, input_ids=input_ids, return_dict=True)  # type: ignore
@@ -56,12 +55,13 @@ class CLIPTextModelWrapper(CLIPTextModel):
 
 
 class AutoencoderKLWrapper(AutoencoderKL):
-    def encode(self, x) -> Tuple:
+    "Internal class"
+    def encode(self, x, _) -> Tuple:
         x = x.to(dtype=torch.float16)
         outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)
         return (outputs.latent_dist.sample().to(dtype=torch.float32),)
 
-    def decode(self, z) -> Tuple:
+    def decode(self, z, _) -> Tuple:
         z = z.to(dtype=torch.float16)
         outputs: DecoderOutput = AutoencoderKL.decode(
             self, z, True) # type: ignore
@@ -76,17 +76,16 @@ class OnnxStableDiffusion(InferenceModel):
         autoload: bool = True,
     ) -> None:
         if is_onnx_available():
+            import onnxruntime as ort
+
             super().__init__(model_id)
             self.device = device
-            self.vae_encoder: OnnxRuntimeModel
-            self.vae_decoder: OnnxRuntimeModel
-            self.unet: OnnxRuntimeModel
-            self.text_encoder: OnnxRuntimeModel
-            self.tokenizer: CLIPTokenizer
-            self.scheduler: Any
-            self.feature_extractor: Any
-            self.requires_safety_checker: bool
-            self.safety_checker: Any
+            self.vae_encoder: ort.InferenceSession
+            self.vae_decoder: ort.InferenceSession
+            self.unet: ort.InferenceSession
+            self.text_encoder: ort.InferenceSession
+            self.tokenizer: CLIPTokenizerFast
+            self.scheduler: SchedulerMixin
 
             if autoload:
                 self.load()
@@ -94,20 +93,33 @@ class OnnxStableDiffusion(InferenceModel):
             raise ValueError("ONNX is not available")
 
     # TODO: test me
-
     def load(self):
-        provider = "CUDAExecutionProvider" if self.device == "cuda" else "CPUExecutionProvider"
-        folder = get_full_model_path(
-            self.model_id, model_folder="onnx", force=True)
+        if is_onnx_available():
+            import onnxruntime as ort
+            provider = "CUDAExecutionProvider" if self.device == "cuda" else "CPUExecutionProvider"
 
-        pipeline = OnnxStableDiffusionPipeline.from_pretrained(
-            folder, provider=provider)
+            def _load(file: Path) -> Union[ort.InferenceSession, CLIPTokenizerFast, SchedulerMixin]:
+                if file.is_dir():
+                    match file.stem:
+                        case "tokenizer":
+                            return CLIPTokenizerFast.from_pretrained(file)
+                        case "scheduler":
+                            # TODO: during conversion save which scheduler was used.
+                            return SchedulerMixin.from_pretrained(file)
+                        case _:
+                            raise ValueError("Bad argument 'file' provided.")
+                else:
+                    return ort.InferenceSession(file, providers=[provider])
 
-        for m in ["vae_encoder", "vae_decoder", "unet", "text_encoder", "tokenizer", "scheduler", "safety_checker", "feature_extractor"]:
-            setattr(self, m, getattr(pipeline, m))
+            folder = get_full_model_path(
+                self.model_id, model_folder="onnx", force=True)
 
-        self.requires_safety_checker = False
-        self.memory_cleanup()
+            for module in ["tokenizer", "scheduler"]:
+                setattr(self, module, _load(folder / module))
+            for module in ["vae_encoder", "vae_decoder", "unet", "text_encoder"]:
+                setattr(self, module, _load(folder / (module + ".onnx")))
+
+            self.memory_cleanup()
 
     def _setup(self, opset_version: int = 17):
         if is_onnxscript_available():
@@ -171,16 +183,27 @@ class OnnxStableDiffusion(InferenceModel):
                 opset_version=opset_version,
             )
 
+    def run_model(self, model, **kwargs):
+        inputs = {k: np.array(v) for k, v in kwargs.items()}
+        return model.run(None, inputs)
+
     @torch.no_grad()
     # TODO: optimize for vram usage.
-    def convert_pytorch_to_onnx(self, model_id: str, target: str = "gpu"):
+    # TODO: let user decide which parts they want to run on cpu and gpu
+    # This would allow them to run VAE & text encoder on cpu while they run only unet on gpu.
+    def convert_pytorch_to_onnx(self, model_id: str, target: dict[str, bool] = { # pylint: disable=dangerous-default-value
+        "vae": False,
+        "unet": False,
+        "text-encoder": False
+    }):
         '''
         Converts a pytorch model into an onnx model and tries to quantize it. Depending on model size, can take up to 6gigabytes of vram
 
         Keyword arguments:
 
         model  -- a repository, or a huggingface model name inside data/models/
-        target -- default: "gpu". If set to "gpu" will quantize using S8S8 (int8 activation, int8 weights). If set to "cpu", will quantize using U8U8 (uint8 activation, uint8 weights)
+
+        target -- default: {"vae": False, "unet": False, "text-encoder": False}. If any of them set to true, they will be quantized using uint8 instead of int8, and will be ran on cpu during inference. 
         '''
         def onnx_export(
             model,
@@ -189,6 +212,7 @@ class OnnxStableDiffusion(InferenceModel):
             ordered_input_names: List[str],
             output_names: List[str],
             dynamic_axes: dict,
+            signed: bool,
             opset: int,
             simplify: bool = True
         ):
@@ -202,6 +226,7 @@ class OnnxStableDiffusion(InferenceModel):
                 dynamic_axes=dynamic_axes,
                 do_constant_folding=True,
                 opset_version=opset,
+                custom_opsets={"torch.onnx": 1},
             )
             # quantize
             try:
@@ -213,7 +238,7 @@ class OnnxStableDiffusion(InferenceModel):
                 quantize_dynamic(
                     in_path,
                     output_path,
-                    weight_type=QuantType.QUInt8 if target == "cpu" else QuantType.QInt8,
+                    weight_type=QuantType.QUInt8 if signed else QuantType.QInt8,
                     per_channel=True,
                     reduce_range=True,
                 )
@@ -229,7 +254,6 @@ class OnnxStableDiffusion(InferenceModel):
             if simplify:
                 if is_onnxsim_available():
                     try:
-                        from onnxsim import simplify # pylint: disable=import-error
                         model = onnx.load(str(output_path)) # pylint: disable=no-member
                         model_opt, check = simplify(model) # type: ignore
                         if not check:
@@ -255,10 +279,14 @@ class OnnxStableDiffusion(InferenceModel):
                 )
 
             if checkpoint_name.endswith(".safetensors"):
-                state_dict = load_file(root / checkpoint_name, device="cpu")
-                for name, param in state_dict.items():
-                    set_module_tensor_to_device(
-                        model, name, device, value=param, dtype=dtype)
+                if is_safetensors_available():
+                    from safetensors.torch import load_file
+                    state_dict = load_file(root / checkpoint_name, device="cpu")
+                    for name, param in state_dict.items():
+                        set_module_tensor_to_device(
+                            model, name, device, value=param, dtype=dtype)
+                else:
+                    logger.error("Cannot load safetensors without safetensors package.")
             else:
                 load_checkpoint_and_dispatch(model, str(
                     root / checkpoint_name), device_map="auto")
@@ -291,7 +319,8 @@ class OnnxStableDiffusion(InferenceModel):
                 dynamic_axes={
                     "input_ids": {0: "batch", 1: "sequence"}
                 },
-                opset=opset
+                opset=opset,
+                signed=target["text-encoder"],
             )
 
             del text_encoder
@@ -303,11 +332,9 @@ class OnnxStableDiffusion(InferenceModel):
                         device=device, dtype=torch.float16)  # type: ignore
 
             if isinstance(unet.config.attention_head_dim, int):  # type: ignore
-                # type: ignore pylint: disable=no-member
-                slice_size = unet.config.attention_head_dim // 2
+                slice_size = unet.config.attention_head_dim // 2 # type: ignore pylint: disable=no-member
             else:
-                # type: ignore pylint: disable=no-member
-                slice_size = min(unet.config.attention_head_dim)
+                slice_size = min(unet.config.attention_head_dim) # type: ignore pylint: disable=no-member
             unet.set_attention_slice(slice_size)
 
             unet_model_size = 0
@@ -344,14 +371,15 @@ class OnnxStableDiffusion(InferenceModel):
                     "encoder_hidden_states": {0: "batch", 1: "sequence"}
                 },
                 opset=opset,
-                simplify=SIMPLIFY_UNET
+                simplify=SIMPLIFY_UNET,
+                signed=target["unet"],
             )
             del unet
             self.memory_cleanup()
             if needs_collate:
                 unet = onnx.load(str(
-                    (unet_out_path / "unet.onnx").absolute().as_posix()))  # pylint: disable=no-member
-                onnx.save_model(  # pylint: disable=no-member
+                    (unet_out_path / "unet.onnx").absolute().as_posix()))
+                onnx.save_model(
                     unet,
                     str((output_folder / "unet.onnx").absolute().as_posix()),
                     save_as_external_data=True,
@@ -385,7 +413,8 @@ class OnnxStableDiffusion(InferenceModel):
                 dynamic_axes={
                     "sample": {0: "batch", 1: "channels", 2: "height", 3: "width"}
                 },
-                opset=opset
+                opset=opset,
+                signed=target["vae"],
             )
 
             vae.forward = vae.decode  # type: ignore
@@ -399,7 +428,8 @@ class OnnxStableDiffusion(InferenceModel):
                 dynamic_axes={
                     "latent_sample": {0: "batch", 1: "channels", 2: "height", 3: "width"}
                 },
-                opset=opset
+                opset=opset,
+                signed=target["vae"],
             )
             del vae
             self.memory_cleanup()
@@ -411,18 +441,21 @@ class OnnxStableDiffusion(InferenceModel):
         output_folder = get_full_model_path(
             model_id, model_folder="onnx", force=True)
         device = "cuda" if target == "gpu" else "cpu"
-        # register aten::scaled_dot_product_attention
-        self._setup(opset)
 
-        tokenizer = CLIPTokenizerFast.from_pretrained(
-            main_folder / "tokenizer")
-        tokenizer.backend_tokenizer.save(str(output_folder / "tokenizer.json"))
+        if is_onnx_available():
+            # register aten::scaled_dot_product_attention
+            self._setup(opset)
 
-        _, num_tokens, text_hidden_size = convert_text_encoder(
-            main_folder, output_folder, tokenizer, device, opset)
-        _, unet_sample_size = convert_unet(
-            main_folder, output_folder, num_tokens, text_hidden_size, device, opset)
-        convert_vae(main_folder, output_folder, unet_sample_size, device, opset)
+            tokenizer = CLIPTokenizerFast.from_pretrained(
+                main_folder / "tokenizer")
+
+            _, num_tokens, text_hidden_size = convert_text_encoder(
+                main_folder, output_folder, tokenizer, device, opset)
+            _, unet_sample_size = convert_unet(
+                main_folder, output_folder, num_tokens, text_hidden_size, device, opset)
+            convert_vae(main_folder, output_folder, unet_sample_size, device, opset)
+            shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
+            shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
 
     # TODO: test me.
     def _encode_prompt(self, prompt: str, num_images_per_prompt: int, do_classifier_free_guidance: bool, negative_prompt: str):
@@ -434,8 +467,7 @@ class OnnxStableDiffusion(InferenceModel):
             return_tensors="np"
         ).input_ids
 
-        # Change me?
-        prompt_embeds = self.text_encoder(
+        prompt_embeds = self.run_model(self.text_encoder,
             input_ids=text_input_ids.astype(np.int32))[0]
         prompt_embeds = np.repeat(prompt_embeds, num_images_per_prompt, axis=0)
 
@@ -449,8 +481,7 @@ class OnnxStableDiffusion(InferenceModel):
             uncond_input = self.tokenizer(
                 uncond_tokens, padding="max_length", max_length=max_length, truncation=True, return_tensors="np")
 
-            # Change me?
-            negative_prompt_embeds = self.text_encoder(
+            negative_prompt_embeds = self.run_model(self.text_encoder,
                 input_ids=uncond_input.input_ids.astype(np.int32))[0]
             negative_prompt_embeds = np.repeat(
                 negative_prompt_embeds, num_images_per_prompt, axis=0)
@@ -496,7 +527,7 @@ class OnnxStableDiffusion(InferenceModel):
             extra_step_kwargs["eta"] = eta
 
         timestep_dtype = next(
-            (input.type for input in self.unet.model.get_inputs()  # type: ignore
+            (input.type for input in self.unet.get_inputs()
              if input.name == "timestep"), "tensor(float)"
         )
         timestep_dtype = ORT_TO_NP_TYPE[timestep_dtype]
@@ -509,7 +540,7 @@ class OnnxStableDiffusion(InferenceModel):
             latent_model_input = latent_model_input.cpu().numpy()
 
             timestep = np.array([t], dtype=timestep_dtype)
-            noise_pred = self.unet(
+            noise_pred = self.run_model(self.unet,
                 sample=latent_model_input, timestep=timestep, encoder_hidden_states=prompt_embeds)
             noise_pred = noise_pred[0]
 
@@ -523,7 +554,7 @@ class OnnxStableDiffusion(InferenceModel):
             latents = scheduler_output.prev_sample.numpy()
         latents = 1 / 0.18215 * latents
         image = np.concatenate(
-            [self.vae_decoder(latent_sample=latents[i: i + 1])[0]
+            [self.run_model(self.vae_decoder, latent_sample=latents[i: i + 1])[0]
              for i in range(latents.shape[0])]
         )
         image = np.clip(image / 2 + 0.5, 0, 1)
@@ -555,9 +586,6 @@ class OnnxStableDiffusion(InferenceModel):
             self.text_encoder,
             self.tokenizer,
             self.scheduler,
-            self.feature_extractor,
-            self.requires_safety_checker,
-            self.safety_checker,
         )
         self.memory_cleanup()
 

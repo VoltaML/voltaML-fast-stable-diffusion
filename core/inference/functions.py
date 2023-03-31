@@ -32,8 +32,8 @@ config_name = "model_index.json"
 def is_onnx_available():
     "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
     try:
-        import onnx
-        import onnxruntime
+        import onnx # pylint: disable=unused-import
+        from onnxruntime.quantization import quantize_dynamic, QuantType # pylint: disable=unused-import
         return True
     except ImportError:
         return False
@@ -42,7 +42,7 @@ def is_onnx_available():
 def is_onnxscript_available():
     "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
     try:
-        import onnxscript
+        import onnxscript # pylint: disable=unused-import
         return True
     except ImportError:
         return False
@@ -51,7 +51,7 @@ def is_onnxscript_available():
 def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
-        import onnxsim
+        from onnxsim import simplify # pylint: disable=import-error,unused-import
         return True
     except ImportError:
         return False
