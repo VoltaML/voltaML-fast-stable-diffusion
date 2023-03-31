@@ -315,12 +315,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           for (const model2 of pyTorch) {
             modelOptions.push({
               label: model2.name,
-              value: model2.name
+              value: model2.name,
+              disabled: !model2.valid
             });
           }
-        }
-        if (modelOptions.length > 0) {
-          model.value = pyTorch[0].name;
+          if (pyTorch.length > 0) {
+            model.value = pyTorch[0].name;
+          }
         }
       });
     });
@@ -337,6 +338,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     };
     const accelerate = async () => {
+      showUnloadModal.value = false;
       building.value = true;
       await fetch(`${serverUrl}/api/generate/generate-aitemplate`, {
         method: "POST",

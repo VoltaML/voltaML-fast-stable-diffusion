@@ -109,6 +109,7 @@ class APIConfig:
     cache_dir: str = field(default=DIFFUSERS_CACHE)
     optLevel: int = 1
     imagePreviewDelay: float = 2.0
+    deviceID: int = 0
 
 
 @dataclass

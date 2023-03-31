@@ -6,17 +6,15 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import torch
-from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
-    download_from_original_stable_diffusion_ckpt,
-)
 from PIL import Image
 
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.errors import DimensionError
+from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
 from core.inference.aitemplate import AITemplateStableDiffusion
+from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.real_esrgan import RealESRGAN
 from core.png_metadata import save_images
@@ -137,33 +135,68 @@ class GPU:
                 self.memory_cleanup()
                 return images
 
-        # Check width and height passed by the user
-        if not isinstance(job, (ImageVariationsQueueEntry, RealESRGANQueueEntry)):
-            if job.data.width % 8 != 0 or job.data.height % 8 != 0:
-                raise DimensionError("Width and height must be divisible by 8")
-
-        # Wait for turn
-        await self.queue.wait_for_turn(job.data.id)
-
-        start_time = time.time()
-
         try:
-            images: Optional[List[Image.Image]]
-            images = await run_in_thread_async(func=generate_thread_call, args=(job,))
+            # Check width and height passed by the user
+            if not isinstance(job, (ImageVariationsQueueEntry, RealESRGANQueueEntry)):
+                if job.data.width % 8 != 0 or job.data.height % 8 != 0:
+                    raise DimensionError("Width and height must be divisible by 8")
 
-            assert images is not None
+            # Wait for turn
+            await self.queue.wait_for_turn(job.data.id)
 
-            if job.save_image:
-                save_images(images, job)
-        except Exception as err:  # pylint: disable=broad-except
+            start_time = time.time()
+
+            try:
+                images: Optional[List[Image.Image]]
+                images = await run_in_thread_async(
+                    func=generate_thread_call, args=(job,)
+                )
+
+                assert images is not None
+
+                if job.save_image:
+                    save_images(images, job)
+            except Exception as err:  # pylint: disable=broad-except
+                self.queue.mark_finished()
+                raise err
+
+            deltatime = time.time() - start_time
+
             self.queue.mark_finished()
-            raise err
 
-        deltatime = time.time() - start_time
+            return (images, deltatime)
+        except InferenceInterruptedError:
+            await websocket_manager.broadcast(
+                Notification(
+                    "warning",
+                    "Inference interrupted",
+                    "The inference was forcefully interrupted",
+                )
+            )
+            return ([], 0.0)
 
-        self.queue.mark_finished()
+        except ValueError as err:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not loaded",
+                    "The model you are trying to use is not loaded, please load it first",
+                )
+            )
 
-        return (images, deltatime)
+            logger.debug("Model not loaded on any GPU. Raising error")
+            raise ModelNotLoadedError("Model not loaded on any GPU") from err
+
+        except Exception as e:  # pylint: disable=broad-except
+            await websocket_manager.broadcast(
+                Notification(
+                    "error",
+                    "Inference error",
+                    f"An error occurred: {type(e).__name__} - {e}",
+                )
+            )
+
+            raise e
 
     async def load_model(
         self,
@@ -171,6 +204,17 @@ class GPU:
         backend: InferenceBackend,
     ):
         "Load a model into memory"
+
+        if model in self.loaded_models:
+            logger.debug(f"{model} is already loaded")
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "info",
+                    "Model already loaded",
+                    f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchStableDiffusion) else 'TensorRT'} backend",
+                )
+            )
+            return
 
         logger.debug(f"Loading {model} with {backend} backend")
 
@@ -335,66 +379,12 @@ class GPU:
 
         self.memory_cleanup()
 
-    async def convert_from_checkpoint(self, checkpoint: str, is_sd2: bool):
-        "Convert a checkpoint to a proper model structure that can be loaded"
-
-        from_safetensors = ".safetensors" in checkpoint
-
-        def convert_from_ckpt_thread_call(**kwargs):
-            save_path = kwargs.pop("dump_path")
-            pipe = download_from_original_stable_diffusion_ckpt(**kwargs)
-            pipe.save_pretrained(save_path, safe_serialization=True)
-
-        await run_in_thread_async(
-            func=convert_from_ckpt_thread_call,
-            kwarkgs={
-                "checkpoint_path": checkpoint,
-                "device": self.cuda_id,
-                "extract_ema": True,
-                "from_safetensors": from_safetensors,
-                "original_config_file": "v1-inference.yaml",
-                "upcast_attention": is_sd2,
-                "image_size": 768 if is_sd2 else 512,
-                "dump_path": f"converted/{Path(checkpoint).name}",
-            },
-        )
-
-    async def accelerate(self, model: str):
-        "Convert a model to a TensorRT model"
-
-        def trt_accelerate_thread_call():
-            from core.tensorrt.volta_accelerate import TRTModel
-
-            trt_model = TRTModel(
-                model_path=model,
-                denoising_steps=25,
-                denoising_fp16=True,
-                hf_token=os.environ["HUGGINGFACE_TOKEN"],
-                verbose=False,
-                nvtx_profile=False,
-                max_batch_size=9,
-            )
-
-            trt_model.loadEngines(
-                engine_dir="engine/" + model,
-                onnx_dir="onnx",
-                onnx_opset=16,
-                opt_batch_size=1,
-                opt_image_height=512,
-                opt_image_width=512,
-                force_build=True,
-                static_batch=True,
-                static_shape=True,
-            )
-            trt_model.teardown()
-            del trt_model
-
-        await run_in_thread_async(func=trt_accelerate_thread_call)
-
     async def build_trt_engine(self, request: BuildRequest):
         "Build a TensorRT engine from a request"
 
         from .inference.tensorrt import TensorRTModel
+
+        logger.debug(f"Building engine for {request.model_id}...")
 
         def trt_build_thread_call():
             model = TensorRTModel(model_id=request.model_id, use_f32=False)
@@ -405,6 +395,8 @@ class GPU:
 
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
         "Convert a model to a AITemplate engine"
+
+        logger.debug(f"Building AI Template for {request.model_id}...")
 
         # Set the number of threads to use and keep them within boundaries of the system
         if request.threads:
@@ -429,17 +421,36 @@ class GPU:
 
         await run_in_thread_async(func=ait_build_thread_call)
 
+        logger.debug(f"AI Template built for {request.model_id}.")
+
         logger.info("AITemplate engine successfully built")
 
-    async def to_fp16(self, model: str):
+    async def convert_model(
+        self, model: str, use_fp32: bool = False, safetensors: bool = False
+    ):
         "Convert a model to FP16"
+
+        logger.debug(f"Converting {model}...")
 
         def model_to_f16_thread_call():
             pt_model = PyTorchStableDiffusion(
-                model_id=model,
-                device=self.cuda_id,
+                model_id=model, device=self.cuda_id, use_fp32=use_fp32, autoload=True
             )
 
-            pt_model.save(path="converted/" + model.split("/")[-1])
+            model_name = model.split("/")[-1]
+            model_name = model_name.split(".")[0]
+
+            pt_model.save(
+                path=str(Path("data/models").joinpath(model_name)),
+                safetensors=safetensors,
+            )
+            pt_model.unload()
 
         await run_in_thread_async(func=model_to_f16_thread_call)
+
+        logger.debug(f"Converted {model}.")
+
+    async def download_huggingface_model(self, model: str):
+        "Download a model from the internet."
+
+        await run_in_thread_async(download_model, args=(model,))

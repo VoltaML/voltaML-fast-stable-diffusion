@@ -21,12 +21,11 @@ from pathlib import Path
 
 import torch
 from aitemplate.testing import detect_target
-from diffusers import StableDiffusionPipeline
 
 from api import websocket_manager
 from api.websockets import Data, Notification
 from core.config import config
-from core.files import get_full_model_path
+from core.inference.functions import load_pytorch_pipeline
 
 from ..src.compile_lib.compile_clip import compile_clip
 from ..src.compile_lib.compile_controlnet_unet import compile_controlnet_unet
@@ -44,6 +43,7 @@ def compile_diffusers(
     use_fp16_acc=True,
     convert_conv_to_gemm=True,
     invalidate_cache=False,
+    device: str = "cuda",
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
 
@@ -54,13 +54,14 @@ def compile_diffusers(
     if detect_target().name() == "rocm":
         convert_conv_to_gemm = False
 
-    pipe = StableDiffusionPipeline.from_pretrained(
-        get_full_model_path(local_dir_or_id),
-        revision="fp16",
-        torch_dtype=torch.float16,
+    old_opt = config.api.optLevel
+    config.api.optLevel = 1
+    pipe = load_pytorch_pipeline(
+        model_id_or_path=local_dir_or_id,
+        use_f32=not use_fp16_acc,
+        device=device,
     )
-    assert isinstance(pipe, StableDiffusionPipeline)
-    pipe.to("cuda")
+    config.api.optLevel = old_opt
 
     assert (
         height % 64 == 0 and width % 64 == 0
@@ -173,10 +174,9 @@ def compile_diffusers(
             Notification(
                 severity="error",
                 title="AITemplate",
-                message=f"Error while compiling UNet: {e}",
+                message=f"Error while compiling ControlNet UNet: {e}",
             )
         )
-        raise e
 
     # CLIP
     websocket_manager.broadcast_sync(

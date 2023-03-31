@@ -14,6 +14,7 @@
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
     "test": "pytest -x",
-    "test:full": "pytest --run-optional-tests=slow --cov=core -x"
+    "test:full": "pytest --run-optional-tests=slow --cov=core -x",
+    "lint": "pylint **/**.py --output-format=colorized"
   }
 }

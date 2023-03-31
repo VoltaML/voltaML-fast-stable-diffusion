@@ -5,11 +5,12 @@ from fastapi import APIRouter, HTTPException
 from PIL import Image
 
 from core.errors import ModelNotLoadedError
-from core.shared_dependent import cluster
+from core.shared_dependent import gpu
 from core.types import (
     AITemplateBuildRequest,
     BuildRequest,
     ControlNetQueueEntry,
+    ConvertModelRequest,
     ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -29,7 +30,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
     try:
         images: List[Image.Image]
         time: float
-        images, time = await cluster.generate(job)
+        images, time = await gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -52,7 +53,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
     try:
         images: List[Image.Image]
         time: float
-        images, time = await cluster.generate(job)
+        images, time = await gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -79,7 +80,7 @@ async def inpaint_job(job: InpaintQueueEntry):
     try:
         images: List[Image.Image]
         time: float
-        images, time = await cluster.generate(job)
+        images, time = await gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -102,7 +103,7 @@ async def image_variations_job(job: ImageVariationsQueueEntry):
     try:
         images: List[Image.Image]
         time: float
-        images, time = await cluster.generate(job)
+        images, time = await gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -125,7 +126,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
     try:
         images: List[Image.Image]
         time: float
-        images, time = await cluster.generate(job)
+        images, time = await gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -148,7 +149,7 @@ async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
     try:
         images: List[Image.Image]
         time: float
-        images, time = await cluster.generate(job)
+        images, time = await gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -164,7 +165,7 @@ async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
 async def generate_engine(request: BuildRequest):
     "Generate a TensorRT engine from a local model"
 
-    await cluster.build_engine(request)
+    await gpu.build_trt_engine(request)
 
     return {"message": "Success"}
 
@@ -173,15 +174,17 @@ async def generate_engine(request: BuildRequest):
 async def generate_aitemplate(request: AITemplateBuildRequest):
     "Generate a TensorRT engine from a local model"
 
-    await cluster.build_aitemplate(request)
+    await gpu.build_aitemplate_engine(request)
 
     return {"message": "Success"}
 
 
-@router.post("/to-fp16")
-async def to_fp16(model: str):
+@router.post("/convert-model")
+async def convert_model(request: ConvertModelRequest):
     "Cast a model to Float16 and save it"
 
-    await cluster.to_fp16(model)
+    await gpu.convert_model(
+        model=request.model, use_fp32=request.use_fp32, safetensors=request.safetensors
+    )
 
     return {"message": "Success"}

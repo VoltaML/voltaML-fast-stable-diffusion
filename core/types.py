@@ -226,6 +226,13 @@ class BuildRequest:
     onnx_minimal_optimization: bool = False
 
 
+@dataclass
+class ConvertModelRequest:
+    model: str
+    use_fp32: bool = False
+    safetensors: bool = False
+
+
 PyTorchModelType = Union[
     DiffusionPipeline,
     StableDiffusionDepth2ImgPipeline,
