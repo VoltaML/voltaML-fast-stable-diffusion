@@ -33,11 +33,11 @@ class WebSocketManager:
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
 
-        from core.shared_dependent import cluster
+        from gpustat.core import GPUStatCollection
 
         while True:
             try:
-                stats = await cluster.stats()
+                stats = [i.entry for i in GPUStatCollection.new_query().gpus]
 
                 data = []
                 for stat in stats:

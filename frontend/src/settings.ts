@@ -97,6 +97,7 @@ export interface SettingsInterface {
     cache_dir: string;
     optLevel: number;
     imagePreviewDelay: number;
+    deviceID: number;
   };
   aitemplate: {
     numThreads: number;
@@ -188,6 +189,7 @@ export const defaultSettings: SettingsInterface = {
     cache_dir: "",
     optLevel: 1,
     imagePreviewDelay: 2.0,
+    deviceID: 0,
   },
   aitemplate: {
     numThreads: 8,

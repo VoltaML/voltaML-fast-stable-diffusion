@@ -68,6 +68,10 @@
           </NIcon>
         </a>
       </NFormItem>
+
+      <NFormItem label="Device ID (GPU ID)">
+        <NInputNumber v-model:value="settings.defaultSettings.api.deviceID" />
+      </NFormItem>
     </NForm>
   </NCard>
 </template>

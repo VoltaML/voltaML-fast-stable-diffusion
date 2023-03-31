@@ -179,12 +179,12 @@ fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
         modelOptions.push({
           label: model.name,
           value: model.name,
+          disabled: !model.valid,
         });
       }
-    }
-
-    if (modelOptions.length > 0) {
-      model.value = pyTorch[0].name;
+      if (pyTorch.length > 0) {
+        model.value = pyTorch[0].name;
+      }
     }
   });
 });
@@ -204,6 +204,7 @@ const accelerateUnload = async () => {
 };
 
 const accelerate = async () => {
+  showUnloadModal.value = false;
   building.value = true;
   await fetch(`${serverUrl}/api/generate/generate-aitemplate`, {
     method: "POST",

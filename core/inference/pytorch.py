@@ -10,9 +10,6 @@ from diffusers import (
     StableDiffusionPipeline,
     UNet2DConditionModel,
 )
-from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
-    download_from_original_stable_diffusion_ckpt,
-)
 from PIL import Image, ImageOps
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -21,9 +18,8 @@ from api import websocket_manager
 from api.websockets import Data
 from core.config import config
 from core.controlnet import image_to_controlnet_input
-from core.files import get_full_model_path
-from core.functions import optimize_model
 from core.inference.base_model import InferenceModel
+from core.inference.functions import load_pytorch_pipeline
 from core.inference.LPW_SD import StableDiffusionLongPromptWeightingPipeline
 from core.inference_callbacks import (
     controlnet_callback,
@@ -52,11 +48,11 @@ class PyTorchStableDiffusion(InferenceModel):
         self,
         model_id: str,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
-        use_f32: bool = False,
+        use_fp32: bool = False,
         device: str = "cuda",
         autoload: bool = True,
     ) -> None:
-        super().__init__(model_id, use_f32, device)
+        super().__init__(model_id, use_fp32, device)
 
         # HuggingFace
         self.auth: str = auth_token
@@ -83,36 +79,12 @@ class PyTorchStableDiffusion(InferenceModel):
 
         logger.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
 
-        if ".ckpt" in self.model_id or ".safetensors" in self.model_id:
-            use_safetensors = ".safetensors" in self.model_id
-            if use_safetensors:
-                logger.info("Loading model as safetensors")
-            else:
-                logger.info("Loading model as checkpoint")
-
-            pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path=self.model_id,
-                from_safetensors=use_safetensors,
-            )
-            pipe.requires_safety_checker = False  # type: ignore
-            pipe.safety_checker = None  # type: ignore
-            pipe.feature_extractor = None  # type: ignore
-        else:
-            pipe = StableDiffusionLongPromptWeightingPipeline.from_pretrained(
-                pretrained_model_name_or_path=get_full_model_path(self.model_id),
-                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
-                use_auth_token=self.auth,
-                safety_checker=None,
-                requires_safety_checker=False,
-                feature_extractor=None,
-                cache_dir=config.api.cache_dir,
-                low_cpu_mem_usage=True,
-            )
-            assert isinstance(pipe, StableDiffusionLongPromptWeightingPipeline)
-
-        logger.debug(f"Loaded {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
-
-        optimize_model(pipe, self.device, self.use_f32)
+        pipe = load_pytorch_pipeline(
+            self.model_id,
+            use_f32=self.use_f32,
+            auth=self.auth,
+            device=self.device,
+        )
 
         self.vae = pipe.vae  # type: ignore
         self.unet = pipe.unet  # type: ignore
@@ -476,7 +448,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.memory_cleanup()
         return images
 
-    def save(self, path: str = "converted"):
+    def save(self, path: str = "converted", safetensors: bool = False):
         "Dump current pipeline to specified path"
 
         pipe = StableDiffusionPipeline(
@@ -490,4 +462,4 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        pipe.save_pretrained(path)
+        pipe.save_pretrained(path, safe_serialization=safetensors)
