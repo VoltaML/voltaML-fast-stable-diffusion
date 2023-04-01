@@ -30,15 +30,27 @@ def convert_image_to_stream(image: Image.Image) -> BytesIO:
     return stream
 
 
-def convert_to_image(image: Union[Image.Image, bytes, str]) -> Image.Image:
+def convert_to_image(
+    image: Union[Image.Image, bytes, str], convert_to_rgb: bool = True
+) -> Image.Image:
     "Converts the image to a PIL Image if it is a base64 string or bytes"
 
     if isinstance(image, str):
         b = convert_base64_to_bytes(image)
-        return Image.open(b)
+        im = Image.open(b)
+
+        if convert_to_rgb:
+            im = im.convert("RGB")
+
+        return im
 
     if isinstance(image, bytes):
-        return Image.open(image)
+        im = Image.open(image)
+
+        if convert_to_rgb:
+            im = im.convert("RGB")
+
+        return im
 
     return image
 

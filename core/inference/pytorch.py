@@ -20,7 +20,8 @@ from core.config import config
 from core.controlnet import image_to_controlnet_input
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
-from core.inference.LPW_SD import StableDiffusionLongPromptWeightingPipeline
+from core.inference.lwp import get_weighted_text_embeddings
+from core.inference.lwp_sd import StableDiffusionLongPromptWeightingPipeline
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
@@ -245,6 +246,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
+        # Preprocess the image
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
 
@@ -306,6 +308,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
+        # Preprocess images
         input_image = convert_to_image(job.data.image).convert("RGB")
         input_image = resize(input_image, job.data.width, job.data.height)
 
@@ -382,20 +385,27 @@ class PyTorchStableDiffusion(InferenceModel):
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
+        # Preprocess the image
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
-
         input_image = image_to_controlnet_input(input_image, job.data)
+
+        # Preprocess the prompt
+        prompt_embeds, negative_embeds = get_weighted_text_embeddings(
+            pipe=pipe,  # type: ignore # implements same protocol, but doesn't inherit
+            prompt=job.data.prompt,
+            uncond_prompt=job.data.negative_prompt,
+        )
 
         total_images: List[Image.Image] = [input_image]
 
         for _ in range(job.data.batch_count):
             data = pipe(
-                prompt=job.data.prompt,
+                prompt_embeds=prompt_embeds,
+                negative_prompt_embeds=negative_embeds,
                 image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
                 callback=controlnet_callback,
