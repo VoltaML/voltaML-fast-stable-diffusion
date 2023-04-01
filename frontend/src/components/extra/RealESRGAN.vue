@@ -22,13 +22,13 @@
                 TODO
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.realesrgan.scaleFactor"
+                v-model:value="conf.data.settings.realesrgan.scale_factor"
                 :min="2"
                 :max="4"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.realesrgan.scaleFactor"
+                v-model:value="conf.data.settings.realesrgan.scale_factor"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="2"
@@ -118,7 +118,7 @@ const generate = () => {
     body: JSON.stringify({
       data: {
         image: conf.data.settings.realesrgan.image,
-        scale_factor: conf.data.settings.realesrgan.scaleFactor,
+        scale_factor: conf.data.settings.realesrgan.scale_factor,
         model: conf.data.settings.realesrgan.model,
       },
       model: conf.data.settings.realesrgan.model,
@@ -127,6 +127,7 @@ const generate = () => {
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
+        console.log(data);
         global.state.realesrgan.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;

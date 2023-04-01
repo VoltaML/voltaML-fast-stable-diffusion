@@ -6,22 +6,22 @@
       </NFormItem>
       <NFormItem label="Negative Prompt">
         <NInput
-          v-model:value="settings.defaultSettings.img2img.negativePrompt"
+          v-model:value="settings.defaultSettings.img2img.negative_prompt"
         />
       </NFormItem>
       <NFormItem label="Batch Count">
         <NInputNumber
-          v-model:value="settings.defaultSettings.img2img.batchCount"
+          v-model:value="settings.defaultSettings.img2img.batch_count"
         />
       </NFormItem>
       <NFormItem label="Batch Size">
         <NInputNumber
-          v-model:value="settings.defaultSettings.img2img.batchSize"
+          v-model:value="settings.defaultSettings.img2img.batch_size"
         />
       </NFormItem>
       <NFormItem label="CFG Scale">
         <NInputNumber
-          v-model:value="settings.defaultSettings.img2img.cfgScale"
+          v-model:value="settings.defaultSettings.img2img.cfg_scale"
           :step="0.1"
         />
       </NFormItem>
@@ -54,7 +54,7 @@
       </NFormItem>
       <NFormItem label="Denoising Strength">
         <NInputNumber
-          v-model:value="settings.defaultSettings.img2img.denoisingStrength"
+          v-model:value="settings.defaultSettings.img2img.denoising_strength"
           :step="0.1"
         />
       </NFormItem>

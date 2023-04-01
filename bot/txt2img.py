@@ -195,8 +195,8 @@ class Inference(Cog):
             "768x768",
         ] = "512x512",
         seed: Optional[int] = None,
-        scheduler: KarrasDiffusionSchedulers = config.bot.defaultScheduler,
-        use_default_negative_prompt: bool = config.bot.useDefaultNegativePrompt,
+        scheduler: KarrasDiffusionSchedulers = config.bot.default_scheduler,
+        use_default_negative_prompt: bool = config.bot.use_default_negative_prompt,
         verbose: bool = config.bot.verbose,
     ):
         "Generate an image from prompt"

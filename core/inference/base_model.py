@@ -11,9 +11,9 @@ from core.types import Job
 class InferenceModel(ABC):
     "Base class for all models that will be used in the API"
 
-    def __init__(self, model_id: str, use_f32: bool = False, device: str = "cuda"):
+    def __init__(self, model_id: str, use_fp32: bool = False, device: str = "cuda"):
         self.model_id = model_id
-        self.use_f32 = use_f32
+        self.use_fp32 = use_fp32
         self.device = device
 
     @abstractmethod

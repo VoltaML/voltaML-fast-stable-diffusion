@@ -11,10 +11,10 @@ from core.types import (
     BuildRequest,
     ControlNetQueueEntry,
     ConvertModelRequest,
-    ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     RealESRGANQueueEntry,
+    SDUpscaleQueueEntry,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_bytes_to_image_stream, convert_image_to_base64
@@ -92,29 +92,6 @@ async def inpaint_job(job: InpaintQueueEntry):
     }
 
 
-@router.post("/image_variations")
-async def image_variations_job(job: ImageVariationsQueueEntry):
-    "Generate variations of the image"
-
-    image_bytes = job.data.image
-    assert isinstance(image_bytes, bytes)
-    job.data.image = convert_bytes_to_image_stream(image_bytes)
-
-    try:
-        images: List[Image.Image]
-        time: float
-        images, time = await gpu.generate(job)
-    except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
-
-    return {
-        "time": time,
-        "images": [convert_image_to_base64(i) for i in images],
-    }
-
-
 @router.post("/controlnet")
 async def controlnet_job(job: ControlNetQueueEntry):
     "Generate variations of the image"
@@ -138,9 +115,32 @@ async def controlnet_job(job: ControlNetQueueEntry):
     }
 
 
+@router.post("/sd-upscale")
+async def sd_upscale_job(job: SDUpscaleQueueEntry):
+    "Upscale image with SD Upscaling model"
+
+    image_bytes = job.data.image
+    assert isinstance(image_bytes, bytes)
+    job.data.image = convert_bytes_to_image_stream(image_bytes)
+
+    try:
+        images: List[Image.Image]
+        time: float
+        images, time = await gpu.generate(job)
+    except ModelNotLoadedError:
+        raise HTTPException(  # pylint: disable=raise-missing-from
+            status_code=400, detail="Model is not loaded"
+        )
+
+    return {
+        "time": time,
+        "images": [convert_image_to_base64(i) for i in images],
+    }
+
+
 @router.post("/realesrgan-upscale")
 async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
-    "Generate variations of the image"
+    "Upscale image with RealESRGAN model"
 
     image_bytes = job.data.image
     assert isinstance(image_bytes, bytes)

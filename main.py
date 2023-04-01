@@ -211,12 +211,12 @@ def checks():
     # Config
     from core.config import config
 
-    config.api.optLevel = (
+    config.api.opt_level = (
         args.optimization
         if args.optimization != -1
-        else int(os.environ.get("OPT_LEVEL", config.api.optLevel))
+        else int(os.environ.get("OPT_LEVEL", config.api.opt_level))
     )
-    logger.info(f"Optimization level set to {config.api.optLevel}")
+    logger.info(f"Optimization level set to {config.api.opt_level}")
 
 
 if __name__ == "__main__":

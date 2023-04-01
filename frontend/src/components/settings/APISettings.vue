@@ -3,21 +3,21 @@
     <NForm>
       <NFormItem label="WebSocket Performance Monitor Interval">
         <NInputNumber
-          v-model:value="settings.defaultSettings.api.websocketPerfInterval"
+          v-model:value="settings.defaultSettings.api.websocket_perf_interval"
           :min="0.1"
           :step="0.1"
         />
       </NFormItem>
       <NFormItem label="WebSocket Sync Interval">
         <NInputNumber
-          v-model:value="settings.defaultSettings.api.websocketSyncInterval"
+          v-model:value="settings.defaultSettings.api.websocket_sync_interval"
           :min="0.001"
           :step="0.01"
         />
       </NFormItem>
       <NFormItem label="Image Preview Interval (seconds)">
         <NInputNumber
-          v-model:value="settings.defaultSettings.api.imagePreviewDelay"
+          v-model:value="settings.defaultSettings.api.image_preview_delay"
           :step="0.1"
         />
       </NFormItem>
@@ -70,7 +70,7 @@
       </NFormItem>
 
       <NFormItem label="Device ID (GPU ID)">
-        <NInputNumber v-model:value="settings.defaultSettings.api.deviceID" />
+        <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
       </NFormItem>
     </NForm>
   </NCard>

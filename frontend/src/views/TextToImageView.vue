@@ -12,7 +12,7 @@
               placeholder="Prompt"
             />
             <NInput
-              v-model:value="conf.data.settings.txt2img.negativePrompt"
+              v-model:value="conf.data.settings.txt2img.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
             />
@@ -125,14 +125,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.txt2img.cfgScale"
+                v-model:value="conf.data.settings.txt2img.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.cfgScale"
+                v-model:value="conf.data.settings.txt2img.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -150,13 +150,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.txt2img.batchCount"
+                v-model:value="conf.data.settings.txt2img.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.batchCount"
+                v-model:value="conf.data.settings.txt2img.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -171,13 +171,13 @@
                 Number of images to generate in paralel.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.txt2img.batchSize"
+                v-model:value="conf.data.settings.txt2img.batch_size"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.batchSize"
+                v-model:value="conf.data.settings.txt2img.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -273,14 +273,14 @@ const generate = () => {
       data: {
         id: uuidv4(),
         prompt: conf.data.settings.txt2img.prompt,
-        negative_prompt: conf.data.settings.txt2img.negativePrompt,
+        negative_prompt: conf.data.settings.txt2img.negative_prompt,
         width: conf.data.settings.txt2img.width,
         height: conf.data.settings.txt2img.height,
         steps: conf.data.settings.txt2img.steps,
-        guidance_scale: conf.data.settings.txt2img.cfgScale,
+        guidance_scale: conf.data.settings.txt2img.cfg_scale,
         seed: checkSeed(conf.data.settings.txt2img.seed),
-        batch_size: conf.data.settings.txt2img.batchSize,
-        batch_count: conf.data.settings.txt2img.batchCount,
+        batch_size: conf.data.settings.txt2img.batch_size,
+        batch_count: conf.data.settings.txt2img.batch_count,
         scheduler: conf.data.settings.txt2img.sampler,
       },
       model: conf.data.settings.model,

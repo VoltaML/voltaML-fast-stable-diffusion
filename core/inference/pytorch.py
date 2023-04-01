@@ -77,11 +77,11 @@ class PyTorchStableDiffusion(InferenceModel):
     def load(self):
         "Load the model from HuggingFace"
 
-        logger.info(f"Loading {self.model_id} with {'f32' if self.use_f32 else 'f16'}")
+        logger.info(f"Loading {self.model_id} with {'f32' if self.use_fp32 else 'f16'}")
 
         pipe = load_pytorch_pipeline(
             self.model_id,
-            use_f32=self.use_f32,
+            use_f32=self.use_fp32,
             auth=self.auth,
             device=self.device,
         )
@@ -146,7 +146,7 @@ class PyTorchStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet.value,
                 resume_download=True,
-                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
+                torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
                 use_auth_token=self.auth,
                 cache_dir=config.api.cache_dir,
             )
@@ -357,7 +357,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
-        if config.api.optLevel == 0:
+        if config.api.opt_level == 0:
             raise ValueError(
                 "ControlNet is not available in optLevel 0, please load this model with optLevel 1"
             )

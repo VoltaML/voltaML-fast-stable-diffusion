@@ -50,7 +50,13 @@ const props = defineProps({
 });
 
 const allImages = computed(() => [props.currentImage, ...props.images]);
-const displayedImage = computed(() => props.currentImage);
+const displayedImage = computed(() =>
+  props.currentImage
+    ? props.currentImage
+    : props.images[0]
+    ? props.images[0]
+    : ""
+);
 </script>
 
 <style scoped>

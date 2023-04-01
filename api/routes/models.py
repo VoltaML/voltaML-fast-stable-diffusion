@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 async def list_loaded_models():
     "Returns a list containing information about loaded models"
 
-    return gpu.loaded_models
+    return list(gpu.loaded_models)
 
 
 @router.get("/avaliable")

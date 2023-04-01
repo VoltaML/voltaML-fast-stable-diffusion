@@ -48,6 +48,10 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
+  sd_upscale: {
+    currentImage: string;
+    images: string[];
+  };
   realesrgan: {
     currentImage: string;
     images: string[];
@@ -93,6 +97,10 @@ export const useState = defineStore("state", () => {
       currentImage: "",
     },
     controlnet: {
+      images: [],
+      currentImage: "",
+    },
+    sd_upscale: {
       images: [],
       currentImage: "",
     },

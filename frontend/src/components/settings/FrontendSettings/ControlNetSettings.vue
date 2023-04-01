@@ -6,22 +6,22 @@
       </NFormItem>
       <NFormItem label="Negative Prompt">
         <NInput
-          v-model:value="settings.defaultSettings.controlnet.negativePrompt"
+          v-model:value="settings.defaultSettings.controlnet.negative_prompt"
         />
       </NFormItem>
       <NFormItem label="Batch Count">
         <NInputNumber
-          v-model:value="settings.defaultSettings.controlnet.batchCount"
+          v-model:value="settings.defaultSettings.controlnet.batch_count"
         />
       </NFormItem>
       <NFormItem label="Batch Size">
         <NInputNumber
-          v-model:value="settings.defaultSettings.controlnet.batchSize"
+          v-model:value="settings.defaultSettings.controlnet.batch_size"
         />
       </NFormItem>
       <NFormItem label="CFG Scale">
         <NInputNumber
-          v-model:value="settings.defaultSettings.controlnet.cfgScale"
+          v-model:value="settings.defaultSettings.controlnet.cfg_scale"
           :step="0.1"
         />
       </NFormItem>
@@ -63,7 +63,7 @@
       <NFormItem label="ControlNet Conditioning Scale">
         <NInputNumber
           v-model:value="
-            settings.defaultSettings.controlnet.controlnetConditioningScale
+            settings.defaultSettings.controlnet.controlnet_conditioning_scale
           "
           :step="0.1"
         />
@@ -71,7 +71,7 @@
       <NFormItem label="Detection Resolution">
         <NInputNumber
           v-model:value="
-            settings.defaultSettings.controlnet.detectionResolution
+            settings.defaultSettings.controlnet.detection_resolution
           "
           :step="8"
         />
