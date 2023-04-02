@@ -1,7 +1,7 @@
-import { j as defineComponent, B as useState, C as useSettings, D as useMessage, y as openBlock, z as createElementBlock, F as createVNode, G as withCtx, H as unref, J as NGi, a2 as NButton, P as createTextVNode, K as NCard, L as NSpace, A as createBaseVNode, O as NTooltip, R as NSlider, T as NInputNumber, _ as _sfc_main$2, U as ImageOutput, V as NGrid, X as serverUrl, Z as pushScopeId, $ as popScopeId, a0 as _export_sfc, a4 as createBlock } from "./index.js";
+import { d as defineComponent, u as useState, b as useSettings, e as useMessage, o as openBlock, c as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, A as NButton, l as createTextVNode, h as NCard, i as NSpace, a as createBaseVNode, k as NTooltip, n as NSlider, p as NInputNumber, _ as _sfc_main$2, I as ImageOutput, q as NGrid, s as serverUrl, r as pushScopeId, t as popScopeId, x as _export_sfc, C as createBlock } from "./index.js";
 import { I as ImageUpload } from "./ImageUpload.js";
 import { N as NTabPane, a as NTabs } from "./Tabs.js";
-const _withScopeId = (n) => (pushScopeId("data-v-5f2dbd03"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-cba9f72b"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale Factor", -1));
@@ -46,7 +46,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         body: JSON.stringify({
           data: {
             image: conf.data.settings.realesrgan.image,
-            scale_factor: conf.data.settings.realesrgan.scaleFactor,
+            scale_factor: conf.data.settings.realesrgan.scale_factor,
             model: conf.data.settings.realesrgan.model
           },
           model: conf.data.settings.realesrgan.model
@@ -54,6 +54,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       }).then((res) => {
         global.state.generating = false;
         res.json().then((data) => {
+          console.log(data);
           global.state.realesrgan.images = data.images;
           global.state.progress = 0;
           global.state.total_steps = 0;
@@ -103,15 +104,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.realesrgan.scaleFactor,
-                            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.realesrgan.scaleFactor = $event),
+                            value: unref(conf).data.settings.realesrgan.scale_factor,
+                            "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.realesrgan.scale_factor = $event),
                             min: 2,
                             max: 4,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.realesrgan.scaleFactor,
-                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.realesrgan.scaleFactor = $event),
+                            value: unref(conf).data.settings.realesrgan.scale_factor,
+                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.realesrgan.scale_factor = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 2,
@@ -144,8 +145,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_5f2dbd03_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-5f2dbd03"]]);
+const RealESRGAN_vue_vue_type_style_index_0_scoped_cba9f72b_lang = "";
+const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-cba9f72b"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {

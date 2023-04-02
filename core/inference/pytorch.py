@@ -149,7 +149,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 resume_download=True,
                 torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
                 use_auth_token=self.auth,
-                cache_dir=config.api.cache_dir,
             )
 
             assert isinstance(cn, ControlNetModel)
@@ -196,7 +195,7 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            data = pipe.text2img(
+            data = pipe(
                 prompt=job.data.prompt,
                 height=job.data.height,
                 width=job.data.width,
@@ -473,3 +472,8 @@ class PyTorchStableDiffusion(InferenceModel):
         )
 
         pipe.save_pretrained(path, safe_serialization=safetensors)
+
+    def load_lora(self, lora: str):
+        "Inject a LoRA model into the pipeline"
+
+        self.unet.load_attn_procs(lora, resume_download=True, use_auth_token=self.auth)

@@ -4,7 +4,6 @@ from dataclasses import Field, dataclass, field, fields
 
 from dataclasses_json import DataClassJsonMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
-from diffusers.utils.constants import DIFFUSERS_CACHE
 
 from core.types import ControlNetMode
 
@@ -94,7 +93,6 @@ class APIConfig:
 
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    cache_dir: str = field(default=DIFFUSERS_CACHE)
     opt_level: int = 1
     image_preview_delay: float = 2.0
     device_id: int = 0

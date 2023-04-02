@@ -1,5 +1,6 @@
-import os
 from pathlib import Path
+
+from diffusers.utils.constants import DIFFUSERS_CACHE
 
 from .config import (
     Configuration,
@@ -10,10 +11,9 @@ from .config import (
 )
 
 config = load_config()
-config.api.cache_dir = os.environ.get("DIFFUSERS_CACHE", config.api.cache_dir)
 
 # Create cache directory if it doesn't exist
-Path(config.api.cache_dir).mkdir(parents=True, exist_ok=True)
+Path(DIFFUSERS_CACHE).mkdir(parents=True, exist_ok=True)
 
 __all__ = [
     "config",

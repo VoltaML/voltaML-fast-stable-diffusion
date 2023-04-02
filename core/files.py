@@ -3,9 +3,8 @@ import os
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Union
 
+from diffusers.utils.constants import DIFFUSERS_CACHE
 from huggingface_hub.file_download import repo_folder_name
-
-from core.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -14,12 +13,13 @@ class CachedModelList:
     "List of models downloaded for PyTorch and (or) converted to TRT"
 
     def __init__(self):
-        self.pytorch_path = Path(config.api.cache_dir)
+        self.pytorch_path = Path(DIFFUSERS_CACHE)
         self.checkpoint_converted_path = Path("data/models")
         self.tensorrt_engine_path = Path(
             os.environ.get("TENSORRT_ENGINE_PATH", "engine")
         )
         self.aitemplate_path = Path("data/aitemplate")
+        self.lora_path = Path("data/lora")
 
     def pytorch(self) -> List[Dict[str, Any]]:
         "List of models downloaded for PyTorch"
@@ -134,10 +134,30 @@ class CachedModelList:
 
         return models
 
+    def lora(self):
+        "List of LoRA models"
+
+        models: List[Dict[str, Any]] = []
+
+        for model in os.listdir(self.lora_path):
+            logger.debug(f"Found LoRA {model}")
+            model_name = model.replace(".safetensors", "").replace(".ckpt", "")
+
+            models.append(
+                {
+                    "name": model_name,
+                    "path": model,
+                    "backend": "LoRA",
+                    "valid": True,
+                }
+            )
+
+        return models
+
     def all(self):
         "List PyTorch, TensorRT and AITemplate models"
 
-        return self.pytorch() + self.tensorrt() + self.aitemplate()
+        return self.pytorch() + self.tensorrt() + self.aitemplate() + self.lora()
 
 
 def is_valid_diffusers_model(model_path: Union[str, Path]):
@@ -244,7 +264,7 @@ def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
     "Return the name of the folder where the diffusers model is stored"
 
     return os.path.join(
-        config.api.cache_dir, repo_folder_name(repo_id=repo_id, repo_type=repo_type)
+        DIFFUSERS_CACHE, repo_folder_name(repo_id=repo_id, repo_type=repo_type)
     )
 
 

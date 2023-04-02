@@ -1,4 +1,4 @@
-import { af as inject, bD as getCurrentInstance, am as watch, aM as onBeforeUnmount, e as cB, g as cM, i as c, aa as createInjectionKey, j as defineComponent, u as useConfig, k as useTheme, r as ref, o as h, bE as formLight, a8 as provide, ao as keysOf, m as computed, aK as formatLength, aR as get, bF as commonVariables, f as cE, a9 as toRef, ai as createId, bG as formItemInjectionKey, bH as onMounted, n as useThemeClass, b1 as Transition, s as resolveWrappedSlot, w as createKey, aX as warn, y as openBlock, z as createElementBlock, A as createBaseVNode, C as useSettings, a4 as createBlock, G as withCtx, F as createVNode, H as unref, T as NInputNumber, M as NInput, Q as NSelect, a3 as NIcon, K as NCard, a0 as _export_sfc, D as useMessage, a2 as NButton, P as createTextVNode, bI as defaultSettings, X as serverUrl } from "./index.js";
+import { V as inject, bw as getCurrentInstance, a5 as watch, aA as onBeforeUnmount, P as cB, R as cM, O as c, L as createInjectionKey, d as defineComponent, E as useConfig, X as useTheme, z as ref, y as h, bx as formLight, J as provide, a7 as keysOf, G as computed, ay as formatLength, aF as get, by as commonVariables, Q as cE, K as toRef, a1 as createId, bz as formItemInjectionKey, bA as onMounted, a0 as useThemeClass, aR as Transition, au as resolveWrappedSlot, $ as createKey, aL as warn, o as openBlock, c as createElementBlock, a as createBaseVNode, b as useSettings, C as createBlock, w as withCtx, f as createVNode, g as unref, p as NInputNumber, j as NInput, m as NSelect, B as NIcon, h as NCard, x as _export_sfc, e as useMessage, A as NButton, l as createTextVNode, bB as defaultSettings, s as serverUrl } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NTabPane, a as NTabs } from "./Tabs.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1890,8 +1890,8 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "WebSocket Performance Monitor Interval" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.websocketPerfInterval,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.websocketPerfInterval = $event),
+                    value: unref(settings).defaultSettings.api.websocket_perf_interval,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.websocket_perf_interval = $event),
                     min: 0.1,
                     step: 0.1
                   }, null, 8, ["value", "min", "step"])
@@ -1901,8 +1901,8 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "WebSocket Sync Interval" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.websocketSyncInterval,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.websocketSyncInterval = $event),
+                    value: unref(settings).defaultSettings.api.websocket_sync_interval,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.websocket_sync_interval = $event),
                     min: 1e-3,
                     step: 0.01
                   }, null, 8, ["value", "min", "step"])
@@ -1912,8 +1912,8 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Image Preview Interval (seconds)" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.imagePreviewDelay,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.imagePreviewDelay = $event),
+                    value: unref(settings).defaultSettings.api.image_preview_delay,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.image_preview_delay = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),
@@ -1973,8 +1973,8 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Device ID (GPU ID)" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.deviceID,
-                    "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.deviceID = $event)
+                    value: unref(settings).defaultSettings.api.device_id,
+                    "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2001,8 +2001,8 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NSelect), {
                     options: unref(settings).scheduler_options,
-                    value: unref(settings).defaultSettings.bot.defaultScheduler,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.bot.defaultScheduler = $event)
+                    value: unref(settings).defaultSettings.bot.default_scheduler,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.bot.default_scheduler = $event)
                   }, null, 8, ["options", "value"])
                 ]),
                 _: 1
@@ -2010,8 +2010,8 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Use Default Negative Prompt" }, {
                 default: withCtx(() => [
                   createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.bot.userDefaultNegativePrompt,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.bot.userDefaultNegativePrompt = $event)
+                    value: unref(settings).defaultSettings.bot.use_default_negative_prompt,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.bot.use_default_negative_prompt = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2055,8 +2055,8 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Negative Prompt" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.controlnet.negativePrompt,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.controlnet.negativePrompt = $event)
+                    value: unref(settings).defaultSettings.controlnet.negative_prompt,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.controlnet.negative_prompt = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2064,8 +2064,8 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Count" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.controlnet.batchCount,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.controlnet.batchCount = $event)
+                    value: unref(settings).defaultSettings.controlnet.batch_count,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.controlnet.batch_count = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2073,8 +2073,8 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Size" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.controlnet.batchSize,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.controlnet.batchSize = $event)
+                    value: unref(settings).defaultSettings.controlnet.batch_size,
+                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.controlnet.batch_size = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2082,8 +2082,8 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "CFG Scale" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.controlnet.cfgScale,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.controlnet.cfgScale = $event),
+                    value: unref(settings).defaultSettings.controlnet.cfg_scale,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.controlnet.cfg_scale = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),
@@ -2151,8 +2151,8 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "ControlNet Conditioning Scale" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.controlnet.controlnetConditioningScale,
-                    "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.controlnet.controlnetConditioningScale = $event),
+                    value: unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale,
+                    "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),
@@ -2161,8 +2161,8 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Detection Resolution" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.controlnet.detectionResolution,
-                    "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.detectionResolution = $event),
+                    value: unref(settings).defaultSettings.controlnet.detection_resolution,
+                    "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.detection_resolution = $event),
                     step: 8
                   }, null, 8, ["value"])
                 ]),
@@ -2198,8 +2198,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Negative Prompt" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.img2img.negativePrompt,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.img2img.negativePrompt = $event)
+                    value: unref(settings).defaultSettings.img2img.negative_prompt,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.img2img.negative_prompt = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2207,8 +2207,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Count" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.img2img.batchCount,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.img2img.batchCount = $event)
+                    value: unref(settings).defaultSettings.img2img.batch_count,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.img2img.batch_count = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2216,8 +2216,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Size" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.img2img.batchSize,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.img2img.batchSize = $event)
+                    value: unref(settings).defaultSettings.img2img.batch_size,
+                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.img2img.batch_size = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2225,8 +2225,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "CFG Scale" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.img2img.cfgScale,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.img2img.cfgScale = $event),
+                    value: unref(settings).defaultSettings.img2img.cfg_scale,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.img2img.cfg_scale = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),
@@ -2284,8 +2284,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Denoising Strength" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.img2img.denoisingStrength,
-                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.img2img.denoisingStrength = $event),
+                    value: unref(settings).defaultSettings.img2img.denoising_strength,
+                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.img2img.denoising_strength = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),
@@ -2321,8 +2321,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Negative Prompt" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.inpainting.negativePrompt,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.inpainting.negativePrompt = $event)
+                    value: unref(settings).defaultSettings.inpainting.negative_prompt,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.inpainting.negative_prompt = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2330,8 +2330,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Count" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.inpainting.batchCount,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.inpainting.batchCount = $event)
+                    value: unref(settings).defaultSettings.inpainting.batch_count,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.inpainting.batch_count = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2339,8 +2339,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Size" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.inpainting.batchSize,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.inpainting.batchSize = $event)
+                    value: unref(settings).defaultSettings.inpainting.batch_size,
+                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.inpainting.batch_size = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2348,8 +2348,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "CFG Scale" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.inpainting.cfgScale,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.inpainting.cfgScale = $event),
+                    value: unref(settings).defaultSettings.inpainting.cfg_scale,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.inpainting.cfg_scale = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),
@@ -2434,8 +2434,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Negative Prompt" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.txt2img.negativePrompt,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.txt2img.negativePrompt = $event)
+                    value: unref(settings).defaultSettings.txt2img.negative_prompt,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.txt2img.negative_prompt = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2443,8 +2443,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Count" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.txt2img.batchCount,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.txt2img.batchCount = $event)
+                    value: unref(settings).defaultSettings.txt2img.batch_count,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.txt2img.batch_count = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2452,8 +2452,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "Batch Size" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.txt2img.batchSize,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.txt2img.batchSize = $event)
+                    value: unref(settings).defaultSettings.txt2img.batch_size,
+                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.txt2img.batch_size = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2461,8 +2461,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NFormItem), { label: "CFG Scale" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.txt2img.cfgScale,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.txt2img.cfgScale = $event),
+                    value: unref(settings).defaultSettings.txt2img.cfg_scale,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.txt2img.cfg_scale = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),

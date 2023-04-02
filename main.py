@@ -88,6 +88,7 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 Path("data/aitemplate").mkdir(exist_ok=True, parents=True)
 Path("data/models").mkdir(exist_ok=True)
 Path("data/outputs").mkdir(exist_ok=True)
+Path("data/lora").mkdir(exist_ok=True)
 Path("engine").mkdir(exist_ok=True)
 
 # Suppress some annoying warnings
