@@ -95,10 +95,10 @@ class AITemplateStableDiffusion(InferenceModel):
         pipe.to(self.device)
 
         # Disable optLevel for AITemplate models and optimize the model
-        _opt = config.api.optLevel
-        config.api.optLevel = 1
+        _opt = config.api.opt_level
+        config.api.opt_level = 1
         optimize_model(pipe, self.device, False)
-        config.api.optLevel = _opt
+        config.api.opt_level = _opt
 
         self.vae = pipe.vae
         self.unet = pipe.unet
@@ -190,7 +190,7 @@ class AITemplateStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet.value,
                 resume_download=True,
-                torch_dtype=torch.float32 if self.use_f32 else torch.float16,
+                torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
                 use_auth_token=self.auth,
                 cache_dir=config.api.cache_dir,
             )

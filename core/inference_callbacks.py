@@ -153,7 +153,7 @@ def pytorch_callback(
         raise InferenceInterruptedError
 
     shared.current_done_steps += 1
-    send_image: bool = time.time() - last_image_time > config.api.imagePreviewDelay
+    send_image: bool = time.time() - last_image_time > config.api.image_preview_delay
     images: List[Image.Image] = []
 
     if send_image:

@@ -53,8 +53,8 @@ export default defineConfig({
 			{
 				text: "Installation",
 				items: [
-					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Local", link: "/installation/local" },
+					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Old", link: "/installation/old" },
 				],
 				collapsed: false,

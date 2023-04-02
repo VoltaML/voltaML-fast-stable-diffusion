@@ -23,89 +23,95 @@ export interface SettingsInterface {
   model: string;
   txt2img: {
     prompt: string;
-    negativePrompt: string;
+    negative_prompt: string;
     width: number;
     height: number;
     seed: number;
-    cfgScale: number;
+    cfg_scale: number;
     sampler: Sampler;
     steps: number;
-    batchCount: number;
-    batchSize: number;
+    batch_count: number;
+    batch_size: number;
   };
   img2img: {
     prompt: string;
-    negativePrompt: string;
+    negative_prompt: string;
     width: number;
     height: number;
     seed: number;
-    cfgScale: number;
+    cfg_scale: number;
     sampler: Sampler;
     steps: number;
-    batchCount: number;
-    batchSize: number;
-    denoisingStrength: number;
+    batch_count: number;
+    batch_size: number;
+    denoising_strength: number;
     image: string;
-  };
-  imageVariations: {
-    image: string;
-    steps: number;
-    cfgScale: number;
-    seed: number;
-    batchCount: number;
-    batchSize: number;
-    sampler: Sampler;
   };
   inpainting: {
     prompt: string;
-    negativePrompt: string;
+    negative_prompt: string;
     width: number;
     height: number;
     seed: number;
-    cfgScale: number;
+    cfg_scale: number;
     steps: number;
-    batchCount: number;
-    batchSize: number;
+    batch_count: number;
+    batch_size: number;
     sampler: Sampler;
     image: string;
-    maskImage: string;
+    mask_image: string;
   };
   controlnet: {
     prompt: string;
-    negativePrompt: string;
+    negative_prompt: string;
     width: number;
     height: number;
     seed: number;
-    cfgScale: number;
+    cfg_scale: number;
     steps: number;
-    batchCount: number;
-    batchSize: number;
+    batch_count: number;
+    batch_size: number;
     sampler: Sampler;
     controlnet: ControlNetType;
-    controlnetConditioningScale: number;
-    detectionResolution: number;
+    controlnet_conditioning_scale: number;
+    detection_resolution: number;
+    image: string;
+  };
+  sd_upscale: {
+    prompt: string;
+    negative_prompt: string;
+    seed: number;
+    cfg_scale: number;
+    steps: number;
+    batch_count: number;
+    batch_size: number;
+    sampler: Sampler;
+    tile_size: number;
+    tile_border: number;
+    original_image_slice: number;
+    noise_level: number;
     image: string;
   };
   realesrgan: {
     image: string;
-    scaleFactor: number;
+    scale_factor: number;
     model: string;
   };
   api: {
-    websocketSyncInterval: number;
-    websocketPerfInterval: number;
+    websocket_sync_interval: number;
+    websocket_perf_interval: number;
     cache_dir: string;
     optLevel: number;
-    imagePreviewDelay: number;
-    deviceID: number;
+    image_preview_delay: number;
+    device_id: number;
   };
   aitemplate: {
-    numThreads: number;
+    num_threads: number;
   };
   bot: {
-    defaultScheduler: Sampler;
+    default_scheduler: Sampler;
     verbose: boolean;
-    userDefaultNegativePrompt: boolean;
+    use_default_negative_prompt: boolean;
   };
 }
 
@@ -117,49 +123,40 @@ export const defaultSettings: SettingsInterface = {
     width: 512,
     height: 512,
     seed: -1,
-    cfgScale: 7,
+    cfg_scale: 7,
     sampler: Sampler.UniPCMultistep,
     prompt: "",
     steps: 25,
-    batchCount: 1,
-    batchSize: 1,
-    negativePrompt: "",
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
   },
   img2img: {
     width: 512,
     height: 512,
     seed: -1,
-    cfgScale: 7,
+    cfg_scale: 7,
     sampler: Sampler.UniPCMultistep,
     prompt: "",
     steps: 25,
-    batchCount: 1,
-    batchSize: 1,
-    negativePrompt: "",
-    denoisingStrength: 0.6,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    denoising_strength: 0.6,
     image: "",
-  },
-  imageVariations: {
-    batchCount: 1,
-    batchSize: 1,
-    cfgScale: 7,
-    image: "",
-    seed: -1,
-    sampler: Sampler.UniPCMultistep,
-    steps: 25,
   },
   inpainting: {
     prompt: "",
-    negativePrompt: "",
+    negative_prompt: "",
     image: "",
-    maskImage: "",
+    mask_image: "",
     width: 512,
     height: 512,
     steps: 25,
-    cfgScale: 7,
+    cfg_scale: 7,
     seed: -1,
-    batchCount: 1,
-    batchSize: 1,
+    batch_count: 1,
+    batch_size: 1,
     sampler: Sampler.UniPCMultistep,
   },
   controlnet: {
@@ -167,37 +164,52 @@ export const defaultSettings: SettingsInterface = {
     image: "",
     sampler: Sampler.UniPCMultistep,
     controlnet: ControlNetType.CANNY,
-    negativePrompt: "",
+    negative_prompt: "",
     width: 512,
     height: 512,
     steps: 25,
-    cfgScale: 7,
+    cfg_scale: 7,
     seed: -1,
-    batchSize: 1,
-    batchCount: 1,
-    controlnetConditioningScale: 1,
-    detectionResolution: 512,
+    batch_size: 1,
+    batch_count: 1,
+    controlnet_conditioning_scale: 1,
+    detection_resolution: 512,
+  },
+  sd_upscale: {
+    prompt: "",
+    negative_prompt: "",
+    seed: -1,
+    cfg_scale: 7,
+    steps: 75,
+    batch_count: 1,
+    batch_size: 1,
+    sampler: Sampler.UniPCMultistep,
+    tile_size: 128,
+    tile_border: 32,
+    original_image_slice: 32,
+    noise_level: 40,
+    image: "",
   },
   realesrgan: {
     image: "",
-    scaleFactor: 4,
+    scale_factor: 4,
     model: "RealESRGAN_x4plus_anime_6B",
   },
   api: {
-    websocketSyncInterval: 0.02,
-    websocketPerfInterval: 1,
+    websocket_sync_interval: 0.02,
+    websocket_perf_interval: 1,
     cache_dir: "",
     optLevel: 1,
-    imagePreviewDelay: 2.0,
-    deviceID: 0,
+    image_preview_delay: 2.0,
+    device_id: 0,
   },
   aitemplate: {
-    numThreads: 8,
+    num_threads: 8,
   },
   bot: {
-    defaultScheduler: Sampler.UniPCMultistep,
+    default_scheduler: Sampler.UniPCMultistep,
     verbose: false,
-    userDefaultNegativePrompt: true,
+    use_default_negative_prompt: true,
   },
 };
 

@@ -9,7 +9,7 @@ from realesrgan import RealESRGANer
 from realesrgan.archs.srvgg_arch import SRVGGNetCompact
 
 from core.inference.base_model import InferenceModel
-from core.types import RealESRGANQueueEntry
+from core.types import Job, RealESRGANQueueEntry
 from core.utils import convert_to_image
 
 
@@ -26,7 +26,7 @@ class RealESRGAN(InferenceModel):
         tile_pad: int = 10,
         pre_pad: int = 0,
     ):
-        super().__init__(model_id=model_name, use_f32=use_f32, device=device)
+        super().__init__(model_id=model_name, use_fp32=use_f32, device=device)
         self.denoise_strength = denoise_strength
         self.tile = tile
         self.tile_pad = tile_pad
@@ -145,7 +145,7 @@ class RealESRGAN(InferenceModel):
             tile=self.tile,
             tile_pad=self.tile_pad,
             pre_pad=self.pre_pad,
-            half=not self.use_f32,
+            half=not self.use_fp32,
             gpu_id=self.gpu_id,
         )
 
@@ -154,7 +154,8 @@ class RealESRGAN(InferenceModel):
         self.upsampler = None
         self.memory_cleanup()
 
-    def generate(self, job: RealESRGANQueueEntry) -> List[Image.Image]:
+    def generate(self, job: Job) -> List[Image.Image]:
+        assert isinstance(job, RealESRGANQueueEntry), "Wrong job type"
         input_image = convert_to_image(job.data.image)
         img = np.array(input_image)
 

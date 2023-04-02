@@ -18,7 +18,7 @@
               placeholder="Prompt"
             />
             <NInput
-              v-model:value="conf.data.settings.img2img.negativePrompt"
+              v-model:value="conf.data.settings.img2img.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
             />
@@ -131,14 +131,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.cfgScale"
+                v-model:value="conf.data.settings.img2img.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.cfgScale"
+                v-model:value="conf.data.settings.img2img.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -156,13 +156,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.batchCount"
+                v-model:value="conf.data.settings.img2img.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.batchCount"
+                v-model:value="conf.data.settings.img2img.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -177,13 +177,13 @@
                 Number of images to generate in paralel.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.batchSize"
+                v-model:value="conf.data.settings.img2img.batch_size"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.batchSize"
+                v-model:value="conf.data.settings.img2img.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -201,14 +201,14 @@
                 ideal
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.denoisingStrength"
+                v-model:value="conf.data.settings.img2img.denoising_strength"
                 :min="0.1"
                 :max="1"
                 style="margin-right: 12px"
                 :step="0.025"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.denoisingStrength"
+                v-model:value="conf.data.settings.img2img.denoising_strength"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
@@ -310,15 +310,15 @@ const generate = () => {
         prompt: conf.data.settings.img2img.prompt,
         image: conf.data.settings.img2img.image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.img2img.negativePrompt,
+        negative_prompt: conf.data.settings.img2img.negative_prompt,
         width: conf.data.settings.img2img.width,
         height: conf.data.settings.img2img.height,
         steps: conf.data.settings.img2img.steps,
-        guidance_scale: conf.data.settings.img2img.cfgScale,
+        guidance_scale: conf.data.settings.img2img.cfg_scale,
         seed: checkSeed(conf.data.settings.img2img.seed),
-        batch_size: conf.data.settings.img2img.batchSize,
-        batch_count: conf.data.settings.img2img.batchCount,
-        strength: conf.data.settings.img2img.denoisingStrength,
+        batch_size: conf.data.settings.img2img.batch_size,
+        batch_count: conf.data.settings.img2img.batch_count,
+        strength: conf.data.settings.img2img.denoising_strength,
         scheduler: conf.data.settings.img2img.sampler,
       },
       model: conf.data.settings.model,

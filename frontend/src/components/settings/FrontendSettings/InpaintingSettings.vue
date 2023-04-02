@@ -6,22 +6,22 @@
       </NFormItem>
       <NFormItem label="Negative Prompt">
         <NInput
-          v-model:value="settings.defaultSettings.inpainting.negativePrompt"
+          v-model:value="settings.defaultSettings.inpainting.negative_prompt"
         />
       </NFormItem>
       <NFormItem label="Batch Count">
         <NInputNumber
-          v-model:value="settings.defaultSettings.inpainting.batchCount"
+          v-model:value="settings.defaultSettings.inpainting.batch_count"
         />
       </NFormItem>
       <NFormItem label="Batch Size">
         <NInputNumber
-          v-model:value="settings.defaultSettings.inpainting.batchSize"
+          v-model:value="settings.defaultSettings.inpainting.batch_size"
         />
       </NFormItem>
       <NFormItem label="CFG Scale">
         <NInputNumber
-          v-model:value="settings.defaultSettings.inpainting.cfgScale"
+          v-model:value="settings.defaultSettings.inpainting.cfg_scale"
           :step="0.1"
         />
       </NFormItem>

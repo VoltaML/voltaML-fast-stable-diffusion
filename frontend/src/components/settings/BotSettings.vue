@@ -4,12 +4,14 @@
       <NFormItem label="Default Scheduler">
         <NSelect
           :options="settings.scheduler_options"
-          v-model:value="settings.defaultSettings.bot.defaultScheduler"
+          v-model:value="settings.defaultSettings.bot.default_scheduler"
         />
       </NFormItem>
       <NFormItem label="Use Default Negative Prompt">
         <NSwitch
-          v-model:value="settings.defaultSettings.bot.userDefaultNegativePrompt"
+          v-model:value="
+            settings.defaultSettings.bot.use_default_negative_prompt
+          "
         />
       </NFormItem>
       <NFormItem label="Verbose">

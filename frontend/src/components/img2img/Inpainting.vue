@@ -22,7 +22,7 @@
               canvas-id="VueDrawingCanvas1"
             />
             <VueDrawingCanvas
-              v-model:image="conf.data.settings.inpainting.maskImage"
+              v-model:image="conf.data.settings.inpainting.mask_image"
               :width="width"
               :height="height"
               ref="maskCanvas"
@@ -104,7 +104,7 @@
               placeholder="Prompt"
             />
             <NInput
-              v-model:value="conf.data.settings.inpainting.negativePrompt"
+              v-model:value="conf.data.settings.inpainting.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
             />
@@ -217,14 +217,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.cfgScale"
+                v-model:value="conf.data.settings.inpainting.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.cfgScale"
+                v-model:value="conf.data.settings.inpainting.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -242,13 +242,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.batchCount"
+                v-model:value="conf.data.settings.inpainting.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.batchCount"
+                v-model:value="conf.data.settings.inpainting.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -263,13 +263,13 @@
                 Number of images to generate in paralel.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.batchSize"
+                v-model:value="conf.data.settings.inpainting.batch_size"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.batchSize"
+                v-model:value="conf.data.settings.inpainting.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -377,16 +377,16 @@ const generate = () => {
       data: {
         prompt: conf.data.settings.inpainting.prompt,
         image: conf.data.settings.inpainting.image,
-        mask_image: conf.data.settings.inpainting.maskImage,
+        mask_image: conf.data.settings.inpainting.mask_image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.inpainting.negativePrompt,
+        negative_prompt: conf.data.settings.inpainting.negative_prompt,
         width: conf.data.settings.inpainting.width,
         height: conf.data.settings.inpainting.height,
         steps: conf.data.settings.inpainting.steps,
-        guidance_scale: conf.data.settings.inpainting.cfgScale,
+        guidance_scale: conf.data.settings.inpainting.cfg_scale,
         seed: checkSeed(conf.data.settings.inpainting.seed),
-        batch_size: conf.data.settings.inpainting.batchSize,
-        batch_count: conf.data.settings.inpainting.batchCount,
+        batch_size: conf.data.settings.inpainting.batch_size,
+        batch_count: conf.data.settings.inpainting.batch_count,
         scheduler: conf.data.settings.inpainting.sampler,
       },
       model: conf.data.settings.model,

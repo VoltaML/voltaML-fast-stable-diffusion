@@ -1,14 +1,12 @@
 import logging
 import os
 from pathlib import Path
-from typing import Dict
+from typing import Dict, Union
 
 import torch
+from diffusers import StableDiffusionPipeline, StableDiffusionUpscalePipeline
 from diffusers.models.attention_processor import AttnProcessor2_0
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
-    StableDiffusionPipeline,
-)
 from diffusers.utils import is_accelerate_available
 from diffusers.utils.import_utils import is_xformers_available
 from PIL import Image
@@ -25,7 +23,11 @@ gpu_module = None
 _device = None
 
 
-def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool) -> None:
+def optimize_model(
+    pipe: Union[StableDiffusionPipeline, StableDiffusionUpscalePipeline],
+    device,
+    use_f32: bool,
+) -> None:
     "Optimize the model for inference"
     global _device  # pylint: disable=global-statement
 
@@ -35,10 +37,10 @@ def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool) -> None
     logger.info("Optimizing model")
 
     # Attention slicing that should save VRAM (but is slower)
-    if config.api.optLevel >= 3:
+    if config.api.opt_level >= 3:
         pipe.enable_attention_slicing(1)
         logger.info("Optimization: Enabled attention slicing (max)")
-    elif config.api.optLevel == 2:
+    elif config.api.opt_level == 2:
         pipe.enable_attention_slicing()
         logger.info("Optimization: Enabled attention slicing")
 
@@ -49,7 +51,7 @@ def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool) -> None
 
     # xFormers and SPDA
     if is_xformers_available():
-        if config.api.optLevel == 0:
+        if config.api.opt_level == 0:
             logger.info("Optimization: Tracing model")
             pipe.unet = trace_model(pipe.unet)  # type: ignore
             logger.info("Optimization: Model successfully traced")
@@ -59,7 +61,7 @@ def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool) -> None
         pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
         logger.info("Optimization: Enabled SDPA, because xformers is not installed")
 
-    if config.api.optLevel == 3:
+    if config.api.opt_level == 3:
         # Offload to CPU
 
         pipe.vae.to("cpu")  # type: ignore
@@ -70,7 +72,7 @@ def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool) -> None
         setattr(pipe.unet, "main_device", True)  # type: ignore
         logger.info("Optimization: Offloaded VAE & UNet to CPU.")
 
-    elif config.api.optLevel == 4:
+    elif config.api.opt_level == 4:
         # Enable sequential offload
 
         if is_accelerate_available():
@@ -103,8 +105,12 @@ def optimize_model(pipe: StableDiffusionPipeline, device, use_f32: bool) -> None
                 "Optimization: Sequential offload is not available, because accelerate is not installed"
             )
 
-    pipe.enable_vae_slicing()
-    logger.info("Optimization: Enabled VAE slicing")
+    if not (
+        issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
+        or isinstance(pipe, StableDiffusionUpscalePipeline)
+    ):
+        pipe.enable_vae_slicing()
+        logger.info("Optimization: Enabled VAE slicing")
 
     logger.info("Optimization complete")
 

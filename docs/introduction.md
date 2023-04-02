@@ -40,7 +40,7 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 | ---------------- | ------- | ---------- | ----------------------------------- |
 | Txt2Img          | ✅      | ✅         | ✅                                  |
 | Img2Img          | ✅      | ✅         | ✅                                  |
-| ControlNet       | ✅      | ✅         | ❌                                  |
+| ControlNet       | ✅      | ✅         | ✅                                  |
 | Inpainting       | ✅      | 🚧         | ✅                                  |
 | Image Variations | ❌      | ❌         | ❌                                  |
 | SD Upscale       | 🚧      | ❌         | ❌                                  |
@@ -53,12 +53,9 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 | Latent Upscale                  | 🚧           |
 | Documentation                   | ✅           |
 | Image Browser                   | ✅           |
-| Model Conversion                | 🚧           |
+| Model Conversion                | ✅           |
 | Model Training                  | ❌           |
 | Confiruration                   | ✅           |
-| Multi-GPU                       | ✅           |
-| MultiModel API                  | ✅           |
-| MultiModel UI                   | 🚧           |
 | UI Performance monitoring       | ✅           |
 | Loading from CKPT / Safetensors | ✅           |
 

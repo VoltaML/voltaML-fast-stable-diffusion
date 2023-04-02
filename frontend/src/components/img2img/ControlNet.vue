@@ -18,7 +18,7 @@
               placeholder="Prompt"
             />
             <NInput
-              v-model:value="conf.data.settings.controlnet.negativePrompt"
+              v-model:value="conf.data.settings.controlnet.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
             />
@@ -147,14 +147,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.controlnet.cfgScale"
+                v-model:value="conf.data.settings.controlnet.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.controlnet.cfgScale"
+                v-model:value="conf.data.settings.controlnet.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -172,13 +172,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.controlnet.batchCount"
+                v-model:value="conf.data.settings.controlnet.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.controlnet.batchCount"
+                v-model:value="conf.data.settings.controlnet.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -193,13 +193,13 @@
                 Number of images to generate in paralel.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.controlnet.batchSize"
+                v-model:value="conf.data.settings.controlnet.batch_size"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.controlnet.batchSize"
+                v-model:value="conf.data.settings.controlnet.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -217,7 +217,7 @@
               </NTooltip>
               <NSlider
                 v-model:value="
-                  conf.data.settings.controlnet.controlnetConditioningScale
+                  conf.data.settings.controlnet.controlnet_conditioning_scale
                 "
                 :min="0.1"
                 :max="2"
@@ -226,7 +226,7 @@
               />
               <NInputNumber
                 v-model:value="
-                  conf.data.settings.controlnet.controlnetConditioningScale
+                  conf.data.settings.controlnet.controlnet_conditioning_scale
                 "
                 size="small"
                 style="min-width: 96px; width: 96px"
@@ -248,7 +248,7 @@
               </NTooltip>
               <NSlider
                 v-model:value="
-                  conf.data.settings.controlnet.detectionResolution
+                  conf.data.settings.controlnet.detection_resolution
                 "
                 :min="128"
                 :max="2048"
@@ -257,7 +257,7 @@
               />
               <NInputNumber
                 v-model:value="
-                  conf.data.settings.controlnet.detectionResolution
+                  conf.data.settings.controlnet.detection_resolution
                 "
                 size="small"
                 style="min-width: 96px; width: 96px"
@@ -361,18 +361,19 @@ const generate = () => {
         prompt: conf.data.settings.controlnet.prompt,
         image: conf.data.settings.controlnet.image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.controlnet.negativePrompt,
+        negative_prompt: conf.data.settings.controlnet.negative_prompt,
         width: conf.data.settings.controlnet.width,
         height: conf.data.settings.controlnet.height,
         steps: conf.data.settings.controlnet.steps,
-        guidance_scale: conf.data.settings.controlnet.cfgScale,
+        guidance_scale: conf.data.settings.controlnet.cfg_scale,
         seed: checkSeed(conf.data.settings.controlnet.seed),
-        batch_size: conf.data.settings.controlnet.batchSize,
-        batch_count: conf.data.settings.controlnet.batchCount,
+        batch_size: conf.data.settings.controlnet.batch_size,
+        batch_count: conf.data.settings.controlnet.batch_count,
         controlnet: conf.data.settings.controlnet.controlnet,
         controlnet_conditioning_scale:
-          conf.data.settings.controlnet.controlnetConditioningScale,
-        detection_resolution: conf.data.settings.controlnet.detectionResolution,
+          conf.data.settings.controlnet.controlnet_conditioning_scale,
+        detection_resolution:
+          conf.data.settings.controlnet.detection_resolution,
         scheduler: conf.data.settings.controlnet.sampler,
         canny_low_threshold: 100,
         canny_high_threshold: 200,

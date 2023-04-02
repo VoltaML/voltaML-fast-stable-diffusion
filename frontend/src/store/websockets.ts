@@ -38,13 +38,13 @@ export const useWebsocket = defineStore("websocket", () => {
         if (response.status === 200) {
           response.json().then((data) => {
             console.log(
-              "Loaded models on the backend: " + data[0].length.toString()
+              "Loaded models on the backend: " + data.length.toString()
             );
-            if (data[0].length === 0) {
+            if (data.length === 0) {
               conf.data.settings.model = "none:PyTorch";
               return;
             }
-            conf.data.settings.model = data[0][0];
+            conf.data.settings.model = data[0];
           });
         }
       });

@@ -16,6 +16,7 @@ from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoade
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
+from core.inference.pytorch_upscale import PyTorchSDUpscaler
 from core.inference.real_esrgan import RealESRGAN
 from core.png_metadata import save_images
 from core.queue import Queue
@@ -23,12 +24,12 @@ from core.types import (
     AITemplateBuildRequest,
     BuildRequest,
     ControlNetQueueEntry,
-    ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
     Job,
     RealESRGANQueueEntry,
+    SDUpscaleQueueEntry,
     Txt2ImgQueueEntry,
 )
 from core.utils import run_in_thread_async
@@ -52,6 +53,7 @@ class GPU:
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
                 "RealESRGAN",
+                PyTorchSDUpscaler,
             ],
         ] = {}
 
@@ -77,9 +79,9 @@ class GPU:
             Txt2ImgQueueEntry,
             Img2ImgQueueEntry,
             InpaintQueueEntry,
-            ImageVariationsQueueEntry,
             ControlNetQueueEntry,
             RealESRGANQueueEntry,
+            SDUpscaleQueueEntry,
         ],
     ):
         "Generate images from the queue"
@@ -90,6 +92,7 @@ class GPU:
                 PyTorchStableDiffusion,
                 AITemplateStableDiffusion,
                 RealESRGAN,
+                PyTorchSDUpscaler,
             ] = self.loaded_models[job.model]
 
             if not isinstance(job, RealESRGANQueueEntry):
@@ -106,11 +109,13 @@ class GPU:
                 images: List[Image.Image] = model.generate(job)
                 self.memory_cleanup()
                 return images
+            elif isinstance(model, PyTorchSDUpscaler):
+                logger.debug("Generating with PyTorchSDUpscaler")
+                images: List[Image.Image] = model.generate(job)
+                self.memory_cleanup()
+                return images
             elif isinstance(model, RealESRGAN):
                 logger.debug("Generating with RealESRGAN")
-                assert isinstance(
-                    job, RealESRGANQueueEntry
-                ), "Job must be RealESRGANJob"
                 images: List[Image.Image] = model.generate(job)
                 self.memory_cleanup()
                 return images
@@ -137,7 +142,10 @@ class GPU:
 
         try:
             # Check width and height passed by the user
-            if not isinstance(job, (ImageVariationsQueueEntry, RealESRGANQueueEntry)):
+            if not isinstance(
+                job,
+                (RealESRGANQueueEntry, SDUpscaleQueueEntry),
+            ):
                 if job.data.width % 8 != 0 or job.data.height % 8 != 0:
                     raise DimensionError("Width and height must be divisible by 8")
 
@@ -312,6 +320,8 @@ class GPU:
                     pt_model = RealESRGAN(
                         model_name=model,
                     )
+                elif model in ["stabilityai/stable-diffusion-x4-upscaler"]:
+                    pt_model = PyTorchSDUpscaler()
 
                 else:
                     pt_model = PyTorchStableDiffusion(
@@ -405,7 +415,7 @@ class GPU:
             elif request.threads > multiprocessing.cpu_count():
                 request.threads = multiprocessing.cpu_count()
             else:
-                config.aitemplate.numThreads = request.threads
+                config.aitemplate.num_threads = request.threads
 
         def ait_build_thread_call():
             from core.aitemplate.scripts.compile import compile_diffusers

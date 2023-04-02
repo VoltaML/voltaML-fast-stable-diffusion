@@ -18,12 +18,12 @@ class Txt2ImgConfig:
     width: int = 512
     height: int = 512
     seed: int = -1
-    cfgScale: int = 7
+    cfg_scale: int = 7
     sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
     prompt: str = ""
-    negativePrompt: str = ""
+    negative_prompt: str = ""
     steps: int = 25
-    batchCount: int = 1
+    batch_count: int = 1
     batchSize: int = 1
 
 
@@ -34,27 +34,15 @@ class Img2ImgConfig:
     width: int = 512
     height: int = 512
     seed: int = -1
-    cfgScale: int = 7
+    cfg_scale: int = 7
     sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
     prompt: str = ""
-    negativePrompt: str = ""
+    negative_prompt: str = ""
     steps: int = 25
-    batchCount: int = 1
-    batchSize: int = 1
-    resizeMethod: int = 0
-    denoisingStrength: float = 0.6
-
-
-@dataclass
-class ImageVariationsConfig:
-    "Configuration for the image variations pipeline"
-
-    batchCount: int = 1
-    batchSize: int = 1
-    cfgScale: int = 7
-    seed: int = -1
-    sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
-    steps: int = 25
+    batch_count: int = 1
+    batch_size: int = 1
+    resize_method: int = 0
+    denoising_strength: float = 0.6
 
 
 @dataclass
@@ -62,14 +50,14 @@ class InpaintingConfig:
     "Configuration for the inpainting pipeline"
 
     prompt: str = ""
-    negativePrompt: str = ""
+    negative_prompt: str = ""
     width: int = 512
     height: int = 512
     steps: int = 25
-    cfgScale: int = 7
+    cfg_scale: int = 7
     seed: int = -1
-    batchCount: int = 1
-    batchSize: int = 1
+    batch_count: int = 1
+    batch_size: int = 1
     sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
 
 
@@ -78,18 +66,18 @@ class ControlNetConfig:
     "Configuration for the inpainting pipeline"
 
     prompt: str = ""
-    negativePrompt: str = ""
+    negative_prompt: str = ""
     width: int = 512
     height: int = 512
     seed: int = -1
-    cfgScale: int = 7
+    cfg_scale: int = 7
     steps: int = 25
-    batchCount: int = 1
-    batchSize: int = 1
+    batch_count: int = 1
+    batch_size: int = 1
     sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
     controlnet: ControlNetMode = ControlNetMode.CANNY
-    controlnetConditioningScale: float = 1.0
-    detectionResolution: int = 512
+    controlnet_conditioning_scale: float = 1.0
+    detection_resolution: int = 512
 
 
 @dataclass
@@ -97,37 +85,37 @@ class RealESRGANConfig:
     "Configuration for the RealESRGAN upscaler"
 
     model: str = "RealESRGAN_x4plus_anime_6B"
-    scaleFactor: int = 4
+    scale_factor: int = 4
 
 
 @dataclass
 class APIConfig:
     "Configuration for the API"
 
-    websocketSyncInterval: float = 0.02
-    websocketPerfInterval: float = 1.0
+    websocket_sync_interval: float = 0.02
+    websocket_perf_interval: float = 1.0
     cache_dir: str = field(default=DIFFUSERS_CACHE)
-    optLevel: int = 1
-    imagePreviewDelay: float = 2.0
-    deviceID: int = 0
+    opt_level: int = 1
+    image_preview_delay: float = 2.0
+    device_id: int = 0
 
 
 @dataclass
 class AITemplateConfig:
     "Configuration for model inference and acceleration"
 
-    numThreads: int = field(default=min(multiprocessing.cpu_count() - 1, 8))
+    num_threads: int = field(default=min(multiprocessing.cpu_count() - 1, 8))
 
 
 @dataclass
 class BotConfig:
     "Configuration for the bot"
 
-    defaultScheduler: KarrasDiffusionSchedulers = (
+    default_scheduler: KarrasDiffusionSchedulers = (
         KarrasDiffusionSchedulers.UniPCMultistepScheduler
     )
     verbose: bool = False
-    useDefaultNegativePrompt: bool = True
+    use_default_negative_prompt: bool = True
 
 
 @dataclass
@@ -136,7 +124,6 @@ class Configuration(DataClassJsonMixin):
 
     txt2img: Txt2ImgConfig = field(default=Txt2ImgConfig())
     img2img: Img2ImgConfig = field(default=Img2ImgConfig())
-    imageVariations: ImageVariationsConfig = field(default=ImageVariationsConfig())
     inpainting: InpaintingConfig = field(default=InpaintingConfig())
     controlnet: ControlNetConfig = field(default=ControlNetConfig())
     api: APIConfig = field(default=APIConfig())

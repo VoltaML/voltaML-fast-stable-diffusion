@@ -9,10 +9,10 @@ from PIL.PngImagePlugin import PngInfo
 
 from core.types import (
     ControlNetQueueEntry,
-    ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     RealESRGANQueueEntry,
+    SDUpscaleQueueEntry,
     Txt2ImgQueueEntry,
 )
 
@@ -24,9 +24,9 @@ def create_metadata(
         Txt2ImgQueueEntry,
         Img2ImgQueueEntry,
         InpaintQueueEntry,
-        ImageVariationsQueueEntry,
         ControlNetQueueEntry,
         RealESRGANQueueEntry,
+        SDUpscaleQueueEntry,
     ],
     index: int,
 ):
@@ -66,8 +66,6 @@ def create_metadata(
         procedure = "img2img"
     elif isinstance(job, InpaintQueueEntry):
         procedure = "inpaint"
-    elif isinstance(job, ImageVariationsQueueEntry):
-        procedure = "image_variations"
     elif isinstance(job, ControlNetQueueEntry):
         procedure = "control_net"
     elif isinstance(job, RealESRGANQueueEntry):
@@ -85,9 +83,9 @@ def save_images(
         Txt2ImgQueueEntry,
         Img2ImgQueueEntry,
         InpaintQueueEntry,
-        ImageVariationsQueueEntry,
         ControlNetQueueEntry,
         RealESRGANQueueEntry,
+        SDUpscaleQueueEntry,
     ],
 ):
     "Save image to disk"
@@ -119,7 +117,7 @@ def save_images(
         prompt = ""
 
     for i, image in enumerate(images):
-        if isinstance(job, RealESRGANQueueEntry):
+        if isinstance(job, (RealESRGANQueueEntry, SDUpscaleQueueEntry)):
             folder = "extra"
         elif isinstance(job, Txt2ImgQueueEntry):
             folder = "txt2img"

@@ -1,21 +1,28 @@
 <template>
-  <NAlert
-    style="width: 100%; margin-bottom: 12px"
-    type="warning"
-    title="Does not work yet"
-  />
   <div style="margin: 0 12px">
     <!-- Main -->
     <NGrid cols="1 850:2" x-gap="12">
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="conf.data.settings.imageVariations.image"
+          :preview="conf.data.settings.sd_upscale.image"
           style="margin-bottom: 12px"
         />
 
         <NCard title="Settings">
           <NSpace vertical class="left-container">
+            <!-- Prompt -->
+            <NInput
+              v-model:value="conf.data.settings.sd_upscale.prompt"
+              type="textarea"
+              placeholder="Prompt"
+            />
+            <NInput
+              v-model:value="conf.data.settings.sd_upscale.negative_prompt"
+              type="textarea"
+              placeholder="Negative prompt"
+            />
+
             <!-- Sampler -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -37,7 +44,7 @@
 
               <NSelect
                 :options="conf.scheduler_options"
-                v-model:value="conf.data.settings.imageVariations.sampler"
+                v-model:value="conf.data.settings.sd_upscale.sampler"
                 style="flex-grow: 1"
               />
             </div>
@@ -57,13 +64,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.imageVariations.steps"
+                v-model:value="conf.data.settings.sd_upscale.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.imageVariations.steps"
+                v-model:value="conf.data.settings.sd_upscale.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="5"
@@ -86,14 +93,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.imageVariations.cfgScale"
+                v-model:value="conf.data.settings.sd_upscale.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.imageVariations.cfgScale"
+                v-model:value="conf.data.settings.sd_upscale.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -111,13 +118,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.imageVariations.batchCount"
+                v-model:value="conf.data.settings.sd_upscale.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.imageVariations.batchCount"
+                v-model:value="conf.data.settings.sd_upscale.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -132,13 +139,13 @@
                 Number of images to generate in paralel.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.imageVariations.batchSize"
+                v-model:value="conf.data.settings.sd_upscale.batch_size"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.imageVariations.batchSize"
+                v-model:value="conf.data.settings.sd_upscale.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -158,11 +165,93 @@
                 <b class="highlight">For random seed use -1.</b>
               </NTooltip>
               <NInputNumber
-                v-model:value="conf.data.settings.imageVariations.seed"
+                v-model:value="conf.data.settings.sd_upscale.seed"
                 size="small"
                 :min="-1"
                 :max="999_999_999_999"
                 style="flex-grow: 1"
+              />
+            </div>
+
+            <!-- Tile Size -->
+            <div class="flex-container">
+              <p class="slider-label">Tile Size</p>
+              <NSlider
+                v-model:value="conf.data.settings.sd_upscale.tile_size"
+                :min="128"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.sd_upscale.tile_size"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="128"
+                :max="2048"
+              />
+            </div>
+
+            <!-- Tile Border -->
+            <div class="flex-container">
+              <p class="slider-label">Tile Border</p>
+              <NSlider
+                v-model:value="conf.data.settings.sd_upscale.tile_border"
+                :min="8"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.sd_upscale.tile_border"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="8"
+                :max="2048"
+              />
+            </div>
+
+            <!-- Original Image Slice -->
+            <div class="flex-container">
+              <p class="slider-label">Original Image Slice</p>
+              <NSlider
+                v-model:value="
+                  conf.data.settings.sd_upscale.original_image_slice
+                "
+                :min="8"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="
+                  conf.data.settings.sd_upscale.original_image_slice
+                "
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="8"
+                :max="2048"
+              />
+            </div>
+
+            <!-- Noise level -->
+            <div class="flex-container">
+              <p class="slider-label">Noise Level</p>
+              <NSlider
+                v-model:value="conf.data.settings.sd_upscale.noise_level"
+                :min="1"
+                :max="100"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.sd_upscale.noise_level"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="1"
+                :max="100"
               />
             </div>
           </NSpace>
@@ -176,22 +265,25 @@
         <GenerateSection :generate="generate" />
 
         <ImageOutput
-          :current-image="global.state.imageVariations.currentImage"
-          :images="global.state.imageVariations.images"
+          :current-image="global.state.sd_upscale.currentImage"
+          :images="global.state.sd_upscale.images"
         />
       </NGi>
     </NGrid>
   </div>
 </template>
 
-<script lang="ts" setup>
+<script setup lang="ts">
+import "@/assets/2img.css";
+import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
+import ImageUpload from "@/components/ImageUpload.vue";
 import { serverUrl } from "@/env";
 import {
-  NAlert,
   NCard,
   NGi,
   NGrid,
+  NInput,
   NInputNumber,
   NSelect,
   NSlider,
@@ -202,16 +294,10 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
-import GenerateSection from "../GenerateSection.vue";
-import ImageUpload from "../ImageUpload.vue";
 
 const global = useState();
 const conf = useSettings();
 const messageHandler = useMessage();
-
-const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.imageVariations.image = base64Image;
-};
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -222,35 +308,45 @@ const checkSeed = (seed: number) => {
   return seed;
 };
 
+const imageSelectCallback = (base64Image: string) => {
+  conf.data.settings.sd_upscale.image = base64Image;
+};
+
 const generate = () => {
-  if (conf.data.settings.imageVariations.seed === null) {
+  if (conf.data.settings.sd_upscale.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
   global.state.generating = true;
-  fetch(`${serverUrl}/api/generate/image_variations`, {
+  fetch(`${serverUrl}/api/generate/sd-upscale`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
-        image: conf.data.settings.imageVariations.image,
+        prompt: conf.data.settings.sd_upscale.prompt,
+        image: conf.data.settings.sd_upscale.image,
+        scheduler: conf.data.settings.sd_upscale.sampler,
         id: uuidv4(),
-        steps: conf.data.settings.imageVariations.steps,
-        guidance_scale: conf.data.settings.imageVariations.cfgScale,
-        seed: checkSeed(conf.data.settings.imageVariations.seed),
-        batch_size: conf.data.settings.imageVariations.batchSize,
-        batch_count: conf.data.settings.imageVariations.batchCount,
-        scheduler: conf.data.settings.imageVariations.sampler,
+        negative_prompt: conf.data.settings.sd_upscale.negative_prompt,
+        steps: conf.data.settings.sd_upscale.steps,
+        guidance_scale: conf.data.settings.sd_upscale.cfg_scale,
+        seed: checkSeed(conf.data.settings.sd_upscale.seed),
+        batch_size: conf.data.settings.sd_upscale.batch_size,
+        batch_count: conf.data.settings.sd_upscale.batch_count,
+        tile_size: conf.data.settings.sd_upscale.tile_size,
+        tile_border: conf.data.settings.sd_upscale.tile_border,
+        original_image_slice:
+          conf.data.settings.sd_upscale.original_image_slice,
+        noise_level: conf.data.settings.sd_upscale.noise_level,
       },
-      model: conf.data.settings.model,
     }),
   })
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
-        global.state.imageVariations.images = data.images;
+        global.state.sd_upscale.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
@@ -263,3 +359,18 @@ const generate = () => {
     });
 };
 </script>
+<style scoped>
+.image-container img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  overflow: hidden;
+}
+
+.image-container {
+  height: 70vh;
+  width: 100%;
+  display: flex;
+  justify-content: center;
+}
+</style>
