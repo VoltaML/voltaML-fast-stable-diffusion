@@ -6,6 +6,8 @@ from pathlib import Path
 import inspect
 from typing import List, Tuple, Type, TypeVar, Union
 from time import time
+import importlib
+import json
 
 from tqdm.auto import tqdm
 from PIL import Image
@@ -33,12 +35,11 @@ from core.types import Job, Txt2ImgQueueEntry
 
 logger = logging.getLogger(__name__)
 
-SIMPLIFY_UNET = False
-
 
 class UNet2DConditionWrapper(UNet2DConditionModel):
     "Internal class"
-    def forward(self, sample, timestep, encoder_hidden_states, class_labels=None, timestep_cond=None, attention_mask=None, cross_attention_kwargs=None, down_block_additional_residuals=None, mid_block_additional_residual=None, return_dict: bool = True) -> Tuple:
+    # I love being retarded
+    def forward(self, sample, timestep, encoder_hidden_states, _=None, __=None, ___=None, ____=None, _____=None, ______=None, _______: bool = True) -> Tuple:
         sample = sample.to(dtype=torch.float16)
         timestep = timestep.to(dtype=torch.long) # type: ignore
         encoder_hidden_states = encoder_hidden_states.to(dtype=torch.float16)
@@ -100,10 +101,19 @@ class OnnxStableDiffusion(InferenceModel):
             def _load(file: Path, providers: List[str] = ["CUDAExecutionProvider"]) -> Union[ort.InferenceSession, CLIPTokenizerFast, SchedulerMixin, dict[str, List[str]]]:
                 if file.stem == "providers":
                     with open(file) as f:
-                        d = map(lambda x: x.split(": "), f.readlines())
+                        # example providers.txt file:
+                        #
+                        # vae_encoder: CPUExecutionProvider 
+                        # vae_decoder: CPUExecutionProvider 
+                        # unet: CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d 
+                        # text_encoder: CPUExecutionProvider 
+                        #
+
+                        d = map(lambda x: x.split(": "), filter(lambda x: x != "", f.readlines()))
                         r = {}
                         for (file_name, file_providers) in d:
-                            r[file_name] = file_providers.split(" ")
+                            # There probably is a better way to do this, but honestly fuck it
+                            r[file_name] = [tuple(map(lambda x: {x: "1"} if "Provider" not in x else x, filter(lambda x: x != "", file_providers.split(" "))))]
                         return r
                 else:
                     if file.is_dir():
@@ -112,11 +122,21 @@ class OnnxStableDiffusion(InferenceModel):
                                 return CLIPTokenizerFast.from_pretrained(file)
                             case "scheduler":
                                 # TODO: during conversion save which scheduler was used.
+                                # json parse scheduler / config.json
+                                # module = importlib.import_module(json._class_name, "diffusers")
+                                # f = getattr(module, "from_pretrained")
+                                # f(pretrained_model_name_or_path=str(file))
                                 return PNDMScheduler.from_pretrained(pretrained_model_name_or_path=str(file))
                             case _:
                                 raise ValueError("Bad argument 'file' provided.")
                     else:
-                        return ort.InferenceSession(str(file), providers=providers)
+                        sess_options = ort.SessionOptions()
+                        
+                        # TODO: benchmark me
+                        sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
+                        sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
+
+                        return ort.InferenceSession(str(file), providers=providers, sess_options=sess_options)
 
             folder = get_full_model_path(
                 self.model_id, model_folder="onnx", force=True)
@@ -124,7 +144,7 @@ class OnnxStableDiffusion(InferenceModel):
             if (folder / "providers.txt").exists():
                 providers = _load(folder / "providers.txt")
             else:
-                providers = {"vae_encoder": ["CUDAExecutionProvider"], "vae_decoder": ["CUDAExecutionProvider"], "unet": ["CUDAExecutionProvider"], "text_encoder": ["CUDAExecutionProvider"]}
+                providers = {"vae_encoder": ["CPUExecutionProvider"], "vae_decoder": ["CPUExecutionProvider"], "unet": ["CUDAExecutionProvider"], "text_encoder": ["CPUExecutionProvider"]}
 
             for module in ["vae_encoder", "vae_decoder", "unet", "text_encoder"]:
                 s = time()
@@ -201,17 +221,28 @@ class OnnxStableDiffusion(InferenceModel):
 
     def run_model(self, model, **kwargs):
         inputs = {k: np.array(v) for k, v in kwargs.items()}
-        return model.run(None, inputs)
+
+        if any(map(lambda x: x == "CUDAExecutionProvider", model.get_providers())):
+            iob = model.io_binding()
+            for k, v in inputs.items():
+                iob.bind_cpu_input(k, v)
+            for k in model.get_outputs():
+                iob.bind_output(k)
+            model.run_with_iobinding(iob)
+            return iob.copy_outputs_to_cpu()
+        else:
+            return model.run(None, inputs)
 
     @torch.no_grad()
     # TODO: optimize for vram usage.
     # TODO: let user decide which parts they want to run on cpu and gpu
     # This would allow them to run VAE & text encoder on cpu while they run only unet on gpu.
     def convert_pytorch_to_onnx(self, model_id: str, target: dict[str, bool] = { # pylint: disable=dangerous-default-value
-        "vae": False,
+        "vae_encoder": False,
+        "vae_decoder": False,
         "unet": False,
-        "text-encoder": False
-    }):
+        "text_encoder": False
+    }, device: Union[torch.device, str] = "cuda", simplify_unet: bool = False):
         '''
         Converts a pytorch model into an onnx model and tries to quantize it. Depending on model size, can take up to 6gigabytes of vram
 
@@ -219,7 +250,11 @@ class OnnxStableDiffusion(InferenceModel):
 
         model  -- a repository, or a huggingface model name inside data/models/
 
-        target -- default: {"vae": False, "unet": False, "text-encoder": False}. If any of them set to true, they will be quantized using uint8 instead of int8, and will be ran on cpu during inference. 
+        target -- default: {"vae_decoder": False, "vae_encoder": False, "unet": False, "text_encoder": False}. If any of them set to true, they will be quantized using uint8 instead of int8, and will be ran on cpu during inference.
+
+        device -- default: "cuda." The device on which torch will run. If you have a gpu, you should use "cuda" or "cuda:0" or "cuda:1" etc. If you have a cpu, you should use "cpu". If on windows, and on amd, use torch_directml.device()
+
+        simplify_unet -- default: False. Whether the UNet should be simplified (this can break the unet)
         '''
         def onnx_export(
             model,
@@ -279,6 +314,8 @@ class OnnxStableDiffusion(InferenceModel):
                         if not check:
                             logger.warning(
                                 f"Could not validate simplified model at path {output_path}")
+                            del model, model_opt, check
+                            raise ValueError("Could not validate simplified model")
                         del model
                         onnx.save(model_opt, str(output_path)) # pylint: disable=no-member
                         del model_opt
@@ -291,7 +328,7 @@ class OnnxStableDiffusion(InferenceModel):
 
         T = TypeVar("T")
 
-        def load(cls: Type[T], root: Path, checkpoint_name="diffusion_pytorch_model.bin", device=torch.device("cpu"), dtype=None) -> T:
+        def load(cls: Type[T], root: Path, checkpoint_name="diffusion_pytorch_model.bin", dtype=None) -> T:
             with init_empty_weights():
                 model = cls.from_config(  # type: ignore
                     config_path=root / "config.json",
@@ -314,7 +351,7 @@ class OnnxStableDiffusion(InferenceModel):
                 model.eval()
             return model
 
-        def convert_text_encoder(main_folder: Path, output_folder: Path, tokenizer: CLIPTokenizerFast, device: str, opset: int):
+        def convert_text_encoder(main_folder: Path, output_folder: Path, tokenizer: CLIPTokenizerFast, opset: int) -> Tuple[int, int]:
             text_encoder = CLIPTextModelWrapper.from_pretrained(
                 main_folder / "text_encoder").to(dtype=torch.float16, device=device)  # type: ignore
             text_encoder.eval()
@@ -345,9 +382,9 @@ class OnnxStableDiffusion(InferenceModel):
 
             del text_encoder
             self.memory_cleanup()
-            return output_folder / "text_encoder.onnx", num_tokens, text_hidden_size
+            return num_tokens, text_hidden_size
 
-        def convert_unet(main_folder: Path, output_folder: Path, num_tokens: int, text_hidden_size: int, device: str, opset: int) -> Tuple[Path, int]:
+        def convert_unet(main_folder: Path, output_folder: Path, num_tokens: int, text_hidden_size: int, opset: int) -> int:
             unet = load(UNet2DConditionWrapper, main_folder / "unet",
                         device=device, dtype=torch.float16)  # type: ignore
 
@@ -391,7 +428,7 @@ class OnnxStableDiffusion(InferenceModel):
                     "encoder_hidden_states": {0: "batch", 1: "sequence"}
                 },
                 opset=opset,
-                simplify=SIMPLIFY_UNET,
+                simplify=simplify_unet,
                 signed=target["unet"],
             )
             del unet
@@ -412,15 +449,14 @@ class OnnxStableDiffusion(InferenceModel):
                 self.memory_cleanup()
                 shutil.rmtree(unet_out_path)
                 unet_out_path = output_folder
-            return unet_out_path / "unet.onnx", sample_size
+            return sample_size
 
-        def convert_vae(main_folder: Path, output_folder: Path, unet_sample_size: int, device: str, opset: int):
+        def convert_vae(main_folder: Path, output_folder: Path, unet_sample_size: int, opset: int):
             vae = load(AutoencoderKLWrapper, main_folder / "vae",
                        device=device, dtype=torch.float16)  # type: ignore
             vae_in_channels = vae.config["in_channels"]
             vae_sample_size = vae.config["sample_size"]
             vae_latent_channels = vae.config["latent_channels"]
-            vae_out_channels = vae.config["out_channels"]
 
             vae.forward = lambda sample: vae.encode(sample)[0]  # type: ignore
             onnx_export(
@@ -454,13 +490,10 @@ class OnnxStableDiffusion(InferenceModel):
             del vae
             self.memory_cleanup()
 
-            return output_folder / "vae_encoder.onnx", output_folder / "vae_decoder.onnx", vae_sample_size, vae_out_channels
-
         opset = 17
         main_folder = get_full_model_path(model_id)
         output_folder = get_full_model_path(
             model_id, model_folder="onnx", force=True)
-        device = "cuda"
 
         if is_onnx_available():
             # register aten::scaled_dot_product_attention
@@ -469,18 +502,21 @@ class OnnxStableDiffusion(InferenceModel):
             tokenizer = CLIPTokenizerFast.from_pretrained(
                 main_folder / "tokenizer")
 
-            _, num_tokens, text_hidden_size = convert_text_encoder(
-                main_folder, output_folder, tokenizer, device, opset)
-            _, unet_sample_size = convert_unet(
-                main_folder, output_folder, num_tokens, text_hidden_size, device, opset)
-            convert_vae(main_folder, output_folder, unet_sample_size, device, opset)
+            num_tokens, text_hidden_size = convert_text_encoder(
+                main_folder, output_folder, tokenizer, opset)
+            unet_sample_size = convert_unet(
+                main_folder, output_folder, num_tokens, text_hidden_size, opset)
+            convert_vae(main_folder, output_folder, unet_sample_size, opset)
             shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
             shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
 
             with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
                 for (fn, prov) in target.items():
-                    t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
-                    f.write(f"{fn}:{t} \n")
+                    if fn == "unet":
+                        t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
+                    else:
+                        t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
+                    f.write(f"{fn}: {t} \n")
 
     # TODO: test me.
     def _encode_prompt(self, prompt: str, num_images_per_prompt: int, do_classifier_free_guidance: bool, negative_prompt: str):
