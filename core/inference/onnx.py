@@ -1,4 +1,3 @@
-from dataclasses import dataclass, asdict
 import logging
 import os
 import shutil
@@ -7,14 +6,14 @@ import inspect
 from typing import List, Tuple, Type, TypeVar, Union
 from time import time
 import importlib
-import json
+import re
 
 from tqdm.auto import tqdm
 from PIL import Image
 
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 from accelerate.utils import set_module_tensor_to_device
-from diffusers import SchedulerMixin, PNDMScheduler
+from diffusers import SchedulerMixin
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
@@ -114,6 +113,11 @@ class OnnxStableDiffusion(InferenceModel):
                         for (file_name, file_providers) in d:
                             # There probably is a better way to do this, but honestly fuck it
                             r[file_name] = [tuple(map(lambda x: {x: "1"} if "Provider" not in x else x, filter(lambda x: x != "", file_providers.split(" "))))]
+                        for (file_name, file_providers) in r.items():
+                            # So no "no fallback" warnings in console (it's ugly)
+                            if "CPUExecutionProvider" not in file_providers:
+                                file_providers.append("CPUExecutionProvider")
+                                r[file_name] = file_providers
                         return r
                 else:
                     if file.is_dir():
@@ -122,11 +126,13 @@ class OnnxStableDiffusion(InferenceModel):
                                 return CLIPTokenizerFast.from_pretrained(file)
                             case "scheduler":
                                 # TODO: during conversion save which scheduler was used.
-                                # json parse scheduler / config.json
-                                # module = importlib.import_module(json._class_name, "diffusers")
-                                # f = getattr(module, "from_pretrained")
-                                # f(pretrained_model_name_or_path=str(file))
-                                return PNDMScheduler.from_pretrained(pretrained_model_name_or_path=str(file))
+                                scheduler_reg = r"_class_name\": \"(.*)\","
+                                with open(file / "scheduler_config.json") as f:
+                                    matches = re.search(scheduler_reg, "\n".join(f.readlines()))
+                                    module = importlib.import_module("diffusers")
+                                    scheduler = getattr(module, matches.group(1))
+                                    f = getattr(scheduler, "from_pretrained")
+                                    return f(pretrained_model_name_or_path=str(file))
                             case _:
                                 raise ValueError("Bad argument 'file' provided.")
                     else:
@@ -134,7 +140,11 @@ class OnnxStableDiffusion(InferenceModel):
                         
                         # TODO: benchmark me
                         sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-                        sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
+                        if providers[0] == "DmlExecutionProvider":
+                            sess_options.enable_mem_pattern = False
+                            sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
+                        else:
+                            sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
                         return ort.InferenceSession(str(file), providers=providers, sess_options=sess_options)
 
@@ -149,11 +159,11 @@ class OnnxStableDiffusion(InferenceModel):
             for module in ["vae_encoder", "vae_decoder", "unet", "text_encoder"]:
                 s = time()
                 setattr(self, module, _load(folder / (module + ".onnx"), providers=providers[module])) # type: ignore
-                logger.info(f"Loaded {module} in {time() - s}s.")
+                logger.info(f"Loaded {module} in {(time() - s):.2f}s.")
             for module in ["tokenizer", "scheduler"]:
                 s = time()
                 setattr(self, module, _load(folder / module))
-                logger.info(f"Loaded {module} in {time() - s}s.")
+                logger.info(f"Loaded {module} in {(time() - s):.2f}s.")
 
             self.memory_cleanup()
 
@@ -222,12 +232,14 @@ class OnnxStableDiffusion(InferenceModel):
     def run_model(self, model, **kwargs):
         inputs = {k: np.array(v) for k, v in kwargs.items()}
 
-        if any(map(lambda x: x == "CUDAExecutionProvider", model.get_providers())):
+        # This was originally any(map(lambda x: x == "CUDAExecutionProvider", model.get_providers()))
+        # I think I classify as a retard
+        if "CPUExecutionProvider" not in model.get_providers() and len(model.get_providers()) != 1:
             iob = model.io_binding()
             for k, v in inputs.items():
                 iob.bind_cpu_input(k, v)
             for k in model.get_outputs():
-                iob.bind_output(k)
+                iob.bind_output(k.name)
             model.run_with_iobinding(iob)
             return iob.copy_outputs_to_cpu()
         else:
@@ -235,7 +247,6 @@ class OnnxStableDiffusion(InferenceModel):
 
     @torch.no_grad()
     # TODO: optimize for vram usage.
-    # TODO: let user decide which parts they want to run on cpu and gpu
     # This would allow them to run VAE & text encoder on cpu while they run only unet on gpu.
     def convert_pytorch_to_onnx(self, model_id: str, target: dict[str, bool] = { # pylint: disable=dangerous-default-value
         "vae_encoder": False,
@@ -551,7 +562,7 @@ class OnnxStableDiffusion(InferenceModel):
         return prompt_embeds
 
     @torch.no_grad()
-    def _text2img(
+    def text2img(
             self,
             prompt: str,
             height: int = 512,
@@ -563,17 +574,18 @@ class OnnxStableDiffusion(InferenceModel):
             generator: np.random.RandomState = None, # type: ignore pylint: disable=no-member
             eta: float = 0.0,
             latents: np.ndarray = None,  # type: ignore
-    ):
+    ) -> StableDiffusionPipelineOutput:
         batch_size = 1
         if generator is None:
             generator = np.random  # type: ignore
         do_classifier_free_guidance = guidance_scale > 1.0
 
-        logger.info("encode prompt begin")
+        t = time()
+        logger.debug("encode prompt begin")
         prompt_embeds = self._encode_prompt(
             prompt, num_images_per_prompt, do_classifier_free_guidance, negative_prompt
         )
-        logger.info("encode prompt end")
+        logger.debug(f"encode prompt end ({(time() - t):.2f}s)")
 
         latents_dtype = prompt_embeds.dtype
         latents_shape = (batch_size * num_images_per_prompt,
@@ -595,7 +607,7 @@ class OnnxStableDiffusion(InferenceModel):
         )
         timestep_dtype = ORT_TO_NP_TYPE[timestep_dtype]
 
-        logger.info("timestep start")
+        logger.debug("timestep start")
         for i, t in enumerate(tqdm(self.scheduler.timesteps)):
             latent_model_input = np.concatenate(
                 [latents] * 2) if do_classifier_free_guidance else latents
@@ -604,10 +616,8 @@ class OnnxStableDiffusion(InferenceModel):
             latent_model_input = latent_model_input.cpu().numpy()
 
             timestep = np.array([t], dtype=timestep_dtype)
-            s = time()
             noise_pred = self.run_model(self.unet,
                 sample=latent_model_input, timestep=timestep, encoder_hidden_states=prompt_embeds)
-            logger.info(f"Generated sample {i} in {time() - s}s.")
             noise_pred = noise_pred[0]
 
             if do_classifier_free_guidance:
@@ -618,12 +628,15 @@ class OnnxStableDiffusion(InferenceModel):
                 torch.from_numpy(noise_pred), t, torch.from_numpy(latents), **extra_step_kwargs
             )
             latents = scheduler_output.prev_sample.numpy()
-        logger.info("timestep end")
+        logger.debug("timestep end")
         latents = 1 / 0.18215 * latents
+        t = time()
+        logger.debug("vae_decoder start")
         image = np.concatenate(
             [self.run_model(self.vae_decoder, latent_sample=latents[i: i + 1])[0]
              for i in range(latents.shape[0])]
         )
+        logger.debug(f"vae_decoder end ({(time() - t):.2f}s)")
         image = np.clip(image / 2 + 0.5, 0, 1)
         image = image.transpose((0, 2, 3, 1))
         image = self.numpy_to_pil(image)
@@ -656,18 +669,15 @@ class OnnxStableDiffusion(InferenceModel):
         )
         self.memory_cleanup()
 
-    def text2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
-        return self._text2img(
-            job.data.prompt,
-            job.data.height,
-            job.data.width,
-            job.data.steps,
-            job.data.guidance_scale,
-            job.data.negative_prompt,
-            job.data.batch_size
-        ).images # type: ignore
-
     def generate(self, job: Job) -> List[Image.Image]:
         if isinstance(job, Txt2ImgQueueEntry):
-            return self.text2img(job)
-        return self.text2img(job)
+            return self.text2img(
+                job.data.prompt,
+                job.data.height,
+                job.data.width,
+                job.data.steps,
+                job.data.guidance_scale,
+                job.data.negative_prompt,
+                job.data.batch_size
+            ).images
+        return []
