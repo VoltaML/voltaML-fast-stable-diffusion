@@ -1,3 +1,4 @@
+from dataclasses import dataclass, asdict
 import logging
 import os
 import shutil
@@ -73,14 +74,12 @@ class OnnxStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        device: str = "cuda",
         autoload: bool = True,
     ) -> None:
         if is_onnx_available():
             import onnxruntime as ort
 
             super().__init__(model_id)
-            self.device = device
             self.vae_encoder: ort.InferenceSession
             self.vae_decoder: ort.InferenceSession
             self.unet: ort.InferenceSession
@@ -97,27 +96,39 @@ class OnnxStableDiffusion(InferenceModel):
     def load(self):
         if is_onnx_available():
             import onnxruntime as ort
-            provider = "CUDAExecutionProvider" if self.device == "cuda" else "CPUExecutionProvider"
 
-            def _load(file: Path) -> Union[ort.InferenceSession, CLIPTokenizerFast, SchedulerMixin]:
-                if file.is_dir():
-                    match file.stem:
-                        case "tokenizer":
-                            return CLIPTokenizerFast.from_pretrained(file)
-                        case "scheduler":
-                            # TODO: during conversion save which scheduler was used.
-                            return PNDMScheduler.from_pretrained(pretrained_model_name_or_path=str(file))
-                        case _:
-                            raise ValueError("Bad argument 'file' provided.")
+            def _load(file: Path, providers: List[str] = ["CUDAExecutionProvider"]) -> Union[ort.InferenceSession, CLIPTokenizerFast, SchedulerMixin, dict[str, List[str]]]:
+                if file.stem == "providers":
+                    with open(file) as f:
+                        d = map(lambda x: x.split(": "), f.readlines())
+                        r = {}
+                        for (file_name, file_providers) in d:
+                            r[file_name] = file_providers.split(" ")
+                        return r
                 else:
-                    return ort.InferenceSession(str(file), providers=[provider])
+                    if file.is_dir():
+                        match file.stem:
+                            case "tokenizer":
+                                return CLIPTokenizerFast.from_pretrained(file)
+                            case "scheduler":
+                                # TODO: during conversion save which scheduler was used.
+                                return PNDMScheduler.from_pretrained(pretrained_model_name_or_path=str(file))
+                            case _:
+                                raise ValueError("Bad argument 'file' provided.")
+                    else:
+                        return ort.InferenceSession(str(file), providers=providers)
 
             folder = get_full_model_path(
                 self.model_id, model_folder="onnx", force=True)
+            
+            if (folder / "providers.txt").exists():
+                providers = _load(folder / "providers.txt")
+            else:
+                providers = {"vae_encoder": ["CUDAExecutionProvider"], "vae_decoder": ["CUDAExecutionProvider"], "unet": ["CUDAExecutionProvider"], "text_encoder": ["CUDAExecutionProvider"]}
 
             for module in ["vae_encoder", "vae_decoder", "unet", "text_encoder"]:
                 s = time()
-                setattr(self, module, _load(folder / (module + ".onnx")))
+                setattr(self, module, _load(folder / (module + ".onnx"), providers=providers[module])) # type: ignore
                 logger.info(f"Loaded {module} in {time() - s}s.")
             for module in ["tokenizer", "scheduler"]:
                 s = time()
@@ -466,6 +477,11 @@ class OnnxStableDiffusion(InferenceModel):
             shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
             shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
 
+            with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
+                for (fn, prov) in target.items():
+                    t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
+                    f.write(f"{fn}:{t} \n")
+
     # TODO: test me.
     def _encode_prompt(self, prompt: str, num_images_per_prompt: int, do_classifier_free_guidance: bool, negative_prompt: str):
         text_input_ids = self.tokenizer(
@@ -495,7 +511,7 @@ class OnnxStableDiffusion(InferenceModel):
             negative_prompt_embeds = np.repeat(
                 negative_prompt_embeds, num_images_per_prompt, axis=0)
 
-            prompt_embeds = np.concatenate([negative_prompt, prompt_embeds])
+            prompt_embeds = np.concatenate([negative_prompt_embeds, prompt_embeds])
         return prompt_embeds
 
     @torch.no_grad()
