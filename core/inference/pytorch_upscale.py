@@ -48,6 +48,8 @@ class PyTorchSDUpscaler(InferenceModel):
         self.memory_cleanup()
 
     def upscale(self, job: SDUpscaleQueueEntry) -> List[Image.Image]:
+        "Upscales an image using the model."
+
         generator = torch.Generator("cuda").manual_seed(job.data.seed)
 
         if job.data.scheduler:

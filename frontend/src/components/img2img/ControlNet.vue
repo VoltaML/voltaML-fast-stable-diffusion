@@ -380,10 +380,13 @@ const generate = () => {
         mlsd_thr_v: 0.1,
         mlsd_thr_d: 0.1,
       },
-      model: conf.data.settings.model,
+      model: conf.data.settings.model.name,
     }),
   })
     .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
       global.state.generating = false;
       console.log(res);
       res.json().then((data) => {

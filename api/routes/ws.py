@@ -15,9 +15,7 @@ async def master_endpoint(websocket: WebSocket):
     await websocket_manager.connect(websocket)
     try:
         while True:
-            text = await websocket.receive_text()
-            if text == "ping":
-                await websocket.send_text("pong")
+            _ = await websocket.receive_text()
 
     except WebSocketDisconnect:
         websocket_manager.disconnect(websocket)

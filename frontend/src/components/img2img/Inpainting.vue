@@ -389,10 +389,13 @@ const generate = () => {
         batch_count: conf.data.settings.inpainting.batch_count,
         scheduler: conf.data.settings.inpainting.sampler,
       },
-      model: conf.data.settings.model,
+      model: conf.data.settings.model.name,
     }),
   })
     .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
       global.state.generating = false;
       res.json().then((data) => {
         global.state.inpainting.images = data.images;

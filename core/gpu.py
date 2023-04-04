@@ -1,6 +1,5 @@
 import logging
 import multiprocessing
-import os
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
@@ -35,7 +34,7 @@ from core.types import (
 from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
-    from core.tensorrt.volta_accelerate import TRTModel
+    from core.inference.tensorrt import TensorRTModel
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +48,7 @@ class GPU:
         self.loaded_models: Dict[
             str,
             Union[
-                "TRTModel",
+                "TensorRTModel",
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
                 "RealESRGAN",
@@ -88,7 +87,7 @@ class GPU:
 
         def generate_thread_call(job: Job) -> List[Image.Image]:
             model: Union[
-                "TRTModel",
+                "TensorRTModel",
                 PyTorchStableDiffusion,
                 AITemplateStableDiffusion,
                 RealESRGAN,
@@ -122,23 +121,25 @@ class GPU:
             else:
                 assert not isinstance(job, RealESRGANQueueEntry)
 
-                logger.debug("Generating with TensorRT")
-                images: List[Image.Image]
+                raise NotImplementedError("TensorRT is not supported at the moment")
 
-                _, images = model.infer(
-                    [job.data.prompt],
-                    [job.data.negative_prompt],
-                    job.data.height,
-                    job.data.width,
-                    guidance_scale=job.data.guidance_scale,
-                    verbose=False,
-                    seed=job.data.seed,
-                    output_dir="output",
-                    num_of_infer_steps=job.data.steps,
-                    scheduler=job.data.scheduler,
-                )
-                self.memory_cleanup()
-                return images
+                # logger.debug("Generating with TensorRT")
+                # images: List[Image.Image]
+
+                # _, images = model.infer(
+                #     [job.data.prompt],
+                #     [job.data.negative_prompt],
+                #     job.data.height,
+                #     job.data.width,
+                #     guidance_scale=job.data.guidance_scale,
+                #     verbose=False,
+                #     seed=job.data.seed,
+                #     output_dir="output",
+                #     num_of_infer_steps=job.data.steps,
+                #     scheduler=job.data.scheduler,
+                # )
+                # self.memory_cleanup()
+                # return images
 
         try:
             # Check width and height passed by the user
@@ -254,31 +255,11 @@ class GPU:
                     )
                 )
 
-                from core.tensorrt.volta_accelerate import TRTModel
+                from core.inference.tensorrt import TensorRTModel
 
-                trt_model = TRTModel(
-                    model_path=model,
-                    denoising_steps=25,
-                    denoising_fp16=True,
-                    hf_token=os.environ["HUGGINGFACE_TOKEN"],
-                    verbose=False,
-                    nvtx_profile=False,
-                    max_batch_size=9,
+                trt_model = TensorRTModel(
+                    model_id=model,
                 )
-                logger.debug("Loading engines...")
-                trt_model.loadEngines(
-                    engine_dir="engine/" + model,
-                    onnx_dir="onnx",
-                    onnx_opset=16,
-                    opt_batch_size=1,
-                    opt_image_height=512,
-                    opt_image_width=512,
-                    enable_preview=True,
-                    static_batch=True,
-                    static_shape=True,
-                )
-                logger.debug("Loading modules")
-                trt_model.loadModules()
                 self.loaded_models[model] = trt_model
                 logger.debug("Loading done")
 

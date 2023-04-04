@@ -321,10 +321,13 @@ const generate = () => {
         strength: conf.data.settings.img2img.denoising_strength,
         scheduler: conf.data.settings.img2img.sampler,
       },
-      model: conf.data.settings.model,
+      model: conf.data.settings.model.name,
     }),
   })
     .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
       global.state.generating = false;
       res.json().then((data) => {
         global.state.img2img.images = data.images;

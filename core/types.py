@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 from uuid import uuid4
 
 from diffusers import (
@@ -242,14 +242,6 @@ class ConvertModelRequest:
     safetensors: bool = False
 
 
-@dataclass
-class LoadLoraRequest:
-    "Dataclass for requesting a LoRA model to be injected into the model"
-
-    model: str
-    lora: str
-
-
 PyTorchModelType = Union[
     DiffusionPipeline,
     StableDiffusionDepth2ImgPipeline,
@@ -271,3 +263,13 @@ class AITemplateBuildRequest:
     height: int = field(default=512)
     batch_size: int = field(default=1)
     threads: Optional[int] = field(default=None)
+
+
+@dataclass
+class LoadedModelResponse:
+    "Dataclass for a response containing a loaded model info"
+
+    model_id: str
+    path: str
+    backend: str
+    loras: List[str]

@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Any, List, Optional
 
 import torch
@@ -28,6 +29,7 @@ from core.inference_callbacks import (
     inpaint_callback,
     txt2img_callback,
 )
+from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
 from core.types import (
     ControlNetMode,
@@ -55,6 +57,8 @@ class PyTorchStableDiffusion(InferenceModel):
     ) -> None:
         super().__init__(model_id, use_fp32, device)
 
+        self.backend = "PyTorch"
+
         # HuggingFace
         self.auth: str = auth_token
 
@@ -71,6 +75,8 @@ class PyTorchStableDiffusion(InferenceModel):
         self.controlnet: Optional[ControlNetModel]
 
         self.current_controlnet: ControlNetMode = ControlNetMode.NONE
+
+        self.loras: List[str] = []
 
         if autoload:
             self.load()
@@ -473,7 +479,28 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe.save_pretrained(path, safe_serialization=safetensors)
 
-    def load_lora(self, lora: str):
+    def load_lora(
+        self, lora: str, alpha_text_encoder: float = 0.5, alpha_unet: float = 0.5
+    ):
         "Inject a LoRA model into the pipeline"
 
-        self.unet.load_attn_procs(lora, resume_download=True, use_auth_token=self.auth)
+        lora = str(Path("data/lora").joinpath(lora))
+
+        logger.info(f"Loading LoRA model {lora} onto {self.model_id}...")
+
+        if any(lora in l for l in self.loras):
+            logger.info(f"LoRA model {lora} already loaded onto {self.model_id}")
+            return
+
+        if ".safetensors" in lora:
+            load_safetensors_loras(
+                self.text_encoder, self.unet, lora, alpha_text_encoder, alpha_unet
+            )
+        else:
+            self.unet.load_attn_procs(
+                pretrained_model_name_or_path_or_dict=lora,
+                resume_download=True,
+                use_auth_token=self.auth,
+            )
+        self.loras.append(lora)
+        logger.info(f"LoRA model {lora} loaded successfully")

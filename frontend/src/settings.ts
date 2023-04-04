@@ -1,4 +1,4 @@
-import { ControlNetType } from "./core/interfaces";
+import { ControlNetType, type ModelEntry } from "./core/interfaces";
 import { serverUrl } from "./env";
 
 export enum Sampler {
@@ -19,8 +19,8 @@ export enum Sampler {
 
 export interface SettingsInterface {
   $schema: string;
-  backend: "PyTorch" | "TensorRT" | "AITemplate";
-  model: string;
+  backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
+  model: ModelEntry | null;
   txt2img: {
     prompt: string;
     negative_prompt: string;
@@ -118,7 +118,14 @@ export interface SettingsInterface {
 export const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
-  model: "none:PyTorch",
+  model: {
+    name: "none",
+    path: "",
+    backend: "PyTorch",
+    valid: false,
+    state: "not loaded",
+    loras: [],
+  },
   txt2img: {
     width: 512,
     height: 512,

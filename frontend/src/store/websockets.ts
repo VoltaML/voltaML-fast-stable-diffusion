@@ -1,4 +1,4 @@
-import { serverUrl, webSocketUrl } from "@/env";
+import { webSocketUrl } from "@/env";
 import {
   processWebSocket,
   type WebSocketMessage,
@@ -8,15 +8,14 @@ import { useMessage, useNotification } from "naive-ui";
 import { defineStore } from "pinia";
 import { computed, ref } from "vue";
 import { useState } from "../store/state";
-import { useSettings } from "./settings";
 
 export const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
   const messageProvider = useMessage();
   const global = useState();
-  const conf = useSettings();
 
   const onConnectedCallbacks: (() => void)[] = [];
+  const onRefreshCallbacks: (() => void)[] = [];
 
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     heartbeat: {
@@ -28,30 +27,21 @@ export const useWebsocket = defineStore("websocket", () => {
       if (event.data === "pong") {
         return;
       }
+
       const data = JSON.parse(event.data) as WebSocketMessage;
+      if (data.type === "refresh_models") {
+        console.log("Recieved refresh_models message");
+        onRefreshCallbacks.forEach((callback) => callback());
+        return;
+      }
       processWebSocket(data, global, notificationProvider);
     },
     onConnected: () => {
       messageProvider.success("Connected to server");
       onConnectedCallbacks.forEach((callback) => callback());
-      fetch(`${serverUrl}/api/models/loaded`).then((response) => {
-        if (response.status === 200) {
-          response.json().then((data) => {
-            console.log(
-              "Loaded models on the backend: " + data.length.toString()
-            );
-            if (data.length === 0) {
-              conf.data.settings.model = "none:PyTorch";
-              return;
-            }
-            conf.data.settings.model = data[0];
-          });
-        }
-      });
     },
     onDisconnected: () => {
       messageProvider.error("Disconnected from server");
-      conf.data.settings.model = "none:PyTorch";
     },
   });
 
@@ -90,5 +80,6 @@ export const useWebsocket = defineStore("websocket", () => {
     ws_open: websocket.open,
     color,
     onConnectedCallbacks,
+    onRefreshCallbacks,
   };
 });

@@ -23,7 +23,7 @@ class Txt2ImgConfig:
     negative_prompt: str = ""
     steps: int = 25
     batch_count: int = 1
-    batchSize: int = 1
+    batch_size: int = 1
 
 
 @dataclass

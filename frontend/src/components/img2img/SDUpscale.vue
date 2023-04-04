@@ -344,6 +344,9 @@ const generate = () => {
     }),
   })
     .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
       global.state.generating = false;
       res.json().then((data) => {
         global.state.sd_upscale.images = data.images;

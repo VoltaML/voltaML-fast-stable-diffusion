@@ -48,6 +48,8 @@ class AITemplateStableDiffusion(InferenceModel):
     ):
         super().__init__(model_id, use_f32, device)
 
+        self.backend = "AITemplate"
+
         # HuggingFace auth token
         self.auth = auth_token
 
