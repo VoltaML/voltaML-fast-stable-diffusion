@@ -13,7 +13,7 @@ from PIL import Image
 
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 from accelerate.utils import set_module_tensor_to_device
-from diffusers import SchedulerMixin, DDPMScheduler
+from diffusers import SchedulerMixin
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
@@ -31,6 +31,7 @@ from core.inference.base_model import InferenceModel
 from core.files import get_full_model_path
 from core.inference.functions import is_onnx_available, is_onnxscript_available, is_onnxsim_available, is_onnxconverter_available
 from core.types import Job, Txt2ImgQueueEntry, Img2ImgQueueEntry
+from core.utils import convert_to_image
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +130,7 @@ class OnnxStableDiffusion(InferenceModel):
                             case "scheduler":
                                 # TODO: during conversion save which scheduler was used.
                                 scheduler_reg = r"_class_name\": \"(.*)\","
-                                with open(file / "scheduler_config.json") as f:
+                                with open(file / "scheduler_config.json", "r") as f:
                                     matches = re.search(scheduler_reg, "\n".join(f.readlines()))
                                     module = importlib.import_module("diffusers")
                                     scheduler = getattr(module, matches.group(1))
@@ -142,7 +143,11 @@ class OnnxStableDiffusion(InferenceModel):
                         
                         # TODO: benchmark me
                         sess_options.graph_optimization_level = ort.GraphOptimizationLevel.ORT_ENABLE_ALL
-                        if providers[0] == "DmlExecutionProvider":
+                        if isinstance(providers[0], tuple):
+                            provname = providers[0][0]
+                        else:
+                            provname = providers[0]
+                        if provname == "DmlExecutionProvider":
                             sess_options.enable_mem_pattern = False
                             sess_options.execution_mode = ort.ExecutionMode.ORT_SEQUENTIAL
                         else:
@@ -607,7 +612,7 @@ class OnnxStableDiffusion(InferenceModel):
             latent_model_input = _init_latent_model(latents, do_classifier_free_guidance, t)
 
             timestep = np.array([t], dtype=timestep_dtype)
-            if class_labels is not None:
+            if class_labels is None: # rookie mistake
                 noise_pred = self.run_model(self.unet,
                     sample=latent_model_input, timestep=timestep, encoder_hidden_states=prompt_embeds)
             else:
@@ -712,6 +717,7 @@ class OnnxStableDiffusion(InferenceModel):
         w, h = width, height
         w, h = (x - x % 64 for x in (w, h))  # resize to integer multiple of 32
 
+        image = [image]
         image = [np.array(i.resize((w, h)))[None, :] for i in image]
         image = np.concatenate(image, axis=0)
         image = np.array(image).astype(np.float32) / 255.0
@@ -799,7 +805,7 @@ class OnnxStableDiffusion(InferenceModel):
         elif isinstance(job, Img2ImgQueueEntry):
             return self.img2img(
                 job.data.prompt,
-                Image.frombytes("RGB", (job.data.width, job.data.height), job.data.image),
+                convert_to_image(job.data.image),
                 job.data.height,
                 job.data.width,
                 job.data.strength,
