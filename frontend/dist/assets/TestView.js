@@ -1,16 +1,18 @@
-import { j as defineComponent, r as ref, z as createElementBlock, F as createVNode, G as withCtx, H as unref, a1 as Fragment, y as openBlock, P as createTextVNode, a2 as NButton, K as NCard, b9 as renderList, A as createBaseVNode, M as NInput, Q as NSelect, a5 as toDisplayString } from "./index.js";
+import { d as defineComponent, z as ref, G as computed, c as createElementBlock, f as createVNode, w as withCtx, g as unref, am as Fragment, o as openBlock, l as createTextVNode, A as NButton, h as NCard, q as NGrid, N as NGi, aZ as renderList, a as createBaseVNode, D as toDisplayString } from "./index.js";
 import { a as NTabs, N as NTabPane } from "./Tabs.js";
 import { N as NModal } from "./Modal.js";
 const _hoisted_1 = /* @__PURE__ */ createBaseVNode("div", null, "Model 2", -1);
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("div", null, "Model 2", -1);
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("div", null, "Model 2", -1);
-const _hoisted_4 = { style: { "display": "inline-flex", "width": "100%", "margin-top": "12px" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "TestView",
   setup(__props) {
     const models = ["Model 1", "Model 2", "Model 3", "Model 4"];
     const selectedModel = ref("");
     const show = ref(true);
+    const lora_title = computed(() => {
+      return `LoRA (${selectedModel.value ? selectedModel.value : "No model selected"})`;
+    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
         createVNode(unref(NButton), {
@@ -43,29 +45,70 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       style: { "height": "100%" }
                     }, {
                       default: withCtx(() => [
-                        createVNode(unref(NCard), {
-                          title: "Models",
+                        createVNode(unref(NGrid), {
+                          cols: 2,
+                          "x-gap": 8,
                           style: { "height": "100%" }
                         }, {
                           default: withCtx(() => [
-                            (openBlock(), createElementBlock(Fragment, null, renderList(models, (model) => {
-                              return createBaseVNode("div", {
-                                style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                key: model
-                              }, [
-                                createBaseVNode("p", null, toDisplayString(model), 1),
-                                createVNode(unref(NButton), {
-                                  type: "success",
-                                  ghost: "",
-                                  onClick: ($event) => selectedModel.value = model
+                            createVNode(unref(NGi), null, {
+                              default: withCtx(() => [
+                                createVNode(unref(NCard), {
+                                  title: "Models",
+                                  style: { "height": "100%" }
                                 }, {
                                   default: withCtx(() => [
-                                    createTextVNode("Select")
+                                    (openBlock(), createElementBlock(Fragment, null, renderList(models, (model) => {
+                                      return createBaseVNode("div", {
+                                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                        key: model
+                                      }, [
+                                        createBaseVNode("p", null, toDisplayString(model), 1),
+                                        createBaseVNode("div", null, [
+                                          createVNode(unref(NButton), {
+                                            type: "success",
+                                            ghost: "",
+                                            onClick: ($event) => selectedModel.value = model
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Load")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick"]),
+                                          createVNode(unref(NButton), {
+                                            type: "info",
+                                            style: { "margin-left": "8px" },
+                                            ghost: "",
+                                            onClick: ($event) => selectedModel.value = model
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Select")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick"])
+                                        ])
+                                      ]);
+                                    }), 64))
                                   ]),
-                                  _: 2
-                                }, 1032, ["onClick"])
-                              ]);
-                            }), 64))
+                                  _: 1
+                                })
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(NGi), null, {
+                              default: withCtx(() => [
+                                createVNode(unref(NCard), {
+                                  title: unref(lora_title),
+                                  style: { "height": "100%" }
+                                }, {
+                                  default: withCtx(() => [
+                                    createBaseVNode("p", null, toDisplayString(selectedModel.value), 1)
+                                  ]),
+                                  _: 1
+                                }, 8, ["title"])
+                              ]),
+                              _: 1
+                            })
                           ]),
                           _: 1
                         })
@@ -92,29 +135,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     })
                   ]),
                   _: 1
-                }),
-                createBaseVNode("div", _hoisted_4, [
-                  createVNode(unref(NInput), {
-                    placeholder: "Model Name",
-                    disabled: "",
-                    style: { "justify-self": "start", "margin-right": "12px" },
-                    value: selectedModel.value
-                  }, null, 8, ["value"]),
-                  createVNode(unref(NSelect), {
-                    placeholder: "GPU",
-                    style: { "margin-right": "12px" }
-                  }),
-                  createVNode(unref(NButton), {
-                    style: { "justify-self": "end" },
-                    type: "success",
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Load")
-                    ]),
-                    _: 1
-                  })
-                ])
+                })
               ]),
               _: 1
             })

@@ -235,9 +235,19 @@ class BuildRequest:
 
 @dataclass
 class ConvertModelRequest:
+    "Dataclass for requesting a conversion of a model"
+
     model: str
     use_fp32: bool = False
     safetensors: bool = False
+
+
+@dataclass
+class LoadLoraRequest:
+    "Dataclass for requesting a LoRA model to be injected into the model"
+
+    model: str
+    lora: str
 
 
 PyTorchModelType = Union[

@@ -5,7 +5,7 @@ import torch
 from fastapi import APIRouter, HTTPException
 
 from core.shared_dependent import cached_model_list, gpu
-from core.types import InferenceBackend
+from core.types import InferenceBackend, LoadLoraRequest
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
@@ -57,6 +57,14 @@ async def unload_all_models():
     await gpu.unload_all()
 
     return {"message": "All models unloaded"}
+
+
+@router.post("/load-lora")
+async def load_lora(req: LoadLoraRequest):
+    "Load a LoRA model into a model"
+
+    await gpu.load_lora(req.model, req.lora)
+    return {"message": "LoRA model loaded"}
 
 
 @router.post("/memory-cleanup")

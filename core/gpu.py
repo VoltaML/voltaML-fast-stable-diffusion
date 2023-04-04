@@ -464,3 +464,32 @@ class GPU:
         "Download a model from the internet."
 
         await run_in_thread_async(download_model, args=(model,))
+
+    async def load_lora(self, model: str, lora: str):
+        "Inject a Lora model into a model"
+
+        if model in self.loaded_models:
+            internal_model = self.loaded_models[model]
+
+            if isinstance(internal_model, PyTorchStableDiffusion):
+                logger.debug(f"Loading Lora model: {lora}")
+
+                internal_model.load_lora(lora)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Lora model loaded",
+                        f"Lora model {lora} loaded",
+                    )
+                )
+
+        else:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not found",
+                    f"Model {model} not found",
+                )
+            )
+            logger.error(f"Model {model} not found")

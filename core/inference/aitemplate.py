@@ -81,7 +81,7 @@ class AITemplateStableDiffusion(InferenceModel):
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
         pipe = StableDiffusionAITPipeline.from_pretrained(
-            get_full_model_path(self.model_id),
+            pretrained_model_name_or_path=str(get_full_model_path(self.model_id)),
             torch_dtype=torch.float16,
             directory=self.directory,
             clip_ait_exe=None,
@@ -192,7 +192,6 @@ class AITemplateStableDiffusion(InferenceModel):
                 resume_download=True,
                 torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
                 use_auth_token=self.auth,
-                cache_dir=config.api.cache_dir,
             )
 
             assert isinstance(cn, ControlNetModel)

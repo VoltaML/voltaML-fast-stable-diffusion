@@ -30,7 +30,6 @@ from huggingface_hub.utils._errors import (
 )
 from requests import HTTPError
 
-from core.config import config
 from core.files import get_full_model_path
 from core.functions import optimize_model
 
@@ -360,7 +359,6 @@ def load_pytorch_pipeline(
             safety_checker=None,
             requires_safety_checker=False,
             feature_extractor=None,
-            cache_dir=config.api.cache_dir,
             low_cpu_mem_usage=True,
         )
         assert isinstance(pipe, StableDiffusionPipeline)
