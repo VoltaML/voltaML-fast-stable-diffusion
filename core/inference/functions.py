@@ -37,6 +37,15 @@ logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
 
+def is_onnxconverter_available():
+    "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
+    try:
+        import onnxconverter_common # pylint: disable=unused-import
+        return True
+    except ImportError:
+        return False
+
+
 def is_onnx_available():
     "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
     try:

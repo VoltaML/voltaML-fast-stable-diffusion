@@ -29,7 +29,7 @@ import numpy as np
 
 from core.inference.base_model import InferenceModel
 from core.files import get_full_model_path
-from core.inference.functions import is_onnx_available, is_onnxscript_available, is_onnxsim_available
+from core.inference.functions import is_onnx_available, is_onnxscript_available, is_onnxsim_available, is_onnxconverter_available
 from core.types import Job, Txt2ImgQueueEntry, Img2ImgQueueEntry
 
 logger = logging.getLogger(__name__)
@@ -74,21 +74,20 @@ class OnnxStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
+        use_fp32: bool = False,
         autoload: bool = True,
     ) -> None:
         if is_onnx_available():
             import onnxruntime as ort
 
             super().__init__(model_id)
+            self.use_fp32 = use_fp32
             self.vae_encoder: ort.InferenceSession
             self.vae_decoder: ort.InferenceSession
             self.unet: ort.InferenceSession
             self.text_encoder: ort.InferenceSession
             self.tokenizer: CLIPTokenizerFast
             self.scheduler: SchedulerMixin
-
-            # Needed for img2img
-            self.low_res_scheduler: DDPMScheduler
 
             if autoload:
                 self.load()
@@ -167,7 +166,6 @@ class OnnxStableDiffusion(InferenceModel):
                 s = time()
                 setattr(self, module, _load(folder / module))
                 logger.info(f"Loaded {module} in {(time() - s):.2f}s.")
-            self.low_res_scheduler = DDPMScheduler()
 
             self.memory_cleanup()
 
@@ -295,6 +293,7 @@ class OnnxStableDiffusion(InferenceModel):
                 custom_opsets={"torch.onnx": 1},
             )
             # quantize
+            quantize_success = False
             try:
                 from onnxruntime.quantization import quantize_dynamic, QuantType
                 logger.info(
@@ -313,11 +312,24 @@ class OnnxStableDiffusion(InferenceModel):
                 os.rename(output_path, in_path)
 
                 output_path = in_path
+                quantize_success = True
 
                 self.memory_cleanup()
             except ValueError:
                 output_path = in_path # type: ignore
                 logger.warning("Could not quantize model, skipping.")
+
+            if is_onnxconverter_available():
+                if not quantize_success and not signed and not self.use_fp32:
+                    import onnx # pylint: disable=import-self
+                    from onnxconverter_common import float16
+                    model = onnx.load(str(output_path)) # pylint: disable=no-member
+                    model = float16.convert_float_to_float16(model, keep_io_types=True)
+                    onnx.save(model, str(output_path)) # pylint: disable=no-member
+                    del model
+            elif not self.use_fp32 and not quantize_success:
+                logger.warning(
+                    "Onnxconverter-common is not available, skipping float16 conversion process. Model will run in FP32.")
 
             if simplify:
                 if is_onnxsim_available():
