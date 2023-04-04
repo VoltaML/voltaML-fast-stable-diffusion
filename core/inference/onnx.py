@@ -26,12 +26,21 @@ from transformers.modeling_outputs import BaseModelOutputWithPooling
 from transformers.utils import is_safetensors_available
 
 import numpy as np
+from numpy.random import MT19937
+from numpy.random import RandomState, SeedSequence
 
+from api import websocket_manager
+from api.websockets import Data
 from core.inference.base_model import InferenceModel
 from core.files import get_full_model_path
+from core.inference_callbacks import (
+    img2img_callback,
+    inpaint_callback,
+    txt2img_callback,
+)
 from core.inference.functions import is_onnx_available, is_onnxscript_available, is_onnxsim_available, is_onnxconverter_available
-from core.types import Job, Txt2ImgQueueEntry, Img2ImgQueueEntry
-from core.utils import convert_to_image
+from core.types import Job, Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry
+from core.utils import convert_images_to_base64_grid, convert_to_image
 
 logger = logging.getLogger(__name__)
 
@@ -550,7 +559,6 @@ class OnnxStableDiffusion(InferenceModel):
                         t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
                     f.write(f"{fn}: {t} \n")
 
-    # TODO: test me.
     def _encode_prompt(self, prompt: str, num_images_per_prompt: int, do_classifier_free_guidance: bool, negative_prompt: str):
         text_input_ids = self.tokenizer(
             prompt,
@@ -597,6 +605,8 @@ class OnnxStableDiffusion(InferenceModel):
             guidance_scale,
             prompt_embeds,
             extra_step_kwargs,
+            callback = None,
+            kw = None,
             class_labels = None,
         ):
         def _init_latent_model(latents, do_classifier_free_guidance, t):
@@ -609,7 +619,10 @@ class OnnxStableDiffusion(InferenceModel):
 
         logger.debug("timestep start")
         for i, t in enumerate(tqdm(self.scheduler.timesteps)):
-            latent_model_input = _init_latent_model(latents, do_classifier_free_guidance, t)
+            if kw is not None:
+                latent_model_input = kw(latents, do_classifier_free_guidance, t)
+            else:
+                latent_model_input = _init_latent_model(latents, do_classifier_free_guidance, t)
 
             timestep = np.array([t], dtype=timestep_dtype)
             if class_labels is None: # rookie mistake
@@ -627,7 +640,11 @@ class OnnxStableDiffusion(InferenceModel):
             scheduler_output = self.scheduler.step(
                 torch.from_numpy(noise_pred), t, torch.from_numpy(latents), **extra_step_kwargs
             )
-            latents = scheduler_output.prev_sample.numpy()
+            latents = scheduler_output.prev_sample
+
+            if callback is not None:
+                callback(i, t, latents)
+            latents = latents.numpy()
         logger.debug("timestep end")
         return latents
     
@@ -653,7 +670,89 @@ class OnnxStableDiffusion(InferenceModel):
         return image
 
     @torch.no_grad()
-    def text2img(
+    def _inpaint(
+            self,
+            prompt: str,
+            image: Image.Image,
+            mask_image: Image.Image,
+            height: int = 512,
+            width: int = 512,
+            num_inference_steps: int = 20,
+            guidance_scale: float = 7.5,
+            negative_prompt: str = None,  # type: ignore
+            num_images_per_prompt: int = 1,
+            callback = None,
+            seed = -1,
+            generator: RandomState = None, # type: ignore pylint: disable=no-member
+            latents: np.ndarray = None,  # type: ignore
+    ) -> StableDiffusionPipelineOutput:
+        if generator is None:
+            generator = RandomState(MT19937(SeedSequence(seed)))
+        do_classifier_free_guidance = guidance_scale > 1.0
+        
+        self.scheduler.set_timesteps(num_inference_steps)
+        prompt_embeds = self._encode_prompt(prompt, num_images_per_prompt, do_classifier_free_guidance, negative_prompt)
+        latents_shape = (num_images_per_prompt, 4, height // 8, width // 8)
+        latents_dtype = prompt_embeds.dtype
+        if latents is None:
+            latents = generator.randn(*latents_shape).astype(latents_dtype)
+        latents_shape = latents_shape[-2:]
+        image = np.array(image.convert("RGB").resize((latents_shape[1] * 8, latents_shape[0] * 8)))
+        image = image[None].transpose(0, 3, 1, 2)
+        image = image.astype(np.float32) / 127.5 - 1.0
+
+        image_mask = np.array(mask_image.convert("L").resize((latents_shape[1] * 8, latents_shape[0] * 8)))
+        masked_image = image * (image_mask < 127.5)
+
+        mask_image = mask_image.resize((latents_shape[1], latents_shape[0]), PIL_INTERPOLATION["nearest"])
+        mask_image = np.array(mask_image.convert("L"))
+        mask_image = mask_image.astype(np.float32) / 255.0
+        mask_image = mask_image[None, None]
+        mask_image[mask_image < 0.5] = 0
+        mask_image[mask_image >= 0.5] = 1
+
+        mask = mask_image.astype(latents.dtype)
+        masked_image = masked_image.astype(latents.dtype)
+
+        masked_image_latents = self.run_model(self.vae_encoder, sample=masked_image)[0]
+        masked_image_latents = 0.18215 * masked_image_latents
+
+        mask = mask.repeat(num_images_per_prompt, 0)
+        masked_image_latents = masked_image_latents.repeat(num_images_per_prompt, 0)
+
+        mask = np.concatenate([mask] * 2) if do_classifier_free_guidance else mask
+        masked_image_latents = np.concatenate([masked_image_latents] * 2) if do_classifier_free_guidance else masked_image_latents
+        
+        latents = latents * np.float64(self.scheduler.init_noise_sigma)
+        extra_step_kwargs = self._extra_args()
+        timestep_dtype = self._get_timestep_dtype()
+
+        def _init_latent_model(latents, do_classifier_free_guidance, t):
+            latent_model_input = np.concatenate(
+                [latents] * 2) if do_classifier_free_guidance else latents
+            latent_model_input = self.scheduler.scale_model_input(
+                torch.from_numpy(latent_model_input), t)
+            latent_model_input = latent_model_input.cpu().numpy()
+            latent_model_input = np.concatenate([latent_model_input, mask, masked_image_latents], axis=1)
+            return latent_model_input
+
+        latents = self._timestep(
+            latents=latents,
+            timestep_dtype=timestep_dtype,
+            do_classifier_free_guidance=do_classifier_free_guidance,
+            guidance_scale=guidance_scale,
+            prompt_embeds=prompt_embeds,
+            extra_step_kwargs=extra_step_kwargs,
+            callback=callback,
+            kw=_init_latent_model
+        )
+
+        image = self._decode_latents(latents, 0.18215)
+        image = self.numpy_to_pil(image)
+        return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=False)
+
+    @torch.no_grad()
+    def _txt2img(
             self,
             prompt: str,
             height: int = 512,
@@ -662,12 +761,13 @@ class OnnxStableDiffusion(InferenceModel):
             guidance_scale: float = 7.5,
             negative_prompt: str = None,  # type: ignore
             num_images_per_prompt: int = 1,
-            generator: np.random.RandomState = None, # type: ignore pylint: disable=no-member
+            callback = None,
+            seed = -1,
+            generator: RandomState = None, # type: ignore pylint: disable=no-member
             latents: np.ndarray = None,  # type: ignore
     ) -> StableDiffusionPipelineOutput:
-        batch_size = 1
         if generator is None:
-            generator = np.random  # type: ignore
+            generator = RandomState(MT19937(SeedSequence(seed)))
         do_classifier_free_guidance = guidance_scale > 1.0
 
         t = time()
@@ -678,7 +778,7 @@ class OnnxStableDiffusion(InferenceModel):
         logger.debug(f"encode prompt end ({(time() - t):.2f}s)")
 
         latents_dtype = prompt_embeds.dtype
-        latents_shape = (batch_size * num_images_per_prompt,
+        latents_shape = (num_images_per_prompt,
                          4, height // 8, width // 8)
         latents = generator.randn(*latents_shape).astype(latents_dtype)
 
@@ -694,13 +794,16 @@ class OnnxStableDiffusion(InferenceModel):
             do_classifier_free_guidance=do_classifier_free_guidance,
             guidance_scale=guidance_scale,
             prompt_embeds=prompt_embeds,
-            extra_step_kwargs=extra_step_kwargs
+            extra_step_kwargs=extra_step_kwargs,
+            callback=callback
         )
         image = self._decode_latents(latents, 0.18215)
         image = self.numpy_to_pil(image)
+
         return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=False) # type: ignore
 
-    def img2img(
+    @torch.no_grad()
+    def _img2img(
             self,
             prompt: str,
             image: Image.Image,
@@ -710,7 +813,9 @@ class OnnxStableDiffusion(InferenceModel):
             num_inference_steps: int = 20,
             guidance_scale: float = 7.5,
             negative_prompt: str = None,  # type: ignore
-            num_images_per_prompt: int = 1
+            num_images_per_prompt: int = 1,
+            callback = None,
+            seed = -1,
     ) -> StableDiffusionPipelineOutput:
         do_classifier_free_guidance = guidance_scale > 1.0
 
@@ -725,7 +830,7 @@ class OnnxStableDiffusion(InferenceModel):
         image = 2.0 * image - 1.0
 
         self.scheduler.set_timesteps(num_inference_steps)
-        generator = np.random
+        generator = RandomState(MT19937(SeedSequence(seed)))
         extra_step_kwargs = self._extra_args()
 
         prompt_embeds = self._encode_prompt(
@@ -757,7 +862,8 @@ class OnnxStableDiffusion(InferenceModel):
             do_classifier_free_guidance=do_classifier_free_guidance,
             guidance_scale=guidance_scale,
             prompt_embeds=prompt_embeds,
-            extra_step_kwargs=extra_step_kwargs
+            extra_step_kwargs=extra_step_kwargs,
+            callback=callback
         )
 
         image = self._decode_latents(latents, 0.18215)
@@ -792,26 +898,81 @@ class OnnxStableDiffusion(InferenceModel):
         self.memory_cleanup()
 
     def generate(self, job: Job) -> List[Image.Image]:
+        total_images = []
         if isinstance(job, Txt2ImgQueueEntry):
-            return self.text2img(
-                job.data.prompt,
-                job.data.height,
-                job.data.width,
-                job.data.steps,
-                job.data.guidance_scale,
-                job.data.negative_prompt,
-                job.data.batch_size
-            ).images
+            for _ in range(job.data.batch_count):
+                total_images.extend(self._txt2img(
+                    job.data.prompt,
+                    job.data.height,
+                    job.data.width,
+                    job.data.steps,
+                    job.data.guidance_scale,
+                    job.data.negative_prompt,
+                    job.data.batch_size,
+                    txt2img_callback,
+                    job.data.seed
+                ).images)
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="txt2img",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(total_images),
+                    },
+                )
+            )
         elif isinstance(job, Img2ImgQueueEntry):
-            return self.img2img(
-                job.data.prompt,
-                convert_to_image(job.data.image),
-                job.data.height,
-                job.data.width,
-                job.data.strength,
-                job.data.steps,
-                job.data.guidance_scale,
-                job.data.negative_prompt,
-                job.data.batch_size
-            ).images
-        return []
+            for _ in range(job.data.batch_count):
+                total_images.extend(self._img2img(
+                    job.data.prompt,
+                    convert_to_image(job.data.image),
+                    job.data.height,
+                    job.data.width,
+                    job.data.strength,
+                    job.data.steps,
+                    job.data.guidance_scale,
+                    job.data.negative_prompt,
+                    job.data.batch_size,
+                    img2img_callback,
+                    job.data.seed
+                ).images)
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="img2img",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(total_images),
+                    },
+                )
+            )
+        elif isinstance(job, InpaintQueueEntry):
+            for _ in range(job.data.batch_count):
+                total_images.extend(self._inpaint(
+                    job.data.prompt,
+                    convert_to_image(job.data.image),
+                    convert_to_image(job.data.mask_image),
+                    job.data.height,
+                    job.data.width,
+                    job.data.steps,
+                    job.data.guidance_scale,
+                    job.data.negative_prompt,
+                    job.data.batch_size,
+                    inpaint_callback,
+                    job.data.seed
+                ).images)
+            websocket_manager.broadcast_sync(
+                data=Data(
+                    data_type="inpainting",
+                    data={
+                        "progress": 0,
+                        "current_step": 0,
+                        "total_steps": 0,
+                        "image": convert_images_to_base64_grid(total_images),
+                    },
+                )
+            )
+        return total_images
