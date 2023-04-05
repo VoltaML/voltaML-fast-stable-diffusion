@@ -1,4 +1,4 @@
-import { ControlNetType } from "./core/interfaces";
+import { ControlNetType, type ModelEntry } from "./core/interfaces";
 import { serverUrl } from "./env";
 
 export enum Sampler {
@@ -19,8 +19,8 @@ export enum Sampler {
 
 export interface SettingsInterface {
   $schema: string;
-  backend: "PyTorch" | "TensorRT" | "AITemplate";
-  model: string;
+  backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
+  model: ModelEntry | null;
   txt2img: {
     prompt: string;
     negative_prompt: string;
@@ -100,8 +100,12 @@ export interface SettingsInterface {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
-    cache_dir: string;
-    optLevel: number;
+    attention_processor: "xformers" | "spda";
+    attention_slicing: "auto" | number | "disabled";
+    channels_last: boolean;
+    vae_slicing: boolean;
+    trace_model: boolean;
+    offload: "module" | "model" | "disabled";
     image_preview_delay: number;
     device_id: number;
   };
@@ -118,7 +122,7 @@ export interface SettingsInterface {
 export const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
-  model: "none:PyTorch",
+  model: null,
   txt2img: {
     width: 512,
     height: 512,
@@ -198,8 +202,12 @@ export const defaultSettings: SettingsInterface = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
-    cache_dir: "",
-    optLevel: 1,
+    attention_processor: "xformers",
+    attention_slicing: "disabled",
+    channels_last: true,
+    vae_slicing: false,
+    trace_model: false,
+    offload: "disabled",
     image_preview_delay: 2.0,
     device_id: 0,
   },

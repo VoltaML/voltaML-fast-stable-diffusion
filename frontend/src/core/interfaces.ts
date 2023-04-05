@@ -16,9 +16,11 @@ export interface imgMetadata {
 
 export interface ModelEntry {
   name: string;
-  path: number;
-  backend: "TensorRT" | "PyTorch";
+  path: string;
+  backend: "TensorRT" | "PyTorch" | "AITemplate" | "unknown" | "LoRA";
   valid: boolean;
+  state: "loading" | "loaded" | "not loaded";
+  loras: string[];
 }
 
 export enum ControlNetType {

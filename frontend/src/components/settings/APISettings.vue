@@ -1,91 +1,123 @@
 <template>
-  <NCard>
-    <NForm>
-      <NFormItem label="WebSocket Performance Monitor Interval">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.websocket_perf_interval"
-          :min="0.1"
-          :step="0.1"
-        />
-      </NFormItem>
-      <NFormItem label="WebSocket Sync Interval">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.websocket_sync_interval"
-          :min="0.001"
-          :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem label="Image Preview Interval (seconds)">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.image_preview_delay"
-          :step="0.1"
-        />
-      </NFormItem>
-      <NFormItem label="Cache Directory">
-        <NInput v-model:value="settings.defaultSettings.api.cache_dir" />
-      </NFormItem>
+  <NForm>
+    <NFormItem label="WebSocket Performance Monitor Interval">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.websocket_perf_interval"
+        :min="0.1"
+        :step="0.1"
+      />
+    </NFormItem>
+    <NFormItem label="WebSocket Sync Interval">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.websocket_sync_interval"
+        :min="0.001"
+        :step="0.01"
+      />
+    </NFormItem>
+    <NFormItem label="Image Preview Interval (seconds)">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.image_preview_delay"
+        :step="0.1"
+      />
+    </NFormItem>
 
-      <NFormItem label="Optimization" style="">
-        <NSelect
-          :options="[
-            {
-              value: 0,
-              label: '(0) Ultra speed (Traced UNet)',
-            },
-            {
-              value: 1,
-              label: '(1) Speed',
-            },
-            {
-              value: 2,
-              label: '(2) Balanced',
-            },
-            {
-              value: 3,
-              label: '(3) Multi-model VRAM efficient',
-            },
-            {
-              value: 4,
-              label: '(4) VRAM efficient',
-            },
-          ]"
-          v-model:value="settings.defaultSettings.api.optLevel"
-        >
-        </NSelect>
+    <NFormItem label="Attention Processor">
+      <NSelect
+        :options="[
+          {
+            value: 'xformers',
+            label: 'xFormers (less memory hungry)',
+          },
+          {
+            value: 'spda',
+            label: 'SPD Attention',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.attention_processor"
+      >
+      </NSelect>
+    </NFormItem>
 
-        <a
-          href="https://voltaml.github.io/voltaML-fast-stable-diffusion/experimental/optimization"
-          style="
-            height: 100%;
-            align-self: center;
-            display: flex;
-            align-items: center;
-            margin-left: 10px;
-          "
-        >
-          <NIcon>
-            <Help />
-          </NIcon>
-        </a>
-      </NFormItem>
+    <NFormItem label="Attention Slicing">
+      <NSelect
+        :options="[
+          {
+            value: 'disabled',
+            label: 'None',
+          },
+          {
+            value: 'auto',
+            label: 'Auto',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.attention_slicing"
+      >
+      </NSelect>
 
-      <NFormItem label="Device ID (GPU ID)">
-        <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
-      </NFormItem>
-    </NForm>
-  </NCard>
+      <a
+        href="https://voltaml.github.io/voltaML-fast-stable-diffusion/experimental/optimization"
+        style="
+          height: 100%;
+          align-self: center;
+          display: flex;
+          align-items: center;
+          margin-left: 10px;
+        "
+      >
+        <NIcon>
+          <Help />
+        </NIcon>
+      </a>
+    </NFormItem>
+
+    <NFormItem label="Channels Last">
+      <NSwitch v-model:value="settings.defaultSettings.api.channels_last" />
+    </NFormItem>
+
+    <NFormItem label="VAE Slicing">
+      <NSwitch v-model:value="settings.defaultSettings.api.vae_slicing" />
+    </NFormItem>
+
+    <NFormItem label="Trace UNet">
+      <NSwitch v-model:value="settings.defaultSettings.api.trace_model" />
+    </NFormItem>
+
+    <NFormItem label="Offload">
+      <NSelect
+        :options="[
+          {
+            value: 'disabled',
+            label: 'Disabled',
+          },
+          {
+            value: 'model',
+            label: 'Offload the whole model to RAM when not used',
+          },
+          {
+            value: 'module',
+            label: 'Offload individual modules to RAM when not used',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.offload"
+      >
+      </NSelect>
+    </NFormItem>
+
+    <NFormItem label="Device ID (GPU ID)">
+      <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
+    </NFormItem>
+  </NForm>
 </template>
 
 <script lang="ts" setup>
 import { Help } from "@vicons/ionicons5";
 import {
-  NCard,
   NForm,
   NFormItem,
   NIcon,
-  NInput,
   NInputNumber,
   NSelect,
+  NSwitch,
 } from "naive-ui";
 import { useSettings } from "../../store/settings";
 

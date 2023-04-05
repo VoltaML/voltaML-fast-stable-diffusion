@@ -1,6 +1,5 @@
-import { d as defineComponent, u as useState, b as useSettings, e as useMessage, o as openBlock, c as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, A as NButton, l as createTextVNode, h as NCard, i as NSpace, a as createBaseVNode, k as NTooltip, n as NSlider, p as NInputNumber, _ as _sfc_main$2, I as ImageOutput, q as NGrid, s as serverUrl, r as pushScopeId, t as popScopeId, x as _export_sfc, C as createBlock } from "./index.js";
+import { d as defineComponent, u as useState, b as useSettings, e as useMessage, o as openBlock, c as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, D as NButton, l as createTextVNode, i as NCard, j as NSpace, a as createBaseVNode, m as NTooltip, p as NSlider, q as NInputNumber, _ as _sfc_main$2, I as ImageOutput, r as NGrid, v as serverUrl, y as pushScopeId, z as popScopeId, A as _export_sfc, F as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { N as NTabPane, a as NTabs } from "./Tabs.js";
 const _withScopeId = (n) => (pushScopeId("data-v-cba9f72b"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };

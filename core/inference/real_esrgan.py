@@ -27,6 +27,7 @@ class RealESRGAN(InferenceModel):
         pre_pad: int = 0,
     ):
         super().__init__(model_id=model_name, use_fp32=use_f32, device=device)
+
         self.denoise_strength = denoise_strength
         self.tile = tile
         self.tile_pad = tile_pad

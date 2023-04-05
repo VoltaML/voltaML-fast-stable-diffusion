@@ -15,6 +15,7 @@ class InferenceModel(ABC):
         self.model_id = model_id
         self.use_fp32 = use_fp32
         self.device = device
+        self.backend = "unknown"
 
     @abstractmethod
     def load(self):

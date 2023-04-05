@@ -16,6 +16,7 @@ class TensorRTModel(InferenceModel):
         self.model_id = model_id
         self.use_f32 = use_f32
         self.device = device
+        self.backend = "TensorRT"
 
     def load(self):
         "Loads the model into the memory"

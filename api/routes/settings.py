@@ -17,7 +17,7 @@ async def save_configuration(settings: config.Configuration):
     update_config(config.config, settings)
     config.save_config(config.config)
 
-    logger.info(f"Optimization level set to {config.config.api.opt_level}")
+    logger.info("Config was updated and saved to disk")
 
     return {"message": "success"}
 

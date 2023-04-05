@@ -54,14 +54,11 @@ def compile_diffusers(
     if detect_target().name() == "rocm":
         convert_conv_to_gemm = False
 
-    old_opt = config.api.opt_level
-    config.api.opt_level = 1
     pipe = load_pytorch_pipeline(
         model_id_or_path=local_dir_or_id,
-        use_f32=not use_fp16_acc,
+        use_fp32=not use_fp16_acc,
         device=device,
     )
-    config.api.opt_level = old_opt
 
     assert (
         height % 64 == 0 and width % 64 == 0
