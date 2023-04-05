@@ -1,5 +1,4 @@
-import { O as c, P as cB, ai as cNotM, R as cM, Q as cE, T as insideModal, U as insidePopover, d as defineComponent, E as useConfig, X as useTheme, G as computed, a0 as useThemeClass, bG as useCompitable, av as flatten, y as h, aw as getSlot, bH as descriptionsLight, $ as createKey, z as ref, az as NScrollbar$1, u as useState, aT as reactive, s as serverUrl, C as createBlock, w as withCtx, g as unref, o as openBlock, f as createVNode, bI as NImage, bJ as createCommentVNode, N as NGi, a as createBaseVNode, h as NCard, c as createElementBlock, aZ as renderList, am as Fragment, q as NGrid, l as createTextVNode, D as toDisplayString, x as _export_sfc } from "./index.js";
-import { a as NTabs, N as NTabPane } from "./Tabs.js";
+import { Q as c, R as cB, ak as cNotM, T as cM, S as cE, V as insideModal, W as insidePopover, d as defineComponent, G as useConfig, Z as useTheme, J as computed, a2 as useThemeClass, bf as useCompitable, ax as flatten, y as h, ay as getSlot, bg as descriptionsLight, a1 as createKey, u as useState, aV as reactive, s as serverUrl, C as createBlock, w as withCtx, g as unref, o as openBlock, f as createVNode, bh as NImage, bi as createCommentVNode, N as NGi, a as createBaseVNode, h as NCard, F as NTabs, E as NTabPane, bj as NScrollbar, c as createElementBlock, bk as renderList, ao as Fragment, q as NGrid, l as createTextVNode, D as toDisplayString, x as _export_sfc } from "./index.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
   if (children !== null && typeof children === "object" && !Array.isArray(children)) {
@@ -279,29 +278,6 @@ const NDescriptionsItem = defineComponent({
     return null;
   }
 });
-const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), { trigger: String, xScrollable: Boolean, onScroll: Function });
-const Scrollbar = defineComponent({
-  name: "Scrollbar",
-  props: scrollbarProps,
-  setup() {
-    const scrollbarInstRef = ref(null);
-    const exposedMethods = {
-      scrollTo: (...args) => {
-        var _a;
-        (_a = scrollbarInstRef.value) === null || _a === void 0 ? void 0 : _a.scrollTo(args[0], args[1]);
-      },
-      scrollBy: (...args) => {
-        var _a;
-        (_a = scrollbarInstRef.value) === null || _a === void 0 ? void 0 : _a.scrollBy(args[0], args[1]);
-      }
-    };
-    return Object.assign(Object.assign({}, exposedMethods), { scrollbarInstRef });
-  },
-  render() {
-    return h(NScrollbar$1, Object.assign({ ref: "scrollbarInstRef" }, this.$props), this.$slots);
-  }
-});
-const NScrollbar = Scrollbar;
 const _hoisted_1 = { style: { "height": "100%", "width": "100%" } };
 const _hoisted_2 = ["onClick"];
 const _hoisted_3 = ["onClick"];

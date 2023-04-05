@@ -389,7 +389,7 @@ const generate = () => {
         batch_count: conf.data.settings.inpainting.batch_count,
         scheduler: conf.data.settings.inpainting.sampler,
       },
-      model: conf.data.settings.model.name,
+      model: conf.data.settings.model?.name,
     }),
   })
     .then((res) => {

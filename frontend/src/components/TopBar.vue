@@ -5,7 +5,7 @@
       :options="generatedModelOptions"
       @update:value="onModelChange"
       :loading="modelsLoading"
-      placeholder="Select model"
+      placeholder=""
       :value="
         conf.data.settings.model !== null ? conf.data.settings.model?.name : ''
       "
@@ -290,6 +290,7 @@ const loraModels = computed(() => {
 });
 
 function refreshModels() {
+  console.log("Refreshing models");
   modelsLoading.value = true;
   fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
     res.json().then((data: Array<ModelEntry>) => {
@@ -328,16 +329,25 @@ function refreshModels() {
       });
 
       // Set the current model to the first available model if it was null
-      if (conf.data.settings.model === null) {
-        conf.data.settings.model = [
+      if (!conf.data.settings.model) {
+        const allLoaded = [
           ...loadedPyTorchModels.value,
           ...loadedAitModels.value,
           ...loadedExtraModels.value,
-        ][0];
-        console.log(
-          "Set current model to first available model: ",
-          conf.data.settings.model
-        );
+        ];
+
+        console.log("All loaded models: ", allLoaded);
+
+        if (allLoaded.length > 0) {
+          conf.data.settings.model = allLoaded[0];
+          console.log(
+            "Set current model to first available model: ",
+            conf.data.settings.model
+          );
+        } else {
+          console.log("No models available");
+          conf.data.settings.model = null;
+        }
       }
     });
   });
@@ -409,6 +419,11 @@ async function onModelChange(modelStr: string) {
   }
 }
 
+function resetModels() {
+  models.value.splice(0, models.value.length);
+  console.log("Reset models");
+}
+
 const syncIcon = () => {
   return h(SyncSharp);
 };
@@ -419,6 +434,9 @@ const perfIcon = () => {
 
 websocketState.onConnectedCallbacks.push(() => {
   refreshModels();
+});
+websocketState.onDisconnectedCallbacks.push(() => {
+  resetModels();
 });
 websocketState.onRefreshCallbacks.push(() => {
   refreshModels();

@@ -15,6 +15,7 @@ export const useWebsocket = defineStore("websocket", () => {
   const global = useState();
 
   const onConnectedCallbacks: (() => void)[] = [];
+  const onDisconnectedCallbacks: (() => void)[] = [];
   const onRefreshCallbacks: (() => void)[] = [];
 
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
@@ -30,8 +31,8 @@ export const useWebsocket = defineStore("websocket", () => {
 
       const data = JSON.parse(event.data) as WebSocketMessage;
       if (data.type === "refresh_models") {
-        console.log("Recieved refresh_models message");
         onRefreshCallbacks.forEach((callback) => callback());
+        console.log("Models refreshed");
         return;
       }
       processWebSocket(data, global, notificationProvider);
@@ -42,6 +43,7 @@ export const useWebsocket = defineStore("websocket", () => {
     },
     onDisconnected: () => {
       messageProvider.error("Disconnected from server");
+      onDisconnectedCallbacks.forEach((callback) => callback());
     },
   });
 
@@ -80,6 +82,7 @@ export const useWebsocket = defineStore("websocket", () => {
     ws_open: websocket.open,
     color,
     onConnectedCallbacks,
+    onDisconnectedCallbacks,
     onRefreshCallbacks,
   };
 });

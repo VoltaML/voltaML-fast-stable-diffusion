@@ -380,7 +380,7 @@ const generate = () => {
         mlsd_thr_v: 0.1,
         mlsd_thr_d: 0.1,
       },
-      model: conf.data.settings.model.name,
+      model: conf.data.settings.model?.name,
     }),
   })
     .then((res) => {

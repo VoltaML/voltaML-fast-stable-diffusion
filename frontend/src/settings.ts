@@ -118,14 +118,7 @@ export interface SettingsInterface {
 export const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
-  model: {
-    name: "none",
-    path: "",
-    backend: "PyTorch",
-    valid: false,
-    state: "not loaded",
-    loras: [],
-  },
+  model: null,
   txt2img: {
     width: 512,
     height: 512,

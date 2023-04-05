@@ -321,7 +321,7 @@ const generate = () => {
         strength: conf.data.settings.img2img.denoising_strength,
         scheduler: conf.data.settings.img2img.sampler,
       },
-      model: conf.data.settings.model.name,
+      model: conf.data.settings.model?.name,
     }),
   })
     .then((res) => {

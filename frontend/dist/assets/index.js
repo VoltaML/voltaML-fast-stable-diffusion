@@ -202,7 +202,7 @@ const looseToNumber = (val) => {
   const n = parseFloat(val);
   return isNaN(n) ? val : n;
 };
-const toNumber = (val) => {
+const toNumber$1 = (val) => {
   const n = isString$1(val) ? Number(val) : NaN;
   return isNaN(n) ? val : n;
 };
@@ -1507,27 +1507,27 @@ function withCtx(fn, ctx2 = currentRenderingInstance, isNonScopedSlot) {
 function markAttrsAccessed() {
 }
 function renderComponentRoot(instance) {
-  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit: emit2, render: render13, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
+  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit: emit2, render: render12, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
   let result;
   let fallthroughAttrs;
   const prev = setCurrentRenderingInstance(instance);
   try {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
-      result = normalizeVNode(render13.call(proxyToUse, proxyToUse, renderCache, props, setupState, data, ctx2));
+      result = normalizeVNode(render12.call(proxyToUse, proxyToUse, renderCache, props, setupState, data, ctx2));
       fallthroughAttrs = attrs;
     } else {
-      const render14 = Component;
+      const render13 = Component;
       if (false)
         ;
-      result = normalizeVNode(render14.length > 1 ? render14(props, false ? {
+      result = normalizeVNode(render13.length > 1 ? render13(props, false ? {
         get attrs() {
           markAttrsAccessed();
           return attrs;
         },
         slots,
         emit: emit2
-      } : { attrs, slots, emit: emit2 }) : render14(
+      } : { attrs, slots, emit: emit2 }) : render13(
         props,
         null
         /* we know it doesn't need it */
@@ -2598,7 +2598,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render13,
+    render: render12,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2702,8 +2702,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render13 && instance.render === NOOP) {
-    instance.render = render13;
+  if (render12 && instance.render === NOOP) {
+    instance.render = render12;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3262,7 +3262,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render13, hydrate) {
+function createAppAPI(render12, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = Object.assign({}, rootComponent);
@@ -3328,7 +3328,7 @@ function createAppAPI(render13, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render13(vnode, rootContainer, isSVG2);
+            render12(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3338,7 +3338,7 @@ function createAppAPI(render13, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render13(null, app2._container);
+          render12(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4224,7 +4224,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render13 = (vnode, container, isSVG2) => {
+  const render12 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4254,9 +4254,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     [hydrate, hydrateNode] = createHydrationFns(internals);
   }
   return {
-    render: render13,
+    render: render12,
     hydrate,
-    createApp: createAppAPI(render13, hydrate)
+    createApp: createAppAPI(render12, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -5514,7 +5514,7 @@ function normalizeDuration(duration) {
   }
 }
 function NumberOf(val) {
-  const res = toNumber(val);
+  const res = toNumber$1(val);
   return res;
 }
 function addTransitionClass(el, cls) {
@@ -7578,6 +7578,96 @@ function createDelegate() {
   };
 }
 const { on, off } = createDelegate();
+const mousePositionRef = ref(null);
+function clickHandler(e) {
+  if (e.clientX > 0 || e.clientY > 0) {
+    mousePositionRef.value = {
+      x: e.clientX,
+      y: e.clientY
+    };
+  } else {
+    const { target } = e;
+    if (target instanceof Element) {
+      const { left, top, width, height } = target.getBoundingClientRect();
+      if (left > 0 || top > 0) {
+        mousePositionRef.value = {
+          x: left + width / 2,
+          y: top + height / 2
+        };
+      } else {
+        mousePositionRef.value = { x: 0, y: 0 };
+      }
+    } else {
+      mousePositionRef.value = null;
+    }
+  }
+}
+let usedCount$1 = 0;
+let managable$1 = true;
+function useClickPosition() {
+  if (!isBrowser$2)
+    return readonly(ref(null));
+  if (usedCount$1 === 0)
+    on("click", document, clickHandler, true);
+  const setup = () => {
+    usedCount$1 += 1;
+  };
+  if (managable$1 && (managable$1 = hasInstance())) {
+    onBeforeMount(setup);
+    onBeforeUnmount(() => {
+      usedCount$1 -= 1;
+      if (usedCount$1 === 0)
+        off("click", document, clickHandler, true);
+    });
+  } else {
+    setup();
+  }
+  return readonly(mousePositionRef);
+}
+const clickedTimeRef = ref(void 0);
+let usedCount = 0;
+function handleClick() {
+  clickedTimeRef.value = Date.now();
+}
+let managable = true;
+function useClicked(timeout) {
+  if (!isBrowser$2)
+    return readonly(ref(false));
+  const clickedRef = ref(false);
+  let timerId = null;
+  function clearTimer() {
+    if (timerId !== null)
+      window.clearTimeout(timerId);
+  }
+  function clickedHandler() {
+    clearTimer();
+    clickedRef.value = true;
+    timerId = window.setTimeout(() => {
+      clickedRef.value = false;
+    }, timeout);
+  }
+  if (usedCount === 0) {
+    on("click", window, handleClick, true);
+  }
+  const setup = () => {
+    usedCount += 1;
+    on("click", window, clickedHandler, true);
+  };
+  if (managable && (managable = hasInstance())) {
+    onBeforeMount(setup);
+    onBeforeUnmount(() => {
+      usedCount -= 1;
+      if (usedCount === 0) {
+        off("click", window, handleClick, true);
+      }
+      off("click", window, clickedHandler, true);
+      clearTimer();
+    });
+  } else {
+    setup();
+  }
+  return readonly(clickedRef);
+}
 function useMergedState(controlledStateRef, uncontrolledStateRef) {
   watch(controlledStateRef, (value) => {
     if (value !== void 0) {
@@ -8749,7 +8839,7 @@ function getOffset(placement, offsetRect, targetRect, offsetTopToStandardPlaceme
       };
   }
 }
-const style$s = c([
+const style$v = c([
   c(".v-binder-follower-container", {
     position: "absolute",
     left: "0",
@@ -8831,7 +8921,7 @@ const VFollower = defineComponent({
       }
     });
     const ssrAdapter2 = useSsrAdapter();
-    style$s.mount({
+    style$v.mount({
       id: "vueuc/binder",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -9576,7 +9666,7 @@ function ensureWheelScale() {
   }
   return wheelScale;
 }
-const styles = c(".v-vl", {
+const styles$1 = c(".v-vl", {
   maxHeight: "inherit",
   height: "100%",
   overflow: "auto",
@@ -9641,7 +9731,7 @@ const VVirtualList = defineComponent({
   },
   setup(props) {
     const ssrAdapter2 = useSsrAdapter();
-    styles.mount({
+    styles$1.mount({
       id: "vueuc/virtual-list",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -9718,15 +9808,15 @@ const VVirtualList = defineComponent({
         scrollToPosition2(options, y, "auto");
         return;
       }
-      const { left, top, index, key, position, behavior, debounce = true } = options;
+      const { left, top, index, key, position, behavior, debounce: debounce2 = true } = options;
       if (left !== void 0 || top !== void 0) {
         scrollToPosition2(left, top, behavior);
       } else if (index !== void 0) {
-        scrollToIndex(index, behavior, debounce);
+        scrollToIndex(index, behavior, debounce2);
       } else if (key !== void 0) {
         const toIndex = keyIndexMapRef.value.get(key);
         if (toIndex !== void 0)
-          scrollToIndex(toIndex, behavior, debounce);
+          scrollToIndex(toIndex, behavior, debounce2);
       } else if (position === "bottom") {
         scrollToPosition2(0, Number.MAX_SAFE_INTEGER, behavior);
       } else if (position === "top") {
@@ -9735,10 +9825,10 @@ const VVirtualList = defineComponent({
     };
     let anchorIndex;
     let anchorTimerId = null;
-    function scrollToIndex(index, behavior, debounce) {
+    function scrollToIndex(index, behavior, debounce2) {
       const { value: ft } = finweckTreeRef;
       const targetTop = ft.sum(index) + depx(props.paddingTop);
-      if (!debounce) {
+      if (!debounce2) {
         listElRef.value.scrollTo({
           left: 0,
           top: targetTop,
@@ -9974,8 +10064,59 @@ const VVirtualList = defineComponent({
     });
   }
 });
+const styles = c(".v-x-scroll", {
+  overflow: "auto",
+  scrollbarWidth: "none"
+}, [
+  c("&::-webkit-scrollbar", {
+    width: 0,
+    height: 0
+  })
+]);
+const VXScroll = defineComponent({
+  name: "XScroll",
+  props: {
+    disabled: Boolean,
+    onScroll: Function
+  },
+  setup() {
+    const selfRef = ref(null);
+    function handleWheel(e) {
+      const preventYWheel = e.currentTarget.offsetWidth < e.currentTarget.scrollWidth;
+      if (!preventYWheel || e.deltaY === 0)
+        return;
+      e.currentTarget.scrollLeft += e.deltaY + e.deltaX;
+      e.preventDefault();
+    }
+    const ssrAdapter2 = useSsrAdapter();
+    styles.mount({
+      id: "vueuc/x-scroll",
+      head: true,
+      anchorMetaName: cssrAnchorMetaName$1,
+      ssr: ssrAdapter2
+    });
+    const exposedMethods = {
+      scrollTo(...args) {
+        var _a2;
+        (_a2 = selfRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollTo(...args);
+      }
+    };
+    return Object.assign({
+      selfRef,
+      handleWheel
+    }, exposedMethods);
+  },
+  render() {
+    return h("div", {
+      ref: "selfRef",
+      onScroll: this.onScroll,
+      onWheel: this.disabled ? void 0 : this.handleWheel,
+      class: "v-x-scroll"
+    }, this.$slots);
+  }
+});
 const hiddenAttr = "v-hidden";
-const style$r = c("[v-hidden]", {
+const style$u = c("[v-hidden]", {
   display: "none!important"
 });
 const VOverflow = defineComponent({
@@ -10065,7 +10206,7 @@ const VOverflow = defineComponent({
       }
     }
     const ssrAdapter2 = useSsrAdapter();
-    style$r.mount({
+    style$u.mount({
       id: "vueuc/overflow",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -10611,9 +10752,43 @@ function baseToString(value) {
   var result = value + "";
   return result == "0" && 1 / value == -INFINITY$1 ? "-0" : result;
 }
+var reWhitespace = /\s/;
+function trimmedEndIndex(string) {
+  var index = string.length;
+  while (index-- && reWhitespace.test(string.charAt(index))) {
+  }
+  return index;
+}
+var reTrimStart = /^\s+/;
+function baseTrim(string) {
+  return string ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, "") : string;
+}
 function isObject(value) {
   var type = typeof value;
   return value != null && (type == "object" || type == "function");
+}
+var NAN = 0 / 0;
+var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+var reIsBinary = /^0b[01]+$/i;
+var reIsOctal = /^0o[0-7]+$/i;
+var freeParseInt = parseInt;
+function toNumber(value) {
+  if (typeof value == "number") {
+    return value;
+  }
+  if (isSymbol(value)) {
+    return NAN;
+  }
+  if (isObject(value)) {
+    var other = typeof value.valueOf == "function" ? value.valueOf() : value;
+    value = isObject(other) ? other + "" : other;
+  }
+  if (typeof value != "string") {
+    return value === 0 ? value : +value;
+  }
+  value = baseTrim(value);
+  var isBinary = reIsBinary.test(value);
+  return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
 }
 function identity$1(value) {
   return value;
@@ -10803,11 +10978,11 @@ function copyObject(source, props, object, customizer) {
   }
   return object;
 }
-var nativeMax = Math.max;
+var nativeMax$1 = Math.max;
 function overRest(func, start, transform) {
-  start = nativeMax(start === void 0 ? func.length - 1 : start, 0);
+  start = nativeMax$1(start === void 0 ? func.length - 1 : start, 0);
   return function() {
-    var args = arguments, index = -1, length = nativeMax(args.length - start, 0), array = Array(length);
+    var args = arguments, index = -1, length = nativeMax$1(args.length - start, 0), array = Array(length);
     while (++index < length) {
       array[index] = args[start + index];
     }
@@ -11155,10 +11330,10 @@ MapCache.prototype["delete"] = mapCacheDelete;
 MapCache.prototype.get = mapCacheGet;
 MapCache.prototype.has = mapCacheHas;
 MapCache.prototype.set = mapCacheSet;
-var FUNC_ERROR_TEXT = "Expected a function";
+var FUNC_ERROR_TEXT$2 = "Expected a function";
 function memoize(func, resolver) {
   if (typeof func != "function" || resolver != null && typeof resolver != "function") {
-    throw new TypeError(FUNC_ERROR_TEXT);
+    throw new TypeError(FUNC_ERROR_TEXT$2);
   }
   var memoized = function() {
     var args = arguments, key = resolver ? resolver.apply(this, args) : args[0], cache2 = memoized.cache;
@@ -12070,6 +12245,93 @@ function createBaseEach(eachFunc, fromRight) {
 }
 var baseEach = createBaseEach(baseForOwn);
 const baseEach$1 = baseEach;
+var now = function() {
+  return root$1.Date.now();
+};
+const now$1 = now;
+var FUNC_ERROR_TEXT$1 = "Expected a function";
+var nativeMax = Math.max, nativeMin = Math.min;
+function debounce(func, wait, options) {
+  var lastArgs, lastThis, maxWait, result, timerId, lastCallTime, lastInvokeTime = 0, leading = false, maxing = false, trailing = true;
+  if (typeof func != "function") {
+    throw new TypeError(FUNC_ERROR_TEXT$1);
+  }
+  wait = toNumber(wait) || 0;
+  if (isObject(options)) {
+    leading = !!options.leading;
+    maxing = "maxWait" in options;
+    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
+    trailing = "trailing" in options ? !!options.trailing : trailing;
+  }
+  function invokeFunc(time2) {
+    var args = lastArgs, thisArg = lastThis;
+    lastArgs = lastThis = void 0;
+    lastInvokeTime = time2;
+    result = func.apply(thisArg, args);
+    return result;
+  }
+  function leadingEdge(time2) {
+    lastInvokeTime = time2;
+    timerId = setTimeout(timerExpired, wait);
+    return leading ? invokeFunc(time2) : result;
+  }
+  function remainingWait(time2) {
+    var timeSinceLastCall = time2 - lastCallTime, timeSinceLastInvoke = time2 - lastInvokeTime, timeWaiting = wait - timeSinceLastCall;
+    return maxing ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke) : timeWaiting;
+  }
+  function shouldInvoke(time2) {
+    var timeSinceLastCall = time2 - lastCallTime, timeSinceLastInvoke = time2 - lastInvokeTime;
+    return lastCallTime === void 0 || timeSinceLastCall >= wait || timeSinceLastCall < 0 || maxing && timeSinceLastInvoke >= maxWait;
+  }
+  function timerExpired() {
+    var time2 = now$1();
+    if (shouldInvoke(time2)) {
+      return trailingEdge(time2);
+    }
+    timerId = setTimeout(timerExpired, remainingWait(time2));
+  }
+  function trailingEdge(time2) {
+    timerId = void 0;
+    if (trailing && lastArgs) {
+      return invokeFunc(time2);
+    }
+    lastArgs = lastThis = void 0;
+    return result;
+  }
+  function cancel() {
+    if (timerId !== void 0) {
+      clearTimeout(timerId);
+    }
+    lastInvokeTime = 0;
+    lastArgs = lastCallTime = lastThis = timerId = void 0;
+  }
+  function flush() {
+    return timerId === void 0 ? result : trailingEdge(now$1());
+  }
+  function debounced() {
+    var time2 = now$1(), isInvoking = shouldInvoke(time2);
+    lastArgs = arguments;
+    lastThis = this;
+    lastCallTime = time2;
+    if (isInvoking) {
+      if (timerId === void 0) {
+        return leadingEdge(lastCallTime);
+      }
+      if (maxing) {
+        clearTimeout(timerId);
+        timerId = setTimeout(timerExpired, wait);
+        return invokeFunc(lastCallTime);
+      }
+    }
+    if (timerId === void 0) {
+      timerId = setTimeout(timerExpired, wait);
+    }
+    return result;
+  }
+  debounced.cancel = cancel;
+  debounced.flush = flush;
+  return debounced;
+}
 function assignMergeValue(object, key, value) {
   if (value !== void 0 && !eq(object[key], value) || value === void 0 && !(key in object)) {
     baseAssignValue(object, key, value);
@@ -12169,6 +12431,22 @@ var merge$1 = createAssigner(function(object, source, srcIndex) {
   baseMerge(object, source, srcIndex);
 });
 const merge$2 = merge$1;
+var FUNC_ERROR_TEXT = "Expected a function";
+function throttle(func, wait, options) {
+  var leading = true, trailing = true;
+  if (typeof func != "function") {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  if (isObject(options)) {
+    leading = "leading" in options ? !!options.leading : leading;
+    trailing = "trailing" in options ? !!options.trailing : trailing;
+  }
+  return debounce(func, wait, {
+    "leading": leading,
+    "maxWait": wait,
+    "trailing": trailing
+  });
+}
 const commonVariables$m = {
   fontFamily: 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
   fontFamilyMono: "v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace",
@@ -13345,7 +13623,7 @@ const NFadeInExpandTransition = defineComponent({
     };
   }
 });
-const style$q = cB("base-icon", `
+const style$t = cB("base-icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -13380,13 +13658,13 @@ const NBaseIcon = defineComponent({
     onMouseup: Function
   },
   setup(props) {
-    useStyle("-base-icon", style$q, toRef(props, "clsPrefix"));
+    useStyle("-base-icon", style$t, toRef(props, "clsPrefix"));
   },
   render() {
     return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
   }
 });
-const style$p = cB("base-close", `
+const style$s = cB("base-close", `
  display: flex;
  align-items: center;
  justify-content: center;
@@ -13455,7 +13733,7 @@ const NBaseClose = defineComponent({
     absolute: Boolean
   },
   setup(props) {
-    useStyle("-base-close", style$p, toRef(props, "clsPrefix"));
+    useStyle("-base-close", style$s, toRef(props, "clsPrefix"));
     return () => {
       const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
       const Tag = isButtonTag ? "button" : "div";
@@ -13514,7 +13792,7 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$o = c$1([c$1("@keyframes loading-container-rotate", `
+const style$r = c$1([c$1("@keyframes loading-container-rotate", `
  to {
  -webkit-transform: rotate(360deg);
  transform: rotate(360deg);
@@ -13677,7 +13955,7 @@ const NBaseLoading = defineComponent({
     default: 100
   } }, exposedLoadingProps),
   setup(props) {
-    useStyle("-base-loading", style$o, toRef(props, "clsPrefix"));
+    useStyle("-base-loading", style$r, toRef(props, "clsPrefix"));
   },
   render() {
     const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
@@ -14707,7 +14985,7 @@ const emptyDark = {
   self: self$Z
 };
 const emptyDark$1 = emptyDark;
-const style$n = cB("empty", `
+const style$q = cB("empty", `
  display: flex;
  flex-direction: column;
  align-items: center;
@@ -14746,7 +15024,7 @@ const NEmpty = defineComponent({
   props: emptyProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Empty", "-empty", style$n, emptyLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Empty", "-empty", style$q, emptyLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
@@ -14837,7 +15115,7 @@ function fadeInTransition({
     opacity: 1
   })];
 }
-const style$m = cB("scrollbar", `
+const style$p = cB("scrollbar", `
  overflow: hidden;
  position: relative;
  z-index: auto;
@@ -14890,7 +15168,7 @@ const style$m = cB("scrollbar", `
  `, [fadeInTransition(), c$1("&:hover", {
   backgroundColor: "var(--n-scrollbar-color-hover)"
 })])])])])]);
-const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), {
+const scrollbarProps$1 = Object.assign(Object.assign({}, useTheme.props), {
   size: {
     type: Number,
     default: 5
@@ -14925,9 +15203,9 @@ const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), {
   internalOnUpdateScrollLeft: Function,
   internalHoistYRail: Boolean
 });
-const Scrollbar = defineComponent({
+const Scrollbar$1 = defineComponent({
   name: "Scrollbar",
-  props: scrollbarProps,
+  props: scrollbarProps$1,
   inheritAttrs: false,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
@@ -15074,14 +15352,14 @@ const Scrollbar = defineComponent({
         scrollToPosition2(y !== null && y !== void 0 ? y : 0, options, 0, false, "auto");
         return;
       }
-      const { left, top, index, elSize, position, behavior, el, debounce = true } = options;
+      const { left, top, index, elSize, position, behavior, el, debounce: debounce2 = true } = options;
       if (left !== void 0 || top !== void 0) {
         scrollToPosition2(left !== null && left !== void 0 ? left : 0, top !== null && top !== void 0 ? top : 0, 0, false, behavior);
       }
       if (el !== void 0) {
-        scrollToPosition2(0, el.offsetTop, el.offsetHeight, debounce, behavior);
+        scrollToPosition2(0, el.offsetTop, el.offsetHeight, debounce2, behavior);
       } else if (index !== void 0 && elSize !== void 0) {
-        scrollToPosition2(0, index * elSize, elSize, debounce, behavior);
+        scrollToPosition2(0, index * elSize, elSize, debounce2, behavior);
       } else if (position === "bottom") {
         scrollToPosition2(0, Number.MAX_SAFE_INTEGER, 0, false, behavior);
       } else if (position === "top") {
@@ -15100,11 +15378,11 @@ const Scrollbar = defineComponent({
         container.scrollBy(options, y || 0);
       }
     };
-    function scrollToPosition2(left, top, elSize, debounce, behavior) {
+    function scrollToPosition2(left, top, elSize, debounce2, behavior) {
       const { value: container } = mergedContainerRef;
       if (!container)
         return;
-      if (debounce) {
+      if (debounce2) {
         const { scrollTop, offsetHeight } = container;
         if (top > scrollTop) {
           if (top + elSize <= scrollTop + offsetHeight)
@@ -15360,7 +15638,7 @@ const Scrollbar = defineComponent({
       off("mousemove", window, handleYScrollMouseMove, true);
       off("mouseup", window, handleYScrollMouseUp, true);
     });
-    const themeRef = useTheme("Scrollbar", "-scrollbar", style$m, scrollbarLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Scrollbar", "-scrollbar", style$p, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
       return {
@@ -15487,8 +15765,8 @@ const Scrollbar = defineComponent({
     }
   }
 });
-const NScrollbar = Scrollbar;
-const XScrollbar = Scrollbar;
+const NScrollbar$1 = Scrollbar$1;
+const XScrollbar = Scrollbar$1;
 const commonVariables$l = {
   height: "calc(var(--n-option-height) * 7.6)",
   paddingSmall: "4px 0",
@@ -15566,7 +15844,7 @@ const NSelectOption = defineComponent({
         return false;
       return props.tmNode.key === pendingTmNode.key;
     });
-    function handleClick(e) {
+    function handleClick2(e) {
       const { tmNode } = props;
       if (tmNode.disabled)
         return;
@@ -15613,11 +15891,11 @@ const NSelectOption = defineComponent({
       renderOption: renderOptionRef,
       handleMouseMove,
       handleMouseEnter,
-      handleClick
+      handleClick: handleClick2
     };
   },
   render() {
-    const { clsPrefix, tmNode: { rawNode }, isSelected, isPending, isGrouped, showCheckmark, nodeProps, renderOption, renderLabel, handleClick, handleMouseEnter, handleMouseMove } = this;
+    const { clsPrefix, tmNode: { rawNode }, isSelected, isPending, isGrouped, showCheckmark, nodeProps, renderOption, renderLabel, handleClick: handleClick2, handleMouseEnter, handleMouseMove } = this;
     const checkmark = renderCheckMark(isSelected, clsPrefix);
     const children = renderLabel ? [renderLabel(rawNode, isSelected), showCheckmark && checkmark] : [
       render$1(rawNode[this.labelField], rawNode, isSelected),
@@ -15637,7 +15915,7 @@ const NSelectOption = defineComponent({
           [`${clsPrefix}-base-select-option--pending`]: isPending,
           [`${clsPrefix}-base-select-option--show-checkmark`]: showCheckmark
         }
-      ], style: [(attrs === null || attrs === void 0 ? void 0 : attrs.style) || "", rawNode.style || ""], onClick: mergeEventHandlers([handleClick, attrs === null || attrs === void 0 ? void 0 : attrs.onClick]), onMouseenter: mergeEventHandlers([
+      ], style: [(attrs === null || attrs === void 0 ? void 0 : attrs.style) || "", rawNode.style || ""], onClick: mergeEventHandlers([handleClick2, attrs === null || attrs === void 0 ? void 0 : attrs.onClick]), onMouseenter: mergeEventHandlers([
         handleMouseEnter,
         attrs === null || attrs === void 0 ? void 0 : attrs.onMouseenter
       ]), onMousemove: mergeEventHandlers([handleMouseMove, attrs === null || attrs === void 0 ? void 0 : attrs.onMousemove]) }),
@@ -15706,7 +15984,7 @@ function fadeInScaleUpTransition({
     transform: `${originalTransform} scale(1)`
   })];
 }
-const style$l = cB("base-select-menu", `
+const style$o = cB("base-select-menu", `
  line-height: 1.5;
  outline: none;
  z-index: 0;
@@ -15875,7 +16153,7 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
-    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$l, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$o, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
     const scrollbarRef = ref(null);
@@ -16153,7 +16431,7 @@ const NInternalSelectMenu = defineComponent({
         "div",
         { class: `${clsPrefix}-base-select-menu__loading` },
         h(NBaseLoading, { clsPrefix, strokeWidth: 20 })
-      ) : !this.empty ? h(NScrollbar, { ref: "scrollbarRef", theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, scrollable: this.scrollable, container: virtualScroll ? this.virtualListContainer : void 0, content: virtualScroll ? this.virtualListContent : void 0, onScroll: virtualScroll ? void 0 : this.doScroll }, {
+      ) : !this.empty ? h(NScrollbar$1, { ref: "scrollbarRef", theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, scrollable: this.scrollable, container: virtualScroll ? this.virtualListContainer : void 0, content: virtualScroll ? this.virtualListContent : void 0, onScroll: virtualScroll ? void 0 : this.doScroll }, {
         default: () => {
           return virtualScroll ? h(VVirtualList, { ref: "virtualListRef", class: `${clsPrefix}-virtual-list`, items: this.flattenedNodes, itemSize: this.itemSize, showScrollbar: false, paddingTop: this.padding.top, paddingBottom: this.padding.bottom, onResize: this.handleVirtualListResize, onScroll: this.handleVirtualListScroll, itemResizable: true }, {
             default: ({ item: tmNode }) => {
@@ -16174,7 +16452,7 @@ const NInternalSelectMenu = defineComponent({
     );
   }
 });
-const style$k = cB("base-wave", `
+const style$n = cB("base-wave", `
  position: absolute;
  left: 0;
  right: 0;
@@ -16191,7 +16469,7 @@ const NBaseWave = defineComponent({
     }
   },
   setup(props) {
-    useStyle("-base-wave", style$k, toRef(props, "clsPrefix"));
+    useStyle("-base-wave", style$n, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const activeRef = ref(false);
     let animationTimerId = null;
@@ -16267,7 +16545,7 @@ const oppositePlacement = {
   right: "left"
 };
 const arrowSize = "var(--n-arrow-height) * 1.414";
-const style$j = c$1([cB("popover", `
+const style$m = c$1([cB("popover", `
  transition:
  box-shadow .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -16459,7 +16737,7 @@ const NPopoverBody = defineComponent({
   props: popoverBodyProps,
   setup(props, { slots, attrs }) {
     const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Popover", "-popover", style$j, popoverLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Popover", "-popover", style$m, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
     const bodyRef = ref(null);
@@ -16959,7 +17237,7 @@ const NPopover = defineComponent({
       }
       (_a2 = props.onClickoutside) === null || _a2 === void 0 ? void 0 : _a2.call(props, e);
     }
-    function handleClick() {
+    function handleClick2() {
       if (props.trigger === "click" && !getMergedDisabled()) {
         clearShowTimer();
         clearHideTimer();
@@ -17014,7 +17292,7 @@ const NPopover = defineComponent({
       mergedShowArrow: mergedShowArrowRef,
       getMergedShow,
       setShow,
-      handleClick,
+      handleClick: handleClick2,
       handleMouseEnter,
       handleMouseLeave,
       handleFocus,
@@ -17342,7 +17620,7 @@ const commonProps = {
     default: void 0
   }
 };
-const style$i = cB("tag", `
+const style$l = cB("tag", `
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -17445,11 +17723,11 @@ const NTag = defineComponent({
   setup(props) {
     const contentRef = ref(null);
     const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Tag", "-tag", style$i, tagLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tag", "-tag", style$l, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
-    function handleClick(e) {
+    function handleClick2(e) {
       if (!props.disabled) {
         if (props.checkable) {
           const { checked, onCheckedChange, onUpdateChecked, "onUpdate:checked": _onUpdateChecked } = props;
@@ -17539,7 +17817,7 @@ const NTag = defineComponent({
       mergedClsPrefix: mergedClsPrefixRef,
       contentRef,
       mergedBordered: mergedBorderedRef,
-      handleClick,
+      handleClick: handleClick2,
       handleCloseClick,
       cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
       themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
@@ -17576,7 +17854,7 @@ const NTag = defineComponent({
     );
   }
 });
-const style$h = cB("base-clear", `
+const style$k = cB("base-clear", `
  flex-shrink: 0;
  height: 1em;
  width: 1em;
@@ -17616,7 +17894,7 @@ const NBaseClear = defineComponent({
     onClear: Function
   },
   setup(props) {
-    useStyle("-base-clear", style$h, toRef(props, "clsPrefix"));
+    useStyle("-base-clear", style$k, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
         e.preventDefault();
@@ -17836,7 +18114,7 @@ const internalSelectionDark = {
   }
 };
 const internalSelectionDark$1 = internalSelectionDark;
-const style$g = c$1([cB("base-selection", `
+const style$j = c$1([cB("base-selection", `
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -18076,7 +18354,7 @@ const NInternalSelection = defineComponent({
     const showTagsPopoverRef = ref(false);
     const patternInputFocusedRef = ref(false);
     const hoverRef = ref(false);
-    const themeRef = useTheme("InternalSelection", "-internal-selection", style$g, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelection", "-internal-selection", style$j, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
     const mergedClearableRef = computed(() => {
       return props.clearable && !props.disabled && (hoverRef.value || props.active);
     });
@@ -19140,7 +19418,7 @@ const WordCount = defineComponent({
     };
   }
 });
-const style$f = cB("input", `
+const style$i = cB("input", `
  max-width: 100%;
  cursor: text;
  line-height: 1.5;
@@ -19495,7 +19773,7 @@ const NInput = defineComponent({
   props: inputProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Input", "-input", style$f, inputLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Input", "-input", style$i, inputLight$1, props, mergedClsPrefixRef);
     if (isSafari) {
       useStyle("-input-safari", safariStyle, mergedClsPrefixRef);
     }
@@ -19827,7 +20105,7 @@ const NInput = defineComponent({
     function handleChange(e, index) {
       handleInput(e, index, "change");
     }
-    function handleClick(e) {
+    function handleClick2(e) {
       doClick(e);
     }
     function handleClear(e) {
@@ -20167,7 +20445,7 @@ const NInput = defineComponent({
       handleMouseLeave,
       handleMouseDown,
       handleChange,
-      handleClick,
+      handleClick: handleClick2,
       handleClear,
       handlePasswordToggleClick,
       handlePasswordToggleMousedown,
@@ -20209,7 +20487,7 @@ const NInput = defineComponent({
         "div",
         { class: `${mergedClsPrefix}-input-wrapper` },
         resolveWrappedSlot($slots.prefix, (children) => children && h("div", { class: `${mergedClsPrefix}-input__prefix` }, children)),
-        type === "textarea" ? h(NScrollbar, { ref: "textareaScrollbarInstRef", class: `${mergedClsPrefix}-input__textarea`, container: this.getTextareaScrollContainer, triggerDisplayManually: true, useUnifiedContainer: true, internalHoistYRail: true }, {
+        type === "textarea" ? h(NScrollbar$1, { ref: "textareaScrollbarInstRef", class: `${mergedClsPrefix}-input__textarea`, container: this.getTextareaScrollContainer, triggerDisplayManually: true, useUnifiedContainer: true, internalHoistYRail: true }, {
           default: () => {
             var _a3, _b2;
             const { textAreaScrollContainerWidth } = this;
@@ -20743,7 +21021,7 @@ const buttonDark = {
   }
 };
 const buttonDark$1 = buttonDark;
-const style$e = c$1([cB("button", `
+const style$h = c$1([cB("button", `
  margin: 0;
  font-weight: var(--n-font-weight);
  line-height: 1;
@@ -20966,7 +21244,7 @@ const Button = defineComponent({
         (_a2 = selfElRef.value) === null || _a2 === void 0 ? void 0 : _a2.focus({ preventScroll: true });
       }
     };
-    const handleClick = (e) => {
+    const handleClick2 = (e) => {
       var _a2;
       if (!props.disabled && !props.loading) {
         const { onClick } = props;
@@ -21000,7 +21278,7 @@ const Button = defineComponent({
       enterPressedRef.value = false;
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Button", "-button", style$e, buttonLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Button", "-button", style$h, buttonLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Button", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const theme = themeRef.value;
@@ -21199,7 +21477,7 @@ const Button = defineComponent({
       handleKeydown,
       handleBlur,
       handleKeyup,
-      handleClick,
+      handleClick: handleClick2,
       customColorCssVars: computed(() => {
         const { color } = props;
         if (!color)
@@ -21386,7 +21664,7 @@ const cardDark = {
   }
 };
 const cardDark$1 = cardDark;
-const style$d = c$1([cB("card", `
+const style$g = c$1([cB("card", `
  font-size: var(--n-font-size);
  line-height: var(--n-line-height);
  display: flex;
@@ -21531,7 +21809,7 @@ const NCard = defineComponent({
         call(onClose);
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Card", "-card", style$d, cardLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Card", "-card", style$g, cardLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Card", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { size: size2 } = props;
@@ -22008,7 +22286,7 @@ const selectDark = {
   self: self$D
 };
 const selectDark$1 = selectDark;
-const style$c = c$1([cB("select", `
+const style$f = c$1([cB("select", `
  z-index: auto;
  outline: none;
  width: 100%;
@@ -22133,7 +22411,7 @@ const NSelect = defineComponent({
   props: selectProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Select", "-select", style$c, selectLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Select", "-select", style$f, selectLight$1, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -23206,7 +23484,7 @@ const iconDark$1 = {
   self: self$x
 };
 const iconDark$2 = iconDark$1;
-const style$b = cB("icon", `
+const style$e = cB("icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -23234,7 +23512,7 @@ const NIcon = defineComponent({
   props: iconProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Icon", "-icon", style$b, iconLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Icon", "-icon", style$e, iconLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { depth } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -23406,7 +23684,7 @@ const NDropdownOption = defineComponent({
         hoverKeyRef.value = null;
       }
     }
-    function handleClick() {
+    function handleClick2() {
       const { value: hasSubmenu } = hasSubmenuRef;
       const { tmNode } = props;
       if (!mergedShowRef.value)
@@ -23454,7 +23732,7 @@ const NDropdownOption = defineComponent({
       mergedDisabled: mergedDisabledRef,
       renderOption: renderOptionRef,
       nodeProps: nodePropsRef,
-      handleClick,
+      handleClick: handleClick2,
       handleMouseMove,
       handleMouseEnter,
       handleMouseLeave,
@@ -23638,8 +23916,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render13, props } } = this.tmNode;
-    return h("div", props, [render13 === null || render13 === void 0 ? void 0 : render13()]);
+    const { rawNode: { render: render12, props } } = this.tmNode;
+    return h("div", props, [render12 === null || render12 === void 0 ? void 0 : render12()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -23728,7 +24006,7 @@ const NDropdownMenu = defineComponent({
     );
   }
 });
-const style$a = cB("dropdown-menu", `
+const style$d = cB("dropdown-menu", `
  transform-origin: var(--v-transform-origin);
  background-color: var(--n-color);
  border-radius: var(--n-border-radius);
@@ -23956,7 +24234,7 @@ const NDropdown = defineComponent({
       }
     }, keyboardEnabledRef);
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Dropdown", "-dropdown", style$a, dropdownLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dropdown", "-dropdown", style$d, dropdownLight$1, props, mergedClsPrefixRef);
     provide(dropdownInjectionKey, {
       labelFieldRef: toRef(props, "labelField"),
       childrenFieldRef: toRef(props, "childrenField"),
@@ -24390,6 +24668,230 @@ const dialogDark = {
   self: self$t
 };
 const dialogDark$1 = dialogDark;
+const dialogProps = {
+  icon: Function,
+  type: {
+    type: String,
+    default: "default"
+  },
+  title: [String, Function],
+  closable: {
+    type: Boolean,
+    default: true
+  },
+  negativeText: String,
+  positiveText: String,
+  positiveButtonProps: Object,
+  negativeButtonProps: Object,
+  content: [String, Function],
+  action: Function,
+  showIcon: {
+    type: Boolean,
+    default: true
+  },
+  loading: Boolean,
+  bordered: Boolean,
+  iconPlacement: String,
+  onPositiveClick: Function,
+  onNegativeClick: Function,
+  onClose: Function
+};
+const dialogPropKeys = keysOf(dialogProps);
+const style$c = c$1([cB("dialog", `
+ word-break: break-word;
+ line-height: var(--n-line-height);
+ position: relative;
+ background: var(--n-color);
+ color: var(--n-text-color);
+ box-sizing: border-box;
+ margin: auto;
+ border-radius: var(--n-border-radius);
+ padding: var(--n-padding);
+ transition: 
+ border-color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ `, [cE("icon", {
+  color: "var(--n-icon-color)"
+}), cM("bordered", {
+  border: "var(--n-border)"
+}), cM("icon-top", [cE("close", {
+  margin: "var(--n-close-margin)"
+}), cE("icon", {
+  margin: "var(--n-icon-margin)"
+}), cE("content", {
+  textAlign: "center"
+}), cE("title", {
+  justifyContent: "center"
+}), cE("action", {
+  justifyContent: "center"
+})]), cM("icon-left", [cE("icon", {
+  margin: "var(--n-icon-margin)"
+}), cM("closable", [cE("title", `
+ padding-right: calc(var(--n-close-size) + 6px);
+ `)])]), cE("close", `
+ position: absolute;
+ right: 0;
+ top: 0;
+ margin: var(--n-close-margin);
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ z-index: 1;
+ `), cE("content", `
+ font-size: var(--n-font-size);
+ margin: var(--n-content-margin);
+ position: relative;
+ word-break: break-word;
+ `, [cM("last", "margin-bottom: 0;")]), cE("action", `
+ display: flex;
+ justify-content: flex-end;
+ `, [c$1("> *:not(:last-child)", {
+  marginRight: "var(--n-action-space)"
+})]), cE("icon", {
+  fontSize: "var(--n-icon-size)",
+  transition: "color .3s var(--n-bezier)"
+}), cE("title", `
+ transition: color .3s var(--n-bezier);
+ display: flex;
+ align-items: center;
+ font-size: var(--n-title-font-size);
+ font-weight: var(--n-title-font-weight);
+ color: var(--n-title-text-color);
+ `), cB("dialog-icon-container", {
+  display: "flex",
+  justifyContent: "center"
+})]), insideModal(cB("dialog", `
+ width: 446px;
+ max-width: calc(100vw - 32px);
+ `)), cB("dialog", [asModal(`
+ width: 446px;
+ max-width: calc(100vw - 32px);
+ `)])]);
+const iconRenderMap$2 = {
+  default: () => h(InfoIcon, null),
+  info: () => h(InfoIcon, null),
+  success: () => h(SuccessIcon, null),
+  warning: () => h(WarningIcon, null),
+  error: () => h(ErrorIcon, null)
+};
+const NDialog = defineComponent({
+  name: "Dialog",
+  alias: [
+    "NimbusConfirmCard",
+    "Confirm"
+    // deprecated
+  ],
+  props: Object.assign(Object.assign({}, useTheme.props), dialogProps),
+  setup(props) {
+    const { mergedComponentPropsRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const mergedIconPlacementRef = computed(() => {
+      var _a2, _b;
+      const { iconPlacement } = props;
+      return iconPlacement || ((_b = (_a2 = mergedComponentPropsRef === null || mergedComponentPropsRef === void 0 ? void 0 : mergedComponentPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.Dialog) === null || _b === void 0 ? void 0 : _b.iconPlacement) || "left";
+    });
+    function handlePositiveClick(e) {
+      const { onPositiveClick } = props;
+      if (onPositiveClick)
+        onPositiveClick(e);
+    }
+    function handleNegativeClick(e) {
+      const { onNegativeClick } = props;
+      if (onNegativeClick)
+        onNegativeClick(e);
+    }
+    function handleCloseClick() {
+      const { onClose } = props;
+      if (onClose)
+        onClose();
+    }
+    const themeRef = useTheme("Dialog", "-dialog", style$c, dialogLight$1, props, mergedClsPrefixRef);
+    const cssVarsRef = computed(() => {
+      const { type } = props;
+      const iconPlacement = mergedIconPlacementRef.value;
+      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, lineHeight: lineHeight2, border, titleTextColor, textColor, color, closeBorderRadius, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, closeIconSize, borderRadius, titleFontWeight, titleFontSize, padding, iconSize, actionSpace, contentMargin, closeSize, [iconPlacement === "top" ? "iconMarginIconTop" : "iconMargin"]: iconMargin, [iconPlacement === "top" ? "closeMarginIconTop" : "closeMargin"]: closeMargin, [createKey("iconColor", type)]: iconColor } } = themeRef.value;
+      return {
+        "--n-font-size": fontSize2,
+        "--n-icon-color": iconColor,
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-close-margin": closeMargin,
+        "--n-icon-margin": iconMargin,
+        "--n-icon-size": iconSize,
+        "--n-close-size": closeSize,
+        "--n-close-icon-size": closeIconSize,
+        "--n-close-border-radius": closeBorderRadius,
+        "--n-close-color-hover": closeColorHover,
+        "--n-close-color-pressed": closeColorPressed,
+        "--n-close-icon-color": closeIconColor,
+        "--n-close-icon-color-hover": closeIconColorHover,
+        "--n-close-icon-color-pressed": closeIconColorPressed,
+        "--n-color": color,
+        "--n-text-color": textColor,
+        "--n-border-radius": borderRadius,
+        "--n-padding": padding,
+        "--n-line-height": lineHeight2,
+        "--n-border": border,
+        "--n-content-margin": contentMargin,
+        "--n-title-font-size": titleFontSize,
+        "--n-title-font-weight": titleFontWeight,
+        "--n-title-text-color": titleTextColor,
+        "--n-action-space": actionSpace
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("dialog", computed(() => `${props.type[0]}${mergedIconPlacementRef.value[0]}`), cssVarsRef, props) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      mergedIconPlacement: mergedIconPlacementRef,
+      mergedTheme: themeRef,
+      handlePositiveClick,
+      handleNegativeClick,
+      handleCloseClick,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    var _a2;
+    const { bordered, mergedIconPlacement, cssVars, closable, showIcon, title, content, action, negativeText, positiveText, positiveButtonProps, negativeButtonProps, handlePositiveClick, handleNegativeClick, mergedTheme, loading, type, mergedClsPrefix } = this;
+    (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+    const icon = showIcon ? h(NBaseIcon, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-dialog__icon` }, {
+      default: () => resolveWrappedSlot(this.$slots.icon, (children) => children || (this.icon ? render$1(this.icon) : iconRenderMap$2[this.type]()))
+    }) : null;
+    const actionNode = resolveWrappedSlot(this.$slots.action, (children) => children || positiveText || negativeText || action ? h("div", { class: `${mergedClsPrefix}-dialog__action` }, children || (action ? [render$1(action)] : [
+      this.negativeText && h(NButton, Object.assign({ theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, ghost: true, size: "small", onClick: handleNegativeClick }, negativeButtonProps), {
+        default: () => render$1(this.negativeText)
+      }),
+      this.positiveText && h(NButton, Object.assign({ theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, size: "small", type: type === "default" ? "primary" : type, disabled: loading, loading, onClick: handlePositiveClick }, positiveButtonProps), {
+        default: () => render$1(this.positiveText)
+      })
+    ])) : null);
+    return h(
+      "div",
+      { class: [
+        `${mergedClsPrefix}-dialog`,
+        this.themeClass,
+        this.closable && `${mergedClsPrefix}-dialog--closable`,
+        `${mergedClsPrefix}-dialog--icon-${mergedIconPlacement}`,
+        bordered && `${mergedClsPrefix}-dialog--bordered`
+      ], style: cssVars, role: "dialog" },
+      closable ? h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-dialog__close`, onClick: this.handleCloseClick }) : null,
+      showIcon && mergedIconPlacement === "top" ? h("div", { class: `${mergedClsPrefix}-dialog-icon-container` }, icon) : null,
+      h(
+        "div",
+        { class: `${mergedClsPrefix}-dialog__title` },
+        showIcon && mergedIconPlacement === "left" ? icon : null,
+        resolveSlot(this.$slots.header, () => [render$1(title)])
+      ),
+      h("div", { class: [
+        `${mergedClsPrefix}-dialog__content`,
+        actionNode ? "" : `${mergedClsPrefix}-dialog__content--last`
+      ] }, resolveSlot(this.$slots.default, () => [render$1(content)])),
+      actionNode
+    );
+  }
+});
+const dialogProviderInjectionKey = createInjectionKey("n-dialog-provider");
 const self$s = (vars) => {
   const { modalColor, textColor2, boxShadow3 } = vars;
   return {
@@ -24420,6 +24922,477 @@ const modalDark = {
   self: self$s
 };
 const modalDark$1 = modalDark;
+const presetProps = Object.assign(Object.assign({}, cardBaseProps), dialogProps);
+const presetPropsKeys = keysOf(presetProps);
+const NModalBodyWrapper = defineComponent({
+  name: "ModalBody",
+  inheritAttrs: false,
+  props: Object.assign(Object.assign({ show: {
+    type: Boolean,
+    required: true
+  }, preset: String, displayDirective: {
+    type: String,
+    required: true
+  }, trapFocus: {
+    type: Boolean,
+    default: true
+  }, autoFocus: {
+    type: Boolean,
+    default: true
+  }, blockScroll: Boolean }, presetProps), {
+    renderMask: Function,
+    // events
+    onClickoutside: Function,
+    onBeforeLeave: {
+      type: Function,
+      required: true
+    },
+    onAfterLeave: {
+      type: Function,
+      required: true
+    },
+    onPositiveClick: {
+      type: Function,
+      required: true
+    },
+    onNegativeClick: {
+      type: Function,
+      required: true
+    },
+    onClose: {
+      type: Function,
+      required: true
+    },
+    onAfterEnter: Function,
+    onEsc: Function
+  }),
+  setup(props) {
+    const bodyRef = ref(null);
+    const scrollbarRef = ref(null);
+    const displayedRef = ref(props.show);
+    const transformOriginXRef = ref(null);
+    const transformOriginYRef = ref(null);
+    watch(toRef(props, "show"), (value) => {
+      if (value)
+        displayedRef.value = true;
+    });
+    useLockHtmlScroll(computed(() => props.blockScroll && displayedRef.value));
+    const NModal2 = inject(modalInjectionKey);
+    function styleTransformOrigin() {
+      if (NModal2.transformOriginRef.value === "center") {
+        return "";
+      }
+      const { value: transformOriginX } = transformOriginXRef;
+      const { value: transformOriginY } = transformOriginYRef;
+      if (transformOriginX === null || transformOriginY === null) {
+        return "";
+      } else if (scrollbarRef.value) {
+        const scrollTop = scrollbarRef.value.containerScrollTop;
+        return `${transformOriginX}px ${transformOriginY + scrollTop}px`;
+      }
+      return "";
+    }
+    function syncTransformOrigin(el) {
+      if (NModal2.transformOriginRef.value === "center") {
+        return;
+      }
+      const mousePosition = NModal2.getMousePosition();
+      if (!mousePosition) {
+        return;
+      }
+      if (!scrollbarRef.value)
+        return;
+      const scrollTop = scrollbarRef.value.containerScrollTop;
+      const { offsetLeft, offsetTop } = el;
+      if (mousePosition) {
+        const top = mousePosition.y;
+        const left = mousePosition.x;
+        transformOriginXRef.value = -(offsetLeft - left);
+        transformOriginYRef.value = -(offsetTop - top - scrollTop);
+      }
+      el.style.transformOrigin = styleTransformOrigin();
+    }
+    function handleEnter(el) {
+      void nextTick(() => {
+        syncTransformOrigin(el);
+      });
+    }
+    function handleBeforeLeave(el) {
+      el.style.transformOrigin = styleTransformOrigin();
+      props.onBeforeLeave();
+    }
+    function handleAfterLeave() {
+      displayedRef.value = false;
+      transformOriginXRef.value = null;
+      transformOriginYRef.value = null;
+      props.onAfterLeave();
+    }
+    function handleCloseClick() {
+      const { onClose } = props;
+      if (onClose) {
+        onClose();
+      }
+    }
+    function handleNegativeClick() {
+      props.onNegativeClick();
+    }
+    function handlePositiveClick() {
+      props.onPositiveClick();
+    }
+    const childNodeRef = ref(null);
+    watch(childNodeRef, (node) => {
+      if (node) {
+        void nextTick(() => {
+          const el = node.el;
+          if (el && bodyRef.value !== el) {
+            bodyRef.value = el;
+          }
+        });
+      }
+    });
+    provide(modalBodyInjectionKey, bodyRef);
+    provide(drawerBodyInjectionKey, null);
+    provide(popoverBodyInjectionKey, null);
+    return {
+      mergedTheme: NModal2.mergedThemeRef,
+      appear: NModal2.appearRef,
+      isMounted: NModal2.isMountedRef,
+      mergedClsPrefix: NModal2.mergedClsPrefixRef,
+      bodyRef,
+      scrollbarRef,
+      displayed: displayedRef,
+      childNodeRef,
+      handlePositiveClick,
+      handleNegativeClick,
+      handleCloseClick,
+      handleAfterLeave,
+      handleBeforeLeave,
+      handleEnter
+    };
+  },
+  render() {
+    const { $slots, $attrs, handleEnter, handleAfterLeave, handleBeforeLeave, preset, mergedClsPrefix } = this;
+    let childNode = null;
+    if (!preset) {
+      childNode = getFirstSlotVNode($slots);
+      if (!childNode) {
+        warn$2("modal", "default slot is empty");
+        return;
+      }
+      childNode = cloneVNode(childNode);
+      childNode.props = mergeProps({
+        class: `${mergedClsPrefix}-modal`
+      }, $attrs, childNode.props || {});
+    }
+    return this.displayDirective === "show" || this.displayed || this.show ? withDirectives(h(
+      "div",
+      { role: "none", class: `${mergedClsPrefix}-modal-body-wrapper` },
+      h(NScrollbar$1, { ref: "scrollbarRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentClass: `${mergedClsPrefix}-modal-scroll-content` }, {
+        default: () => {
+          var _a2;
+          return [
+            (_a2 = this.renderMask) === null || _a2 === void 0 ? void 0 : _a2.call(this),
+            h(FocusTrap, { disabled: !this.trapFocus, active: this.show, onEsc: this.onEsc, autoFocus: this.autoFocus }, {
+              default: () => {
+                var _a3;
+                return h(Transition, { name: "fade-in-scale-up-transition", appear: (_a3 = this.appear) !== null && _a3 !== void 0 ? _a3 : this.isMounted, onEnter: handleEnter, onAfterEnter: this.onAfterEnter, onAfterLeave: handleAfterLeave, onBeforeLeave: handleBeforeLeave }, {
+                  default: () => {
+                    const dirs = [
+                      [vShow, this.show]
+                    ];
+                    const { onClickoutside } = this;
+                    if (onClickoutside) {
+                      dirs.push([
+                        clickoutside$1,
+                        this.onClickoutside,
+                        void 0,
+                        { capture: true }
+                      ]);
+                    }
+                    return withDirectives(this.preset === "confirm" || this.preset === "dialog" ? h(NDialog, Object.assign({}, this.$attrs, { class: [
+                      `${mergedClsPrefix}-modal`,
+                      this.$attrs.class
+                    ], ref: "bodyRef", theme: this.mergedTheme.peers.Dialog, themeOverrides: this.mergedTheme.peerOverrides.Dialog }, keep(this.$props, dialogPropKeys), { "aria-modal": "true" }), $slots) : this.preset === "card" ? h(NCard, Object.assign({}, this.$attrs, { ref: "bodyRef", class: [
+                      `${mergedClsPrefix}-modal`,
+                      this.$attrs.class
+                    ], theme: this.mergedTheme.peers.Card, themeOverrides: this.mergedTheme.peerOverrides.Card }, keep(this.$props, cardBasePropKeys), { "aria-modal": "true", role: "dialog" }), $slots) : this.childNodeRef = childNode, dirs);
+                  }
+                });
+              }
+            })
+          ];
+        }
+      })
+    ), [
+      [
+        vShow,
+        this.displayDirective === "if" || this.displayed || this.show
+      ]
+    ]) : null;
+  }
+});
+const style$b = c$1([cB("modal-container", `
+ position: fixed;
+ left: 0;
+ top: 0;
+ height: 0;
+ width: 0;
+ display: flex;
+ `), cB("modal-mask", `
+ position: fixed;
+ left: 0;
+ right: 0;
+ top: 0;
+ bottom: 0;
+ background-color: rgba(0, 0, 0, .4);
+ `, [fadeInTransition({
+  enterDuration: ".25s",
+  leaveDuration: ".25s",
+  enterCubicBezier: "var(--n-bezier-ease-out)",
+  leaveCubicBezier: "var(--n-bezier-ease-out)"
+})]), cB("modal-body-wrapper", `
+ position: fixed;
+ left: 0;
+ right: 0;
+ top: 0;
+ bottom: 0;
+ overflow: visible;
+ `, [cB("modal-scroll-content", `
+ min-height: 100%;
+ display: flex;
+ position: relative;
+ `)]), cB("modal", `
+ position: relative;
+ align-self: center;
+ color: var(--n-text-color);
+ margin: auto;
+ box-shadow: var(--n-box-shadow);
+ `, [fadeInScaleUpTransition({
+  duration: ".25s",
+  enterScale: ".5"
+})])]);
+const modalProps = Object.assign(Object.assign(Object.assign(Object.assign({}, useTheme.props), { show: Boolean, unstableShowMask: {
+  type: Boolean,
+  default: true
+}, maskClosable: {
+  type: Boolean,
+  default: true
+}, preset: String, to: [String, Object], displayDirective: {
+  type: String,
+  default: "if"
+}, transformOrigin: {
+  type: String,
+  default: "mouse"
+}, zIndex: Number, autoFocus: {
+  type: Boolean,
+  default: true
+}, trapFocus: {
+  type: Boolean,
+  default: true
+}, closeOnEsc: {
+  type: Boolean,
+  default: true
+}, blockScroll: { type: Boolean, default: true } }), presetProps), {
+  // events
+  onEsc: Function,
+  "onUpdate:show": [Function, Array],
+  onUpdateShow: [Function, Array],
+  onAfterEnter: Function,
+  onBeforeLeave: Function,
+  onAfterLeave: Function,
+  onClose: Function,
+  onPositiveClick: Function,
+  onNegativeClick: Function,
+  onMaskClick: Function,
+  // private
+  internalDialog: Boolean,
+  internalAppear: {
+    type: Boolean,
+    default: void 0
+  },
+  // deprecated
+  overlayStyle: [String, Object],
+  onBeforeHide: Function,
+  onAfterHide: Function,
+  onHide: Function
+});
+const NModal = defineComponent({
+  name: "Modal",
+  inheritAttrs: false,
+  props: modalProps,
+  setup(props) {
+    const containerRef = ref(null);
+    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const themeRef = useTheme("Modal", "-modal", style$b, modalLight$1, props, mergedClsPrefixRef);
+    const clickedRef = useClicked(64);
+    const clickedPositionRef = useClickPosition();
+    const isMountedRef = isMounted();
+    const NDialogProvider = props.internalDialog ? inject(dialogProviderInjectionKey, null) : null;
+    const isComposingRef2 = useIsComposing();
+    function doUpdateShow(show) {
+      const { onUpdateShow, "onUpdate:show": _onUpdateShow, onHide } = props;
+      if (onUpdateShow)
+        call(onUpdateShow, show);
+      if (_onUpdateShow)
+        call(_onUpdateShow, show);
+      if (onHide && !show)
+        onHide(show);
+    }
+    function handleCloseClick() {
+      const { onClose } = props;
+      if (onClose) {
+        void Promise.resolve(onClose()).then((value) => {
+          if (value === false)
+            return;
+          doUpdateShow(false);
+        });
+      } else {
+        doUpdateShow(false);
+      }
+    }
+    function handlePositiveClick() {
+      const { onPositiveClick } = props;
+      if (onPositiveClick) {
+        void Promise.resolve(onPositiveClick()).then((value) => {
+          if (value === false)
+            return;
+          doUpdateShow(false);
+        });
+      } else {
+        doUpdateShow(false);
+      }
+    }
+    function handleNegativeClick() {
+      const { onNegativeClick } = props;
+      if (onNegativeClick) {
+        void Promise.resolve(onNegativeClick()).then((value) => {
+          if (value === false)
+            return;
+          doUpdateShow(false);
+        });
+      } else {
+        doUpdateShow(false);
+      }
+    }
+    function handleBeforeLeave() {
+      const { onBeforeLeave, onBeforeHide } = props;
+      if (onBeforeLeave)
+        call(onBeforeLeave);
+      if (onBeforeHide)
+        onBeforeHide();
+    }
+    function handleAfterLeave() {
+      const { onAfterLeave, onAfterHide } = props;
+      if (onAfterLeave)
+        call(onAfterLeave);
+      if (onAfterHide)
+        onAfterHide();
+    }
+    function handleClickoutside(e) {
+      var _a2;
+      const { onMaskClick } = props;
+      if (onMaskClick) {
+        onMaskClick(e);
+      }
+      if (props.maskClosable) {
+        if ((_a2 = containerRef.value) === null || _a2 === void 0 ? void 0 : _a2.contains(getPreciseEventTarget(e))) {
+          doUpdateShow(false);
+        }
+      }
+    }
+    function handleEsc(e) {
+      var _a2;
+      (_a2 = props.onEsc) === null || _a2 === void 0 ? void 0 : _a2.call(props);
+      if (props.show && props.closeOnEsc && eventEffectNotPerformed(e)) {
+        !isComposingRef2.value && doUpdateShow(false);
+      }
+    }
+    provide(modalInjectionKey, {
+      getMousePosition: () => {
+        if (NDialogProvider) {
+          const { clickedRef: clickedRef2, clickPositionRef } = NDialogProvider;
+          if (clickedRef2.value && clickPositionRef.value) {
+            return clickPositionRef.value;
+          }
+        }
+        if (clickedRef.value) {
+          return clickedPositionRef.value;
+        }
+        return null;
+      },
+      mergedClsPrefixRef,
+      mergedThemeRef: themeRef,
+      isMountedRef,
+      appearRef: toRef(props, "internalAppear"),
+      transformOriginRef: toRef(props, "transformOrigin")
+    });
+    const cssVarsRef = computed(() => {
+      const { common: { cubicBezierEaseOut: cubicBezierEaseOut2 }, self: { boxShadow, color, textColor } } = themeRef.value;
+      return {
+        "--n-bezier-ease-out": cubicBezierEaseOut2,
+        "--n-box-shadow": boxShadow,
+        "--n-color": color,
+        "--n-text-color": textColor
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("theme-class", void 0, cssVarsRef, props) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      namespace: namespaceRef,
+      isMounted: isMountedRef,
+      containerRef,
+      presetProps: computed(() => {
+        const pickedProps = keep(props, presetPropsKeys);
+        return pickedProps;
+      }),
+      handleEsc,
+      handleAfterLeave,
+      handleClickoutside,
+      handleBeforeLeave,
+      doUpdateShow,
+      handleNegativeClick,
+      handlePositiveClick,
+      handleCloseClick,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    const { mergedClsPrefix } = this;
+    return h(LazyTeleport, { to: this.to, show: this.show }, {
+      default: () => {
+        var _a2;
+        (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+        const { unstableShowMask } = this;
+        return withDirectives(h(
+          "div",
+          { role: "none", ref: "containerRef", class: [
+            `${mergedClsPrefix}-modal-container`,
+            this.themeClass,
+            this.namespace
+          ], style: this.cssVars },
+          h(NModalBodyWrapper, Object.assign({ style: this.overlayStyle }, this.$attrs, { ref: "bodyWrapper", displayDirective: this.displayDirective, show: this.show, preset: this.preset, autoFocus: this.autoFocus, trapFocus: this.trapFocus, blockScroll: this.blockScroll }, this.presetProps, { onEsc: this.handleEsc, onClose: this.handleCloseClick, onNegativeClick: this.handleNegativeClick, onPositiveClick: this.handlePositiveClick, onBeforeLeave: this.handleBeforeLeave, onAfterEnter: this.onAfterEnter, onAfterLeave: this.handleAfterLeave, onClickoutside: unstableShowMask ? void 0 : this.handleClickoutside, renderMask: unstableShowMask ? () => {
+            var _a3;
+            return h(Transition, { name: "fade-in-transition", key: "mask", appear: (_a3 = this.internalAppear) !== null && _a3 !== void 0 ? _a3 : this.isMounted }, {
+              default: () => {
+                return this.show ? h("div", { "aria-hidden": true, ref: "containerRef", class: `${mergedClsPrefix}-modal-mask`, onClick: this.handleClickoutside }) : null;
+              }
+            });
+          } : void 0 }), this.$slots)
+        ), [
+          [
+            zindexable$1,
+            {
+              zIndex: this.zIndex,
+              enabled: this.show
+            }
+          ]
+        ]);
+      }
+    });
+  }
+});
 const self$r = (vars) => {
   const { textColor1, dividerColor, fontWeightStrong } = vars;
   return {
@@ -24680,7 +25653,7 @@ const NDrawerBodyWrapper = defineComponent({
                 `${mergedClsPrefix}-drawer__resize-trigger`,
                 (this.isDragging || this.isHoverOnResizeTrigger) && `${mergedClsPrefix}-drawer__resize-trigger--hover`
               ], onMouseenter: this.handleMouseenterResizeTrigger, onMouseleave: this.handleMouseleaveResizeTrigger, onMousedown: this.handleMousedownResizeTrigger }) : null,
-              this.nativeScrollbar ? h("div", { class: `${mergedClsPrefix}-drawer-content-wrapper`, style: this.contentStyle, role: "none" }, $slots) : h(NScrollbar, Object.assign({}, this.scrollbarProps, { contentStyle: this.contentStyle, contentClass: `${mergedClsPrefix}-drawer-content-wrapper`, theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar }), $slots)
+              this.nativeScrollbar ? h("div", { class: `${mergedClsPrefix}-drawer-content-wrapper`, style: this.contentStyle, role: "none" }, $slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, { contentStyle: this.contentStyle, contentClass: `${mergedClsPrefix}-drawer-content-wrapper`, theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar }), $slots)
             ]), this.bodyDirectives)
           })
         })
@@ -24786,7 +25759,7 @@ function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s"
     })
   ];
 }
-const style$9 = c$1([cB("drawer", `
+const style$a = c$1([cB("drawer", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: absolute;
@@ -24996,7 +25969,7 @@ const NDrawer = defineComponent({
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
     const isMountedRef = isMounted();
-    const themeRef = useTheme("Drawer", "-drawer", style$9, drawerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Drawer", "-drawer", style$a, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
     const uncontrolledHeightRef = ref(props.defaultHeight);
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
@@ -25187,7 +26160,7 @@ const NDrawerContent = defineComponent({
         "div",
         { class: `${mergedClsPrefix}-drawer-body`, style: bodyStyle, role: "none" },
         h("div", { class: `${mergedClsPrefix}-drawer-body-content-wrapper`, style: bodyContentStyle, role: "none" }, $slots)
-      ) : h(NScrollbar, Object.assign({ themeOverrides: mergedTheme.peerOverrides.Scrollbar, theme: mergedTheme.peers.Scrollbar }, scrollbarProps2, { class: `${mergedClsPrefix}-drawer-body`, contentClass: `${mergedClsPrefix}-drawer-body-content-wrapper`, contentStyle: bodyContentStyle }), $slots),
+      ) : h(NScrollbar$1, Object.assign({ themeOverrides: mergedTheme.peerOverrides.Scrollbar, theme: mergedTheme.peers.Scrollbar }, scrollbarProps2, { class: `${mergedClsPrefix}-drawer-body`, contentClass: `${mergedClsPrefix}-drawer-body-content-wrapper`, contentStyle: bodyContentStyle }), $slots),
       $slots.footer ? h("div", { class: `${mergedClsPrefix}-drawer-footer`, style: footerStyle, role: "none" }, $slots.footer()) : null
     );
   }
@@ -26854,7 +27827,7 @@ const closeIcon = h(
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
   h("path", { d: "M4.089 4.216l.057-.07a.5.5 0 0 1 .638-.057l.07.057L10 9.293l5.146-5.147a.5.5 0 0 1 .638-.057l.07.057a.5.5 0 0 1 .057.638l-.057.07L10.707 10l5.147 5.146a.5.5 0 0 1 .057.638l-.057.07a.5.5 0 0 1-.638.057l-.07-.057L10 10.707l-5.146 5.147a.5.5 0 0 1-.638.057l-.07-.057a.5.5 0 0 1-.057-.638l.057-.07L9.293 10L4.146 4.854a.5.5 0 0 1-.057-.638l.057-.07l-.057.07z", fill: "currentColor" })
 );
-const style$8 = c$1([c$1("body >", [cB("image-container", "position: fixed;")]), cB("image-preview-container", `
+const style$9 = c$1([c$1("body >", [cB("image-container", "position: fixed;")]), cB("image-preview-container", `
  position: fixed;
  left: 0;
  right: 0;
@@ -26921,7 +27894,7 @@ const NImagePreview = defineComponent({
     required: true
   } }),
   setup(props) {
-    const themeRef = useTheme("Image", "-image", style$8, imageLight, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("Image", "-image", style$9, imageLight, props, toRef(props, "clsPrefix"));
     let thumbnailEl = null;
     const previewRef = ref(null);
     const previewWrapperRef = ref(null);
@@ -27553,7 +28526,7 @@ function parseNumber(number) {
     }
   }
 }
-const style$7 = c$1([cB("input-number-suffix", `
+const style$8 = c$1([cB("input-number-suffix", `
  display: inline-block;
  margin-right: 10px;
  `), cB("input-number-prefix", `
@@ -27625,7 +28598,7 @@ const NInputNumber = defineComponent({
   props: inputNumberProps,
   setup(props) {
     const { mergedBorderedRef, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("InputNumber", "-input-number", style$7, inputNumberLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("InputNumber", "-input-number", style$8, inputNumberLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("InputNumber");
     const formItem = useFormItem(props);
     const { mergedSizeRef, mergedDisabledRef, mergedStatusRef } = formItem;
@@ -28136,7 +29109,7 @@ const positionProp = {
   type: String,
   default: "static"
 };
-const style$6 = cB("layout", `
+const style$7 = cB("layout", `
  color: var(--n-text-color);
  background-color: var(--n-color);
  box-sizing: border-box;
@@ -28187,7 +29160,7 @@ function createLayoutComponent(isContent) {
       const scrollableElRef = ref(null);
       const scrollbarInstRef = ref(null);
       const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-      const themeRef = useTheme("Layout", "-layout", style$6, layoutLight$1, props, mergedClsPrefixRef);
+      const themeRef = useTheme("Layout", "-layout", style$7, layoutLight$1, props, mergedClsPrefixRef);
       function scrollTo(options, y) {
         if (props.nativeScrollbar) {
           const { value: scrollableEl } = scrollableElRef;
@@ -28267,12 +29240,12 @@ function createLayoutComponent(isContent) {
         `${mergedClsPrefix}-layout`,
         `${mergedClsPrefix}-layout--${this.position}-positioned`
       ];
-      return h("div", { class: layoutClass, style: this.cssVars }, this.nativeScrollbar ? h("div", { ref: "scrollableElRef", class: `${mergedClsPrefix}-layout-scroll-container`, style: [this.contentStyle, hasSiderStyle], onScroll: this.handleNativeElScroll }, this.$slots) : h(NScrollbar, Object.assign({}, this.scrollbarProps, { onScroll: this.onScroll, ref: "scrollbarInstRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentStyle: [this.contentStyle, hasSiderStyle] }), this.$slots));
+      return h("div", { class: layoutClass, style: this.cssVars }, this.nativeScrollbar ? h("div", { ref: "scrollableElRef", class: `${mergedClsPrefix}-layout-scroll-container`, style: [this.contentStyle, hasSiderStyle], onScroll: this.handleNativeElScroll }, this.$slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, { onScroll: this.onScroll, ref: "scrollbarInstRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentStyle: [this.contentStyle, hasSiderStyle] }), this.$slots));
     }
   });
 }
 const NLayout = createLayoutComponent(false);
-const style$5 = cB("layout-sider", `
+const style$6 = cB("layout-sider", `
  flex-shrink: 0;
  box-sizing: border-box;
  position: relative;
@@ -28576,7 +29549,7 @@ const NLayoutSider = defineComponent({
       collapseModeRef: toRef(props, "collapseMode")
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Layout", "-layout-sider", style$5, layoutLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Layout", "-layout-sider", style$6, layoutLight$1, props, mergedClsPrefixRef);
     function handleTransitionend(e) {
       var _a2, _b;
       if (e.propertyName === "max-width") {
@@ -28654,7 +29627,7 @@ const NLayoutSider = defineComponent({
           width: formatLength(this.width)
         }
       ] },
-      !this.nativeScrollbar ? h(NScrollbar, Object.assign({}, this.scrollbarProps, {
+      !this.nativeScrollbar ? h(NScrollbar$1, Object.assign({}, this.scrollbarProps, {
         onScroll: this.onScroll,
         ref: "scrollbarInstRef",
         style: this.scrollContainerStyle,
@@ -28982,7 +29955,7 @@ const NSubmenu = defineComponent({
       if (onClick)
         onClick();
     }
-    function handleClick() {
+    function handleClick2() {
       if (!mergedDisabledRef.value) {
         if (!mergedCollapsedRef.value) {
           NMenu2.toggleExpand(props.internalKey);
@@ -29023,19 +29996,19 @@ const NSubmenu = defineComponent({
         return !mergedDisabledRef.value && (menuProps2.mode === "horizontal" || mergedCollapsedRef.value);
       }),
       handlePopoverShowChange,
-      handleClick
+      handleClick: handleClick2
     };
   },
   render() {
     var _a2;
     const { mergedClsPrefix, menuProps: { renderIcon, renderLabel } } = this;
     const createSubmenuItem = () => {
-      const { isHorizontal, paddingLeft, collapsed, mergedDisabled, maxIconSize, activeIconSize, title, childActive, icon, handleClick, menuProps: { nodeProps }, dropdownShow, iconMarginRight, tmNode, mergedClsPrefix: mergedClsPrefix2 } = this;
+      const { isHorizontal, paddingLeft, collapsed, mergedDisabled, maxIconSize, activeIconSize, title, childActive, icon, handleClick: handleClick2, menuProps: { nodeProps }, dropdownShow, iconMarginRight, tmNode, mergedClsPrefix: mergedClsPrefix2 } = this;
       const attrs = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(tmNode.rawNode);
       return h(
         "div",
         Object.assign({}, attrs, { class: [`${mergedClsPrefix2}-menu-item`, attrs === null || attrs === void 0 ? void 0 : attrs.class], role: "menuitem" }),
-        h(NMenuOptionContent, { tmNode, paddingLeft, collapsed, disabled: mergedDisabled, iconMarginRight, maxIconSize, activeIconSize, title, extra: this.extra, showArrow: !isHorizontal, childActive, clsPrefix: mergedClsPrefix2, icon, hover: dropdownShow, onClick: handleClick })
+        h(NMenuOptionContent, { tmNode, paddingLeft, collapsed, disabled: mergedDisabled, iconMarginRight, maxIconSize, activeIconSize, title, extra: this.extra, showArrow: !isHorizontal, childActive, clsPrefix: mergedClsPrefix2, icon, hover: dropdownShow, onClick: handleClick2 })
       );
     };
     const createSubmenuChildren = () => {
@@ -29084,7 +30057,7 @@ const NMenuOption = defineComponent({
       if (onClick)
         onClick(e);
     }
-    function handleClick(e) {
+    function handleClick2(e) {
       if (!mergedDisabledRef.value) {
         NMenu2.doSelect(props.internalKey, props.tmNode.rawNode);
         doClick(e);
@@ -29108,7 +30081,7 @@ const NMenuOption = defineComponent({
         return false;
       }),
       mergedDisabled: mergedDisabledRef,
-      handleClick
+      handleClick: handleClick2
     };
   },
   render() {
@@ -29202,7 +30175,7 @@ const horizontalHoverStyleChildren = [cE("icon", `
  `), cE("extra", `
  color: var(--n-item-text-color-hover-horizontal);
  `)])];
-const style$4 = c$1([cB("menu", `
+const style$5 = c$1([cB("menu", `
  background-color: var(--n-color);
  color: var(--n-item-text-color);
  overflow: hidden;
@@ -29457,7 +30430,7 @@ const NMenu = defineComponent({
   props: menuProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Menu", "-menu", style$4, menuLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Menu", "-menu", style$5, menuLight$1, props, mergedClsPrefixRef);
     const layoutSider = inject(layoutSiderInjectionKey, null);
     const mergedCollapsedRef = computed(() => {
       var _a2;
@@ -29741,7 +30714,7 @@ const messageProps = {
 };
 const messageApiInjectionKey = createInjectionKey("n-message-api");
 const messageProviderInjectionKey = createInjectionKey("n-message-provider");
-const style$3 = c$1([cB("message-wrapper", `
+const style$4 = c$1([cB("message-wrapper", `
  margin: var(--n-margin);
  z-index: 0;
  transform-origin: top center;
@@ -29862,7 +30835,7 @@ const NMessage = defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(messageProviderInjectionKey);
     const rtlEnabledRef = useRtl("Message", mergedRtlRef, mergedClsPrefixRef);
-    const themeRef = useTheme("Message", "-message", style$3, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
+    const themeRef = useTheme("Message", "-message", style$4, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { padding, margin, maxWidth, iconMargin, closeMargin, closeSize, iconSize, fontSize: fontSize2, lineHeight: lineHeight2, borderRadius, iconColorInfo, iconColorSuccess, iconColorWarning, iconColorError, iconColorLoading, closeIconSize, closeBorderRadius, [createKey("textColor", type)]: textColor, [createKey("boxShadow", type)]: boxShadow, [createKey("color", type)]: color, [createKey("closeColorHover", type)]: closeColorHover, [createKey("closeColorPressed", type)]: closeColorPressed, [createKey("closeIconColor", type)]: closeIconColor, [createKey("closeIconColorPressed", type)]: closeIconColorPressed, [createKey("closeIconColorHover", type)]: closeIconColorHover } } = themeRef.value;
@@ -30179,7 +31152,7 @@ const NotificationContainer = defineComponent({
       `${mergedClsPrefix}-notification-container`,
       scrollable && `${mergedClsPrefix}-notification-container--scrollable`,
       `${mergedClsPrefix}-notification-container--${placement}`
-    ] }, scrollable ? h(NScrollbar, { theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, contentStyle: { overflow: "hidden" } }, $slots) : $slots);
+    ] }, scrollable ? h(NScrollbar$1, { theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, contentStyle: { overflow: "hidden" } }, $slots) : $slots);
   }
 });
 const iconRenderMap = {
@@ -30463,7 +31436,7 @@ const NotificationEnvironment = defineComponent({
     });
   }
 });
-const style$2 = c$1([cB("notification-container", `
+const style$3 = c$1([cB("notification-container", `
  z-index: 4000;
  position: fixed;
  overflow: visible;
@@ -30716,7 +31689,7 @@ const NNotificationProvider = defineComponent({
       leavingKeySet.delete(key);
       notificationListRef.value.splice(notificationListRef.value.findIndex((notification) => notification.key === key), 1);
     }
-    const themeRef = useTheme("Notification", "-notification", style$2, notificationLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Notification", "-notification", style$3, notificationLight$1, props, mergedClsPrefixRef);
     const api = {
       create,
       info: apis[0],
@@ -30787,7 +31760,7 @@ function useNotification() {
   }
   return api;
 }
-const style$1 = c$1([cB("progress", {
+const style$2 = c$1([cB("progress", {
   display: "inline-block"
 }, [cB("progress-icon", `
  color: var(--n-icon-color);
@@ -31366,7 +32339,7 @@ const NProgress = defineComponent({
       return void 0;
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Progress", "-progress", style$1, progressLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Progress", "-progress", style$2, progressLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { status } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, fontSizeCircle, railColor, railHeight, iconSizeCircle, iconSizeLine, textColorCircle, textColorLineInner, textColorLineOuter, lineBgProcessing, fontWeightCircle, [createKey("iconColor", status)]: iconColor, [createKey("fillColor", status)]: fillColor } } = themeRef.value;
@@ -31408,6 +32381,29 @@ const NProgress = defineComponent({
     ], style: cssVars, "aria-valuemax": 100, "aria-valuemin": 0, "aria-valuenow": percentage, role: type === "circle" || type === "line" || type === "dashboard" ? "progressbar" : "none" }, type === "circle" || type === "dashboard" ? h(Circle, { clsPrefix: mergedClsPrefix, status, showIndicator, indicatorTextColor, railColor, fillColor: color, railStyle, offsetDegree: this.offsetDegree, percentage, viewBoxWidth, strokeWidth, gapDegree: gapDeg === void 0 ? type === "dashboard" ? 75 : 0 : gapDeg, gapOffsetDegree, unit }, $slots) : type === "line" ? h(Line, { clsPrefix: mergedClsPrefix, status, showIndicator, indicatorTextColor, railColor, fillColor: color, railStyle, percentage, processing, indicatorPlacement: mergedIndicatorPlacement, unit, fillBorderRadius, railBorderRadius: borderRadius, height }, $slots) : type === "multiple-circle" ? h(MultipleCircle, { clsPrefix: mergedClsPrefix, strokeWidth, railColor, fillColor: color, railStyle, viewBoxWidth, percentage, showIndicator, circleGap }, $slots) : null);
   }
 });
+const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), { trigger: String, xScrollable: Boolean, onScroll: Function });
+const Scrollbar = defineComponent({
+  name: "Scrollbar",
+  props: scrollbarProps,
+  setup() {
+    const scrollbarInstRef = ref(null);
+    const exposedMethods = {
+      scrollTo: (...args) => {
+        var _a2;
+        (_a2 = scrollbarInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollTo(args[0], args[1]);
+      },
+      scrollBy: (...args) => {
+        var _a2;
+        (_a2 = scrollbarInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollBy(args[0], args[1]);
+      }
+    };
+    return Object.assign(Object.assign({}, exposedMethods), { scrollbarInstRef });
+  },
+  render() {
+    return h(NScrollbar$1, Object.assign({ ref: "scrollbarInstRef" }, this.$props), this.$slots);
+  }
+});
+const NScrollbar = Scrollbar;
 const skeletonDark = {
   name: "Skeleton",
   common: commonDark,
@@ -31434,7 +32430,7 @@ function useRefs() {
   onBeforeUpdate(() => refs.value.clear());
   return [refs, setRefs];
 }
-const style = c$1([cB("slider", `
+const style$1 = c$1([cB("slider", `
  display: block;
  padding: calc((var(--n-handle-size) - var(--n-rail-height)) / 2) 0;
  position: relative;
@@ -31635,7 +32631,7 @@ const NSlider = defineComponent({
   props: sliderProps,
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Slider", "-slider", style, sliderLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Slider", "-slider", style$1, sliderLight$1, props, mergedClsPrefixRef);
     const handleRailRef = ref(null);
     const [handleRefs, setHandleRefs] = useRefs();
     const [followerRefs, setFollowerRefs] = useRefs();
@@ -32136,6 +33132,999 @@ const NSlider = defineComponent({
     );
   }
 });
+const tabsInjectionKey = createInjectionKey("n-tabs");
+const tabPaneProps = {
+  tab: [String, Number, Object, Function],
+  name: {
+    type: [String, Number],
+    required: true
+  },
+  disabled: Boolean,
+  displayDirective: {
+    type: String,
+    default: "if"
+  },
+  closable: {
+    type: Boolean,
+    default: void 0
+  },
+  tabProps: Object,
+  /** @deprecated */
+  label: [String, Number, Object, Function]
+};
+const NTabPane = defineComponent({
+  __TAB_PANE__: true,
+  name: "TabPane",
+  alias: ["TabPanel"],
+  props: tabPaneProps,
+  setup(props) {
+    const NTab = inject(tabsInjectionKey, null);
+    if (!NTab) {
+      throwError("tab-pane", "`n-tab-pane` must be placed inside `n-tabs`.");
+    }
+    return {
+      style: NTab.paneStyleRef,
+      class: NTab.paneClassRef,
+      mergedClsPrefix: NTab.mergedClsPrefixRef
+    };
+  },
+  render() {
+    return h("div", { class: [`${this.mergedClsPrefix}-tab-pane`, this.class], style: this.style }, this.$slots);
+  }
+});
+const tabProps = Object.assign({ internalLeftPadded: Boolean, internalAddable: Boolean, internalCreatedByPane: Boolean }, omit(tabPaneProps, ["displayDirective"]));
+const Tab = defineComponent({
+  __TAB__: true,
+  inheritAttrs: false,
+  name: "Tab",
+  props: tabProps,
+  setup(props) {
+    const {
+      mergedClsPrefixRef,
+      valueRef,
+      typeRef,
+      closableRef,
+      tabStyleRef,
+      tabChangeIdRef,
+      onBeforeLeaveRef,
+      triggerRef,
+      handleAdd,
+      activateTab,
+      handleClose
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    } = inject(tabsInjectionKey);
+    return {
+      trigger: triggerRef,
+      mergedClosable: computed(() => {
+        if (props.internalAddable)
+          return false;
+        const { closable } = props;
+        if (closable === void 0)
+          return closableRef.value;
+        return closable;
+      }),
+      style: tabStyleRef,
+      clsPrefix: mergedClsPrefixRef,
+      value: valueRef,
+      type: typeRef,
+      handleClose(e) {
+        e.stopPropagation();
+        if (props.disabled)
+          return;
+        handleClose(props.name);
+      },
+      activateTab() {
+        if (props.disabled)
+          return;
+        if (props.internalAddable) {
+          handleAdd();
+          return;
+        }
+        const { name: nameProp } = props;
+        const id = ++tabChangeIdRef.id;
+        if (nameProp !== valueRef.value) {
+          const { value: onBeforeLeave } = onBeforeLeaveRef;
+          if (!onBeforeLeave) {
+            activateTab(nameProp);
+          } else {
+            void Promise.resolve(onBeforeLeave(props.name, valueRef.value)).then((allowLeave) => {
+              if (allowLeave && tabChangeIdRef.id === id) {
+                activateTab(nameProp);
+              }
+            });
+          }
+        }
+      }
+    };
+  },
+  render() {
+    const { internalAddable, clsPrefix, name, disabled, label, tab, value, mergedClosable, style: style2, trigger: trigger2, $slots: { default: defaultSlot } } = this;
+    const mergedTab = label !== null && label !== void 0 ? label : tab;
+    return h(
+      "div",
+      { class: `${clsPrefix}-tabs-tab-wrapper` },
+      this.internalLeftPadded ? h("div", { class: `${clsPrefix}-tabs-tab-pad` }) : null,
+      h(
+        "div",
+        Object.assign({ key: name, "data-name": name, "data-disabled": disabled ? true : void 0 }, mergeProps({
+          class: [
+            `${clsPrefix}-tabs-tab`,
+            value === name && `${clsPrefix}-tabs-tab--active`,
+            disabled && `${clsPrefix}-tabs-tab--disabled`,
+            mergedClosable && `${clsPrefix}-tabs-tab--closable`,
+            internalAddable && `${clsPrefix}-tabs-tab--addable`
+          ],
+          onClick: trigger2 === "click" ? this.activateTab : void 0,
+          onMouseenter: trigger2 === "hover" ? this.activateTab : void 0,
+          style: internalAddable ? void 0 : style2
+        }, this.internalCreatedByPane ? this.tabProps || {} : this.$attrs)),
+        h("span", { class: `${clsPrefix}-tabs-tab__label` }, internalAddable ? h(
+          Fragment,
+          null,
+          h("div", { class: `${clsPrefix}-tabs-tab__height-placeholder` }, " "),
+          h(NBaseIcon, { clsPrefix }, {
+            default: () => h(AddIcon, null)
+          })
+        ) : defaultSlot ? defaultSlot() : typeof mergedTab === "object" ? mergedTab : render$1(mergedTab !== null && mergedTab !== void 0 ? mergedTab : name)),
+        mergedClosable && this.type === "card" ? h(NBaseClose, { clsPrefix, class: `${clsPrefix}-tabs-tab__close`, onClick: this.handleClose, disabled }) : null
+      )
+    );
+  }
+});
+const style = cB("tabs", `
+ box-sizing: border-box;
+ width: 100%;
+ display: flex;
+ flex-direction: column;
+ transition:
+ background-color .3s var(--n-bezier),
+ border-color .3s var(--n-bezier);
+`, [cM("segment-type", [cB("tabs-rail", [c$1("&.transition-disabled", "color: red;", [cB("tabs-tab", `
+ transition: none;
+ `)])])]), cM("left, right", `
+ flex-direction: row;
+ `, [cB("tabs-bar", `
+ width: 2px;
+ right: 0;
+ transition:
+ top .2s var(--n-bezier),
+ max-height .2s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ `), cB("tabs-tab", `
+ padding: var(--n-tab-padding-vertical); 
+ `)]), cM("right", `
+ flex-direction: row-reverse;
+ `, [cB("tabs-bar", `
+ left: 0;
+ `)]), cM("bottom", `
+ flex-direction: column-reverse;
+ justify-content: flex-end;
+ `, [cB("tabs-bar", `
+ top: 0;
+ `)]), cB("tabs-rail", `
+ padding: 3px;
+ border-radius: var(--n-tab-border-radius);
+ width: 100%;
+ background-color: var(--n-color-segment);
+ transition: background-color .3s var(--n-bezier);
+ display: flex;
+ align-items: center;
+ `, [cB("tabs-tab-wrapper", `
+ flex-basis: 0;
+ flex-grow: 1;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ `, [cB("tabs-tab", `
+ overflow: hidden;
+ border-radius: var(--n-tab-border-radius);
+ width: 100%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ `, [cM("active", `
+ font-weight: var(--n-font-weight-strong);
+ color: var(--n-tab-text-color-active);
+ background-color: var(--n-tab-color-segment);
+ box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .08);
+ `), c$1("&:hover", `
+ color: var(--n-tab-text-color-hover);
+ `)])])]), cM("flex", [cB("tabs-nav", {
+  width: "100%"
+}, [cB("tabs-wrapper", {
+  width: "100%"
+}, [cB("tabs-tab", {
+  marginRight: 0
+})])])]), cB("tabs-nav", `
+ box-sizing: border-box;
+ line-height: 1.5;
+ display: flex;
+ transition: border-color .3s var(--n-bezier);
+ `, [cE("prefix, suffix", `
+ display: flex;
+ align-items: center;
+ `), cE("prefix", "padding-right: 16px;"), cE("suffix", "padding-left: 16px;")]), cB("tabs-nav-scroll-wrapper", `
+ flex: 1;
+ position: relative;
+ overflow: hidden;
+ `, [cM("shadow-before", [c$1("&::before", `
+ box-shadow: inset 10px 0 8px -8px rgba(0, 0, 0, .12);
+ `)]), cM("shadow-after", [c$1("&::after", `
+ box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, .12);
+ `)]), cB("tabs-nav-y-scroll", `
+ height: 100%;
+ width: 100%;
+ overflow-y: auto; 
+ scrollbar-width: none;
+ `, [c$1("&::-webkit-scrollbar", `
+ width: 0;
+ height: 0;
+ `)]), c$1("&::before, &::after", `
+ transition: box-shadow .3s var(--n-bezier);
+ pointer-events: none;
+ content: "";
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ width: 20px;
+ z-index: 1;
+ `), c$1("&::before", `
+ left: 0;
+ `), c$1("&::after", `
+ right: 0;
+ `)]), cB("tabs-nav-scroll-content", `
+ display: flex;
+ position: relative;
+ min-width: 100%;
+ width: fit-content;
+ `), cB("tabs-wrapper", `
+ display: inline-flex;
+ flex-wrap: nowrap;
+ position: relative;
+ `), cB("tabs-tab-wrapper", `
+ display: flex;
+ flex-wrap: nowrap;
+ flex-shrink: 0;
+ flex-grow: 0;
+ `), cB("tabs-tab", `
+ cursor: pointer;
+ white-space: nowrap;
+ flex-wrap: nowrap;
+ display: inline-flex;
+ align-items: center;
+ color: var(--n-tab-text-color);
+ font-size: var(--n-tab-font-size);
+ background-clip: padding-box;
+ padding: var(--n-tab-padding);
+ transition:
+ box-shadow .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ border-color .3s var(--n-bezier);
+ `, [cM("disabled", {
+  cursor: "not-allowed"
+}), cE("close", `
+ margin-left: 6px;
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ `), cE("label", `
+ display: flex;
+ align-items: center;
+ `)]), cB("tabs-bar", `
+ position: absolute;
+ bottom: 0;
+ height: 2px;
+ border-radius: 1px;
+ background-color: var(--n-bar-color);
+ transition:
+ left .2s var(--n-bezier),
+ max-width .2s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ `, [c$1("&.transition-disabled", `
+ transition: none;
+ `), cM("disabled", `
+ background-color: var(--n-tab-text-color-disabled)
+ `)]), cB("tabs-pane-wrapper", `
+ position: relative;
+ overflow: hidden;
+ transition: max-height .2s var(--n-bezier);
+ `), cB("tab-pane", `
+ color: var(--n-pane-text-color);
+ width: 100%;
+ padding: var(--n-pane-padding);
+ transition:
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ opacity .2s var(--n-bezier);
+ left: 0;
+ right: 0;
+ top: 0;
+ `, [c$1("&.next-transition-leave-active, &.prev-transition-leave-active, &.next-transition-enter-active, &.prev-transition-enter-active", `
+ transition:
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ transform .2s var(--n-bezier),
+ opacity .2s var(--n-bezier);
+ `), c$1("&.next-transition-leave-active, &.prev-transition-leave-active", `
+ position: absolute;
+ `), c$1("&.next-transition-enter-from, &.prev-transition-leave-to", `
+ transform: translateX(32px);
+ opacity: 0;
+ `), c$1("&.next-transition-leave-to, &.prev-transition-enter-from", `
+ transform: translateX(-32px);
+ opacity: 0;
+ `), c$1("&.next-transition-leave-from, &.next-transition-enter-to, &.prev-transition-leave-from, &.prev-transition-enter-to", `
+ transform: translateX(0);
+ opacity: 1;
+ `)]), cB("tabs-tab-pad", `
+ width: var(--n-tab-gap);
+ flex-grow: 0;
+ flex-shrink: 0;
+ `), cM("line-type, bar-type", [cB("tabs-tab", `
+ font-weight: var(--n-tab-font-weight);
+ box-sizing: border-box;
+ vertical-align: bottom;
+ `, [c$1("&:hover", {
+  color: "var(--n-tab-text-color-hover)"
+}), cM("active", `
+ color: var(--n-tab-text-color-active);
+ font-weight: var(--n-tab-font-weight-active);
+ `), cM("disabled", {
+  color: "var(--n-tab-text-color-disabled)"
+})])]), cB("tabs-nav", [cM("line-type", [cE("prefix, suffix", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-nav-scroll-content", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-bar", `
+ border-radius: 0;
+ bottom: -1px;
+ `)]), cM("card-type", [cE("prefix, suffix", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-pad", `
+ flex-grow: 1;
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-tab-pad", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-tab", `
+ font-weight: var(--n-tab-font-weight);
+ border: 1px solid var(--n-tab-border-color);
+ border-top-left-radius: var(--n-tab-border-radius);
+ border-top-right-radius: var(--n-tab-border-radius);
+ background-color: var(--n-tab-color);
+ box-sizing: border-box;
+ position: relative;
+ vertical-align: bottom;
+ display: flex;
+ justify-content: space-between;
+ font-size: var(--n-tab-font-size);
+ color: var(--n-tab-text-color);
+ `, [cM("addable", `
+ padding-left: 8px;
+ padding-right: 8px;
+ font-size: 16px;
+ `, [cE("height-placeholder", `
+ width: 0;
+ font-size: var(--n-tab-font-size);
+ `), cNotM("disabled", [c$1("&:hover", `
+ color: var(--n-tab-text-color-hover);
+ `)])]), cM("closable", "padding-right: 6px;"), cM("active", `
+ border-bottom: 1px solid #0000;
+ background-color: #0000;
+ font-weight: var(--n-tab-font-weight-active);
+ color: var(--n-tab-text-color-active);
+ `), cM("disabled", "color: var(--n-tab-text-color-disabled);")]), cB("tabs-scroll-padding", "border-bottom: 1px solid var(--n-tab-border-color);")]), cM("left, right", [cB("tabs-wrapper", `
+ flex-direction: column;
+ `, [cB("tabs-tab-wrapper", `
+ flex-direction: column;
+ `, [cB("tabs-tab-pad", `
+ height: var(--n-tab-gap);
+ width: 100%;
+ `)])]), cB("tabs-nav-scroll-content", `
+ border-bottom: none;
+ `)]), cM("left", [cB("tabs-nav-scroll-content", `
+ box-sizing: border-box;
+ border-right: 1px solid var(--n-tab-border-color);
+ `)]), cM("right", [cB("tabs-nav-scroll-content", `
+ border-left: 1px solid var(--n-tab-border-color);
+ `)]), cM("bottom", [cB("tabs-nav-scroll-content", `
+ border-top: 1px solid var(--n-tab-border-color);
+ border-bottom: none;
+ `)])])]);
+const tabsProps = Object.assign(Object.assign({}, useTheme.props), {
+  value: [String, Number],
+  defaultValue: [String, Number],
+  trigger: {
+    type: String,
+    default: "click"
+  },
+  type: {
+    type: String,
+    default: "bar"
+  },
+  closable: Boolean,
+  justifyContent: String,
+  size: {
+    type: String,
+    default: "medium"
+  },
+  placement: {
+    type: String,
+    default: "top"
+  },
+  tabStyle: [String, Object],
+  barWidth: Number,
+  paneClass: String,
+  paneStyle: [String, Object],
+  addable: [Boolean, Object],
+  tabsPadding: {
+    type: Number,
+    default: 0
+  },
+  animated: Boolean,
+  onBeforeLeave: Function,
+  onAdd: Function,
+  "onUpdate:value": [Function, Array],
+  onUpdateValue: [Function, Array],
+  onClose: [Function, Array],
+  // deprecated
+  labelSize: String,
+  activeName: [String, Number],
+  onActiveNameChange: [Function, Array]
+});
+const NTabs = defineComponent({
+  name: "Tabs",
+  props: tabsProps,
+  setup(props, { slots }) {
+    var _a2, _b, _c, _d;
+    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const themeRef = useTheme("Tabs", "-tabs", style, tabsLight$1, props, mergedClsPrefixRef);
+    const tabsElRef = ref(null);
+    const barElRef = ref(null);
+    const scrollWrapperElRef = ref(null);
+    const addTabInstRef = ref(null);
+    const xScrollInstRef = ref(null);
+    const leftReachedRef = ref(true);
+    const rightReachedRef = ref(true);
+    const compitableSizeRef = useCompitable(props, ["labelSize", "size"]);
+    const compitableValueRef = useCompitable(props, ["activeName", "value"]);
+    const uncontrolledValueRef = ref((_b = (_a2 = compitableValueRef.value) !== null && _a2 !== void 0 ? _a2 : props.defaultValue) !== null && _b !== void 0 ? _b : slots.default ? (_d = (_c = flatten$2(slots.default())[0]) === null || _c === void 0 ? void 0 : _c.props) === null || _d === void 0 ? void 0 : _d.name : null);
+    const mergedValueRef = useMergedState(compitableValueRef, uncontrolledValueRef);
+    const tabChangeIdRef = { id: 0 };
+    const tabWrapperStyleRef = computed(() => {
+      if (!props.justifyContent || props.type === "card")
+        return void 0;
+      return {
+        display: "flex",
+        justifyContent: props.justifyContent
+      };
+    });
+    watch(mergedValueRef, () => {
+      tabChangeIdRef.id = 0;
+      updateCurrentBarStyle();
+      updateCurrentScrollPosition();
+    });
+    function getCurrentEl() {
+      var _a3;
+      const { value } = mergedValueRef;
+      if (value === null)
+        return null;
+      const tabEl = (_a3 = tabsElRef.value) === null || _a3 === void 0 ? void 0 : _a3.querySelector(`[data-name="${value}"]`);
+      return tabEl;
+    }
+    function updateBarStyle(tabEl) {
+      if (props.type === "card")
+        return;
+      const { value: barEl } = barElRef;
+      if (!barEl)
+        return;
+      if (tabEl) {
+        const disabledClassName = `${mergedClsPrefixRef.value}-tabs-bar--disabled`;
+        const { barWidth, placement } = props;
+        if (tabEl.dataset.disabled === "true") {
+          barEl.classList.add(disabledClassName);
+        } else {
+          barEl.classList.remove(disabledClassName);
+        }
+        if (["top", "bottom"].includes(placement)) {
+          clearBarStyle(["top", "maxHeight", "height"]);
+          if (typeof barWidth === "number" && tabEl.offsetWidth >= barWidth) {
+            const offsetDiffLeft = Math.floor((tabEl.offsetWidth - barWidth) / 2) + tabEl.offsetLeft;
+            barEl.style.left = `${offsetDiffLeft}px`;
+            barEl.style.maxWidth = `${barWidth}px`;
+          } else {
+            barEl.style.left = `${tabEl.offsetLeft}px`;
+            barEl.style.maxWidth = `${tabEl.offsetWidth}px`;
+          }
+          barEl.style.width = "8192px";
+          void barEl.offsetWidth;
+        } else {
+          clearBarStyle(["left", "maxWidth", "width"]);
+          if (typeof barWidth === "number" && tabEl.offsetHeight >= barWidth) {
+            const offsetDiffTop = Math.floor((tabEl.offsetHeight - barWidth) / 2) + tabEl.offsetTop;
+            barEl.style.top = `${offsetDiffTop}px`;
+            barEl.style.maxHeight = `${barWidth}px`;
+          } else {
+            barEl.style.top = `${tabEl.offsetTop}px`;
+            barEl.style.maxHeight = `${tabEl.offsetHeight}px`;
+          }
+          barEl.style.height = "8192px";
+          void barEl.offsetHeight;
+        }
+      }
+    }
+    function clearBarStyle(styleProps) {
+      const { value: barEl } = barElRef;
+      if (!barEl)
+        return;
+      for (const prop of styleProps) {
+        barEl.style[prop] = "";
+      }
+    }
+    function updateCurrentBarStyle() {
+      if (props.type === "card")
+        return;
+      const tabEl = getCurrentEl();
+      if (tabEl) {
+        updateBarStyle(tabEl);
+      }
+    }
+    function updateCurrentScrollPosition(smooth) {
+      var _a3;
+      const scrollWrapperEl = (_a3 = xScrollInstRef.value) === null || _a3 === void 0 ? void 0 : _a3.$el;
+      if (!scrollWrapperEl)
+        return;
+      const tabEl = getCurrentEl();
+      if (!tabEl)
+        return;
+      const { scrollLeft: scrollWrapperElScrollLeft, offsetWidth: scrollWrapperElOffsetWidth } = scrollWrapperEl;
+      const { offsetLeft: tabElOffsetLeft, offsetWidth: tabElOffsetWidth } = tabEl;
+      if (scrollWrapperElScrollLeft > tabElOffsetLeft) {
+        scrollWrapperEl.scrollTo({
+          top: 0,
+          left: tabElOffsetLeft,
+          behavior: "smooth"
+        });
+      } else if (tabElOffsetLeft + tabElOffsetWidth > scrollWrapperElScrollLeft + scrollWrapperElOffsetWidth) {
+        scrollWrapperEl.scrollTo({
+          top: 0,
+          left: tabElOffsetLeft + tabElOffsetWidth - scrollWrapperElOffsetWidth,
+          behavior: "smooth"
+        });
+      }
+    }
+    const tabsPaneWrapperRef = ref(null);
+    let fromHeight = 0;
+    let hangingTransition = null;
+    function onAnimationBeforeLeave(el) {
+      const tabsPaneWrapperEl = tabsPaneWrapperRef.value;
+      if (tabsPaneWrapperEl) {
+        fromHeight = el.getBoundingClientRect().height;
+        const fromHeightPx = `${fromHeight}px`;
+        const applyFromStyle = () => {
+          tabsPaneWrapperEl.style.height = fromHeightPx;
+          tabsPaneWrapperEl.style.maxHeight = fromHeightPx;
+        };
+        if (!hangingTransition) {
+          hangingTransition = applyFromStyle;
+        } else {
+          applyFromStyle();
+          hangingTransition();
+          hangingTransition = null;
+        }
+      }
+    }
+    function onAnimationEnter(el) {
+      const tabsPaneWrapperEl = tabsPaneWrapperRef.value;
+      if (tabsPaneWrapperEl) {
+        const targetHeight = el.getBoundingClientRect().height;
+        const applyTargetStyle = () => {
+          void document.body.offsetHeight;
+          tabsPaneWrapperEl.style.maxHeight = `${targetHeight}px`;
+          tabsPaneWrapperEl.style.height = `${Math.max(fromHeight, targetHeight)}px`;
+        };
+        if (!hangingTransition) {
+          hangingTransition = applyTargetStyle;
+        } else {
+          hangingTransition();
+          hangingTransition = null;
+          applyTargetStyle();
+        }
+      }
+    }
+    function onAnimationAfterEnter() {
+      const tabsPaneWrapperEl = tabsPaneWrapperRef.value;
+      if (tabsPaneWrapperEl) {
+        tabsPaneWrapperEl.style.maxHeight = "";
+        tabsPaneWrapperEl.style.height = "";
+      }
+    }
+    const renderNameListRef = { value: [] };
+    const animationDirectionRef = ref("next");
+    function activateTab(panelName) {
+      const currentValue = mergedValueRef.value;
+      let dir = "next";
+      for (const name of renderNameListRef.value) {
+        if (name === currentValue) {
+          break;
+        }
+        if (name === panelName) {
+          dir = "prev";
+          break;
+        }
+      }
+      animationDirectionRef.value = dir;
+      doUpdateValue(panelName);
+    }
+    function doUpdateValue(panelName) {
+      const { onActiveNameChange, onUpdateValue, "onUpdate:value": _onUpdateValue } = props;
+      if (onActiveNameChange) {
+        call(onActiveNameChange, panelName);
+      }
+      if (onUpdateValue)
+        call(onUpdateValue, panelName);
+      if (_onUpdateValue)
+        call(_onUpdateValue, panelName);
+      uncontrolledValueRef.value = panelName;
+    }
+    function handleClose(panelName) {
+      const { onClose } = props;
+      if (onClose)
+        call(onClose, panelName);
+    }
+    function updateBarPositionInstantly() {
+      const { value: barEl } = barElRef;
+      if (!barEl)
+        return;
+      const disableTransitionClassName = "transition-disabled";
+      barEl.classList.add(disableTransitionClassName);
+      updateCurrentBarStyle();
+      barEl.classList.remove(disableTransitionClassName);
+    }
+    let memorizedWidth = 0;
+    function _handleNavResize(entry) {
+      var _b2;
+      if (entry.contentRect.width === 0 && entry.contentRect.height === 0) {
+        return;
+      }
+      if (memorizedWidth === entry.contentRect.width) {
+        return;
+      }
+      memorizedWidth = entry.contentRect.width;
+      const { type } = props;
+      if (type === "line" || type === "bar") {
+        {
+          updateBarPositionInstantly();
+        }
+      }
+      if (type !== "segment") {
+        deriveScrollShadow((_b2 = xScrollInstRef.value) === null || _b2 === void 0 ? void 0 : _b2.$el);
+      }
+    }
+    const handleNavResize = throttle(_handleNavResize, 64);
+    watch([() => props.justifyContent, () => props.size], () => {
+      void nextTick(() => {
+        const { type } = props;
+        if (type === "line" || type === "bar") {
+          updateBarPositionInstantly();
+        }
+      });
+    });
+    const addTabFixedRef = ref(false);
+    function _handleTabsResize(entry) {
+      var _a3;
+      const { target, contentRect: { width } } = entry;
+      const containerWidth = target.parentElement.offsetWidth;
+      if (!addTabFixedRef.value) {
+        if (containerWidth < width) {
+          addTabFixedRef.value = true;
+        }
+      } else {
+        const { value: addTabInst } = addTabInstRef;
+        if (!addTabInst)
+          return;
+        if (containerWidth - width > addTabInst.$el.offsetWidth) {
+          addTabFixedRef.value = false;
+        }
+      }
+      deriveScrollShadow((_a3 = xScrollInstRef.value) === null || _a3 === void 0 ? void 0 : _a3.$el);
+    }
+    const handleTabsResize = throttle(_handleTabsResize, 64);
+    function handleAdd() {
+      const { onAdd } = props;
+      if (onAdd)
+        onAdd();
+      void nextTick(() => {
+        const currentEl = getCurrentEl();
+        const { value: xScrollInst } = xScrollInstRef;
+        if (!currentEl || !xScrollInst)
+          return;
+        xScrollInst.scrollTo({
+          left: currentEl.offsetLeft,
+          top: 0,
+          behavior: "smooth"
+        });
+      });
+    }
+    function deriveScrollShadow(el) {
+      if (!el)
+        return;
+      const { scrollLeft, scrollWidth, offsetWidth } = el;
+      leftReachedRef.value = scrollLeft <= 0;
+      rightReachedRef.value = scrollLeft + offsetWidth >= scrollWidth;
+    }
+    const handleScroll = throttle((e) => {
+      deriveScrollShadow(e.target);
+    }, 64);
+    provide(tabsInjectionKey, {
+      triggerRef: toRef(props, "trigger"),
+      tabStyleRef: toRef(props, "tabStyle"),
+      paneClassRef: toRef(props, "paneClass"),
+      paneStyleRef: toRef(props, "paneStyle"),
+      mergedClsPrefixRef,
+      typeRef: toRef(props, "type"),
+      closableRef: toRef(props, "closable"),
+      valueRef: mergedValueRef,
+      tabChangeIdRef,
+      onBeforeLeaveRef: toRef(props, "onBeforeLeave"),
+      activateTab,
+      handleClose,
+      handleAdd
+    });
+    onFontsReady(() => {
+      updateCurrentBarStyle();
+      updateCurrentScrollPosition();
+    });
+    watchEffect(() => {
+      const { value: el } = scrollWrapperElRef;
+      if (!el || ["left", "right"].includes(props.placement))
+        return;
+      const { value: clsPrefix } = mergedClsPrefixRef;
+      const shadowBeforeClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-before`;
+      const shadowAfterClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-after`;
+      if (leftReachedRef.value) {
+        el.classList.remove(shadowBeforeClass);
+      } else {
+        el.classList.add(shadowBeforeClass);
+      }
+      if (rightReachedRef.value) {
+        el.classList.remove(shadowAfterClass);
+      } else {
+        el.classList.add(shadowAfterClass);
+      }
+    });
+    const tabsRailElRef = ref(null);
+    watch(mergedValueRef, () => {
+      if (props.type === "segment") {
+        const tabsRailEl = tabsRailElRef.value;
+        if (tabsRailEl) {
+          void nextTick(() => {
+            tabsRailEl.classList.add("transition-disabled");
+            void tabsRailEl.offsetWidth;
+            tabsRailEl.classList.remove("transition-disabled");
+          });
+        }
+      }
+    });
+    const exposedMethods = {
+      syncBarPosition: () => {
+        updateCurrentBarStyle();
+      }
+    };
+    const cssVarsRef = computed(() => {
+      const { value: size2 } = compitableSizeRef;
+      const { type } = props;
+      const typeSuffix = {
+        card: "Card",
+        bar: "Bar",
+        line: "Line",
+        segment: "Segment"
+      }[type];
+      const sizeType = `${size2}${typeSuffix}`;
+      const { self: { barColor, closeIconColor, closeIconColorHover, closeIconColorPressed, tabColor, tabBorderColor, paneTextColor, tabFontWeight, tabBorderRadius, tabFontWeightActive, colorSegment, fontWeightStrong, tabColorSegment, closeSize, closeIconSize, closeColorHover, closeColorPressed, closeBorderRadius, [createKey("panePadding", size2)]: panePadding, [createKey("tabPadding", sizeType)]: tabPadding, [createKey("tabPaddingVertical", sizeType)]: tabPaddingVertical, [createKey("tabGap", sizeType)]: tabGap, [createKey("tabTextColor", type)]: tabTextColor, [createKey("tabTextColorActive", type)]: tabTextColorActive, [createKey("tabTextColorHover", type)]: tabTextColorHover, [createKey("tabTextColorDisabled", type)]: tabTextColorDisabled, [createKey("tabFontSize", size2)]: tabFontSize }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
+      return {
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-color-segment": colorSegment,
+        "--n-bar-color": barColor,
+        "--n-tab-font-size": tabFontSize,
+        "--n-tab-text-color": tabTextColor,
+        "--n-tab-text-color-active": tabTextColorActive,
+        "--n-tab-text-color-disabled": tabTextColorDisabled,
+        "--n-tab-text-color-hover": tabTextColorHover,
+        "--n-pane-text-color": paneTextColor,
+        "--n-tab-border-color": tabBorderColor,
+        "--n-tab-border-radius": tabBorderRadius,
+        "--n-close-size": closeSize,
+        "--n-close-icon-size": closeIconSize,
+        "--n-close-color-hover": closeColorHover,
+        "--n-close-color-pressed": closeColorPressed,
+        "--n-close-border-radius": closeBorderRadius,
+        "--n-close-icon-color": closeIconColor,
+        "--n-close-icon-color-hover": closeIconColorHover,
+        "--n-close-icon-color-pressed": closeIconColorPressed,
+        "--n-tab-color": tabColor,
+        "--n-tab-font-weight": tabFontWeight,
+        "--n-tab-font-weight-active": tabFontWeightActive,
+        "--n-tab-padding": tabPadding,
+        "--n-tab-padding-vertical": tabPaddingVertical,
+        "--n-tab-gap": tabGap,
+        "--n-pane-padding": panePadding,
+        "--n-font-weight-strong": fontWeightStrong,
+        "--n-tab-color-segment": tabColorSegment
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("tabs", computed(() => {
+      return `${compitableSizeRef.value[0]}${props.type[0]}`;
+    }), cssVarsRef, props) : void 0;
+    return Object.assign({
+      mergedClsPrefix: mergedClsPrefixRef,
+      mergedValue: mergedValueRef,
+      renderedNames: /* @__PURE__ */ new Set(),
+      tabsRailElRef,
+      tabsPaneWrapperRef,
+      tabsElRef,
+      barElRef,
+      addTabInstRef,
+      xScrollInstRef,
+      scrollWrapperElRef,
+      addTabFixed: addTabFixedRef,
+      tabWrapperStyle: tabWrapperStyleRef,
+      handleNavResize,
+      mergedSize: compitableSizeRef,
+      handleScroll,
+      handleTabsResize,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      animationDirection: animationDirectionRef,
+      renderNameListRef,
+      onAnimationBeforeLeave,
+      onAnimationEnter,
+      onAnimationAfterEnter,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    }, exposedMethods);
+  },
+  render() {
+    const { mergedClsPrefix, type, placement, addTabFixed, addable, mergedSize, renderNameListRef, onRender, $slots: { default: defaultSlot, prefix: prefixSlot, suffix: suffixSlot } } = this;
+    onRender === null || onRender === void 0 ? void 0 : onRender();
+    const tabPaneChildren = defaultSlot ? flatten$2(defaultSlot()).filter((v) => {
+      return v.type.__TAB_PANE__ === true;
+    }) : [];
+    const tabChildren = defaultSlot ? flatten$2(defaultSlot()).filter((v) => {
+      return v.type.__TAB__ === true;
+    }) : [];
+    const showPane = !tabChildren.length;
+    const isCard = type === "card";
+    const isSegment = type === "segment";
+    const mergedJustifyContent = !isCard && !isSegment && this.justifyContent;
+    renderNameListRef.value = [];
+    const scrollContent = () => {
+      const tabs = h(
+        "div",
+        { style: this.tabWrapperStyle, class: [`${mergedClsPrefix}-tabs-wrapper`] },
+        mergedJustifyContent ? null : h("div", { class: `${mergedClsPrefix}-tabs-scroll-padding`, style: { width: `${this.tabsPadding}px` } }),
+        showPane ? tabPaneChildren.map((tabPaneVNode, index) => {
+          renderNameListRef.value.push(tabPaneVNode.props.name);
+          return justifyTabDynamicProps(h(Tab, Object.assign({}, tabPaneVNode.props, { internalCreatedByPane: true, internalLeftPadded: index !== 0 && (!mergedJustifyContent || mergedJustifyContent === "center" || mergedJustifyContent === "start" || mergedJustifyContent === "end") }), tabPaneVNode.children ? {
+            default: tabPaneVNode.children.tab
+          } : void 0));
+        }) : tabChildren.map((tabVNode, index) => {
+          renderNameListRef.value.push(tabVNode.props.name);
+          if (index !== 0 && !mergedJustifyContent) {
+            return justifyTabDynamicProps(createLeftPaddedTabVNode(tabVNode));
+          } else {
+            return justifyTabDynamicProps(tabVNode);
+          }
+        }),
+        !addTabFixed && addable && isCard ? createAddTag(addable, (showPane ? tabPaneChildren.length : tabChildren.length) !== 0) : null,
+        mergedJustifyContent ? null : h("div", { class: `${mergedClsPrefix}-tabs-scroll-padding`, style: { width: `${this.tabsPadding}px` } })
+      );
+      return h(
+        "div",
+        { ref: "tabsElRef", class: `${mergedClsPrefix}-tabs-nav-scroll-content` },
+        isCard && addable ? h(VResizeObserver, { onResize: this.handleTabsResize }, {
+          default: () => tabs
+        }) : tabs,
+        isCard ? h("div", { class: `${mergedClsPrefix}-tabs-pad` }) : null,
+        isCard ? null : h("div", { ref: "barElRef", class: `${mergedClsPrefix}-tabs-bar` })
+      );
+    };
+    return h(
+      "div",
+      { class: [
+        `${mergedClsPrefix}-tabs`,
+        this.themeClass,
+        `${mergedClsPrefix}-tabs--${type}-type`,
+        `${mergedClsPrefix}-tabs--${mergedSize}-size`,
+        mergedJustifyContent && `${mergedClsPrefix}-tabs--flex`,
+        `${mergedClsPrefix}-tabs--${placement}`
+      ], style: this.cssVars },
+      h(
+        "div",
+        { class: [
+          // the class should be applied here since it's possible
+          // to make tabs nested in tabs, style may influence each
+          // other. adding a class will make it easy to write the
+          // style.
+          `${mergedClsPrefix}-tabs-nav--${type}-type`,
+          `${mergedClsPrefix}-tabs-nav--${placement}`,
+          `${mergedClsPrefix}-tabs-nav`
+        ] },
+        resolveWrappedSlot(prefixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__prefix` }, children)),
+        isSegment ? h("div", { class: `${mergedClsPrefix}-tabs-rail`, ref: "tabsRailElRef" }, showPane ? tabPaneChildren.map((tabPaneVNode, index) => {
+          renderNameListRef.value.push(tabPaneVNode.props.name);
+          return h(Tab, Object.assign({}, tabPaneVNode.props, { internalCreatedByPane: true, internalLeftPadded: index !== 0 }), tabPaneVNode.children ? {
+            default: tabPaneVNode.children.tab
+          } : void 0);
+        }) : tabChildren.map((tabVNode, index) => {
+          renderNameListRef.value.push(tabVNode.props.name);
+          if (index === 0) {
+            return tabVNode;
+          } else {
+            return createLeftPaddedTabVNode(tabVNode);
+          }
+        })) : h(VResizeObserver, { onResize: this.handleNavResize }, {
+          default: () => h("div", { class: `${mergedClsPrefix}-tabs-nav-scroll-wrapper`, ref: "scrollWrapperElRef" }, ["top", "bottom"].includes(placement) ? h(VXScroll, { ref: "xScrollInstRef", onScroll: this.handleScroll }, {
+            default: scrollContent
+          }) : h("div", { class: `${mergedClsPrefix}-tabs-nav-y-scroll` }, scrollContent()))
+        }),
+        addTabFixed && addable && isCard ? createAddTag(addable, true) : null,
+        resolveWrappedSlot(suffixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__suffix` }, children))
+      ),
+      showPane && (this.animated ? h("div", { ref: "tabsPaneWrapperRef", class: `${mergedClsPrefix}-tabs-pane-wrapper` }, filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames, this.onAnimationBeforeLeave, this.onAnimationEnter, this.onAnimationAfterEnter, this.animationDirection)) : filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames))
+    );
+  }
+});
+function filterMapTabPanes(tabPaneVNodes, value, renderedNames, onBeforeLeave, onEnter, onAfterEnter, animationDirection) {
+  const children = [];
+  tabPaneVNodes.forEach((vNode) => {
+    const { name, displayDirective, "display-directive": _displayDirective } = vNode.props;
+    const matchDisplayDirective = (directive) => displayDirective === directive || _displayDirective === directive;
+    const show = value === name;
+    if (vNode.key !== void 0) {
+      vNode.key = name;
+    }
+    if (show || matchDisplayDirective("show") || matchDisplayDirective("show:lazy") && renderedNames.has(name)) {
+      if (!renderedNames.has(name)) {
+        renderedNames.add(name);
+      }
+      const useVShow = !matchDisplayDirective("if");
+      children.push(useVShow ? withDirectives(vNode, [[vShow, show]]) : vNode);
+    }
+  });
+  if (!animationDirection) {
+    return children;
+  }
+  return h(TransitionGroup, { name: `${animationDirection}-transition`, onBeforeLeave, onEnter, onAfterEnter }, { default: () => children });
+}
+function createAddTag(addable, internalLeftPadded) {
+  return h(Tab, { ref: "addTabInstRef", key: "__addable", name: "__addable", internalCreatedByPane: true, internalAddable: true, internalLeftPadded, disabled: typeof addable === "object" && addable.disabled });
+}
+function createLeftPaddedTabVNode(tabVNode) {
+  const modifiedVNode = cloneVNode(tabVNode);
+  if (modifiedVNode.props) {
+    modifiedVNode.props.internalLeftPadded = true;
+  } else {
+    modifiedVNode.props = {
+      internalLeftPadded: true
+    };
+  }
+  return modifiedVNode;
+}
+function justifyTabDynamicProps(tabVNode) {
+  if (Array.isArray(tabVNode.dynamicProps)) {
+    if (!tabVNode.dynamicProps.includes("internalLeftPadded")) {
+      tabVNode.dynamicProps.push("internalLeftPadded");
+    }
+  } else {
+    tabVNode.dynamicProps = ["internalLeftPadded"];
+  }
+  return tabVNode;
+}
 const self$1 = () => ({});
 const equationDark = {
   name: "Equation",
@@ -32228,12 +34217,12 @@ const darkTheme = {
   Upload: uploadDark$1,
   Watermark: watermarkDark$1
 };
-const _hoisted_1$f = {
+const _hoisted_1$e = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -32243,7 +34232,7 @@ const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -32263,43 +34252,11 @@ const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$4 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$9];
+const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$4);
-  }
-});
-const _hoisted_1$e = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M272 48a16 16 0 0 0-32 0v112h32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$8 = [_hoisted_2$d, _hoisted_3$c];
-const Download = defineComponent({
-  name: "Download",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
+    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_5$5);
   }
 });
 const _hoisted_1$d = {
@@ -32310,7 +34267,7 @@ const _hoisted_1$d = {
 const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
+    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
     fill: "currentColor"
   },
   null,
@@ -32320,18 +34277,18 @@ const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
+    d: "M272 48a16 16 0 0 0-32 0v112h32z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$7 = [_hoisted_2$c, _hoisted_3$b];
-const Duplicate = defineComponent({
-  name: "Duplicate",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
+const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
+const Download = defineComponent({
+  name: "Download",
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$8);
   }
 });
 const _hoisted_1$c = {
@@ -32342,7 +34299,7 @@ const _hoisted_1$c = {
 const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
@@ -32352,18 +34309,18 @@ const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$6 = [_hoisted_2$b, _hoisted_3$a];
-const GitCompare = defineComponent({
-  name: "GitCompare",
-  render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$6);
+const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
+const Duplicate = defineComponent({
+  name: "Duplicate",
+  render: function render4(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$7);
   }
 });
 const _hoisted_1$b = {
@@ -32374,18 +34331,28 @@ const _hoisted_1$b = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
+    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$9 = [_hoisted_2$a];
-const Image$1 = defineComponent({
-  name: "Image",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_3$9);
+const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$6 = [_hoisted_2$a, _hoisted_3$9];
+const GitCompare = defineComponent({
+  name: "GitCompare",
+  render: function render5(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
 const _hoisted_1$a = {
@@ -32396,28 +34363,18 @@ const _hoisted_1$a = {
 const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
+    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$5 = [_hoisted_2$9, _hoisted_3$8];
-const Images = defineComponent({
-  name: "Images",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
+const _hoisted_3$8 = [_hoisted_2$9];
+const Image$1 = defineComponent({
+  name: "Image",
+  render: function render6(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$8);
   }
 });
 const _hoisted_1$9 = {
@@ -32428,12 +34385,8 @@ const _hoisted_1$9 = {
 const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M400 148l-21.12-24.57A191.43 191.43 0 0 0 240 64C134 64 48 150 48 256s86 192 192 192a192.09 192.09 0 0 0 181.07-128",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-miterlimit": "10",
-    "stroke-width": "32"
+    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
+    fill: "currentColor"
   },
   null,
   -1
@@ -32442,18 +34395,18 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M464 97.42V208a16 16 0 0 1-16 16H337.42c-14.26 0-21.4-17.23-11.32-27.31L436.69 86.1C446.77 76 464 83.16 464 97.42z",
+    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = [_hoisted_2$8, _hoisted_3$7];
-const ReloadOutline = defineComponent({
-  name: "ReloadOutline",
-  render: function render8(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$4);
+const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
+const Images = defineComponent({
+  name: "Images",
+  render: function render7(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
   }
 });
 const _hoisted_1$8 = {
@@ -32474,7 +34427,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$6 = [_hoisted_2$7];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
-  render: function render9(_ctx, _cache) {
+  render: function render8(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$6);
   }
 });
@@ -32496,7 +34449,7 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$5 = [_hoisted_2$6];
 const Speedometer = defineComponent({
   name: "Speedometer",
-  render: function render10(_ctx, _cache) {
+  render: function render9(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$5);
   }
 });
@@ -32525,7 +34478,7 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M440 496h-32a24 24 0 0 1-24-24V120a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v352a24 24 0 0 1-24 24z",
@@ -32535,7 +34488,7 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M216 496h-32a24 24 0 0 1-24-24V40a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v432a24 24 0 0 1-24 24z",
@@ -32545,11 +34498,11 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$1 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$3, _hoisted_5$3];
+const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$1);
+  render: function render10(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
   }
 });
 const _hoisted_1$5 = {
@@ -32585,7 +34538,7 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -32599,11 +34552,11 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$2 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$2];
+const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render12(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$2);
+  render: function render11(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$3);
   }
 });
 /*!
@@ -34552,8 +36505,8 @@ const useState = defineStore("state", () => {
 const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
 const _hoisted_3$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
-const _hoisted_5$1 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
+const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
+const _hoisted_5$2 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
 const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
   setup(__props) {
@@ -34601,7 +36554,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                       }, null, 8, ["percentage"])
                     ]),
                     createBaseVNode("div", _hoisted_3$2, [
-                      _hoisted_4$1,
+                      _hoisted_4$2,
                       createVNode(unref(NProgress), {
                         percentage: gpu.memory_usage,
                         type: "line",
@@ -34609,7 +36562,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                         color: "#63e2b7",
                         "indicator-placement": "inside"
                       }, null, 8, ["percentage"]),
-                      createBaseVNode("p", _hoisted_5$1, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
+                      createBaseVNode("p", _hoisted_5$2, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
                     ])
                   ]),
                   _: 2
@@ -35044,6 +36997,97 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
+const useWebsocket = defineStore("websocket", () => {
+  const notificationProvider = useNotification();
+  const messageProvider = useMessage();
+  const global2 = useState();
+  const onConnectedCallbacks = [];
+  const onDisconnectedCallbacks = [];
+  const onRefreshCallbacks = [];
+  const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
+    heartbeat: {
+      message: "ping",
+      interval: 3e4
+    },
+    immediate: false,
+    onMessage: (ws, event) => {
+      if (event.data === "pong") {
+        return;
+      }
+      const data = JSON.parse(event.data);
+      if (data.type === "refresh_models") {
+        onRefreshCallbacks.forEach((callback) => callback());
+        console.log("Models refreshed");
+        return;
+      }
+      processWebSocket(data, global2, notificationProvider);
+    },
+    onConnected: () => {
+      messageProvider.success("Connected to server");
+      onConnectedCallbacks.forEach((callback) => callback());
+    },
+    onDisconnected: () => {
+      messageProvider.error("Disconnected from server");
+      onDisconnectedCallbacks.forEach((callback) => callback());
+    }
+  });
+  function ws_text() {
+    switch (readyState.value) {
+      case "CLOSED":
+        return "Closed";
+      case "CONNECTING":
+        return "Connecting";
+      case "OPEN":
+        return "Connected";
+    }
+  }
+  function get_color() {
+    switch (readyState.value) {
+      case "CLOSED":
+        return "error";
+      case "CONNECTING":
+        return "warning";
+      case "OPEN":
+        return "success";
+    }
+  }
+  const readyState = ref(websocket.status);
+  const loading = computed(() => readyState.value === "CONNECTING");
+  const text = computed(() => ws_text());
+  const color = computed(() => get_color());
+  return {
+    websocket,
+    readyState,
+    loading,
+    text,
+    ws_open: websocket.open,
+    color,
+    onConnectedCallbacks,
+    onDisconnectedCallbacks,
+    onRefreshCallbacks
+  };
+});
+async function startWebsocket(messageProvider) {
+  const websocketState = useWebsocket();
+  const timeout = 1e3;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(`${serverUrl}/api/test/alive`, {
+    signal: controller.signal
+  }).catch(() => {
+    messageProvider.error("Server is not responding");
+  });
+  clearTimeout(id);
+  if (response === void 0) {
+    return;
+  }
+  if (response.status !== 200) {
+    messageProvider.error("Server is not responding");
+    return;
+  }
+  console.log("Starting websocket");
+  websocketState.ws_open();
+}
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
   ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
@@ -35058,7 +37102,7 @@ var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
 const defaultSettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
-  model: "none:PyTorch",
+  model: null,
   txt2img: {
     width: 512,
     height: 512,
@@ -35290,106 +37334,12 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const useWebsocket = defineStore("websocket", () => {
-  const notificationProvider = useNotification();
-  const messageProvider = useMessage();
-  const global2 = useState();
-  const conf = useSettings();
-  const onConnectedCallbacks = [];
-  const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
-    heartbeat: {
-      message: "ping",
-      interval: 3e4
-    },
-    immediate: false,
-    onMessage: (ws, event) => {
-      if (event.data === "pong") {
-        return;
-      }
-      const data = JSON.parse(event.data);
-      processWebSocket(data, global2, notificationProvider);
-    },
-    onConnected: () => {
-      messageProvider.success("Connected to server");
-      onConnectedCallbacks.forEach((callback) => callback());
-      fetch(`${serverUrl}/api/models/loaded`).then((response) => {
-        if (response.status === 200) {
-          response.json().then((data) => {
-            console.log(
-              "Loaded models on the backend: " + data.length.toString()
-            );
-            if (data.length === 0) {
-              conf.data.settings.model = "none:PyTorch";
-              return;
-            }
-            conf.data.settings.model = data[0];
-          });
-        }
-      });
-    },
-    onDisconnected: () => {
-      messageProvider.error("Disconnected from server");
-      conf.data.settings.model = "none:PyTorch";
-    }
-  });
-  function ws_text() {
-    switch (readyState.value) {
-      case "CLOSED":
-        return "Closed";
-      case "CONNECTING":
-        return "Connecting";
-      case "OPEN":
-        return "Connected";
-    }
-  }
-  function get_color() {
-    switch (readyState.value) {
-      case "CLOSED":
-        return "error";
-      case "CONNECTING":
-        return "warning";
-      case "OPEN":
-        return "success";
-    }
-  }
-  const readyState = ref(websocket.status);
-  const loading = computed(() => readyState.value === "CONNECTING");
-  const text = computed(() => ws_text());
-  const color = computed(() => get_color());
-  return {
-    websocket,
-    readyState,
-    loading,
-    text,
-    ws_open: websocket.open,
-    color,
-    onConnectedCallbacks
-  };
-});
-async function startWebsocket(messageProvider) {
-  const websocketState = useWebsocket();
-  const timeout = 1e3;
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(`${serverUrl}/api/test/alive`, {
-    signal: controller.signal
-  }).catch(() => {
-    messageProvider.error("Server is not responding");
-  });
-  clearTimeout(id);
-  if (response === void 0) {
-    return;
-  }
-  if (response.status !== 200) {
-    messageProvider.error("Server is not responding");
-    return;
-  }
-  console.log("Starting websocket");
-  websocketState.ws_open();
-}
 const _hoisted_1$2 = { class: "top-bar" };
-const _hoisted_2$2 = { class: "progress-container" };
-const _hoisted_3$1 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
+const _hoisted_2$2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_3$1 = { style: { "display": "inline-flex" } };
+const _hoisted_4$1 = { style: { "display": "inline-flex" } };
+const _hoisted_5$1 = { class: "progress-container" };
+const _hoisted_6$1 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
 const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -35397,86 +37347,145 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     const global2 = useState();
     const conf = useSettings();
     const modelsLoading = ref(false);
+    const filter = ref("");
+    const models = ref([]);
+    const filteredModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.path.toLowerCase().includes(filter.value.toLowerCase()) || filter.value === "";
+      });
+    });
+    const pyTorchModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "PyTorch";
+      });
+    });
+    const aitModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "AITemplate";
+      });
+    });
+    const trtModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "TensorRT";
+      });
+    });
+    const loraModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "LoRA";
+      });
+    });
     function refreshModels() {
+      console.log("Refreshing models");
       modelsLoading.value = true;
       fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
         res.json().then((data) => {
-          modelOptions.splice(0, modelOptions.length);
-          const pytorchGroup = {
-            type: "group",
-            label: "PyTorch",
-            key: "pytorch",
-            children: []
-          };
-          const tensorrtGroup = {
-            type: "group",
-            label: "TensorRT",
-            key: "tensorrt",
-            children: []
-          };
-          const aitemplatesGroup = {
-            type: "group",
-            label: "AITemplate",
-            key: "aitemplate",
-            children: []
-          };
-          data.forEach((item) => {
-            var _a2, _b, _c;
-            if (item.backend === "PyTorch") {
-              (_a2 = pytorchGroup.children) == null ? void 0 : _a2.push({
-                label: item.name,
-                value: item.path + ":" + item.backend,
-                style: item.valid ? "color: #eb7028" : "text-decoration: line-through"
-              });
-            } else if (item.backend === "TensorRT") {
-              (_b = tensorrtGroup.children) == null ? void 0 : _b.push({
-                label: item.name,
-                value: item.path + ":" + item.backend,
-                style: item.valid ? "color: #28eb6c" : "text-decoration: line-through"
-              });
-            } else if (item.backend === "AITemplate") {
-              (_c = aitemplatesGroup.children) == null ? void 0 : _c.push({
-                label: item.name,
-                value: item.path + ":" + item.backend,
-                style: item.valid ? "color: #48bdf0" : "text-decoration: line-through"
-              });
-            }
+          models.value.splice(0, models.value.length);
+          data.forEach((model) => {
+            models.value.push(model);
           });
-          modelOptions.push(tensorrtGroup);
-          modelOptions.push(aitemplatesGroup);
-          modelOptions.push(pytorchGroup);
-          modelOptions.push(defaultOptions);
           modelsLoading.value = false;
         });
       });
+      fetch(`${serverUrl}/api/models/loaded`).then((res) => {
+        res.json().then((data) => {
+          if (conf.data.settings.model) {
+            if (!data.find((model) => {
+              var _a2;
+              return model.path === ((_a2 = conf.data.settings.model) == null ? void 0 : _a2.path);
+            })) {
+              console.log("Current model is not loaded anymore");
+              conf.data.settings.model = null;
+            }
+          }
+          data.forEach((loadedModel) => {
+            const model = models.value.find((model2) => {
+              return model2.path === loadedModel.path;
+            });
+            if (model) {
+              model.state = "loaded";
+              model.loras = loadedModel.loras;
+            }
+          });
+          if (!conf.data.settings.model) {
+            const allLoaded = [
+              ...loadedPyTorchModels.value,
+              ...loadedAitModels.value,
+              ...loadedExtraModels.value
+            ];
+            console.log("All loaded models: ", allLoaded);
+            if (allLoaded.length > 0) {
+              conf.data.settings.model = allLoaded[0];
+              console.log(
+                "Set current model to first available model: ",
+                conf.data.settings.model
+              );
+            } else {
+              console.log("No models available");
+              conf.data.settings.model = null;
+            }
+          }
+        });
+      });
     }
-    async function onModelChange(value) {
-      const model = value.split(":")[0];
-      const x = value.split(":")[1];
-      if (x !== "PyTorch" && x !== "TensorRT" && x !== "AITemplate") {
-        throw new Error("Invalid backend");
-      }
-      const backend = x;
-      await fetch(`${serverUrl}/api/models/unload-all`, {
-        method: "POST"
-      });
-      if (model === "none") {
-        conf.data.settings.model = value;
-        return;
-      }
-      conf.data.settings.backend = backend;
+    async function loadModel(model) {
+      model.state = "loading";
       const load_url = new URL(`${serverUrl}/api/models/load`);
-      const params = { model, backend };
+      const params = { model: model.path, backend: model.backend };
       load_url.search = new URLSearchParams(params).toString();
-      modelsLoading.value = true;
-      await fetch(load_url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      }).catch(() => {
-        modelsLoading.value = false;
+      try {
+        await fetch(load_url, {
+          method: "POST"
+        });
+        model.state = "loaded";
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    async function unloadModel(model) {
+      const load_url = new URL(`${serverUrl}/api/models/unload`);
+      const params = { model: model.name };
+      load_url.search = new URLSearchParams(params).toString();
+      try {
+        await fetch(load_url, {
+          method: "POST"
+        });
+        model.state = "not loaded";
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    async function loadLoRA(lora) {
+      const load_url = new URL(`${serverUrl}/api/models/load-lora`);
+      if (selectedModel.value) {
+        const params = { model: selectedModel.value.name, lora: lora.path };
+        load_url.search = new URLSearchParams(params).toString();
+        try {
+          await fetch(load_url, {
+            method: "POST"
+          });
+          lora.state = "loaded";
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        message.error("No model selected");
+      }
+    }
+    async function onModelChange(modelStr) {
+      const modelName = modelStr.split(":")[0];
+      const modelBackend = modelStr.split(":")[1];
+      const model = models.value.find((model2) => {
+        return model2.path === modelName && model2.backend === modelBackend;
       });
-      modelsLoading.value = false;
-      conf.data.settings.model = model;
+      if (model) {
+        conf.data.settings.model = model;
+      } else {
+        message.error("Model not found");
+      }
+    }
+    function resetModels() {
+      models.value.splice(0, models.value.length);
+      console.log("Reset models");
     }
     const syncIcon = () => {
       return h(SyncSharp);
@@ -35484,56 +37493,361 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     const perfIcon = () => {
       return h(StatsChart);
     };
-    const defaultOptions = {
-      type: "group",
-      label: "Unload",
-      key: "unload",
-      children: [
-        {
-          label: "No model selected",
-          value: "none:PyTorch"
-        }
-      ]
-    };
-    const modelOptions = reactive([defaultOptions]);
     websocketState.onConnectedCallbacks.push(() => {
+      refreshModels();
+    });
+    websocketState.onDisconnectedCallbacks.push(() => {
+      resetModels();
+    });
+    websocketState.onRefreshCallbacks.push(() => {
       refreshModels();
     });
     if (websocketState.readyState === "OPEN") {
       refreshModels();
     }
+    const loadedPyTorchModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.backend === "PyTorch" && model.state === "loaded";
+      });
+    });
+    const loadedAitModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.backend === "AITemplate" && model.state === "loaded";
+      });
+    });
+    const loadedExtraModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.backend === "unknown" && model.state === "loaded";
+      });
+    });
+    const pyTorchOptions = computed(() => {
+      return {
+        type: "group",
+        label: "PyTorch",
+        key: "pytorch",
+        children: loadedPyTorchModels.value.map((model) => {
+          return {
+            label: model.name,
+            value: `${model.path}:PyTorch`
+          };
+        })
+      };
+    });
+    const aitOptions = computed(() => {
+      return {
+        type: "group",
+        label: "AITemplate",
+        key: "ait",
+        children: loadedAitModels.value.map((model) => {
+          return {
+            label: model.name,
+            value: `${model.path}:AITemplate`
+          };
+        })
+      };
+    });
+    const extraOptions = computed(() => {
+      return {
+        type: "group",
+        label: "Extra",
+        key: "extra",
+        children: loadedExtraModels.value.map((model) => {
+          return {
+            label: model.name,
+            value: `${model.path}:PyTorch`
+          };
+        })
+      };
+    });
+    const generatedModelOptions = computed(() => {
+      return [pyTorchOptions.value, aitOptions.value, extraOptions.value];
+    });
     const message = useMessage();
+    const showModal = ref(false);
+    const selectedModel = ref();
+    const lora_title = computed(() => {
+      return `LoRA (${selectedModel.value ? selectedModel.value.name : "No model selected"})`;
+    });
     startWebsocket(message);
     return (_ctx, _cache) => {
+      var _a2;
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
-          options: modelOptions,
+          options: unref(generatedModelOptions),
           "onUpdate:value": onModelChange,
           loading: modelsLoading.value,
-          placeholder: "Select model",
-          "default-value": "none:PyTorch",
-          value: unref(conf).data.settings.model,
+          placeholder: "",
+          value: unref(conf).data.settings.model !== null ? (_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name : "",
           "consistent-menu-width": false,
           filterable: ""
         }, null, 8, ["options", "loading", "value"]),
         createVNode(unref(NButton), {
-          quaternary: "",
-          circle: "",
-          type: "default",
-          onClick: refreshModels
+          onClick: _cache[0] || (_cache[0] = ($event) => showModal.value = true)
         }, {
-          icon: withCtx(() => [
-            createVNode(unref(NIcon), null, {
+          default: withCtx(() => [
+            createTextVNode("Load Model")
+          ]),
+          _: 1
+        }),
+        createVNode(unref(NModal), {
+          show: showModal.value,
+          "onUpdate:show": _cache[2] || (_cache[2] = ($event) => showModal.value = $event),
+          closable: "",
+          "mask-closable": "",
+          preset: "card",
+          style: { "width": "85vw" },
+          title: "Models",
+          "auto-focus": false
+        }, {
+          default: withCtx(() => [
+            createBaseVNode("div", _hoisted_2$2, [
+              createVNode(unref(NInput), {
+                value: filter.value,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => filter.value = $event),
+                clearable: "",
+                placeholder: "Filter Models"
+              }, null, 8, ["value"]),
+              createVNode(unref(NButton), {
+                ghost: "",
+                type: "success",
+                style: { "margin-left": "4px" },
+                onClick: refreshModels
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("Refresh")
+                ]),
+                _: 1
+              })
+            ]),
+            createVNode(unref(NScrollbar), null, {
               default: withCtx(() => [
-                createVNode(unref(ReloadOutline))
+                createVNode(unref(NTabs), {
+                  type: "segment",
+                  style: { "height": "70vh" }
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NTabPane), {
+                      name: "PyTorch",
+                      style: { "height": "100%" }
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NGrid), {
+                          cols: "1 900:2",
+                          "x-gap": 8,
+                          "y-gap": 8,
+                          style: { "height": "100%" }
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(NGi), null, {
+                              default: withCtx(() => [
+                                createVNode(unref(NCard), {
+                                  title: "Models",
+                                  style: { "height": "100%" }
+                                }, {
+                                  default: withCtx(() => [
+                                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(pyTorchModels), (model) => {
+                                      return openBlock(), createElementBlock("div", {
+                                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                        key: model.path
+                                      }, [
+                                        createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                        createBaseVNode("div", _hoisted_3$1, [
+                                          model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                            key: 0,
+                                            type: "error",
+                                            ghost: "",
+                                            onClick: ($event) => unloadModel(model)
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Unload")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                            key: 1,
+                                            type: "success",
+                                            ghost: "",
+                                            onClick: ($event) => loadModel(model),
+                                            loading: model.state === "loading"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Load")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick", "loading"])),
+                                          createVNode(unref(NButton), {
+                                            type: "info",
+                                            style: { "margin-left": "4px" },
+                                            ghost: "",
+                                            onClick: ($event) => selectedModel.value = model,
+                                            disabled: model.state !== "loaded"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Select")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick", "disabled"])
+                                        ])
+                                      ]);
+                                    }), 128))
+                                  ]),
+                                  _: 1
+                                })
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(NGi), null, {
+                              default: withCtx(() => [
+                                createVNode(unref(NCard), {
+                                  title: unref(lora_title),
+                                  style: { "height": "100%" }
+                                }, {
+                                  default: withCtx(() => [
+                                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(loraModels), (lora) => {
+                                      return openBlock(), createElementBlock("div", {
+                                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                        key: lora.path
+                                      }, [
+                                        createBaseVNode("p", null, toDisplayString(lora.name), 1),
+                                        createBaseVNode("div", _hoisted_4$1, [
+                                          lora.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                            key: 0,
+                                            type: "error",
+                                            ghost: "",
+                                            disabled: ""
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Loaded")
+                                            ]),
+                                            _: 1
+                                          })) : (openBlock(), createBlock(unref(NButton), {
+                                            key: 1,
+                                            type: "success",
+                                            ghost: "",
+                                            onClick: ($event) => loadLoRA(lora),
+                                            disabled: selectedModel.value === void 0,
+                                            loading: lora.state === "loading"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Load")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick", "disabled", "loading"]))
+                                        ])
+                                      ]);
+                                    }), 128))
+                                  ]),
+                                  _: 1
+                                }, 8, ["title"])
+                              ]),
+                              _: 1
+                            })
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(unref(NTabPane), { name: "AITemplate" }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NCard), {
+                          title: "Models",
+                          style: { "height": "100%" }
+                        }, {
+                          default: withCtx(() => [
+                            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(aitModels), (model) => {
+                              return openBlock(), createElementBlock("div", {
+                                style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                key: model.path
+                              }, [
+                                createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                createBaseVNode("div", null, [
+                                  model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                    key: 0,
+                                    type: "error",
+                                    ghost: "",
+                                    onClick: ($event) => unloadModel(model)
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Unload")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                    key: 1,
+                                    type: "success",
+                                    ghost: "",
+                                    onClick: ($event) => loadModel(model),
+                                    loading: model.state === "loading"
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Load")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick", "loading"]))
+                                ])
+                              ]);
+                            }), 128))
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(unref(NTabPane), { name: "Extra" }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NCard), {
+                          title: "Models",
+                          style: { "height": "100%" }
+                        }, {
+                          default: withCtx(() => [
+                            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(trtModels), (model) => {
+                              return openBlock(), createElementBlock("div", {
+                                style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                key: model.path
+                              }, [
+                                createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                createBaseVNode("div", null, [
+                                  model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                    key: 0,
+                                    type: "error",
+                                    ghost: "",
+                                    onClick: ($event) => unloadModel(model)
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Unload")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                    key: 1,
+                                    type: "success",
+                                    ghost: "",
+                                    onClick: ($event) => loadModel(model),
+                                    loading: model.state === "loading"
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Load")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick", "loading"]))
+                                ])
+                              ]);
+                            }), 128))
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
               ]),
               _: 1
             })
           ]),
           _: 1
-        }),
-        createBaseVNode("div", _hoisted_2$2, [
+        }, 8, ["show"]),
+        createBaseVNode("div", _hoisted_5$1, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -35548,14 +37862,14 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_3$1, [
+        createBaseVNode("div", _hoisted_6$1, [
           createVNode(unref(NButton), {
             type: unref(websocketState).color,
             quaternary: "",
             "icon-placement": "left",
             "render-icon": syncIcon,
             loading: unref(websocketState).loading,
-            onClick: _cache[0] || (_cache[0] = ($event) => unref(startWebsocket)(unref(message)))
+            onClick: _cache[3] || (_cache[3] = ($event) => unref(startWebsocket)(unref(message)))
           }, {
             default: withCtx(() => [
               createTextVNode(toDisplayString(unref(websocketState).text), 1)
@@ -35568,7 +37882,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
             "icon-placement": "left",
             "render-icon": perfIcon,
             style: { "margin-right": "8px" },
-            onClick: _cache[1] || (_cache[1] = ($event) => unref(global2).state.perf_drawer.enabled = true),
+            onClick: _cache[4] || (_cache[4] = ($event) => unref(global2).state.perf_drawer.enabled = true),
             disabled: unref(global2).state.perf_drawer.enabled
           }, null, 8, ["disabled"])
         ])
@@ -35576,7 +37890,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_1a90d7a4_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_46fa2d16_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -35584,7 +37898,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-1a90d7a4"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-46fa2d16"]]);
 const _sfc_main$4 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -35596,7 +37910,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const overrides = {
       common: {
-        fontSize: "10",
+        fontSize: "15px",
         fontWeight: "600"
       }
     };
@@ -35887,6 +38201,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       return seed;
     };
     const generate = () => {
+      var _a2;
       if (conf.data.settings.txt2img.seed === null) {
         messageHandler.error("Please set a seed");
         return;
@@ -35911,11 +38226,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             batch_count: conf.data.settings.txt2img.batch_count,
             scheduler: conf.data.settings.txt2img.sampler
           },
-          model: conf.data.settings.model,
+          model: (_a2 = conf.data.settings.model) == null ? void 0 : _a2.name,
           backend: "PyTorch",
           autoload: false
         })
       }).then((res) => {
+        if (!res.ok) {
+          throw new Error(res.statusText);
+        }
         global2.state.generating = false;
         res.json().then((data) => {
           global2.state.txt2img.images = data.images;
@@ -36181,12 +38499,12 @@ const router = createRouter({
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Tabs.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/Tabs.js","assets/ExtraView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/ExtraView.css"] : void 0)
     },
     {
       path: "/download",
@@ -36201,27 +38519,27 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Modal.js","assets/Tabs.js"] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? [] : void 0)
     },
     {
       path: "/test",
       name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/Tabs.js","assets/Modal.js"] : void 0)
+      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
     },
     {
       path: "/convert",
       name: "convert",
-      component: () => __vitePreload(() => import("./ConvertView.js"), true ? ["assets/ConvertView.js","assets/Switch.js","assets/Modal.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Tabs.js"] : void 0)
+      component: () => __vitePreload(() => import("./ConvertView.js"), true ? ["assets/ConvertView.js","assets/Switch.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
     },
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/Tabs.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/Tabs.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/ImageBrowserView.css"] : void 0)
     }
   ]
 });
@@ -36232,156 +38550,121 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  createKey as $,
+  checkboxLight$1 as $,
   NButton as A,
   NIcon as B,
   createBlock as C,
   toDisplayString as D,
-  useConfig as E,
-  useFormItem as F,
-  computed as G,
-  useMergedState as H,
+  NTabPane as E,
+  NTabs as F,
+  useConfig as G,
+  useFormItem as H,
   ImageOutput as I,
-  provide as J,
-  toRef as K,
-  createInjectionKey as L,
-  call as M,
+  computed as J,
+  useMergedState as K,
+  provide as L,
+  toRef as M,
   NGi as N,
-  c$1 as O,
-  cB as P,
-  cE as Q,
-  cM as R,
-  iconSwitchTransition as S,
-  insideModal as T,
-  insidePopover as U,
-  inject as V,
-  useMemo as W,
-  useTheme as X,
-  checkboxLight$1 as Y,
-  useRtl as Z,
+  createInjectionKey as O,
+  call as P,
+  c$1 as Q,
+  cB as R,
+  cE as S,
+  cM as T,
+  iconSwitchTransition as U,
+  insideModal as V,
+  insidePopover as W,
+  inject as X,
+  useMemo as Y,
+  useTheme as Z,
   _sfc_main$2 as _,
   createBaseVNode as a,
-  SuccessIcon as a$,
-  useThemeClass as a0,
-  createId as a1,
-  NIconSwitchTransition as a2,
-  on as a3,
-  popselectLight$1 as a4,
-  watch as a5,
-  NInternalSelectMenu as a6,
-  keysOf as a7,
-  createTreeMate as a8,
-  happensIn as a9,
-  onBeforeUnmount as aA,
-  off as aB,
-  ChevronDownIcon as aC,
-  NDropdown as aD,
-  pxfy as aE,
-  get as aF,
-  NBaseLoading as aG,
-  ChevronRightIcon as aH,
-  onUnmounted as aI,
-  VVirtualList as aJ,
-  VResizeObserver as aK,
-  warn$2 as aL,
-  cssrAnchorMetaName as aM,
-  repeat as aN,
-  NEmpty as aO,
-  beforeNextFrameOnce as aP,
-  fadeInScaleUpTransition as aQ,
-  Transition as aR,
-  dataTableLight$1 as aS,
-  reactive as aT,
-  NTag as aU,
-  stepsLight$1 as aV,
-  throwError as aW,
-  FinishedIcon as aX,
-  ErrorIcon$1 as aY,
-  renderList as aZ,
-  InfoIcon as a_,
-  nextTick as aa,
-  createTmOptions as ab,
-  keep as ac,
-  createRefSetter as ad,
-  mergeEventHandlers as ae,
-  omit as af,
-  NPopover as ag,
-  popoverBaseProps as ah,
-  cNotM as ai,
-  useLocale as aj,
-  watchEffect as ak,
-  resolveSlot as al,
-  Fragment as am,
-  NBaseIcon as an,
-  useAdjustedTo as ao,
-  paginationLight$1 as ap,
-  ellipsisLight$1 as aq,
-  onDeactivated as ar,
-  mergeProps as as,
-  radioLight$1 as at,
-  resolveWrappedSlot as au,
-  flatten$2 as av,
-  getSlot$1 as aw,
-  depx as ax,
-  formatLength as ay,
-  NScrollbar as az,
+  NModal as a$,
+  useRtl as a0,
+  createKey as a1,
+  useThemeClass as a2,
+  createId as a3,
+  NIconSwitchTransition as a4,
+  on as a5,
+  popselectLight$1 as a6,
+  watch as a7,
+  NInternalSelectMenu as a8,
+  keysOf as a9,
+  formatLength as aA,
+  NScrollbar$1 as aB,
+  onBeforeUnmount as aC,
+  off as aD,
+  ChevronDownIcon as aE,
+  NDropdown as aF,
+  pxfy as aG,
+  get as aH,
+  NBaseLoading as aI,
+  ChevronRightIcon as aJ,
+  onUnmounted as aK,
+  VVirtualList as aL,
+  VResizeObserver as aM,
+  warn$2 as aN,
+  cssrAnchorMetaName as aO,
+  repeat as aP,
+  NEmpty as aQ,
+  beforeNextFrameOnce as aR,
+  fadeInScaleUpTransition as aS,
+  Transition as aT,
+  dataTableLight$1 as aU,
+  reactive as aV,
+  NTag as aW,
+  stepsLight$1 as aX,
+  throwError as aY,
+  FinishedIcon as aZ,
+  ErrorIcon$1 as a_,
+  createTreeMate as aa,
+  happensIn as ab,
+  nextTick as ac,
+  createTmOptions as ad,
+  keep as ae,
+  createRefSetter as af,
+  mergeEventHandlers as ag,
+  omit as ah,
+  NPopover as ai,
+  popoverBaseProps as aj,
+  cNotM as ak,
+  useLocale as al,
+  watchEffect as am,
+  resolveSlot as an,
+  Fragment as ao,
+  NBaseIcon as ap,
+  useAdjustedTo as aq,
+  paginationLight$1 as ar,
+  ellipsisLight$1 as as,
+  onDeactivated as at,
+  mergeProps as au,
+  radioLight$1 as av,
+  resolveWrappedSlot as aw,
+  flatten$2 as ax,
+  getSlot$1 as ay,
+  depx as az,
   useSettings as b,
-  WarningIcon as b0,
-  ErrorIcon as b1,
-  resultLight$1 as b2,
-  isBrowser$2 as b3,
-  readonly as b4,
-  hasInstance as b5,
-  onBeforeMount as b6,
-  asModal as b7,
-  dialogLight$1 as b8,
-  render$1 as b9,
-  onMounted as bA,
-  defaultSettings as bB,
-  commonLight as bC,
-  commonVars$1 as bD,
-  changeColor as bE,
-  isSlotEmpty as bF,
-  useCompitable as bG,
-  descriptionsLight$1 as bH,
-  NImage as bI,
-  createCommentVNode as bJ,
-  useSsrAdapter as bK,
-  cssrAnchorMetaName$1 as bL,
-  c as bM,
-  isSymbol as bN,
-  isObject as bO,
-  root$1 as bP,
-  AddIcon as bQ,
-  onFontsReady as bR,
-  tabsLight$1 as bS,
-  TransitionGroup as bT,
-  NBaseClose as ba,
-  cardBaseProps as bb,
-  useLockHtmlScroll as bc,
-  getFirstSlotVNode as bd,
-  cloneVNode as be,
-  withDirectives as bf,
-  vShow as bg,
-  FocusTrap as bh,
-  clickoutside$1 as bi,
-  cardBasePropKeys as bj,
-  modalInjectionKey as bk,
-  modalBodyInjectionKey as bl,
-  drawerBodyInjectionKey as bm,
-  popoverBodyInjectionKey as bn,
-  fadeInTransition as bo,
-  isMounted as bp,
-  useIsComposing as bq,
-  zindexable$1 as br,
-  LazyTeleport as bs,
-  modalLight$1 as bt,
-  getPreciseEventTarget as bu,
-  eventEffectNotPerformed as bv,
-  getCurrentInstance as bw,
-  formLight$1 as bx,
-  commonVariables$m as by,
-  formItemInjectionKey as bz,
+  InfoIcon as b0,
+  SuccessIcon as b1,
+  WarningIcon as b2,
+  ErrorIcon as b3,
+  resultLight$1 as b4,
+  getCurrentInstance as b5,
+  formLight$1 as b6,
+  commonVariables$m as b7,
+  formItemInjectionKey as b8,
+  onMounted as b9,
+  defaultSettings as ba,
+  commonLight as bb,
+  commonVars$1 as bc,
+  changeColor as bd,
+  isSlotEmpty as be,
+  useCompitable as bf,
+  descriptionsLight$1 as bg,
+  NImage as bh,
+  createCommentVNode as bi,
+  NScrollbar as bj,
+  renderList as bk,
   createElementBlock as c,
   defineComponent as d,
   useMessage as e,

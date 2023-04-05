@@ -264,8 +264,6 @@ const generate = () => {
   }
   global.state.generating = true;
 
-  console.log(conf.data.settings.model.name);
-
   fetch(`${serverUrl}/api/generate/txt2img`, {
     method: "POST",
     headers: {
@@ -285,7 +283,7 @@ const generate = () => {
         batch_count: conf.data.settings.txt2img.batch_count,
         scheduler: conf.data.settings.txt2img.sampler,
       },
-      model: conf.data.settings.model.name,
+      model: conf.data.settings.model?.name,
       backend: "PyTorch",
       autoload: false,
     }),
