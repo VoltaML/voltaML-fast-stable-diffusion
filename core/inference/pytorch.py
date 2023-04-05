@@ -88,7 +88,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe = load_pytorch_pipeline(
             self.model_id,
-            use_f32=self.use_fp32,
+            use_fp32=self.use_fp32,
             auth=self.auth,
             device=self.device,
         )
@@ -365,9 +365,9 @@ class PyTorchStableDiffusion(InferenceModel):
     def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
-        if config.api.opt_level == 0:
+        if config.api.trace_model == True:
             raise ValueError(
-                "ControlNet is not available in optLevel 0, please load this model with optLevel 1"
+                "ControlNet is not available with traced UNet, please disable tracing and reload the model."
             )
 
         self.manage_optional_components(target_controlnet=job.data.controlnet)

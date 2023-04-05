@@ -15,8 +15,8 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.utils import PIL_INTERPOLATION, logging
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
-from core.functions import send_everything_to_cpu, send_to_gpu
 from core.inference.lwp import get_weighted_text_embeddings
+from core.optimizations import send_everything_to_cpu, send_to_gpu
 
 # ------------------------------------------------------------------------------
 

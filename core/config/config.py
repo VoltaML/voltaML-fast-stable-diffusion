@@ -1,6 +1,7 @@
 import logging
 import multiprocessing
 from dataclasses import Field, dataclass, field, fields
+from typing import Literal, Union
 
 from dataclasses_json import DataClassJsonMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
@@ -93,7 +94,12 @@ class APIConfig:
 
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    opt_level: int = 1
+    attention_processor: Literal["xformers", "spda"] = "xformers"
+    attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
+    channels_last: bool = True
+    vae_slicing: bool = True
+    trace_model: bool = False
+    offload: Literal["module", "model", "disabled"] = "disabled"
     image_preview_delay: float = 2.0
     device_id: int = 0
 

@@ -13,16 +13,16 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets.data import Data
-from core.config import config
 from core.controlnet import image_to_controlnet_input
 from core.files import get_full_model_path
-from core.functions import init_ait_module, optimize_model
+from core.functions import init_ait_module
 from core.inference.base_model import InferenceModel
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
     txt2img_callback,
 )
+from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import (
     ControlNetMode,
@@ -97,10 +97,7 @@ class AITemplateStableDiffusion(InferenceModel):
         pipe.to(self.device)
 
         # Disable optLevel for AITemplate models and optimize the model
-        _opt = config.api.opt_level
-        config.api.opt_level = 1
-        optimize_model(pipe, self.device, False)
-        config.api.opt_level = _opt
+        optimize_model(pipe=pipe, device=self.device, use_fp32=False)
 
         self.vae = pipe.vae
         self.unet = pipe.unet

@@ -37067,6 +37067,7 @@ const useWebsocket = defineStore("websocket", () => {
     onRefreshCallbacks
   };
 });
+const spaceRegex = new RegExp("[\\s,]+");
 async function startWebsocket(messageProvider) {
   const websocketState = useWebsocket();
   const timeout = 1e3;
@@ -37183,8 +37184,12 @@ const defaultSettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
-    cache_dir: "",
-    optLevel: 1,
+    attention_processor: "xformers",
+    attention_slicing: "disabled",
+    channels_last: true,
+    vae_slicing: false,
+    trace_model: false,
+    offload: "disabled",
     image_preview_delay: 2,
     device_id: 0
   },
@@ -37385,45 +37390,46 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
           });
           modelsLoading.value = false;
         });
-      });
-      fetch(`${serverUrl}/api/models/loaded`).then((res) => {
-        res.json().then((data) => {
-          if (conf.data.settings.model) {
-            if (!data.find((model) => {
-              var _a2;
-              return model.path === ((_a2 = conf.data.settings.model) == null ? void 0 : _a2.path);
-            })) {
-              console.log("Current model is not loaded anymore");
-              conf.data.settings.model = null;
+      }).then(() => {
+        fetch(`${serverUrl}/api/models/loaded`).then((res) => {
+          res.json().then((data) => {
+            if (conf.data.settings.model) {
+              if (!data.find((model) => {
+                var _a2;
+                return model.path === ((_a2 = conf.data.settings.model) == null ? void 0 : _a2.path);
+              })) {
+                console.log("Current model is not loaded anymore");
+                conf.data.settings.model = null;
+              }
             }
-          }
-          data.forEach((loadedModel) => {
-            const model = models.value.find((model2) => {
-              return model2.path === loadedModel.path;
+            data.forEach((loadedModel) => {
+              const model = models.value.find((model2) => {
+                return model2.path === loadedModel.path;
+              });
+              if (model) {
+                model.state = "loaded";
+                model.loras = loadedModel.loras;
+              }
             });
-            if (model) {
-              model.state = "loaded";
-              model.loras = loadedModel.loras;
+            if (!conf.data.settings.model) {
+              const allLoaded = [
+                ...loadedPyTorchModels.value,
+                ...loadedAitModels.value,
+                ...loadedExtraModels.value
+              ];
+              console.log("All loaded models: ", allLoaded);
+              if (allLoaded.length > 0) {
+                conf.data.settings.model = allLoaded[0];
+                console.log(
+                  "Set current model to first available model: ",
+                  conf.data.settings.model
+                );
+              } else {
+                console.log("No models available");
+                conf.data.settings.model = null;
+              }
             }
           });
-          if (!conf.data.settings.model) {
-            const allLoaded = [
-              ...loadedPyTorchModels.value,
-              ...loadedAitModels.value,
-              ...loadedExtraModels.value
-            ];
-            console.log("All loaded models: ", allLoaded);
-            if (allLoaded.length > 0) {
-              conf.data.settings.model = allLoaded[0];
-              console.log(
-                "Set current model to first available model: ",
-                conf.data.settings.model
-              );
-            } else {
-              console.log("No models available");
-              conf.data.settings.model = null;
-            }
-          }
         });
       });
     }
@@ -37436,7 +37442,6 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
         await fetch(load_url, {
           method: "POST"
         });
-        model.state = "loaded";
       } catch (e) {
         console.error(e);
       }
@@ -37449,7 +37454,6 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
         await fetch(load_url, {
           method: "POST"
         });
-        model.state = "not loaded";
       } catch (e) {
         console.error(e);
       }
@@ -37890,7 +37894,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_46fa2d16_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_b8152149_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -37898,7 +37902,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-46fa2d16"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-b8152149"]]);
 const _sfc_main$4 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -38194,6 +38198,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const global2 = useState();
     const conf = useSettings();
     const messageHandler = useMessage();
+    const promptCount = computed(() => {
+      return conf.data.settings.txt2img.prompt.split(spaceRegex).length - 1;
+    });
+    const negativePromptCount = computed(() => {
+      return conf.data.settings.txt2img.negative_prompt.split(spaceRegex).length - 1;
+    });
     const checkSeed = (seed) => {
       if (seed === -1) {
         seed = Math.floor(Math.random() * 999999999999);
@@ -38267,14 +38277,26 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           value: unref(conf).data.settings.txt2img.prompt,
                           "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.txt2img.prompt = $event),
                           type: "textarea",
-                          placeholder: "Prompt"
-                        }, null, 8, ["value"]),
+                          placeholder: "Prompt",
+                          "show-count": ""
+                        }, {
+                          count: withCtx(() => [
+                            createTextVNode(toDisplayString(unref(promptCount)), 1)
+                          ]),
+                          _: 1
+                        }, 8, ["value"]),
                         createVNode(unref(NInput), {
                           value: unref(conf).data.settings.txt2img.negative_prompt,
                           "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.txt2img.negative_prompt = $event),
                           type: "textarea",
-                          placeholder: "Negative prompt"
-                        }, null, 8, ["value"]),
+                          placeholder: "Negative prompt",
+                          "show-count": ""
+                        }, {
+                          count: withCtx(() => [
+                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
+                          ]),
+                          _: 1
+                        }, 8, ["value"]),
                         createBaseVNode("div", _hoisted_2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -38550,143 +38572,144 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  checkboxLight$1 as $,
-  NButton as A,
-  NIcon as B,
-  createBlock as C,
-  toDisplayString as D,
-  NTabPane as E,
-  NTabs as F,
-  useConfig as G,
-  useFormItem as H,
+  useTheme as $,
+  _export_sfc as A,
+  h as B,
+  ref as C,
+  NButton as D,
+  NIcon as E,
+  createBlock as F,
+  NTabPane as G,
+  NTabs as H,
   ImageOutput as I,
-  computed as J,
-  useMergedState as K,
-  provide as L,
-  toRef as M,
+  useConfig as J,
+  useFormItem as K,
+  useMergedState as L,
+  provide as M,
   NGi as N,
-  createInjectionKey as O,
-  call as P,
-  c$1 as Q,
-  cB as R,
-  cE as S,
-  cM as T,
-  iconSwitchTransition as U,
-  insideModal as V,
-  insidePopover as W,
-  inject as X,
-  useMemo as Y,
-  useTheme as Z,
+  toRef as O,
+  createInjectionKey as P,
+  call as Q,
+  c$1 as R,
+  cB as S,
+  cE as T,
+  cM as U,
+  iconSwitchTransition as V,
+  insideModal as W,
+  insidePopover as X,
+  inject as Y,
+  useMemo as Z,
   _sfc_main$2 as _,
   createBaseVNode as a,
-  NModal as a$,
-  useRtl as a0,
-  createKey as a1,
-  useThemeClass as a2,
-  createId as a3,
-  NIconSwitchTransition as a4,
-  on as a5,
-  popselectLight$1 as a6,
-  watch as a7,
-  NInternalSelectMenu as a8,
-  keysOf as a9,
-  formatLength as aA,
-  NScrollbar$1 as aB,
-  onBeforeUnmount as aC,
-  off as aD,
-  ChevronDownIcon as aE,
-  NDropdown as aF,
-  pxfy as aG,
-  get as aH,
-  NBaseLoading as aI,
-  ChevronRightIcon as aJ,
-  onUnmounted as aK,
-  VVirtualList as aL,
-  VResizeObserver as aM,
-  warn$2 as aN,
-  cssrAnchorMetaName as aO,
-  repeat as aP,
-  NEmpty as aQ,
-  beforeNextFrameOnce as aR,
-  fadeInScaleUpTransition as aS,
-  Transition as aT,
-  dataTableLight$1 as aU,
-  reactive as aV,
-  NTag as aW,
-  stepsLight$1 as aX,
-  throwError as aY,
-  FinishedIcon as aZ,
-  ErrorIcon$1 as a_,
-  createTreeMate as aa,
-  happensIn as ab,
-  nextTick as ac,
-  createTmOptions as ad,
-  keep as ae,
-  createRefSetter as af,
-  mergeEventHandlers as ag,
-  omit as ah,
-  NPopover as ai,
-  popoverBaseProps as aj,
-  cNotM as ak,
-  useLocale as al,
-  watchEffect as am,
-  resolveSlot as an,
-  Fragment as ao,
-  NBaseIcon as ap,
-  useAdjustedTo as aq,
-  paginationLight$1 as ar,
-  ellipsisLight$1 as as,
-  onDeactivated as at,
-  mergeProps as au,
-  radioLight$1 as av,
-  resolveWrappedSlot as aw,
-  flatten$2 as ax,
-  getSlot$1 as ay,
-  depx as az,
+  ErrorIcon$1 as a$,
+  checkboxLight$1 as a0,
+  useRtl as a1,
+  createKey as a2,
+  useThemeClass as a3,
+  createId as a4,
+  NIconSwitchTransition as a5,
+  on as a6,
+  popselectLight$1 as a7,
+  watch as a8,
+  NInternalSelectMenu as a9,
+  depx as aA,
+  formatLength as aB,
+  NScrollbar$1 as aC,
+  onBeforeUnmount as aD,
+  off as aE,
+  ChevronDownIcon as aF,
+  NDropdown as aG,
+  pxfy as aH,
+  get as aI,
+  NBaseLoading as aJ,
+  ChevronRightIcon as aK,
+  onUnmounted as aL,
+  VVirtualList as aM,
+  VResizeObserver as aN,
+  warn$2 as aO,
+  cssrAnchorMetaName as aP,
+  repeat as aQ,
+  NEmpty as aR,
+  beforeNextFrameOnce as aS,
+  fadeInScaleUpTransition as aT,
+  Transition as aU,
+  dataTableLight$1 as aV,
+  reactive as aW,
+  NTag as aX,
+  stepsLight$1 as aY,
+  throwError as aZ,
+  FinishedIcon as a_,
+  keysOf as aa,
+  createTreeMate as ab,
+  happensIn as ac,
+  nextTick as ad,
+  createTmOptions as ae,
+  keep as af,
+  createRefSetter as ag,
+  mergeEventHandlers as ah,
+  omit as ai,
+  NPopover as aj,
+  popoverBaseProps as ak,
+  cNotM as al,
+  useLocale as am,
+  watchEffect as an,
+  resolveSlot as ao,
+  Fragment as ap,
+  NBaseIcon as aq,
+  useAdjustedTo as ar,
+  paginationLight$1 as as,
+  ellipsisLight$1 as at,
+  onDeactivated as au,
+  mergeProps as av,
+  radioLight$1 as aw,
+  resolveWrappedSlot as ax,
+  flatten$2 as ay,
+  getSlot$1 as az,
   useSettings as b,
-  InfoIcon as b0,
-  SuccessIcon as b1,
-  WarningIcon as b2,
-  ErrorIcon as b3,
-  resultLight$1 as b4,
-  getCurrentInstance as b5,
-  formLight$1 as b6,
-  commonVariables$m as b7,
-  formItemInjectionKey as b8,
-  onMounted as b9,
-  defaultSettings as ba,
-  commonLight as bb,
-  commonVars$1 as bc,
-  changeColor as bd,
-  isSlotEmpty as be,
-  useCompitable as bf,
-  descriptionsLight$1 as bg,
-  NImage as bh,
-  createCommentVNode as bi,
-  NScrollbar as bj,
-  renderList as bk,
+  NModal as b0,
+  InfoIcon as b1,
+  SuccessIcon as b2,
+  WarningIcon as b3,
+  ErrorIcon as b4,
+  resultLight$1 as b5,
+  getCurrentInstance as b6,
+  formLight$1 as b7,
+  commonVariables$m as b8,
+  formItemInjectionKey as b9,
+  onMounted as ba,
+  defaultSettings as bb,
+  commonLight as bc,
+  commonVars$1 as bd,
+  changeColor as be,
+  isSlotEmpty as bf,
+  useCompitable as bg,
+  descriptionsLight$1 as bh,
+  NImage as bi,
+  createCommentVNode as bj,
+  NScrollbar as bk,
+  renderList as bl,
   createElementBlock as c,
   defineComponent as d,
   useMessage as e,
-  createVNode as f,
-  unref as g,
-  NCard as h,
-  NSpace as i,
-  NInput as j,
-  NTooltip as k,
+  computed as f,
+  createVNode as g,
+  unref as h,
+  NCard as i,
+  NSpace as j,
+  NInput as k,
   createTextVNode as l,
-  NSelect as m,
-  NSlider as n,
+  NTooltip as m,
+  NSelect as n,
   openBlock as o,
-  NInputNumber as p,
-  NGrid as q,
-  pushScopeId as r,
-  serverUrl as s,
-  popScopeId as t,
+  NSlider as p,
+  NInputNumber as q,
+  NGrid as r,
+  spaceRegex as s,
+  toDisplayString as t,
   useState as u,
-  v4 as v,
+  serverUrl as v,
   withCtx as w,
-  _export_sfc as x,
-  h as y,
-  ref as z
+  v4 as x,
+  pushScopeId as y,
+  popScopeId as z
 };

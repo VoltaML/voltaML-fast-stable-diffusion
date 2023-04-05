@@ -1,4 +1,4 @@
-import { x as _export_sfc } from "./index.js";
+import { A as _export_sfc } from "./index.js";
 const _sfc_main = {};
 function _sfc_render(_ctx, _cache) {
   return "Test";

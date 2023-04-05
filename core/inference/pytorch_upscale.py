@@ -6,9 +6,9 @@ from PIL import Image
 
 from api import websocket_manager
 from api.websockets import Data
-from core.functions import optimize_model
 from core.inference.base_model import InferenceModel
 from core.inference.tiled_upscale import StableDiffusionTiledUpscalePipeline
+from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import Job, SDUpscaleQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image

@@ -10,12 +10,18 @@
               v-model:value="conf.data.settings.txt2img.prompt"
               type="textarea"
               placeholder="Prompt"
-            />
+              show-count
+            >
+              <template #count>{{ promptCount }}</template>
+            </NInput>
             <NInput
               v-model:value="conf.data.settings.txt2img.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
-            />
+              show-count
+            >
+              <template #count>{{ negativePromptCount }}</template>
+            </NInput>
 
             <!-- Sampler -->
             <div class="flex-container">
@@ -228,6 +234,7 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import { serverUrl } from "@/env";
+import { spaceRegex } from "@/functions";
 import {
   NCard,
   NGi,
@@ -241,12 +248,22 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
+import { computed } from "vue";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
 const conf = useSettings();
 const messageHandler = useMessage();
+
+const promptCount = computed(() => {
+  return conf.data.settings.txt2img.prompt.split(spaceRegex).length - 1;
+});
+const negativePromptCount = computed(() => {
+  return (
+    conf.data.settings.txt2img.negative_prompt.split(spaceRegex).length - 1
+  );
+});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed

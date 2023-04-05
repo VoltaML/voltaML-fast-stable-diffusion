@@ -54,12 +54,8 @@ parser.add_argument(
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
-parser.add_argument("--low-vram", action="store_true", help="Use low VRAM mode")
 parser.add_argument(
     "--bot", action="store_true", help="Run in tandem with the Discord bot"
-)
-parser.add_argument(
-    "-o", "--optimization", help="Optimization level", type=int, default=-1
 )
 args = parser.parse_args(args=app_args)
 
@@ -208,16 +204,6 @@ def checks():
     from diffusers.utils import DIFFUSERS_CACHE
 
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
-
-    # Config
-    from core.config import config
-
-    config.api.opt_level = (
-        args.optimization
-        if args.optimization != -1
-        else int(os.environ.get("OPT_LEVEL", config.api.opt_level))
-    )
-    logger.info(f"Optimization level set to {config.api.opt_level}")
 
 
 if __name__ == "__main__":

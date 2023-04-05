@@ -292,65 +292,67 @@ const loraModels = computed(() => {
 function refreshModels() {
   console.log("Refreshing models");
   modelsLoading.value = true;
-  fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
-    res.json().then((data: Array<ModelEntry>) => {
-      // add all the strings from the list to model options
-      models.value.splice(0, models.value.length);
-      data.forEach((model) => {
-        models.value.push(model);
-      });
-      modelsLoading.value = false;
-    });
-  });
-
-  fetch(`${serverUrl}/api/models/loaded`).then((res) => {
-    res.json().then((data: Array<ModelEntry>) => {
-      // Check if the current model is still loaded, if not, set it to null
-      if (conf.data.settings.model) {
-        if (
-          !data.find((model) => {
-            return model.path === conf.data.settings.model?.path;
-          })
-        ) {
-          console.log("Current model is not loaded anymore");
-          conf.data.settings.model = null;
-        }
-      }
-
-      // Update the state of the models
-      data.forEach((loadedModel) => {
-        const model = models.value.find((model) => {
-          return model.path === loadedModel.path;
+  fetch(`${serverUrl}/api/models/avaliable`)
+    .then((res) => {
+      res.json().then((data: Array<ModelEntry>) => {
+        // TODO: Lora loaded state isnt updated
+        models.value.splice(0, models.value.length);
+        data.forEach((model) => {
+          models.value.push(model);
         });
-        if (model) {
-          model.state = "loaded";
-          model.loras = loadedModel.loras;
-        }
+        modelsLoading.value = false;
       });
+    })
+    .then(() => {
+      fetch(`${serverUrl}/api/models/loaded`).then((res) => {
+        res.json().then((data: Array<ModelEntry>) => {
+          // Check if the current model is still loaded, if not, set it to null
+          if (conf.data.settings.model) {
+            if (
+              !data.find((model) => {
+                return model.path === conf.data.settings.model?.path;
+              })
+            ) {
+              console.log("Current model is not loaded anymore");
+              conf.data.settings.model = null;
+            }
+          }
 
-      // Set the current model to the first available model if it was null
-      if (!conf.data.settings.model) {
-        const allLoaded = [
-          ...loadedPyTorchModels.value,
-          ...loadedAitModels.value,
-          ...loadedExtraModels.value,
-        ];
+          // Update the state of the models
+          data.forEach((loadedModel) => {
+            const model = models.value.find((model) => {
+              return model.path === loadedModel.path;
+            });
+            if (model) {
+              model.state = "loaded";
+              model.loras = loadedModel.loras;
+            }
+          });
 
-        console.log("All loaded models: ", allLoaded);
+          // Set the current model to the first available model if it was null
+          if (!conf.data.settings.model) {
+            const allLoaded = [
+              ...loadedPyTorchModels.value,
+              ...loadedAitModels.value,
+              ...loadedExtraModels.value,
+            ];
 
-        if (allLoaded.length > 0) {
-          conf.data.settings.model = allLoaded[0];
-          console.log(
-            "Set current model to first available model: ",
-            conf.data.settings.model
-          );
-        } else {
-          console.log("No models available");
-          conf.data.settings.model = null;
-        }
-      }
+            console.log("All loaded models: ", allLoaded);
+
+            if (allLoaded.length > 0) {
+              conf.data.settings.model = allLoaded[0];
+              console.log(
+                "Set current model to first available model: ",
+                conf.data.settings.model
+              );
+            } else {
+              console.log("No models available");
+              conf.data.settings.model = null;
+            }
+          }
+        });
+      });
     });
-  });
 }
 
 async function loadModel(model: ModelEntry) {
@@ -363,7 +365,6 @@ async function loadModel(model: ModelEntry) {
     await fetch(load_url, {
       method: "POST",
     });
-    model.state = "loaded";
   } catch (e) {
     console.error(e);
   }
@@ -378,7 +379,6 @@ async function unloadModel(model: ModelEntry) {
     await fetch(load_url, {
       method: "POST",
     });
-    model.state = "not loaded";
   } catch (e) {
     console.error(e);
   }
