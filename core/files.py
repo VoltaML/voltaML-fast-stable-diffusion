@@ -286,7 +286,10 @@ def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
 
 
 def get_full_model_path(
-    repo_id: str, revision: str = "main", model_folder: str = "models", force: bool = False
+    repo_id: str,
+    revision: str = "main",
+    model_folder: str = "models",
+    force: bool = False,
 ) -> Path:
     "Return the path to the actual model"
 
