@@ -17,6 +17,8 @@ from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate"]
 
+Backend = Literal["PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA"]
+
 
 @dataclass
 class Job:
@@ -266,10 +268,12 @@ class AITemplateBuildRequest:
 
 
 @dataclass
-class LoadedModelResponse:
+class ModelResponse:
     "Dataclass for a response containing a loaded model info"
 
-    model_id: str
+    name: str
     path: str
-    backend: str
-    loras: List[str]
+    backend: Backend
+    valid: bool
+    state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
+    loras: List[str] = field(default_factory=list)

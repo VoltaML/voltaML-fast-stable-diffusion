@@ -5,7 +5,7 @@ from typing import List
 import torch
 from PIL import Image
 
-from core.types import Job
+from core.types import Backend, Job
 
 
 class InferenceModel(ABC):
@@ -15,7 +15,7 @@ class InferenceModel(ABC):
         self.model_id = model_id
         self.use_fp32 = use_fp32
         self.device = device
-        self.backend = "unknown"
+        self.backend: Backend = "unknown"
 
     @abstractmethod
     def load(self):

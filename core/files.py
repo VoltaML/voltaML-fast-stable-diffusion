@@ -1,10 +1,12 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
 from diffusers.utils.constants import DIFFUSERS_CACHE
 from huggingface_hub.file_download import repo_folder_name
+
+from core.types import ModelResponse
 
 logger = logging.getLogger(__name__)
 
@@ -21,10 +23,10 @@ class CachedModelList:
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
 
-    def pytorch(self) -> List[Dict[str, Any]]:
+    def pytorch(self) -> List[ModelResponse]:
         "List of models downloaded for PyTorch"
 
-        models: List[Dict[str, Any]] = []
+        models: List[ModelResponse] = []
 
         # Diffusers cached models
         logger.debug(f"Looking for PyTorch models in {self.pytorch_path}")
@@ -38,12 +40,14 @@ class CachedModelList:
             name: str = "/".join(model_name.split("--")[1:3])
             try:
                 models.append(
-                    {
-                        "name": name,
-                        "path": name,
-                        "backend": "PyTorch",
-                        "valid": is_valid_diffusers_model(get_full_model_path(name)),
-                    }
+                    ModelResponse(
+                        name=name,
+                        path=name,
+                        backend="PyTorch",
+                        valid=is_valid_diffusers_model(get_full_model_path(name)),
+                        loras=[],
+                        state="not loaded",
+                    )
                 )
             except ValueError:
                 logger.debug(f"Invalid model {name}, skipping...")
@@ -57,26 +61,28 @@ class CachedModelList:
             if self.checkpoint_converted_path.joinpath(model_name).is_dir():
                 # Assuming that model is in Diffusers format
                 models.append(
-                    {
-                        "name": model_name,
-                        "path": model_name,
-                        "backend": "PyTorch",
-                        "valid": is_valid_diffusers_model(
+                    ModelResponse(
+                        name=model_name,
+                        path=model_name,
+                        backend="PyTorch",
+                        valid=is_valid_diffusers_model(
                             self.checkpoint_converted_path.joinpath(model_name)
                         ),
-                    }
+                        loras=[],
+                        state="not loaded",
+                    )
                 )
             elif ".safetensors" in model_name or ".ckpt" in model_name:
                 # Assuming that model is in Checkpoint / Safetensors format
                 models.append(
-                    {
-                        "name": model_name,
-                        "path": str(
-                            self.checkpoint_converted_path.joinpath(model_name)
-                        ),
-                        "backend": "PyTorch",
-                        "valid": True,
-                    }
+                    ModelResponse(
+                        name=model_name,
+                        path=model_name,
+                        backend="PyTorch",
+                        valid=True,
+                        loras=[],
+                        state="not loaded",
+                    )
                 )
             else:
                 # Junk file, notify user
@@ -86,10 +92,10 @@ class CachedModelList:
 
         return models
 
-    def tensorrt(self) -> List[Dict[str, Any]]:
+    def tensorrt(self) -> List[ModelResponse]:
         "List of models converted to TRT"
 
-        models: List[Dict[str, Any]] = []
+        models: List[ModelResponse] = []
 
         logger.debug(f"Looking for TensorRT models in {self.tensorrt_engine_path}")
 
@@ -98,22 +104,24 @@ class CachedModelList:
             for model_name in os.listdir(self.tensorrt_engine_path.joinpath(author)):
                 logger.debug(f"Found model {model_name}")
                 models.append(
-                    {
-                        "name": "/".join([author, model_name]),
-                        "path": "/".join([author, model_name]),
-                        "backend": "TensorRT",
-                        "valid": is_valid_tensorrt_model(
+                    ModelResponse(
+                        name="/".join([author, model_name]),
+                        path="/".join([author, model_name]),
+                        backend="TensorRT",
+                        valid=is_valid_tensorrt_model(
                             self.tensorrt_engine_path.joinpath(author, model_name)
                         ),
-                    }
+                        loras=[],
+                        state="not loaded",
+                    )
                 )
 
         return models
 
-    def aitemplate(self) -> List[Dict[str, Any]]:
+    def aitemplate(self) -> List[ModelResponse]:
         "List of models converted to TRT"
 
-        models: List[Dict[str, Any]] = []
+        models: List[ModelResponse] = []
 
         logger.debug(f"Looking for AITemplate models in {self.aitemplate_path}")
 
@@ -122,14 +130,16 @@ class CachedModelList:
             model_name = model.replace("--", "/")
 
             models.append(
-                {
-                    "name": model_name,
-                    "path": model,
-                    "backend": "AITemplate",
-                    "valid": is_valid_aitemplate_model(
+                ModelResponse(
+                    name=model_name,
+                    path=model,
+                    backend="AITemplate",
+                    valid=is_valid_aitemplate_model(
                         self.aitemplate_path.joinpath(model)
                     ),
-                }
+                    loras=[],
+                    state="not loaded",
+                )
             )
 
         return models
@@ -137,19 +147,21 @@ class CachedModelList:
     def lora(self):
         "List of LoRA models"
 
-        models: List[Dict[str, Any]] = []
+        models: List[ModelResponse] = []
 
         for model in os.listdir(self.lora_path):
             logger.debug(f"Found LoRA {model}")
             model_name = model.replace(".safetensors", "").replace(".ckpt", "")
 
             models.append(
-                {
-                    "name": model_name,
-                    "path": model,
-                    "backend": "LoRA",
-                    "valid": True,
-                }
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.lora_path, model),
+                    backend="LoRA",
+                    valid=True,
+                    loras=[],
+                    state="not loaded",
+                )
             )
 
         return models

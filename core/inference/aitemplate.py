@@ -25,6 +25,7 @@ from core.inference_callbacks import (
 from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import (
+    Backend,
     ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -48,7 +49,7 @@ class AITemplateStableDiffusion(InferenceModel):
     ):
         super().__init__(model_id, use_f32, device)
 
-        self.backend = "AITemplate"
+        self.backend: Backend = "AITemplate"
 
         # HuggingFace auth token
         self.auth = auth_token

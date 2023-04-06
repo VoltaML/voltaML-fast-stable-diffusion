@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 from typing import Any, List, Optional
 
 import torch
@@ -32,6 +31,7 @@ from core.inference_callbacks import (
 from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
 from core.types import (
+    Backend,
     ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -57,7 +57,7 @@ class PyTorchStableDiffusion(InferenceModel):
     ) -> None:
         super().__init__(model_id, use_fp32, device)
 
-        self.backend = "PyTorch"
+        self.backend: Backend = "PyTorch"
 
         # HuggingFace
         self.auth: str = auth_token
@@ -483,8 +483,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self, lora: str, alpha_text_encoder: float = 0.5, alpha_unet: float = 0.5
     ):
         "Inject a LoRA model into the pipeline"
-
-        lora = str(Path("data/lora").joinpath(lora))
 
         logger.info(f"Loading LoRA model {lora} onto {self.model_id}...")
 

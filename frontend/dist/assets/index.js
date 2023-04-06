@@ -37407,8 +37407,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                 return model2.path === loadedModel.path;
               });
               if (model) {
-                model.state = "loaded";
-                model.loras = loadedModel.loras;
+                Object.assign(model, loadedModel);
               }
             });
             if (!conf.data.settings.model) {
@@ -37467,7 +37466,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
           await fetch(load_url, {
             method: "POST"
           });
-          lora.state = "loaded";
+          selectedModel.value.loras.push(lora.path);
         } catch (e) {
           console.error(e);
         }
@@ -37708,13 +37707,14 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                                 }, {
                                   default: withCtx(() => [
                                     (openBlock(true), createElementBlock(Fragment, null, renderList(unref(loraModels), (lora) => {
+                                      var _a3;
                                       return openBlock(), createElementBlock("div", {
                                         style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                                         key: lora.path
                                       }, [
                                         createBaseVNode("p", null, toDisplayString(lora.name), 1),
                                         createBaseVNode("div", _hoisted_4$1, [
-                                          lora.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                          ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(lora.path)) ? (openBlock(), createBlock(unref(NButton), {
                                             key: 0,
                                             type: "error",
                                             ghost: "",
@@ -37894,7 +37894,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_b8152149_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_c8e15e08_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -37902,7 +37902,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-b8152149"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-c8e15e08"]]);
 const _sfc_main$4 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
