@@ -75,3 +75,7 @@ def test_aitemplate_controlnet(pipe: AITemplateStableDiffusion):
 
 def test_unload(pipe: AITemplateStableDiffusion):
     pipe.unload()
+
+
+def test_cleanup(pipe: AITemplateStableDiffusion):
+    pipe.memory_cleanup()

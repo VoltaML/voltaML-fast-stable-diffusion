@@ -17,8 +17,8 @@ sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda
 sudo add-apt-repository -y "deb https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/ /"
 sudo apt-get update
 
-echo ----Installing CUDA and Python---
-sudo apt install -y python3.10 python3.10-venv build-essential cuda python3-pip
+echo ----Installing CUDA, Python, ROCmInfo---
+sudo apt install -y python3.10 python3.10-venv build-essential cuda python3-pip rocminfo
 
 echo ----Adding required paths and env vars to .bashrc---
 echo "" >> ~/.bashrc
