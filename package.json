@@ -18,6 +18,7 @@
     "api:lint": "pylint **/**.py --output-format=colorized",
     "api:dev": "python main.py --log-level DEBUG",
     "frontend:dev": "cd frontend && yarn dev",
-    "frontend:build": "cd frontend && yarn build"
+    "frontend:build": "cd frontend && yarn build",
+    "format": "black ."
   }
 }
