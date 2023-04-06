@@ -82,3 +82,6 @@ external
 
 # Ignore for black
 core/submodules
+
+# Installer
+installer/target

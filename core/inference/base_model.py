@@ -5,6 +5,7 @@ from typing import List
 import torch
 from PIL import Image
 
+from core.config import config
 from core.types import Backend, Job
 
 
@@ -31,6 +32,9 @@ class InferenceModel(ABC):
     def memory_cleanup(self) -> None:
         "Cleanup the GPU memory"
 
-        torch.cuda.empty_cache()
-        torch.cuda.ipc_collect()
-        gc.collect()
+        if config.api.device_type == "cpu":
+            gc.collect()
+        else:
+            torch.cuda.empty_cache()
+            torch.cuda.ipc_collect()
+            gc.collect()
