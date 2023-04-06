@@ -195,35 +195,31 @@ def is_valid_diffusers_model(model_path: Union[str, Path]):
     for folder in binary_folders:
         # Check if the folder exists
         if not os.path.exists(path / folder):
-            logger.debug(f"Folder {path / folder} not found: model is not valid")
             is_valid = False
             break
 
         # Check if there is at least one .bin file in the folder
         has_binaries = True
         found_files = os.listdir(path / folder)
-        if [path / folder / i for i in found_files if i.endswith(".bin")].__len__() < 1:
+        if len([path / folder / i for i in found_files if i.endswith(".bin")]) < 1:
             has_binaries = False
 
         # Check if there is at least one .safetensor file in the folder
         has_safetensors = True
         found_files = os.listdir(path / folder)
-        if [
-            path / folder / i for i in found_files if i.endswith(".safetensors")
-        ].__len__() < 1:
+        if (
+            len([path / folder / i for i in found_files if i.endswith(".safetensors")])
+            < 1
+        ):
             has_safetensors = False
 
         # If there is no binary or safetensor file, the model is not valid
         if not has_binaries and not has_safetensors:
-            logger.debug(
-                f"No binary files or safetensors found in {path / folder}: model is not valid"
-            )
             is_valid = False
 
     # Check all the other files that should be present
     for file in files:
         if not os.path.exists(path / file):
-            logger.debug(f"File {path / file} not found: model is not valid")
             is_valid = False
 
     return is_valid
@@ -245,7 +241,6 @@ def is_valid_tensorrt_model(model_path: Union[str, Path]):
     # Check all the files that should be present
     for file in files:
         if not os.path.exists(path / file):
-            logger.debug(f"File {path / file} not found: model is not valid")
             is_valid = False
 
     return is_valid
@@ -266,7 +261,6 @@ def is_valid_aitemplate_model(model_path: Union[str, Path]):
     # Check all the files that should be present
     for file in files:
         if not os.path.exists(path / file):
-            logger.debug(f"File {path / file} not found: model is not valid")
             is_valid = False
 
     return is_valid

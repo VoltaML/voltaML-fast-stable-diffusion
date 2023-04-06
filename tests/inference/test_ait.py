@@ -13,7 +13,7 @@ from core.types import (
 from tests.functions import generate_random_image
 
 try:
-    from core.aitemplate.scripts.compile import compile_diffusers
+    from core.aitemplate.compile import compile_diffusers
     from core.inference.aitemplate import AITemplateStableDiffusion
 except ModuleNotFoundError:
     pytest.skip("Skipping aitemplate tests, ait not installed", allow_module_level=True)

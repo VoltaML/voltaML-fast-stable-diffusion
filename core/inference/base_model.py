@@ -11,9 +11,8 @@ from core.types import Backend, Job
 class InferenceModel(ABC):
     "Base class for all models that will be used in the API"
 
-    def __init__(self, model_id: str, use_fp32: bool = False, device: str = "cuda"):
+    def __init__(self, model_id: str, device: str = "cuda"):
         self.model_id = model_id
-        self.use_fp32 = use_fp32
         self.device = device
         self.backend: Backend = "unknown"
 

@@ -27,10 +27,10 @@ from api.websockets import Data, Notification
 from core.config import config
 from core.inference.functions import load_pytorch_pipeline
 
-from ..src.compile_lib.compile_clip import compile_clip
-from ..src.compile_lib.compile_controlnet_unet import compile_controlnet_unet
-from ..src.compile_lib.compile_unet import compile_unet
-from ..src.compile_lib.compile_vae import compile_vae
+from .src.compile_lib.compile_clip import compile_clip
+from .src.compile_lib.compile_controlnet_unet import compile_controlnet_unet
+from .src.compile_lib.compile_unet import compile_unet
+from .src.compile_lib.compile_vae import compile_vae
 
 logger = logging.getLogger(__name__)
 
@@ -40,13 +40,13 @@ def compile_diffusers(
     width: int = 512,
     height: int = 512,
     batch_size: int = 1,
-    use_fp16_acc=True,
     convert_conv_to_gemm=True,
     invalidate_cache=False,
     device: str = "cuda",
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
 
+    use_fp16_acc = not config.api.use_fp32
     start_time = time.time()
 
     torch.manual_seed(4896)
@@ -56,7 +56,6 @@ def compile_diffusers(
 
     pipe = load_pytorch_pipeline(
         model_id_or_path=local_dir_or_id,
-        use_fp32=not use_fp16_acc,
         device=device,
     )
 

@@ -37109,7 +37109,7 @@ const defaultSettings = {
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: 13,
+    sampler: 8,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -37121,7 +37121,7 @@ const defaultSettings = {
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: 13,
+    sampler: 8,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -37142,13 +37142,13 @@ const defaultSettings = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
-    sampler: 13
-    /* UniPCMultistep */
+    sampler: 8
+    /* DPMSolverMultistep */
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: 13,
+    sampler: 8,
     controlnet: ControlNetType.CANNY,
     negative_prompt: "",
     width: 512,
@@ -37169,7 +37169,7 @@ const defaultSettings = {
     steps: 75,
     batch_count: 1,
     batch_size: 1,
-    sampler: 13,
+    sampler: 8,
     tile_size: 128,
     tile_border: 32,
     original_image_slice: 32,
@@ -37191,13 +37191,15 @@ const defaultSettings = {
     trace_model: false,
     offload: "disabled",
     image_preview_delay: 2,
-    device_id: 0
+    device_id: 0,
+    device_type: "cuda",
+    use_fp32: false
   },
   aitemplate: {
     num_threads: 8
   },
   bot: {
-    default_scheduler: 13,
+    default_scheduler: 8,
     verbose: false,
     use_default_negative_prompt: true
   }

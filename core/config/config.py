@@ -102,6 +102,19 @@ class APIConfig:
     offload: Literal["module", "model", "disabled"] = "disabled"
     image_preview_delay: float = 2.0
     device_id: int = 0
+    device_type: Literal["cpu", "cuda", "mps", "directml"] = "cuda"
+    use_fp32: bool = False
+
+    @property
+    def device(self):
+        "Return the device string"
+
+        if self.device_type == "cpu":
+            return "cpu"
+        if self.device_type == "directml":
+            raise NotImplementedError("DirectML is not supported yet")
+
+        return f"{self.device_type}:{self.device_id}"
 
 
 @dataclass

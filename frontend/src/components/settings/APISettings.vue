@@ -21,6 +21,8 @@
       />
     </NFormItem>
 
+    <h2>Optimizations</h2>
+
     <NFormItem label="Attention Processor">
       <NSelect
         :options="[
@@ -103,8 +105,42 @@
       </NSelect>
     </NFormItem>
 
+    <h2>Device</h2>
+
+    <NFormItem label="Device Type">
+      <NSelect
+        :options="[
+          {
+            value: 'cpu',
+            label: 'CPU',
+          },
+          {
+            value: 'cuda',
+            label: 'CUDA (NVIDIA)',
+          },
+          {
+            value: 'mps',
+            label: 'MPS (Apple)',
+          },
+          {
+            value: 'directml',
+            label: 'DirectML (NOT IMPLEMENTED)',
+          },
+          {
+            value: 'ROCm',
+            label: 'ROCm (AMD)',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.device_type"
+      />
+    </NFormItem>
+
     <NFormItem label="Device ID (GPU ID)">
       <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
+    </NFormItem>
+
+    <NFormItem label="Use FP32 precision">
+      <NSwitch v-model:value="settings.defaultSettings.api.use_fp32" />
     </NFormItem>
   </NForm>
 </template>

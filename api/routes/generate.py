@@ -181,10 +181,8 @@ async def generate_aitemplate(request: AITemplateBuildRequest):
 
 @router.post("/convert-model")
 async def convert_model(request: ConvertModelRequest):
-    "Cast a model to Float16 and save it"
+    "Convert a Stable Diffusion model"
 
-    await gpu.convert_model(
-        model=request.model, use_fp32=request.use_fp32, safetensors=request.safetensors
-    )
+    await gpu.convert_model(model=request.model, safetensors=request.safetensors)
 
     return {"message": "Success"}

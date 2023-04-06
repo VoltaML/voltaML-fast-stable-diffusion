@@ -1840,7 +1840,7 @@ const _hoisted_1$1 = {
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M160 164s1.44-33 33.54-59.46C212.6 88.83 235.49 84.28 256 84c18.73-.23 35.47 2.94 45.48 7.82C318.59 100.2 352 120.6 352 164c0 45.67-29.18 66.37-62.35 89.18S248 298.36 248 324",
@@ -1854,7 +1854,7 @@ const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   "circle",
   {
     cx: "248",
@@ -1866,17 +1866,19 @@ const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4 = [_hoisted_2, _hoisted_3];
+const _hoisted_4 = [_hoisted_2$1, _hoisted_3$1];
 const Help = defineComponent({
   name: "Help",
   render: function render(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4);
   }
 });
-const _hoisted_1 = {
+const _hoisted_1 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
+const _hoisted_2 = {
   href: "https://voltaml.github.io/voltaML-fast-stable-diffusion/experimental/optimization",
   style: { "height": "100%", "align-self": "center", "display": "flex", "align-items": "center", "margin-left": "10px" }
 };
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
@@ -1916,6 +1918,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
+          _hoisted_1,
           createVNode(unref(NFormItem), { label: "Attention Processor" }, {
             default: withCtx(() => [
               createVNode(unref(NSelect), {
@@ -1951,7 +1954,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                 value: unref(settings).defaultSettings.api.attention_slicing,
                 "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.attention_slicing = $event)
               }, null, 8, ["value"]),
-              createBaseVNode("a", _hoisted_1, [
+              createBaseVNode("a", _hoisted_2, [
                 createVNode(unref(NIcon), null, {
                   default: withCtx(() => [
                     createVNode(unref(Help))
@@ -2012,11 +2015,52 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
+          _hoisted_3,
+          createVNode(unref(NFormItem), { label: "Device Type" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "cpu",
+                    label: "CPU"
+                  },
+                  {
+                    value: "cuda",
+                    label: "CUDA (NVIDIA)"
+                  },
+                  {
+                    value: "mps",
+                    label: "MPS (Apple)"
+                  },
+                  {
+                    value: "directml",
+                    label: "DirectML (NOT IMPLEMENTED)"
+                  },
+                  {
+                    value: "ROCm",
+                    label: "ROCm (AMD)"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.device_type,
+                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.device_type = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
           createVNode(unref(NFormItem), { label: "Device ID (GPU ID)" }, {
             default: withCtx(() => [
               createVNode(unref(NInputNumber), {
                 value: unref(settings).defaultSettings.api.device_id,
-                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
+                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Use FP32 precision" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.use_fp32,
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.use_fp32 = $event)
               }, null, 8, ["value"])
             ]),
             _: 1

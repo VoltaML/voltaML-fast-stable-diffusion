@@ -108,6 +108,8 @@ export interface SettingsInterface {
     offload: "module" | "model" | "disabled";
     image_preview_delay: number;
     device_id: number;
+    device_type: "cpu" | "cuda" | "mps" | "directml";
+    use_fp32: boolean;
   };
   aitemplate: {
     num_threads: number;
@@ -210,6 +212,8 @@ export const defaultSettings: SettingsInterface = {
     offload: "disabled",
     image_preview_delay: 2.0,
     device_id: 0,
+    device_type: "cuda",
+    use_fp32: false,
   },
   aitemplate: {
     num_threads: 8,

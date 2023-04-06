@@ -205,6 +205,11 @@ def checks():
 
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
 
+    from core.config import config
+
+    logger.info(f"Device: {config.api.device}")
+    logger.info(f"Precision: {'FP32' if config.api.use_fp32 else 'FP16'}")
+
 
 if __name__ == "__main__":
     print("Starting the API...")

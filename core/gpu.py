@@ -56,11 +56,6 @@ class GPU:
             ],
         ] = {}
 
-    @property
-    def cuda_id(self) -> str:
-        "Returns the CUDA ID of the GPU."
-        return f"cuda:{self.gpu_id}"
-
     def vram_free(self) -> float:
         "Returns the amount of free VRAM on the GPU in MB."
         return (
@@ -276,7 +271,7 @@ class GPU:
 
                 pt_model = AITemplateStableDiffusion(
                     model_id=model,
-                    device=self.cuda_id,
+                    device=config.api.device,
                 )
                 self.loaded_models[model] = pt_model
 
@@ -307,7 +302,7 @@ class GPU:
                 else:
                     pt_model = PyTorchStableDiffusion(
                         model_id=model,
-                        device=self.cuda_id,
+                        device=config.api.device,
                     )
                 self.loaded_models[model] = pt_model
 
@@ -399,7 +394,7 @@ class GPU:
                 config.aitemplate.num_threads = request.threads
 
         def ait_build_thread_call():
-            from core.aitemplate.scripts.compile import compile_diffusers
+            from core.aitemplate.compile import compile_diffusers
 
             compile_diffusers(
                 batch_size=request.batch_size,
@@ -416,16 +411,16 @@ class GPU:
 
         logger.info("AITemplate engine successfully built")
 
-    async def convert_model(
-        self, model: str, use_fp32: bool = False, safetensors: bool = False
-    ):
+    async def convert_model(self, model: str, safetensors: bool = False):
         "Convert a model to FP16"
 
         logger.debug(f"Converting {model}...")
 
         def model_to_f16_thread_call():
             pt_model = PyTorchStableDiffusion(
-                model_id=model, device=self.cuda_id, use_fp32=use_fp32, autoload=True
+                model_id=model,
+                device=config.api.device,
+                autoload=True,
             )
 
             model_name = model.split("/")[-1]
