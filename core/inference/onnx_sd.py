@@ -140,13 +140,16 @@ class OnnxStableDiffusion(InferenceModel):
             import onnxruntime as ort
 
             def _load(
-                file: Path, providers: List[str] = ["CUDAExecutionProvider"]
+                file: Path, providers: Optional[List[str]] = None
             ) -> Union[
                 ort.InferenceSession,
                 CLIPTokenizerFast,
                 SchedulerMixin,
                 Dict[str, List[str]],
             ]:
+                if providers is None:
+                    providers = ["CUDAExecutionProvider"]
+
                 if file.stem == "providers":
                     with open(file, encoding="utf-8") as f:
                         # example providers.txt file:
@@ -190,7 +193,11 @@ class OnnxStableDiffusion(InferenceModel):
                             case "scheduler":
                                 # TODO: during conversion save which scheduler was used.
                                 scheduler_reg = r"_class_name\": \"(.*)\","
-                                with open(file / "scheduler_config.json", "r") as f:
+                                with open(
+                                    file / "scheduler_config.json",
+                                    "r",
+                                    encoding="utf-8",
+                                ) as f:
                                     matches = re.search(
                                         scheduler_reg, "\n".join(f.readlines())
                                     )
@@ -343,12 +350,7 @@ class OnnxStableDiffusion(InferenceModel):
     def convert_pytorch_to_onnx(
         self,
         model_id: str,
-        target: Dict[str, Optional[bool]] = {  # pylint: disable=dangerous-default-value
-            "vae_encoder": None,
-            "vae_decoder": None,
-            "unet": None,
-            "text_encoder": None,
-        },
+        target: Optional[Dict[str, Optional[bool]]] = None,
         device: Union[torch.device, str] = "cuda",
         simplify_unet: bool = False,
     ):
@@ -365,6 +367,14 @@ class OnnxStableDiffusion(InferenceModel):
 
         simplify_unet -- default: False. Whether the UNet should be simplified (this uses upwards of 20gb of RAM)
         """
+
+        if target is None:
+            target = {
+                "vae_encoder": None,
+                "vae_decoder": None,
+                "unet": None,
+                "text_encoder": None,
+            }
 
         def onnx_export(
             model,
