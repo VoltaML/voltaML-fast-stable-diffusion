@@ -2037,7 +2037,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                     label: "DirectML (NOT IMPLEMENTED)"
                   },
                   {
-                    value: "ROCm",
+                    value: "cuda",
                     label: "ROCm (AMD)"
                   }
                 ],

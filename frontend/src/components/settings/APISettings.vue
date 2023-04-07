@@ -127,7 +127,7 @@
             label: 'DirectML (NOT IMPLEMENTED)',
           },
           {
-            value: 'ROCm',
+            value: 'cuda',
             label: 'ROCm (AMD)',
           },
         ]"
