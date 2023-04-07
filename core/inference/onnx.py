@@ -1,55 +1,53 @@
+import importlib
+import inspect
 import logging
 import os
-import shutil
-from pathlib import Path
-import inspect
-from typing import List, Tuple, Type, TypeVar, Union, Optional, Dict
-from time import time
-import importlib
 import re
+import shutil
 import warnings
+from pathlib import Path
+from time import time
+from typing import Dict, List, Optional, Tuple, Type, TypeVar, Union
 
-from tqdm.auto import tqdm
-from PIL import Image
-
+import numpy as np
+import torch
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 from accelerate.utils import set_module_tensor_to_device
-from diffusers import SchedulerMixin
+from diffusers import LMSDiscreteScheduler, SchedulerMixin
 from diffusers.models.attention_processor import AttnProcessor
+from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.models.vae import DecoderOutput
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipelineOutput,
 )
-from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
-from diffusers.models.unet_2d_condition import UNet2DConditionModel
-from diffusers.models.vae import DecoderOutput
 from diffusers.utils import PIL_INTERPOLATION
-import torch
+from numpy.random import MT19937, RandomState, SeedSequence
+from packaging import version
+from PIL import Image
 from torch.onnx import export
+from tqdm.auto import tqdm
 from transformers import CLIPTextModel, CLIPTokenizerFast
 from transformers.modeling_outputs import BaseModelOutputWithPooling
 from transformers.utils import is_safetensors_available
-import numpy as np
-from numpy.random import MT19937
-from numpy.random import RandomState, SeedSequence
-from packaging import version
 
 from api import websocket_manager
 from api.websockets import Data
-from core.inference.base_model import InferenceModel
 from core.files import get_full_model_path
+from core.inference.base_model import InferenceModel
+from core.inference.functions import (
+    is_onnx_available,
+    is_onnxconverter_available,
+    is_onnxscript_available,
+    is_onnxsim_available,
+)
 from core.inference_callbacks import (
     img2img_callback,
     inpaint_callback,
     txt2img_callback,
 )
-from core.inference.functions import (
-    is_onnx_available,
-    is_onnxscript_available,
-    is_onnxsim_available,
-    is_onnxconverter_available,
-)
-from core.types import Job, Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry
+from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Job, Txt2ImgQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image
 
 logger = logging.getLogger(__name__)
@@ -98,12 +96,12 @@ class CLIPTextModelWrapper(CLIPTextModel):
 class AutoencoderKLWrapper(AutoencoderKL):
     "Internal class"
 
-    def encode(self, x) -> Tuple:
+    def encode(self, x) -> Tuple:  # pylint: disable=arguments-differ
         x = x.to(dtype=torch.float16)
         outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)
         return (outputs.latent_dist.sample().to(dtype=torch.float32),)
 
-    def decode(self, z) -> Tuple:
+    def decode(self, z) -> Tuple:  # pylint: disable=arguments-differ
         z = z.to(dtype=torch.float16)
         outputs: DecoderOutput = AutoencoderKL.decode(self, z, True)  # type: ignore
         return (outputs.sample.to(dtype=torch.float32),)
@@ -130,7 +128,7 @@ class OnnxStableDiffusion(InferenceModel):
             self.unet: ort.InferenceSession
             self.text_encoder: ort.InferenceSession
             self.tokenizer: CLIPTokenizerFast
-            self.scheduler: SchedulerMixin
+            self.scheduler: LMSDiscreteScheduler
 
             if autoload:
                 self.load()
@@ -150,7 +148,7 @@ class OnnxStableDiffusion(InferenceModel):
                 Dict[str, List[str]],
             ]:
                 if file.stem == "providers":
-                    with open(file) as f:
+                    with open(file, encoding="utf-8") as f:
                         # example providers.txt file:
                         #
                         # vae_encoder: CPUExecutionProvider
@@ -197,6 +195,9 @@ class OnnxStableDiffusion(InferenceModel):
                                         scheduler_reg, "\n".join(f.readlines())
                                     )
                                     module = importlib.import_module("diffusers")
+                                    assert (
+                                        matches is not None
+                                    ), "Scheduler not found in the scheduler_config.json"
                                     scheduler = getattr(module, matches.group(1))
                                     f = getattr(scheduler, "from_pretrained")
                                     return f(pretrained_model_name_or_path=str(file))
@@ -257,9 +258,7 @@ class OnnxStableDiffusion(InferenceModel):
             import onnxscript  # pylint: disable=import-error,unreachable
 
             # make dynamic?
-            from onnxscript.onnx_opset import (
-                opset17 as op,
-            )  # pylint: disable=import-error
+            from onnxscript.onnx_opset import opset17 as op  # pylint: disable=E0401
 
             custom_opset = onnxscript.values.Opset(
                 domain="torch.onnx", version=opset_version
@@ -402,7 +401,7 @@ class OnnxStableDiffusion(InferenceModel):
             quantize_success = False if signed is not None else True
             try:
                 if signed is not None:
-                    from onnxruntime.quantization import quantize_dynamic, QuantType
+                    from onnxruntime.quantization import QuantType, quantize_dynamic
 
                     t = time()
                     logger.info(
@@ -444,9 +443,10 @@ class OnnxStableDiffusion(InferenceModel):
                 if not quantize_success and not signed and not self.use_fp32:
                     logger.info(f"Starting FP16 conversion on {str(output_path)}")
                     t = time()
-                    import onnx  # pylint: disable=import-self
-                    import onnxruntime as ort
-                    from onnxconverter_common import float16
+                    import onnxruntime as ort  # pylint: disable=import-error
+                    from onnxconverter_common import float16  # pylint: disable=E0401
+
+                    import onnx
 
                     model = onnx.load(str(output_path))  # pylint: disable=no-member
                     model = float16.convert_float_to_float16(model, keep_io_types=True)
@@ -466,8 +466,9 @@ class OnnxStableDiffusion(InferenceModel):
                 if is_onnxsim_available():
                     logger.info("Starting simplification process on %s", output_path)
                     try:
+                        import onnxsim as onx  # pylint: disable=import-error
+
                         import onnx  # pylint: disable=import-self
-                        import onnxsim as onx
 
                         t = time()
                         model = onnx.load(str(output_path))  # pylint: disable=no-member
@@ -481,7 +482,7 @@ class OnnxStableDiffusion(InferenceModel):
                         del model
                         old_size = os.stat(str(output_path)).st_size
                         os.remove(str(output_path))
-                        onnx.save(
+                        onnx.save(  # pylint: disable=no-member
                             model_opt, str(output_path)
                         )  # pylint: disable=no-member
                         new_size = os.stat(str(output_path)).st_size
@@ -525,7 +526,9 @@ class OnnxStableDiffusion(InferenceModel):
                 if is_safetensors_available():
                     from safetensors.torch import load_file
 
-                    state_dict = load_file(root / checkpoint_name, device="cpu")
+                    state_dict = load_file(
+                        str(root.joinpath(checkpoint_name)), device="cpu"
+                    )
                     for name, param in state_dict.items():
                         set_module_tensor_to_device(
                             model, name, device, value=param, dtype=dtype
@@ -549,9 +552,9 @@ class OnnxStableDiffusion(InferenceModel):
         ) -> Tuple[int, int]:
             text_encoder = CLIPTextModelWrapper.from_pretrained(
                 main_folder / "text_encoder"
-            ).to(
-                dtype=torch.float16, device=device
-            )  # type: ignore
+            )
+            assert isinstance(text_encoder, CLIPTextModelWrapper)
+            text_encoder.to(dtype=torch.float16, device=device)
             text_encoder.eval()
 
             num_tokens = text_encoder.config.max_position_embeddings
@@ -573,7 +576,7 @@ class OnnxStableDiffusion(InferenceModel):
                 output_names=["last_hidden_state", "pooler_output"],
                 dynamic_axes={"input_ids": {0: "batch", 1: "sequence"}},
                 opset=opset,
-                signed=target["text_encoder"],
+                signed=target["text_encoder"],  # type: ignore
             )
 
             del text_encoder
@@ -593,12 +596,12 @@ class OnnxStableDiffusion(InferenceModel):
                 from diffusers.models.attention_processor import AttnProcessor2_0
 
                 logger.info("Compiling SDPA into model")
-                unet.set_attn_processor(AttnProcessor2_0())
+                unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
             else:
                 logger.info("Compiling cross-attention into model")
                 unet.set_attn_processor(AttnProcessor())
 
-            if isinstance(unet.config.attention_head_dim, int):  # type: ignore
+            if isinstance(unet.config.attention_head_dim, int):  # type: ignore pylint: disable=no-member
                 slice_size = unet.config.attention_head_dim // 2  # type: ignore pylint: disable=no-member
             else:
                 slice_size = min(unet.config.attention_head_dim)  # type: ignore pylint: disable=no-member
@@ -645,15 +648,15 @@ class OnnxStableDiffusion(InferenceModel):
                 },
                 opset=opset,
                 simplify=simplify_unet,
-                signed=target["unet"],
+                signed=target["unet"],  # type: ignore
             )
             del unet
             self.memory_cleanup()
             if needs_collate:
-                unet = onnx.load(
+                unet = onnx.load(  # type: ignore pylint: disable=undefined-variable
                     str((unet_out_path / "unet.onnx").absolute().as_posix())
                 )
-                onnx.save_model(
+                onnx.save_model(  # type: ignore pylint: disable=undefined-variable
                     unet,
                     str((output_folder / "unet.onnx").absolute().as_posix()),
                     save_as_external_data=True,
@@ -691,7 +694,7 @@ class OnnxStableDiffusion(InferenceModel):
                     "sample": {0: "batch", 1: "channels", 2: "height", 3: "width"}
                 },
                 opset=opset,
-                signed=target["vae_encoder"],
+                signed=target["vae_encoder"],  # type: ignore
             )
 
             vae.forward = vae.decode  # type: ignore
@@ -714,7 +717,7 @@ class OnnxStableDiffusion(InferenceModel):
                     }
                 },
                 opset=opset,
-                signed=target["vae_decoder"],
+                signed=target["vae_decoder"],  # type: ignore
             )
             del vae
             self.memory_cleanup()
@@ -756,7 +759,7 @@ class OnnxStableDiffusion(InferenceModel):
         prompt: str,
         num_images_per_prompt: int,
         do_classifier_free_guidance: bool,
-        negative_prompt: str,
+        negative_prompt: Optional[str],
     ):
         t = time()
         logger.debug("encode prompt")
@@ -824,13 +827,13 @@ class OnnxStableDiffusion(InferenceModel):
         class_labels=None,
     ):
         def _init_latent_model(latents, do_classifier_free_guidance, t):
-            latent_model_input = (
+            latent_model_input_numpy = (
                 np.concatenate([latents] * 2)
                 if do_classifier_free_guidance
                 else latents
             )
             latent_model_input = self.scheduler.scale_model_input(
-                torch.from_numpy(latent_model_input), t
+                torch.from_numpy(latent_model_input_numpy), t  # type: ignore
             )
             latent_model_input = latent_model_input.cpu().numpy()
             return latent_model_input
@@ -871,12 +874,12 @@ class OnnxStableDiffusion(InferenceModel):
                     noise_pred_text - noise_pred_uncond
                 )
             scheduler_output = self.scheduler.step(
-                torch.from_numpy(noise_pred),
-                t,
-                torch.from_numpy(latents),
+                torch.from_numpy(noise_pred),  # type: ignore
+                t,  # type: ignore
+                torch.from_numpy(latents),  # type: ignore
                 **extra_step_kwargs,
             )
-            latents = scheduler_output.prev_sample
+            latents = scheduler_output.prev_sample  # type: ignore
 
             if callback is not None:
                 callback(i, t, latents)
@@ -943,16 +946,16 @@ class OnnxStableDiffusion(InferenceModel):
         # preprocess
         latents_shape = latents_shape[-2:]
         mask = mask_image
-        image = np.array(
+        image = np.array(  # type: ignore
             image.convert("RGB").resize((latents_shape[1] * 8, latents_shape[0] * 8))
         )
-        image = image[None].transpose(0, 3, 1, 2)
-        image = image.astype(np.float32) / 127.5 - 1.0
+        image = image[None].transpose(0, 3, 1, 2)  # type: ignore
+        image = image.astype(np.float32) / 127.5 - 1.0  # type: ignore
 
         image_mask = np.array(
             mask.convert("L").resize((latents_shape[1] * 8, latents_shape[0] * 8))
         )
-        masked_image = image * (image_mask < 127.5)
+        masked_image = image * (image_mask < 127.5)  # type: ignore
 
         mask = mask.resize(
             (latents_shape[1], latents_shape[0]), PIL_INTERPOLATION["nearest"]
@@ -990,7 +993,7 @@ class OnnxStableDiffusion(InferenceModel):
                 else latents
             )
             latent_model_input = self.scheduler.scale_model_input(
-                torch.from_numpy(latent_model_input), t
+                torch.from_numpy(latent_model_input), t  # type: ignore
             )
             latent_model_input = latent_model_input.cpu().numpy()
             latent_model_input = np.concatenate(
@@ -1009,9 +1012,9 @@ class OnnxStableDiffusion(InferenceModel):
             kw=_init_latent_model,
         )
 
-        image = self._decode_latents(latents, 0.18215)
-        image = self.numpy_to_pil(image)
-        return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=False)
+        image = self._decode_latents(latents, 0.18215)  # type: ignore
+        image = self.numpy_to_pil(image)  # type: ignore
+        return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=False)  # type: ignore
 
     @torch.no_grad()
     def _txt2img(
@@ -1080,12 +1083,12 @@ class OnnxStableDiffusion(InferenceModel):
             x - x % 64 for x in (width, height)
         )  # resize to integer multiple of 64
 
-        image = [image]
-        image = [np.array(i.resize((width, height)))[None, :] for i in image]
-        image = np.concatenate(image, axis=0)
-        image = np.array(image).astype(np.float32) / 255.0
-        image = image.transpose(0, 3, 1, 2)
-        image = 2.0 * image - 1.0
+        image = [image]  # type: ignore
+        image = [np.array(i.resize((width, height)))[None, :] for i in image]  # type: ignore
+        image = np.concatenate(image, axis=0)  # type: ignore
+        image = np.array(image).astype(np.float32) / 255.0  # type: ignore
+        image = image.transpose(0, 3, 1, 2)  # type: ignore
+        image = 2.0 * image - 1.0  # type: ignore
 
         self.scheduler.set_timesteps(num_inference_steps)
         generator = RandomState(MT19937(SeedSequence(seed)))
@@ -1103,11 +1106,11 @@ class OnnxStableDiffusion(InferenceModel):
         timesteps = self.scheduler.timesteps.numpy()[-init_timestep]
         timesteps = np.array([timesteps] * num_images_per_prompt)
 
-        noise = generator.randn(*init_latents.shape).astype(latents_dtype)
+        noise = generator.randn(*init_latents.shape).astype(latents_dtype)  # type: ignore
         init_latents = self.scheduler.add_noise(
-            torch.from_numpy(init_latents),
-            torch.from_numpy(noise),
-            torch.from_numpy(timesteps),
+            torch.from_numpy(init_latents),  # type: ignore
+            torch.from_numpy(noise),  # type: ignore
+            torch.from_numpy(timesteps),  # type: ignore
         ).numpy()
 
         t_start = max(0, num_inference_steps - init_timestep)
@@ -1127,8 +1130,8 @@ class OnnxStableDiffusion(InferenceModel):
             timesteps=timesteps,
         )
 
-        image = self._decode_latents(latents, 0.18215)
-        image = self.numpy_to_pil(image)
+        image = self._decode_latents(latents, 0.18215)  # type: ignore
+        image = self.numpy_to_pil(image)  # type: ignore
         return StableDiffusionPipelineOutput(images=image, nsfw_content_detected=False)  # type: ignore
 
     def numpy_to_pil(self, images):
