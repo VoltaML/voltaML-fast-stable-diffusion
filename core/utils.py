@@ -4,7 +4,7 @@ import logging
 import math
 import re
 from io import BytesIO
-from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple, Union
+from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
 
 from PIL import Image
 
@@ -21,11 +21,11 @@ def get_grid_dimension(length: int) -> Tuple[int, int]:
     return cols, rows
 
 
-def convert_image_to_stream(image: Image.Image) -> BytesIO:
+def convert_image_to_stream(image: Image.Image, quality: int = 95) -> BytesIO:
     "Convert an image to a stream of bytes"
 
     stream = BytesIO()
-    image.save(stream, format="PNG")
+    image.save(stream, format="webp", quality=quality)
     stream.seek(0)
     return stream
 
@@ -55,11 +55,18 @@ def convert_to_image(
     return image
 
 
-def convert_image_to_base64(image: Image.Image) -> str:
+def convert_image_to_base64(
+    image: Image.Image, quality: int = 95, image_format: Literal["png", "webp"] = "png"
+) -> str:
     "Convert an image to a base64 string"
 
-    stream = convert_image_to_stream(image)
-    return base64.b64encode(stream.read()).decode("utf-8")
+    stream = convert_image_to_stream(image, quality=quality)
+    prefix = (
+        f"data:image/{image_format};base64,"
+        if image_format == "png"
+        else "data:image/webp;base64,"
+    )
+    return prefix + base64.b64encode(stream.read()).decode("utf-8")
 
 
 def convert_base64_to_bytes(data: str):
@@ -109,10 +116,16 @@ def image_grid(imgs: List[Image.Image]):
     return grid
 
 
-def convert_images_to_base64_grid(images: List[Image.Image]) -> str:
+def convert_images_to_base64_grid(
+    images: List[Image.Image],
+    quality: int = 95,
+    image_format: Literal["png", "webp"] = "png",
+) -> str:
     "Convert a list of images to a list of base64 strings"
 
-    return convert_image_to_base64(image_grid(images))
+    return convert_image_to_base64(
+        image_grid(images), quality=quality, image_format=image_format
+    )
 
 
 def resize(image: Image.Image, w: int, h: int):

@@ -38095,7 +38095,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           createBaseVNode("div", _hoisted_1$1, [
             unref(displayedImage) ? (openBlock(), createBlock(unref(NImage), {
               key: 0,
-              src: unref(displayedImage).startsWith("data:image/png") ? unref(displayedImage).toString() : `data:image/png;base64,${unref(displayedImage)}`,
+              src: unref(displayedImage).toString(),
               "img-props": {
                 style: "max-width: 100%; max-height: 70vh; width: 100%"
               },
@@ -38109,7 +38109,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 (openBlock(true), createElementBlock(Fragment, null, renderList(unref(allImages), (image, i) => {
                   return openBlock(), createBlock(unref(NImage), {
                     key: i,
-                    src: `data:image/png;base64,${image}`,
+                    src: image.toString(),
                     class: "bottom-images",
                     "img-props": {
                       style: "height: 100px; width: 100px; margin: 5px;"
@@ -38128,8 +38128,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageOutput_vue_vue_type_style_index_0_scoped_ec32e663_lang = "";
-const ImageOutput = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-ec32e663"]]);
+const ImageOutput_vue_vue_type_style_index_0_scoped_2d84f5b9_lang = "";
+const ImageOutput = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2d84f5b9"]]);
 let getRandomValues;
 const rnds8 = new Uint8Array(16);
 function rng() {

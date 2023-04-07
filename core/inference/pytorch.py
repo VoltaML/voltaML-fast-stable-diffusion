@@ -225,7 +225,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     "progress": 0,
                     "current_step": 0,
                     "total_steps": 0,
-                    "image": convert_images_to_base64_grid(total_images),
+                    "image": convert_images_to_base64_grid(
+                        total_images, quality=90, image_format="webp"
+                    ),
                 },
             )
         )
@@ -287,7 +289,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     "progress": 0,
                     "current_step": 0,
                     "total_steps": 0,
-                    "image": convert_images_to_base64_grid(total_images),
+                    "image": convert_images_to_base64_grid(
+                        total_images, quality=90, image_format="webp"
+                    ),
                 },
             )
         )
@@ -355,7 +359,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     "progress": 0,
                     "current_step": 0,
                     "total_steps": 0,
-                    "image": convert_images_to_base64_grid(total_images),
+                    "image": convert_images_to_base64_grid(
+                        total_images, quality=90, image_format="webp"
+                    ),
                 },
             )
         )
@@ -433,7 +439,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     "progress": 0,
                     "current_step": 0,
                     "total_steps": 0,
-                    "image": convert_images_to_base64_grid(total_images),
+                    "image": convert_images_to_base64_grid(
+                        total_images, quality=90, image_format="webp"
+                    ),
                 },
             )
         )

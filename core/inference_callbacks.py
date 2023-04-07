@@ -55,7 +55,11 @@ def txt2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -75,7 +79,11 @@ def img2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -95,7 +103,11 @@ def inpaint_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -115,7 +127,11 @@ def image_variations_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -135,7 +151,11 @@ def controlnet_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )

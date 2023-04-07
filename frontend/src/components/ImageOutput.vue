@@ -3,11 +3,7 @@
     <div style="width: 100%; display: flex; justify-content: center">
       <NImage
         v-if="displayedImage"
-        :src="
-          displayedImage.startsWith('data:image/png')
-            ? displayedImage.toString()
-            : `data:image/png;base64,${displayedImage}`
-        "
+        :src="displayedImage.toString()"
         :img-props="{
           style: 'max-width: 100%; max-height: 70vh; width: 100%',
         }"
@@ -20,7 +16,7 @@
         <NImage
           v-for="(image, i) in allImages"
           v-bind:key="i"
-          :src="`data:image/png;base64,${image}`"
+          :src="image.toString()"
           class="bottom-images"
           :img-props="{
             style: 'height: 100px; width: 100px; margin: 5px;',
