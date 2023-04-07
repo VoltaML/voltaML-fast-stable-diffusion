@@ -2,18 +2,15 @@ from typing import List
 
 import torch
 from fastapi import APIRouter, HTTPException
-from pynvml import nvml, smi
-from torch._C import _CudaDeviceProperties
 
 router = APIRouter(tags=["hardware"])
-
-nvsmi = smi.nvidia_smi.getInstance()
-assert nvsmi is not None
 
 
 @router.get("/driver")
 async def driver():
     "Return the version of the NVIDIA driver"
+
+    from pynvml import nvml
 
     return nvml.nvmlSystemGetDriverVersion()
 
@@ -36,6 +33,11 @@ async def gpu(gpu_id: int) -> str:
 async def gpu_memory(gpu_id: int):
     "Return the memory statistics of the GPU"
 
+    from pynvml import smi
+
+    nvsmi = smi.nvidia_smi.getInstance()
+    assert nvsmi is not None
+
     data = nvsmi.DeviceQuery("memory.free, memory.total")["gpu"]
     try:
         data = data[gpu_id]
@@ -54,6 +56,8 @@ async def gpu_memory(gpu_id: int):
 @router.get("/gpus")
 async def gpus():
     "List all available GPUs"
+
+    from torch._C import _CudaDeviceProperties
 
     devices = {}
     for i in range(torch.cuda.device_count()):

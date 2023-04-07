@@ -28,8 +28,10 @@ from core.inference_callbacks import (
     inpaint_callback,
     txt2img_callback,
 )
+from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
 from core.types import (
+    Backend,
     ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -49,11 +51,12 @@ class PyTorchStableDiffusion(InferenceModel):
         self,
         model_id: str,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
-        use_fp32: bool = False,
         device: str = "cuda",
         autoload: bool = True,
     ) -> None:
-        super().__init__(model_id, use_fp32, device)
+        super().__init__(model_id, device)
+
+        self.backend: Backend = "PyTorch"
 
         # HuggingFace
         self.auth: str = auth_token
@@ -72,17 +75,20 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.current_controlnet: ControlNetMode = ControlNetMode.NONE
 
+        self.loras: List[str] = []
+
         if autoload:
             self.load()
 
     def load(self):
         "Load the model from HuggingFace"
 
-        logger.info(f"Loading {self.model_id} with {'f32' if self.use_fp32 else 'f16'}")
+        logger.info(
+            f"Loading {self.model_id} with {'f32' if config.api.use_fp32 else 'f16'}"
+        )
 
         pipe = load_pytorch_pipeline(
             self.model_id,
-            use_f32=self.use_fp32,
             auth=self.auth,
             device=self.device,
         )
@@ -147,7 +153,7 @@ class PyTorchStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet.value,
                 resume_download=True,
-                torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
+                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
                 use_auth_token=self.auth,
             )
 
@@ -184,7 +190,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         if job.data.scheduler:
             change_scheduler(
@@ -241,7 +247,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -303,7 +309,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -359,9 +365,9 @@ class PyTorchStableDiffusion(InferenceModel):
     def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
-        if config.api.opt_level == 0:
+        if config.api.trace_model == True:
             raise ValueError(
-                "ControlNet is not available in optLevel 0, please load this model with optLevel 1"
+                "ControlNet is not available with traced UNet, please disable tracing and reload the model."
             )
 
         self.manage_optional_components(target_controlnet=job.data.controlnet)
@@ -380,7 +386,7 @@ class PyTorchStableDiffusion(InferenceModel):
             vae=self.vae,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -473,7 +479,26 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe.save_pretrained(path, safe_serialization=safetensors)
 
-    def load_lora(self, lora: str):
+    def load_lora(
+        self, lora: str, alpha_text_encoder: float = 0.5, alpha_unet: float = 0.5
+    ):
         "Inject a LoRA model into the pipeline"
 
-        self.unet.load_attn_procs(lora, resume_download=True, use_auth_token=self.auth)
+        logger.info(f"Loading LoRA model {lora} onto {self.model_id}...")
+
+        if any(lora in l for l in self.loras):
+            logger.info(f"LoRA model {lora} already loaded onto {self.model_id}")
+            return
+
+        if ".safetensors" in lora:
+            load_safetensors_loras(
+                self.text_encoder, self.unet, lora, alpha_text_encoder, alpha_unet
+            )
+        else:
+            self.unet.load_attn_procs(
+                pretrained_model_name_or_path_or_dict=lora,
+                resume_download=True,
+                use_auth_token=self.auth,
+            )
+        self.loras.append(lora)
+        logger.info(f"LoRA model {lora} loaded successfully")

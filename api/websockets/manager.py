@@ -33,7 +33,11 @@ class WebSocketManager:
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
 
-        from gpustat.core import GPUStatCollection
+        try:
+            from gpustat.core import GPUStatCollection
+        except ImportError:
+            logger.warning("GPUStat failed to initialize - probably not an NVIDIA GPU")
+            return
 
         while True:
             try:

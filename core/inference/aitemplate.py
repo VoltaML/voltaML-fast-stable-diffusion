@@ -16,15 +16,17 @@ from api.websockets.data import Data
 from core.config import config
 from core.controlnet import image_to_controlnet_input
 from core.files import get_full_model_path
-from core.functions import init_ait_module, optimize_model
+from core.functions import init_ait_module
 from core.inference.base_model import InferenceModel
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
     txt2img_callback,
 )
+from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import (
+    Backend,
     ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -43,10 +45,11 @@ class AITemplateStableDiffusion(InferenceModel):
         self,
         model_id: str,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
-        use_f32: bool = False,
         device: str = "cuda",
     ):
-        super().__init__(model_id, use_f32, device)
+        super().__init__(model_id, device)
+
+        self.backend: Backend = "AITemplate"
 
         # HuggingFace auth token
         self.auth = auth_token
@@ -92,13 +95,9 @@ class AITemplateStableDiffusion(InferenceModel):
             feature_extractor=None,
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
-        pipe.to(self.device)
 
         # Disable optLevel for AITemplate models and optimize the model
-        _opt = config.api.opt_level
-        config.api.opt_level = 1
-        optimize_model(pipe, self.device, False)
-        config.api.opt_level = _opt
+        optimize_model(pipe=pipe, device=self.device, use_fp32=config.api.use_fp32)
 
         self.vae = pipe.vae
         self.unet = pipe.unet
@@ -190,7 +189,7 @@ class AITemplateStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet.value,
                 resume_download=True,
-                torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
+                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
                 use_auth_token=self.auth,
             )
 

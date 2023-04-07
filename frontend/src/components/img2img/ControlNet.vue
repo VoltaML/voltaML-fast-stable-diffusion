@@ -16,12 +16,18 @@
               v-model:value="conf.data.settings.controlnet.prompt"
               type="textarea"
               placeholder="Prompt"
-            />
+              show-count
+            >
+              <template #count>{{ promptCount }}</template>
+            </NInput>
             <NInput
               v-model:value="conf.data.settings.controlnet.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
-            />
+              show-count
+            >
+              <template #count>{{ negativePromptCount }}</template>
+            </NInput>
 
             <!-- Sampler -->
             <div class="flex-container">
@@ -311,6 +317,7 @@ import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import { serverUrl } from "@/env";
+import { spaceRegex } from "@/functions";
 import {
   NCard,
   NGi,
@@ -324,12 +331,22 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
+import { computed } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
 const conf = useSettings();
 const messageHandler = useMessage();
+
+const promptCount = computed(() => {
+  return conf.data.settings.controlnet.prompt.split(spaceRegex).length - 1;
+});
+const negativePromptCount = computed(() => {
+  return (
+    conf.data.settings.controlnet.negative_prompt.split(spaceRegex).length - 1
+  );
+});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -380,10 +397,13 @@ const generate = () => {
         mlsd_thr_v: 0.1,
         mlsd_thr_d: 0.1,
       },
-      model: conf.data.settings.model,
+      model: conf.data.settings.model?.name,
     }),
   })
     .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
       global.state.generating = false;
       console.log(res);
       res.json().then((data) => {

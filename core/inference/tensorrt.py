@@ -1,7 +1,7 @@
 import logging
 
 from core.tensorrt.TensorRT.engine import EngineBuilder
-from core.types import BuildRequest, Job
+from core.types import Backend, BuildRequest, Job
 
 from .base_model import InferenceModel
 
@@ -16,6 +16,7 @@ class TensorRTModel(InferenceModel):
         self.model_id = model_id
         self.use_f32 = use_f32
         self.device = device
+        self.backend: Backend = "TensorRT"
 
     def load(self):
         "Loads the model into the memory"

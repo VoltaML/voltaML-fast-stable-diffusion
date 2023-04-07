@@ -87,6 +87,23 @@ def test_control_net(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
+def test_lora(pipe: PyTorchStableDiffusion):
+    pipe.load_lora("data/lora/shenheLoraCollection_shenheHard.safetensors")
+
+
+def test_txt2img_with_lora(pipe: PyTorchStableDiffusion):
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="shenhe (genshin)",
+            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            id="test",
+        ),
+        model="andite/anything-v4.0",
+    )
+
+    pipe.generate(job)
+
+
 def test_unload(pipe: PyTorchStableDiffusion):
     pipe.unload()
 

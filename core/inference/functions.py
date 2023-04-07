@@ -30,11 +30,56 @@ from huggingface_hub.utils._errors import (
 )
 from requests import HTTPError
 
+from core.config import config
 from core.files import get_full_model_path
-from core.functions import optimize_model
+from core.optimizations import optimize_model
 
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
+
+
+def is_onnxconverter_available():
+    "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
+    try:
+        import onnxconverter_common  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnx_available():
+    "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
+    try:
+        import onnx  # pylint: disable=unused-import
+        from onnxruntime.quantization import (
+            quantize_dynamic,
+            QuantType,
+        )  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnxscript_available():
+    "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
+    try:
+        import onnxscript  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnxsim_available():
+    "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
+    try:
+        from onnxsim import simplify  # pylint: disable=import-error,unused-import
+
+        return True
+    except ImportError:
+        return False
 
 
 def load_config(
@@ -292,14 +337,16 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
 
 def load_pytorch_pipeline(
     model_id_or_path: str,
-    use_f32: bool = False,
     auth: str = os.environ["HUGGINGFACE_TOKEN"],
     device: str = "cuda",
     optimize: bool = True,
+    is_for_aitemplate: bool = False,
 ) -> StableDiffusionPipeline:
     "Load the model from HuggingFace"
 
-    logger.info(f"Loading {model_id_or_path} with {'f32' if use_f32 else 'f16'}")
+    logger.info(
+        f"Loading {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"
+    )
 
     if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
         use_safetensors = ".safetensors" in model_id_or_path
@@ -326,7 +373,7 @@ def load_pytorch_pipeline(
     else:
         pipe = StableDiffusionPipeline.from_pretrained(
             pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-            torch_dtype=torch.float32 if use_f32 else torch.float16,
+            torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
             use_auth_token=auth,
             safety_checker=None,
             requires_safety_checker=False,
@@ -335,9 +382,18 @@ def load_pytorch_pipeline(
         )
         assert isinstance(pipe, StableDiffusionPipeline)
 
-    logger.debug(f"Loaded {model_id_or_path} with {'f32' if use_f32 else 'f16'}")
+    logger.debug(
+        f"Loaded {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"
+    )
 
     if optimize:
-        optimize_model(pipe, device, use_f32)
+        optimize_model(
+            pipe=pipe,
+            device=device,
+            use_fp32=config.api.use_fp32,
+            is_for_aitemplate=is_for_aitemplate,
+        )
+    else:
+        pipe.to(device)
 
     return pipe

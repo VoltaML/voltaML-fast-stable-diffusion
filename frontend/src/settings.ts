@@ -1,4 +1,4 @@
-import { ControlNetType } from "./core/interfaces";
+import { ControlNetType, type ModelEntry } from "./core/interfaces";
 import { serverUrl } from "./env";
 
 export enum Sampler {
@@ -19,8 +19,8 @@ export enum Sampler {
 
 export interface SettingsInterface {
   $schema: string;
-  backend: "PyTorch" | "TensorRT" | "AITemplate";
-  model: string;
+  backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
+  model: ModelEntry | null;
   txt2img: {
     prompt: string;
     negative_prompt: string;
@@ -100,10 +100,16 @@ export interface SettingsInterface {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
-    cache_dir: string;
-    optLevel: number;
+    attention_processor: "xformers" | "spda";
+    attention_slicing: "auto" | number | "disabled";
+    channels_last: boolean;
+    vae_slicing: boolean;
+    trace_model: boolean;
+    offload: "module" | "model" | "disabled";
     image_preview_delay: number;
     device_id: number;
+    device_type: "cpu" | "cuda" | "mps" | "directml";
+    use_fp32: boolean;
   };
   aitemplate: {
     num_threads: number;
@@ -118,13 +124,13 @@ export interface SettingsInterface {
 export const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
-  model: "none:PyTorch",
+  model: null,
   txt2img: {
     width: 512,
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -136,7 +142,7 @@ export const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -157,12 +163,12 @@ export const defaultSettings: SettingsInterface = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     controlnet: ControlNetType.CANNY,
     negative_prompt: "",
     width: 512,
@@ -183,7 +189,7 @@ export const defaultSettings: SettingsInterface = {
     steps: 75,
     batch_count: 1,
     batch_size: 1,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     tile_size: 128,
     tile_border: 32,
     original_image_slice: 32,
@@ -198,16 +204,22 @@ export const defaultSettings: SettingsInterface = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
-    cache_dir: "",
-    optLevel: 1,
+    attention_processor: "xformers",
+    attention_slicing: "disabled",
+    channels_last: true,
+    vae_slicing: false,
+    trace_model: false,
+    offload: "disabled",
     image_preview_delay: 2.0,
     device_id: 0,
+    device_type: "cuda",
+    use_fp32: false,
   },
   aitemplate: {
     num_threads: 8,
   },
   bot: {
-    default_scheduler: Sampler.UniPCMultistep,
+    default_scheduler: Sampler.DPMSolverMultistep,
     verbose: false,
     use_default_negative_prompt: true,
   },

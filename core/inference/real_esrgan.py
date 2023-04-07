@@ -8,6 +8,7 @@ from PIL import Image
 from realesrgan import RealESRGANer
 from realesrgan.archs.srvgg_arch import SRVGGNetCompact
 
+from core.config import config
 from core.inference.base_model import InferenceModel
 from core.types import Job, RealESRGANQueueEntry
 from core.utils import convert_to_image
@@ -26,7 +27,8 @@ class RealESRGAN(InferenceModel):
         tile_pad: int = 10,
         pre_pad: int = 0,
     ):
-        super().__init__(model_id=model_name, use_fp32=use_f32, device=device)
+        super().__init__(model_id=model_name, device=device)
+
         self.denoise_strength = denoise_strength
         self.tile = tile
         self.tile_pad = tile_pad
@@ -39,10 +41,7 @@ class RealESRGAN(InferenceModel):
     def gpu_id(self) -> int:
         "Returns the GPU ID"
 
-        if self.device == "cuda":
-            return 0
-        else:
-            return int(self.device.replace("cuda:", ""))
+        return config.api.device_id
 
     def load(self):
         if self.model_id == "RealESRGAN_x4plus":  # x4 RRDBNet model
@@ -145,7 +144,7 @@ class RealESRGAN(InferenceModel):
             tile=self.tile,
             tile_pad=self.tile_pad,
             pre_pad=self.pre_pad,
-            half=not self.use_fp32,
+            half=not config.api.use_fp32,
             gpu_id=self.gpu_id,
         )
 

@@ -13,8 +13,12 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "test": "pytest -x",
-    "test:full": "pytest --run-optional-tests=slow --cov=core -x",
-    "lint": "pylint **/**.py --output-format=colorized"
+    "api:test": "pytest",
+    "api:fulltest": "pytest --run-optional-tests=slow --cov=core -x",
+    "api:lint": "pylint **/**.py --output-format=colorized",
+    "api:dev": "python main.py --log-level DEBUG",
+    "frontend:dev": "cd frontend && yarn dev",
+    "frontend:build": "cd frontend && yarn build",
+    "format": "black ."
   }
 }

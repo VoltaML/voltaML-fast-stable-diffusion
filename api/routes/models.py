@@ -1,25 +1,41 @@
 import logging
 import traceback
+from typing import List
 
 import torch
 from fastapi import APIRouter, HTTPException
 
+from api import websocket_manager
+from api.websockets.data import Data
 from core.shared_dependent import cached_model_list, gpu
-from core.types import InferenceBackend, LoadLoraRequest
+from core.types import InferenceBackend, ModelResponse
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
 
 
 @router.get("/loaded")
-async def list_loaded_models():
+async def list_loaded_models() -> List[ModelResponse]:
     "Returns a list containing information about loaded models"
 
-    return list(gpu.loaded_models)
+    loaded_models = []
+    for model_id in gpu.loaded_models:
+        loaded_models.append(
+            ModelResponse(
+                name=model_id,
+                backend=gpu.loaded_models[model_id].backend,
+                path=gpu.loaded_models[model_id].model_id,
+                state="loaded",
+                loras=gpu.loaded_models[model_id].__dict__.get("loras", []),
+                valid=True,
+            )
+        )
+
+    return loaded_models
 
 
 @router.get("/avaliable")
-async def list_avaliable_models():
+async def list_avaliable_models() -> List[ModelResponse]:
     "Show a list of avaliable models"
 
     return cached_model_list.all()
@@ -34,6 +50,10 @@ async def load_model(
 
     try:
         await gpu.load_model(model, backend)
+
+        await websocket_manager.broadcast(
+            data=Data(data_type="refresh_models", data={})
+        )
     except torch.cuda.OutOfMemoryError:  # type: ignore
         logger.warning(traceback.format_exc())
         raise HTTPException(  # pylint: disable=raise-missing-from
@@ -47,6 +67,7 @@ async def unload_model(model: str):
     "Unloads a model from memory"
 
     await gpu.unload(model)
+    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model unloaded"}
 
 
@@ -55,15 +76,17 @@ async def unload_all_models():
     "Unload all models from memory"
 
     await gpu.unload_all()
+    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
 
     return {"message": "All models unloaded"}
 
 
 @router.post("/load-lora")
-async def load_lora(req: LoadLoraRequest):
+async def load_lora(model: str, lora: str):
     "Load a LoRA model into a model"
 
-    await gpu.load_lora(req.model, req.lora)
+    await gpu.load_lora(model, lora)
+    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "LoRA model loaded"}
 
 
@@ -80,4 +103,5 @@ async def download_model(model: str):
     "Download a model to the cache"
 
     await gpu.download_huggingface_model(model)
+    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model downloaded"}

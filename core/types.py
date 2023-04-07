@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Literal, Optional, Union
+from typing import Any, List, Literal, Optional, Union
 from uuid import uuid4
 
 from diffusers import (
@@ -16,6 +16,8 @@ from diffusers import (
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate"]
+
+Backend = Literal["PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA"]
 
 
 @dataclass
@@ -242,14 +244,6 @@ class ConvertModelRequest:
     safetensors: bool = False
 
 
-@dataclass
-class LoadLoraRequest:
-    "Dataclass for requesting a LoRA model to be injected into the model"
-
-    model: str
-    lora: str
-
-
 PyTorchModelType = Union[
     DiffusionPipeline,
     StableDiffusionDepth2ImgPipeline,
@@ -271,3 +265,15 @@ class AITemplateBuildRequest:
     height: int = field(default=512)
     batch_size: int = field(default=1)
     threads: Optional[int] = field(default=None)
+
+
+@dataclass
+class ModelResponse:
+    "Dataclass for a response containing a loaded model info"
+
+    name: str
+    path: str
+    backend: Backend
+    valid: bool
+    state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
+    loras: List[str] = field(default_factory=list)

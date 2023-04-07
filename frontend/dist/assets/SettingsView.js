@@ -1,6 +1,5 @@
-import { V as inject, bw as getCurrentInstance, a5 as watch, aA as onBeforeUnmount, P as cB, R as cM, O as c, L as createInjectionKey, d as defineComponent, E as useConfig, X as useTheme, z as ref, y as h, bx as formLight, J as provide, a7 as keysOf, G as computed, ay as formatLength, aF as get, by as commonVariables, Q as cE, K as toRef, a1 as createId, bz as formItemInjectionKey, bA as onMounted, a0 as useThemeClass, aR as Transition, au as resolveWrappedSlot, $ as createKey, aL as warn, o as openBlock, c as createElementBlock, a as createBaseVNode, b as useSettings, C as createBlock, w as withCtx, f as createVNode, g as unref, p as NInputNumber, j as NInput, m as NSelect, B as NIcon, h as NCard, x as _export_sfc, e as useMessage, A as NButton, l as createTextVNode, bB as defaultSettings, s as serverUrl } from "./index.js";
+import { Y as inject, b6 as getCurrentInstance, a8 as watch, aD as onBeforeUnmount, S as cB, U as cM, R as c, P as createInjectionKey, d as defineComponent, J as useConfig, $ as useTheme, C as ref, B as h, b7 as formLight, M as provide, aa as keysOf, f as computed, aB as formatLength, aI as get, b8 as commonVariables, T as cE, O as toRef, a4 as createId, b9 as formItemInjectionKey, ba as onMounted, a3 as useThemeClass, aU as Transition, ax as resolveWrappedSlot, a2 as createKey, aO as warn, o as openBlock, c as createElementBlock, a as createBaseVNode, b as useSettings, F as createBlock, w as withCtx, g as createVNode, h as unref, q as NInputNumber, n as NSelect, E as NIcon, i as NCard, k as NInput, G as NTabPane, H as NTabs, A as _export_sfc, e as useMessage, D as NButton, l as createTextVNode, bb as defaultSettings, v as serverUrl } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
-import { N as NTabPane, a as NTabs } from "./Tabs.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
   const injection = inject(injectionName, null);
@@ -1841,7 +1840,7 @@ const _hoisted_1$1 = {
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M160 164s1.44-33 33.54-59.46C212.6 88.83 235.49 84.28 256 84c18.73-.23 35.47 2.94 45.48 7.82C318.59 100.2 352 120.6 352 164c0 45.67-29.18 66.37-62.35 89.18S248 298.36 248 324",
@@ -1855,7 +1854,7 @@ const _hoisted_2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   "circle",
   {
     cx: "248",
@@ -1867,118 +1866,202 @@ const _hoisted_3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4 = [_hoisted_2, _hoisted_3];
+const _hoisted_4 = [_hoisted_2$1, _hoisted_3$1];
 const Help = defineComponent({
   name: "Help",
   render: function render(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4);
   }
 });
-const _hoisted_1 = {
+const _hoisted_1 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
+const _hoisted_2 = {
   href: "https://voltaml.github.io/voltaML-fast-stable-diffusion/experimental/optimization",
   style: { "height": "100%", "align-self": "center", "display": "flex", "align-items": "center", "margin-left": "10px" }
 };
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
     const settings = useSettings();
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), null, {
+      return openBlock(), createBlock(unref(NForm), null, {
         default: withCtx(() => [
-          createVNode(unref(NForm), null, {
+          createVNode(unref(NFormItem), { label: "WebSocket Performance Monitor Interval" }, {
             default: withCtx(() => [
-              createVNode(unref(NFormItem), { label: "WebSocket Performance Monitor Interval" }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.websocket_perf_interval,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.websocket_perf_interval = $event),
-                    min: 0.1,
-                    step: 0.1
-                  }, null, 8, ["value", "min", "step"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), { label: "WebSocket Sync Interval" }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.websocket_sync_interval,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.websocket_sync_interval = $event),
-                    min: 1e-3,
-                    step: 0.01
-                  }, null, 8, ["value", "min", "step"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), { label: "Image Preview Interval (seconds)" }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.image_preview_delay,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.image_preview_delay = $event),
-                    step: 0.1
-                  }, null, 8, ["value", "step"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), { label: "Cache Directory" }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.api.cache_dir,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.cache_dir = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Optimization",
-                style: {}
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: [
-                      {
-                        value: 0,
-                        label: "(0) Ultra speed (Traced UNet)"
-                      },
-                      {
-                        value: 1,
-                        label: "(1) Speed"
-                      },
-                      {
-                        value: 2,
-                        label: "(2) Balanced"
-                      },
-                      {
-                        value: 3,
-                        label: "(3) Multi-model VRAM efficient"
-                      },
-                      {
-                        value: 4,
-                        label: "(4) VRAM efficient"
-                      }
-                    ],
-                    value: unref(settings).defaultSettings.api.optLevel,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.optLevel = $event)
-                  }, null, 8, ["options", "value"]),
-                  createBaseVNode("a", _hoisted_1, [
-                    createVNode(unref(NIcon), null, {
-                      default: withCtx(() => [
-                        createVNode(unref(Help))
-                      ]),
-                      _: 1
-                    })
-                  ])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), { label: "Device ID (GPU ID)" }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.device_id,
-                    "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.websocket_perf_interval,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.websocket_perf_interval = $event),
+                min: 0.1,
+                step: 0.1
+              }, null, 8, ["value", "min", "step"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "WebSocket Sync Interval" }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.websocket_sync_interval,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.websocket_sync_interval = $event),
+                min: 1e-3,
+                step: 0.01
+              }, null, 8, ["value", "min", "step"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Image Preview Interval (seconds)" }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.image_preview_delay,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.image_preview_delay = $event),
+                step: 0.1
+              }, null, 8, ["value", "step"])
+            ]),
+            _: 1
+          }),
+          _hoisted_1,
+          createVNode(unref(NFormItem), { label: "Attention Processor" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "xformers",
+                    label: "xFormers (less memory hungry)"
+                  },
+                  {
+                    value: "spda",
+                    label: "SPD Attention"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.attention_processor,
+                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.attention_processor = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Attention Slicing" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "disabled",
+                    label: "None"
+                  },
+                  {
+                    value: "auto",
+                    label: "Auto"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.attention_slicing,
+                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.attention_slicing = $event)
+              }, null, 8, ["value"]),
+              createBaseVNode("a", _hoisted_2, [
+                createVNode(unref(NIcon), null, {
+                  default: withCtx(() => [
+                    createVNode(unref(Help))
+                  ]),
+                  _: 1
+                })
+              ])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Channels Last" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.channels_last,
+                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.channels_last = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "VAE Slicing" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.vae_slicing,
+                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).defaultSettings.api.vae_slicing = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Trace UNet" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.trace_model,
+                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.api.trace_model = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Offload" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "disabled",
+                    label: "Disabled"
+                  },
+                  {
+                    value: "model",
+                    label: "Offload the whole model to RAM when not used"
+                  },
+                  {
+                    value: "module",
+                    label: "Offload individual modules to RAM when not used"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.offload,
+                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.offload = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          _hoisted_3,
+          createVNode(unref(NFormItem), { label: "Device Type" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "cpu",
+                    label: "CPU"
+                  },
+                  {
+                    value: "cuda",
+                    label: "CUDA (NVIDIA)"
+                  },
+                  {
+                    value: "mps",
+                    label: "MPS (Apple)"
+                  },
+                  {
+                    value: "directml",
+                    label: "DirectML (NOT IMPLEMENTED)"
+                  },
+                  {
+                    value: "ROCm",
+                    label: "ROCm (AMD)"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.device_type,
+                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.device_type = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Device ID (GPU ID)" }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.device_id,
+                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "Use FP32 precision" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.use_fp32,
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.use_fp32 = $event)
+              }, null, 8, ["value"])
             ]),
             _: 1
           })

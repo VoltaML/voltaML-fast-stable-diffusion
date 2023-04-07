@@ -5,6 +5,7 @@ __pycache__/
 
 # Distribution / packaging
 .Python
+onnx-script/
 build/
 develop-eggs/
 /dist
@@ -82,3 +83,6 @@ external
 
 # Ignore for black
 core/submodules
+
+# Installer
+installer/target

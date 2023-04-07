@@ -6,9 +6,10 @@ from PIL import Image
 
 from api import websocket_manager
 from api.websockets import Data
-from core.functions import optimize_model
+from core.config import config
 from core.inference.base_model import InferenceModel
 from core.inference.tiled_upscale import StableDiffusionTiledUpscalePipeline
+from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import Job, SDUpscaleQueueEntry
 from core.utils import convert_images_to_base64_grid, convert_to_image
@@ -19,12 +20,9 @@ logger = logging.getLogger(__name__)
 class PyTorchSDUpscaler(InferenceModel):
     "PyTorch Upscaler model for super-resolution."
 
-    def __init__(
-        self, use_fp32: bool = False, autoload: bool = True, device: str = "cuda"
-    ):
+    def __init__(self, autoload: bool = True, device: str = "cuda"):
         super().__init__(
             model_id="stabilityai/stable-diffusion-x4-upscaler",
-            use_fp32=use_fp32,
             device=device,
         )
 
@@ -36,11 +34,11 @@ class PyTorchSDUpscaler(InferenceModel):
     def load(self):
         pipe = StableDiffusionTiledUpscalePipeline.from_pretrained(
             self.model_id,
-            torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
+            torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
         )
 
         assert isinstance(pipe, StableDiffusionTiledUpscalePipeline)
-        optimize_model(pipe, self.device, self.use_fp32)
+        optimize_model(pipe, self.device, config.api.use_fp32)
         self.pipe = pipe
 
     def unload(self):
@@ -48,7 +46,9 @@ class PyTorchSDUpscaler(InferenceModel):
         self.memory_cleanup()
 
     def upscale(self, job: SDUpscaleQueueEntry) -> List[Image.Image]:
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        "Upscales an image using the model."
+
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         if job.data.scheduler:
             change_scheduler(
