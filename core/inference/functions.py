@@ -38,6 +38,50 @@ logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
 
+def is_onnxconverter_available():
+    "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
+    try:
+        import onnxconverter_common  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnx_available():
+    "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
+    try:
+        import onnx  # pylint: disable=unused-import
+        from onnxruntime.quantization import (
+            quantize_dynamic,
+            QuantType,
+        )  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnxscript_available():
+    "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
+    try:
+        import onnxscript  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnxsim_available():
+    "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
+    try:
+        from onnxsim import simplify  # pylint: disable=import-error,unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
 def load_config(
     pretrained_model_name_or_path: Union[str, os.PathLike],
     return_unused_kwargs=False,
