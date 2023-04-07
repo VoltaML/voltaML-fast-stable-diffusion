@@ -108,6 +108,8 @@ export interface SettingsInterface {
     offload: "module" | "model" | "disabled";
     image_preview_delay: number;
     device_id: number;
+    device_type: "cpu" | "cuda" | "mps" | "directml";
+    use_fp32: boolean;
   };
   aitemplate: {
     num_threads: number;
@@ -128,7 +130,7 @@ export const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -140,7 +142,7 @@ export const defaultSettings: SettingsInterface = {
     height: 512,
     seed: -1,
     cfg_scale: 7,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
     batch_count: 1,
@@ -161,12 +163,12 @@ export const defaultSettings: SettingsInterface = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     controlnet: ControlNetType.CANNY,
     negative_prompt: "",
     width: 512,
@@ -187,7 +189,7 @@ export const defaultSettings: SettingsInterface = {
     steps: 75,
     batch_count: 1,
     batch_size: 1,
-    sampler: Sampler.UniPCMultistep,
+    sampler: Sampler.DPMSolverMultistep,
     tile_size: 128,
     tile_border: 32,
     original_image_slice: 32,
@@ -210,12 +212,14 @@ export const defaultSettings: SettingsInterface = {
     offload: "disabled",
     image_preview_delay: 2.0,
     device_id: 0,
+    device_type: "cuda",
+    use_fp32: false,
   },
   aitemplate: {
     num_threads: 8,
   },
   bot: {
-    default_scheduler: Sampler.UniPCMultistep,
+    default_scheduler: Sampler.DPMSolverMultistep,
     verbose: false,
     use_default_negative_prompt: true,
   },

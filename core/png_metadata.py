@@ -1,5 +1,6 @@
 import copy
 import logging
+from dataclasses import fields
 from os import makedirs
 from pathlib import Path
 from typing import List, Union
@@ -41,25 +42,9 @@ def create_metadata(
     def write_metadata(key: str):
         metadata.add_text(key, str(data.__dict__.get(key, "")))
 
-    if not isinstance(job, RealESRGANQueueEntry):
-        for key in [
-            "prompt",
-            "negative_prompt",
-            "width",
-            "height",
-            "steps",
-            "guidance_scale",
-            "seed",
-            "strength",
-        ]:
-            write_metadata(key)
-    else:
-        for key in [
-            "upscale_factor",
-        ]:
-            write_metadata(key)
+    for key in fields(data):
+        write_metadata(key.name)
 
-    procedure = ""
     if isinstance(job, Txt2ImgQueueEntry):
         procedure = "txt2img"
     elif isinstance(job, Img2ImgQueueEntry):
@@ -70,6 +55,8 @@ def create_metadata(
         procedure = "control_net"
     elif isinstance(job, RealESRGANQueueEntry):
         procedure = "real_esrgan"
+    else:
+        procedure = "unknown"
 
     metadata.add_text("procedure", procedure)
     metadata.add_text("model", job.model)

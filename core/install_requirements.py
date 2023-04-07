@@ -113,22 +113,52 @@ def install_pytorch():
                 ]
             )
     else:
-        if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
-            "torchvision", "==0.15.1+cu118"
+        if (
+            subprocess.run(  # pylint: disable=subprocess-run-check
+                "rocminfo"
+            ).returncode
+            == 0
         ):
-            logger.info("Installing PyTorch")
-            subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "torch==2.0.0",
-                    "torchvision",
-                    "--extra-index-url",
-                    "https://download.pytorch.org/whl/cu118",
-                ]
-            )
+            logger.info("ROCmInfo success, assuming user has AMD GPU")
+
+            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
+                "torchvision", "==0.15.1+cu118"
+            ):
+                logger.info("Installing PyTorch")
+
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "torch==2.0.0",
+                        "torchvision",
+                        "--index-url",
+                        "https://download.pytorch.org/whl/rocm5.4.2",
+                    ]
+                )
+
+        else:
+            logger.info("ROCmInfo check failed, assuming user has NVIDIA GPU")
+
+            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
+                "torchvision", "==0.15.1+cu118"
+            ):
+                logger.info("Installing PyTorch")
+
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "torch==2.0.0",
+                        "torchvision",
+                        "--index-url",
+                        "https://download.pytorch.org/whl/cu118",
+                    ]
+                )
 
     # Install other requirements
     install_requirements("requirements/pytorch.txt")

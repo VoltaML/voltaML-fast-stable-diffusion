@@ -19,7 +19,7 @@ class Txt2ImgConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
     steps: int = 25
@@ -35,7 +35,7 @@ class Img2ImgConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
     steps: int = 25
@@ -58,7 +58,7 @@ class InpaintingConfig:
     seed: int = -1
     batch_count: int = 1
     batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
 
 
 @dataclass
@@ -74,7 +74,7 @@ class ControlNetConfig:
     steps: int = 25
     batch_count: int = 1
     batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.UniPCMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
     controlnet: ControlNetMode = ControlNetMode.CANNY
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512
@@ -102,6 +102,19 @@ class APIConfig:
     offload: Literal["module", "model", "disabled"] = "disabled"
     image_preview_delay: float = 2.0
     device_id: int = 0
+    device_type: Literal["cpu", "cuda", "mps", "directml"] = "cuda"
+    use_fp32: bool = False
+
+    @property
+    def device(self):
+        "Return the device string"
+
+        if self.device_type == "cpu":
+            return "cpu"
+        if self.device_type == "directml":
+            raise NotImplementedError("DirectML is not supported yet")
+
+        return f"{self.device_type}:{self.device_id}"
 
 
 @dataclass
@@ -116,7 +129,7 @@ class BotConfig:
     "Configuration for the bot"
 
     default_scheduler: KarrasDiffusionSchedulers = (
-        KarrasDiffusionSchedulers.UniPCMultistepScheduler
+        KarrasDiffusionSchedulers.DPMSolverMultistepScheduler
     )
     verbose: bool = False
     use_default_negative_prompt: bool = True

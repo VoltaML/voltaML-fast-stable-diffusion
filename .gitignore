@@ -84,4 +84,5 @@ external
 # Ignore for black
 core/submodules
 
-.vscode/
+# Installer
+installer/target

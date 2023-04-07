@@ -97,7 +97,7 @@
                         type="error"
                         ghost
                         disabled
-                        v-if="lora.state === 'loaded'"
+                        v-if="selectedModel?.loras.includes(lora.path)"
                         >Loaded</NButton
                       >
                       <NButton
@@ -324,8 +324,8 @@ function refreshModels() {
               return model.path === loadedModel.path;
             });
             if (model) {
-              model.state = "loaded";
-              model.loras = loadedModel.loras;
+              // Update all the keys
+              Object.assign(model, loadedModel);
             }
           });
 
@@ -395,7 +395,7 @@ async function loadLoRA(lora: ModelEntry) {
       await fetch(load_url, {
         method: "POST",
       });
-      lora.state = "loaded";
+      selectedModel.value.loras.push(lora.path);
     } catch (e) {
       console.error(e);
     }

@@ -1,6 +1,5 @@
 import logging
 import os
-from pathlib import Path
 from typing import Any, List, Optional
 
 import torch
@@ -32,6 +31,7 @@ from core.inference_callbacks import (
 from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
 from core.types import (
+    Backend,
     ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -51,13 +51,12 @@ class PyTorchStableDiffusion(InferenceModel):
         self,
         model_id: str,
         auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
-        use_fp32: bool = False,
         device: str = "cuda",
         autoload: bool = True,
     ) -> None:
-        super().__init__(model_id, use_fp32, device)
+        super().__init__(model_id, device)
 
-        self.backend = "PyTorch"
+        self.backend: Backend = "PyTorch"
 
         # HuggingFace
         self.auth: str = auth_token
@@ -84,11 +83,12 @@ class PyTorchStableDiffusion(InferenceModel):
     def load(self):
         "Load the model from HuggingFace"
 
-        logger.info(f"Loading {self.model_id} with {'f32' if self.use_fp32 else 'f16'}")
+        logger.info(
+            f"Loading {self.model_id} with {'f32' if config.api.use_fp32 else 'f16'}"
+        )
 
         pipe = load_pytorch_pipeline(
             self.model_id,
-            use_fp32=self.use_fp32,
             auth=self.auth,
             device=self.device,
         )
@@ -153,7 +153,7 @@ class PyTorchStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet.value,
                 resume_download=True,
-                torch_dtype=torch.float32 if self.use_fp32 else torch.float16,
+                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
                 use_auth_token=self.auth,
             )
 
@@ -190,7 +190,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         if job.data.scheduler:
             change_scheduler(
@@ -247,7 +247,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -309,7 +309,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -386,7 +386,7 @@ class PyTorchStableDiffusion(InferenceModel):
             vae=self.vae,
         )
 
-        generator = torch.Generator("cuda").manual_seed(job.data.seed)
+        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -483,8 +483,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self, lora: str, alpha_text_encoder: float = 0.5, alpha_unet: float = 0.5
     ):
         "Inject a LoRA model into the pipeline"
-
-        lora = str(Path("data/lora").joinpath(lora))
 
         logger.info(f"Loading LoRA model {lora} onto {self.model_id}...")
 

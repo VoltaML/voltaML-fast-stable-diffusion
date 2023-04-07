@@ -1,5 +1,6 @@
 import logging
 import traceback
+from typing import List
 
 import torch
 from fastapi import APIRouter, HTTPException
@@ -7,24 +8,26 @@ from fastapi import APIRouter, HTTPException
 from api import websocket_manager
 from api.websockets.data import Data
 from core.shared_dependent import cached_model_list, gpu
-from core.types import InferenceBackend, LoadedModelResponse
+from core.types import InferenceBackend, ModelResponse
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
 
 
 @router.get("/loaded")
-async def list_loaded_models():
+async def list_loaded_models() -> List[ModelResponse]:
     "Returns a list containing information about loaded models"
 
     loaded_models = []
     for model_id in gpu.loaded_models:
         loaded_models.append(
-            LoadedModelResponse(
-                model_id=model_id,
+            ModelResponse(
+                name=model_id,
                 backend=gpu.loaded_models[model_id].backend,
                 path=gpu.loaded_models[model_id].model_id,
+                state="loaded",
                 loras=gpu.loaded_models[model_id].__dict__.get("loras", []),
+                valid=True,
             )
         )
 
@@ -32,7 +35,7 @@ async def list_loaded_models():
 
 
 @router.get("/avaliable")
-async def list_avaliable_models():
+async def list_avaliable_models() -> List[ModelResponse]:
     "Show a list of avaliable models"
 
     return cached_model_list.all()

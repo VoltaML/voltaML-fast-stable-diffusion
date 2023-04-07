@@ -13,7 +13,7 @@ pynvml
 k-diffusion
 safetensors
 pytorch-lightning
-gpustat
+gpustat==1.0.0
 opencv-contrib-python-headless
 git+https://github.com/patrickvonplaten/controlnet_aux
 realesrgan
