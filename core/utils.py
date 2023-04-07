@@ -56,16 +56,22 @@ def convert_to_image(
 
 
 def convert_image_to_base64(
-    image: Image.Image, quality: int = 95, image_format: Literal["png", "webp"] = "png"
+    image: Image.Image,
+    quality: int = 95,
+    image_format: Literal["png", "webp"] = "png",
+    prefix_js: bool = True,
 ) -> str:
     "Convert an image to a base64 string"
 
     stream = convert_image_to_stream(image, quality=quality)
-    prefix = (
-        f"data:image/{image_format};base64,"
-        if image_format == "png"
-        else "data:image/webp;base64,"
-    )
+    if prefix_js:
+        prefix = (
+            f"data:image/{image_format};base64,"
+            if image_format == "png"
+            else "data:image/webp;base64,"
+        )
+    else:
+        prefix = ""
     return prefix + base64.b64encode(stream.read()).decode("utf-8")
 
 

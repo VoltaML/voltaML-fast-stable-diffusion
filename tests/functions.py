@@ -9,6 +9,6 @@ def generate_random_image(w: int = 512, h: int = 512) -> str:
 
     np_image = np.random.randint(0, 255, size=(w, h, 3), dtype=np.uint8)
     image = Image.fromarray(np_image)
-    encoded_image = convert_image_to_base64(image)
+    encoded_image = convert_image_to_base64(image, prefix_js=False)
 
     return encoded_image

@@ -56,7 +56,7 @@ def test_img2img(pipe: PyTorchStableDiffusion):
 def test_inpaint(pipe: PyTorchStableDiffusion):
     np_mask = np.random.randint(0, 1, size=(256, 256, 3), dtype=np.uint8)
     mask = Image.fromarray(np_mask)
-    encoded_mask = convert_image_to_base64(mask)
+    encoded_mask = convert_image_to_base64(mask, prefix_js=False)
 
     job = InpaintQueueEntry(
         data=InpaintData(
