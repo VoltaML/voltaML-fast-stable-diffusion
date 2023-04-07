@@ -112,10 +112,18 @@ def install_pytorch():
                     "https://download.pytorch.org/whl/cu118",
                 ]
             )
+    elif platform.system() == "Darwin":
+        if not is_installed("torch", version="==2.0.0") or not is_installed(
+            "torchvision"
+        ):
+            logger.info("Installing PyTorch")
+            subprocess.check_call(
+                [sys.executable, "-m", "pip", "install", "torch==2.0.0", "torchvision"]
+            )
     else:
         if (
             subprocess.run(  # pylint: disable=subprocess-run-check
-                "rocminfo"
+                "rocminfo", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
             ).returncode
             == 0
         ):

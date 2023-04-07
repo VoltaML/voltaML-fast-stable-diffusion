@@ -10,6 +10,8 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
+from fastapi_simple_cachecontrol.types import CacheControl
 from starlette import status
 from starlette.responses import JSONResponse
 
@@ -124,9 +126,23 @@ app.include_router(settings.router, prefix="/api/settings")
 ## WebSockets
 app.include_router(ws.router, prefix="/api/websockets")
 
-# Mount static files (css, js, images, etc.)
-app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
-
+# Mount outputs folder
 output_folder = Path("data/outputs")
 output_folder.mkdir(exist_ok=True)
 app.mount("/data/outputs", StaticFiles(directory="data/outputs"), name="outputs")
+
+# Mount static files (css, js, images, etc.)
+static_app = FastAPI()
+static_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+static_app.add_middleware(
+    CacheControlMiddleware, cache_control=CacheControl("no-cache")
+)
+static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
+app.mount("/assets", static_app)

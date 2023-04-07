@@ -57,6 +57,11 @@ parser.add_argument("--in-container", action="store_true", help="Skip virtualenv
 parser.add_argument(
     "--bot", action="store_true", help="Run in tandem with the Discord bot"
 )
+parser.add_argument(
+    "--enable-r2",
+    action="store_true",
+    help="Enable Cloudflare R2 bucket upload support",
+)
 args = parser.parse_args(args=app_args)
 
 logging.basicConfig(level=args.log_level)
@@ -209,6 +214,16 @@ def checks():
 
     logger.info(f"Device: {config.api.device}")
     logger.info(f"Precision: {'FP32' if config.api.use_fp32 else 'FP16'}")
+
+    # Initialize R2 bucket if needed
+    if args.enable_r2:
+        from core import shared_dependent
+        from core.extra.cloudflare_r2 import R2Bucket
+
+        endpoint = os.environ["R2_ENDPOINT"]
+        bucket_name = os.environ["R2_BUCKET_NAME"]
+
+        shared_dependent.r2 = R2Bucket(endpoint=endpoint, bucket_name=bucket_name)
 
 
 if __name__ == "__main__":

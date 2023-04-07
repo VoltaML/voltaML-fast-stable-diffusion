@@ -19,6 +19,8 @@
     "api:dev": "python main.py --log-level DEBUG",
     "frontend:dev": "cd frontend && yarn dev",
     "frontend:build": "cd frontend && yarn build",
-    "format": "black ."
+    "format": "black .",
+    "installer:build-linux": "cd installer && cargo build --release --target=x86_64-unknown-linux-gnu",
+    "installer:build-windows": "cd installer && cargo build --release --target=x86_64-pc-windows-msvc"
   }
 }

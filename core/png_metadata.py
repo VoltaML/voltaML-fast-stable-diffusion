@@ -1,6 +1,7 @@
 import copy
 import logging
 from dataclasses import fields
+from io import BytesIO
 from os import makedirs
 from pathlib import Path
 from typing import List, Union
@@ -75,7 +76,7 @@ def save_images(
         SDUpscaleQueueEntry,
     ],
 ):
-    "Save image to disk"
+    "Save image to disk or r2"
 
     if isinstance(
         job,
@@ -111,12 +112,27 @@ def save_images(
         else:
             folder = "img2img"
 
-        path = Path(f"data/outputs/{folder}/{prompt}/{job.data.id}-{i}.png")
-        makedirs(path.parent, exist_ok=True)
-
+        filename = f"{job.data.id}-{i}.png"
         metadata = create_metadata(job, i)
 
-        logger.debug(f"Saving image to {path.as_posix()}")
+        if job.save_image == "r2":
+            # Save into Cloudflare R2 bucket
+            from core.shared_dependent import r2
 
-        with path.open("wb") as f:
-            image.save(f, pnginfo=metadata)
+            assert r2 is not None, "R2 is not configured, enable debug mode to see why"
+
+            image_bytes = BytesIO()
+            image.save(image_bytes, pnginfo=metadata, format="png")
+
+            url = r2.upload_file(file=image_bytes, filename=filename)
+            logger.debug(f"Saved image to R2 as {filename}")
+            return url
+        else:
+            # Save locally
+            path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
+            makedirs(path.parent, exist_ok=True)
+
+            logger.debug(f"Saving image to {path.as_posix()}")
+
+            with path.open("wb") as f:
+                image.save(f, pnginfo=metadata)

@@ -27,7 +27,7 @@ class Job:
     data: Any
     model: str
     websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
+    save_image: Literal[True, False, "r2"] = True
 
 
 class SupportedModel(Enum):

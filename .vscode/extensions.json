@@ -9,6 +9,7 @@
 		"esbenp.prettier-vscode",
 		"ms-python.vscode-pylance",
 		"vue.volar",
-		"christian-kohler.path-intellisense"
+		"christian-kohler.path-intellisense",
+		"rust-lang.rust-analyzer"
 	]
 }
