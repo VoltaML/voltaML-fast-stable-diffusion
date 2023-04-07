@@ -51,11 +51,12 @@ def is_onnxconverter_available():
 def is_onnx_available():
     "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
     try:
-        import onnx  # pylint: disable=unused-import
-        from onnxruntime.quantization import (
-            quantize_dynamic,
+        from onnxruntime.quantization import (  # pylint: disable=unused-import
             QuantType,
-        )  # pylint: disable=unused-import
+            quantize_dynamic,
+        )
+
+        import onnx  # pylint: disable=unused-import
 
         return True
     except ImportError:

@@ -15,7 +15,7 @@ from diffusers import (
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate"]
+InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate", "ONNX"]
 
 Backend = Literal["PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA"]
 
@@ -214,7 +214,7 @@ class SDUpscaleQueueEntry(Job):
 
 
 @dataclass
-class BuildRequest:
+class TRTBuildRequest:
     "Dataclass for requesting a build of an engine"
 
     model_id: str
@@ -233,6 +233,25 @@ class BuildRequest:
     force_onnx_export: bool = False
     force_onnx_optimize: bool = False
     onnx_minimal_optimization: bool = False
+
+
+@dataclass
+class QuantizationDict:
+    "Dataclass for quantization parameters"
+
+    vae_encoder: Literal[True, False, None] = None
+    vae_decoder: Literal[True, False, None] = None
+    unet: Literal[True, False, None] = None
+    text_encoder: Literal[True, False, None] = None
+
+
+@dataclass
+class ONNXBuildRequest:
+    "Dataclass for requesting a build of an ONNX engine"
+
+    model_id: str
+    simplify_unet: bool = False
+    quant_dict: QuantizationDict = field(default_factory=QuantizationDict)
 
 
 @dataclass

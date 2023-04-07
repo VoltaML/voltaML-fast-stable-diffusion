@@ -17,9 +17,7 @@ class CachedModelList:
     def __init__(self):
         self.pytorch_path = Path(DIFFUSERS_CACHE)
         self.checkpoint_converted_path = Path("data/models")
-        self.tensorrt_engine_path = Path(
-            os.environ.get("TENSORRT_ENGINE_PATH", "engine")
-        )
+        self.tensorrt_engine_path = Path("data/tensorrt")
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
 
@@ -309,7 +307,7 @@ def get_full_model_path(
         return repo_path
 
     # 2. Check if model is stored in local storage
-    alt_path = Path("data/") / model_folder / repo_id
+    alt_path = Path("data") / model_folder / repo_id
     if alt_path.exists() or force:
         logger.debug(f"Found model in {alt_path}")
         return alt_path

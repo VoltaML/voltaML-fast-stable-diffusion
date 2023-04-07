@@ -21,19 +21,21 @@ from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
-    BuildRequest,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
     Job,
+    ONNXBuildRequest,
     RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
+    TRTBuildRequest,
     Txt2ImgQueueEntry,
 )
 from core.utils import run_in_thread_async
 
 if TYPE_CHECKING:
+    from core.inference.onnx_sd import OnnxStableDiffusion
     from core.inference.tensorrt import TensorRTModel
 
 logger = logging.getLogger(__name__)
@@ -53,6 +55,7 @@ class GPU:
                 "AITemplateStableDiffusion",
                 "RealESRGAN",
                 PyTorchSDUpscaler,
+                "OnnxStableDiffusion",
             ],
         ] = {}
 
@@ -87,6 +90,7 @@ class GPU:
                 AITemplateStableDiffusion,
                 RealESRGAN,
                 PyTorchSDUpscaler,
+                "OnnxStableDiffusion",
             ] = self.loaded_models[job.model]
 
             if not isinstance(job, RealESRGANQueueEntry):
@@ -115,6 +119,14 @@ class GPU:
                 return images
             else:
                 assert not isinstance(job, RealESRGANQueueEntry)
+
+                from core.inference.onnx_sd import OnnxStableDiffusion
+
+                if isinstance(model, OnnxStableDiffusion):
+                    logger.debug("Generating with ONNX")
+                    images: List[Image.Image] = model.generate(job)
+                    self.memory_cleanup()
+                    return images
 
                 raise NotImplementedError("TensorRT is not supported at the moment")
 
@@ -274,7 +286,24 @@ class GPU:
                     device=config.api.device,
                 )
                 self.loaded_models[model] = pt_model
+            elif backend == "ONNX":
+                logger.debug("Selecting ONNX")
 
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "info",
+                        "ONNX",
+                        f"Loading {model} into memory, this may take a while",
+                    )
+                )
+
+                from core.inference.onnx_sd import OnnxStableDiffusion
+
+                pt_model = OnnxStableDiffusion(
+                    model_id=model,
+                    use_fp32=config.api.use_fp32,
+                )
+                self.loaded_models[model] = pt_model
             else:
                 logger.debug("Selecting PyTorch")
 
@@ -365,7 +394,7 @@ class GPU:
 
         self.memory_cleanup()
 
-    async def build_trt_engine(self, request: BuildRequest):
+    async def build_trt_engine(self, request: TRTBuildRequest):
         "Build a TensorRT engine from a request"
 
         from .inference.tensorrt import TensorRTModel
@@ -410,6 +439,33 @@ class GPU:
         logger.debug(f"AI Template built for {request.model_id}.")
 
         logger.info("AITemplate engine successfully built")
+
+    async def build_onnx_engine(self, request: ONNXBuildRequest):
+        "Convert a model to a ONNX engine"
+
+        from core.inference.onnx_sd import OnnxStableDiffusion
+
+        logger.debug(f"Building ONNX for {request.model_id}...")
+
+        def onnx_build_thread_call():
+            pipe = OnnxStableDiffusion(
+                model_id=request.model_id,
+                use_fp32=config.api.use_fp32,
+                autoload=False,
+            )
+
+            pipe.convert_pytorch_to_onnx(
+                device=config.api.device,
+                model_id=request.model_id,
+                simplify_unet=request.simplify_unet,
+                target=request.quant_dict,
+            )
+
+            self.memory_cleanup()
+
+        await run_in_thread_async(func=onnx_build_thread_call)
+
+        logger.info(f"ONNX engine successfully built for {request.model_id}.")
 
     async def convert_model(self, model: str, safetensors: bool = False):
         "Convert a model to FP16"

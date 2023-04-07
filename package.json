@@ -21,6 +21,7 @@
     "frontend:build": "cd frontend && yarn build",
     "format": "black .",
     "installer:build-linux": "cd installer && cargo build --release --target=x86_64-unknown-linux-gnu",
-    "installer:build-windows": "cd installer && cargo build --release --target=x86_64-pc-windows-msvc"
+    "installer:build-windows": "cd installer && cargo build --release --target=x86_64-pc-windows-msvc",
+    "lines": "tokei . -e frontend/dist -e venv -e node_modules -e installer/target -e frontend/node_modules -e docs/.vitepress/dist -e docs/.vitepress/cache"
   }
 }

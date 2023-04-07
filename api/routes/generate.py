@@ -8,13 +8,14 @@ from core.errors import ModelNotLoadedError
 from core.shared_dependent import gpu
 from core.types import (
     AITemplateBuildRequest,
-    BuildRequest,
     ControlNetQueueEntry,
     ConvertModelRequest,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
+    ONNXBuildRequest,
     RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
+    TRTBuildRequest,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_bytes_to_image_stream, convert_image_to_base64
@@ -162,7 +163,7 @@ async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
 
 
 @router.post("/generate-engine")
-async def generate_engine(request: BuildRequest):
+async def generate_engine(request: TRTBuildRequest):
     "Generate a TensorRT engine from a local model"
 
     await gpu.build_trt_engine(request)
@@ -175,6 +176,15 @@ async def generate_aitemplate(request: AITemplateBuildRequest):
     "Generate a TensorRT engine from a local model"
 
     await gpu.build_aitemplate_engine(request)
+
+    return {"message": "Success"}
+
+
+@router.post("/generate-onnx")
+async def generate_onnx(request: ONNXBuildRequest):
+    "Generate a TensorRT engine from a local model"
+
+    await gpu.build_onnx_engine(request)
 
     return {"message": "Success"}
 

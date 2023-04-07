@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import warnings
+from dataclasses import fields
 from pathlib import Path
 from time import time
 from typing import Dict, List, Optional, Tuple, Type, TypeVar, Union
@@ -47,7 +48,13 @@ from core.inference_callbacks import (
     inpaint_callback,
     txt2img_callback,
 )
-from core.types import Img2ImgQueueEntry, InpaintQueueEntry, Job, Txt2ImgQueueEntry
+from core.types import (
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Job,
+    QuantizationDict,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image
 
 logger = logging.getLogger(__name__)
@@ -233,7 +240,7 @@ class OnnxStableDiffusion(InferenceModel):
                             str(file), providers=providers, sess_options=sess_options
                         )
 
-            folder = get_full_model_path(self.model_id, model_folder="onnx", force=True)
+            folder = Path("data/onnx").joinpath(self.model_id)
 
             if (folder / "providers.txt").exists():
                 providers = _load(folder / "providers.txt")
@@ -350,7 +357,7 @@ class OnnxStableDiffusion(InferenceModel):
     def convert_pytorch_to_onnx(
         self,
         model_id: str,
-        target: Optional[Dict[str, Optional[bool]]] = None,
+        target: Optional[QuantizationDict] = None,
         device: Union[torch.device, str] = "cuda",
         simplify_unet: bool = False,
     ):
@@ -369,12 +376,9 @@ class OnnxStableDiffusion(InferenceModel):
         """
 
         if target is None:
-            target = {
-                "vae_encoder": None,
-                "vae_decoder": None,
-                "unet": None,
-                "text_encoder": None,
-            }
+            target = QuantizationDict(
+                vae_encoder=None, vae_decoder=None, unet=None, text_encoder=None
+            )
 
         def onnx_export(
             model,
@@ -453,10 +457,9 @@ class OnnxStableDiffusion(InferenceModel):
                 if not quantize_success and not signed and not self.use_fp32:
                     logger.info(f"Starting FP16 conversion on {str(output_path)}")
                     t = time()
+                    import onnx
                     import onnxruntime as ort  # pylint: disable=import-error
                     from onnxconverter_common import float16  # pylint: disable=E0401
-
-                    import onnx
 
                     model = onnx.load(str(output_path))  # pylint: disable=no-member
                     model = float16.convert_float_to_float16(model, keep_io_types=True)
@@ -476,9 +479,8 @@ class OnnxStableDiffusion(InferenceModel):
                 if is_onnxsim_available():
                     logger.info("Starting simplification process on %s", output_path)
                     try:
-                        import onnxsim as onx  # pylint: disable=import-error
-
                         import onnx  # pylint: disable=import-self
+                        import onnxsim as onx  # pylint: disable=import-error
 
                         t = time()
                         model = onnx.load(str(output_path))  # pylint: disable=no-member
@@ -586,7 +588,7 @@ class OnnxStableDiffusion(InferenceModel):
                 output_names=["last_hidden_state", "pooler_output"],
                 dynamic_axes={"input_ids": {0: "batch", 1: "sequence"}},
                 opset=opset,
-                signed=target["text_encoder"],  # type: ignore
+                signed=target.text_encoder,  # type: ignore
             )
 
             del text_encoder
@@ -658,7 +660,7 @@ class OnnxStableDiffusion(InferenceModel):
                 },
                 opset=opset,
                 simplify=simplify_unet,
-                signed=target["unet"],  # type: ignore
+                signed=target.unet,  # type: ignore
             )
             del unet
             self.memory_cleanup()
@@ -704,7 +706,7 @@ class OnnxStableDiffusion(InferenceModel):
                     "sample": {0: "batch", 1: "channels", 2: "height", 3: "width"}
                 },
                 opset=opset,
-                signed=target["vae_encoder"],  # type: ignore
+                signed=target.vae_encoder,  # type: ignore
             )
 
             vae.forward = vae.decode  # type: ignore
@@ -727,14 +729,15 @@ class OnnxStableDiffusion(InferenceModel):
                     }
                 },
                 opset=opset,
-                signed=target["vae_decoder"],  # type: ignore
+                signed=target.vae_decoder,  # type: ignore
             )
             del vae
             self.memory_cleanup()
 
         opset = 17
         main_folder = get_full_model_path(model_id)
-        output_folder = get_full_model_path(model_id, model_folder="onnx", force=True)
+        model_id_fixed = model_id.replace("/", "--")
+        output_folder = Path(f"data/onnx/{model_id_fixed}")
 
         if is_onnx_available():
             # register aten::scaled_dot_product_attention
@@ -753,7 +756,8 @@ class OnnxStableDiffusion(InferenceModel):
             shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
 
             with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
-                for fn, prov in target.items():
+                for field in fields(target):
+                    fn, prov = field.name, getattr(target, field.name)
                     if fn == "unet":
                         t = (
                             "CPUExecutionProvider"
@@ -1256,4 +1260,7 @@ class OnnxStableDiffusion(InferenceModel):
                     },
                 )
             )
+        else:
+            raise ValueError("Invalid job type for this pipeline")
+
         return total_images
