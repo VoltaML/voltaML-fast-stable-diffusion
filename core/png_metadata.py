@@ -104,6 +104,7 @@ def save_images(
     else:
         prompt = ""
 
+    urls: List[str] = []
     for i, image in enumerate(images):
         if isinstance(job, (RealESRGANQueueEntry, SDUpscaleQueueEntry)):
             folder = "extra"
@@ -123,10 +124,14 @@ def save_images(
 
             image_bytes = BytesIO()
             image.save(image_bytes, pnginfo=metadata, format="png")
+            image_bytes.seek(0)
 
             url = r2.upload_file(file=image_bytes, filename=filename)
-            logger.debug(f"Saved image to R2 as {filename}")
-            return url
+            if url:
+                logger.debug(f"Saved image to R2: {filename}")
+                urls.append(url)
+            else:
+                logger.debug("No provided Dev R2 URL, uploaded but returning empty URL")
         else:
             # Save locally
             path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
@@ -136,3 +141,5 @@ def save_images(
 
             with path.open("wb") as f:
                 image.save(f, pnginfo=metadata)
+
+    return urls

@@ -123,7 +123,10 @@ def install_pytorch():
     else:
         if (
             subprocess.run(  # pylint: disable=subprocess-run-check
-                "rocminfo", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL
+                "rocminfo",
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                shell=True,
             ).returncode
             == 0
         ):

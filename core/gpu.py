@@ -83,7 +83,7 @@ class GPU:
     ):
         "Generate images from the queue"
 
-        def generate_thread_call(job: Job) -> List[Image.Image]:
+        def generate_thread_call(job: Job) -> Union[List[Image.Image], List[str]]:
             model: Union[
                 "TensorRTModel",
                 PyTorchStableDiffusion,
@@ -163,15 +163,19 @@ class GPU:
             start_time = time.time()
 
             try:
-                images: Optional[List[Image.Image]]
-                images = await run_in_thread_async(
+                generated_images: Optional[List[Image.Image]]
+                generated_images = await run_in_thread_async(
                     func=generate_thread_call, args=(job,)
                 )
 
-                assert images is not None
+                assert generated_images is not None
 
+                images = generated_images
                 if job.save_image:
-                    save_images(images, job)
+                    out = save_images(generated_images, job)
+                    if out:
+                        images = out
+
             except Exception as err:  # pylint: disable=broad-except
                 self.queue.mark_finished()
                 raise err

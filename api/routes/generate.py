@@ -1,5 +1,5 @@
 import logging
-from typing import List
+from typing import List, Union
 
 from fastapi import APIRouter, HTTPException
 from PIL import Image
@@ -29,7 +29,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
     "Generate images from text"
 
     try:
-        images: List[Image.Image]
+        images: Union[List[Image.Image], List[str]]
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
@@ -37,10 +37,21 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    return {
-        "time": time,
-        "images": [convert_image_to_base64(i) for i in images],
-    }
+    if len(images) == 0:
+        return {
+            "time": time,
+            "images": [],
+        }
+    elif isinstance(images[0], str):
+        return {
+            "time": time,
+            "images": images,
+        }
+    else:
+        return {
+            "time": time,
+            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
+        }
 
 
 @router.post("/img2img")
@@ -52,7 +63,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
     job.data.image = convert_bytes_to_image_stream(data)
 
     try:
-        images: List[Image.Image]
+        images: Union[List[Image.Image], List[str]]
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
@@ -60,10 +71,21 @@ async def img2img_job(job: Img2ImgQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    return {
-        "time": time,
-        "images": [convert_image_to_base64(i) for i in images],
-    }
+    if len(images) == 0:
+        return {
+            "time": time,
+            "images": [],
+        }
+    elif isinstance(images[0], str):
+        return {
+            "time": time,
+            "images": images,
+        }
+    else:
+        return {
+            "time": time,
+            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
+        }
 
 
 @router.post("/inpainting")
@@ -79,7 +101,7 @@ async def inpaint_job(job: InpaintQueueEntry):
     job.data.mask_image = convert_bytes_to_image_stream(mask_bytes)
 
     try:
-        images: List[Image.Image]
+        images: Union[List[Image.Image], List[str]]
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
@@ -87,10 +109,21 @@ async def inpaint_job(job: InpaintQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    return {
-        "time": time,
-        "images": [convert_image_to_base64(i) for i in images],
-    }
+    if len(images) == 0:
+        return {
+            "time": time,
+            "images": [],
+        }
+    elif isinstance(images[0], str):
+        return {
+            "time": time,
+            "images": images,
+        }
+    else:
+        return {
+            "time": time,
+            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
+        }
 
 
 @router.post("/controlnet")
@@ -102,7 +135,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
     job.data.image = convert_bytes_to_image_stream(image_bytes)
 
     try:
-        images: List[Image.Image]
+        images: Union[List[Image.Image], List[str]]
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
@@ -110,10 +143,21 @@ async def controlnet_job(job: ControlNetQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    return {
-        "time": time,
-        "images": [convert_image_to_base64(i) for i in images],
-    }
+    if len(images) == 0:
+        return {
+            "time": time,
+            "images": [],
+        }
+    elif isinstance(images[0], str):
+        return {
+            "time": time,
+            "images": images,
+        }
+    else:
+        return {
+            "time": time,
+            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
+        }
 
 
 @router.post("/sd-upscale")
@@ -125,7 +169,7 @@ async def sd_upscale_job(job: SDUpscaleQueueEntry):
     job.data.image = convert_bytes_to_image_stream(image_bytes)
 
     try:
-        images: List[Image.Image]
+        images: Union[List[Image.Image], List[str]]
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
@@ -133,10 +177,21 @@ async def sd_upscale_job(job: SDUpscaleQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    return {
-        "time": time,
-        "images": [convert_image_to_base64(i) for i in images],
-    }
+    if len(images) == 0:
+        return {
+            "time": time,
+            "images": [],
+        }
+    elif isinstance(images[0], str):
+        return {
+            "time": time,
+            "images": images,
+        }
+    else:
+        return {
+            "time": time,
+            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
+        }
 
 
 @router.post("/realesrgan-upscale")
@@ -148,7 +203,7 @@ async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
     job.data.image = convert_bytes_to_image_stream(image_bytes)
 
     try:
-        images: List[Image.Image]
+        images: Union[List[Image.Image], List[str]]
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
@@ -156,10 +211,21 @@ async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    return {
-        "time": time,
-        "images": [convert_image_to_base64(i) for i in images],
-    }
+    if len(images) == 0:
+        return {
+            "time": time,
+            "images": [],
+        }
+    elif isinstance(images[0], str):
+        return {
+            "time": time,
+            "images": images,
+        }
+    else:
+        return {
+            "time": time,
+            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
+        }
 
 
 @router.post("/generate-engine")
