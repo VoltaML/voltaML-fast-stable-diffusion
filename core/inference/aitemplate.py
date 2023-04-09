@@ -15,9 +15,9 @@ from api import websocket_manager
 from api.websockets.data import Data
 from core.config import config
 from core.controlnet import image_to_controlnet_input
-from core.files import get_full_model_path
 from core.functions import init_ait_module
 from core.inference.base_model import InferenceModel
+from core.inference.functions import load_pytorch_pipeline
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
@@ -83,16 +83,25 @@ class AITemplateStableDiffusion(InferenceModel):
     def load(self):
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
-        pipe = StableDiffusionAITPipeline.from_pretrained(
-            pretrained_model_name_or_path=str(get_full_model_path(self.model_id)),
-            torch_dtype=torch.float16,
+        pipe = load_pytorch_pipeline(
+            self.model_id,
+            device=self.device,
+            is_for_aitemplate=True,
+        )
+
+        pipe = StableDiffusionAITPipeline(
+            vae=pipe.vae,  # type: ignore
+            unet=pipe.unet,  # type: ignore
+            text_encoder=pipe.text_encoder,  # type: ignore
+            tokenizer=pipe.tokenizer,  # type: ignore
+            scheduler=pipe.scheduler,  # type: ignore
             directory=self.directory,
             clip_ait_exe=None,
             unet_ait_exe=None,
             vae_ait_exe=None,
-            safety_checker=None,
             requires_safety_checker=False,
-            feature_extractor=None,
+            safety_checker=None,  # type: ignore
+            feature_extractor=None,  # type: ignore
         )
         assert isinstance(pipe, StableDiffusionAITPipeline)
 

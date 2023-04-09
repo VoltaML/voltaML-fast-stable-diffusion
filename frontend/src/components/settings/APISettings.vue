@@ -55,21 +55,6 @@
         v-model:value="settings.defaultSettings.api.attention_slicing"
       >
       </NSelect>
-
-      <a
-        href="https://voltaml.github.io/voltaML-fast-stable-diffusion/experimental/optimization"
-        style="
-          height: 100%;
-          align-self: center;
-          display: flex;
-          align-items: center;
-          margin-left: 10px;
-        "
-      >
-        <NIcon>
-          <Help />
-        </NIcon>
-      </a>
     </NFormItem>
 
     <NFormItem label="Channels Last">
@@ -116,7 +101,7 @@
           },
           {
             value: 'cuda',
-            label: 'CUDA (NVIDIA)',
+            label: 'CUDA (NVIDIA) or ROCm (AMD)',
           },
           {
             value: 'mps',
@@ -125,10 +110,6 @@
           {
             value: 'directml',
             label: 'DirectML (NOT IMPLEMENTED)',
-          },
-          {
-            value: 'cuda',
-            label: 'ROCm (AMD)',
           },
         ]"
         v-model:value="settings.defaultSettings.api.device_type"
@@ -146,15 +127,7 @@
 </template>
 
 <script lang="ts" setup>
-import { Help } from "@vicons/ionicons5";
-import {
-  NForm,
-  NFormItem,
-  NIcon,
-  NInputNumber,
-  NSelect,
-  NSwitch,
-} from "naive-ui";
+import { NForm, NFormItem, NInputNumber, NSelect, NSwitch } from "naive-ui";
 import { useSettings } from "../../store/settings";
 
 const settings = useSettings();
