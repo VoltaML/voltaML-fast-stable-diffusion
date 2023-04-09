@@ -7,10 +7,11 @@ from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 )
-from diffusers.models.attention_processor import AttnProcessor2_0
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from diffusers.utils import is_accelerate_available
 from diffusers.utils.import_utils import is_xformers_available
+
+from packaging import version
 
 from core.config import config
 from core.files import get_full_model_path
@@ -48,7 +49,8 @@ def optimize_model(
             logger.info(f"Optimization: Enabled attention slicing ({slicing})")
 
     # Change the order of the channels to be more efficient for the GPU
-    if config.api.channels_last:
+    # DirectML only supports contiguous memory format
+    if config.api.channels_last and config.api.device != "directml":
         pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
         pipe.vae.to(memory_format=torch.channels_last)  # type: ignore
         logger.info("Optimization: Enabled channels_last memory format")
@@ -61,58 +63,66 @@ def optimize_model(
             logger.info("Optimization: Model successfully traced")
         pipe.enable_xformers_memory_efficient_attention()
         logger.info("Optimization: Enabled xFormers memory efficient attention")
-    else:
+    elif version.parse(torch.__version__) >= version.parse("2.0.0"):
+        from diffusers.models.attention_processor import AttnProcessor2_0
         pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
         logger.info("Optimization: Enabled SDPA, because xformers is not installed")
+    else:
+        # This should only be the case if pytorch_directml is to be used
+        # This isn't a hot-spot either, so it's fine (imo) to put in safety nets.
+        from diffusers.models.attention_processor import AttnProcessor
+        pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
+        logger.info("Optimization: Pytorch STILL not newer than 2.0.0, using Cross-Attention")
 
     offload = (
         config.api.offload
         if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
         else None
     )
-    if offload == "model":
-        # Offload to CPU
+    if config.api.device != "directml":
+        if offload == "model":
+            # Offload to CPU
 
-        pipe.vae.to("cpu")  # type: ignore
-        pipe.unet.to("cpu")  # type: ignore
-        pipe.unet.register_forward_pre_hook(send_to_gpu)  # type: ignore
-        pipe.vae.register_forward_pre_hook(send_to_gpu)  # type: ignore
-        setattr(pipe.vae, "main_device", True)  # type: ignore
-        setattr(pipe.unet, "main_device", True)  # type: ignore
-        logger.info("Optimization: Offloaded VAE & UNet to CPU.")
+            pipe.vae.to("cpu")  # type: ignore
+            pipe.unet.to("cpu")  # type: ignore
+            pipe.unet.register_forward_pre_hook(send_to_gpu)  # type: ignore
+            pipe.vae.register_forward_pre_hook(send_to_gpu)  # type: ignore
+            setattr(pipe.vae, "main_device", True)  # type: ignore
+            setattr(pipe.unet, "main_device", True)  # type: ignore
+            logger.info("Optimization: Offloaded VAE & UNet to CPU.")
 
-    elif offload == "module":
-        # Enable sequential offload
+        elif offload == "module":
+            # Enable sequential offload
 
-        if is_accelerate_available():
-            from accelerate import cpu_offload, disk_offload
+            if is_accelerate_available():
+                from accelerate import cpu_offload, disk_offload
 
-            for m in [
-                pipe.vae,  # type: ignore
-                pipe.safety_checker,  # type: ignore
-                pipe.unet,  # type: ignore
-            ]:
-                if m is not None:
-                    if USE_DISK_OFFLOAD:
-                        # If LOW_RAM toggle set (idk why anyone would do this, but it's nice to support stuff
-                        # like this in case anyone wants to try running this on fuck knows what)
-                        # then offload to disk.
-                        disk_offload(
-                            m,
-                            str(
-                                get_full_model_path("offload-dir", model_folder="temp")
-                            ),
-                            device,
-                            offload_buffers=True,
-                        )
-                    else:
-                        cpu_offload(m, device, offload_buffers=True)
+                for m in [
+                    pipe.vae,  # type: ignore
+                    pipe.safety_checker,  # type: ignore
+                    pipe.unet,  # type: ignore
+                ]:
+                    if m is not None:
+                        if USE_DISK_OFFLOAD:
+                            # If LOW_RAM toggle set (idk why anyone would do this, but it's nice to support stuff
+                            # like this in case anyone wants to try running this on fuck knows what)
+                            # then offload to disk.
+                            disk_offload(
+                                m,
+                                str(
+                                    get_full_model_path("offload-dir", model_folder="temp")
+                                ),
+                                device,
+                                offload_buffers=True,
+                            )
+                        else:
+                            cpu_offload(m, device, offload_buffers=True)
 
-            logger.info("Optimization: Enabled sequential offload")
-        else:
-            logger.warning(
-                "Optimization: Sequential offload is not available, because accelerate is not installed"
-            )
+                logger.info("Optimization: Enabled sequential offload")
+            else:
+                logger.warning(
+                    "Optimization: Sequential offload is not available, because accelerate is not installed"
+                )
 
     if config.api.vae_slicing:
         if not (
@@ -125,6 +135,14 @@ def optimize_model(
             logger.debug(
                 "Optimization: VAE slicing is not available for upscale models"
             )
+
+    if config.api.use_tomesd:
+        try:
+            import tomesd
+            tomesd.apply_patch(pipe.unet, ratio=config.api.tomesd_ratio, max_downsample=config.api.tomesd_downsample_layers)  # type: ignore
+            logger.info("Optimization: Patched UNet for ToMeSD")
+        except ImportError:
+            logger.info("Optimization: ToMeSD patch failed, despite having it enabled. Please check installation")
 
     logger.info("Optimization complete")
 
