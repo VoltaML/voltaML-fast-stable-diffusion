@@ -36343,7 +36343,7 @@ function extractChangingRecords(to, from) {
   return [leavingRecords, updatingRecords, enteringRecords];
 }
 const _hoisted_1$4 = { class: "navbar" };
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
   setup(__props) {
     function renderIcon(icon) {
@@ -36464,7 +36464,8 @@ const useState = defineStore("state", () => {
     },
     img2img: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      tab: "Image to Image"
     },
     inpainting: {
       images: [],
@@ -36482,9 +36483,10 @@ const useState = defineStore("state", () => {
       images: [],
       currentImage: ""
     },
-    realesrgan: {
+    extra: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      tab: "Upscale"
     },
     current_step: 0,
     total_steps: 0,
@@ -36507,7 +36509,7 @@ const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "1
 const _hoisted_3$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
 const _hoisted_5$2 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
   setup(__props) {
     const global2 = useState();
@@ -37347,7 +37349,7 @@ const _hoisted_3$1 = { style: { "display": "inline-flex" } };
 const _hoisted_4$1 = { style: { "display": "inline-flex" } };
 const _hoisted_5$1 = { class: "progress-container" };
 const _hoisted_6$1 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     const websocketState = useWebsocket();
@@ -37904,14 +37906,14 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-c8e15e08"]]);
-const _sfc_main$4 = {};
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-c8e15e08"]]);
+const _sfc_main$5 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
   return openBlock(), createBlock(_component_RouterView, { class: "view" });
 }
-const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render]]);
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render]]);
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     const overrides = {
@@ -37930,10 +37932,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$7),
+                  createVNode(_sfc_main$8),
                   createVNode(TopBarVue),
                   createVNode(routerContainerVue),
-                  createVNode(_sfc_main$6)
+                  createVNode(_sfc_main$7)
                 ]),
                 _: 1
               })
@@ -37991,7 +37993,7 @@ const __vitePreload = function preload(baseModule, deps, importerUrl) {
   })).then(() => baseModule());
 };
 const _2img = "";
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "GenerateSection",
   props: {
     generate: {
@@ -38067,7 +38069,7 @@ const _hoisted_2$1 = {
   key: 0,
   style: { "height": "100px", "margin-top": "12px" }
 };
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ImageOutput",
   props: {
     currentImage: {
@@ -38129,7 +38131,124 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   }
 });
 const ImageOutput_vue_vue_type_style_index_0_scoped_2d84f5b9_lang = "";
-const ImageOutput = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2d84f5b9"]]);
+const ImageOutput = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2d84f5b9"]]);
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "SendOutputTo",
+  props: {
+    output: {
+      type: String,
+      required: true
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const conf = useSettings();
+    const state = useState();
+    async function toImg2Img() {
+      conf.data.settings.img2img.image = props.output;
+      state.state.img2img.tab = "Image to Image";
+      await router.push("/image2image");
+    }
+    async function toControlNet() {
+      conf.data.settings.controlnet.image = props.output;
+      state.state.img2img.tab = "ControlNet";
+      await router.push("/image2image");
+    }
+    async function toInpainting() {
+      conf.data.settings.inpainting.image = props.output;
+      state.state.img2img.tab = "Inpainting";
+      await router.push("/image2image");
+    }
+    async function toUpscale() {
+      conf.data.settings.realesrgan.image = props.output;
+      state.state.extra.tab = "Upscale";
+      await router.push("/extra");
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), {
+        style: { "margin": "12px 0" },
+        title: "Send To"
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NGrid), {
+            cols: "4",
+            "x-gap": "4",
+            "y-gap": "4"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NButton), {
+                    type: "default",
+                    onClick: toImg2Img,
+                    style: { "width": "100%" },
+                    ghost: ""
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode("Img2Img")
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NButton), {
+                    type: "default",
+                    onClick: toControlNet,
+                    style: { "width": "100%" },
+                    ghost: ""
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode("ControlNet")
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NButton), {
+                    type: "default",
+                    onClick: toInpainting,
+                    style: { "width": "100%" },
+                    ghost: ""
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode("Inpainting")
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NButton), {
+                    type: "default",
+                    onClick: toUpscale,
+                    style: { "width": "100%" },
+                    ghost: ""
+                  }, {
+                    default: withCtx(() => [
+                      createTextVNode("Upscale")
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
 let getRandomValues;
 const rnds8 = new Uint8Array(16);
 function rng() {
@@ -38497,11 +38616,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$2, { generate }),
+                createVNode(_sfc_main$3, { generate }),
                 createVNode(ImageOutput, {
                   "current-image": unref(global2).state.txt2img.currentImage,
                   images: unref(global2).state.txt2img.images
-                }, null, 8, ["current-image", "images"])
+                }, null, 8, ["current-image", "images"]),
+                createVNode(_sfc_main$1, {
+                  output: unref(global2).state.txt2img.currentImage
+                }, null, 8, ["output"])
               ]),
               _: 1
             })
@@ -38523,7 +38645,7 @@ const router = createRouter({
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
@@ -38569,127 +38691,129 @@ const router = createRouter({
 });
 const main = "";
 const pinia = createPinia();
-const app = createApp(_sfc_main$3);
+const app = createApp(_sfc_main$4);
 app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  useTheme as $,
-  _export_sfc as A,
-  h as B,
-  ref as C,
-  NButton as D,
-  NIcon as E,
-  createBlock as F,
-  NTabPane as G,
-  NTabs as H,
+  inject as $,
+  popScopeId as A,
+  _export_sfc as B,
+  resolveComponent as C,
+  h as D,
+  ref as E,
+  NButton as F,
+  NIcon as G,
+  createBlock as H,
   ImageOutput as I,
-  useConfig as J,
-  useFormItem as K,
-  useMergedState as L,
-  provide as M,
+  NTabPane as J,
+  NTabs as K,
+  useConfig as L,
+  useFormItem as M,
   NGi as N,
-  toRef as O,
-  createInjectionKey as P,
-  call as Q,
-  c$1 as R,
-  cB as S,
-  cE as T,
-  cM as U,
-  iconSwitchTransition as V,
-  insideModal as W,
-  insidePopover as X,
-  inject as Y,
-  useMemo as Z,
-  _sfc_main$2 as _,
+  useMergedState as O,
+  provide as P,
+  toRef as Q,
+  createInjectionKey as R,
+  call as S,
+  c$1 as T,
+  cB as U,
+  cE as V,
+  cM as W,
+  iconSwitchTransition as X,
+  insideModal as Y,
+  insidePopover as Z,
+  _sfc_main$3 as _,
   createBaseVNode as a,
-  ErrorIcon$1 as a$,
-  checkboxLight$1 as a0,
-  useRtl as a1,
-  createKey as a2,
-  useThemeClass as a3,
-  createId as a4,
-  NIconSwitchTransition as a5,
-  on as a6,
-  popselectLight$1 as a7,
-  watch as a8,
-  NInternalSelectMenu as a9,
-  depx as aA,
-  formatLength as aB,
-  NScrollbar$1 as aC,
-  onBeforeUnmount as aD,
-  off as aE,
-  ChevronDownIcon as aF,
-  NDropdown as aG,
-  pxfy as aH,
-  get as aI,
-  NBaseLoading as aJ,
-  ChevronRightIcon as aK,
-  onUnmounted as aL,
-  VVirtualList as aM,
-  VResizeObserver as aN,
-  warn$2 as aO,
-  cssrAnchorMetaName as aP,
-  repeat as aQ,
-  NEmpty as aR,
-  beforeNextFrameOnce as aS,
-  fadeInScaleUpTransition as aT,
-  Transition as aU,
-  dataTableLight$1 as aV,
-  reactive as aW,
-  NTag as aX,
-  stepsLight$1 as aY,
-  throwError as aZ,
-  FinishedIcon as a_,
-  keysOf as aa,
-  createTreeMate as ab,
-  happensIn as ac,
-  nextTick as ad,
-  createTmOptions as ae,
-  keep as af,
-  createRefSetter as ag,
-  mergeEventHandlers as ah,
-  omit as ai,
-  NPopover as aj,
-  popoverBaseProps as ak,
-  cNotM as al,
-  useLocale as am,
-  watchEffect as an,
-  resolveSlot as ao,
-  Fragment as ap,
-  NBaseIcon as aq,
-  useAdjustedTo as ar,
-  paginationLight$1 as as,
-  ellipsisLight$1 as at,
-  onDeactivated as au,
-  mergeProps as av,
-  radioLight$1 as aw,
-  resolveWrappedSlot as ax,
-  flatten$2 as ay,
-  getSlot$1 as az,
+  throwError as a$,
+  useMemo as a0,
+  useTheme as a1,
+  checkboxLight$1 as a2,
+  useRtl as a3,
+  createKey as a4,
+  useThemeClass as a5,
+  createId as a6,
+  NIconSwitchTransition as a7,
+  on as a8,
+  popselectLight$1 as a9,
+  flatten$2 as aA,
+  getSlot$1 as aB,
+  depx as aC,
+  formatLength as aD,
+  NScrollbar$1 as aE,
+  onBeforeUnmount as aF,
+  off as aG,
+  ChevronDownIcon as aH,
+  NDropdown as aI,
+  pxfy as aJ,
+  get as aK,
+  NBaseLoading as aL,
+  ChevronRightIcon as aM,
+  onUnmounted as aN,
+  VVirtualList as aO,
+  VResizeObserver as aP,
+  warn$2 as aQ,
+  cssrAnchorMetaName as aR,
+  repeat as aS,
+  NEmpty as aT,
+  beforeNextFrameOnce as aU,
+  fadeInScaleUpTransition as aV,
+  Transition as aW,
+  dataTableLight$1 as aX,
+  reactive as aY,
+  NTag as aZ,
+  stepsLight$1 as a_,
+  watch as aa,
+  NInternalSelectMenu as ab,
+  keysOf as ac,
+  createTreeMate as ad,
+  happensIn as ae,
+  nextTick as af,
+  createTmOptions as ag,
+  keep as ah,
+  createRefSetter as ai,
+  mergeEventHandlers as aj,
+  omit as ak,
+  NPopover as al,
+  popoverBaseProps as am,
+  cNotM as an,
+  useLocale as ao,
+  watchEffect as ap,
+  resolveSlot as aq,
+  Fragment as ar,
+  NBaseIcon as as,
+  useAdjustedTo as at,
+  paginationLight$1 as au,
+  ellipsisLight$1 as av,
+  onDeactivated as aw,
+  mergeProps as ax,
+  radioLight$1 as ay,
+  resolveWrappedSlot as az,
   useSettings as b,
-  NModal as b0,
-  InfoIcon as b1,
-  SuccessIcon as b2,
-  WarningIcon as b3,
-  ErrorIcon as b4,
-  resultLight$1 as b5,
-  getCurrentInstance as b6,
-  formLight$1 as b7,
-  commonVariables$m as b8,
-  formItemInjectionKey as b9,
-  onMounted as ba,
-  defaultSettings as bb,
-  commonLight as bc,
-  commonVars$1 as bd,
-  changeColor as be,
-  isSlotEmpty as bf,
-  useCompitable as bg,
-  descriptionsLight$1 as bh,
-  NImage as bi,
-  createCommentVNode as bj,
-  NScrollbar as bk,
-  renderList as bl,
+  FinishedIcon as b0,
+  ErrorIcon$1 as b1,
+  NModal as b2,
+  InfoIcon as b3,
+  SuccessIcon as b4,
+  WarningIcon as b5,
+  ErrorIcon as b6,
+  resultLight$1 as b7,
+  getCurrentInstance as b8,
+  formLight$1 as b9,
+  commonVariables$m as ba,
+  formItemInjectionKey as bb,
+  onMounted as bc,
+  defaultSettings as bd,
+  commonLight as be,
+  commonVars$1 as bf,
+  changeColor as bg,
+  isSlotEmpty as bh,
+  useCompitable as bi,
+  descriptionsLight$1 as bj,
+  NImage as bk,
+  createCommentVNode as bl,
+  NScrollbar as bm,
+  renderList as bn,
   createElementBlock as c,
   defineComponent as d,
   useMessage as e,
@@ -38705,13 +38829,13 @@ export {
   openBlock as o,
   NSlider as p,
   NInputNumber as q,
-  NGrid as r,
-  spaceRegex as s,
+  _sfc_main$1 as r,
+  NGrid as s,
   toDisplayString as t,
   useState as u,
-  serverUrl as v,
+  spaceRegex as v,
   withCtx as w,
-  v4 as x,
-  pushScopeId as y,
-  popScopeId as z
+  serverUrl as x,
+  v4 as y,
+  pushScopeId as z
 };

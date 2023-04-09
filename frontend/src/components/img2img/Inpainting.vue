@@ -316,6 +316,8 @@
           :current-image="global.state.inpainting.currentImage"
           :images="global.state.inpainting.images"
         />
+
+        <SendOutputTo :output="global.state.inpainting.currentImage" />
       </NGi>
     </NGrid>
   </div>

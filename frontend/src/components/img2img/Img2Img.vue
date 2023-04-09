@@ -256,6 +256,8 @@
           :current-image="global.state.img2img.currentImage"
           :images="global.state.img2img.images"
         />
+
+        <SendOutputTo :output="global.state.img2img.currentImage" />
       </NGi>
     </NGrid>
   </div>

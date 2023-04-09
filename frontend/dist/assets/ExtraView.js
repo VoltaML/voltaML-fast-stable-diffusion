@@ -1,6 +1,6 @@
-import { d as defineComponent, u as useState, b as useSettings, e as useMessage, o as openBlock, c as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, D as NButton, l as createTextVNode, i as NCard, j as NSpace, a as createBaseVNode, m as NTooltip, p as NSlider, q as NInputNumber, _ as _sfc_main$2, I as ImageOutput, r as NGrid, v as serverUrl, y as pushScopeId, z as popScopeId, A as _export_sfc, F as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { d as defineComponent, u as useState, b as useSettings, e as useMessage, o as openBlock, c as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, F as NButton, l as createTextVNode, i as NCard, j as NSpace, a as createBaseVNode, m as NTooltip, p as NSlider, q as NInputNumber, _ as _sfc_main$2, I as ImageOutput, s as NGrid, x as serverUrl, z as pushScopeId, A as popScopeId, B as _export_sfc, H as createBlock, J as NTabPane, K as NTabs } from "./index.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-cba9f72b"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-32484a4b"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale Factor", -1));
@@ -54,7 +54,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         global.state.generating = false;
         res.json().then((data) => {
           console.log(data);
-          global.state.realesrgan.images = data.images;
+          global.state.extra.images = data.images;
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;
@@ -131,8 +131,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(_sfc_main$2, { generate }),
                 createVNode(ImageOutput, {
-                  "current-image": unref(global).state.realesrgan.currentImage,
-                  images: unref(global).state.realesrgan.images
+                  "current-image": unref(global).state.extra.currentImage,
+                  images: unref(global).state.extra.images
                 }, null, 8, ["current-image", "images"])
               ]),
               _: 1
@@ -144,15 +144,20 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_cba9f72b_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-cba9f72b"]]);
+const RealESRGAN_vue_vue_type_style_index_0_scoped_32484a4b_lang = "";
+const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-32484a4b"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {
+    const state = useState();
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NTabs), { type: "segment" }, {
+      return openBlock(), createBlock(unref(NTabs), {
+        type: "segment",
+        value: unref(state).state.extra.tab,
+        "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(state).state.extra.tab = $event)
+      }, {
         default: withCtx(() => [
-          createVNode(unref(NTabPane), { name: "Real-ESRGAN" }, {
+          createVNode(unref(NTabPane), { name: "Upscale" }, {
             default: withCtx(() => [
               createVNode(RealESRGAN)
             ]),
@@ -160,7 +165,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           })
         ]),
         _: 1
-      });
+      }, 8, ["value"]);
     };
   }
 });

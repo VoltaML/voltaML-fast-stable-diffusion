@@ -46,8 +46,8 @@
         <GenerateSection :generate="generate" />
 
         <ImageOutput
-          :current-image="global.state.realesrgan.currentImage"
-          :images="global.state.realesrgan.images"
+          :current-image="global.state.extra.currentImage"
+          :images="global.state.extra.images"
         />
       </NGi>
     </NGrid>
@@ -128,7 +128,7 @@ const generate = () => {
       global.state.generating = false;
       res.json().then((data) => {
         console.log(data);
-        global.state.realesrgan.images = data.images;
+        global.state.extra.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;

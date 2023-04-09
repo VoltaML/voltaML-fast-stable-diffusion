@@ -306,6 +306,8 @@
           :current-image="global.state.controlnet.currentImage"
           :images="global.state.controlnet.images"
         />
+
+        <SendOutputTo :output="global.state.controlnet.currentImage" />
       </NGi>
     </NGrid>
   </div>
@@ -316,6 +318,7 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
+import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
 import {

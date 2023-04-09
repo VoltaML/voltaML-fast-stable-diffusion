@@ -35,6 +35,7 @@ export interface StateInterface {
   img2img: {
     currentImage: string;
     images: string[];
+    tab: string;
   };
   inpainting: {
     currentImage: string;
@@ -52,9 +53,10 @@ export interface StateInterface {
     currentImage: string;
     images: string[];
   };
-  realesrgan: {
+  extra: {
     currentImage: string;
     images: string[];
+    tab: string;
   };
   current_step: number;
   total_steps: number;
@@ -87,6 +89,7 @@ export const useState = defineStore("state", () => {
     img2img: {
       images: [],
       currentImage: "",
+      tab: "Image to Image",
     },
     inpainting: {
       images: [],
@@ -104,9 +107,10 @@ export const useState = defineStore("state", () => {
       images: [],
       currentImage: "",
     },
-    realesrgan: {
+    extra: {
       images: [],
       currentImage: "",
+      tab: "Upscale",
     },
     current_step: 0,
     total_steps: 0,

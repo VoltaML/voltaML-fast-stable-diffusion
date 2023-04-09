@@ -1,6 +1,6 @@
-import { d as defineComponent, o as openBlock, c as createElementBlock, a as createBaseVNode, u as useState, b as useSettings, e as useMessage, f as computed, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, l as createTextVNode, t as toDisplayString, m as NTooltip, n as NSelect, p as NSlider, q as NInputNumber, _ as _sfc_main$5, I as ImageOutput, r as NGrid, s as spaceRegex, v as serverUrl, x as v4, y as pushScopeId, z as popScopeId, A as _export_sfc, B as h, C as ref, D as NButton, E as NIcon, F as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { _ as _sfc_main$7 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, o as openBlock, c as createElementBlock, a as createBaseVNode, u as useState, b as useSettings, e as useMessage, f as computed, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, l as createTextVNode, t as toDisplayString, m as NTooltip, n as NSelect, p as NSlider, q as NInputNumber, _ as _sfc_main$5, I as ImageOutput, r as _sfc_main$6, s as NGrid, v as spaceRegex, x as serverUrl, y as v4, z as pushScopeId, A as popScopeId, B as _export_sfc, C as resolveComponent, D as h, E as ref, F as NButton, G as NIcon, H as createBlock, J as NTabPane, K as NTabs } from "./index.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { _ as _sfc_main$6 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
 const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -134,7 +134,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-0a94af4b"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-3d308219"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -562,7 +562,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.controlnet.currentImage,
                   images: unref(global).state.controlnet.images
-                }, null, 8, ["current-image", "images"])
+                }, null, 8, ["current-image", "images"]),
+                createVNode(_sfc_main$6, {
+                  output: unref(global).state.controlnet.currentImage
+                }, null, 8, ["output"])
               ]),
               _: 1
             })
@@ -573,9 +576,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_0a94af4b_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-0a94af4b"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-fb60971b"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_3d308219_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-3d308219"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-342f66c4"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -672,6 +675,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       });
     };
     return (_ctx, _cache) => {
+      const _component_SendOutputTo = resolveComponent("SendOutputTo");
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createVNode(unref(NGrid), {
           cols: "1 850:2",
@@ -946,7 +950,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.img2img.currentImage,
                   images: unref(global).state.img2img.images
-                }, null, 8, ["current-image", "images"])
+                }, null, 8, ["current-image", "images"]),
+                createVNode(_component_SendOutputTo, {
+                  output: unref(global).state.img2img.currentImage
+                }, null, 8, ["output"])
               ]),
               _: 1
             })
@@ -957,8 +964,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_fb60971b_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-fb60971b"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_342f66c4_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-342f66c4"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1534,7 +1541,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-a65bf882"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-841fa800"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1711,6 +1718,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     }
     return (_ctx, _cache) => {
+      const _component_SendOutputTo = resolveComponent("SendOutputTo");
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NGrid), {
           cols: "1 850:2",
@@ -2080,7 +2088,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 createVNode(ImageOutput, {
                   "current-image": unref(global).state.inpainting.currentImage,
                   images: unref(global).state.inpainting.images
-                }, null, 8, ["current-image", "images"])
+                }, null, 8, ["current-image", "images"]),
+                createVNode(_component_SendOutputTo, {
+                  output: unref(global).state.inpainting.currentImage
+                }, null, 8, ["output"])
               ]),
               _: 1
             })
@@ -2091,8 +2102,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_a65bf882_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-a65bf882"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_841fa800_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-841fa800"]]);
 const _withScopeId = (n) => (pushScopeId("data-v-2120391e"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
@@ -2491,8 +2502,13 @@ const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {
+    const state = useState();
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NTabs), { type: "segment" }, {
+      return openBlock(), createBlock(unref(NTabs), {
+        type: "segment",
+        value: unref(state).state.img2img.tab,
+        "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(state).state.img2img.tab = $event)
+      }, {
         default: withCtx(() => [
           createVNode(unref(NTabPane), { name: "Image to Image" }, {
             default: withCtx(() => [
@@ -2520,19 +2536,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           createVNode(unref(NTabPane), { name: "Depth to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$6)
+              createVNode(_sfc_main$7)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Pix to Pix" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$6)
+              createVNode(_sfc_main$7)
             ]),
             _: 1
           })
         ]),
         _: 1
-      });
+      }, 8, ["value"]);
     };
   }
 });
