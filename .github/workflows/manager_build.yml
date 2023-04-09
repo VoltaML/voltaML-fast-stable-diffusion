@@ -2,11 +2,11 @@ name: Build Manager
 
 on:
   push:
-    branches: ["main"]
+    branches: ["main", "experimental"]
     paths:
       - "**.rs"
   pull_request:
-    branches: ["main"]
+    branches: ["main", "experimental"]
     paths:
       - "**.rs"
 
