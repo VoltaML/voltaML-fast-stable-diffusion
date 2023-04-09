@@ -1,8 +1,7 @@
-mod targets;
-
+use crate::targets;
 use dialoguer::{theme::ColorfulTheme, Select};
 
-fn main() {
+pub fn install() {
     let items = vec!["Windows", "WSL", "Ubuntu"];
     let response = Select::with_theme(&ColorfulTheme::default())
         .default(0)

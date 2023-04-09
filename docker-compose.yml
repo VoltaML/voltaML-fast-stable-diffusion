@@ -3,13 +3,23 @@ version: "3.7"
 services:
   voltaml:
     image: stax124/volta:latest
-    pull_policy: always
+    pull_policy: always # Pull the latest image - feel free to remove this line if you want to stay on your current version
     environment:
+      # General
       - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN}
       - LOG_LEVEL=${LOG_LEVEL}
+      - EXTRA_ARGS=${EXTRA_ARGS}
+
+      # Extra api keys
       - FASTAPI_ANALYTICS_KEY=${FASTAPI_ANALYTICS_KEY}
       - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN}
-      - EXTRA_ARGS=${EXTRA_ARGS}
+
+      # R2
+      - R2_ENDPOINT=${R2_ENDPOINT}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - R2_DEV_ADDRESS=${R2_DEV_ADDRESS}
     volumes:
       - XXX:/app/data # XXX is the path to the folder where all the outputs will be saved
       - YYY/.cache/huggingface:/root/.cache/huggingface # YYY is path to your home folder (you may need to change the YYY/.cache/huggingface to YYY\.cache\huggingface on Windows)
