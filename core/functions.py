@@ -3,7 +3,7 @@ import logging
 import os
 from pathlib import Path
 from typing import Dict, Literal, List, Union
-import shutil
+from tqdm import tqdm
 
 import requests
 from PIL import Image
@@ -33,7 +33,7 @@ class CivitAiModel:
     download_link: str
 
 
-def fetch_civitai_models(t: Union[List[str], Literal["Checkpoint", "LORA", "Controlnet"]] = "Checkpoint", page: int = 1) -> List[CivitAiModel]:
+def fetch_civitai_models(t: Union[List[str], Literal["Checkpoint", "LORA"]] = "Checkpoint", page: int = 1) -> List[CivitAiModel]:
     params = {}
     if isinstance(t, list):
         params["types[]"] = ",".join(t)
@@ -58,35 +58,28 @@ def fetch_civitai_models(t: Union[List[str], Literal["Checkpoint", "LORA", "Cont
     return f
 
 
-def download_bits(link: Union[CivitAiModel, str]) -> Path:
+def download_model(link: Union[CivitAiModel, str]) -> Path:
+    folder = "models"
     if isinstance(link, CivitAiModel):
         match link.tags[-1]:
             case "checkpoint":
                 folder = "models"
             case "lora":
                 folder = "lora"
-            case "controlnet":
-                folder = "controlnet"
-            case _:
-                folder = "models"
         link = link.download_link
-    else:
-        folder = "models"
-    headers = []
-    with requests.get(link, stream=True) as r: # pylint: disable=missing-timeout
-        headers = r.headers
-        r.close()
-    file_name = headers["Content-Disposition"].split('"')[1]
 
-    file = get_full_model_path(file_name, model_folder=folder, force=True)
-    nh = {}
-    if file.exists():
-        nh["Range"] = f"{file.stat().st_size}-"
-    else:
-        open(file, "x").close() # pylint: disable=unspecified-encoding
-    with requests.get(link, headers=headers, stream=True) as r: # pylint: disable=missing-timeout
-        with open(file, mode="wb") as f:
-            shutil.copyfileobj(r.raw, f)
+    with requests.get(link, stream=True) as r:  # pylint: disable=missing-timeout
+        file_name = r.headers["Content-Disposition"].split('"')[1]
+        file = get_full_model_path(file_name, model_folder=folder, force=True)
+        cl = int(r.headers["Content-Length"])
+        logger.info("Downloading %s", file_name)
+        with tqdm(total=cl, unit="iB", unit_scale=True) as pb:
+            # AFAIK Windows doesn't like big buffers
+            s = (64 if os.name == "nt" else 1024) * 1024
+            with open(file, mode="wb+") as f:
+                for data in r.iter_content(s):
+                    pb.update(len(data))
+                    f.write(data)
     return file
 
 
