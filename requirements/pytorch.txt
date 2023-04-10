@@ -19,4 +19,4 @@ git+https://github.com/patrickvonplaten/controlnet_aux
 realesrgan
 timm
 boto3
-timesd==0.1.2
+tomesd==0.1.2
