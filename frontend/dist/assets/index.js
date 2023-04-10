@@ -37193,7 +37193,10 @@ const defaultSettings = {
     image_preview_delay: 2,
     device_id: 0,
     device_type: "cuda",
-    use_fp32: false
+    use_fp32: false,
+    use_tomesd: true,
+    tomesd_ratio: 0.4,
+    tomesd_downsample_layers: 1
   },
   aitemplate: {
     num_threads: 8

@@ -110,6 +110,9 @@ export interface SettingsInterface {
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
     use_fp32: boolean;
+    use_tomesd: boolean;
+    tomesd_ratio: number;
+    tomesd_downsample_layers: 1 | 2 | 4 | 8;
   };
   aitemplate: {
     num_threads: number;
@@ -214,6 +217,9 @@ export const defaultSettings: SettingsInterface = {
     device_id: 0,
     device_type: "cuda",
     use_fp32: false,
+    use_tomesd: true,
+    tomesd_ratio: 0.4,
+    tomesd_downsample_layers: 1,
   },
   aitemplate: {
     num_threads: 8,

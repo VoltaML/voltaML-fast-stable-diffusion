@@ -1866,11 +1866,11 @@ const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4 = [_hoisted_2$1, _hoisted_3$1];
+const _hoisted_4$1 = [_hoisted_2$1, _hoisted_3$1];
 const Help = defineComponent({
   name: "Help",
   render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4);
+    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4$1);
   }
 });
 const _hoisted_1 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
@@ -1879,6 +1879,7 @@ const _hoisted_2 = {
   style: { "height": "100%", "align-self": "center", "display": "flex", "align-items": "center", "margin-left": "10px" }
 };
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
+const _hoisted_4 = /* @__PURE__ */ createBaseVNode("h2", null, "TomeSD", -1);
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
@@ -2061,6 +2062,54 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.use_fp32,
                 "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.use_fp32 = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          _hoisted_4,
+          createVNode(unref(NFormItem), { label: "Use TomeSD" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.use_tomesd,
+                "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "TomeSD Ratio" }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.tomesd_ratio,
+                "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
+                min: 0.1,
+                max: 1
+              }, null, 8, ["value", "min", "max"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "TomeSD Downsample layers" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: 1,
+                    label: "1"
+                  },
+                  {
+                    value: 2,
+                    label: "2"
+                  },
+                  {
+                    value: 4,
+                    label: "4"
+                  },
+                  {
+                    value: 8,
+                    label: "8"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.tomesd_downsample_layers,
+                "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
