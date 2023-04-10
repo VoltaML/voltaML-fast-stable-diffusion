@@ -123,6 +123,43 @@
     <NFormItem label="Use FP32 precision">
       <NSwitch v-model:value="settings.defaultSettings.api.use_fp32" />
     </NFormItem>
+
+    <h2>TomeSD</h2>
+    <NFormItem label="Use TomeSD">
+      <NSwitch v-model:value="settings.defaultSettings.api.use_tomesd" />
+    </NFormItem>
+
+    <NFormItem label="TomeSD Ratio">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.tomesd_ratio"
+        :min="0.1"
+        :max="1.0"
+      />
+    </NFormItem>
+
+    <NFormItem label="TomeSD Downsample layers">
+      <NSelect
+        :options="[
+          {
+            value: 1,
+            label: '1',
+          },
+          {
+            value: 2,
+            label: '2',
+          },
+          {
+            value: 4,
+            label: '4',
+          },
+          {
+            value: 8,
+            label: '8',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.tomesd_downsample_layers"
+      />
+    </NFormItem>
   </NForm>
 </template>
 
