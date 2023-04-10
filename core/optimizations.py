@@ -65,14 +65,18 @@ def optimize_model(
         logger.info("Optimization: Enabled xFormers memory efficient attention")
     elif version.parse(torch.__version__) >= version.parse("2.0.0"):
         from diffusers.models.attention_processor import AttnProcessor2_0
+
         pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
         logger.info("Optimization: Enabled SDPA, because xformers is not installed")
     else:
         # This should only be the case if pytorch_directml is to be used
         # This isn't a hot-spot either, so it's fine (imo) to put in safety nets.
         from diffusers.models.attention_processor import AttnProcessor
+
         pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
-        logger.info("Optimization: Pytorch STILL not newer than 2.0.0, using Cross-Attention")
+        logger.info(
+            "Optimization: Pytorch STILL not newer than 2.0.0, using Cross-Attention"
+        )
 
     offload = (
         config.api.offload
@@ -110,7 +114,9 @@ def optimize_model(
                             disk_offload(
                                 m,
                                 str(
-                                    get_full_model_path("offload-dir", model_folder="temp")
+                                    get_full_model_path(
+                                        "offload-dir", model_folder="temp"
+                                    )
                                 ),
                                 device,
                                 offload_buffers=True,
@@ -139,10 +145,13 @@ def optimize_model(
     if config.api.use_tomesd:
         try:
             import tomesd
+
             tomesd.apply_patch(pipe.unet, ratio=config.api.tomesd_ratio, max_downsample=config.api.tomesd_downsample_layers)  # type: ignore
             logger.info("Optimization: Patched UNet for ToMeSD")
         except ImportError:
-            logger.info("Optimization: ToMeSD patch failed, despite having it enabled. Please check installation")
+            logger.info(
+                "Optimization: ToMeSD patch failed, despite having it enabled. Please check installation"
+            )
 
     logger.info("Optimization complete")
 
