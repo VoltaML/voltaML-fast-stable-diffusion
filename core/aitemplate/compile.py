@@ -13,6 +13,7 @@
 #  limitations under the License.
 #
 import gc
+import json
 import logging
 import os
 import shutil
@@ -114,6 +115,15 @@ def compile_diffusers(
         else:
             logger.info("UNet already compiled. Skipping...")
 
+        # Dump UNet config
+        with open(
+            os.path.join(dump_dir, "UNet2DConditionModel", "config.json"),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            json.dump(pipe.unet.config, f, indent=4, ensure_ascii=False)  # type: ignore
+            logger.info("UNet config saved")
+
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"unet": "finish"})
         )
@@ -197,10 +207,6 @@ def compile_diffusers(
         else:
             logger.info("CLIP already compiled. Skipping...")
 
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"clip": "finish"})
-        )
-
     except Exception as e:  # pylint: disable=broad-except
         logger.error(e)
         websocket_manager.broadcast_sync(
@@ -236,6 +242,15 @@ def compile_diffusers(
         else:
             logger.info("VAE already compiled. Skipping...")
 
+        # Dump VAE config
+        with open(
+            os.path.join(dump_dir, "AutoencoderKL", "config.json"),
+            "w",
+            encoding="utf-8",
+        ) as f:
+            json.dump(pipe.vae.config, f, indent=4, ensure_ascii=False)  # type: ignore
+            logger.info("VAE config saved")
+
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"vae": "finish"})
         )
@@ -263,7 +278,7 @@ def compile_diffusers(
         # Clean all files except test.so recursively
         for root, _dirs, files in os.walk(dump_dir):
             for file in files:
-                if file != "test.so":
+                if file not in ["test.so", "config.json"]:
                     os.remove(os.path.join(root, file))
 
         # Clean profiler (sometimes not present)

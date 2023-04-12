@@ -273,6 +273,7 @@
         <ImageOutput
           :current-image="global.state.sd_upscale.currentImage"
           :images="global.state.sd_upscale.images"
+          @image-clicked="global.state.sd_upscale.currentImage = $event"
         />
       </NGi>
     </NGrid>

@@ -1,26 +1,25 @@
 import inspect
 import logging
 import os
+from pathlib import Path
 from typing import Callable, List, Optional, Union
 
 import numpy as np
 import torch
 from aitemplate.compiler import Model
-from diffusers import (
-    AutoencoderKL,
-    ControlNetModel,
-    LMSDiscreteScheduler,
-    UNet2DConditionModel,
-)
+from diffusers import AutoencoderKL, ControlNetModel, LMSDiscreteScheduler
+from diffusers.configuration_utils import FrozenDict
 from diffusers.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
     StableDiffusionSafetyChecker,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
-from diffusers.utils import PIL_INTERPOLATION
+from diffusers.utils import PIL_INTERPOLATION, deprecate
 from PIL import Image
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+
+from core.aitemplate.config import get_unet_in_channels
 
 logger = logging.getLogger(__name__)
 
@@ -55,12 +54,11 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
             Model that extracts features from generated images to be used as inputs for the `safety_checker`.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=super-init-not-called
         self,
         vae: AutoencoderKL,
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
-        unet: UNet2DConditionModel,
         scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
@@ -71,18 +69,78 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
         vae_ait_exe: Optional[Model] = None,
         requires_safety_checker: bool = True,
     ):
-        super().__init__()
+        if hasattr(scheduler.config, "steps_offset") and scheduler.config.steps_offset != 1:  # type: ignore
+            deprecation_message = (
+                f"The configuration file of this scheduler: {scheduler} is outdated. `steps_offset`"
+                f" should be set to 1 instead of {scheduler.config.steps_offset}. Please make sure "  # type: ignore
+                "to update the config accordingly as leaving `steps_offset` might led to incorrect results"
+                " in future versions. If you have downloaded this checkpoint from the Hugging Face Hub,"
+                " it would be very nice if you could open a Pull request for the `scheduler/scheduler_config.json`"
+                " file"
+            )
+            deprecate(
+                "steps_offset!=1", "1.0.0", deprecation_message, standard_warn=False
+            )
+            new_config = dict(scheduler.config)  # type: ignore
+            new_config["steps_offset"] = 1
+            scheduler._internal_dict = FrozenDict(new_config)  # type: ignore
+
+        if (
+            hasattr(scheduler.config, "clip_sample")  # type: ignore
+            and scheduler.config.clip_sample is True  # type: ignore
+        ):
+            deprecation_message = (
+                f"The configuration file of this scheduler: {scheduler} has not set the configuration `clip_sample`."
+                " `clip_sample` should be set to False in the configuration file. Please make sure to update the"
+                " config accordingly as not setting `clip_sample` in the config might lead to incorrect results in"
+                " future versions. If you have downloaded this checkpoint from the Hugging Face Hub, it would be very"
+                " nice if you could open a Pull request for the `scheduler/scheduler_config.json` file"
+            )
+            deprecate(
+                "clip_sample not set", "1.0.0", deprecation_message, standard_warn=False
+            )
+            new_config = dict(scheduler.config)  # type: ignore
+            new_config["clip_sample"] = False
+            scheduler._internal_dict = FrozenDict(new_config)  # type: ignore
+
+        if safety_checker is None and requires_safety_checker:
+            logger.warning(
+                f"You have disabled the safety checker for {self.__class__} by passing `safety_checker=None`. Ensure"
+                " that you abide to the conditions of the Stable Diffusion license and do not expose unfiltered"
+                " results in services or applications open to the public. Both the diffusers team and Hugging Face"
+                " strongly recommend to keep the safety filter enabled in all public facing circumstances, disabling"
+                " it only for use-cases that involve analyzing network behavior or auditing its results. For more"
+                " information, please have a look at https://github.com/huggingface/diffusers/pull/254 ."
+            )
+
+        if safety_checker is not None and feature_extractor is None:
+            raise ValueError(
+                "Make sure to define a feature extractor when loading {self.__class__} if you want to use the safety"
+                " checker. If you do not want to use the safety checker, you can pass `'safety_checker=None'` instead."
+            )
 
         self.register_modules(
             vae=vae,
             text_encoder=text_encoder,
             tokenizer=tokenizer,
-            unet=unet,
             controlnet=controlnet,
             scheduler=scheduler,
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
+
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.requires_safety_checker: bool
+        self.feature_extractor: CLIPFeatureExtractor
+        self.vae: AutoencoderKL
+        self.text_encoder: CLIPTextModel
+        self.tokenizer: CLIPTokenizer
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.feature_extractor: CLIPFeatureExtractor
+
+        self.scheduler: LMSDiscreteScheduler
+
+        self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)  # type: ignore
         self.register_to_config(requires_safety_checker=requires_safety_checker)
 
         logger.debug(f"AIT workdir: {directory}")
@@ -115,12 +173,13 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
         self.vae: AutoencoderKL
         self.text_encoder: CLIPTextModel
         self.tokenizer: CLIPTokenizer
-        self.unet: UNet2DConditionModel
         self.safety_checker: StableDiffusionSafetyChecker
         self.feature_extractor: CLIPFeatureExtractor
         self.controlnet: ControlNetModel
 
         self.scheduler: LMSDiscreteScheduler
+
+        self.unet_in_channels = get_unet_in_channels(directory=Path(directory))
 
     def init_ait_module(
         self,
@@ -181,7 +240,7 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
             shape = exe_module.get_output_maximum_shape(i)
             ys.append(torch.empty(shape).cuda().half())
         exe_module.run_with_tensors(inputs, ys, graph_mode=False)
-        noise_pred = ys[0].permute((0, 3, 1, 2)).float()
+        noise_pred = ys[0].permute((0, 3, 1, 2))
         return noise_pred
 
     def clip_inference(self, input_ids, seqlen=64):
@@ -427,7 +486,7 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
         # for 1-to-1 results reproducibility with the CompVis implementation.
         # However this currently doesn't work in `mps`.
         latents_device = "cpu" if self.device.type == "mps" else self.device
-        latents_shape = (batch_size, self.unet.in_channels, height // 8, width // 8)
+        latents_shape = (batch_size, self.unet_in_channels, height // 8, width // 8)
         # import ipdb; ipdb.set_trace()
         if latents is None:
             latents = torch.randn(

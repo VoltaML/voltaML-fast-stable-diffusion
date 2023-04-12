@@ -28306,7 +28306,7 @@ const NImagePreview = defineComponent({
 });
 const imageGroupInjectionKey = createInjectionKey("n-image-group");
 const imageGroupProps = imagePreviewSharedProps;
-const NImageGroup = defineComponent({
+defineComponent({
   name: "ImageGroup",
   props: imageGroupProps,
   setup(props) {
@@ -34232,7 +34232,7 @@ const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -34242,7 +34242,7 @@ const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -34252,7 +34252,7 @@ const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
+const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$d, _hoisted_4$a];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
@@ -34274,7 +34274,7 @@ const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M272 48a16 16 0 0 0-32 0v112h32z",
@@ -34284,11 +34284,11 @@ const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
+const _hoisted_4$9 = [_hoisted_2$c, _hoisted_3$c];
 const Download = defineComponent({
   name: "Download",
   render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$8);
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$9);
   }
 });
 const _hoisted_1$c = {
@@ -34306,7 +34306,7 @@ const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
@@ -34316,11 +34316,11 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
+const _hoisted_4$8 = [_hoisted_2$b, _hoisted_3$b];
 const Duplicate = defineComponent({
   name: "Duplicate",
   render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$8);
   }
 });
 const _hoisted_1$b = {
@@ -34338,7 +34338,7 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
@@ -34348,11 +34348,11 @@ const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$6 = [_hoisted_2$a, _hoisted_3$9];
+const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$a];
 const GitCompare = defineComponent({
   name: "GitCompare",
   render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
+    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$7);
   }
 });
 const _hoisted_1$a = {
@@ -34370,11 +34370,11 @@ const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$8 = [_hoisted_2$9];
+const _hoisted_3$9 = [_hoisted_2$9];
 const Image$1 = defineComponent({
   name: "Image",
   render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$8);
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$9);
   }
 });
 const _hoisted_1$9 = {
@@ -34392,7 +34392,7 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
@@ -34402,11 +34402,11 @@ const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
+const _hoisted_4$6 = [_hoisted_2$8, _hoisted_3$8];
 const Images = defineComponent({
   name: "Images",
   render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$6);
   }
 });
 const _hoisted_1$8 = {
@@ -34424,11 +34424,11 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = [_hoisted_2$7];
+const _hoisted_3$7 = [_hoisted_2$7];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
   render: function render8(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$6);
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$7);
   }
 });
 const _hoisted_1$7 = {
@@ -34446,11 +34446,11 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$5 = [_hoisted_2$6];
+const _hoisted_3$6 = [_hoisted_2$6];
 const Speedometer = defineComponent({
   name: "Speedometer",
   render: function render9(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$6);
   }
 });
 const _hoisted_1$6 = {
@@ -34468,7 +34468,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M328 496h-32a24 24 0 0 1-24-24V232a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v240a24 24 0 0 1-24 24z",
@@ -34478,7 +34478,7 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M440 496h-32a24 24 0 0 1-24-24V120a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v352a24 24 0 0 1-24 24z",
@@ -34498,7 +34498,7 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
+const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$5, _hoisted_5$4];
 const StatsChart = defineComponent({
   name: "StatsChart",
   render: function render10(_ctx, _cache) {
@@ -34524,7 +34524,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -34538,7 +34538,7 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -34552,7 +34552,7 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
+const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$4, _hoisted_4$4];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
   render: function render11(_ctx, _cache) {
@@ -36506,8 +36506,8 @@ const useState = defineStore("state", () => {
 });
 const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
-const _hoisted_3$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
+const _hoisted_3$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
 const _hoisted_5$2 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
 const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
@@ -36555,8 +36555,8 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         style: { "flex-grow": "1", "width": "400px" }
                       }, null, 8, ["percentage"])
                     ]),
-                    createBaseVNode("div", _hoisted_3$2, [
-                      _hoisted_4$2,
+                    createBaseVNode("div", _hoisted_3$3, [
+                      _hoisted_4$3,
                       createVNode(unref(NProgress), {
                         percentage: gpu.memory_usage,
                         type: "line",
@@ -37348,8 +37348,8 @@ const useSettings = defineStore("settings", () => {
 });
 const _hoisted_1$2 = { class: "top-bar" };
 const _hoisted_2$2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_3$1 = { style: { "display": "inline-flex" } };
-const _hoisted_4$1 = { style: { "display": "inline-flex" } };
+const _hoisted_3$2 = { style: { "display": "inline-flex" } };
+const _hoisted_4$2 = { style: { "display": "inline-flex" } };
 const _hoisted_5$1 = { class: "progress-container" };
 const _hoisted_6$1 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
 const _sfc_main$6 = /* @__PURE__ */ defineComponent({
@@ -37662,7 +37662,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                                         key: model.path
                                       }, [
                                         createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                        createBaseVNode("div", _hoisted_3$1, [
+                                        createBaseVNode("div", _hoisted_3$2, [
                                           model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                             key: 0,
                                             type: "error",
@@ -37720,7 +37720,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                                         key: lora.path
                                       }, [
                                         createBaseVNode("p", null, toDisplayString(lora.name), 1),
-                                        createBaseVNode("div", _hoisted_4$1, [
+                                        createBaseVNode("div", _hoisted_4$2, [
                                           ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(lora.path)) ? (openBlock(), createBlock(unref(NButton), {
                                             key: 0,
                                             type: "error",
@@ -38070,8 +38070,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
 const _hoisted_1$1 = { style: { "width": "100%", "display": "flex", "justify-content": "center" } };
 const _hoisted_2$1 = {
   key: 0,
-  style: { "height": "100px", "margin-top": "12px" }
+  style: { "height": "150px", "margin-top": "12px" }
 };
+const _hoisted_3$1 = ["onClick"];
+const _hoisted_4$1 = ["src"];
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ImageOutput",
   props: {
@@ -38085,12 +38087,18 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       default: () => []
     }
   },
+  emits: ["image-clicked"],
   setup(__props) {
     const props = __props;
-    const allImages = computed(() => [props.currentImage, ...props.images]);
-    const displayedImage = computed(
-      () => props.currentImage ? props.currentImage : props.images[0] ? props.images[0] : ""
-    );
+    const displayedImage = computed(() => {
+      if (props.currentImage) {
+        return props.currentImage;
+      } else if (props.images.length > 0) {
+        return props.images[0];
+      } else {
+        return "";
+      }
+    });
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NCard), {
         title: "Output",
@@ -38109,19 +38117,19 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             }, null, 8, ["src"])) : createCommentVNode("", true)
           ]),
           __props.images.length > 1 ? (openBlock(), createElementBlock("div", _hoisted_2$1, [
-            createVNode(unref(NImageGroup), null, {
+            createVNode(unref(NScrollbar), { "x-scrollable": "" }, {
               default: withCtx(() => [
-                (openBlock(true), createElementBlock(Fragment, null, renderList(unref(allImages), (image, i) => {
-                  return openBlock(), createBlock(unref(NImage), {
+                (openBlock(true), createElementBlock(Fragment, null, renderList(props.images, (image, i) => {
+                  return openBlock(), createElementBlock("span", {
                     key: i,
-                    src: image.toString(),
-                    class: "bottom-images",
-                    "img-props": {
-                      style: "height: 100px; width: 100px; margin: 5px;"
-                    },
-                    "object-fit": "contain",
-                    onClick: () => displayedImage.value = image.toString()
-                  }, null, 8, ["src", "onClick"]);
+                    onClick: ($event) => _ctx.$emit("image-clicked", image.toString()),
+                    style: { "cursor": "pointer" }
+                  }, [
+                    createBaseVNode("img", {
+                      src: image.toString(),
+                      style: { "height": "100px", "width": "100px", "margin": "5px", "object-fit": "contain" }
+                    }, null, 8, _hoisted_4$1)
+                  ], 8, _hoisted_3$1);
                 }), 128))
               ]),
               _: 1
@@ -38133,8 +38141,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageOutput_vue_vue_type_style_index_0_scoped_2d84f5b9_lang = "";
-const ImageOutput = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2d84f5b9"]]);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "SendOutputTo",
   props: {
@@ -38168,7 +38174,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       await router.push("/extra");
     }
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), {
+      return __props.output ? (openBlock(), createBlock(unref(NCard), {
+        key: 0,
         style: { "margin": "12px 0" },
         title: "Send To"
       }, {
@@ -38248,7 +38255,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           })
         ]),
         _: 1
-      });
+      })) : createCommentVNode("", true);
     };
   }
 });
@@ -38620,9 +38627,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
                 createVNode(_sfc_main$3, { generate }),
-                createVNode(ImageOutput, {
+                createVNode(_sfc_main$2, {
                   "current-image": unref(global2).state.txt2img.currentImage,
-                  images: unref(global2).state.txt2img.images
+                  images: unref(global2).state.txt2img.images,
+                  onImageClicked: _cache[16] || (_cache[16] = ($event) => unref(global2).state.txt2img.currentImage = $event)
                 }, null, 8, ["current-image", "images"]),
                 createVNode(_sfc_main$1, {
                   output: unref(global2).state.txt2img.currentImage
@@ -38700,15 +38708,15 @@ app.use(router);
 app.mount("#app");
 export {
   inject as $,
-  popScopeId as A,
-  _export_sfc as B,
-  resolveComponent as C,
+  pushScopeId as A,
+  popScopeId as B,
+  _export_sfc as C,
   h as D,
   ref as E,
   NButton as F,
   NIcon as G,
   createBlock as H,
-  ImageOutput as I,
+  resolveComponent as I,
   NTabPane as J,
   NTabs as K,
   useConfig as L,
@@ -38832,13 +38840,13 @@ export {
   openBlock as o,
   NSlider as p,
   NInputNumber as q,
-  _sfc_main$1 as r,
-  NGrid as s,
+  _sfc_main$2 as r,
+  _sfc_main$1 as s,
   toDisplayString as t,
   useState as u,
-  spaceRegex as v,
+  NGrid as v,
   withCtx as w,
-  serverUrl as x,
-  v4 as y,
-  pushScopeId as z
+  spaceRegex as x,
+  serverUrl as y,
+  v4 as z
 };

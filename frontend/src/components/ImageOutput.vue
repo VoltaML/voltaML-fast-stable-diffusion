@@ -11,26 +11,31 @@
         object-fit="contain"
       />
     </div>
-    <div style="height: 100px; margin-top: 12px" v-if="images.length > 1">
-      <NImageGroup>
-        <NImage
-          v-for="(image, i) in allImages"
+    <div style="height: 150px; margin-top: 12px" v-if="images.length > 1">
+      <NScrollbar x-scrollable>
+        <span
+          v-for="(image, i) in props.images"
           v-bind:key="i"
-          :src="image.toString()"
-          class="bottom-images"
-          :img-props="{
-            style: 'height: 100px; width: 100px; margin: 5px;',
-          }"
-          object-fit="contain"
-          @click="() => (displayedImage = image.toString())"
-        />
-      </NImageGroup>
+          @click="$emit('image-clicked', image.toString())"
+          style="cursor: pointer"
+        >
+          <img
+            :src="image.toString()"
+            style="
+              height: 100px;
+              width: 100px;
+              margin: 5px;
+              object-fit: contain;
+            "
+          />
+        </span>
+      </NScrollbar>
     </div>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import { NCard, NImage, NImageGroup } from "naive-ui";
+import { NCard, NImage, NScrollbar } from "naive-ui";
 import { computed, defineProps } from "vue";
 
 const props = defineProps({
@@ -45,21 +50,15 @@ const props = defineProps({
   },
 });
 
-const allImages = computed(() => [props.currentImage, ...props.images]);
-const displayedImage = computed(() =>
-  props.currentImage
-    ? props.currentImage
-    : props.images[0]
-    ? props.images[0]
-    : ""
-);
-</script>
+defineEmits(["image-clicked"]);
 
-<style scoped>
-/* .bottom-images {
-  height: 100px;
-  width: 100px;
-  margin: 5px;
-  object-fit: contain;
-} */
-</style>
+const displayedImage = computed(() => {
+  if (props.currentImage) {
+    return props.currentImage;
+  } else if (props.images.length > 0) {
+    return props.images[0];
+  } else {
+    return "";
+  }
+});
+</script>

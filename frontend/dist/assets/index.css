@@ -52,13 +52,6 @@
 .highlight {
   color: #63e2b7;
 }
-
-/* .bottom-images {
-  height: 100px;
-  width: 100px;
-  margin: 5px;
-  object-fit: contain;
-} */
 body {
   min-height: 100vh;
   margin-left: 64px;

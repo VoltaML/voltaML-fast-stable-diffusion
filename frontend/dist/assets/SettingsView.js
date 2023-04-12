@@ -1,4 +1,4 @@
-import { $ as inject, b8 as getCurrentInstance, aa as watch, aF as onBeforeUnmount, U as cB, W as cM, T as c, R as createInjectionKey, d as defineComponent, L as useConfig, a1 as useTheme, E as ref, D as h, b9 as formLight, P as provide, ac as keysOf, f as computed, aD as formatLength, aK as get, ba as commonVariables, V as cE, Q as toRef, a6 as createId, bb as formItemInjectionKey, bc as onMounted, a5 as useThemeClass, aW as Transition, az as resolveWrappedSlot, a4 as createKey, aQ as warn, o as openBlock, c as createElementBlock, a as createBaseVNode, b as useSettings, H as createBlock, w as withCtx, g as createVNode, h as unref, q as NInputNumber, n as NSelect, G as NIcon, i as NCard, k as NInput, J as NTabPane, K as NTabs, B as _export_sfc, e as useMessage, F as NButton, l as createTextVNode, bd as defaultSettings, x as serverUrl } from "./index.js";
+import { $ as inject, b8 as getCurrentInstance, aa as watch, aF as onBeforeUnmount, U as cB, W as cM, T as c, R as createInjectionKey, d as defineComponent, L as useConfig, a1 as useTheme, E as ref, D as h, b9 as formLight, P as provide, ac as keysOf, f as computed, aD as formatLength, aK as get, ba as commonVariables, V as cE, Q as toRef, a6 as createId, bb as formItemInjectionKey, bc as onMounted, a5 as useThemeClass, aW as Transition, az as resolveWrappedSlot, a4 as createKey, aQ as warn, b as useSettings, o as openBlock, H as createBlock, w as withCtx, g as createVNode, h as unref, q as NInputNumber, n as NSelect, a as createBaseVNode, i as NCard, k as NInput, J as NTabPane, K as NTabs, C as _export_sfc, e as useMessage, F as NButton, l as createTextVNode, bd as defaultSettings, y as serverUrl } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
@@ -1826,7 +1826,7 @@ const NFormItem = defineComponent({
             return resolveWrappedSlot($slots.feedback, (children) => {
               var _a;
               const { feedback } = this;
-              const feedbackNodes = children || feedback ? h("div", { key: "__feedback__", class: `${mergedClsPrefix}-form-item-feedback__line` }, children || feedback) : this.renderExplains.length ? (_a = this.renderExplains) === null || _a === void 0 ? void 0 : _a.map(({ key, render: render2 }) => h("div", { key, class: `${mergedClsPrefix}-form-item-feedback__line` }, render2())) : null;
+              const feedbackNodes = children || feedback ? h("div", { key: "__feedback__", class: `${mergedClsPrefix}-form-item-feedback__line` }, children || feedback) : this.renderExplains.length ? (_a = this.renderExplains) === null || _a === void 0 ? void 0 : _a.map(({ key, render }) => h("div", { key, class: `${mergedClsPrefix}-form-item-feedback__line` }, render())) : null;
               return feedbackNodes ? mergedValidationStatus === "warning" ? h("div", { key: "controlled-warning", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--warning` }, feedbackNodes) : mergedValidationStatus === "error" ? h("div", { key: "controlled-error", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--error` }, feedbackNodes) : mergedValidationStatus === "success" ? h("div", { key: "controlled-success", class: `${mergedClsPrefix}-form-item-feedback ${mergedClsPrefix}-form-item-feedback--success` }, feedbackNodes) : h("div", { key: "controlled-default", class: `${mergedClsPrefix}-form-item-feedback` }, feedbackNodes) : null;
             });
           }
@@ -1835,51 +1835,9 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _hoisted_1$1 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M160 164s1.44-33 33.54-59.46C212.6 88.83 235.49 84.28 256 84c18.73-.23 35.47 2.94 45.48 7.82C318.59 100.2 352 120.6 352 164c0 45.67-29.18 66.37-62.35 89.18S248 298.36 248 324",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-miterlimit": "10",
-    "stroke-width": "40"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
-  "circle",
-  {
-    cx: "248",
-    cy: "399.99",
-    r: "32",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$1 = [_hoisted_2$1, _hoisted_3$1];
-const Help = defineComponent({
-  name: "Help",
-  render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4$1);
-  }
-});
 const _hoisted_1 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
-const _hoisted_2 = {
-  href: "https://voltaml.github.io/voltaML-fast-stable-diffusion/experimental/optimization",
-  style: { "height": "100%", "align-self": "center", "display": "flex", "align-items": "center", "margin-left": "10px" }
-};
-const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
-const _hoisted_4 = /* @__PURE__ */ createBaseVNode("h2", null, "TomeSD", -1);
+const _hoisted_2 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "TomeSD", -1);
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
@@ -1954,15 +1912,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                 ],
                 value: unref(settings).defaultSettings.api.attention_slicing,
                 "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.attention_slicing = $event)
-              }, null, 8, ["value"]),
-              createBaseVNode("a", _hoisted_2, [
-                createVNode(unref(NIcon), null, {
-                  default: withCtx(() => [
-                    createVNode(unref(Help))
-                  ]),
-                  _: 1
-                })
-              ])
+              }, null, 8, ["value"])
             ]),
             _: 1
           }),
@@ -2016,7 +1966,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          _hoisted_3,
+          _hoisted_2,
           createVNode(unref(NFormItem), { label: "Device Type" }, {
             default: withCtx(() => [
               createVNode(unref(NSelect), {
@@ -2027,7 +1977,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                   },
                   {
                     value: "cuda",
-                    label: "CUDA (NVIDIA)"
+                    label: "CUDA (NVIDIA) or ROCm (AMD)"
                   },
                   {
                     value: "mps",
@@ -2036,10 +1986,6 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                   {
                     value: "directml",
                     label: "DirectML (NOT IMPLEMENTED)"
-                  },
-                  {
-                    value: "cuda",
-                    label: "ROCm (AMD)"
                   }
                 ],
                 value: unref(settings).defaultSettings.api.device_type,
@@ -2066,7 +2012,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          _hoisted_4,
+          _hoisted_3,
           createVNode(unref(NFormItem), { label: "Use TomeSD" }, {
             default: withCtx(() => [
               createVNode(unref(NSwitch), {

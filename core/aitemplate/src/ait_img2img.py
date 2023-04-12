@@ -28,13 +28,14 @@ from diffusers import (
     AutoencoderKL,
     LMSDiscreteScheduler,
     StableDiffusionImg2ImgPipeline,
-    UNet2DConditionModel,
 )
+from diffusers.configuration_utils import FrozenDict
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
     StableDiffusionSafetyChecker,
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.utils import deprecate
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 logger = logging.getLogger(__name__)
@@ -78,12 +79,11 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             Model that extracts features from generated images to be used as inputs for the `safety_checker`.
     """
 
-    def __init__(
+    def __init__(  # pylint: disable=super-init-not-called
         self,
         vae: AutoencoderKL,
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
-        unet: UNet2DConditionModel,
         scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
@@ -93,16 +93,78 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         vae_ait_exe: Optional[Model] = None,
         requires_safety_checker: bool = True,
     ):
-        super().__init__(
+        if hasattr(scheduler.config, "steps_offset") and scheduler.config.steps_offset != 1:  # type: ignore
+            deprecation_message = (
+                f"The configuration file of this scheduler: {scheduler} is outdated. `steps_offset`"
+                f" should be set to 1 instead of {scheduler.config.steps_offset}. Please make sure "  # type: ignore
+                "to update the config accordingly as leaving `steps_offset` might led to incorrect results"
+                " in future versions. If you have downloaded this checkpoint from the Hugging Face Hub,"
+                " it would be very nice if you could open a Pull request for the `scheduler/scheduler_config.json`"
+                " file"
+            )
+            deprecate(
+                "steps_offset!=1", "1.0.0", deprecation_message, standard_warn=False
+            )
+            new_config = dict(scheduler.config)  # type: ignore
+            new_config["steps_offset"] = 1
+            scheduler._internal_dict = FrozenDict(new_config)  # type: ignore
+
+        if (
+            hasattr(scheduler.config, "clip_sample")  # type: ignore
+            and scheduler.config.clip_sample is True  # type: ignore
+        ):
+            deprecation_message = (
+                f"The configuration file of this scheduler: {scheduler} has not set the configuration `clip_sample`."
+                " `clip_sample` should be set to False in the configuration file. Please make sure to update the"
+                " config accordingly as not setting `clip_sample` in the config might lead to incorrect results in"
+                " future versions. If you have downloaded this checkpoint from the Hugging Face Hub, it would be very"
+                " nice if you could open a Pull request for the `scheduler/scheduler_config.json` file"
+            )
+            deprecate(
+                "clip_sample not set", "1.0.0", deprecation_message, standard_warn=False
+            )
+            new_config = dict(scheduler.config)  # type: ignore
+            new_config["clip_sample"] = False
+            scheduler._internal_dict = FrozenDict(new_config)  # type: ignore
+
+        if safety_checker is None and requires_safety_checker:
+            logger.warning(
+                f"You have disabled the safety checker for {self.__class__} by passing `safety_checker=None`. Ensure"
+                " that you abide to the conditions of the Stable Diffusion license and do not expose unfiltered"
+                " results in services or applications open to the public. Both the diffusers team and Hugging Face"
+                " strongly recommend to keep the safety filter enabled in all public facing circumstances, disabling"
+                " it only for use-cases that involve analyzing network behavior or auditing its results. For more"
+                " information, please have a look at https://github.com/huggingface/diffusers/pull/254 ."
+            )
+
+        if safety_checker is not None and feature_extractor is None:
+            raise ValueError(
+                "Make sure to define a feature extractor when loading {self.__class__} if you want to use the safety"
+                " checker. If you do not want to use the safety checker, you can pass `'safety_checker=None'` instead."
+            )
+
+        self.register_modules(
             vae=vae,
             text_encoder=text_encoder,
             tokenizer=tokenizer,
-            unet=unet,
             scheduler=scheduler,
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
-            requires_safety_checker=requires_safety_checker,
         )
+
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.requires_safety_checker: bool
+        self.feature_extractor: CLIPFeatureExtractor
+        self.vae: AutoencoderKL
+        self.text_encoder: CLIPTextModel
+        self.tokenizer: CLIPTokenizer
+        self.safety_checker: StableDiffusionSafetyChecker
+        self.feature_extractor: CLIPFeatureExtractor
+
+        self.scheduler: LMSDiscreteScheduler
+
+        self.vae_scale_factor = 2 ** (len(self.vae.config.block_out_channels) - 1)  # type: ignore
+        self.register_to_config(requires_safety_checker=requires_safety_checker)
 
         logger.debug(f"AIT workdir: {directory}")
 
@@ -126,19 +188,6 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             )
         else:
             self.vae_ait_exe = vae_ait_exe
-
-        self.safety_checker: StableDiffusionSafetyChecker
-        self.requires_safety_checker: bool
-        self.feature_extractor: CLIPFeatureExtractor
-
-        self.vae: AutoencoderKL
-        self.text_encoder: CLIPTextModel
-        self.tokenizer: CLIPTokenizer
-        self.unet: UNet2DConditionModel
-        self.safety_checker: StableDiffusionSafetyChecker
-        self.feature_extractor: CLIPFeatureExtractor
-
-        self.scheduler: LMSDiscreteScheduler
 
     def init_ait_module(
         self,
@@ -310,7 +359,7 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             init_image = preprocess(init_image)  # type: ignore
 
         # convert to correct dtype and push to right device
-        init_image = init_image.to(self.device, dtype=self.unet.dtype)  # type: ignore
+        init_image = init_image.to(self.device, dtype=self.vae.dtype)  # type: ignore
         # encode the init image into latents and scale the latents
         init_latent_dist = self.vae.encode(init_image).latent_dist  # type: ignore
         init_latents = init_latent_dist.sample(generator=generator)
@@ -423,8 +472,8 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
                 sigma = self.scheduler.sigmas[t_index]
                 # the model input needs to be scaled to match the continuous ODE formulation in K-LMS
                 latent_model_input = latent_model_input / ((sigma**2 + 1) ** 0.5)
-                latent_model_input = latent_model_input.to(self.unet.dtype)
-                t = t.to(self.unet.dtype)
+                latent_model_input = latent_model_input.to(self.vae.dtype)
+                t = t.to(self.vae.dtype)
 
             # predict the noise residual
             noise_pred = self.unet_inference(

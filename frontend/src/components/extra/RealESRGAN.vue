@@ -48,6 +48,7 @@
         <ImageOutput
           :current-image="global.state.extra.currentImage"
           :images="global.state.extra.images"
+          @image-clicked="global.state.extra.currentImage = $event"
         />
       </NGi>
     </NGrid>

@@ -305,6 +305,7 @@
         <ImageOutput
           :current-image="global.state.controlnet.currentImage"
           :images="global.state.controlnet.images"
+          @image-clicked="global.state.controlnet.currentImage = $event"
         />
 
         <SendOutputTo :output="global.state.controlnet.currentImage" />
@@ -410,7 +411,6 @@ const generate = () => {
       global.state.generating = false;
       console.log(res);
       res.json().then((data) => {
-        console.log(data.images.length);
         global.state.controlnet.images = data.images;
         global.state.progress = 0;
         global.state.total_steps = 0;

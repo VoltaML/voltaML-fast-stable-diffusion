@@ -223,6 +223,7 @@
         <ImageOutput
           :current-image="global.state.txt2img.currentImage"
           :images="global.state.txt2img.images"
+          @image-clicked="global.state.txt2img.currentImage = $event"
         />
 
         <SendOutputTo :output="global.state.txt2img.currentImage" />

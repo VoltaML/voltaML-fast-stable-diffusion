@@ -10,7 +10,6 @@ from diffusers import (
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from diffusers.utils import is_accelerate_available
 from diffusers.utils.import_utils import is_xformers_available
-
 from packaging import version
 
 from core.config import config
@@ -50,33 +49,38 @@ def optimize_model(
 
     # Change the order of the channels to be more efficient for the GPU
     # DirectML only supports contiguous memory format
-    if config.api.channels_last and config.api.device != "directml":
+    if (
+        config.api.channels_last
+        and config.api.device != "directml"
+        and not is_for_aitemplate
+    ):
         pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
         pipe.vae.to(memory_format=torch.channels_last)  # type: ignore
         logger.info("Optimization: Enabled channels_last memory format")
 
     # xFormers and SPDA
-    if is_xformers_available() and config.api.attention_processor == "xformers":
-        if config.api.trace_model:
-            logger.info("Optimization: Tracing model")
-            pipe.unet = trace_model(pipe.unet)  # type: ignore
-            logger.info("Optimization: Model successfully traced")
-        pipe.enable_xformers_memory_efficient_attention()
-        logger.info("Optimization: Enabled xFormers memory efficient attention")
-    elif version.parse(torch.__version__) >= version.parse("2.0.0"):
-        from diffusers.models.attention_processor import AttnProcessor2_0
+    if not is_for_aitemplate:
+        if is_xformers_available() and config.api.attention_processor == "xformers":
+            if config.api.trace_model:
+                logger.info("Optimization: Tracing model")
+                pipe.unet = trace_model(pipe.unet)  # type: ignore
+                logger.info("Optimization: Model successfully traced")
+            pipe.enable_xformers_memory_efficient_attention()
+            logger.info("Optimization: Enabled xFormers memory efficient attention")
+        elif version.parse(torch.__version__) >= version.parse("2.0.0"):
+            from diffusers.models.attention_processor import AttnProcessor2_0
 
-        pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
-        logger.info("Optimization: Enabled SDPA, because xformers is not installed")
-    else:
-        # This should only be the case if pytorch_directml is to be used
-        # This isn't a hot-spot either, so it's fine (imo) to put in safety nets.
-        from diffusers.models.attention_processor import AttnProcessor
+            pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
+            logger.info("Optimization: Enabled SDPA, because xformers is not installed")
+        else:
+            # This should only be the case if pytorch_directml is to be used
+            # This isn't a hot-spot either, so it's fine (imo) to put in safety nets.
+            from diffusers.models.attention_processor import AttnProcessor
 
-        pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
-        logger.info(
-            "Optimization: Pytorch STILL not newer than 2.0.0, using Cross-Attention"
-        )
+            pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
+            logger.info(
+                "Optimization: Pytorch STILL not newer than 2.0.0, using Cross-Attention"
+            )
 
     offload = (
         config.api.offload
@@ -142,7 +146,7 @@ def optimize_model(
                 "Optimization: VAE slicing is not available for upscale models"
             )
 
-    if config.api.use_tomesd:
+    if config.api.use_tomesd and not is_for_aitemplate:
         try:
             import tomesd
 

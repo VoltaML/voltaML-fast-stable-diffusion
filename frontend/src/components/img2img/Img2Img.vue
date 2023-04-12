@@ -255,6 +255,7 @@
         <ImageOutput
           :current-image="global.state.img2img.currentImage"
           :images="global.state.img2img.images"
+          @image-clicked="global.state.img2img.currentImage = $event"
         />
 
         <SendOutputTo :output="global.state.img2img.currentImage" />
@@ -268,6 +269,7 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
+import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
 import {

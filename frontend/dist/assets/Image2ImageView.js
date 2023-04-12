@@ -1,5 +1,5 @@
-import { _ as _sfc_main$7 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, o as openBlock, c as createElementBlock, a as createBaseVNode, u as useState, b as useSettings, e as useMessage, f as computed, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, l as createTextVNode, t as toDisplayString, m as NTooltip, n as NSelect, p as NSlider, q as NInputNumber, _ as _sfc_main$5, I as ImageOutput, r as _sfc_main$6, s as NGrid, v as spaceRegex, x as serverUrl, y as v4, z as pushScopeId, A as popScopeId, B as _export_sfc, C as resolveComponent, D as h, E as ref, F as NButton, G as NIcon, H as createBlock, J as NTabPane, K as NTabs } from "./index.js";
+import { _ as _sfc_main$8 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, o as openBlock, c as createElementBlock, a as createBaseVNode, u as useState, b as useSettings, e as useMessage, f as computed, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, l as createTextVNode, t as toDisplayString, m as NTooltip, n as NSelect, p as NSlider, q as NInputNumber, _ as _sfc_main$5, r as _sfc_main$6, s as _sfc_main$7, v as NGrid, x as spaceRegex, y as serverUrl, z as v4, A as pushScopeId, B as popScopeId, C as _export_sfc, D as h, E as ref, F as NButton, G as NIcon, H as createBlock, I as resolveComponent, J as NTabPane, K as NTabs } from "./index.js";
 import { I as ImageUpload } from "./ImageUpload.js";
 const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
@@ -134,7 +134,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-3d308219"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-dca96ed2"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -230,7 +230,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         global.state.generating = false;
         console.log(res);
         res.json().then((data) => {
-          console.log(data.images.length);
           global.state.controlnet.images = data.images;
           global.state.progress = 0;
           global.state.total_steps = 0;
@@ -559,11 +558,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
                 createVNode(_sfc_main$5, { generate }),
-                createVNode(ImageOutput, {
-                  "current-image": unref(global).state.controlnet.currentImage,
-                  images: unref(global).state.controlnet.images
-                }, null, 8, ["current-image", "images"]),
                 createVNode(_sfc_main$6, {
+                  "current-image": unref(global).state.controlnet.currentImage,
+                  images: unref(global).state.controlnet.images,
+                  onImageClicked: _cache[21] || (_cache[21] = ($event) => unref(global).state.controlnet.currentImage = $event)
+                }, null, 8, ["current-image", "images"]),
+                createVNode(_sfc_main$7, {
                   output: unref(global).state.controlnet.currentImage
                 }, null, 8, ["output"])
               ]),
@@ -576,9 +576,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_3d308219_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-3d308219"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-342f66c4"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_dca96ed2_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-dca96ed2"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-7df52fbb"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -675,7 +675,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       });
     };
     return (_ctx, _cache) => {
-      const _component_SendOutputTo = resolveComponent("SendOutputTo");
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createVNode(unref(NGrid), {
           cols: "1 850:2",
@@ -947,11 +946,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
                 createVNode(_sfc_main$5, { generate }),
-                createVNode(ImageOutput, {
+                createVNode(_sfc_main$6, {
                   "current-image": unref(global).state.img2img.currentImage,
-                  images: unref(global).state.img2img.images
+                  images: unref(global).state.img2img.images,
+                  onImageClicked: _cache[18] || (_cache[18] = ($event) => unref(global).state.img2img.currentImage = $event)
                 }, null, 8, ["current-image", "images"]),
-                createVNode(_component_SendOutputTo, {
+                createVNode(_sfc_main$7, {
                   output: unref(global).state.img2img.currentImage
                 }, null, 8, ["output"])
               ]),
@@ -964,8 +964,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_342f66c4_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-342f66c4"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_7df52fbb_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-7df52fbb"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1541,7 +1541,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-841fa800"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-fa807e59"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2085,9 +2085,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
                 createVNode(_sfc_main$5, { generate }),
-                createVNode(ImageOutput, {
+                createVNode(_sfc_main$6, {
                   "current-image": unref(global).state.inpainting.currentImage,
-                  images: unref(global).state.inpainting.images
+                  images: unref(global).state.inpainting.images,
+                  onImageClicked: _cache[18] || (_cache[18] = ($event) => unref(global).state.inpainting.currentImage = $event)
                 }, null, 8, ["current-image", "images"]),
                 createVNode(_component_SendOutputTo, {
                   output: unref(global).state.inpainting.currentImage
@@ -2102,9 +2103,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_841fa800_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-841fa800"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-2120391e"), n = n(), popScopeId(), n);
+const Inpainting_vue_vue_type_style_index_0_scoped_fa807e59_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-fa807e59"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-3a2ee2b9"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -2483,9 +2484,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
                 createVNode(_sfc_main$5, { generate }),
-                createVNode(ImageOutput, {
+                createVNode(_sfc_main$6, {
                   "current-image": unref(global).state.sd_upscale.currentImage,
-                  images: unref(global).state.sd_upscale.images
+                  images: unref(global).state.sd_upscale.images,
+                  onImageClicked: _cache[20] || (_cache[20] = ($event) => unref(global).state.sd_upscale.currentImage = $event)
                 }, null, 8, ["current-image", "images"])
               ]),
               _: 1
@@ -2497,8 +2499,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const SDUpscale_vue_vue_type_style_index_0_scoped_2120391e_lang = "";
-const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2120391e"]]);
+const SDUpscale_vue_vue_type_style_index_0_scoped_3a2ee2b9_lang = "";
+const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-3a2ee2b9"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {
@@ -2536,13 +2538,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }),
           createVNode(unref(NTabPane), { name: "Depth to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$7)
+              createVNode(_sfc_main$8)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Pix to Pix" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$7)
+              createVNode(_sfc_main$8)
             ]),
             _: 1
           })

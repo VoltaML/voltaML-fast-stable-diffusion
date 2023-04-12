@@ -371,7 +371,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
-        if config.api.trace_model == True:
+        if config.api.trace_model is True:
             raise ValueError(
                 "ControlNet is not available with traced UNet, please disable tracing and reload the model."
             )

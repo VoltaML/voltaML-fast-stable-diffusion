@@ -89,9 +89,11 @@ class AITemplateStableDiffusion(InferenceModel):
             is_for_aitemplate=True,
         )
 
+        pipe.unet = None  # type: ignore
+        self.memory_cleanup()
+
         pipe = StableDiffusionAITPipeline(
             vae=pipe.vae,  # type: ignore
-            unet=pipe.unet,  # type: ignore
             text_encoder=pipe.text_encoder,  # type: ignore
             tokenizer=pipe.tokenizer,  # type: ignore
             scheduler=pipe.scheduler,  # type: ignore
@@ -106,10 +108,14 @@ class AITemplateStableDiffusion(InferenceModel):
         assert isinstance(pipe, StableDiffusionAITPipeline)
 
         # Disable optLevel for AITemplate models and optimize the model
-        optimize_model(pipe=pipe, device=self.device, use_fp32=config.api.use_fp32)
+        optimize_model(
+            pipe=pipe,
+            device=self.device,
+            use_fp32=config.api.use_fp32,
+            is_for_aitemplate=True,
+        )
 
         self.vae = pipe.vae
-        self.unet = pipe.unet
         self.text_encoder = pipe.text_encoder
         self.tokenizer = pipe.tokenizer
         self.scheduler = pipe.scheduler
@@ -126,7 +132,6 @@ class AITemplateStableDiffusion(InferenceModel):
     def unload(self):
         del (
             self.vae,
-            self.unet,
             self.text_encoder,
             self.tokenizer,
             self.scheduler,
@@ -150,10 +155,6 @@ class AITemplateStableDiffusion(InferenceModel):
             # Cleanup old controlnet
             self.controlnet = None
             self.memory_cleanup()
-
-            logger.warning(
-                f"C: {self.current_controlnet} T: {target_controlnet} U: {self.current_unet}"
-            )
 
             if target_controlnet == ControlNetMode.NONE:
                 # Load basic unet if requested
@@ -249,7 +250,6 @@ class AITemplateStableDiffusion(InferenceModel):
             scheduler=self.scheduler,
             safety_checker=self.safety_checker,
             requires_safety_checker=self.requires_safety_checker,
-            unet=self.unet,
             feature_extractor=self.feature_extractor,
             clip_ait_exe=self.clip_ait_exe,
             unet_ait_exe=self.unet_ait_exe,
@@ -314,7 +314,6 @@ class AITemplateStableDiffusion(InferenceModel):
             scheduler=self.scheduler,
             safety_checker=self.safety_checker,
             requires_safety_checker=self.requires_safety_checker,
-            unet=self.unet,
             feature_extractor=self.feature_extractor,
             clip_ait_exe=self.clip_ait_exe,
             unet_ait_exe=self.unet_ait_exe,
@@ -385,7 +384,6 @@ class AITemplateStableDiffusion(InferenceModel):
             scheduler=self.scheduler,
             safety_checker=self.safety_checker,
             requires_safety_checker=self.requires_safety_checker,
-            unet=self.unet,
             controlnet=self.controlnet,
             feature_extractor=self.feature_extractor,
             clip_ait_exe=self.clip_ait_exe,

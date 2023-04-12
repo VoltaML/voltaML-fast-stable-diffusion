@@ -32,7 +32,7 @@ from core.types import (
     TRTBuildRequest,
     Txt2ImgQueueEntry,
 )
-from core.utils import run_in_thread_async
+from core.utils import image_grid, run_in_thread_async
 
 if TYPE_CHECKING:
     from core.inference.onnx_sd import OnnxStableDiffusion
@@ -157,11 +157,12 @@ class GPU:
                 if job.data.width % 8 != 0 or job.data.height % 8 != 0:
                     raise DimensionError("Width and height must be divisible by 8")
 
-            # Wait for turn
+            # Wait for turn in the queue
             await self.queue.wait_for_turn(job.data.id)
 
             start_time = time.time()
 
+            # Generate images
             try:
                 generated_images: Optional[List[Image.Image]]
                 generated_images = await run_in_thread_async(
@@ -171,6 +172,13 @@ class GPU:
                 assert generated_images is not None
 
                 images = generated_images
+
+                # Save Grid
+                grid = image_grid(images)
+                if job.save_grid:
+                    images = [grid, *images]
+
+                # Save Images
                 if job.save_image:
                     out = save_images(generated_images, job)
                     if out:
@@ -182,7 +190,12 @@ class GPU:
 
             deltatime = time.time() - start_time
 
+            # Mark job as finished, so the next job can start
             self.queue.mark_finished()
+
+            # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
+            if isinstance(images[0], Image.Image):
+                images = [grid, *images]
 
             return (images, deltatime)
         except InferenceInterruptedError:

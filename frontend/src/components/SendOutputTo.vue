@@ -1,6 +1,6 @@
 <template>
   <!-- Generate button -->
-  <NCard style="margin: 12px 0" title="Send To">
+  <NCard style="margin: 12px 0" title="Send To" v-if="output">
     <NGrid cols="4" x-gap="4" y-gap="4">
       <NGi>
         <NButton type="default" @click="toImg2Img" style="width: 100%" ghost

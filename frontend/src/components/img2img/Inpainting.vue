@@ -315,6 +315,7 @@
         <ImageOutput
           :current-image="global.state.inpainting.currentImage"
           :images="global.state.inpainting.images"
+          @image-clicked="global.state.inpainting.currentImage = $event"
         />
 
         <SendOutputTo :output="global.state.inpainting.currentImage" />

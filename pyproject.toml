@@ -1,0 +1,36 @@
+[project]
+name = "voltaml-fast-stable-diffusion"
+authors = [{ name = "Tomáš Novák", email = "tamoncz@gmail.com" }]
+description = "Advanced Stable Diffusion WebUI with support for model acceleration"
+readme = "README.md"
+requires-python = ">=3.8"
+license = { text = "GPL-3.0" }
+dynamic = ["version"]
+
+[project.urls]
+homepage = "https://voltaml.github.io/voltaML-fast-stable-diffusion/"
+documentation = "https://voltaml.github.io/voltaML-fast-stable-diffusion/"
+repository = "https://github.com/voltaML/voltaML-fast-stable-diffusion"
+
+[tool.ruff]
+ignore = [
+    "E501",
+    "G004",
+    "PGH003",
+    "S101",
+    "FBT001",
+    "FBT002",
+    "PTH123",
+    "PTH118",
+    "D202",
+    "TRY003",
+    "EM102",
+    "PTH112",
+    "B008",
+]
+
+select = ["ALL"]
+format = "grouped"
+target-version = "py38"
+[tool.ruff.flake8-quotes]
+docstring-quotes = "double"
