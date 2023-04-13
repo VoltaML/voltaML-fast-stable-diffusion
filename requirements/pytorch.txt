@@ -2,7 +2,7 @@
 colored
 coloredlogs
 dataclasses-json
-git+https://github.com/huggingface/diffusers
+diffusers>=0.15.0
 scipy
 transformers
 accelerate
@@ -15,7 +15,7 @@ safetensors
 pytorch-lightning
 gpustat==1.0.0
 opencv-contrib-python-headless
-git+https://github.com/patrickvonplaten/controlnet_aux
+controlnet-aux>=0.0.2
 realesrgan
 timm
 boto3
