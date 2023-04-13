@@ -7,6 +7,7 @@
           :callback="imageSelectCallback"
           :preview="conf.data.settings.sd_upscale.image"
           style="margin-bottom: 12px"
+          @file-dropped="conf.data.settings.sd_upscale.image = $event"
         />
 
         <NCard title="Settings">

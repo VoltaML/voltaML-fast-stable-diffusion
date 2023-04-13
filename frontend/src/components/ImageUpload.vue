@@ -1,15 +1,47 @@
 <template>
   <NCard title="Input image">
     <div class="image-container">
-      <img :src="$props.preview" style="width: 400px; height: auto" />
+      <label
+        for="file-upload"
+        style="width: 100%; height: 100%; cursor: pointer"
+      >
+        <span style="width: 100%; height: 100%" @drop.prevent="onDrop">
+          <img
+            :src="$props.preview"
+            style="width: 100%"
+            v-if="$props.preview"
+          />
+          <div
+            style="
+              margin-bottom: 12px;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              height: 100%;
+              widows: 100%;
+              border: 1px dashed #666;
+            "
+            v-else
+          >
+            <NIcon size="48" :depth="3">
+              <CloudUpload />
+            </NIcon>
+            <p style="margin-left: 12px">Drag and drop or click to upload</p>
+          </div>
+        </span>
+      </label>
     </div>
 
-    <NSpace inline justify="space-between" align="center" style="width: 100%">
+    <div
+      style="
+        width: 100%;
+        display: inline-flex;
+        align-items: center;
+        justify-content: space-between;
+      "
+    >
       <p>{{ width }}x{{ height }}</p>
-      <label for="file-upload">
-        <span class="file-upload">Select image</span>
-      </label>
-    </NSpace>
+    </div>
     <input
       type="file"
       accept="image/*"
@@ -21,20 +53,22 @@
 </template>
 
 <script lang="ts" setup>
-import { NCard, NSpace } from "naive-ui";
-import { ref, type PropType } from "vue";
+import { CloudUpload } from "@vicons/ionicons5";
+import { NCard, NIcon } from "naive-ui";
+import { computed, onMounted, ref, type PropType } from "vue";
 
 const props = defineProps({
   callback: {
-    type: Object as unknown as PropType<(base64Image: string) => void>,
+    type: Function as PropType<(base64Image: string) => void>,
   },
   preview: {
     type: String,
   },
 });
 
-const width = ref(0);
-const height = ref(0);
+const image = ref<HTMLImageElement>();
+const width = computed(() => (image.value ? image.value?.width : 0));
+const height = computed(() => (image.value ? image.value?.height : 0));
 
 function previewImage(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -50,57 +84,56 @@ function previewImage(event: Event) {
         const img = new Image();
         img.src = s;
         img.onload = () => {
-          width.value = img.width;
-          height.value = img.height;
+          image.value = img;
         };
       }
     };
     reader.readAsDataURL(input.files[0]);
   }
 }
+
+const emit = defineEmits(["file-dropped"]);
+
+function onDrop(e: DragEvent) {
+  console.log(e.dataTransfer?.files);
+
+  // Emit file as string
+  if (e.dataTransfer?.files) {
+    const reader = new FileReader();
+    reader.onload = (e: ProgressEvent<FileReader>) => {
+      const i = e.target?.result;
+      if (i) {
+        const s = i.toString();
+        if (props.callback) {
+          props.callback(s);
+        }
+        const img = new Image();
+        img.src = s;
+        img.onload = () => {
+          emit("file-dropped", s);
+        };
+      }
+    };
+    reader.readAsDataURL(e.dataTransfer.files[0]);
+  }
+}
+
+function preventDefaults(e: Event) {
+  e.preventDefault();
+}
+
+const events = ["dragenter", "dragover", "dragleave", "drop"];
+
+onMounted(() => {
+  events.forEach((eventName) => {
+    document.body.addEventListener(eventName, preventDefaults);
+  });
+});
 </script>
 
 <style scoped>
 .hidden-input {
   display: none;
-}
-
-.file-upload {
-  appearance: none;
-  background-color: transparent;
-  border: 1px solid #63e2b7;
-  border-radius: 6px;
-  box-shadow: rgba(27, 31, 35, 0.1) 0 1px 0;
-  box-sizing: border-box;
-  color: #63e2b7;
-  cursor: pointer;
-  display: inline-block;
-  padding: 6px 16px;
-  position: relative;
-  text-align: center;
-  text-decoration: none;
-  user-select: none;
-  -webkit-user-select: none;
-  touch-action: manipulation;
-  vertical-align: middle;
-  white-space: nowrap;
-}
-
-.file-upload:focus:not(:focus-visible):not(.focus-visible) {
-  box-shadow: none;
-  outline: none;
-}
-
-.file-upload:focus {
-  box-shadow: rgba(46, 164, 79, 0.4) 0 0 0 3px;
-  outline: none;
-}
-
-.file-upload:disabled {
-  background-color: #94d3a2;
-  border-color: rgba(27, 31, 35, 0.1);
-  color: rgba(255, 255, 255, 0.8);
-  cursor: default;
 }
 
 .image-container img {

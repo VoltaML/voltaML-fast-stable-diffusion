@@ -328,6 +328,7 @@
 import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
+import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
 import {

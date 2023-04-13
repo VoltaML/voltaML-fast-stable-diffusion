@@ -7,6 +7,7 @@
           :callback="imageSelectCallback"
           :preview="conf.data.settings.img2img.image"
           style="margin-bottom: 12px"
+          @file-dropped="conf.data.settings.img2img.image = $event"
         />
 
         <NCard title="Settings">

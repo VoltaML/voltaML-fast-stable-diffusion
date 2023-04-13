@@ -9,6 +9,7 @@
           :callback="imageSelectCallback"
           :preview="conf.data.settings.realesrgan.image"
           style="margin-bottom: 12px"
+          @file-dropped="conf.data.settings.realesrgan.image = $event"
         />
 
         <NCard title="Settings">

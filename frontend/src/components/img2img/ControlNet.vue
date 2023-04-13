@@ -7,6 +7,7 @@
           :callback="imageSelectCallback"
           :preview="conf.data.settings.controlnet.image"
           style="margin-bottom: 12px"
+          @file-dropped="conf.data.settings.controlnet.image = $event"
         />
 
         <NCard title="Settings">
