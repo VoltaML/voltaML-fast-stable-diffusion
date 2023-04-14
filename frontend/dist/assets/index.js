@@ -37392,7 +37392,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     });
     const pyTorchModels = computed(() => {
       return filteredModels.value.filter((model) => {
-        return model.backend === "PyTorch";
+        return model.backend === "PyTorch" && model.valid === true;
       });
     });
     const aitModels = computed(() => {
@@ -37925,7 +37925,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_c8e15e08_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_ff0aa00f_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -37933,7 +37933,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-c8e15e08"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-ff0aa00f"]]);
 const _sfc_main$5 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

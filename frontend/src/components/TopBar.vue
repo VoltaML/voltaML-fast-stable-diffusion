@@ -267,7 +267,7 @@ const filteredModels = computed(() => {
 
 const pyTorchModels = computed(() => {
   return filteredModels.value.filter((model) => {
-    return model.backend === "PyTorch";
+    return model.backend === "PyTorch" && model.valid === true;
   });
 });
 
