@@ -17,7 +17,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
-from core.controlnet import image_to_controlnet_input
+from core.controlnet_preprocessing import image_to_controlnet_input
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
 from core.inference.lwp import get_weighted_text_embeddings

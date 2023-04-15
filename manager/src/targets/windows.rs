@@ -1,3 +1,3 @@
-pub fn install(_branch: &str) {
+pub fn install() {
     println!("Selected Windows installation method")
 }

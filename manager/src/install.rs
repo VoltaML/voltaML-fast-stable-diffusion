@@ -9,18 +9,10 @@ pub fn install() {
         .interact()
         .unwrap();
 
-    let branches = vec!["main", "experimental"];
-    let branch_id = Select::with_theme(&ColorfulTheme::default())
-        .default(0)
-        .items(&branches)
-        .interact()
-        .unwrap();
-    let branch = branches[branch_id].to_string();
-
     match response {
-        0 => targets::windows::install(&branch),
-        1 => targets::ubuntu::install(&branch, true),
-        2 => targets::ubuntu::install(&branch, false),
+        0 => targets::windows::install(),
+        1 => targets::ubuntu::install(true),
+        2 => targets::ubuntu::install(false),
         _ => println!("Error"),
     }
 }

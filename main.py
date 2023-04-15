@@ -179,6 +179,21 @@ def checks():
             ]
         )
 
+    if not is_installed("dotenv"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "python-dotenv",
+            ]
+        )
+
+    import dotenv
+
+    dotenv.load_dotenv()
+
     # Inject coloredlogs
     import coloredlogs
 
@@ -231,4 +246,9 @@ if __name__ == "__main__":
     print("Starting the API...")
 
     checks()
-    main()
+
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info("Received keyboard interrupt, exiting...")
+        exit(0)
