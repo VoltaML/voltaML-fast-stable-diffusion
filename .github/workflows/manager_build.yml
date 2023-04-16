@@ -21,3 +21,9 @@ jobs:
       - uses: actions/checkout@v3
       - name: Build
         run: cd manager && cargo build --verbose --release
+      - name: Output binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: volta-manager
+          path: manager/target/release/volta-manager
+          retention-days: 3

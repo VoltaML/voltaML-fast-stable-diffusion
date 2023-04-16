@@ -12,10 +12,23 @@ use utils::shell::run_command;
 
 fn main() {
     // Check the Git repo update status
-    if git::git::is_git_repo_up_to_date() {
-        println!("{} {}", style("[Ok]").green(), "Already up-to-date.");
+    let uptodate = git::git::is_git_repo_up_to_date();
+    if uptodate.is_ok() {
+        if uptodate.unwrap() {
+            println!("{} {}", style("[Ok]").green(), "Repository up-to-date.");
+        } else {
+            println!(
+                "{} {}",
+                style("[!]").yellow(),
+                "Repository ready to update."
+            );
+        }
     } else {
-        println!("{} {}", style("[!]").yellow(), "Update available.");
+        println!(
+            "{} {}",
+            style("[!]").red(),
+            "Could not check for repository updates."
+        );
     }
 
     // Loop the menu
@@ -34,7 +47,14 @@ fn main() {
                 debug_menu();
             }
             "Install" => install::install(),
-            "Update" => git::git::update_git_repo(),
+            "Update" => {
+                let res = git::git::update_git_repo();
+                if res.is_ok() {
+                    println!("{}", res.unwrap());
+                } else {
+                    println!("{} {}", style("[!]").red(), res.err().unwrap());
+                }
+            }
             "Configure" => configure(),
             "Start" => {
                 start_api();
@@ -123,7 +143,7 @@ fn debug_menu() {
             }
             3 => {
                 let os = targets::detect_target();
-                println!("Targer OS: {}", os.to_string());
+                println!("{} Targer OS: {}", style("[OK]").green(), os.to_string());
             }
             4 => {
                 println!("Cloning repo...");

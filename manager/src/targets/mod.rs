@@ -26,7 +26,7 @@ pub fn detect_target() -> Target {
     if cfg!(target_os = "windows") {
         return Target::Windows;
     } else if cfg!(target_os = "linux") {
-        let uname = run_command("uname -r", "Check if WSL");
+        let uname = run_command("uname -r", "");
         if uname.is_ok() {
             let uname = uname.unwrap();
             if uname.contains("microsoft") {
