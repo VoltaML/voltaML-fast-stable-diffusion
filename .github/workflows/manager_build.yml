@@ -25,5 +25,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: volta-manager
-          path: manager/target/release/volta-manager
+          path: manager/target/release/voltaml-manager
           retention-days: 3
