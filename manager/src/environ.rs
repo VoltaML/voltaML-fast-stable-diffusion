@@ -1,5 +1,7 @@
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use regex::Regex;
+use shellexpand::tilde;
+use std::error::Error;
 use std::fs::{File, OpenOptions};
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
@@ -55,4 +57,45 @@ pub fn change_logging_level() {
     };
 
     inject_variable("LOG_LEVEL", level);
+}
+
+pub fn check_cuda_exports() -> Result<bool, Box<dyn Error>> {
+    let mut file = OpenOptions::new()
+        .read(true)
+        .open(Path::new(&tilde("~/.bashrc").to_string()))?;
+
+    let mut contents = String::new();
+    file.read_to_string(&mut contents)?;
+
+    Ok(
+        contents.contains("export PATH=\"/usr/local/cuda/bin:$PATH\"")
+            && contents
+                .contains("export LD_LIBRARY_PATH=\"/usr/local/cuda/lib64:$LD_LIBRARY_PATH\""),
+    )
+}
+
+pub fn insert_cuda_exports() -> Result<(), Box<dyn Error>> {
+    // Insert export commands into .bashrc
+    let mut file = OpenOptions::new()
+        .append(true)
+        .open(Path::new(&tilde("~/.bashrc").to_string()))?;
+
+    file.write_all(b"\n")?;
+    file.write_all(b"export PATH=\"/usr/local/cuda/bin:$PATH\"\n")?;
+    file.write_all(b"export LD_LIBRARY_PATH=\"/usr/local/cuda/lib64:$LD_LIBRARY_PATH\"\n")?;
+
+    // Insert into current shell
+    std::env::set_var(
+        "PATH",
+        format!("/usr/local/cuda/bin:{}", std::env::var("PATH").unwrap()),
+    );
+    std::env::set_var(
+        "LD_LIBRARY_PATH",
+        format!(
+            "/usr/local/cuda/lib64:{}",
+            std::env::var("LD_LIBRARY_PATH").unwrap()
+        ),
+    );
+
+    Ok(())
 }

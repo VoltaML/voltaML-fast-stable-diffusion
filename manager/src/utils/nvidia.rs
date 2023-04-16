@@ -22,13 +22,15 @@ pub fn nvcc_version() -> Result<String, Box<dyn Error>> {
     Ok(version)
 }
 
-pub fn is_cuda_installed() -> bool {
-    let res = run_command("which nvcc", "Check if NVCC is installed");
-    if res.is_err() {
-        return false;
-    } else {
-        return true;
+pub fn is_cuda_installed() -> Result<bool, Box<dyn Error>> {
+    let res = run_command("dpkg -l", "List dpgk packages")?;
+    for line in res.lines() {
+        let package_name = line.split_whitespace().nth(1);
+        if package_name.unwrap_or("") == "cuda" {
+            return Ok(true);
+        }
     }
+    return Ok(false);
 }
 
 pub fn is_nvidia_repo_added() -> bool {
@@ -43,35 +45,36 @@ pub fn is_nvidia_repo_added() -> bool {
     }
 }
 
-pub fn add_nvidia_repo() {
+pub fn add_nvidia_repo() -> Result<(), Box<dyn Error>> {
     // Install Wget
-    run_command("sudo apt install wget", "Install wget").unwrap();
+    crate::apt::install("wget")?;
 
     // Get the NVIDIA repo key
     run_command(
         "wget https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/cuda-wsl-ubuntu.pin",
         "Get NVIDIA repo key",
-    ).unwrap();
+    )?;
 
     // Move the NVIDIA repo key
     run_command(
         "sudo mv cuda-wsl-ubuntu.pin /etc/apt/preferences.d/cuda-repository-pin-600",
         "Move NVIDIA repo key",
-    )
-    .unwrap();
+    )?;
 
     // Add the NVIDIA repo key to apt
     run_command(
         "sudo apt-key adv --fetch-keys https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/3bf863cc.pub",
         "Insert NVIDIA repo key into apt",
-    ).unwrap();
+    )?;
 
     // Add the NVIDIA repo to apt
     run_command(
         "sudo add-apt-repository -y \"deb https://developer.download.nvidia.com/compute/cuda/repos/wsl-ubuntu/x86_64/ /\"",
         "Add NVIDIA repo to apt",
-    ).unwrap();
+    )?;
 
     // Update
     update();
+
+    Ok(())
 }

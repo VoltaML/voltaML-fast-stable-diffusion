@@ -1,3 +1,5 @@
+use std::error::Error;
+
 use crate::utils::shell::run_command;
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Select};
@@ -28,23 +30,56 @@ pub fn install(wsl: bool) {
         ".",
         if branch == 0 { "main" } else { "experimental" },
     )
-    .unwrap();
+    .unwrap_or_else({
+        |e| {
+            println!("{} {}", style("[ERROR]").red(), e);
+            return;
+        }
+    });
 
-    // Install Python, ROCmInfo
-    run_command(
-        "sudo apt install -y python3.10 python3.10-venv build-essential python3-pip",
-        "Install Python dependencies",
-    )
-    .unwrap();
+    // Install build-essential
+    let res = crate::apt::install("build-essential");
+    if res.is_err() {
+        println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+        return;
+    }
 
     // Check Python
-    crate::utils::python::is_python_installed();
-    crate::utils::python::is_pip_installed();
-    crate::utils::python::is_virtualenv_installed();
+    if !crate::utils::python::is_python_installed() {
+        let res = crate::apt::install("python3.10");
+        if res.is_err() {
+            println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+            return;
+        }
+    }
+
+    // Check pip
+    if !crate::utils::python::is_pip_installed() {
+        let res = crate::apt::install("python3-pip");
+        if res.is_err() {
+            println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+            return;
+        }
+    }
+
+    // Check virtualenv
+    if !crate::utils::python::is_virtualenv_installed() {
+        let res = crate::apt::install("python3-venv");
+        if res.is_err() {
+            println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+            return;
+        }
+    }
 
     // Install GPU Inference dependencies
     match gpu_type {
-        0 => nvidia(wsl),
+        0 => {
+            let res = nvidia(wsl);
+            if res.is_err() {
+                println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+                return;
+            }
+        }
         1 => {
             println!("{} {}", style("[ERROR]").red(), "AMD not supported yet");
             return;
@@ -56,13 +91,21 @@ pub fn install(wsl: bool) {
     crate::utils::nvidia::is_nvcc_installed();
 
     // Insert the HUGGINGFACE_TOKEN
-    crate::env::change_huggingface_token();
+    crate::environ::change_huggingface_token();
 
     // Create the virtual environment
-    crate::utils::python::create_venv();
+    let res = crate::utils::python::create_venv();
+    if res.is_err() {
+        println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+        return;
+    }
 
     // Install wheel
-    crate::utils::python::pip_install("wheel");
+    let res = crate::utils::python::pip_install("wheel");
+    if res.is_err() {
+        println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+        return;
+    }
 
     // Install AITemplate
     run_command(
@@ -79,14 +122,54 @@ pub fn install(wsl: bool) {
     );
 }
 
-fn nvidia(_wsl: bool) {
+fn nvidia(_wsl: bool) -> Result<(), Box<dyn Error>> {
     // Check if nvidia repository is added to apt
     if !crate::utils::nvidia::is_nvidia_repo_added() {
-        crate::utils::nvidia::add_nvidia_repo();
+        crate::utils::nvidia::add_nvidia_repo()?;
     }
 
     // Install CUDA if not installed
-    if !crate::utils::nvidia::is_cuda_installed() {
-        crate::apt::install("cuda");
+    let cuda_installed = crate::utils::nvidia::is_cuda_installed();
+    if cuda_installed.is_ok() {
+        if !cuda_installed.unwrap() {
+            crate::apt::install("cuda")?;
+        }
+    } else {
+        println!(
+            "{} {}",
+            style("[ERROR]").red(),
+            "Could not check if CUDA is installed, exiting"
+        );
+        return Err(cuda_installed.err().unwrap());
+    }
+
+    let export_check = crate::environ::check_cuda_exports();
+    if export_check.is_ok() {
+        if !export_check.unwrap() {
+            println!(
+                "{} {}",
+                style("[OK]").green(),
+                "CUDA exports are not present, adding them"
+            );
+            crate::environ::insert_cuda_exports()?;
+            println!(
+                "{} {}",
+                style("[OK]").green(),
+                "CUDA exports added to ~/.bashrc"
+            );
+        }
+        println!(
+            "{} {}",
+            style("[OK]").green(),
+            "CUDA exports are already present, continuing"
+        );
+        Ok(())
+    } else {
+        println!(
+            "{} {}",
+            style("[ERROR]").red(),
+            "Could not check if CUDA exports are present, exiting"
+        );
+        Err(export_check.err().unwrap())
     }
 }

@@ -34,7 +34,7 @@ pub fn is_pip_installed() -> bool {
 }
 
 pub fn is_virtualenv_installed() -> bool {
-    run_command("virtualenv --version", "Is virtualenv available").is_ok()
+    run_command("virtualenv --version", "").is_ok()
 }
 
 pub fn does_venv_exists() -> bool {
@@ -59,14 +59,26 @@ pub fn installed_packages() -> Result<Vec<PythonPackage>, Box<dyn Error>> {
     Ok(packages)
 }
 
-pub fn create_venv() {
-    run_command("virtualenv venv", "Create virtualenv").unwrap();
+pub fn create_venv() -> Result<(), Box<dyn Error>> {
+    run_command("virtualenv venv", "Create virtualenv")?;
+    Ok(())
 }
 
-pub fn pip_install(package: &str) {
+pub fn install_virtualenv() -> Result<(), Box<dyn Error>> {
+    let os = detect_target();
+    if os == Target::Windows {
+        run_command("python -m pip install virtualenv", "Install virtualenv")?;
+    } else {
+        run_command("sudo apt install python3.10-venv", "Install virtualenv")?;
+    }
+
+    Ok(())
+}
+
+pub fn pip_install(package: &str) -> Result<(), Box<dyn Error>> {
     run_command(
         &format!("venv/bin/pip install {}", package),
         &format!("Install package {}", package),
-    )
-    .unwrap();
+    )?;
+    Ok(())
 }

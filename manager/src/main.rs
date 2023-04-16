@@ -1,6 +1,6 @@
 mod apt;
 mod debug;
-mod env;
+mod environ;
 pub mod git;
 pub mod install;
 mod targets;
@@ -8,6 +8,7 @@ mod utils;
 
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Select};
+use std::env;
 use utils::shell::run_command;
 
 fn main() {
@@ -75,8 +76,8 @@ fn configure() {
 
         match response {
             0 => break,
-            1 => env::change_huggingface_token(),
-            2 => env::change_logging_level(),
+            1 => environ::change_huggingface_token(),
+            2 => environ::change_logging_level(),
             _ => println!("Error"),
         }
     }
@@ -98,16 +99,23 @@ fn debug_menu() {
             "Create venv",
             "Check CUDA",
             "Check NVIDIA CUDA repo key",
+            "Is virtualenv installed",
+            "Install virtualenv",
+            "Show $PATH",
+            "Check CUDA exports in .bashrc",
+            "Insert CUDA exports to .bashrc",
         ];
-        let response = Select::with_theme(&ColorfulTheme::default())
+        let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
             .items(&items)
             .interact()
             .unwrap();
 
+        let response = items[response_id];
+
         match response {
-            0 => break,
-            1 => {
+            "Exit" => break,
+            "Check NVCC" => {
                 if utils::nvidia::is_nvcc_installed() {
                     let version = utils::nvidia::nvcc_version();
                     if version.is_ok() {
@@ -123,7 +131,7 @@ fn debug_menu() {
                     println!("{} {}", style("[ERROR]").red(), "nvcc not available");
                 }
             }
-            2 => {
+            "Check Python" => {
                 if utils::python::is_python_installed() {
                     let version = utils::python::python_version();
                     if version.is_ok() {
@@ -141,11 +149,11 @@ fn debug_menu() {
                     println!("{} {}", style("[ERROR]").red(), "Python not available");
                 }
             }
-            3 => {
+            "Detect OS" => {
                 let os = targets::detect_target();
                 println!("{} Targer OS: {}", style("[OK]").green(), os.to_string());
             }
-            4 => {
+            "Clone repo" => {
                 println!("Cloning repo...");
                 let res = git::clone::clone_repo(
                     "https://github.com/voltaML/voltaML-fast-stable-diffusion",
@@ -158,36 +166,56 @@ fn debug_menu() {
                     println!("{} {}", style("[ERROR]").red(), "Clone failed");
                 }
             }
-            5 => {
+            "Is Root" => {
                 if utils::is_root() {
                     println!("{} {}", style("[INFO]").green(), "Running as root");
                 } else {
                     println!("{} {}", style("[INFO]").green(), "Running as user");
                 }
             }
-            6 => apt::update(),
-            7 => apt::upgrade(),
-            8 => {
+            "Apt Update" => apt::update(),
+            "Apt Upgrade" => apt::upgrade(),
+            "Does venv exist" => {
                 if utils::python::does_venv_exists() {
                     println!("{} {}", style("[INFO]").green(), "Venv exists");
                 } else {
                     println!("{} {}", style("[ERROR]").red(), "No venv found");
                 }
             }
-            9 => {
-                debug::python_packages().print_tty(false).unwrap();
-            }
-            10 => {
-                utils::python::create_venv();
-            }
-            11 => {
-                if utils::nvidia::is_cuda_installed() {
-                    println!("{} {}", style("[OK]").green(), "CUDA installed");
+            "Installed Python packages" => {
+                let res = debug::python_packages();
+                if res.is_ok() {
+                    res.unwrap().print_tty(false).unwrap();
                 } else {
-                    println!("{} {}", style("[ERROR]").red(), "CUDA not installed");
+                    println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
                 }
             }
-            12 => {
+            "Create venv" => {
+                let res = utils::python::create_venv();
+                if res.is_ok() {
+                    println!("{} {}", style("[OK]").green(), "Venv created");
+                } else {
+                    println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+                }
+            }
+            "Check CUDA" => {
+                let res = utils::nvidia::is_cuda_installed();
+                if res.is_ok() {
+                    if res.unwrap() {
+                        println!("{} {}", style("[OK]").green(), "CUDA installed");
+                    } else {
+                        println!("{} {}", style("[ERROR]").red(), "CUDA not installed");
+                    }
+                } else {
+                    println!(
+                        "{} {}: {}",
+                        style("[ERROR]").red(),
+                        "CUDA not installed",
+                        res.err().unwrap()
+                    );
+                }
+            }
+            "Check NVIDIA CUDA repo key" => {
                 if utils::nvidia::is_nvidia_repo_added() {
                     println!(
                         "{} {}",
@@ -199,6 +227,59 @@ fn debug_menu() {
                         "{} {}",
                         style("[ERROR]").red(),
                         "NVIDIA CUDA repo key not present"
+                    );
+                }
+            }
+            "Is virtualenv installed" => {
+                if utils::python::is_virtualenv_installed() {
+                    println!("{} {}", style("[OK]").green(), "virtualenv installed");
+                } else {
+                    println!("{} {}", style("[ERROR]").red(), "virtualenv not installed");
+                }
+            }
+            "Install virtualenv" => {
+                let res = utils::python::install_virtualenv();
+                if res.is_ok() {
+                    println!("{} {}", style("[OK]").green(), "virtualenv installed");
+                } else {
+                    println!(
+                        "{} {}: {}",
+                        style("[ERROR]").red(),
+                        "virtualenv failed to install",
+                        res.err().unwrap()
+                    );
+                }
+            }
+            "Show $PATH" => {
+                println!("Path: {}", env::var("PATH").unwrap_or("".to_string()));
+            }
+            "Check CUDA exports in .bashrc" => {
+                let res = environ::check_cuda_exports();
+                if res.is_ok() {
+                    if res.unwrap() {
+                        println!("{} {}", style("[OK]").green(), "CUDA exports present");
+                    } else {
+                        println!("{} {}", style("[ERROR]").red(), "CUDA exports not present");
+                    }
+                } else {
+                    println!(
+                        "{} {}: {}",
+                        style("[ERROR]").red(),
+                        "CUDA exports check failed",
+                        res.err().unwrap()
+                    );
+                }
+            }
+            "Insert CUDA exports to .bashrc" => {
+                let res = environ::insert_cuda_exports();
+                if res.is_ok() {
+                    println!("{} {}", style("[OK]").green(), "CUDA exports inserted");
+                } else {
+                    println!(
+                        "{} {}: {}",
+                        style("[ERROR]").red(),
+                        "CUDA exports failed to insert",
+                        res.err().unwrap()
                     );
                 }
             }
