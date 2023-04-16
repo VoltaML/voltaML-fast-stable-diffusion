@@ -2,7 +2,7 @@
 
 This is a list of commands that the bot supports. The bot will also try respond to any command prefixed with `!`, but the intended way of using these commands is with a `/`.
 
-## Avaliable
+## Available
 
 Lists all the available models that can be loaded for inference.
 

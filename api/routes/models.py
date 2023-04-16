@@ -34,9 +34,9 @@ async def list_loaded_models() -> List[ModelResponse]:
     return loaded_models
 
 
-@router.get("/avaliable")
-async def list_avaliable_models() -> List[ModelResponse]:
-    "Show a list of avaliable models"
+@router.get("/available")
+async def list_available_models() -> List[ModelResponse]:
+    "Show a list of available models"
 
     return cached_model_list.all()
 

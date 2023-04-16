@@ -1,6 +1,6 @@
 # Settings
 
-This is an experimental feature that is avaliable in both the UI and the API. It can be fund in the `Settings` tab in the UI.
+This is an experimental feature that is available in both the UI and the API. It can be fund in the `Settings` tab in the UI.
 
 Settings are split into multiple categories:
 

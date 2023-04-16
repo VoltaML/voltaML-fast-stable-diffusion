@@ -37413,7 +37413,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     function refreshModels() {
       console.log("Refreshing models");
       modelsLoading.value = true;
-      fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
+      fetch(`${serverUrl}/api/models/available`).then((res) => {
         res.json().then((data) => {
           models.value.splice(0, models.value.length);
           data.forEach((model) => {
@@ -37925,7 +37925,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_ff0aa00f_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_6372c5f5_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -37933,7 +37933,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-ff0aa00f"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-6372c5f5"]]);
 const _sfc_main$5 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

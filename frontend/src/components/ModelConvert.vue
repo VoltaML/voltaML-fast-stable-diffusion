@@ -77,7 +77,7 @@ const use_fp32 = ref(false);
 const safetensors = ref(false);
 const showUnloadModal = ref(false);
 
-fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
+fetch(`${serverUrl}/api/models/available`).then((res) => {
   res.json().then((data: Array<ModelEntry>) => {
     modelOptions.splice(0, modelOptions.length);
 

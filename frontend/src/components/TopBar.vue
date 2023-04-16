@@ -292,7 +292,7 @@ const loraModels = computed(() => {
 function refreshModels() {
   console.log("Refreshing models");
   modelsLoading.value = true;
-  fetch(`${serverUrl}/api/models/avaliable`)
+  fetch(`${serverUrl}/api/models/available`)
     .then((res) => {
       res.json().then((data: Array<ModelEntry>) => {
         // TODO: Lora loaded state isnt updated
