@@ -1,6 +1,6 @@
-use std::error::Error;
+use std::{error::Error, path::Path};
 
-use crate::utils::shell::run_command;
+use crate::utils::shell::spawn_command;
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Select};
 
@@ -25,17 +25,22 @@ pub fn install(wsl: bool) {
         .items(&branches)
         .interact()
         .unwrap();
-    crate::git::clone::clone_repo(
+    let res = crate::git::clone::clone_repo(
         "https://github.com/voltaML/voltaML-fast-stable-diffusion",
-        ".",
+        "tmp",
         if branch == 0 { "main" } else { "experimental" },
-    )
-    .unwrap_or_else({
-        |e| {
-            println!("{} {}", style("[ERROR]").red(), e);
-            return;
-        }
-    });
+    );
+    if res.is_err() {
+        println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+        return;
+    }
+
+    // Move everything into current dir
+    let res = crate::utils::shell::move_dir_recursive(&Path::new("tmp"), &Path::new("."));
+    if res.is_err() {
+        println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+        return;
+    }
 
     // Install build-essential
     let res = crate::apt::install("build-essential");
@@ -64,7 +69,7 @@ pub fn install(wsl: bool) {
 
     // Check virtualenv
     if !crate::utils::python::is_virtualenv_installed() {
-        let res = crate::apt::install("python3-venv");
+        let res = crate::apt::install("python3-virtualenv");
         if res.is_err() {
             println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
             return;
@@ -108,8 +113,8 @@ pub fn install(wsl: bool) {
     }
 
     // Install AITemplate
-    run_command(
-        "git clone --recursive https://github.com/facebookincubator/AITemplate && cd AITemplate/python && ../../venv/bin/python setup.py bdist_wheel && ../../venv/bin/pip install dist/*.whl --force-reinstall",
+    spawn_command(
+        "bash -c \"git clone --recursive https://github.com/facebookincubator/AITemplate && cd AITemplate/python && ../../venv/bin/python setup.py bdist_wheel && ../../venv/bin/pip install dist/*.whl --force-reinstall\"",
         "Install AITemplate",
     )
     .unwrap();

@@ -19,10 +19,7 @@ pub fn inject_variable(name: &str, value: &str) {
         .expect("Failed to read file");
 
     let re = Regex::new(&format!("{}=.*", name)).expect("Invalid regular expression");
-    println!("Found: {}", re.find(&contents).is_some());
     let new_contents = re.replace(&contents, &format!("{}={}", name, value));
-
-    println!("Writing to file:\n{}", new_contents);
 
     let mut outfile = File::create(&envfile).expect("Failed to create file");
     outfile
@@ -85,17 +82,21 @@ pub fn insert_cuda_exports() -> Result<(), Box<dyn Error>> {
     file.write_all(b"export LD_LIBRARY_PATH=\"/usr/local/cuda/lib64:$LD_LIBRARY_PATH\"\n")?;
 
     // Insert into current shell
-    std::env::set_var(
-        "PATH",
-        format!("/usr/local/cuda/bin:{}", std::env::var("PATH").unwrap()),
-    );
-    std::env::set_var(
-        "LD_LIBRARY_PATH",
-        format!(
-            "/usr/local/cuda/lib64:{}",
-            std::env::var("LD_LIBRARY_PATH").unwrap()
-        ),
-    );
+    // PATH
+    let path = std::env::var("PATH").unwrap_or("".to_string());
+    if path.is_empty() {
+        std::env::set_var("PATH", "/usr/local/cuda/bin");
+    } else {
+        std::env::set_var("PATH", format!("/usr/local/cuda/bin:{}", path));
+    }
+
+    // LD_LIBRARY_PATH
+    let ld = std::env::var("LD_LIBRARY_PATH").unwrap_or("".to_string());
+    if ld.is_empty() {
+        std::env::set_var("LD_LIBRARY_PATH", "/usr/local/cuda/lib64");
+    } else {
+        std::env::set_var("LD_LIBRARY_PATH", format!("/usr/local/cuda/lib64:{}", ld));
+    }
 
     Ok(())
 }

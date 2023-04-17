@@ -1,6 +1,6 @@
 use console::style;
 use shlex::split;
-use std::{error::Error, process::Command};
+use std::{error::Error, fs, path::Path, process::Command};
 
 pub fn run_command(command: &str, command_name: &str) -> Result<String, Box<dyn Error>> {
     let command_args: Vec<String> = split(command).unwrap();
@@ -66,4 +66,26 @@ pub fn spawn_command(command: &str, command_name: &str) -> Result<String, Box<dy
         }
         return Err(output.err().unwrap().into());
     }
+}
+
+pub fn move_dir_recursive(src: &Path, dst: &Path) -> std::io::Result<()> {
+    if src.is_dir() {
+        fs::create_dir_all(dst)?;
+
+        for entry in src.read_dir()? {
+            let entry = entry?;
+            let src_path = entry.path();
+            let dst_path = dst.join(entry.file_name());
+            if src_path.is_dir() {
+                move_dir_recursive(&src_path, &dst_path)?;
+            } else {
+                fs::rename(&src_path, &dst_path)?;
+            }
+        }
+    } else {
+        fs::rename(src, dst)?;
+    }
+
+    fs::remove_dir_all(src)?;
+    Ok(())
 }

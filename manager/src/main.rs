@@ -8,8 +8,8 @@ mod utils;
 
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Select};
-use std::env;
-use utils::shell::run_command;
+use std::{env, error::Error};
+use utils::shell::spawn_command;
 
 fn main() {
     // Check the Git repo update status
@@ -34,7 +34,14 @@ fn main() {
 
     // Loop the menu
     loop {
-        let items = vec!["Update", "Install", "Configure", "Developer Menu", "Exit"];
+        let items = vec![
+            "Start",
+            "Update",
+            "Install",
+            "Configure",
+            "Developer Menu",
+            "Exit",
+        ];
         let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
             .items(&items)
@@ -58,7 +65,10 @@ fn main() {
             }
             "Configure" => configure(),
             "Start" => {
-                start_api();
+                let res = start_api();
+                if res.is_err() {
+                    println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+                }
             }
             _ => println!("Error"),
         }
@@ -288,6 +298,7 @@ fn debug_menu() {
     }
 }
 
-fn start_api() {
-    run_command("venv/bin/python main.py", "Run the API").unwrap();
+fn start_api() -> Result<(), Box<dyn Error>> {
+    spawn_command("venv/bin/python main.py", "Run the API")?;
+    Ok(())
 }

@@ -2,7 +2,7 @@ use std::{error::Error, path::Path};
 
 use crate::targets::{detect_target, Target};
 
-use super::shell::run_command;
+use super::shell::{run_command, spawn_command};
 
 pub fn python_executable() -> String {
     if detect_target() == Target::Windows {
@@ -76,7 +76,7 @@ pub fn install_virtualenv() -> Result<(), Box<dyn Error>> {
 }
 
 pub fn pip_install(package: &str) -> Result<(), Box<dyn Error>> {
-    run_command(
+    spawn_command(
         &format!("venv/bin/pip install {}", package),
         &format!("Install package {}", package),
     )?;
