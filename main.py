@@ -67,20 +67,6 @@ args = parser.parse_args(args=app_args)
 logging.basicConfig(level=args.log_level)
 logger = logging.getLogger(__name__)
 
-# Check tokens
-if not os.getenv("HUGGINGFACE_TOKEN"):
-    logger.error(
-        "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
-    )
-    sys.exit(1)
-
-if args.bot:
-    if not os.getenv("DISCORD_BOT_TOKEN"):
-        logger.error(
-            "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
-        )
-        sys.exit(1)
-
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
@@ -179,6 +165,35 @@ def checks():
             ]
         )
 
+    if not is_installed("dotenv"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "python-dotenv",
+            ]
+        )
+
+    import dotenv
+
+    dotenv.load_dotenv()
+
+    # Check tokens
+    if not os.getenv("HUGGINGFACE_TOKEN"):
+        logger.error(
+            "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
+        )
+        sys.exit(1)
+
+    if args.bot:
+        if not os.getenv("DISCORD_BOT_TOKEN"):
+            logger.error(
+                "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
+            )
+            sys.exit(1)
+
     # Inject coloredlogs
     import coloredlogs
 
@@ -231,4 +246,9 @@ if __name__ == "__main__":
     print("Starting the API...")
 
     checks()
-    main()
+
+    try:
+        main()
+    except KeyboardInterrupt:
+        logger.info("Received keyboard interrupt, exiting...")
+        exit(0)

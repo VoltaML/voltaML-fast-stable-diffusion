@@ -305,7 +305,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const modelOptions = reactive([]);
     const building = ref(false);
     const showUnloadModal = ref(false);
-    fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
+    fetch(`${serverUrl}/api/models/available`).then((res) => {
       res.json().then((data) => {
         modelOptions.splice(0, modelOptions.length);
         const pyTorch = data.filter((x) => x.backend === "PyTorch");

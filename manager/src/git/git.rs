@@ -1,61 +1,55 @@
-use std::process::exit;
+use std::error::Error;
 
 use console::style;
 use git2::{BranchType, Repository};
 
-pub fn is_git_repo_up_to_date() -> bool {
+pub fn is_git_repo_up_to_date() -> Result<bool, Box<dyn Error>> {
     let repo = Repository::discover(".");
-    let repo = match repo {
-        Ok(repo) => repo,
-        Err(e) => {
-            println!("{} {}", style("[!]").red(), e);
-            exit(1)
-        }
-    };
+    let repo = repo?;
 
-    let head = repo.head().unwrap();
+    let head = repo.head()?;
     let branch = head.shorthand().unwrap();
 
-    let branch_ref = repo.find_branch(branch, BranchType::Local).unwrap();
-    let upstream = branch_ref.upstream().unwrap();
-    let upstream_oid = upstream.get().peel_to_commit().unwrap().id();
+    let branch_ref = repo.find_branch(branch, BranchType::Local)?;
+    let upstream = branch_ref.upstream()?;
+    let upstream_oid = upstream.get().peel_to_commit()?.id();
 
-    let head_oid = head.peel_to_commit().unwrap().id();
+    let head_oid = head.peel_to_commit()?.id();
     let is_up_to_date = head_oid == upstream_oid;
 
-    return is_up_to_date;
+    return Ok(is_up_to_date);
 }
 
-pub fn update_git_repo() {
-    let repo = Repository::discover(".").unwrap();
-    let binding = repo.head().unwrap();
+pub fn update_git_repo() -> Result<String, Box<dyn Error>> {
+    let repo = Repository::discover(".")?;
+    let binding = repo.head()?;
     let current_branch = binding.shorthand().unwrap();
 
-    repo.find_remote("origin")
-        .unwrap()
-        .fetch(&[current_branch], None, None)
-        .unwrap();
+    repo.find_remote("origin")?
+        .fetch(&[current_branch], None, None)?;
 
-    let fetch_head = repo.find_reference("FETCH_HEAD").unwrap();
-    let fetch_commit = repo.reference_to_annotated_commit(&fetch_head).unwrap();
-    let analysis = repo.merge_analysis(&[&fetch_commit]).unwrap();
+    let fetch_head = repo.find_reference("FETCH_HEAD")?;
+    let fetch_commit = repo.reference_to_annotated_commit(&fetch_head)?;
+    let analysis = repo.merge_analysis(&[&fetch_commit])?;
     if analysis.0.is_up_to_date() {
-        println!("{} {}", style("[Ok]").red(), "Already up-to-date.");
+        Ok(format!("{} {}", style("[Ok]").red(), "Already up-to-date."))
     } else if analysis.0.is_fast_forward() {
         let refname = format!("refs/heads/{}", current_branch);
-        let mut reference = repo.find_reference(&refname).unwrap();
-        reference
-            .set_target(fetch_commit.id(), "Fast-Forward")
-            .unwrap();
-        repo.set_head(&refname).unwrap();
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))
-            .unwrap();
+        let mut reference = repo.find_reference(&refname)?;
+        reference.set_target(fetch_commit.id(), "Fast-Forward")?;
+        repo.set_head(&refname)?;
+        repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
+        Ok(format!(
+            "{} {}",
+            style("[Ok]").green(),
+            "Repository updated."
+        ))
     } else {
         println!(
             "{} {}",
             style("[!]").red(),
             "Cannot fast-forward, please merge manually."
         );
-        exit(1)
+        Err("Cannot fast-forward, please merge manually.".into())
     }
 }

@@ -81,7 +81,7 @@ async def startup_event():
     logger.info("Started WebSocketManager sync loop")
     asyncio.create_task(websocket_manager.perf_loop())
     logger.info("Started WebSocketManager performance monitoring loop")
-    logger.info("UI Avaliable at: http://localhost:5003/")
+    logger.info("UI Available at: http://localhost:5003/")
 
 
 @app.on_event("shutdown")

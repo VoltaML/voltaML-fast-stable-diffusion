@@ -175,7 +175,7 @@ class GPU:
 
                 # Save Grid
                 grid = image_grid(images)
-                if job.save_grid:
+                if job.save_grid and len(images) > 1:
                     images = [grid, *images]
 
                 # Save Images
@@ -194,7 +194,7 @@ class GPU:
             self.queue.mark_finished()
 
             # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
-            if isinstance(images[0], Image.Image):
+            if isinstance(images[0], Image.Image) and len(images) > 1:
                 images = [grid, *images]
 
             return (images, deltatime)

@@ -4,7 +4,7 @@ VoltaML support all of these methods for loading models:
 
 |                    | Diffusers | Checkpoint (.ckpt)     | Safetensors (.safetensors) | AITemplate  |
 | ------------------ | --------- | ---------------------- | -------------------------- | ----------- |
-| AITemplate compile | Yes       | No                     | No                         | Unavaliable |
+| AITemplate compile | Yes       | No                     | No                         | Unavailable |
 | Float 16           | Yes       | Only if already pruned | Only if already pruned     | Yes         |
 | Float 32           | Yes       | Yes                    | Yes                        | No          |
 

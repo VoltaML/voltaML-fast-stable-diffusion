@@ -19,7 +19,7 @@ class Txt2ImgConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
     steps: int = 25
@@ -35,7 +35,7 @@ class Img2ImgConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
     steps: int = 25
@@ -58,7 +58,7 @@ class InpaintingConfig:
     seed: int = -1
     batch_count: int = 1
     batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
 
 
 @dataclass
@@ -74,7 +74,7 @@ class ControlNetConfig:
     steps: int = 25
     batch_count: int = 1
     batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverMultistepScheduler.value
+    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     controlnet: ControlNetMode = ControlNetMode.CANNY
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512
@@ -132,7 +132,7 @@ class BotConfig:
     "Configuration for the bot"
 
     default_scheduler: KarrasDiffusionSchedulers = (
-        KarrasDiffusionSchedulers.DPMSolverMultistepScheduler
+        KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler
     )
     verbose: bool = False
     use_default_negative_prompt: bool = True

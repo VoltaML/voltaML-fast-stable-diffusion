@@ -30,35 +30,6 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 - Documented API
 - Clean source code that should be easy to understand
 
-## Feature availability
-
-- ✅ Feature available and supported
-- ❌ Feature not available yet
-- 🚧 Feature is in the development or testing phase
-
-| Feature          | PyTorch | AITemplate | Long Weighted Prompt (PyTorch Only) |
-| ---------------- | ------- | ---------- | ----------------------------------- |
-| Txt2Img          | ✅      | ✅         | ✅                                  |
-| Img2Img          | ✅      | ✅         | ✅                                  |
-| ControlNet       | ✅      | ✅         | ✅                                  |
-| Inpainting       | ✅      | 🚧         | ✅                                  |
-| Image Variations | ❌      | ❌         | ❌                                  |
-| SD Upscale       | 🚧      | ❌         | ❌                                  |
-| Pix2Pix          | ❌      | ❌         | ❌                                  |
-
-| Feature                         | Availability |
-| ------------------------------- | ------------ |
-| Discord bot                     | ✅           |
-| Real-ESRGAN                     | 🚧           |
-| Latent Upscale                  | 🚧           |
-| Documentation                   | ✅           |
-| Image Browser                   | ✅           |
-| Model Conversion                | ✅           |
-| Model Training                  | ❌           |
-| Confiruration                   | ✅           |
-| UI Performance monitoring       | ✅           |
-| Loading from CKPT / Safetensors | ✅           |
-
 ## Speed comparison
 
 The below benchmarks have been done for generating a 512x512 image, batch size of one, measured in it/s.
@@ -77,14 +48,14 @@ The below benchmarks have been done for generating a 512x512 image, batch size o
 ## UI Preview
 
 **Text to image**
-![Text2Image](/static/frontend/frontend-txt2img.webp)
+![Text2Image](../static/frontend/frontend-txt2img.webp)
 
 <hr>
 
 **Image to image**
-![Image2Image](static/frontend/frontend-img2img.webp)
+![Image2Image](../static/frontend/frontend-img2img.webp)
 
 <hr>
 
 **Image Browser**
-![ImageBrowser](/static/frontend/frontend-browser.webp)
+![ImageBrowser](../static/frontend/frontend-browser.webp)

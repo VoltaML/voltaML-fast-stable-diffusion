@@ -40,21 +40,21 @@ class Models(Cog):
         else:
             await ctx.send(f"Error: {status}")
 
-    @commands.hybrid_command(name="avaliable")
+    @commands.hybrid_command(name="available")
     @commands.has_permissions(administrator=True)
-    async def avaliable_models(self, ctx: Context) -> None:
-        "List all avaliable models"
+    async def available_models(self, ctx: Context) -> None:
+        "List all available models"
 
         async with ClientSession() as session:
             async with session.get(
-                "http://localhost:5003/api/models/avaliable"
+                "http://localhost:5003/api/models/available"
             ) as response:
                 status = response.status
                 data: List[Dict[str, str]] = await response.json()
 
         if status == 200:
             models = set([i["name"] for i in data])
-            await ctx.send("Avaliable models:\n{}".format("\n ".join(models)))
+            await ctx.send("Available models:\n{}".format("\n ".join(models)))
         else:
             await ctx.send(f"Error: {status}")
 

@@ -11,7 +11,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /introduction
+      link: /getting-started/introduction
     - theme: alt
       text: View on GitHub
       link: https://github.com/voltaML/voltaML-fast-stable-diffusion

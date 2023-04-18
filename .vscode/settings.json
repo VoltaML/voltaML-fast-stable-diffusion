@@ -6,5 +6,6 @@
 	"python.testing.pytestEnabled": true,
 	"python.analysis.typeCheckingMode": "basic",
 	"python.formatting.provider": "black",
-	"python.languageServer": "Pylance"
+	"python.languageServer": "Pylance",
+	"rust-analyzer.linkedProjects": ["./manager/Cargo.toml"]
 }
