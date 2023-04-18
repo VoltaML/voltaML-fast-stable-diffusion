@@ -527,9 +527,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 ).sample
             else:
                 # this probably could have been done better but honestly fuck this
-                noise_pred = self.unet(  # type: ignore
-                    latent_model_input, t, encoder_hidden_states=text_embeddings
-                ).sample
+                try:
+                    noise_pred = self.unet(  # type: ignore
+                        latent_model_input, t, encoder_hidden_states=text_embeddings
+                    ).sample
+                except TypeError:
+                    noise_pred = self.unet(latent_model_input, t, text_embeddings).sample
 
             # perform guidance
             if do_classifier_free_guidance:
