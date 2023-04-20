@@ -174,6 +174,7 @@ def install_pytorch():
     # Install other requirements
     install_requirements("requirements/pytorch.txt")
     install_requirements("requirements/api.txt")
+    install_requirements("requirements/interrogation.txt")
 
 
 def install_bot():

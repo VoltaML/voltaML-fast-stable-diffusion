@@ -152,6 +152,8 @@ class InterrogatorConfig:
     chunk_size: int = 2048 # set to 1024 for lower vram usage
     flavor_intermediate_count: int = 2048 # set to 1024 for lower vram usage
 
+    flamingo_model: str = "dhansmair/flamingo-mini"
+
     caption_max_length: int = 32
 
 
