@@ -1,19 +1,24 @@
-import gc
 from abc import ABC, abstractmethod
-from typing import List
+import gc
+from dataclasses import dataclass
 
 import torch
-from PIL import Image
 
 from core.config import config
 from core.types import Backend, Job
 
 
-class InferenceModel(ABC):
-    "Base class for all inference models that will be used in the API"
+@dataclass
+class InterrogationResult:
+    "Contains results from the interrogation"
+    positive: str
+    negative: str
 
-    def __init__(self, model_id: str, device: str = "cuda"):
-        self.model_id = model_id
+
+class InterrogationModel(ABC):
+    "Base class for all interrogator models that will be used in the API"
+
+    def __init__(self, device: str = "cuda"):
         self.device = device
         self.backend: Backend = "unknown"
 
@@ -26,7 +31,7 @@ class InferenceModel(ABC):
         "Unloads the model from the memory"
 
     @abstractmethod
-    def generate(self, job: Job) -> List[Image.Image]:
+    def generate(self, job: Job) -> InterrogationResult:
         "Generates the output of the model"
 
     def memory_cleanup(self) -> None:

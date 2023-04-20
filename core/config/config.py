@@ -139,6 +139,23 @@ class BotConfig:
 
 
 @dataclass
+class InterrogatorConfig:
+    "Configuration for interrogation models"
+
+    # set to "Salesforce/blip-image-captioning-base" for an extra vram
+    caption_model: str = "Salesforce/blip-image-captioning-large"
+    visualizer_model: str = "ViT-L-14/openai"
+
+    offload_captioner: bool = False # should net a very big vram save for minimal performance cost
+    offload_visualizer: bool = False # should net a somewhat big vram save for a bigger performance cost compared to captioner
+
+    chunk_size: int = 2048 # set to 1024 for lower vram usage
+    flavor_intermediate_count: int = 2048 # set to 1024 for lower vram usage
+
+    caption_max_length: int = 32
+
+
+@dataclass
 class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"
 
@@ -147,6 +164,7 @@ class Configuration(DataClassJsonMixin):
     inpainting: InpaintingConfig = field(default=InpaintingConfig())
     controlnet: ControlNetConfig = field(default=ControlNetConfig())
     api: APIConfig = field(default=APIConfig())
+    interrogator: InterrogatorConfig = field(default=InterrogatorConfig())
     aitemplate: AITemplateConfig = field(default=AITemplateConfig())
     bot: BotConfig = field(default=BotConfig())
 

@@ -1,0 +1,103 @@
+from pathlib import Path
+from PIL import Image
+
+import numpy as np
+
+from torch.ao.quantization import default_qconfig, get_default_qconfig_mapping
+from torch.ao.quantization.backend_config.tensorrt import get_tensorrt_backend_config_dict
+from torch.ao.quantization.quantize_fx import prepare_fx, convert_to_reference_fx, convert_fx
+import torch
+from tqdm import tqdm
+
+from core.utils import convert_to_image, download_file
+from core.interrogation.clip import is_cpu
+from core.types import Job, InterrogatorQueueEntry
+from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
+from core.interrogation.models.deepdanbooru_model import DeepDanbooruModel
+
+
+DEEPDANBOORU_URL = "https://github.com/AUTOMATIC1111/TorchDeepDanbooru/releases/download/v1/model-resnet_custom_v3.pt"
+
+
+class DeepdanbooruInterrogator(InterrogationModel):
+    "internal"
+    def __init__(self, device: str = "cuda", use_fp32: bool = False, quantized: bool = False, autoload: bool = False):
+        super().__init__(device)
+
+        self.tags = []
+        self.model: DeepDanbooruModel
+        self.model_location = Path("data") / "models" / "deepdanbooru.pt"
+        self.dtype = torch.float32 if use_fp32 else (torch.quint8 if quantized else (torch.bfloat16 if is_cpu(device) else torch.float16))
+        self.device: torch.device
+        if isinstance(self.device, str):
+            self.device = torch.device(device)
+        else:
+            self.device = device # type: ignore
+        self.quantized = quantized
+        if autoload:
+            self.load()
+
+    def load(self):
+        self.model = DeepDanbooruModel()
+        if not self.model_location.exists():
+            download_file(DEEPDANBOORU_URL, self.model_location)
+        state_dict = torch.load(self.model_location, map_location="cpu")
+        self.tags = state_dict.get("tags", [])
+        self.model.load_state_dict(state_dict)
+        self.model.eval()
+
+        # Quantize if needed (should support TRT too)
+        if self.quantized:
+            if is_cpu(self.device):
+                qconfig_dict = {"": default_qconfig}
+            else:
+                qconfig_dict = get_default_qconfig_mapping()
+
+            # Images will be ( forcefully :) ) resized to 512x512 with only 3 channels, so [1, 512, 512, 3]'s the shape
+            prepared = prepare_fx(self.model, qconfig_dict, (torch.randn(1, 512, 512, 3),))
+            for _ in tqdm(range(25), unit="it", unit_scale=False):
+                prepared(torch.randn(1, 512, 512, 3))
+
+            if is_cpu(self.device):
+                self.model = convert_fx(prepared)  # type: ignore
+            else:
+                self.model = convert_to_reference_fx(prepared, backend_config=get_tensorrt_backend_config_dict())  # type: ignore
+        else:
+            self.model.to(self.device, dtype=self.dtype) # type: ignore
+
+    def _infer(self, image: Image.Image, alpha_sort: bool = True) -> str:
+        pic = image.convert("RGB").resize((512, 512))
+        a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
+
+        with torch.no_grad():
+            x = torch.from_numpy(a).to(self.device)
+            y = self.model(x)[0].detach().cpu().numpy()
+
+        probability_dict = {}
+        for tag, probability in zip(self.tags, y):
+            if probability < 0.5:
+                continue
+            if tag.startswith("rating:"):
+                continue
+            probability_dict[tag] = probability
+
+        if alpha_sort:
+            tags = sorted(probability_dict)
+        else:
+            tags = [tag for tag, _ in sorted(probability_dict.items(), key=lambda x: -x[1])]
+        res = []
+
+        for tag in tags:
+            probability = probability_dict[tag]
+            res.append(f"({tag}:{probability:.2f})")
+        self.memory_cleanup()
+        return ", ".join(res)
+
+    def generate(self, job: Job) -> InterrogationResult:
+        if not isinstance(job, InterrogatorQueueEntry):
+            return None # type: ignore
+        return InterrogationResult(self._infer(convert_to_image(job.data.image)), "")
+
+    def unload(self):
+        del self.model
+        self.memory_cleanup()

@@ -13,8 +13,7 @@ from diffusers import (
 )
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 import diffusers.models.embeddings as emb
-from diffusers.utils import is_accelerate_available
-from diffusers.utils.import_utils import is_xformers_available
+from diffusers.utils import is_accelerate_available, is_xformers_available
 from packaging import version
 
 from core.config import config

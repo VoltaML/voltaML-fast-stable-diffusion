@@ -7,3 +7,4 @@ pyngrok
 nest_asyncio
 fastapi-analytics
 fastapi-simple-cachecontrol
+open_clip_torch
