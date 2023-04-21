@@ -30,6 +30,7 @@ export interface StateInterface {
   };
   txt2img: {
     currentImage: string;
+    highres: boolean;
     images: string[];
   };
   img2img: {
@@ -84,6 +85,7 @@ export const useState = defineStore("state", () => {
     },
     txt2img: {
       images: [],
+      highres: false,
       currentImage: "",
     },
     img2img: {

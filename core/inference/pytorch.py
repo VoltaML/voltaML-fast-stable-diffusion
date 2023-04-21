@@ -18,8 +18,10 @@ from api import websocket_manager
 from api.websockets import Data
 from core.config import config
 from core.controlnet_preprocessing import image_to_controlnet_input
+from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
+from core.inference.latents import scale_latents
 from core.inference.lwp import get_weighted_text_embeddings
 from core.inference.lwp_sd import StableDiffusionLongPromptWeightingPipeline
 from core.inference_callbacks import (
@@ -201,6 +203,11 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
+            output_type = "pil"
+
+            if "highres_fix" in job.flags:
+                output_type = "latent"
+
             data = pipe(
                 prompt=job.data.prompt,
                 height=job.data.height,
@@ -208,11 +215,40 @@ class PyTorchStableDiffusion(InferenceModel):
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
-                output_type="pil",
+                output_type=output_type,
                 generator=generator,
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
             )
+
+            if output_type == "latent":
+                latents = data[0]  # type: ignore
+                assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
+
+                flag = job.flags["highres_fix"]
+                flag = HighResFixFlag.from_dict(flag)
+
+                latents = scale_latents(
+                    latents=latents,
+                    scale=flag.scale,
+                    latent_scale_mode=flag.latent_scale_mode,
+                )
+
+                self.memory_cleanup()
+
+                data = pipe.img2img(
+                    prompt=job.data.prompt,
+                    image=latents,
+                    num_inference_steps=flag.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    generator=generator,
+                    callback=txt2img_callback,
+                    strength=flag.strength,
+                    return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
+                )
 
             images: list[Image.Image] = data[0]  # type: ignore
 
@@ -455,17 +491,22 @@ class PyTorchStableDiffusion(InferenceModel):
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")
+        self.memory_cleanup()
 
-        if isinstance(job, Txt2ImgQueueEntry):
-            images = self.txt2img(job)
-        elif isinstance(job, Img2ImgQueueEntry):
-            images = self.img2img(job)
-        elif isinstance(job, InpaintQueueEntry):
-            images = self.inpaint(job)
-        elif isinstance(job, ControlNetQueueEntry):
-            images = self.controlnet2img(job)
-        else:
-            raise ValueError("Invalid job type for this pipeline")
+        try:
+            if isinstance(job, Txt2ImgQueueEntry):
+                images = self.txt2img(job)
+            elif isinstance(job, Img2ImgQueueEntry):
+                images = self.img2img(job)
+            elif isinstance(job, InpaintQueueEntry):
+                images = self.inpaint(job)
+            elif isinstance(job, ControlNetQueueEntry):
+                images = self.controlnet2img(job)
+            else:
+                raise ValueError("Invalid job type for this pipeline")
+        except Exception as e:
+            self.memory_cleanup()
+            raise e
 
         # Clean memory and return images
         self.memory_cleanup()
@@ -476,7 +517,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe = StableDiffusionPipeline(
             vae=self.vae,
-            unet=self.unet,  # type: ignore
+            unet=self.unet,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,

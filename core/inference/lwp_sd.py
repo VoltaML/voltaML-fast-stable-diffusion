@@ -1,7 +1,7 @@
 # HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 
 import inspect
-from typing import Callable, List, Optional, Union
+from typing import Callable, List, Literal, Optional, Union
 
 import numpy as np
 import PIL
@@ -304,7 +304,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 3,
-        output_type: Optional[str] = "pil",
+        output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
@@ -498,6 +498,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     return None
 
         # 9. Post-processing
+        if output_type == "latent":
+            return latents, False
+
         image = self.decode_latents(latents)
 
         # 10. Run safety checker
@@ -531,7 +534,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 3,
-        output_type: Optional[str] = "pil",
+        output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
@@ -625,7 +628,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
         max_embeddings_multiples: Optional[int] = 3,
-        output_type: Optional[str] = "pil",
+        output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
@@ -720,7 +723,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
         max_embeddings_multiples: Optional[int] = 3,
-        output_type: Optional[str] = "pil",
+        output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,

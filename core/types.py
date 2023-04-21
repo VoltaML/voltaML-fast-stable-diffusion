@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import uuid4
 
 from diffusers import (
@@ -16,7 +16,6 @@ from diffusers import (
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate", "ONNX"]
-
 Backend = Literal["PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA"]
 
 
@@ -29,6 +28,7 @@ class Job:
     websocket_id: Union[str, None] = field(default=None)
     save_image: Literal[True, False, "r2"] = True
     save_grid: bool = False
+    flags: Dict[str, Dict] = field(default_factory=dict)
 
 
 class SupportedModel(Enum):

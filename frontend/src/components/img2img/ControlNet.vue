@@ -73,7 +73,25 @@
             </div>
 
             <!-- Dimensions -->
-            <div class="flex-container">
+            <div class="flex-container" v-if="conf.data.settings.aitDim.width">
+              <p class="slider-label">Width</p>
+              <NSlider
+                :value="conf.data.settings.aitDim.width"
+                :min="128"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                :value="conf.data.settings.aitDim.width"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="128"
+                :max="2048"
+              />
+            </div>
+            <div class="flex-container" v-else>
               <p class="slider-label">Width</p>
               <NSlider
                 v-model:value="conf.data.settings.controlnet.width"
@@ -91,7 +109,25 @@
                 :max="2048"
               />
             </div>
-            <div class="flex-container">
+            <div class="flex-container" v-if="conf.data.settings.aitDim.height">
+              <p class="slider-label">Height</p>
+              <NSlider
+                :value="conf.data.settings.aitDim.height"
+                :min="128"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                :value="conf.data.settings.aitDim.height"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="128"
+                :max="2048"
+              />
+            </div>
+            <div class="flex-container" v-else>
               <p class="slider-label">Height</p>
               <NSlider
                 v-model:value="conf.data.settings.controlnet.height"

@@ -21,6 +21,25 @@ export interface SettingsInterface {
   $schema: string;
   backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
   model: ModelEntry | null;
+  extra: {
+    highres: {
+      scale: number;
+      latent_scale_mode:
+        | "nearest"
+        | "linear"
+        | "bilinear"
+        | "bicubic"
+        | "nearest-exact";
+      strength: number;
+      steps: 50;
+      antialiased: boolean;
+    };
+  };
+  aitDim: {
+    width: number | undefined;
+    height: number | undefined;
+    batch_size: number | undefined;
+  };
   txt2img: {
     prompt: string;
     negative_prompt: string;
@@ -128,6 +147,20 @@ export const defaultSettings: SettingsInterface = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: null,
+  extra: {
+    highres: {
+      scale: 2,
+      latent_scale_mode: "bilinear",
+      strength: 0.7,
+      steps: 50,
+      antialiased: false,
+    },
+  },
+  aitDim: {
+    width: undefined,
+    height: undefined,
+    batch_size: undefined,
+  },
   txt2img: {
     width: 512,
     height: 512,
@@ -238,8 +271,12 @@ try {
   req.open("GET", `${serverUrl}/api/settings/`, false);
   req.send();
 
-  console.log("Recieved settings:", req.responseText);
-  rSettings = JSON.parse(req.responseText);
+  // Extra is CatchAll property, so we need to keep ours and merge the rest
+  const extra = rSettings.extra;
+  // Merge the recieved settings with the default settings
+  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
+  // Overwrite the extra property as it is store for frontend only
+  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
 } catch (e) {
   console.error(e);
 }

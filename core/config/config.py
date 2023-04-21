@@ -3,7 +3,7 @@ import multiprocessing
 from dataclasses import Field, dataclass, field, fields
 from typing import Literal, Union
 
-from dataclasses_json import DataClassJsonMixin
+from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import ControlNetMode
@@ -138,6 +138,7 @@ class BotConfig:
     use_default_negative_prompt: bool = True
 
 
+@dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
 class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"
@@ -149,6 +150,7 @@ class Configuration(DataClassJsonMixin):
     api: APIConfig = field(default=APIConfig())
     aitemplate: AITemplateConfig = field(default=AITemplateConfig())
     bot: BotConfig = field(default=BotConfig())
+    extra: CatchAll = field(default_factory=dict)
 
 
 def save_config(config: Configuration):
