@@ -3,7 +3,8 @@ init-hook="import sys; sys.path.insert(0, '.')"
 ignore=
     core/submodules,
     typings,
-    core/tensorrt
+    core/tensorrt,
+    AITemplate,
 disable=
     C0114, # Missing module docstring
     W1203, # Use lazy % formatting in logging functions

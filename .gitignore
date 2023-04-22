@@ -81,6 +81,7 @@ external
 /tmp
 /data
 /data/settings.json
+/AITemplate
 
 # Ignore for black
 core/submodules
