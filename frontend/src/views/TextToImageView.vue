@@ -50,7 +50,25 @@
             </div>
 
             <!-- Dimensions -->
-            <div class="flex-container">
+            <div class="flex-container" v-if="conf.data.settings.aitDim.width">
+              <p class="slider-label">Width</p>
+              <NSlider
+                :value="conf.data.settings.aitDim.width"
+                :min="128"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                :value="conf.data.settings.aitDim.width"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="128"
+                :max="2048"
+              />
+            </div>
+            <div class="flex-container" v-else>
               <p class="slider-label">Width</p>
               <NSlider
                 v-model:value="conf.data.settings.txt2img.width"
@@ -68,7 +86,25 @@
                 :max="2048"
               />
             </div>
-            <div class="flex-container">
+            <div class="flex-container" v-if="conf.data.settings.aitDim.height">
+              <p class="slider-label">Height</p>
+              <NSlider
+                :value="conf.data.settings.aitDim.height"
+                :min="128"
+                :max="2048"
+                :step="8"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                :value="conf.data.settings.aitDim.height"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :step="8"
+                :min="128"
+                :max="2048"
+              />
+            </div>
+            <div class="flex-container" v-else>
               <p class="slider-label">Height</p>
               <NSlider
                 v-model:value="conf.data.settings.txt2img.height"
@@ -169,7 +205,31 @@
                 :max="9"
               />
             </div>
-            <div class="flex-container">
+            <div
+              class="flex-container"
+              v-if="conf.data.settings.aitDim.batch_size"
+            >
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Batch Size</p>
+                </template>
+                Number of images to generate in paralel.
+              </NTooltip>
+              <NSlider
+                :value="conf.data.settings.aitDim.batch_size"
+                :min="1"
+                :max="9"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                :value="conf.data.settings.aitDim.batch_size"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="1"
+                :max="9"
+              />
+            </div>
+            <div class="flex-container" v-else>
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Batch Size</p>
@@ -212,6 +272,115 @@
             </div>
           </NSpace>
         </NCard>
+
+        <NCard title="Highres fix" style="margin-top: 12px">
+          <div class="flex-container">
+            <div class="slider-label">
+              <p>Enabled</p>
+            </div>
+            <NSwitch v-model:value="global.state.txt2img.highres" />
+          </div>
+
+          <NSpace
+            vertical
+            class="left-container"
+            v-if="global.state.txt2img.highres"
+          >
+            <!-- Steps -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Steps</p>
+                </template>
+                Number of steps to take in the diffusion process. Higher values
+                will result in more detailed images but will take longer to
+                generate. There is also a point of diminishing returns around
+                100 steps.
+                <b class="highlight"
+                  >We recommend using 20-50 steps for most images.</b
+                >
+              </NTooltip>
+              <NSlider
+                v-model:value="conf.data.settings.extra.highres.steps"
+                :min="5"
+                :max="300"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.extra.highres.steps"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="5"
+                :max="300"
+              />
+            </div>
+
+            <!-- Scale -->
+            <div class="flex-container">
+              <p class="slider-label">Scale</p>
+              <NSlider
+                v-model:value="conf.data.settings.extra.highres.scale"
+                :min="1"
+                :max="8"
+                :step="1"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.extra.highres.scale"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="1"
+                :max="8"
+                :step="1"
+              />
+            </div>
+
+            <!-- Denoising strength -->
+            <div class="flex-container">
+              <p class="slider-label">Strength</p>
+              <NSlider
+                v-model:value="conf.data.settings.extra.highres.strength"
+                :min="0.1"
+                :max="0.9"
+                :step="0.05"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.extra.highres.strength"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="0.1"
+                :max="0.9"
+                :step="0.05"
+              />
+            </div>
+
+            <div class="flex-container">
+              <p class="slider-label">Antialiased</p>
+              <NSwitch
+                v-model:value="conf.data.settings.extra.highres.antialiased"
+              />
+            </div>
+
+            <div class="flex-container">
+              <p class="slider-label">Latent Mode</p>
+              <NSelect
+                v-model:value="
+                  conf.data.settings.extra.highres.latent_scale_mode
+                "
+                size="small"
+                style="flex-grow: 1"
+                :options="[
+                  { label: 'Nearest', value: 'nearest' },
+                  { label: 'Nearest exact', value: 'nearest-exact' },
+                  { label: 'Linear', value: 'linear' },
+                  { label: 'Bilinear', value: 'bilinear' },
+                  { label: 'Bicubic', value: 'bicubic' },
+                ]"
+              />
+            </div>
+          </NSpace>
+        </NCard>
       </NGi>
 
       <!-- Split -->
@@ -248,6 +417,7 @@ import {
   NSelect,
   NSlider,
   NSpace,
+  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";
@@ -307,6 +477,18 @@ const generate = () => {
       model: conf.data.settings.model?.name,
       backend: "PyTorch",
       autoload: false,
+      flags: global.state.txt2img.highres
+        ? {
+            highres_fix: {
+              scale: conf.data.settings.extra.highres.scale,
+              latent_scale_mode:
+                conf.data.settings.extra.highres.latent_scale_mode,
+              strength: conf.data.settings.extra.highres.strength,
+              steps: conf.data.settings.extra.highres.steps,
+              antialiased: conf.data.settings.extra.highres.antialiased,
+            },
+          }
+        : {},
     }),
   })
     .then((res) => {

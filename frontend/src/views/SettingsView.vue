@@ -13,6 +13,9 @@
       <NTabPane name="General">
         <GeneralSettings />
       </NTabPane>
+      <NTabPane name="Extra">
+        <ExtraSettings />
+      </NTabPane>
 
       <template #suffix>
         <NButton
@@ -33,6 +36,7 @@
 <script lang="ts" setup>
 import APISettings from "@/components/settings/APISettings.vue";
 import BotSettings from "@/components/settings/BotSettings.vue";
+import ExtraSettings from "@/components/settings/ExtraSettings.vue";
 import FrontendSettings from "@/components/settings/FrontendSettings.vue";
 import GeneralSettings from "@/components/settings/GeneralSettings.vue";
 import { serverUrl } from "@/env";

@@ -1,4 +1,5 @@
-import { a0 as inject, b9 as getCurrentInstance, ab as watch, aG as onBeforeUnmount, V as cB, X as cM, U as c, S as createInjectionKey, d as defineComponent, M as useConfig, a2 as useTheme, E as ref, D as h, ba as formLight, Q as provide, ad as keysOf, f as computed, aE as formatLength, aL as get, bb as commonVariables, W as cE, R as toRef, a7 as createId, bc as formItemInjectionKey, K as onMounted, a6 as useThemeClass, aX as Transition, aA as resolveWrappedSlot, a5 as createKey, aR as warn, b as useSettings, o as openBlock, H as createBlock, w as withCtx, g as createVNode, h as unref, q as NInputNumber, n as NSelect, a as createBaseVNode, i as NCard, k as NInput, I as NTabPane, J as NTabs, C as _export_sfc, e as useMessage, F as NButton, l as createTextVNode, bd as defaultSettings, y as serverUrl } from "./index.js";
+import { $ as inject, be as getCurrentInstance, aa as watch, aE as onBeforeUnmount, U as cB, W as cM, T as c, R as createInjectionKey, d as defineComponent, L as useConfig, a1 as useTheme, A as ref, z as h, bf as formLight, P as provide, ac as keysOf, c as computed, aC as formatLength, aJ as get, bg as commonVariables, V as cE, Q as toRef, a6 as createId, bh as formItemInjectionKey, G as onMounted, a5 as useThemeClass, aV as Transition, ay as resolveWrappedSlot, a4 as createKey, aP as warn, a as useSettings, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, n as NSelect, l as createBaseVNode, h as NCard, D as NTabPane, E as NTabs, j as NInput, _ as _export_sfc, b as useMessage, B as NButton, k as createTextVNode, bi as defaultSettings, v as serverUrl } from "./index.js";
+import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
@@ -1838,7 +1839,7 @@ const NFormItem = defineComponent({
 const _hoisted_1 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "TomeSD", -1);
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const _sfc_main$a = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
     const settings = useSettings();
@@ -2066,7 +2067,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   __name: "BotSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2103,6 +2104,109 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 1
               })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+  __name: "HiresSettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), null, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), { label: "Scale" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.extra.highres.scale,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.extra.highres.scale = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), { label: "Scaling Mode" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSelect), {
+                    options: [
+                      {
+                        label: "Nearest",
+                        value: "nearest"
+                      },
+                      {
+                        label: "Linear",
+                        value: "linear"
+                      },
+                      {
+                        label: "Bilinear",
+                        value: "bilinear"
+                      },
+                      {
+                        label: "Bicubic",
+                        value: "bicubic"
+                      },
+                      {
+                        label: "Nearest Exact",
+                        value: "nearest-exact"
+                      }
+                    ],
+                    value: unref(settings).defaultSettings.extra.highres.latent_scale_mode,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.extra.highres.latent_scale_mode = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), { label: "Strength" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.extra.highres.strength,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.extra.highres.strength = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), { label: "Steps" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.extra.highres.steps,
+                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.extra.highres.steps = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), { label: "Antialiased" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.extra.highres.antialiased,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.extra.highres.antialiased = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+  __name: "ExtraSettings",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NTabs), null, {
+        default: withCtx(() => [
+          createVNode(unref(NTabPane), { name: "Highres fix" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$8)
             ]),
             _: 1
           })
@@ -2706,19 +2810,25 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               }),
               createVNode(unref(NTabPane), { name: "API" }, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$8)
+                  createVNode(_sfc_main$a)
                 ]),
                 _: 1
               }),
               createVNode(unref(NTabPane), { name: "Bot" }, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$7)
+                  createVNode(_sfc_main$9)
                 ]),
                 _: 1
               }),
               createVNode(unref(NTabPane), { name: "General" }, {
                 default: withCtx(() => [
                   createVNode(GeneralSettings)
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NTabPane), { name: "Extra" }, {
+                default: withCtx(() => [
+                  createVNode(_sfc_main$7)
                 ]),
                 _: 1
               })

@@ -1,9 +1,14 @@
-from typing import Optional
+import logging
+from typing import Optional, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
+from torch.nn.functional import interpolate
 
+from core.flags import LatentScaleModel
 from core.optimizations import send_to_gpu
+
+logger = logging.getLogger(__name__)
 
 
 def prepare_latents(
@@ -49,10 +54,16 @@ def prepare_latents(
     else:
         if hasattr(pipe.vae, "main_device"):  # type: ignore
             send_to_gpu(pipe.vae, None)  # type: ignore
-        init_latent_dist = pipe.vae.encode(image).latent_dist  # type: ignore
-        init_latents = init_latent_dist.sample(generator=generator)
-        init_latents = 0.18215 * init_latents
-        init_latents = torch.cat([init_latents] * batch_size, dim=0)
+
+        if image.shape[1] != 4:
+            init_latent_dist = pipe.vae.encode(image).latent_dist  # type: ignore
+            init_latents = init_latent_dist.sample(generator=generator)
+            init_latents = 0.18215 * init_latents
+            init_latents = torch.cat([init_latents] * batch_size, dim=0)
+        else:
+            logger.debug("Skipping VAE encode, already have latents")
+            init_latents = image
+
         init_latents_orig = init_latents
         shape = init_latents.shape
 
@@ -65,3 +76,29 @@ def prepare_latents(
             noise = torch.randn(shape, generator=generator, device=device, dtype=dtype)
         latents = pipe.scheduler.add_noise(init_latents, noise, timestep)  # type: ignore
         return latents, init_latents_orig, noise
+
+
+def scale_latents(
+    latents: Union[torch.Tensor, torch.FloatTensor],
+    scale: int = 2,
+    latent_scale_mode: LatentScaleModel = "bilinear",
+    antialiased: bool = False,
+):
+    "Interpolate the latents to the desired scale."
+
+    # Scale and round to multiple of 32
+    width_truncated = int(((latents.shape[2] * scale - 1) // 32 + 1) * 32)
+    height_truncated = int(((latents.shape[3] * scale - 1) // 32 + 1) * 32)
+
+    # Scale the latents
+    interpolated = interpolate(
+        latents,
+        size=(
+            width_truncated,
+            height_truncated,
+        ),
+        mode=latent_scale_mode,
+        antialias=antialiased,
+    )
+    logger.debug(f"Interpolated latents from {latents.shape} to {interpolated.shape}")
+    return interpolated

@@ -7,12 +7,12 @@
   z-index: 1;
 }
 
-.progress-container[data-v-6372c5f5] {
+.progress-container[data-v-e15ed902] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-6372c5f5] {
+.top-bar[data-v-e15ed902] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -22,35 +22,9 @@
   background-color: rgb(24, 24, 28, 0.6);
   height: 32px;
 }
-.logo[data-v-6372c5f5] {
+.logo[data-v-e15ed902] {
   margin-right: 16px;
   margin-left: 16px;
-}
-.left-container {
-  margin: 0 12px;
-}
-
-.split {
-  width: 50%;
-}
-
-.flex-container {
-  width: 100%;
-  display: inline-flex;
-  align-items: center;
-}
-
-.slider-label {
-  margin-right: 12px;
-  width: 128px;
-}
-
-.main-container {
-  margin: 18px;
-}
-
-.highlight {
-  color: #63e2b7;
 }
 body {
   min-height: 100vh;

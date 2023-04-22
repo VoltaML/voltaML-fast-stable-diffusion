@@ -5823,7 +5823,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.33
+  * pinia v2.0.34
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -6727,13 +6727,13 @@ function isMediaOrSupports(selector) {
   return /^\s*@(s|m)/.test(selector);
 }
 const kebabRegex = /[A-Z]/g;
-function kebabCase$2(pattern) {
+function kebabCase(pattern) {
   return pattern.replace(kebabRegex, (match2) => "-" + match2.toLowerCase());
 }
 function unwrapProperty(prop, indent = "  ") {
   if (typeof prop === "object" && prop !== null) {
     return " {\n" + Object.entries(prop).map((v) => {
-      return indent + `  ${kebabCase$2(v[0])}: ${v[1]};`;
+      return indent + `  ${kebabCase(v[0])}: ${v[1]};`;
     }).join("\n") + "\n" + indent + "}";
   }
   return `: ${prop};`;
@@ -6773,7 +6773,7 @@ ${unwrappedProps}
       statements.push("\n" + property2 + "\n");
       return;
     }
-    propertyName = kebabCase$2(propertyName);
+    propertyName = kebabCase(propertyName);
     if (property2 !== null && property2 !== void 0) {
       statements.push(`  ${propertyName}${unwrapProperty(property2)}`);
     }
@@ -8863,7 +8863,7 @@ function getOffset(placement, offsetRect, targetRect, offsetTopToStandardPlaceme
       };
   }
 }
-const style$v = c([
+const style$s = c([
   c(".v-binder-follower-container", {
     position: "absolute",
     left: "0",
@@ -8945,7 +8945,7 @@ const VFollower = defineComponent({
       }
     });
     const ssrAdapter2 = useSsrAdapter();
-    style$v.mount({
+    style$s.mount({
       id: "vueuc/binder",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -10140,7 +10140,7 @@ const VXScroll = defineComponent({
   }
 });
 const hiddenAttr = "v-hidden";
-const style$u = c("[v-hidden]", {
+const style$r = c("[v-hidden]", {
   display: "none!important"
 });
 const VOverflow = defineComponent({
@@ -10230,7 +10230,7 @@ const VOverflow = defineComponent({
       }
     }
     const ssrAdapter2 = useSsrAdapter();
-    style$u.mount({
+    style$r.mount({
       id: "vueuc/overflow",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -11472,19 +11472,19 @@ function castSlice(array, start, end) {
   end = end === void 0 ? length : end;
   return !start && end >= length ? array : baseSlice(array, start, end);
 }
-var rsAstralRange$2 = "\\ud800-\\udfff", rsComboMarksRange$3 = "\\u0300-\\u036f", reComboHalfMarksRange$3 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$3 = "\\u20d0-\\u20ff", rsComboRange$3 = rsComboMarksRange$3 + reComboHalfMarksRange$3 + rsComboSymbolsRange$3, rsVarRange$2 = "\\ufe0e\\ufe0f";
-var rsZWJ$2 = "\\u200d";
-var reHasUnicode = RegExp("[" + rsZWJ$2 + rsAstralRange$2 + rsComboRange$3 + rsVarRange$2 + "]");
+var rsAstralRange$1 = "\\ud800-\\udfff", rsComboMarksRange$1 = "\\u0300-\\u036f", reComboHalfMarksRange$1 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$1 = "\\u20d0-\\u20ff", rsComboRange$1 = rsComboMarksRange$1 + reComboHalfMarksRange$1 + rsComboSymbolsRange$1, rsVarRange$1 = "\\ufe0e\\ufe0f";
+var rsZWJ$1 = "\\u200d";
+var reHasUnicode = RegExp("[" + rsZWJ$1 + rsAstralRange$1 + rsComboRange$1 + rsVarRange$1 + "]");
 function hasUnicode(string) {
   return reHasUnicode.test(string);
 }
 function asciiToArray(string) {
   return string.split("");
 }
-var rsAstralRange$1 = "\\ud800-\\udfff", rsComboMarksRange$2 = "\\u0300-\\u036f", reComboHalfMarksRange$2 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$2 = "\\u20d0-\\u20ff", rsComboRange$2 = rsComboMarksRange$2 + reComboHalfMarksRange$2 + rsComboSymbolsRange$2, rsVarRange$1 = "\\ufe0e\\ufe0f";
-var rsAstral = "[" + rsAstralRange$1 + "]", rsCombo$2 = "[" + rsComboRange$2 + "]", rsFitz$1 = "\\ud83c[\\udffb-\\udfff]", rsModifier$1 = "(?:" + rsCombo$2 + "|" + rsFitz$1 + ")", rsNonAstral$1 = "[^" + rsAstralRange$1 + "]", rsRegional$1 = "(?:\\ud83c[\\udde6-\\uddff]){2}", rsSurrPair$1 = "[\\ud800-\\udbff][\\udc00-\\udfff]", rsZWJ$1 = "\\u200d";
-var reOptMod$1 = rsModifier$1 + "?", rsOptVar$1 = "[" + rsVarRange$1 + "]?", rsOptJoin$1 = "(?:" + rsZWJ$1 + "(?:" + [rsNonAstral$1, rsRegional$1, rsSurrPair$1].join("|") + ")" + rsOptVar$1 + reOptMod$1 + ")*", rsSeq$1 = rsOptVar$1 + reOptMod$1 + rsOptJoin$1, rsSymbol = "(?:" + [rsNonAstral$1 + rsCombo$2 + "?", rsCombo$2, rsRegional$1, rsSurrPair$1, rsAstral].join("|") + ")";
-var reUnicode = RegExp(rsFitz$1 + "(?=" + rsFitz$1 + ")|" + rsSymbol + rsSeq$1, "g");
+var rsAstralRange = "\\ud800-\\udfff", rsComboMarksRange = "\\u0300-\\u036f", reComboHalfMarksRange = "\\ufe20-\\ufe2f", rsComboSymbolsRange = "\\u20d0-\\u20ff", rsComboRange = rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange, rsVarRange = "\\ufe0e\\ufe0f";
+var rsAstral = "[" + rsAstralRange + "]", rsCombo = "[" + rsComboRange + "]", rsFitz = "\\ud83c[\\udffb-\\udfff]", rsModifier = "(?:" + rsCombo + "|" + rsFitz + ")", rsNonAstral = "[^" + rsAstralRange + "]", rsRegional = "(?:\\ud83c[\\udde6-\\uddff]){2}", rsSurrPair = "[\\ud800-\\udbff][\\udc00-\\udfff]", rsZWJ = "\\u200d";
+var reOptMod = rsModifier + "?", rsOptVar = "[" + rsVarRange + "]?", rsOptJoin = "(?:" + rsZWJ + "(?:" + [rsNonAstral, rsRegional, rsSurrPair].join("|") + ")" + rsOptVar + reOptMod + ")*", rsSeq = rsOptVar + reOptMod + rsOptJoin, rsSymbol = "(?:" + [rsNonAstral + rsCombo + "?", rsCombo, rsRegional, rsSurrPair, rsAstral].join("|") + ")";
+var reUnicode = RegExp(rsFitz + "(?=" + rsFitz + ")|" + rsSymbol + rsSeq, "g");
 function unicodeToArray(string) {
   return string.match(reUnicode) || [];
 }
@@ -11502,264 +11502,6 @@ function createCaseFirst(methodName) {
 }
 var upperFirst = createCaseFirst("toUpperCase");
 const upperFirst$1 = upperFirst;
-function arrayReduce(array, iteratee, accumulator, initAccum) {
-  var index = -1, length = array == null ? 0 : array.length;
-  if (initAccum && length) {
-    accumulator = array[++index];
-  }
-  while (++index < length) {
-    accumulator = iteratee(accumulator, array[index], index, array);
-  }
-  return accumulator;
-}
-function basePropertyOf(object) {
-  return function(key) {
-    return object == null ? void 0 : object[key];
-  };
-}
-var deburredLetters = {
-  // Latin-1 Supplement block.
-  "À": "A",
-  "Á": "A",
-  "Â": "A",
-  "Ã": "A",
-  "Ä": "A",
-  "Å": "A",
-  "à": "a",
-  "á": "a",
-  "â": "a",
-  "ã": "a",
-  "ä": "a",
-  "å": "a",
-  "Ç": "C",
-  "ç": "c",
-  "Ð": "D",
-  "ð": "d",
-  "È": "E",
-  "É": "E",
-  "Ê": "E",
-  "Ë": "E",
-  "è": "e",
-  "é": "e",
-  "ê": "e",
-  "ë": "e",
-  "Ì": "I",
-  "Í": "I",
-  "Î": "I",
-  "Ï": "I",
-  "ì": "i",
-  "í": "i",
-  "î": "i",
-  "ï": "i",
-  "Ñ": "N",
-  "ñ": "n",
-  "Ò": "O",
-  "Ó": "O",
-  "Ô": "O",
-  "Õ": "O",
-  "Ö": "O",
-  "Ø": "O",
-  "ò": "o",
-  "ó": "o",
-  "ô": "o",
-  "õ": "o",
-  "ö": "o",
-  "ø": "o",
-  "Ù": "U",
-  "Ú": "U",
-  "Û": "U",
-  "Ü": "U",
-  "ù": "u",
-  "ú": "u",
-  "û": "u",
-  "ü": "u",
-  "Ý": "Y",
-  "ý": "y",
-  "ÿ": "y",
-  "Æ": "Ae",
-  "æ": "ae",
-  "Þ": "Th",
-  "þ": "th",
-  "ß": "ss",
-  // Latin Extended-A block.
-  "Ā": "A",
-  "Ă": "A",
-  "Ą": "A",
-  "ā": "a",
-  "ă": "a",
-  "ą": "a",
-  "Ć": "C",
-  "Ĉ": "C",
-  "Ċ": "C",
-  "Č": "C",
-  "ć": "c",
-  "ĉ": "c",
-  "ċ": "c",
-  "č": "c",
-  "Ď": "D",
-  "Đ": "D",
-  "ď": "d",
-  "đ": "d",
-  "Ē": "E",
-  "Ĕ": "E",
-  "Ė": "E",
-  "Ę": "E",
-  "Ě": "E",
-  "ē": "e",
-  "ĕ": "e",
-  "ė": "e",
-  "ę": "e",
-  "ě": "e",
-  "Ĝ": "G",
-  "Ğ": "G",
-  "Ġ": "G",
-  "Ģ": "G",
-  "ĝ": "g",
-  "ğ": "g",
-  "ġ": "g",
-  "ģ": "g",
-  "Ĥ": "H",
-  "Ħ": "H",
-  "ĥ": "h",
-  "ħ": "h",
-  "Ĩ": "I",
-  "Ī": "I",
-  "Ĭ": "I",
-  "Į": "I",
-  "İ": "I",
-  "ĩ": "i",
-  "ī": "i",
-  "ĭ": "i",
-  "į": "i",
-  "ı": "i",
-  "Ĵ": "J",
-  "ĵ": "j",
-  "Ķ": "K",
-  "ķ": "k",
-  "ĸ": "k",
-  "Ĺ": "L",
-  "Ļ": "L",
-  "Ľ": "L",
-  "Ŀ": "L",
-  "Ł": "L",
-  "ĺ": "l",
-  "ļ": "l",
-  "ľ": "l",
-  "ŀ": "l",
-  "ł": "l",
-  "Ń": "N",
-  "Ņ": "N",
-  "Ň": "N",
-  "Ŋ": "N",
-  "ń": "n",
-  "ņ": "n",
-  "ň": "n",
-  "ŋ": "n",
-  "Ō": "O",
-  "Ŏ": "O",
-  "Ő": "O",
-  "ō": "o",
-  "ŏ": "o",
-  "ő": "o",
-  "Ŕ": "R",
-  "Ŗ": "R",
-  "Ř": "R",
-  "ŕ": "r",
-  "ŗ": "r",
-  "ř": "r",
-  "Ś": "S",
-  "Ŝ": "S",
-  "Ş": "S",
-  "Š": "S",
-  "ś": "s",
-  "ŝ": "s",
-  "ş": "s",
-  "š": "s",
-  "Ţ": "T",
-  "Ť": "T",
-  "Ŧ": "T",
-  "ţ": "t",
-  "ť": "t",
-  "ŧ": "t",
-  "Ũ": "U",
-  "Ū": "U",
-  "Ŭ": "U",
-  "Ů": "U",
-  "Ű": "U",
-  "Ų": "U",
-  "ũ": "u",
-  "ū": "u",
-  "ŭ": "u",
-  "ů": "u",
-  "ű": "u",
-  "ų": "u",
-  "Ŵ": "W",
-  "ŵ": "w",
-  "Ŷ": "Y",
-  "ŷ": "y",
-  "Ÿ": "Y",
-  "Ź": "Z",
-  "Ż": "Z",
-  "Ž": "Z",
-  "ź": "z",
-  "ż": "z",
-  "ž": "z",
-  "Ĳ": "IJ",
-  "ĳ": "ij",
-  "Œ": "Oe",
-  "œ": "oe",
-  "ŉ": "'n",
-  "ſ": "s"
-};
-var deburrLetter = basePropertyOf(deburredLetters);
-const deburrLetter$1 = deburrLetter;
-var reLatin = /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g;
-var rsComboMarksRange$1 = "\\u0300-\\u036f", reComboHalfMarksRange$1 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$1 = "\\u20d0-\\u20ff", rsComboRange$1 = rsComboMarksRange$1 + reComboHalfMarksRange$1 + rsComboSymbolsRange$1;
-var rsCombo$1 = "[" + rsComboRange$1 + "]";
-var reComboMark = RegExp(rsCombo$1, "g");
-function deburr(string) {
-  string = toString(string);
-  return string && string.replace(reLatin, deburrLetter$1).replace(reComboMark, "");
-}
-var reAsciiWord = /[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;
-function asciiWords(string) {
-  return string.match(reAsciiWord) || [];
-}
-var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
-function hasUnicodeWord(string) {
-  return reHasUnicodeWord.test(string);
-}
-var rsAstralRange = "\\ud800-\\udfff", rsComboMarksRange = "\\u0300-\\u036f", reComboHalfMarksRange = "\\ufe20-\\ufe2f", rsComboSymbolsRange = "\\u20d0-\\u20ff", rsComboRange = rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange, rsDingbatRange = "\\u2700-\\u27bf", rsLowerRange = "a-z\\xdf-\\xf6\\xf8-\\xff", rsMathOpRange = "\\xac\\xb1\\xd7\\xf7", rsNonCharRange = "\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf", rsPunctuationRange = "\\u2000-\\u206f", rsSpaceRange = " \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000", rsUpperRange = "A-Z\\xc0-\\xd6\\xd8-\\xde", rsVarRange = "\\ufe0e\\ufe0f", rsBreakRange = rsMathOpRange + rsNonCharRange + rsPunctuationRange + rsSpaceRange;
-var rsApos$1 = "['’]", rsBreak = "[" + rsBreakRange + "]", rsCombo = "[" + rsComboRange + "]", rsDigits = "\\d+", rsDingbat = "[" + rsDingbatRange + "]", rsLower = "[" + rsLowerRange + "]", rsMisc = "[^" + rsAstralRange + rsBreakRange + rsDigits + rsDingbatRange + rsLowerRange + rsUpperRange + "]", rsFitz = "\\ud83c[\\udffb-\\udfff]", rsModifier = "(?:" + rsCombo + "|" + rsFitz + ")", rsNonAstral = "[^" + rsAstralRange + "]", rsRegional = "(?:\\ud83c[\\udde6-\\uddff]){2}", rsSurrPair = "[\\ud800-\\udbff][\\udc00-\\udfff]", rsUpper = "[" + rsUpperRange + "]", rsZWJ = "\\u200d";
-var rsMiscLower = "(?:" + rsLower + "|" + rsMisc + ")", rsMiscUpper = "(?:" + rsUpper + "|" + rsMisc + ")", rsOptContrLower = "(?:" + rsApos$1 + "(?:d|ll|m|re|s|t|ve))?", rsOptContrUpper = "(?:" + rsApos$1 + "(?:D|LL|M|RE|S|T|VE))?", reOptMod = rsModifier + "?", rsOptVar = "[" + rsVarRange + "]?", rsOptJoin = "(?:" + rsZWJ + "(?:" + [rsNonAstral, rsRegional, rsSurrPair].join("|") + ")" + rsOptVar + reOptMod + ")*", rsOrdLower = "\\d*(?:1st|2nd|3rd|(?![123])\\dth)(?=\\b|[A-Z_])", rsOrdUpper = "\\d*(?:1ST|2ND|3RD|(?![123])\\dTH)(?=\\b|[a-z_])", rsSeq = rsOptVar + reOptMod + rsOptJoin, rsEmoji = "(?:" + [rsDingbat, rsRegional, rsSurrPair].join("|") + ")" + rsSeq;
-var reUnicodeWord = RegExp([
-  rsUpper + "?" + rsLower + "+" + rsOptContrLower + "(?=" + [rsBreak, rsUpper, "$"].join("|") + ")",
-  rsMiscUpper + "+" + rsOptContrUpper + "(?=" + [rsBreak, rsUpper + rsMiscLower, "$"].join("|") + ")",
-  rsUpper + "?" + rsMiscLower + "+" + rsOptContrLower,
-  rsUpper + "+" + rsOptContrUpper,
-  rsOrdUpper,
-  rsOrdLower,
-  rsDigits,
-  rsEmoji
-].join("|"), "g");
-function unicodeWords(string) {
-  return string.match(reUnicodeWord) || [];
-}
-function words(string, pattern, guard) {
-  string = toString(string);
-  pattern = guard ? void 0 : pattern;
-  if (pattern === void 0) {
-    return hasUnicodeWord(string) ? unicodeWords(string) : asciiWords(string);
-  }
-  return string.match(pattern) || [];
-}
-var rsApos = "['’]";
-var reApos = RegExp(rsApos, "g");
-function createCompounder(callback) {
-  return function(string) {
-    return arrayReduce(words(deburr(string).replace(reApos, "")), callback, "");
-  };
-}
 function stackClear() {
   this.__data__ = new ListCache();
   this.size = 0;
@@ -12447,10 +12189,6 @@ function map(collection, iteratee) {
   var func = isArray$2(collection) ? arrayMap : baseMap;
   return func(collection, baseIteratee(iteratee));
 }
-var kebabCase = createCompounder(function(result, word, index) {
-  return result + (index ? "-" : "") + word.toLowerCase();
-});
-const kebabCase$1 = kebabCase;
 var merge$1 = createAssigner(function(object, source, srcIndex) {
   baseMerge(object, source, srcIndex);
 });
@@ -12726,8 +12464,8 @@ function buildFormatLongFn(args) {
   return function() {
     var options = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
     var width = options.width ? String(options.width) : args.defaultWidth;
-    var format2 = args.formats[width] || args.formats[args.defaultWidth];
-    return format2;
+    var format = args.formats[width] || args.formats[args.defaultWidth];
+    return format;
   };
 }
 function buildLocalizeFn(args) {
@@ -13439,16 +13177,6 @@ const InfoIcon = replaceable("info", h(
     )
   )
 ));
-const RemoveIcon = defineComponent({
-  name: "Remove",
-  render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-      h("line", { x1: "400", y1: "256", x2: "112", y2: "256", style: "\n        fill: none;\n        stroke: currentColor;\n        stroke-linecap: round;\n        stroke-linejoin: round;\n        stroke-width: 32px;\n      " })
-    );
-  }
-});
 const SuccessIcon = replaceable("success", h(
   "svg",
   { viewBox: "0 0 48 48", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
@@ -13505,44 +13233,6 @@ const ChevronDownFilledIcon = defineComponent({
       "svg",
       { viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
       h("path", { d: "M3.20041 5.73966C3.48226 5.43613 3.95681 5.41856 4.26034 5.70041L8 9.22652L11.7397 5.70041C12.0432 5.41856 12.5177 5.43613 12.7996 5.73966C13.0815 6.0432 13.0639 6.51775 12.7603 6.7996L8.51034 10.7996C8.22258 11.0668 7.77743 11.0668 7.48967 10.7996L3.23966 6.7996C2.93613 6.51775 2.91856 6.0432 3.20041 5.73966Z", fill: "currentColor" })
-    );
-  }
-});
-const RotateClockwiseIcon = replaceable("rotateClockwise", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 12.7916 15.3658 15.2026 13 16.3265V14.5C13 14.2239 12.7761 14 12.5 14C12.2239 14 12 14.2239 12 14.5V17.5C12 17.7761 12.2239 18 12.5 18H15.5C15.7761 18 16 17.7761 16 17.5C16 17.2239 15.7761 17 15.5 17H13.8758C16.3346 15.6357 18 13.0128 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 10.2761 2.22386 10.5 2.5 10.5C2.77614 10.5 3 10.2761 3 10Z", fill: "currentColor" }),
-  h("path", { d: "M10 12C11.1046 12 12 11.1046 12 10C12 8.89543 11.1046 8 10 8C8.89543 8 8 8.89543 8 10C8 11.1046 8.89543 12 10 12ZM10 11C9.44772 11 9 10.5523 9 10C9 9.44772 9.44772 9 10 9C10.5523 9 11 9.44772 11 10C11 10.5523 10.5523 11 10 11Z", fill: "currentColor" })
-));
-const RotateCounterclockwiseIcon = replaceable("rotateClockwise", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 12.7916 4.63419 15.2026 7 16.3265V14.5C7 14.2239 7.22386 14 7.5 14C7.77614 14 8 14.2239 8 14.5V17.5C8 17.7761 7.77614 18 7.5 18H4.5C4.22386 18 4 17.7761 4 17.5C4 17.2239 4.22386 17 4.5 17H6.12422C3.66539 15.6357 2 13.0128 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10C18 10.2761 17.7761 10.5 17.5 10.5C17.2239 10.5 17 10.2761 17 10Z", fill: "currentColor" }),
-  h("path", { d: "M10 12C8.89543 12 8 11.1046 8 10C8 8.89543 8.89543 8 10 8C11.1046 8 12 8.89543 12 10C12 11.1046 11.1046 12 10 12ZM10 11C10.5523 11 11 10.5523 11 10C11 9.44772 10.5523 9 10 9C9.44772 9 9 9.44772 9 10C9 10.5523 9.44772 11 10 11Z", fill: "currentColor" })
-));
-const ZoomInIcon = replaceable("zoomIn", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M11.5 8.5C11.5 8.22386 11.2761 8 11 8H9V6C9 5.72386 8.77614 5.5 8.5 5.5C8.22386 5.5 8 5.72386 8 6V8H6C5.72386 8 5.5 8.22386 5.5 8.5C5.5 8.77614 5.72386 9 6 9H8V11C8 11.2761 8.22386 11.5 8.5 11.5C8.77614 11.5 9 11.2761 9 11V9H11C11.2761 9 11.5 8.77614 11.5 8.5Z", fill: "currentColor" }),
-  h("path", { d: "M8.5 3C11.5376 3 14 5.46243 14 8.5C14 9.83879 13.5217 11.0659 12.7266 12.0196L16.8536 16.1464C17.0488 16.3417 17.0488 16.6583 16.8536 16.8536C16.68 17.0271 16.4106 17.0464 16.2157 16.9114L16.1464 16.8536L12.0196 12.7266C11.0659 13.5217 9.83879 14 8.5 14C5.46243 14 3 11.5376 3 8.5C3 5.46243 5.46243 3 8.5 3ZM8.5 4C6.01472 4 4 6.01472 4 8.5C4 10.9853 6.01472 13 8.5 13C10.9853 13 13 10.9853 13 8.5C13 6.01472 10.9853 4 8.5 4Z", fill: "currentColor" })
-));
-const ZoomOutIcon = replaceable("zoomOut", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M11 8C11.2761 8 11.5 8.22386 11.5 8.5C11.5 8.77614 11.2761 9 11 9H6C5.72386 9 5.5 8.77614 5.5 8.5C5.5 8.22386 5.72386 8 6 8H11Z", fill: "currentColor" }),
-  h("path", { d: "M14 8.5C14 5.46243 11.5376 3 8.5 3C5.46243 3 3 5.46243 3 8.5C3 11.5376 5.46243 14 8.5 14C9.83879 14 11.0659 13.5217 12.0196 12.7266L16.1464 16.8536L16.2157 16.9114C16.4106 17.0464 16.68 17.0271 16.8536 16.8536C17.0488 16.6583 17.0488 16.3417 16.8536 16.1464L12.7266 12.0196C13.5217 11.0659 14 9.83879 14 8.5ZM4 8.5C4 6.01472 6.01472 4 8.5 4C10.9853 4 13 6.01472 13 8.5C13 10.9853 10.9853 13 8.5 13C6.01472 13 4 10.9853 4 8.5Z", fill: "currentColor" })
-));
-const ResizeSmallIcon = defineComponent({
-  name: "ResizeSmall",
-  render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 20 20" },
-      h(
-        "g",
-        { fill: "none" },
-        h("path", { d: "M5.5 4A1.5 1.5 0 0 0 4 5.5v1a.5.5 0 0 1-1 0v-1A2.5 2.5 0 0 1 5.5 3h1a.5.5 0 0 1 0 1h-1zM16 5.5A1.5 1.5 0 0 0 14.5 4h-1a.5.5 0 0 1 0-1h1A2.5 2.5 0 0 1 17 5.5v1a.5.5 0 0 1-1 0v-1zm0 9a1.5 1.5 0 0 1-1.5 1.5h-1a.5.5 0 0 0 0 1h1a2.5 2.5 0 0 0 2.5-2.5v-1a.5.5 0 0 0-1 0v1zm-12 0A1.5 1.5 0 0 0 5.5 16h1.25a.5.5 0 0 1 0 1H5.5A2.5 2.5 0 0 1 3 14.5v-1.25a.5.5 0 0 1 1 0v1.25zM8.5 7A1.5 1.5 0 0 0 7 8.5v3A1.5 1.5 0 0 0 8.5 13h3a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 11.5 7h-3zM8 8.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3z", fill: "currentColor" })
-      )
     );
   }
 });
@@ -13647,7 +13337,7 @@ const NFadeInExpandTransition = defineComponent({
     };
   }
 });
-const style$t = cB("base-icon", `
+const style$q = cB("base-icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -13682,13 +13372,13 @@ const NBaseIcon = defineComponent({
     onMouseup: Function
   },
   setup(props) {
-    useStyle("-base-icon", style$t, toRef(props, "clsPrefix"));
+    useStyle("-base-icon", style$q, toRef(props, "clsPrefix"));
   },
   render() {
     return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
   }
 });
-const style$s = cB("base-close", `
+const style$p = cB("base-close", `
  display: flex;
  align-items: center;
  justify-content: center;
@@ -13757,7 +13447,7 @@ const NBaseClose = defineComponent({
     absolute: Boolean
   },
   setup(props) {
-    useStyle("-base-close", style$s, toRef(props, "clsPrefix"));
+    useStyle("-base-close", style$p, toRef(props, "clsPrefix"));
     return () => {
       const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
       const Tag = isButtonTag ? "button" : "div";
@@ -13816,7 +13506,7 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$r = c$1([c$1("@keyframes loading-container-rotate", `
+const style$o = c$1([c$1("@keyframes loading-container-rotate", `
  to {
  -webkit-transform: rotate(360deg);
  transform: rotate(360deg);
@@ -13979,7 +13669,7 @@ const NBaseLoading = defineComponent({
     default: 100
   } }, exposedLoadingProps),
   setup(props) {
-    useStyle("-base-loading", style$r, toRef(props, "clsPrefix"));
+    useStyle("-base-loading", style$o, toRef(props, "clsPrefix"));
   },
   render() {
     const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
@@ -14985,7 +14675,7 @@ const commonVars$c = {
   iconSizeLarge: "46px",
   iconSizeHuge: "52px"
 };
-const self$Z = (vars) => {
+const self$W = (vars) => {
   const { textColorDisabled, iconColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge } = vars;
   return Object.assign(Object.assign({}, commonVars$c), {
     fontSizeSmall,
@@ -15000,16 +14690,16 @@ const self$Z = (vars) => {
 const emptyLight = {
   name: "Empty",
   common: commonLight,
-  self: self$Z
+  self: self$W
 };
 const emptyLight$1 = emptyLight;
 const emptyDark = {
   name: "Empty",
   common: commonDark,
-  self: self$Z
+  self: self$W
 };
 const emptyDark$1 = emptyDark;
-const style$q = cB("empty", `
+const style$n = cB("empty", `
  display: flex;
  flex-direction: column;
  align-items: center;
@@ -15048,7 +14738,7 @@ const NEmpty = defineComponent({
   props: emptyProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Empty", "-empty", style$q, emptyLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Empty", "-empty", style$n, emptyLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
@@ -15100,7 +14790,7 @@ const NEmpty = defineComponent({
     );
   }
 });
-const self$Y = (vars) => {
+const self$V = (vars) => {
   const { scrollbarColor, scrollbarColorHover } = vars;
   return {
     color: scrollbarColor,
@@ -15110,13 +14800,13 @@ const self$Y = (vars) => {
 const scrollbarLight = {
   name: "Scrollbar",
   common: commonLight,
-  self: self$Y
+  self: self$V
 };
 const scrollbarLight$1 = scrollbarLight;
 const scrollbarDark = {
   name: "Scrollbar",
   common: commonDark,
-  self: self$Y
+  self: self$V
 };
 const scrollbarDark$1 = scrollbarDark;
 const {
@@ -15139,7 +14829,7 @@ function fadeInTransition({
     opacity: 1
   })];
 }
-const style$p = cB("scrollbar", `
+const style$m = cB("scrollbar", `
  overflow: hidden;
  position: relative;
  z-index: auto;
@@ -15662,7 +15352,7 @@ const Scrollbar$1 = defineComponent({
       off("mousemove", window, handleYScrollMouseMove, true);
       off("mouseup", window, handleYScrollMouseUp, true);
     });
-    const themeRef = useTheme("Scrollbar", "-scrollbar", style$p, scrollbarLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Scrollbar", "-scrollbar", style$m, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
       return {
@@ -15803,7 +15493,7 @@ const commonVariables$l = {
   optionPaddingHuge: "0 12px",
   loadingSize: "18px"
 };
-const self$X = (vars) => {
+const self$U = (vars) => {
   const { borderRadius, popoverColor, textColor3, dividerColor, textColor2, primaryColorPressed, textColorDisabled, primaryColor, opacityDisabled, hoverColor, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge } = vars;
   return Object.assign(Object.assign({}, commonVariables$l), { optionFontSizeSmall: fontSizeSmall, optionFontSizeMedium: fontSizeMedium, optionFontSizeLarge: fontSizeLarge, optionFontSizeHuge: fontSizeHuge, optionHeightSmall: heightSmall, optionHeightMedium: heightMedium, optionHeightLarge: heightLarge, optionHeightHuge: heightHuge, borderRadius, color: popoverColor, groupHeaderTextColor: textColor3, actionDividerColor: dividerColor, optionTextColor: textColor2, optionTextColorPressed: primaryColorPressed, optionTextColorDisabled: textColorDisabled, optionTextColorActive: primaryColor, optionOpacityDisabled: opacityDisabled, optionCheckColor: primaryColor, optionColorPending: hoverColor, optionColorActive: "rgba(0, 0, 0, 0)", optionColorActivePending: hoverColor, actionTextColor: textColor2, loadingColor: primaryColor });
 };
@@ -15814,7 +15504,7 @@ const internalSelectMenuLight = createTheme({
     Scrollbar: scrollbarLight$1,
     Empty: emptyLight$1
   },
-  self: self$X
+  self: self$U
 });
 const internalSelectMenuLight$1 = internalSelectMenuLight;
 const internalSelectMenuDark = {
@@ -15824,7 +15514,7 @@ const internalSelectMenuDark = {
     Scrollbar: scrollbarDark$1,
     Empty: emptyDark$1
   },
-  self: self$X
+  self: self$U
 };
 const internalSelectMenuDark$1 = internalSelectMenuDark;
 function renderCheckMark(show, clsPrefix) {
@@ -16008,7 +15698,7 @@ function fadeInScaleUpTransition({
     transform: `${originalTransform} scale(1)`
   })];
 }
-const style$o = cB("base-select-menu", `
+const style$l = cB("base-select-menu", `
  line-height: 1.5;
  outline: none;
  z-index: 0;
@@ -16177,7 +15867,7 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
-    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$o, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$l, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
     const scrollbarRef = ref(null);
@@ -16476,7 +16166,7 @@ const NInternalSelectMenu = defineComponent({
     );
   }
 });
-const style$n = cB("base-wave", `
+const style$k = cB("base-wave", `
  position: absolute;
  left: 0;
  right: 0;
@@ -16493,7 +16183,7 @@ const NBaseWave = defineComponent({
     }
   },
   setup(props) {
-    useStyle("-base-wave", style$n, toRef(props, "clsPrefix"));
+    useStyle("-base-wave", style$k, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const activeRef = ref(false);
     let animationTimerId = null;
@@ -16539,7 +16229,7 @@ const commonVariables$k = {
   arrowHeight: "6px",
   padding: "8px 14px"
 };
-const self$W = (vars) => {
+const self$T = (vars) => {
   const { boxShadow2, popoverColor, textColor2, borderRadius, fontSize: fontSize2, dividerColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$k), {
     fontSize: fontSize2,
@@ -16553,13 +16243,13 @@ const self$W = (vars) => {
 const popoverLight = {
   name: "Popover",
   common: commonLight,
-  self: self$W
+  self: self$T
 };
 const popoverLight$1 = popoverLight;
 const popoverDark = {
   name: "Popover",
   common: commonDark,
-  self: self$W
+  self: self$T
 };
 const popoverDark$1 = popoverDark;
 const oppositePlacement = {
@@ -16569,7 +16259,7 @@ const oppositePlacement = {
   right: "left"
 };
 const arrowSize = "var(--n-arrow-height) * 1.414";
-const style$m = c$1([cB("popover", `
+const style$j = c$1([cB("popover", `
  transition:
  box-shadow .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -16761,7 +16451,7 @@ const NPopoverBody = defineComponent({
   props: popoverBodyProps,
   setup(props, { slots, attrs }) {
     const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Popover", "-popover", style$m, popoverLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Popover", "-popover", style$j, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
     const bodyRef = ref(null);
@@ -17538,7 +17228,7 @@ const tagDark = {
   }
 };
 const tagDark$1 = tagDark;
-const self$V = (vars) => {
+const self$S = (vars) => {
   const { textColor2, primaryColorHover, primaryColorPressed, primaryColor, infoColor, successColor, warningColor, errorColor, baseColor, borderColor, opacityDisabled, tagColor, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadiusSmall: borderRadius, fontSizeMini, fontSizeTiny, fontSizeSmall, fontSizeMedium, heightMini, heightTiny, heightSmall, heightMedium, closeColorHover, closeColorPressed, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$j), {
     closeBorderRadius: borderRadius,
@@ -17624,7 +17314,7 @@ const self$V = (vars) => {
 const tagLight = {
   name: "Tag",
   common: commonLight,
-  self: self$V
+  self: self$S
 };
 const tagLight$1 = tagLight;
 const commonProps = {
@@ -17644,7 +17334,7 @@ const commonProps = {
     default: void 0
   }
 };
-const style$l = cB("tag", `
+const style$i = cB("tag", `
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -17747,7 +17437,7 @@ const NTag = defineComponent({
   setup(props) {
     const contentRef = ref(null);
     const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Tag", "-tag", style$l, tagLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tag", "-tag", style$i, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
@@ -17878,7 +17568,7 @@ const NTag = defineComponent({
     );
   }
 });
-const style$k = cB("base-clear", `
+const style$h = cB("base-clear", `
  flex-shrink: 0;
  height: 1em;
  width: 1em;
@@ -17918,7 +17608,7 @@ const NBaseClear = defineComponent({
     onClear: Function
   },
   setup(props) {
-    useStyle("-base-clear", style$k, toRef(props, "clsPrefix"));
+    useStyle("-base-clear", style$h, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
         e.preventDefault();
@@ -17985,7 +17675,7 @@ const commonVars$b = {
   clearSize: "16px",
   arrowSize: "16px"
 };
-const self$U = (vars) => {
+const self$R = (vars) => {
   const { borderRadius, textColor2, textColorDisabled, inputColor, inputColorDisabled, primaryColor, primaryColorHover, warningColor, warningColorHover, errorColor, errorColorHover, borderColor, iconColor, iconColorDisabled, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge } = vars;
   return Object.assign(Object.assign({}, commonVars$b), {
     fontSizeTiny,
@@ -18059,7 +17749,7 @@ const internalSelectionLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$U
+  self: self$R
 });
 const internalSelectionLight$1 = internalSelectionLight;
 const internalSelectionDark = {
@@ -18138,7 +17828,7 @@ const internalSelectionDark = {
   }
 };
 const internalSelectionDark$1 = internalSelectionDark;
-const style$j = c$1([cB("base-selection", `
+const style$g = c$1([cB("base-selection", `
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -18378,7 +18068,7 @@ const NInternalSelection = defineComponent({
     const showTagsPopoverRef = ref(false);
     const patternInputFocusedRef = ref(false);
     const hoverRef = ref(false);
-    const themeRef = useTheme("InternalSelection", "-internal-selection", style$j, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelection", "-internal-selection", style$g, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
     const mergedClearableRef = computed(() => {
       return props.clearable && !props.disabled && (hoverRef.value || props.active);
     });
@@ -19118,7 +18808,7 @@ const commonVars$9 = {
   linkPadding: "0 0 0 16px",
   railWidth: "4px"
 };
-const self$T = (vars) => {
+const self$Q = (vars) => {
   const { borderRadius, railColor, primaryColor, primaryColorHover, primaryColorPressed, textColor2 } = vars;
   return Object.assign(Object.assign({}, commonVars$9), {
     borderRadius,
@@ -19134,7 +18824,7 @@ const self$T = (vars) => {
 const anchorDark = {
   name: "Anchor",
   common: commonDark,
-  self: self$T
+  self: self$Q
 };
 const anchorDark$1 = anchorDark;
 function getIsGroup(option) {
@@ -19284,7 +18974,7 @@ const inputDark = {
   }
 };
 const inputDark$1 = inputDark;
-const self$S = (vars) => {
+const self$P = (vars) => {
   const { textColor2, textColor3, textColorDisabled, primaryColor, primaryColorHover, inputColor, inputColorDisabled, borderColor, warningColor, warningColorHover, errorColor, errorColorHover, borderRadius, lineHeight: lineHeight2, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge, actionColor, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, iconColor, iconColorDisabled, iconColorHover, iconColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$i), {
     countTextColorDisabled: textColorDisabled,
@@ -19352,7 +19042,7 @@ const self$S = (vars) => {
 const inputLight = {
   name: "Input",
   common: commonLight,
-  self: self$S
+  self: self$P
 };
 const inputLight$1 = inputLight;
 const inputInjectionKey = createInjectionKey("n-input");
@@ -19442,7 +19132,7 @@ const WordCount = defineComponent({
     };
   }
 });
-const style$i = cB("input", `
+const style$f = cB("input", `
  max-width: 100%;
  cursor: text;
  line-height: 1.5;
@@ -19797,7 +19487,7 @@ const NInput = defineComponent({
   props: inputProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Input", "-input", style$i, inputLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Input", "-input", style$f, inputLight$1, props, mergedClsPrefixRef);
     if (isSafari) {
       useStyle("-input-safari", safariStyle, mergedClsPrefixRef);
     }
@@ -20628,7 +20318,7 @@ const NInput = defineComponent({
     );
   }
 });
-function self$R(vars) {
+function self$O(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -20641,86 +20331,10 @@ const autoCompleteDark = {
     InternalSelectMenu: internalSelectMenuDark$1,
     Input: inputDark$1
   },
-  self: self$R
+  self: self$O
 };
 const autoCompleteDark$1 = autoCompleteDark;
-const isImageSupportNativeLazy = isBrowser$3 && "loading" in document.createElement("img");
-const resolveOptionsAndHash = (options = {}) => {
-  var _a2;
-  const { root: root2 = null } = options;
-  return {
-    hash: `${options.rootMargin || "0px 0px 0px 0px"}-${Array.isArray(options.threshold) ? options.threshold.join(",") : (_a2 = options.threshold) !== null && _a2 !== void 0 ? _a2 : "0"}`,
-    options: Object.assign(Object.assign({}, options), { root: (typeof root2 === "string" ? document.querySelector(root2) : root2) || document.documentElement })
-  };
-};
-const observers = /* @__PURE__ */ new WeakMap();
-const unobserveHandleMap = /* @__PURE__ */ new WeakMap();
-const shouldStartLoadingRefMap = /* @__PURE__ */ new WeakMap();
-const observeIntersection = (el, options, shouldStartLoadingRef) => {
-  if (!el)
-    return () => {
-    };
-  const resolvedOptionsAndHash = resolveOptionsAndHash(options);
-  const { root: root2 } = resolvedOptionsAndHash.options;
-  let rootObservers;
-  const _rootObservers = observers.get(root2);
-  if (_rootObservers) {
-    rootObservers = _rootObservers;
-  } else {
-    rootObservers = /* @__PURE__ */ new Map();
-    observers.set(root2, rootObservers);
-  }
-  let observer;
-  let observerAndObservedElements;
-  if (rootObservers.has(resolvedOptionsAndHash.hash)) {
-    observerAndObservedElements = // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    rootObservers.get(resolvedOptionsAndHash.hash);
-    if (!observerAndObservedElements[1].has(el)) {
-      observer = observerAndObservedElements[0];
-      observerAndObservedElements[1].add(el);
-      observer.observe(el);
-    }
-  } else {
-    observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const _unobserve = unobserveHandleMap.get(entry.target);
-          const _shouldStartLoadingRef = shouldStartLoadingRefMap.get(entry.target);
-          if (_unobserve)
-            _unobserve();
-          if (_shouldStartLoadingRef) {
-            _shouldStartLoadingRef.value = true;
-          }
-        }
-      });
-    }, resolvedOptionsAndHash.options);
-    observer.observe(el);
-    observerAndObservedElements = [observer, /* @__PURE__ */ new Set([el])];
-    rootObservers.set(resolvedOptionsAndHash.hash, observerAndObservedElements);
-  }
-  let unobservered = false;
-  const unobserve = () => {
-    if (unobservered)
-      return;
-    unobserveHandleMap.delete(el);
-    shouldStartLoadingRefMap.delete(el);
-    unobservered = true;
-    if (observerAndObservedElements[1].has(el)) {
-      observerAndObservedElements[0].unobserve(el);
-      observerAndObservedElements[1].delete(el);
-    }
-    if (observerAndObservedElements[1].size <= 0) {
-      rootObservers.delete(resolvedOptionsAndHash.hash);
-    }
-    if (!rootObservers.size) {
-      observers.delete(root2);
-    }
-  };
-  unobserveHandleMap.set(el, unobserve);
-  shouldStartLoadingRefMap.set(el, shouldStartLoadingRef);
-  return unobserve;
-};
-const self$Q = (vars) => {
+const self$N = (vars) => {
   const { borderRadius, avatarColor, cardColor, fontSize: fontSize2, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, modalColor, popoverColor } = vars;
   return {
     borderRadius,
@@ -20739,10 +20353,10 @@ const self$Q = (vars) => {
 const avatarDark = {
   name: "Avatar",
   common: commonDark,
-  self: self$Q
+  self: self$N
 };
 const avatarDark$1 = avatarDark;
-const self$P = () => {
+const self$M = () => {
   return {
     gap: "-12px"
   };
@@ -20753,7 +20367,7 @@ const avatarGroupDark = {
   peers: {
     Avatar: avatarDark$1
   },
-  self: self$P
+  self: self$M
 };
 const avatarGroupDark$1 = avatarGroupDark;
 const commonVariables$h = {
@@ -20791,14 +20405,14 @@ const badgeDark$1 = badgeDark;
 const commonVariables$g = {
   fontWeightActive: "400"
 };
-const self$O = (vars) => {
+const self$L = (vars) => {
   const { fontSize: fontSize2, textColor3, textColor2, borderRadius, buttonColor2Hover, buttonColor2Pressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$g), { fontSize: fontSize2, itemLineHeight: "1.25", itemTextColor: textColor3, itemTextColorHover: textColor2, itemTextColorPressed: textColor2, itemTextColorActive: textColor2, itemBorderRadius: borderRadius, itemColorHover: buttonColor2Hover, itemColorPressed: buttonColor2Pressed, separatorColor: textColor3 });
 };
 const breadcrumbDark = {
   name: "Breadcrumb",
   common: commonDark,
-  self: self$O
+  self: self$L
 };
 const breadcrumbDark$1 = breadcrumbDark;
 function createHoverColor(rgb) {
@@ -20827,7 +20441,7 @@ const commonVariables$f = {
   iconSizeLarge: "20px",
   rippleDuration: ".6s"
 };
-const self$N = (vars) => {
+const self$K = (vars) => {
   const { heightTiny, heightSmall, heightMedium, heightLarge, borderRadius, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, opacityDisabled, textColor2, textColor3, primaryColorHover, primaryColorPressed, borderColor, primaryColor, baseColor, infoColor, infoColorHover, infoColorPressed, successColor, successColorHover, successColorPressed, warningColor, warningColorHover, warningColorPressed, errorColor, errorColorHover, errorColorPressed, fontWeight, buttonColor2, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$f), {
     heightTiny,
@@ -21029,14 +20643,14 @@ const self$N = (vars) => {
 const buttonLight = {
   name: "Button",
   common: commonLight,
-  self: self$N
+  self: self$K
 };
 const buttonLight$1 = buttonLight;
 const buttonDark = {
   name: "Button",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$N(vars);
+    const commonSelf = self$K(vars);
     commonSelf.waveOpacity = "0.8";
     commonSelf.colorOpacitySecondary = "0.16";
     commonSelf.colorOpacitySecondaryHover = "0.2";
@@ -21045,7 +20659,7 @@ const buttonDark = {
   }
 };
 const buttonDark$1 = buttonDark;
-const style$h = c$1([cB("button", `
+const style$e = c$1([cB("button", `
  margin: 0;
  font-weight: var(--n-font-weight);
  line-height: 1;
@@ -21302,7 +20916,7 @@ const Button = defineComponent({
       enterPressedRef.value = false;
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Button", "-button", style$h, buttonLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Button", "-button", style$e, buttonLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Button", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const theme = themeRef.value;
@@ -21566,7 +21180,7 @@ const XButton = Button;
 const commonVariables$e = {
   titleFontSize: "22px"
 };
-const self$M = (vars) => {
+const self$J = (vars) => {
   const { borderRadius, fontSize: fontSize2, lineHeight: lineHeight2, textColor2, textColor1, textColorDisabled, dividerColor, fontWeightStrong, primaryColor, baseColor, hoverColor, cardColor, modalColor, popoverColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$e), {
     borderRadius,
@@ -21596,10 +21210,10 @@ const calendarDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$M
+  self: self$J
 };
 const calendarDark$1 = calendarDark;
-const self$L = (vars) => {
+const self$I = (vars) => {
   const { fontSize: fontSize2, boxShadow2, popoverColor, textColor2, borderRadius, borderColor, heightSmall, heightMedium, heightLarge, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor } = vars;
   return {
     panelFontSize: fontSize2,
@@ -21624,7 +21238,7 @@ const colorPickerDark = {
     Input: inputDark$1,
     Button: buttonDark$1
   },
-  self: self$L
+  self: self$I
 };
 const colorPickerDark$1 = colorPickerDark;
 const commonVariables$d = {
@@ -21639,7 +21253,7 @@ const commonVariables$d = {
   closeIconSize: "18px",
   closeSize: "22px"
 };
-const self$K = (vars) => {
+const self$H = (vars) => {
   const { primaryColor, borderRadius, lineHeight: lineHeight2, fontSize: fontSize2, cardColor, textColor2, textColor1, dividerColor, fontWeightStrong, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, modalColor, boxShadow1, popoverColor, actionColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$d), {
     lineHeight: lineHeight2,
@@ -21672,14 +21286,14 @@ const self$K = (vars) => {
 const cardLight = {
   name: "Card",
   common: commonLight,
-  self: self$K
+  self: self$H
 };
 const cardLight$1 = cardLight;
 const cardDark = {
   name: "Card",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$K(vars);
+    const commonSelf = self$H(vars);
     const { cardColor, modalColor, popoverColor } = vars;
     commonSelf.colorEmbedded = cardColor;
     commonSelf.colorEmbeddedModal = modalColor;
@@ -21688,7 +21302,7 @@ const cardDark = {
   }
 };
 const cardDark$1 = cardDark;
-const style$g = c$1([cB("card", `
+const style$d = c$1([cB("card", `
  font-size: var(--n-font-size);
  line-height: var(--n-line-height);
  display: flex;
@@ -21833,7 +21447,7 @@ const NCard = defineComponent({
         call(onClose);
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Card", "-card", style$g, cardLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Card", "-card", style$d, cardLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Card", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { size: size2 } = props;
@@ -21921,7 +21535,7 @@ const NCard = defineComponent({
     );
   }
 });
-const self$J = (vars) => {
+const self$G = (vars) => {
   return {
     dotSize: "8px",
     dotColor: "rgba(255, 255, 255, .3)",
@@ -21935,7 +21549,7 @@ const self$J = (vars) => {
 const carouselDark = {
   name: "Carousel",
   common: commonDark,
-  self: self$J
+  self: self$G
 };
 const carouselDark$1 = carouselDark;
 const commonVariables$c = {
@@ -21945,7 +21559,7 @@ const commonVariables$c = {
   labelPadding: "0 8px",
   labelFontWeight: "400"
 };
-const self$I = (vars) => {
+const self$F = (vars) => {
   const { baseColor, inputColorDisabled, cardColor, modalColor, popoverColor, textColorDisabled, borderColor, primaryColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, borderRadiusSmall, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$c), {
     labelLineHeight: lineHeight2,
@@ -21976,7 +21590,7 @@ const self$I = (vars) => {
 const checkboxLight = {
   name: "Checkbox",
   common: commonLight,
-  self: self$I
+  self: self$F
 };
 const checkboxLight$1 = checkboxLight;
 const checkboxDark = {
@@ -21984,14 +21598,14 @@ const checkboxDark = {
   common: commonDark,
   self(vars) {
     const { cardColor } = vars;
-    const commonSelf = self$I(vars);
+    const commonSelf = self$F(vars);
     commonSelf.color = "#0000";
     commonSelf.checkMarkColor = cardColor;
     return commonSelf;
   }
 };
 const checkboxDark$1 = checkboxDark;
-const self$H = (vars) => {
+const self$E = (vars) => {
   const { borderRadius, boxShadow2, popoverColor, textColor2, textColor3, primaryColor, textColorDisabled, dividerColor, hoverColor, fontSizeMedium, heightMedium } = vars;
   return {
     menuBorderRadius: borderRadius,
@@ -22021,7 +21635,7 @@ const cascaderDark = {
     Checkbox: checkboxDark$1,
     Empty: emptyLight$1
   },
-  self: self$H
+  self: self$E
 };
 const cascaderDark$1 = cascaderDark;
 const codeDark = {
@@ -22049,7 +21663,7 @@ const codeDark = {
   }
 };
 const codeDark$1 = codeDark;
-const self$G = (vars) => {
+const self$D = (vars) => {
   const { fontWeight, textColor1, textColor2, textColorDisabled, dividerColor, fontSize: fontSize2 } = vars;
   return {
     titleFontSize: fontSize2,
@@ -22067,10 +21681,10 @@ const self$G = (vars) => {
 const collapseDark = {
   name: "Collapse",
   common: commonDark,
-  self: self$G
+  self: self$D
 };
 const collapseDark$1 = collapseDark;
-const self$F = (vars) => {
+const self$C = (vars) => {
   const { cubicBezierEaseInOut: cubicBezierEaseInOut2 } = vars;
   return {
     bezier: cubicBezierEaseInOut2
@@ -22079,7 +21693,7 @@ const self$F = (vars) => {
 const collapseTransitionDark = {
   name: "CollapseTransition",
   common: commonDark,
-  self: self$F
+  self: self$C
 };
 const collapseTransitionDark$1 = collapseTransitionDark;
 const configProviderProps = {
@@ -22268,7 +21882,7 @@ const popselect = {
   }
 };
 const popselectDark = popselect;
-function self$E(vars) {
+function self$B(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -22281,10 +21895,10 @@ const popselectLight = createTheme({
     Popover: popoverLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$E
+  self: self$B
 });
 const popselectLight$1 = popselectLight;
-function self$D(vars) {
+function self$A(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -22297,7 +21911,7 @@ const selectLight = createTheme({
     InternalSelection: internalSelectionLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$D
+  self: self$A
 });
 const selectLight$1 = selectLight;
 const selectDark = {
@@ -22307,10 +21921,10 @@ const selectDark = {
     InternalSelection: internalSelectionDark$1,
     InternalSelectMenu: internalSelectMenuDark$1
   },
-  self: self$D
+  self: self$A
 };
 const selectDark$1 = selectDark;
-const style$f = c$1([cB("select", `
+const style$c = c$1([cB("select", `
  z-index: auto;
  outline: none;
  width: 100%;
@@ -22435,7 +22049,7 @@ const NSelect = defineComponent({
   props: selectProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Select", "-select", style$f, selectLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Select", "-select", style$c, selectLight$1, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -23074,7 +22688,7 @@ const commonVariables$b = {
   prefixMarginLarge: "0 8px 0 0",
   suffixMarginLarge: "0 0 0 8px"
 };
-const self$C = (vars) => {
+const self$z = (vars) => {
   const {
     textColor2,
     primaryColor,
@@ -23103,7 +22717,7 @@ const paginationLight = createTheme({
     Input: inputLight$1,
     Popselect: popselectLight$1
   },
-  self: self$C
+  self: self$z
 });
 const paginationLight$1 = paginationLight;
 const paginationDark = {
@@ -23119,7 +22733,7 @@ const paginationDark = {
     const borderColorActive = changeColor(primaryColor, {
       alpha: Number(opacity3)
     });
-    const commonSelf = self$C(vars);
+    const commonSelf = self$z(vars);
     commonSelf.itemBorderActive = `1px solid ${borderColorActive}`;
     commonSelf.itemBorderDisabled = "1px solid #0000";
     return commonSelf;
@@ -23141,7 +22755,7 @@ const tooltipDark = {
   }
 };
 const tooltipDark$1 = tooltipDark;
-const self$B = (vars) => {
+const self$y = (vars) => {
   const { borderRadius, boxShadow2, baseColor } = vars;
   return Object.assign(Object.assign({}, commonVars$8), { borderRadius, boxShadow: boxShadow2, color: composite(baseColor, "rgba(0, 0, 0, .85)"), textColor: baseColor });
 };
@@ -23151,7 +22765,7 @@ const tooltipLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$B
+  self: self$y
 });
 const tooltipLight$1 = tooltipLight;
 const ellipsisDark = {
@@ -23219,7 +22833,7 @@ const radioDark = {
   }
 };
 const radioDark$1 = radioDark;
-const self$A = (vars) => {
+const self$x = (vars) => {
   const { borderColor, primaryColor, baseColor, textColorDisabled, inputColorDisabled, textColor2, opacityDisabled, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightSmall, heightMedium, heightLarge, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$a), {
     labelLineHeight: lineHeight2,
@@ -23259,7 +22873,7 @@ const self$A = (vars) => {
 const radioLight = {
   name: "Radio",
   common: commonLight,
-  self: self$A
+  self: self$x
 };
 const radioLight$1 = radioLight;
 const commonVariables$9 = {
@@ -23285,7 +22899,7 @@ const commonVariables$9 = {
   optionIconPrefixWidthLarge: "40px",
   optionIconPrefixWidthHuge: "40px"
 };
-const self$z = (vars) => {
+const self$w = (vars) => {
   const { primaryColor, textColor2, dividerColor, hoverColor, popoverColor, invertedColor, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge, textColor3, opacityDisabled } = vars;
   return Object.assign(Object.assign({}, commonVariables$9), {
     optionHeightSmall: heightSmall,
@@ -23330,7 +22944,7 @@ const dropdownLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$z
+  self: self$w
 });
 const dropdownLight$1 = dropdownLight;
 const dropdownDark = {
@@ -23341,7 +22955,7 @@ const dropdownDark = {
   },
   self(vars) {
     const { primaryColorSuppl, primaryColor, popoverColor } = vars;
-    const commonSelf = self$z(vars);
+    const commonSelf = self$w(vars);
     commonSelf.colorInverted = popoverColor;
     commonSelf.optionColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.optionColorActiveInverted = primaryColorSuppl;
@@ -23366,7 +22980,7 @@ const commonVariables$8 = {
   actionPadding: "8px 12px",
   actionButtonMargin: "0 8px 0 0"
 };
-const self$y = (vars) => {
+const self$v = (vars) => {
   const { cardColor, modalColor, popoverColor, textColor2, textColor1, tableHeaderColor, tableColorHover, iconColor, primaryColor, fontWeightStrong, borderRadius, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor, heightSmall, opacityDisabled, tableColorStriped } = vars;
   return Object.assign(Object.assign({}, commonVariables$8), {
     actionDividerColor: dividerColor,
@@ -23423,7 +23037,7 @@ const dataTableLight = createTheme({
     Ellipsis: ellipsisLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$y
+  self: self$v
 });
 const dataTableLight$1 = dataTableLight;
 const dataTableDark = {
@@ -23441,7 +23055,7 @@ const dataTableDark = {
     Dropdown: dropdownDark$1
   },
   self(vars) {
-    const commonSelf = self$y(vars);
+    const commonSelf = self$v(vars);
     commonSelf.boxShadowAfter = "inset 12px 0 8px -12px rgba(0, 0, 0, .36)";
     commonSelf.boxShadowBefore = "inset -12px 0 8px -12px rgba(0, 0, 0, .36)";
     return commonSelf;
@@ -23485,7 +23099,7 @@ const NDropdownDivider = defineComponent({
     return h("div", { class: `${this.clsPrefix}-dropdown-divider` });
   }
 });
-const self$x = (vars) => {
+const self$u = (vars) => {
   const { textColorBase, opacity1, opacity2, opacity3, opacity4, opacity5 } = vars;
   return {
     color: textColorBase,
@@ -23499,16 +23113,16 @@ const self$x = (vars) => {
 const iconLight = {
   name: "Icon",
   common: commonLight,
-  self: self$x
+  self: self$u
 };
 const iconLight$1 = iconLight;
 const iconDark$1 = {
   name: "Icon",
   common: commonDark,
-  self: self$x
+  self: self$u
 };
 const iconDark$2 = iconDark$1;
-const style$e = cB("icon", `
+const style$b = cB("icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -23536,7 +23150,7 @@ const NIcon = defineComponent({
   props: iconProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Icon", "-icon", style$e, iconLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Icon", "-icon", style$b, iconLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { depth } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -24030,7 +23644,7 @@ const NDropdownMenu = defineComponent({
     );
   }
 });
-const style$d = cB("dropdown-menu", `
+const style$a = cB("dropdown-menu", `
  transform-origin: var(--v-transform-origin);
  background-color: var(--n-color);
  border-radius: var(--n-border-radius);
@@ -24258,7 +23872,7 @@ const NDropdown = defineComponent({
       }
     }, keyboardEnabledRef);
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Dropdown", "-dropdown", style$d, dropdownLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dropdown", "-dropdown", style$a, dropdownLight$1, props, mergedClsPrefixRef);
     provide(dropdownInjectionKey, {
       labelFieldRef: toRef(props, "labelField"),
       childrenFieldRef: toRef(props, "childrenField"),
@@ -24473,7 +24087,7 @@ const commonVars$7 = {
   itemWidth: "52px",
   panelActionPadding: "8px 0"
 };
-const self$w = (vars) => {
+const self$t = (vars) => {
   const { popoverColor, textColor2, primaryColor, hoverColor, dividerColor, opacityDisabled, boxShadow2, borderRadius, iconColor, iconColorDisabled } = vars;
   return Object.assign(Object.assign({}, commonVars$7), {
     panelColor: popoverColor,
@@ -24497,7 +24111,7 @@ const timePickerDark = {
     Button: buttonDark$1,
     Input: inputDark$1
   },
-  self: self$w
+  self: self$t
 };
 const timePickerDark$1 = timePickerDark;
 const commonVars$6 = {
@@ -24536,7 +24150,7 @@ const commonVars$6 = {
   calendarRightPaddingQuarterrange: "0",
   calendarRightPaddingYearrange: "0"
 };
-const self$v = (vars) => {
+const self$s = (vars) => {
   const { hoverColor, fontSize: fontSize2, textColor2, textColorDisabled, popoverColor, primaryColor, borderRadiusSmall, iconColor, iconColorDisabled, textColor1, dividerColor, boxShadow2, borderRadius, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVars$6), {
     itemFontSize: fontSize2,
@@ -24580,7 +24194,7 @@ const datePickerDark = {
   },
   self(vars) {
     const { popoverColor, hoverColor, primaryColor } = vars;
-    const commonSelf = self$v(vars);
+    const commonSelf = self$s(vars);
     commonSelf.itemColorDisabled = composite(popoverColor, hoverColor);
     commonSelf.itemColorIncluded = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorHover = composite(popoverColor, hoverColor);
@@ -24602,7 +24216,7 @@ const commonVariables$7 = {
   tdPaddingMedium: "0 0 12px 0",
   tdPaddingLarge: "0 0 16px 0"
 };
-const self$u = (vars) => {
+const self$r = (vars) => {
   const { tableHeaderColor, textColor2, textColor1, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge } = vars;
   return Object.assign(Object.assign({}, commonVariables$7), {
     lineHeight: lineHeight2,
@@ -24628,13 +24242,13 @@ const self$u = (vars) => {
 const descriptionsLight = {
   name: "Descriptions",
   common: commonLight,
-  self: self$u
+  self: self$r
 };
 const descriptionsLight$1 = descriptionsLight;
 const descriptionsDark = {
   name: "Descriptions",
   common: commonDark,
-  self: self$u
+  self: self$r
 };
 const descriptionsDark$1 = descriptionsDark;
 const commonVars$5 = {
@@ -24650,7 +24264,7 @@ const commonVars$5 = {
   closeMargin: "20px 26px 0 0",
   closeMarginIconTop: "10px 16px 0 0"
 };
-const self$t = (vars) => {
+const self$q = (vars) => {
   const { textColor1, textColor2, modalColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, infoColor, successColor, warningColor, errorColor, primaryColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$5), {
     fontSize: fontSize2,
@@ -24680,7 +24294,7 @@ const dialogLight = createTheme({
   peers: {
     Button: buttonLight$1
   },
-  self: self$t
+  self: self$q
 });
 const dialogLight$1 = dialogLight;
 const dialogDark = {
@@ -24689,7 +24303,7 @@ const dialogDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$t
+  self: self$q
 };
 const dialogDark$1 = dialogDark;
 const dialogProps = {
@@ -24721,7 +24335,7 @@ const dialogProps = {
   onClose: Function
 };
 const dialogPropKeys = keysOf(dialogProps);
-const style$c = c$1([cB("dialog", `
+const style$9 = c$1([cB("dialog", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: relative;
@@ -24829,7 +24443,7 @@ const NDialog = defineComponent({
       if (onClose)
         onClose();
     }
-    const themeRef = useTheme("Dialog", "-dialog", style$c, dialogLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dialog", "-dialog", style$9, dialogLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const iconPlacement = mergedIconPlacementRef.value;
@@ -24916,7 +24530,7 @@ const NDialog = defineComponent({
   }
 });
 const dialogProviderInjectionKey = createInjectionKey("n-dialog-provider");
-const self$s = (vars) => {
+const self$p = (vars) => {
   const { modalColor, textColor2, boxShadow3 } = vars;
   return {
     color: modalColor,
@@ -24932,7 +24546,7 @@ const modalLight = createTheme({
     Dialog: dialogLight$1,
     Card: cardLight$1
   },
-  self: self$s
+  self: self$p
 });
 const modalLight$1 = modalLight;
 const modalDark = {
@@ -24943,7 +24557,7 @@ const modalDark = {
     Dialog: dialogDark$1,
     Card: cardDark$1
   },
-  self: self$s
+  self: self$p
 };
 const modalDark$1 = modalDark;
 const presetProps = Object.assign(Object.assign({}, cardBaseProps), dialogProps);
@@ -25155,7 +24769,7 @@ const NModalBodyWrapper = defineComponent({
     ]) : null;
   }
 });
-const style$b = c$1([cB("modal-container", `
+const style$8 = c$1([cB("modal-container", `
  position: fixed;
  left: 0;
  top: 0;
@@ -25247,7 +24861,7 @@ const NModal = defineComponent({
   setup(props) {
     const containerRef = ref(null);
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Modal", "-modal", style$b, modalLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Modal", "-modal", style$8, modalLight$1, props, mergedClsPrefixRef);
     const clickedRef = useClicked(64);
     const clickedPositionRef = useClickPosition();
     const isMountedRef = isMounted();
@@ -25417,7 +25031,7 @@ const NModal = defineComponent({
     });
   }
 });
-const self$r = (vars) => {
+const self$o = (vars) => {
   const { textColor1, dividerColor, fontWeightStrong } = vars;
   return {
     textColor: textColor1,
@@ -25428,10 +25042,10 @@ const self$r = (vars) => {
 const dividerDark = {
   name: "Divider",
   common: commonDark,
-  self: self$r
+  self: self$o
 };
 const dividerDark$1 = dividerDark;
-const self$q = (vars) => {
+const self$n = (vars) => {
   const { modalColor, textColor1, textColor2, boxShadow3, lineHeight: lineHeight2, fontWeightStrong, dividerColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadius, primaryColorHover } = vars;
   return {
     bodyPadding: "16px 24px",
@@ -25463,7 +25077,7 @@ const drawerLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$q
+  self: self$n
 });
 const drawerLight$1 = drawerLight;
 const drawerDark = {
@@ -25472,7 +25086,7 @@ const drawerDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$q
+  self: self$n
 };
 const drawerDark$1 = drawerDark;
 const NDrawerBodyWrapper = defineComponent({
@@ -25783,7 +25397,7 @@ function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s"
     })
   ];
 }
-const style$a = c$1([cB("drawer", `
+const style$7 = c$1([cB("drawer", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: absolute;
@@ -25993,7 +25607,7 @@ const NDrawer = defineComponent({
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
     const isMountedRef = isMounted();
-    const themeRef = useTheme("Drawer", "-drawer", style$a, drawerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Drawer", "-drawer", style$7, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
     const uncontrolledHeightRef = ref(props.defaultHeight);
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
@@ -26217,12 +25831,12 @@ const spaceDark = {
   }
 };
 const spaceDark$1 = spaceDark;
-const self$p = () => {
+const self$m = () => {
   return commonVars$4;
 };
 const spaceLight = {
   name: "Space",
-  self: self$p
+  self: self$m
 };
 const spaceLight$1 = spaceLight;
 let supportFlexGap;
@@ -26392,20 +26006,20 @@ const commonVariables$5 = {
   labelTextAlignHorizontal: "right",
   labelFontWeight: "400"
 };
-const self$o = (vars) => {
+const self$l = (vars) => {
   const { heightSmall, heightMedium, heightLarge, textColor1, errorColor, warningColor, lineHeight: lineHeight2, textColor3 } = vars;
   return Object.assign(Object.assign({}, commonVariables$5), { blankHeightSmall: heightSmall, blankHeightMedium: heightMedium, blankHeightLarge: heightLarge, lineHeight: lineHeight2, labelTextColor: textColor1, asteriskColor: errorColor, feedbackTextColorError: errorColor, feedbackTextColorWarning: warningColor, feedbackTextColor: textColor3 });
 };
 const formLight = {
   name: "Form",
   common: commonLight,
-  self: self$o
+  self: self$l
 };
 const formLight$1 = formLight;
 const formItemDark = {
   name: "Form",
   common: commonDark,
-  self: self$o
+  self: self$l
 };
 const formDark = formItemDark;
 const defaultSpan$1 = 1;
@@ -26740,7 +26354,7 @@ const NGrid = defineComponent({
     }) : renderContent();
   }
 });
-const self$n = (vars) => {
+const self$k = (vars) => {
   const { primaryColor, baseColor } = vars;
   return {
     color: primaryColor,
@@ -26750,27 +26364,9 @@ const self$n = (vars) => {
 const iconDark = {
   name: "IconWrapper",
   common: commonDark,
-  self: self$n
+  self: self$k
 };
 const iconWrapperDark = iconDark;
-const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), { showToolbar: { type: Boolean, default: true }, showToolbarTooltip: Boolean });
-const imageContextKey = createInjectionKey("n-image");
-function self$m() {
-  return {
-    toolbarIconColor: "rgba(255, 255, 255, .9)",
-    toolbarColor: "rgba(0, 0, 0, .35)",
-    toolbarBoxShadow: "none",
-    toolbarBorderRadius: "24px"
-  };
-}
-const imageLight = createTheme({
-  name: "Image",
-  common: commonLight,
-  peers: {
-    Tooltip: tooltipLight$1
-  },
-  self: self$m
-});
 const commonVars$3 = {
   closeMargin: "16px 12px",
   closeSize: "20px",
@@ -26781,7 +26377,7 @@ const commonVars$3 = {
   metaFontSize: "12px",
   descriptionFontSize: "12px"
 };
-const self$l = (vars) => {
+const self$j = (vars) => {
   const { textColor2, successColor, infoColor, warningColor, errorColor, popoverColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, textColor1, textColor3, borderRadius, fontWeightStrong, boxShadow2, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$3), {
     borderRadius,
@@ -26813,7 +26409,7 @@ const notificationLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$l
+  self: self$j
 });
 const notificationLight$1 = notificationLight;
 const notificationDark = {
@@ -26822,7 +26418,7 @@ const notificationDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$l
+  self: self$j
 };
 const notificationDark$1 = notificationDark;
 const commonVariables$4 = {
@@ -26837,7 +26433,7 @@ const commonVariables$4 = {
   iconSize: "20px",
   fontSize: "14px"
 };
-const self$k = (vars) => {
+const self$i = (vars) => {
   const { textColor2, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, errorColor, warningColor, popoverColor, boxShadow2, primaryColor, lineHeight: lineHeight2, borderRadius, closeColorHover, closeColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$4), {
     closeBorderRadius: borderRadius,
@@ -26903,13 +26499,13 @@ const self$k = (vars) => {
 const messageLight = {
   name: "Message",
   common: commonLight,
-  self: self$k
+  self: self$i
 };
 const messageLight$1 = messageLight;
 const messageDark = {
   name: "Message",
   common: commonDark,
-  self: self$k
+  self: self$i
 };
 const messageDark$1 = messageDark;
 const buttonGroupDark = {
@@ -26932,22 +26528,6 @@ const inputNumberDark = {
   }
 };
 const inputNumberDark$1 = inputNumberDark;
-const self$j = (vars) => {
-  const { textColorDisabled } = vars;
-  return {
-    iconColorDisabled: textColorDisabled
-  };
-};
-const inputNumberLight = createTheme({
-  name: "InputNumber",
-  common: commonLight,
-  peers: {
-    Button: buttonLight$1,
-    Input: inputLight$1
-  },
-  self: self$j
-});
-const inputNumberLight$1 = inputNumberLight;
 const layoutDark = {
   name: "Layout",
   common: commonDark,
@@ -26984,7 +26564,7 @@ const layoutDark = {
   }
 };
 const layoutDark$1 = layoutDark;
-const self$i = (vars) => {
+const self$h = (vars) => {
   const { baseColor, textColor2, bodyColor, cardColor, dividerColor, actionColor, scrollbarColor, scrollbarColorHover, invertedColor } = vars;
   return {
     textColor: textColor2,
@@ -27019,10 +26599,10 @@ const layoutLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$i
+  self: self$h
 });
 const layoutLight$1 = layoutLight;
-const self$h = (vars) => {
+const self$g = (vars) => {
   const { textColor2, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontSize: fontSize2, hoverColor } = vars;
   return {
     textColor: textColor2,
@@ -27042,7 +26622,7 @@ const self$h = (vars) => {
 const listDark$1 = {
   name: "List",
   common: commonDark,
-  self: self$h
+  self: self$g
 };
 const listDark$2 = listDark$1;
 const loadingBarDark = {
@@ -27132,7 +26712,7 @@ function createPartialInvertedVars(color, activeItemColor, activeTextColor, grou
     groupTextColorInverted: groupTextColor
   };
 }
-const self$g = (vars) => {
+const self$f = (vars) => {
   const { borderRadius, textColor3, primaryColor, textColor2, textColor1, fontSize: fontSize2, dividerColor, hoverColor, primaryColorHover } = vars;
   return Object.assign({
     borderRadius,
@@ -27187,7 +26767,7 @@ const menuLight = createTheme({
     Tooltip: tooltipLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$g
+  self: self$f
 });
 const menuLight$1 = menuLight;
 const menuDark = {
@@ -27199,7 +26779,7 @@ const menuDark = {
   },
   self(vars) {
     const { primaryColor, primaryColorSuppl } = vars;
-    const commonSelf = self$g(vars);
+    const commonSelf = self$f(vars);
     commonSelf.itemColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveHover = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveCollapsed = changeColor(primaryColor, {
@@ -27216,19 +26796,19 @@ const common = {
   titleFontSize: "18px",
   backSize: "22px"
 };
-function self$f(vars) {
+function self$e(vars) {
   const { textColor1, textColor2, textColor3, fontSize: fontSize2, fontWeightStrong, primaryColorHover, primaryColorPressed } = vars;
   return Object.assign(Object.assign({}, common), { titleFontWeight: fontWeightStrong, fontSize: fontSize2, titleTextColor: textColor1, backColor: textColor2, backColorHover: primaryColorHover, backColorPressed: primaryColorPressed, subtitleTextColor: textColor3 });
 }
 const pageHeaderDark = {
   name: "PageHeader",
   common: commonDark,
-  self: self$f
+  self: self$e
 };
 const commonVars$2 = {
   iconSize: "22px"
 };
-const self$e = (vars) => {
+const self$d = (vars) => {
   const { fontSize: fontSize2, warningColor } = vars;
   return Object.assign(Object.assign({}, commonVars$2), { fontSize: fontSize2, iconColor: warningColor });
 };
@@ -27239,10 +26819,10 @@ const popconfirmDark = {
     Button: buttonDark$1,
     Popover: popoverDark$1
   },
-  self: self$e
+  self: self$d
 };
 const popconfirmDark$1 = popconfirmDark;
-const self$d = (vars) => {
+const self$c = (vars) => {
   const { infoColor, successColor, warningColor, errorColor, textColor2, progressRailColor, fontSize: fontSize2, fontWeight } = vars;
   return {
     fontSize: fontSize2,
@@ -27271,14 +26851,14 @@ const self$d = (vars) => {
 const progressLight = {
   name: "Progress",
   common: commonLight,
-  self: self$d
+  self: self$c
 };
 const progressLight$1 = progressLight;
 const progressDark = {
   name: "Progress",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$d(vars);
+    const commonSelf = self$c(vars);
     commonSelf.textColorLineInner = "rgb(0, 0, 0)";
     commonSelf.lineBgProcessing = "linear-gradient(90deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .5) 100%)";
     return commonSelf;
@@ -27319,20 +26899,20 @@ const commonVariables$3 = {
   iconColor403: void 0,
   iconColor500: void 0
 };
-const self$c = (vars) => {
+const self$b = (vars) => {
   const { textColor2, textColor1, errorColor, successColor, infoColor, warningColor, lineHeight: lineHeight2, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$3), { lineHeight: lineHeight2, titleFontWeight: fontWeightStrong, titleTextColor: textColor1, textColor: textColor2, iconColorError: errorColor, iconColorSuccess: successColor, iconColorInfo: infoColor, iconColorWarning: warningColor });
 };
 const resultLight = {
   name: "Result",
   common: commonLight,
-  self: self$c
+  self: self$b
 };
 const resultLight$1 = resultLight;
 const resultDark = {
   name: "Result",
   common: commonDark,
-  self: self$c
+  self: self$b
 };
 const resultDark$1 = resultDark;
 const sizeVariables$3 = {
@@ -27353,18 +26933,6 @@ const sliderDark = {
   }
 };
 const sliderDark$1 = sliderDark;
-const self$b = (vars) => {
-  const indicatorColor = "rgba(0, 0, 0, .85)";
-  const boxShadow = "0 2px 8px 0 rgba(0, 0, 0, 0.12)";
-  const { railColor, primaryColor, baseColor, cardColor, modalColor, popoverColor, borderRadius, fontSize: fontSize2, opacityDisabled } = vars;
-  return Object.assign(Object.assign({}, sizeVariables$3), { fontSize: fontSize2, markFontSize: fontSize2, railColor, railColorHover: railColor, fillColor: primaryColor, fillColorHover: primaryColor, opacityDisabled, handleColor: "#FFF", dotColor: cardColor, dotColorModal: modalColor, dotColorPopover: popoverColor, handleBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowHover: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowActive: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowFocus: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", indicatorColor, indicatorBoxShadow: boxShadow, indicatorTextColor: baseColor, indicatorBorderRadius: borderRadius, dotBorder: `2px solid ${railColor}`, dotBorderActive: `2px solid ${primaryColor}`, dotBoxShadow: "" });
-};
-const sliderLight = {
-  name: "Slider",
-  common: commonLight,
-  self: self$b
-};
-const sliderLight$1 = sliderLight;
 const self$a = (vars) => {
   const { opacityDisabled, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, primaryColor, fontSize: fontSize2 } = vars;
   return {
@@ -27836,1304 +27404,12 @@ const imageDark = {
     };
   }
 };
-const prevIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M6 5C5.75454 5 5.55039 5.17688 5.50806 5.41012L5.5 5.5V14.5C5.5 14.7761 5.72386 15 6 15C6.24546 15 6.44961 14.8231 6.49194 14.5899L6.5 14.5V5.5C6.5 5.22386 6.27614 5 6 5ZM13.8536 5.14645C13.68 4.97288 13.4106 4.9536 13.2157 5.08859L13.1464 5.14645L8.64645 9.64645C8.47288 9.82001 8.4536 10.0894 8.58859 10.2843L8.64645 10.3536L13.1464 14.8536C13.3417 15.0488 13.6583 15.0488 13.8536 14.8536C14.0271 14.68 14.0464 14.4106 13.9114 14.2157L13.8536 14.1464L9.70711 10L13.8536 5.85355C14.0488 5.65829 14.0488 5.34171 13.8536 5.14645Z", fill: "currentColor" })
-);
-const nextIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M13.5 5C13.7455 5 13.9496 5.17688 13.9919 5.41012L14 5.5V14.5C14 14.7761 13.7761 15 13.5 15C13.2545 15 13.0504 14.8231 13.0081 14.5899L13 14.5V5.5C13 5.22386 13.2239 5 13.5 5ZM5.64645 5.14645C5.82001 4.97288 6.08944 4.9536 6.28431 5.08859L6.35355 5.14645L10.8536 9.64645C11.0271 9.82001 11.0464 10.0894 10.9114 10.2843L10.8536 10.3536L6.35355 14.8536C6.15829 15.0488 5.84171 15.0488 5.64645 14.8536C5.47288 14.68 5.4536 14.4106 5.58859 14.2157L5.64645 14.1464L9.79289 10L5.64645 5.85355C5.45118 5.65829 5.45118 5.34171 5.64645 5.14645Z", fill: "currentColor" })
-);
-const closeIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M4.089 4.216l.057-.07a.5.5 0 0 1 .638-.057l.07.057L10 9.293l5.146-5.147a.5.5 0 0 1 .638-.057l.07.057a.5.5 0 0 1 .057.638l-.057.07L10.707 10l5.147 5.146a.5.5 0 0 1 .057.638l-.057.07a.5.5 0 0 1-.638.057l-.07-.057L10 10.707l-5.146 5.147a.5.5 0 0 1-.638.057l-.07-.057a.5.5 0 0 1-.057-.638l.057-.07L9.293 10L4.146 4.854a.5.5 0 0 1-.057-.638l.057-.07l-.057.07z", fill: "currentColor" })
-);
-const style$9 = c$1([c$1("body >", [cB("image-container", "position: fixed;")]), cB("image-preview-container", `
- position: fixed;
- left: 0;
- right: 0;
- top: 0;
- bottom: 0;
- display: flex;
- `), cB("image-preview-overlay", `
- z-index: -1;
- position: absolute;
- left: 0;
- right: 0;
- top: 0;
- bottom: 0;
- background: rgba(0, 0, 0, .3);
- `, [fadeInTransition()]), cB("image-preview-toolbar", `
- z-index: 1;
- position: absolute;
- left: 50%;
- transform: translateX(-50%);
- border-radius: var(--n-toolbar-border-radius);
- height: 48px;
- bottom: 40px;
- padding: 0 12px;
- background: var(--n-toolbar-color);
- box-shadow: var(--n-toolbar-box-shadow);
- color: var(--n-toolbar-icon-color);
- transition: color .3s var(--n-bezier);
- display: flex;
- align-items: center;
- `, [cB("base-icon", `
- padding: 0 8px;
- font-size: 28px;
- cursor: pointer;
- `), fadeInTransition()]), cB("image-preview-wrapper", `
- position: absolute;
- left: 0;
- right: 0;
- top: 0;
- bottom: 0;
- display: flex;
- pointer-events: none;
- `, [fadeInScaleUpTransition()]), cB("image-preview", `
- user-select: none;
- -webkit-user-select: none;
- pointer-events: all;
- margin: auto;
- max-height: calc(100vh - 32px);
- max-width: calc(100vw - 32px);
- transition: transform .3s var(--n-bezier);
- `), cB("image", `
- display: inline-flex;
- max-height: 100%;
- max-width: 100%;
- `, [cNotM("preview-disabled", `
- cursor: pointer;
- `), c$1("img", `
- border-radius: inherit;
- `)])]);
-const BLEEDING = 32;
-const NImagePreview = defineComponent({
-  name: "ImagePreview",
-  props: Object.assign(Object.assign({}, imagePreviewSharedProps), { onNext: Function, onPrev: Function, clsPrefix: {
-    type: String,
-    required: true
-  } }),
-  setup(props) {
-    const themeRef = useTheme("Image", "-image", style$9, imageLight, props, toRef(props, "clsPrefix"));
-    let thumbnailEl = null;
-    const previewRef = ref(null);
-    const previewWrapperRef = ref(null);
-    const previewSrcRef = ref(void 0);
-    const showRef = ref(false);
-    const displayedRef = ref(false);
-    const { localeRef } = useLocale("Image");
-    function syncTransformOrigin() {
-      const { value: previewWrapper } = previewWrapperRef;
-      if (!thumbnailEl || !previewWrapper)
-        return;
-      const { style: style2 } = previewWrapper;
-      const tbox = thumbnailEl.getBoundingClientRect();
-      const tx = tbox.left + tbox.width / 2;
-      const ty = tbox.top + tbox.height / 2;
-      style2.transformOrigin = `${tx}px ${ty}px`;
-    }
-    function handleKeydown(e) {
-      var _a2, _b;
-      switch (e.key) {
-        case " ":
-          e.preventDefault();
-          break;
-        case "ArrowLeft":
-          (_a2 = props.onPrev) === null || _a2 === void 0 ? void 0 : _a2.call(props);
-          break;
-        case "ArrowRight":
-          (_b = props.onNext) === null || _b === void 0 ? void 0 : _b.call(props);
-          break;
-        case "Escape":
-          toggleShow();
-          break;
-      }
-    }
-    watch(showRef, (value) => {
-      if (value) {
-        on("keydown", document, handleKeydown);
-      } else
-        off("keydown", document, handleKeydown);
-    });
-    onBeforeUnmount(() => {
-      off("keydown", document, handleKeydown);
-    });
-    let startX = 0;
-    let startY = 0;
-    let offsetX = 0;
-    let offsetY = 0;
-    let startOffsetX = 0;
-    let startOffsetY = 0;
-    let mouseDownClientX = 0;
-    let mouseDownClientY = 0;
-    let dragging = false;
-    function handleMouseMove(e) {
-      const { clientX, clientY } = e;
-      offsetX = clientX - startX;
-      offsetY = clientY - startY;
-      beforeNextFrameOnce(derivePreviewStyle);
-    }
-    function getMoveStrategy(opts) {
-      const { mouseUpClientX, mouseUpClientY, mouseDownClientX: mouseDownClientX2, mouseDownClientY: mouseDownClientY2 } = opts;
-      const deltaHorizontal = mouseDownClientX2 - mouseUpClientX;
-      const deltaVertical = mouseDownClientY2 - mouseUpClientY;
-      const moveVerticalDirection = `vertical${deltaVertical > 0 ? "Top" : "Bottom"}`;
-      const moveHorizontalDirection = `horizontal${deltaHorizontal > 0 ? "Left" : "Right"}`;
-      return {
-        moveVerticalDirection,
-        moveHorizontalDirection,
-        deltaHorizontal,
-        deltaVertical
-      };
-    }
-    function getDerivedOffset(moveStrategy) {
-      const { value: preview } = previewRef;
-      if (!preview)
-        return { offsetX: 0, offsetY: 0 };
-      const pbox = preview.getBoundingClientRect();
-      const { moveVerticalDirection, moveHorizontalDirection, deltaHorizontal, deltaVertical } = moveStrategy || {};
-      let nextOffsetX = 0;
-      let nextOffsetY = 0;
-      if (pbox.width <= window.innerWidth) {
-        nextOffsetX = 0;
-      } else if (pbox.left > 0) {
-        nextOffsetX = (pbox.width - window.innerWidth) / 2;
-      } else if (pbox.right < window.innerWidth) {
-        nextOffsetX = -(pbox.width - window.innerWidth) / 2;
-      } else if (moveHorizontalDirection === "horizontalRight") {
-        nextOffsetX = Math.min((pbox.width - window.innerWidth) / 2, startOffsetX - (deltaHorizontal !== null && deltaHorizontal !== void 0 ? deltaHorizontal : 0));
-      } else {
-        nextOffsetX = Math.max(-((pbox.width - window.innerWidth) / 2), startOffsetX - (deltaHorizontal !== null && deltaHorizontal !== void 0 ? deltaHorizontal : 0));
-      }
-      if (pbox.height <= window.innerHeight) {
-        nextOffsetY = 0;
-      } else if (pbox.top > 0) {
-        nextOffsetY = (pbox.height - window.innerHeight) / 2;
-      } else if (pbox.bottom < window.innerHeight) {
-        nextOffsetY = -(pbox.height - window.innerHeight) / 2;
-      } else if (moveVerticalDirection === "verticalBottom") {
-        nextOffsetY = Math.min((pbox.height - window.innerHeight) / 2, startOffsetY - (deltaVertical !== null && deltaVertical !== void 0 ? deltaVertical : 0));
-      } else {
-        nextOffsetY = Math.max(-((pbox.height - window.innerHeight) / 2), startOffsetY - (deltaVertical !== null && deltaVertical !== void 0 ? deltaVertical : 0));
-      }
-      return {
-        offsetX: nextOffsetX,
-        offsetY: nextOffsetY
-      };
-    }
-    function handleMouseUp(e) {
-      off("mousemove", document, handleMouseMove);
-      off("mouseup", document, handleMouseUp);
-      const { clientX: mouseUpClientX, clientY: mouseUpClientY } = e;
-      dragging = false;
-      const moveStrategy = getMoveStrategy({
-        mouseUpClientX,
-        mouseUpClientY,
-        mouseDownClientX,
-        mouseDownClientY
-      });
-      const offset = getDerivedOffset(moveStrategy);
-      offsetX = offset.offsetX;
-      offsetY = offset.offsetY;
-      derivePreviewStyle();
-    }
-    const imageContext = inject(imageContextKey, null);
-    function handlePreviewMousedown(e) {
-      var _a2, _b;
-      (_b = (_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.onMousedown) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-      if (e.button !== 0)
-        return;
-      const { clientX, clientY } = e;
-      dragging = true;
-      startX = clientX - offsetX;
-      startY = clientY - offsetY;
-      startOffsetX = offsetX;
-      startOffsetY = offsetY;
-      mouseDownClientX = clientX;
-      mouseDownClientY = clientY;
-      derivePreviewStyle();
-      on("mousemove", document, handleMouseMove);
-      on("mouseup", document, handleMouseUp);
-    }
-    function handlePreviewDblclick(e) {
-      var _a2, _b;
-      (_b = (_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.onDblclick) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-      const originalImageSizeScale = getOrignalImageSizeScale();
-      scale = scale === originalImageSizeScale ? 1 : originalImageSizeScale;
-      derivePreviewStyle();
-    }
-    const scaleRadix = 1.5;
-    let scaleExp = 0;
-    let scale = 1;
-    let rotate = 0;
-    function resetScale() {
-      scale = 1;
-      scaleExp = 0;
-    }
-    function handleSwitchPrev() {
-      var _a2;
-      resetScale();
-      rotate = 0;
-      (_a2 = props.onPrev) === null || _a2 === void 0 ? void 0 : _a2.call(props);
-    }
-    function handleSwitchNext() {
-      var _a2;
-      resetScale();
-      rotate = 0;
-      (_a2 = props.onNext) === null || _a2 === void 0 ? void 0 : _a2.call(props);
-    }
-    function rotateCounterclockwise() {
-      rotate -= 90;
-      derivePreviewStyle();
-    }
-    function rotateClockwise() {
-      rotate += 90;
-      derivePreviewStyle();
-    }
-    function getMaxScale() {
-      const { value: preview } = previewRef;
-      if (!preview)
-        return 1;
-      const { innerWidth, innerHeight } = window;
-      const heightMaxScale = Math.max(1, preview.naturalHeight / (innerHeight - BLEEDING));
-      const widthMaxScale = Math.max(1, preview.naturalWidth / (innerWidth - BLEEDING));
-      return Math.max(3, heightMaxScale * 2, widthMaxScale * 2);
-    }
-    function getOrignalImageSizeScale() {
-      const { value: preview } = previewRef;
-      if (!preview)
-        return 1;
-      const { innerWidth, innerHeight } = window;
-      const heightScale = preview.naturalHeight / (innerHeight - BLEEDING);
-      const widthScale = preview.naturalWidth / (innerWidth - BLEEDING);
-      if (heightScale < 1 && widthScale < 1) {
-        return 1;
-      }
-      return Math.max(heightScale, widthScale);
-    }
-    function zoomIn() {
-      const maxScale = getMaxScale();
-      if (scale < maxScale) {
-        scaleExp += 1;
-        scale = Math.min(maxScale, Math.pow(scaleRadix, scaleExp));
-        derivePreviewStyle();
-      }
-    }
-    function zoomOut() {
-      if (scale > 0.5) {
-        const originalScale = scale;
-        scaleExp -= 1;
-        scale = Math.max(0.5, Math.pow(scaleRadix, scaleExp));
-        const diff = originalScale - scale;
-        derivePreviewStyle(false);
-        const offset = getDerivedOffset();
-        scale += diff;
-        derivePreviewStyle(false);
-        scale -= diff;
-        offsetX = offset.offsetX;
-        offsetY = offset.offsetY;
-        derivePreviewStyle();
-      }
-    }
-    function derivePreviewStyle(transition = true) {
-      var _a2;
-      const { value: preview } = previewRef;
-      if (!preview)
-        return;
-      const { style: style2 } = preview;
-      const controlledStyle = normalizeStyle((_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.style);
-      let controlledStyleString = "";
-      if (typeof controlledStyle === "string") {
-        controlledStyleString = controlledStyle + ";";
-      } else {
-        for (const key in controlledStyle) {
-          controlledStyleString += `${kebabCase$1(key)}: ${controlledStyle[key]};`;
-        }
-      }
-      const transformStyle = `transform-origin: center; transform: translateX(${offsetX}px) translateY(${offsetY}px) rotate(${rotate}deg) scale(${scale});`;
-      if (dragging) {
-        style2.cssText = controlledStyleString + "cursor: grabbing; transition: none;" + transformStyle;
-      } else {
-        style2.cssText = controlledStyleString + "cursor: grab;" + transformStyle + (transition ? "" : "transition: none;");
-      }
-      if (!transition) {
-        void preview.offsetHeight;
-      }
-    }
-    function toggleShow() {
-      showRef.value = !showRef.value;
-      displayedRef.value = true;
-    }
-    function resizeToOrignalImageSize() {
-      scale = getOrignalImageSizeScale();
-      scaleExp = Math.ceil(Math.log(scale) / Math.log(scaleRadix));
-      offsetX = 0;
-      offsetY = 0;
-      derivePreviewStyle();
-    }
-    const exposedMethods = {
-      setPreviewSrc: (src) => {
-        previewSrcRef.value = src;
-      },
-      setThumbnailEl: (el) => {
-        thumbnailEl = el;
-      },
-      toggleShow
-    };
-    function withTooltip(node, tooltipKey) {
-      if (props.showToolbarTooltip) {
-        const { value: theme } = themeRef;
-        return h(NTooltip, { to: false, theme: theme.peers.Tooltip, themeOverrides: theme.peerOverrides.Tooltip, keepAliveOnHover: false }, {
-          default: () => {
-            return localeRef.value[tooltipKey];
-          },
-          trigger: () => node
-        });
-      } else {
-        return node;
-      }
-    }
-    const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { toolbarIconColor, toolbarBorderRadius, toolbarBoxShadow, toolbarColor } } = themeRef.value;
-      return {
-        "--n-bezier": cubicBezierEaseInOut2,
-        "--n-toolbar-icon-color": toolbarIconColor,
-        "--n-toolbar-color": toolbarColor,
-        "--n-toolbar-border-radius": toolbarBorderRadius,
-        "--n-toolbar-box-shadow": toolbarBoxShadow
-      };
-    });
-    const { inlineThemeDisabled } = useConfig();
-    const themeClassHandle = inlineThemeDisabled ? useThemeClass("image-preview", void 0, cssVarsRef, props) : void 0;
-    return Object.assign({
-      previewRef,
-      previewWrapperRef,
-      previewSrc: previewSrcRef,
-      show: showRef,
-      appear: isMounted(),
-      displayed: displayedRef,
-      previewedImgProps: imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef,
-      handleWheel(e) {
-        e.preventDefault();
-      },
-      handlePreviewMousedown,
-      handlePreviewDblclick,
-      syncTransformOrigin,
-      handleAfterLeave: () => {
-        resetScale();
-        rotate = 0;
-        displayedRef.value = false;
-      },
-      handleDragStart: (e) => {
-        var _a2, _b;
-        (_b = (_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.onDragstart) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-        e.preventDefault();
-      },
-      zoomIn,
-      zoomOut,
-      rotateCounterclockwise,
-      rotateClockwise,
-      handleSwitchPrev,
-      handleSwitchNext,
-      withTooltip,
-      resizeToOrignalImageSize,
-      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
-      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
-      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
-    }, exposedMethods);
-  },
-  render() {
-    var _a2, _b;
-    const { clsPrefix } = this;
-    return h(
-      Fragment,
-      null,
-      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2),
-      h(LazyTeleport, { show: this.show }, {
-        default: () => {
-          var _a3;
-          if (!(this.show || this.displayed)) {
-            return null;
-          }
-          (_a3 = this.onRender) === null || _a3 === void 0 ? void 0 : _a3.call(this);
-          return withDirectives(h(
-            "div",
-            { class: [
-              `${clsPrefix}-image-preview-container`,
-              this.themeClass
-            ], style: this.cssVars, onWheel: this.handleWheel },
-            h(Transition, { name: "fade-in-transition", appear: this.appear }, {
-              default: () => this.show ? h("div", { class: `${clsPrefix}-image-preview-overlay`, onClick: this.toggleShow }) : null
-            }),
-            this.showToolbar ? h(Transition, { name: "fade-in-transition", appear: this.appear }, {
-              default: () => {
-                if (!this.show)
-                  return null;
-                const { withTooltip } = this;
-                return h(
-                  "div",
-                  { class: `${clsPrefix}-image-preview-toolbar` },
-                  this.onPrev ? h(
-                    Fragment,
-                    null,
-                    withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleSwitchPrev }, { default: () => prevIcon }), "tipPrevious"),
-                    withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleSwitchNext }, { default: () => nextIcon }), "tipNext")
-                  ) : null,
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.rotateCounterclockwise }, {
-                    default: () => h(RotateCounterclockwiseIcon, null)
-                  }), "tipCounterclockwise"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.rotateClockwise }, {
-                    default: () => h(RotateClockwiseIcon, null)
-                  }), "tipClockwise"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.resizeToOrignalImageSize }, {
-                    default: () => {
-                      return h(ResizeSmallIcon, null);
-                    }
-                  }), "tipOriginalSize"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomOut }, { default: () => h(ZoomOutIcon, null) }), "tipZoomOut"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomIn }, { default: () => h(ZoomInIcon, null) }), "tipZoomIn"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.toggleShow }, { default: () => closeIcon }), "tipClose")
-                );
-              }
-            }) : null,
-            h(Transition, {
-              name: "fade-in-scale-up-transition",
-              onAfterLeave: this.handleAfterLeave,
-              appear: this.appear,
-              // BUG:
-              // onEnter will be called twice, I don't know why
-              // Maybe it is a bug of vue
-              onEnter: this.syncTransformOrigin,
-              onBeforeLeave: this.syncTransformOrigin
-            }, {
-              default: () => {
-                const { previewedImgProps = {} } = this;
-                return withDirectives(h(
-                  "div",
-                  { class: `${clsPrefix}-image-preview-wrapper`, ref: "previewWrapperRef" },
-                  h("img", Object.assign({}, previewedImgProps, { draggable: false, onMousedown: this.handlePreviewMousedown, onDblclick: this.handlePreviewDblclick, class: [
-                    `${clsPrefix}-image-preview`,
-                    previewedImgProps.class
-                  ], key: this.previewSrc, src: this.previewSrc, ref: "previewRef", onDragstart: this.handleDragStart }))
-                ), [[vShow, this.show]]);
-              }
-            })
-          ), [[zindexable$1, { enabled: this.show }]]);
-        }
-      })
-    );
-  }
-});
-const imageGroupInjectionKey = createInjectionKey("n-image-group");
-const imageGroupProps = imagePreviewSharedProps;
-defineComponent({
-  name: "ImageGroup",
-  props: imageGroupProps,
-  setup(props) {
-    let currentSrc;
-    const { mergedClsPrefixRef } = useConfig(props);
-    const groupId = `c${createId()}`;
-    const vm = getCurrentInstance();
-    const setPreviewSrc = (src) => {
-      var _a2;
-      currentSrc = src;
-      (_a2 = previewInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.setPreviewSrc(src);
-    };
-    function go(step) {
-      if (!(vm === null || vm === void 0 ? void 0 : vm.proxy))
-        return;
-      const container = vm.proxy.$el.parentElement;
-      const imgs = container.querySelectorAll(`[data-group-id=${groupId}]:not([data-error=true])`);
-      if (!imgs.length)
-        return;
-      const index = Array.from(imgs).findIndex((img) => img.dataset.previewSrc === currentSrc);
-      if (~index) {
-        setPreviewSrc(imgs[(index + step + imgs.length) % imgs.length].dataset.previewSrc);
-      } else {
-        setPreviewSrc(imgs[0].dataset.previewSrc);
-      }
-    }
-    provide(imageGroupInjectionKey, {
-      mergedClsPrefixRef,
-      setPreviewSrc,
-      setThumbnailEl: (el) => {
-        var _a2;
-        (_a2 = previewInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.setThumbnailEl(el);
-      },
-      toggleShow: () => {
-        var _a2;
-        (_a2 = previewInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.toggleShow();
-      },
-      groupId
-    });
-    const previewInstRef = ref(null);
-    return {
-      mergedClsPrefix: mergedClsPrefixRef,
-      previewInstRef,
-      next: () => go(1),
-      prev: () => go(-1)
-    };
-  },
-  render() {
-    return h(NImagePreview, { theme: this.theme, themeOverrides: this.themeOverrides, clsPrefix: this.mergedClsPrefix, ref: "previewInstRef", onPrev: this.prev, onNext: this.next, showToolbar: this.showToolbar, showToolbarTooltip: this.showToolbarTooltip }, this.$slots);
-  }
-});
-const imageProps = Object.assign({ alt: String, height: [String, Number], imgProps: Object, previewedImgProps: Object, lazy: Boolean, intersectionObserverOptions: Object, objectFit: {
-  type: String,
-  default: "fill"
-}, previewSrc: String, fallbackSrc: String, width: [String, Number], src: String, previewDisabled: Boolean, loadDescription: String, onError: Function, onLoad: Function }, imagePreviewSharedProps);
-const NImage = defineComponent({
-  name: "Image",
-  props: imageProps,
-  inheritAttrs: false,
-  setup(props) {
-    const imageRef = ref(null);
-    const showErrorRef = ref(false);
-    const previewInstRef = ref(null);
-    const imageGroupHandle = inject(imageGroupInjectionKey, null);
-    const { mergedClsPrefixRef } = imageGroupHandle || useConfig(props);
-    const exposedMethods = {
-      click: () => {
-        if (props.previewDisabled || showErrorRef.value)
-          return;
-        const mergedPreviewSrc = props.previewSrc || props.src;
-        if (imageGroupHandle) {
-          imageGroupHandle.setPreviewSrc(mergedPreviewSrc);
-          imageGroupHandle.setThumbnailEl(imageRef.value);
-          imageGroupHandle.toggleShow();
-          return;
-        }
-        const { value: previewInst } = previewInstRef;
-        if (!previewInst)
-          return;
-        previewInst.setPreviewSrc(mergedPreviewSrc);
-        previewInst.setThumbnailEl(imageRef.value);
-        previewInst.toggleShow();
-      }
-    };
-    const shouldStartLoadingRef = ref(!props.lazy);
-    onMounted(() => {
-      var _a2;
-      (_a2 = imageRef.value) === null || _a2 === void 0 ? void 0 : _a2.setAttribute("data-group-id", (imageGroupHandle === null || imageGroupHandle === void 0 ? void 0 : imageGroupHandle.groupId) || "");
-    });
-    onMounted(() => {
-      if (isImageSupportNativeLazy) {
-        return;
-      }
-      let unobserve;
-      const stopWatchHandle = watchEffect(() => {
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-        unobserve = void 0;
-        if (props.lazy) {
-          unobserve = observeIntersection(imageRef.value, props.intersectionObserverOptions, shouldStartLoadingRef);
-        }
-      });
-      onBeforeUnmount(() => {
-        stopWatchHandle();
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-      });
-    });
-    watchEffect(() => {
-      var _a2;
-      void props.src;
-      void ((_a2 = props.imgProps) === null || _a2 === void 0 ? void 0 : _a2.src);
-      showErrorRef.value = false;
-    });
-    const loadedRef = ref(false);
-    provide(imageContextKey, {
-      previewedImgPropsRef: toRef(props, "previewedImgProps")
-    });
-    return Object.assign({
-      mergedClsPrefix: mergedClsPrefixRef,
-      groupId: imageGroupHandle === null || imageGroupHandle === void 0 ? void 0 : imageGroupHandle.groupId,
-      previewInstRef,
-      imageRef,
-      showError: showErrorRef,
-      shouldStartLoading: shouldStartLoadingRef,
-      loaded: loadedRef,
-      mergedOnClick: (e) => {
-        var _a2, _b;
-        exposedMethods.click();
-        (_b = (_a2 = props.imgProps) === null || _a2 === void 0 ? void 0 : _a2.onClick) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-      },
-      mergedOnError: (e) => {
-        if (!shouldStartLoadingRef.value)
-          return;
-        showErrorRef.value = true;
-        const { onError, imgProps: { onError: imgPropsOnError } = {} } = props;
-        onError === null || onError === void 0 ? void 0 : onError(e);
-        imgPropsOnError === null || imgPropsOnError === void 0 ? void 0 : imgPropsOnError(e);
-      },
-      mergedOnLoad: (e) => {
-        const { onLoad, imgProps: { onLoad: imgPropsOnLoad } = {} } = props;
-        onLoad === null || onLoad === void 0 ? void 0 : onLoad(e);
-        imgPropsOnLoad === null || imgPropsOnLoad === void 0 ? void 0 : imgPropsOnLoad(e);
-        loadedRef.value = true;
-      }
-    }, exposedMethods);
-  },
-  render() {
-    var _a2, _b;
-    const { mergedClsPrefix, imgProps = {}, loaded, $attrs, lazy } = this;
-    const placeholderNode = (_b = (_a2 = this.$slots).placeholder) === null || _b === void 0 ? void 0 : _b.call(_a2);
-    const loadSrc = this.src || imgProps.src || "";
-    const imgNode = h("img", Object.assign(Object.assign({}, imgProps), {
-      ref: "imageRef",
-      width: this.width || imgProps.width,
-      height: this.height || imgProps.height,
-      src: isImageSupportNativeLazy ? loadSrc : this.showError ? this.fallbackSrc : this.shouldStartLoading ? loadSrc : void 0,
-      alt: this.alt || imgProps.alt,
-      "aria-label": this.alt || imgProps.alt,
-      onClick: this.mergedOnClick,
-      onError: this.mergedOnError,
-      onLoad: this.mergedOnLoad,
-      // If interseciton observer options is set, do not use native lazy
-      loading: isImageSupportNativeLazy && lazy && !this.intersectionObserverOptions ? "lazy" : "eager",
-      style: [
-        imgProps.style || "",
-        placeholderNode && !loaded ? { height: "0", width: "0", visibility: "hidden" } : "",
-        { objectFit: this.objectFit }
-      ],
-      "data-error": this.showError,
-      "data-preview-src": this.previewSrc || this.src
-    }));
-    return h(
-      "div",
-      Object.assign({}, $attrs, { role: "none", class: [
-        $attrs.class,
-        `${mergedClsPrefix}-image`,
-        (this.previewDisabled || this.showError) && `${mergedClsPrefix}-image--preview-disabled`
-      ] }),
-      this.groupId ? imgNode : h(NImagePreview, { theme: this.theme, themeOverrides: this.themeOverrides, clsPrefix: mergedClsPrefix, ref: "previewInstRef", showToolbar: this.showToolbar, showToolbarTooltip: this.showToolbarTooltip }, {
-        default: () => imgNode
-      }),
-      !loaded && placeholderNode
-    );
-  }
-});
-function parse(value) {
-  if (value === void 0 || value === null || typeof value === "string" && value.trim() === "") {
-    return null;
-  }
-  return Number(value);
-}
-function isWipValue(value) {
-  return value.includes(".") && (/^(-)?\d+.*(\.|0)$/.test(value) || /^\.\d+$/.test(value));
-}
-function validator(value) {
-  if (value === void 0 || value === null)
-    return true;
-  if (Number.isNaN(value))
-    return false;
-  return true;
-}
-function format(value, precision) {
-  if (value === void 0 || value === null)
-    return "";
-  return precision === void 0 ? String(value) : value.toFixed(precision);
-}
-function parseNumber(number) {
-  if (number === null)
-    return null;
-  if (typeof number === "number") {
-    return number;
-  } else {
-    const parsedNumber = Number(number);
-    if (Number.isNaN(parsedNumber))
-      return null;
-    else {
-      return parsedNumber;
-    }
-  }
-}
-const style$8 = c$1([cB("input-number-suffix", `
- display: inline-block;
- margin-right: 10px;
- `), cB("input-number-prefix", `
- display: inline-block;
- margin-left: 10px;
- `)]);
-const HOLDING_CHANGE_THRESHOLD = 800;
-const HOLDING_CHANGE_INTERVAL = 100;
-const inputNumberProps = Object.assign(Object.assign({}, useTheme.props), {
-  autofocus: Boolean,
-  loading: {
-    type: Boolean,
-    default: void 0
-  },
-  placeholder: String,
-  defaultValue: {
-    type: Number,
-    default: null
-  },
-  value: Number,
-  step: {
-    type: [Number, String],
-    default: 1
-  },
-  min: [Number, String],
-  max: [Number, String],
-  size: String,
-  disabled: {
-    type: Boolean,
-    default: void 0
-  },
-  validator: Function,
-  bordered: {
-    type: Boolean,
-    default: void 0
-  },
-  showButton: {
-    type: Boolean,
-    default: true
-  },
-  buttonPlacement: {
-    type: String,
-    default: "right"
-  },
-  readonly: Boolean,
-  clearable: Boolean,
-  keyboard: {
-    type: Object,
-    default: {}
-  },
-  updateValueOnInput: {
-    type: Boolean,
-    default: true
-  },
-  parse: Function,
-  format: Function,
-  precision: Number,
-  status: String,
-  "onUpdate:value": [Function, Array],
-  onUpdateValue: [Function, Array],
-  onFocus: [Function, Array],
-  onBlur: [Function, Array],
-  onClear: [Function, Array],
-  // deprecated
-  onChange: [Function, Array]
-});
-const NInputNumber = defineComponent({
-  name: "InputNumber",
-  props: inputNumberProps,
-  setup(props) {
-    const { mergedBorderedRef, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("InputNumber", "-input-number", style$8, inputNumberLight$1, props, mergedClsPrefixRef);
-    const { localeRef } = useLocale("InputNumber");
-    const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef, mergedStatusRef } = formItem;
-    const inputInstRef = ref(null);
-    const minusButtonInstRef = ref(null);
-    const addButtonInstRef = ref(null);
-    const uncontrolledValueRef = ref(props.defaultValue);
-    const controlledValueRef = toRef(props, "value");
-    const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
-    const displayedValueRef = ref("");
-    const getPrecision = (value) => {
-      const fraction = String(value).split(".")[1];
-      return fraction ? fraction.length : 0;
-    };
-    const getMaxPrecision = (currentValue) => {
-      const precisions = [props.min, props.max, props.step, currentValue].map((value) => {
-        if (value === void 0)
-          return 0;
-        return getPrecision(value);
-      });
-      return Math.max(...precisions);
-    };
-    const mergedPlaceholderRef = useMemo(() => {
-      const { placeholder } = props;
-      if (placeholder !== void 0)
-        return placeholder;
-      return localeRef.value.placeholder;
-    });
-    const mergedStepRef = useMemo(() => {
-      const parsedNumber = parseNumber(props.step);
-      if (parsedNumber !== null) {
-        return parsedNumber === 0 ? 1 : Math.abs(parsedNumber);
-      }
-      return 1;
-    });
-    const mergedMinRef = useMemo(() => {
-      const parsedNumber = parseNumber(props.min);
-      if (parsedNumber !== null)
-        return parsedNumber;
-      else
-        return null;
-    });
-    const mergedMaxRef = useMemo(() => {
-      const parsedNumber = parseNumber(props.max);
-      if (parsedNumber !== null)
-        return parsedNumber;
-      else
-        return null;
-    });
-    const doUpdateValue = (value) => {
-      const { value: mergedValue } = mergedValueRef;
-      if (value === mergedValue) {
-        deriveDisplayedValueFromValue();
-        return;
-      }
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue, onChange } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
-      if (onChange)
-        call(onChange, value);
-      if (onUpdateValue)
-        call(onUpdateValue, value);
-      if (_onUpdateValue)
-        call(_onUpdateValue, value);
-      uncontrolledValueRef.value = value;
-      nTriggerFormInput();
-      nTriggerFormChange();
-    };
-    const deriveValueFromDisplayedValue = ({ offset, doUpdateIfValid, fixPrecision, isInputing }) => {
-      const { value: displayedValue } = displayedValueRef;
-      if (isInputing && isWipValue(displayedValue)) {
-        return false;
-      }
-      const parsedValue = (props.parse || parse)(displayedValue);
-      if (parsedValue === null) {
-        if (doUpdateIfValid)
-          doUpdateValue(null);
-        return null;
-      }
-      if (validator(parsedValue)) {
-        const currentPrecision = getPrecision(parsedValue);
-        const { precision } = props;
-        if (precision !== void 0 && precision < currentPrecision && !fixPrecision) {
-          return false;
-        }
-        let nextValue = parseFloat((parsedValue + offset).toFixed(precision !== null && precision !== void 0 ? precision : getMaxPrecision(parsedValue)));
-        if (validator(nextValue)) {
-          const { value: mergedMax } = mergedMaxRef;
-          const { value: mergedMin } = mergedMinRef;
-          if (mergedMax !== null && nextValue > mergedMax) {
-            if (!doUpdateIfValid || isInputing)
-              return false;
-            nextValue = mergedMax;
-          }
-          if (mergedMin !== null && nextValue < mergedMin) {
-            if (!doUpdateIfValid || isInputing)
-              return false;
-            nextValue = mergedMin;
-          }
-          if (props.validator && !props.validator(nextValue))
-            return false;
-          if (doUpdateIfValid)
-            doUpdateValue(nextValue);
-          return nextValue;
-        }
-      }
-      return false;
-    };
-    const deriveDisplayedValueFromValue = () => {
-      const { value: mergedValue } = mergedValueRef;
-      if (validator(mergedValue)) {
-        const { format: formatProp, precision } = props;
-        if (formatProp) {
-          displayedValueRef.value = formatProp(mergedValue);
-        } else {
-          if (mergedValue === null || precision === void 0 || // precision overflow
-          getPrecision(mergedValue) > precision) {
-            displayedValueRef.value = format(mergedValue, void 0);
-          } else {
-            displayedValueRef.value = format(mergedValue, precision);
-          }
-        }
-      } else {
-        displayedValueRef.value = String(mergedValue);
-      }
-    };
-    deriveDisplayedValueFromValue();
-    const displayedValueInvalidRef = useMemo(() => {
-      const derivedValue = deriveValueFromDisplayedValue({
-        offset: 0,
-        doUpdateIfValid: false,
-        isInputing: false,
-        fixPrecision: false
-      });
-      return derivedValue === false;
-    });
-    const minusableRef = useMemo(() => {
-      const { value: mergedValue } = mergedValueRef;
-      if (props.validator && mergedValue === null) {
-        return false;
-      }
-      const { value: mergedStep } = mergedStepRef;
-      const derivedNextValue = deriveValueFromDisplayedValue({
-        offset: -mergedStep,
-        doUpdateIfValid: false,
-        isInputing: false,
-        fixPrecision: false
-      });
-      return derivedNextValue !== false;
-    });
-    const addableRef = useMemo(() => {
-      const { value: mergedValue } = mergedValueRef;
-      if (props.validator && mergedValue === null) {
-        return false;
-      }
-      const { value: mergedStep } = mergedStepRef;
-      const derivedNextValue = deriveValueFromDisplayedValue({
-        offset: +mergedStep,
-        doUpdateIfValid: false,
-        isInputing: false,
-        fixPrecision: false
-      });
-      return derivedNextValue !== false;
-    });
-    function doFocus(e) {
-      const { onFocus } = props;
-      const { nTriggerFormFocus } = formItem;
-      if (onFocus)
-        call(onFocus, e);
-      nTriggerFormFocus();
-    }
-    function doBlur(e) {
-      var _a2, _b;
-      if (e.target === ((_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.wrapperElRef)) {
-        return;
-      }
-      const value = deriveValueFromDisplayedValue({
-        offset: 0,
-        doUpdateIfValid: true,
-        isInputing: false,
-        fixPrecision: true
-      });
-      if (value !== false) {
-        const inputElRef = (_b = inputInstRef.value) === null || _b === void 0 ? void 0 : _b.inputElRef;
-        if (inputElRef) {
-          inputElRef.value = String(value || "");
-        }
-        if (mergedValueRef.value === value) {
-          deriveDisplayedValueFromValue();
-        }
-      } else {
-        deriveDisplayedValueFromValue();
-      }
-      const { onBlur } = props;
-      const { nTriggerFormBlur } = formItem;
-      if (onBlur)
-        call(onBlur, e);
-      nTriggerFormBlur();
-      void nextTick(() => {
-        deriveDisplayedValueFromValue();
-      });
-    }
-    function doClear(e) {
-      const { onClear } = props;
-      if (onClear)
-        call(onClear, e);
-    }
-    function doAdd() {
-      const { value: addable } = addableRef;
-      if (!addable) {
-        clearAddHoldTimeout();
-        return;
-      }
-      const { value: mergedValue } = mergedValueRef;
-      if (mergedValue === null) {
-        if (!props.validator) {
-          doUpdateValue(createValidValue());
-        }
-      } else {
-        const { value: mergedStep } = mergedStepRef;
-        deriveValueFromDisplayedValue({
-          offset: mergedStep,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-      }
-    }
-    function doMinus() {
-      const { value: minusable } = minusableRef;
-      if (!minusable) {
-        clearMinusHoldTimeout();
-        return;
-      }
-      const { value: mergedValue } = mergedValueRef;
-      if (mergedValue === null) {
-        if (!props.validator) {
-          doUpdateValue(createValidValue());
-        }
-      } else {
-        const { value: mergedStep } = mergedStepRef;
-        deriveValueFromDisplayedValue({
-          offset: -mergedStep,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-      }
-    }
-    const handleFocus = doFocus;
-    const handleBlur = doBlur;
-    function createValidValue() {
-      if (props.validator)
-        return null;
-      const { value: mergedMin } = mergedMinRef;
-      const { value: mergedMax } = mergedMaxRef;
-      if (mergedMin !== null) {
-        return Math.max(0, mergedMin);
-      } else if (mergedMax !== null) {
-        return Math.min(0, mergedMax);
-      } else {
-        return 0;
-      }
-    }
-    function handleClear(e) {
-      doClear(e);
-      doUpdateValue(null);
-    }
-    function handleMouseDown(e) {
-      var _a2, _b, _c;
-      if ((_a2 = addButtonInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.$el.contains(e.target)) {
-        e.preventDefault();
-      }
-      if ((_b = minusButtonInstRef.value) === null || _b === void 0 ? void 0 : _b.$el.contains(e.target)) {
-        e.preventDefault();
-      }
-      (_c = inputInstRef.value) === null || _c === void 0 ? void 0 : _c.activate();
-    }
-    let minusHoldStateIntervalId = null;
-    let addHoldStateIntervalId = null;
-    let firstMinusMousedownId = null;
-    function clearMinusHoldTimeout() {
-      if (firstMinusMousedownId) {
-        window.clearTimeout(firstMinusMousedownId);
-        firstMinusMousedownId = null;
-      }
-      if (minusHoldStateIntervalId) {
-        window.clearInterval(minusHoldStateIntervalId);
-        minusHoldStateIntervalId = null;
-      }
-    }
-    function clearAddHoldTimeout() {
-      if (firstAddMousedownId) {
-        window.clearTimeout(firstAddMousedownId);
-        firstAddMousedownId = null;
-      }
-      if (addHoldStateIntervalId) {
-        window.clearInterval(addHoldStateIntervalId);
-        addHoldStateIntervalId = null;
-      }
-    }
-    function handleMinusMousedown() {
-      clearMinusHoldTimeout();
-      firstMinusMousedownId = window.setTimeout(() => {
-        minusHoldStateIntervalId = window.setInterval(() => {
-          doMinus();
-        }, HOLDING_CHANGE_INTERVAL);
-      }, HOLDING_CHANGE_THRESHOLD);
-      on("mouseup", document, clearMinusHoldTimeout, {
-        once: true
-      });
-    }
-    let firstAddMousedownId = null;
-    function handleAddMousedown() {
-      clearAddHoldTimeout();
-      firstAddMousedownId = window.setTimeout(() => {
-        addHoldStateIntervalId = window.setInterval(() => {
-          doAdd();
-        }, HOLDING_CHANGE_INTERVAL);
-      }, HOLDING_CHANGE_THRESHOLD);
-      on("mouseup", document, clearAddHoldTimeout, {
-        once: true
-      });
-    }
-    const handleAddClick = () => {
-      if (addHoldStateIntervalId)
-        return;
-      doAdd();
-    };
-    const handleMinusClick = () => {
-      if (minusHoldStateIntervalId)
-        return;
-      doMinus();
-    };
-    function handleKeyDown(e) {
-      var _a2, _b;
-      if (e.key === "Enter") {
-        if (e.target === ((_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.wrapperElRef)) {
-          return;
-        }
-        const value = deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-        if (value !== false) {
-          (_b = inputInstRef.value) === null || _b === void 0 ? void 0 : _b.deactivate();
-        }
-      } else if (e.key === "ArrowUp") {
-        if (!addableRef.value)
-          return;
-        if (props.keyboard.ArrowUp === false)
-          return;
-        e.preventDefault();
-        const value = deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-        if (value !== false) {
-          doAdd();
-        }
-      } else if (e.key === "ArrowDown") {
-        if (!minusableRef.value)
-          return;
-        if (props.keyboard.ArrowDown === false)
-          return;
-        e.preventDefault();
-        const value = deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-        if (value !== false) {
-          doMinus();
-        }
-      }
-    }
-    function handleUpdateDisplayedValue(value) {
-      displayedValueRef.value = value;
-      if (props.updateValueOnInput && !props.format && !props.parse && props.precision === void 0) {
-        deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: true,
-          fixPrecision: false
-        });
-      }
-    }
-    watch(mergedValueRef, () => {
-      deriveDisplayedValueFromValue();
-    });
-    const exposedMethods = {
-      focus: () => {
-        var _a2;
-        return (_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.focus();
-      },
-      blur: () => {
-        var _a2;
-        return (_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.blur();
-      }
-    };
-    const rtlEnabledRef = useRtl("InputNumber", mergedRtlRef, mergedClsPrefixRef);
-    return Object.assign(Object.assign({}, exposedMethods), {
-      rtlEnabled: rtlEnabledRef,
-      inputInstRef,
-      minusButtonInstRef,
-      addButtonInstRef,
-      mergedClsPrefix: mergedClsPrefixRef,
-      mergedBordered: mergedBorderedRef,
-      uncontrolledValue: uncontrolledValueRef,
-      mergedValue: mergedValueRef,
-      mergedPlaceholder: mergedPlaceholderRef,
-      displayedValueInvalid: displayedValueInvalidRef,
-      mergedSize: mergedSizeRef,
-      mergedDisabled: mergedDisabledRef,
-      displayedValue: displayedValueRef,
-      addable: addableRef,
-      minusable: minusableRef,
-      mergedStatus: mergedStatusRef,
-      handleFocus,
-      handleBlur,
-      handleClear,
-      handleMouseDown,
-      handleAddClick,
-      handleMinusClick,
-      handleAddMousedown,
-      handleMinusMousedown,
-      handleKeyDown,
-      handleUpdateDisplayedValue,
-      // theme
-      mergedTheme: themeRef,
-      inputThemeOverrides: {
-        paddingSmall: "0 8px 0 10px",
-        paddingMedium: "0 8px 0 12px",
-        paddingLarge: "0 8px 0 14px"
-      },
-      buttonThemeOverrides: computed(() => {
-        const { self: { iconColorDisabled } } = themeRef.value;
-        const [r, g, b, a] = rgba(iconColorDisabled);
-        return {
-          textColorTextDisabled: `rgb(${r}, ${g}, ${b})`,
-          opacityDisabled: `${a}`
-        };
-      })
-    });
-  },
-  render() {
-    const { mergedClsPrefix, $slots } = this;
-    const renderMinusButton = () => {
-      return h(XButton, { text: true, disabled: !this.minusable || this.mergedDisabled || this.readonly, focusable: false, theme: this.mergedTheme.peers.Button, themeOverrides: this.mergedTheme.peerOverrides.Button, builtinThemeOverrides: this.buttonThemeOverrides, onClick: this.handleMinusClick, onMousedown: this.handleMinusMousedown, ref: "minusButtonInstRef" }, {
-        icon: () => resolveSlot($slots["minus-icon"], () => [
-          h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-            default: () => h(RemoveIcon, null)
-          })
-        ])
-      });
-    };
-    const renderAddButton = () => {
-      return h(XButton, { text: true, disabled: !this.addable || this.mergedDisabled || this.readonly, focusable: false, theme: this.mergedTheme.peers.Button, themeOverrides: this.mergedTheme.peerOverrides.Button, builtinThemeOverrides: this.buttonThemeOverrides, onClick: this.handleAddClick, onMousedown: this.handleAddMousedown, ref: "addButtonInstRef" }, {
-        icon: () => resolveSlot($slots["add-icon"], () => [
-          h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-            default: () => h(AddIcon, null)
-          })
-        ])
-      });
-    };
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-input-number`,
-        this.rtlEnabled && `${mergedClsPrefix}-input-number--rtl`
-      ] },
-      h(NInput, { ref: "inputInstRef", autofocus: this.autofocus, status: this.mergedStatus, bordered: this.mergedBordered, loading: this.loading, value: this.displayedValue, onUpdateValue: this.handleUpdateDisplayedValue, theme: this.mergedTheme.peers.Input, themeOverrides: this.mergedTheme.peerOverrides.Input, builtinThemeOverrides: this.inputThemeOverrides, size: this.mergedSize, placeholder: this.mergedPlaceholder, disabled: this.mergedDisabled, readonly: this.readonly, textDecoration: this.displayedValueInvalid ? "line-through" : void 0, onFocus: this.handleFocus, onBlur: this.handleBlur, onKeydown: this.handleKeyDown, onMousedown: this.handleMouseDown, onClear: this.handleClear, clearable: this.clearable, internalLoadingBeforeSuffix: true }, {
-        prefix: () => {
-          var _a2;
-          return this.showButton && this.buttonPlacement === "both" ? [
-            renderMinusButton(),
-            resolveWrappedSlot($slots.prefix, (children) => {
-              if (children) {
-                return h("span", { class: `${mergedClsPrefix}-input-number-prefix` }, children);
-              }
-              return null;
-            })
-          ] : (_a2 = $slots.prefix) === null || _a2 === void 0 ? void 0 : _a2.call($slots);
-        },
-        suffix: () => {
-          var _a2;
-          return this.showButton ? [
-            resolveWrappedSlot($slots.suffix, (children) => {
-              if (children) {
-                return h("span", { class: `${mergedClsPrefix}-input-number-suffix` }, children);
-              }
-              return null;
-            }),
-            this.buttonPlacement === "right" ? renderMinusButton() : null,
-            renderAddButton()
-          ] : (_a2 = $slots.suffix) === null || _a2 === void 0 ? void 0 : _a2.call($slots);
-        }
-      })
-    );
-  }
-});
 const layoutSiderInjectionKey = createInjectionKey("n-layout-sider");
 const positionProp = {
   type: String,
   default: "static"
 };
-const style$7 = cB("layout", `
+const style$6 = cB("layout", `
  color: var(--n-text-color);
  background-color: var(--n-color);
  box-sizing: border-box;
@@ -29184,7 +27460,7 @@ function createLayoutComponent(isContent) {
       const scrollableElRef = ref(null);
       const scrollbarInstRef = ref(null);
       const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-      const themeRef = useTheme("Layout", "-layout", style$7, layoutLight$1, props, mergedClsPrefixRef);
+      const themeRef = useTheme("Layout", "-layout", style$6, layoutLight$1, props, mergedClsPrefixRef);
       function scrollTo(options, y) {
         if (props.nativeScrollbar) {
           const { value: scrollableEl } = scrollableElRef;
@@ -29269,7 +27545,7 @@ function createLayoutComponent(isContent) {
   });
 }
 const NLayout = createLayoutComponent(false);
-const style$6 = cB("layout-sider", `
+const style$5 = cB("layout-sider", `
  flex-shrink: 0;
  box-sizing: border-box;
  position: relative;
@@ -29573,7 +27849,7 @@ const NLayoutSider = defineComponent({
       collapseModeRef: toRef(props, "collapseMode")
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Layout", "-layout-sider", style$6, layoutLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Layout", "-layout-sider", style$5, layoutLight$1, props, mergedClsPrefixRef);
     function handleTransitionend(e) {
       var _a2, _b;
       if (e.propertyName === "max-width") {
@@ -30199,7 +28475,7 @@ const horizontalHoverStyleChildren = [cE("icon", `
  `), cE("extra", `
  color: var(--n-item-text-color-hover-horizontal);
  `)])];
-const style$5 = c$1([cB("menu", `
+const style$4 = c$1([cB("menu", `
  background-color: var(--n-color);
  color: var(--n-item-text-color);
  overflow: hidden;
@@ -30454,7 +28730,7 @@ const NMenu = defineComponent({
   props: menuProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Menu", "-menu", style$5, menuLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Menu", "-menu", style$4, menuLight$1, props, mergedClsPrefixRef);
     const layoutSider = inject(layoutSiderInjectionKey, null);
     const mergedCollapsedRef = computed(() => {
       var _a2;
@@ -30738,7 +29014,7 @@ const messageProps = {
 };
 const messageApiInjectionKey = createInjectionKey("n-message-api");
 const messageProviderInjectionKey = createInjectionKey("n-message-provider");
-const style$4 = c$1([cB("message-wrapper", `
+const style$3 = c$1([cB("message-wrapper", `
  margin: var(--n-margin);
  z-index: 0;
  transform-origin: top center;
@@ -30859,7 +29135,7 @@ const NMessage = defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(messageProviderInjectionKey);
     const rtlEnabledRef = useRtl("Message", mergedRtlRef, mergedClsPrefixRef);
-    const themeRef = useTheme("Message", "-message", style$4, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
+    const themeRef = useTheme("Message", "-message", style$3, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { padding, margin, maxWidth, iconMargin, closeMargin, closeSize, iconSize, fontSize: fontSize2, lineHeight: lineHeight2, borderRadius, iconColorInfo, iconColorSuccess, iconColorWarning, iconColorError, iconColorLoading, closeIconSize, closeBorderRadius, [createKey("textColor", type)]: textColor, [createKey("boxShadow", type)]: boxShadow, [createKey("color", type)]: color, [createKey("closeColorHover", type)]: closeColorHover, [createKey("closeColorPressed", type)]: closeColorPressed, [createKey("closeIconColor", type)]: closeIconColor, [createKey("closeIconColorPressed", type)]: closeIconColorPressed, [createKey("closeIconColorHover", type)]: closeIconColorHover } } = themeRef.value;
@@ -31460,7 +29736,7 @@ const NotificationEnvironment = defineComponent({
     });
   }
 });
-const style$3 = c$1([cB("notification-container", `
+const style$2 = c$1([cB("notification-container", `
  z-index: 4000;
  position: fixed;
  overflow: visible;
@@ -31713,7 +29989,7 @@ const NNotificationProvider = defineComponent({
       leavingKeySet.delete(key);
       notificationListRef.value.splice(notificationListRef.value.findIndex((notification) => notification.key === key), 1);
     }
-    const themeRef = useTheme("Notification", "-notification", style$3, notificationLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Notification", "-notification", style$2, notificationLight$1, props, mergedClsPrefixRef);
     const api = {
       create,
       info: apis[0],
@@ -31784,7 +30060,7 @@ function useNotification() {
   }
   return api;
 }
-const style$2 = c$1([cB("progress", {
+const style$1 = c$1([cB("progress", {
   display: "inline-block"
 }, [cB("progress-icon", `
  color: var(--n-icon-color);
@@ -32363,7 +30639,7 @@ const NProgress = defineComponent({
       return void 0;
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Progress", "-progress", style$2, progressLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Progress", "-progress", style$1, progressLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { status } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, fontSizeCircle, railColor, railHeight, iconSizeCircle, iconSizeLine, textColorCircle, textColorLineInner, textColorLineOuter, lineBgProcessing, fontWeightCircle, [createKey("iconColor", status)]: iconColor, [createKey("fillColor", status)]: fillColor } } = themeRef.value;
@@ -32443,719 +30719,6 @@ const skeletonDark = {
     };
   }
 };
-function isTouchEvent(e) {
-  return window.TouchEvent && e instanceof window.TouchEvent;
-}
-function useRefs() {
-  const refs = ref(/* @__PURE__ */ new Map());
-  const setRefs = (index) => (el) => {
-    refs.value.set(index, el);
-  };
-  onBeforeUpdate(() => refs.value.clear());
-  return [refs, setRefs];
-}
-const style$1 = c$1([cB("slider", `
- display: block;
- padding: calc((var(--n-handle-size) - var(--n-rail-height)) / 2) 0;
- position: relative;
- z-index: 0;
- width: 100%;
- cursor: pointer;
- user-select: none;
- -webkit-user-select: none;
- `, [cM("reverse", [cB("slider-handles", [cB("slider-handle-wrapper", `
- transform: translate(50%, -50%);
- `)]), cB("slider-dots", [cB("slider-dot", `
- transform: translateX(50%, -50%);
- `)]), cM("vertical", [cB("slider-handles", [cB("slider-handle-wrapper", `
- transform: translate(-50%, -50%);
- `)]), cB("slider-marks", [cB("slider-mark", `
- transform: translateY(calc(-50% + var(--n-dot-height) / 2));
- `)]), cB("slider-dots", [cB("slider-dot", `
- transform: translateX(-50%) translateY(0);
- `)])])]), cM("vertical", `
- padding: 0 calc((var(--n-handle-size) - var(--n-rail-height)) / 2);
- width: var(--n-rail-width-vertical);
- height: 100%;
- `, [cB("slider-handles", `
- top: calc(var(--n-handle-size) / 2);
- right: 0;
- bottom: calc(var(--n-handle-size) / 2);
- left: 0;
- `, [cB("slider-handle-wrapper", `
- top: unset;
- left: 50%;
- transform: translate(-50%, 50%);
- `)]), cB("slider-rail", `
- height: 100%;
- `, [cE("fill", `
- top: unset;
- right: 0;
- bottom: unset;
- left: 0;
- `)]), cM("with-mark", `
- width: var(--n-rail-width-vertical);
- margin: 0 32px 0 8px;
- `), cB("slider-marks", `
- top: calc(var(--n-handle-size) / 2);
- right: unset;
- bottom: calc(var(--n-handle-size) / 2);
- left: 22px;
- font-size: var(--n-mark-font-size);
- `, [cB("slider-mark", `
- transform: translateY(50%);
- white-space: nowrap;
- `)]), cB("slider-dots", `
- top: calc(var(--n-handle-size) / 2);
- right: unset;
- bottom: calc(var(--n-handle-size) / 2);
- left: 50%;
- `, [cB("slider-dot", `
- transform: translateX(-50%) translateY(50%);
- `)])]), cM("disabled", `
- cursor: not-allowed;
- opacity: var(--n-opacity-disabled);
- `, [cB("slider-handle", `
- cursor: not-allowed;
- `)]), cM("with-mark", `
- width: 100%;
- margin: 8px 0 32px 0;
- `), c$1("&:hover", [cB("slider-rail", {
-  backgroundColor: "var(--n-rail-color-hover)"
-}, [cE("fill", {
-  backgroundColor: "var(--n-fill-color-hover)"
-})]), cB("slider-handle", {
-  boxShadow: "var(--n-handle-box-shadow-hover)"
-})]), cM("active", [cB("slider-rail", {
-  backgroundColor: "var(--n-rail-color-hover)"
-}, [cE("fill", {
-  backgroundColor: "var(--n-fill-color-hover)"
-})]), cB("slider-handle", {
-  boxShadow: "var(--n-handle-box-shadow-hover)"
-})]), cB("slider-marks", `
- position: absolute;
- top: 18px;
- left: calc(var(--n-handle-size) / 2);
- right: calc(var(--n-handle-size) / 2);
- `, [cB("slider-mark", `
- position: absolute;
- transform: translateX(-50%);
- white-space: nowrap;
- `)]), cB("slider-rail", `
- width: 100%;
- position: relative;
- height: var(--n-rail-height);
- background-color: var(--n-rail-color);
- transition: background-color .3s var(--n-bezier);
- border-radius: calc(var(--n-rail-height) / 2);
- `, [cE("fill", `
- position: absolute;
- top: 0;
- bottom: 0;
- border-radius: calc(var(--n-rail-height) / 2);
- transition: background-color .3s var(--n-bezier);
- background-color: var(--n-fill-color);
- `)]), cB("slider-handles", `
- position: absolute;
- top: 0;
- right: calc(var(--n-handle-size) / 2);
- bottom: 0;
- left: calc(var(--n-handle-size) / 2);
- `, [cB("slider-handle-wrapper", `
- outline: none;
- position: absolute;
- top: 50%;
- transform: translate(-50%, -50%);
- cursor: pointer;
- display: flex;
- `, [cB("slider-handle", `
- height: var(--n-handle-size);
- width: var(--n-handle-size);
- border-radius: 50%;
- overflow: hidden;
- transition: box-shadow .2s var(--n-bezier), background-color .3s var(--n-bezier);
- background-color: var(--n-handle-color);
- box-shadow: var(--n-handle-box-shadow);
- `, [c$1("&:hover", `
- box-shadow: var(--n-handle-box-shadow-hover);
- `)]), c$1("&:focus", [cB("slider-handle", `
- box-shadow: var(--n-handle-box-shadow-focus);
- `, [c$1("&:hover", `
- box-shadow: var(--n-handle-box-shadow-active);
- `)])])])]), cB("slider-dots", `
- position: absolute;
- top: 50%;
- left: calc(var(--n-handle-size) / 2);
- right: calc(var(--n-handle-size) / 2);
- `, [cM("transition-disabled", [cB("slider-dot", "transition: none;")]), cB("slider-dot", `
- transition:
- border-color .3s var(--n-bezier),
- box-shadow .3s var(--n-bezier),
- background-color .3s var(--n-bezier);
- position: absolute;
- transform: translate(-50%, -50%);
- height: var(--n-dot-height);
- width: var(--n-dot-width);
- border-radius: var(--n-dot-border-radius);
- overflow: hidden;
- box-sizing: border-box;
- border: var(--n-dot-border);
- background-color: var(--n-dot-color);
- `, [cM("active", "border: var(--n-dot-border-active);")])])]), cB("slider-handle-indicator", `
- font-size: var(--n-font-size);
- padding: 6px 10px;
- border-radius: var(--n-indicator-border-radius);
- color: var(--n-indicator-text-color);
- background-color: var(--n-indicator-color);
- box-shadow: var(--n-indicator-box-shadow);
- `, [fadeInScaleUpTransition()]), cB("slider-handle-indicator", `
- font-size: var(--n-font-size);
- padding: 6px 10px;
- border-radius: var(--n-indicator-border-radius);
- color: var(--n-indicator-text-color);
- background-color: var(--n-indicator-color);
- box-shadow: var(--n-indicator-box-shadow);
- `, [cM("top", `
- margin-bottom: 12px;
- `), cM("right", `
- margin-left: 12px;
- `), cM("bottom", `
- margin-top: 12px;
- `), cM("left", `
- margin-right: 12px;
- `), fadeInScaleUpTransition()]), insideModal(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-modal);")])), insidePopover(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-popover);")]))]);
-const eventButtonLeft = 0;
-const sliderProps = Object.assign(Object.assign({}, useTheme.props), { to: useAdjustedTo.propTo, defaultValue: {
-  type: [Number, Array],
-  default: 0
-}, marks: Object, disabled: {
-  type: Boolean,
-  default: void 0
-}, formatTooltip: Function, keyboard: {
-  type: Boolean,
-  default: true
-}, min: {
-  type: Number,
-  default: 0
-}, max: {
-  type: Number,
-  default: 100
-}, step: {
-  type: [Number, String],
-  default: 1
-}, range: Boolean, value: [Number, Array], placement: String, showTooltip: {
-  type: Boolean,
-  default: void 0
-}, tooltip: {
-  type: Boolean,
-  default: true
-}, vertical: Boolean, reverse: Boolean, "onUpdate:value": [Function, Array], onUpdateValue: [Function, Array] });
-const NSlider = defineComponent({
-  name: "Slider",
-  props: sliderProps,
-  setup(props) {
-    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Slider", "-slider", style$1, sliderLight$1, props, mergedClsPrefixRef);
-    const handleRailRef = ref(null);
-    const [handleRefs, setHandleRefs] = useRefs();
-    const [followerRefs, setFollowerRefs] = useRefs();
-    const followerEnabledIndexSetRef = ref(/* @__PURE__ */ new Set());
-    const formItem = useFormItem(props);
-    const { mergedDisabledRef } = formItem;
-    const precisionRef = computed(() => {
-      const { step } = props;
-      if (step <= 0 || step === "mark")
-        return 0;
-      const stepString = step.toString();
-      let precision = 0;
-      if (stepString.includes(".")) {
-        precision = stepString.length - stepString.indexOf(".") - 1;
-      }
-      return precision;
-    });
-    const uncontrolledValueRef = ref(props.defaultValue);
-    const controlledValueRef = toRef(props, "value");
-    const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
-    const arrifiedValueRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
-      return (props.range ? mergedValue : [mergedValue]).map(clampValue);
-    });
-    const handleCountExceeds2Ref = computed(() => arrifiedValueRef.value.length > 2);
-    const mergedPlacementRef = computed(() => {
-      return props.placement === void 0 ? props.vertical ? "right" : "top" : props.placement;
-    });
-    const markValuesRef = computed(() => {
-      const { marks } = props;
-      return marks ? Object.keys(marks).map(parseFloat) : null;
-    });
-    const activeIndexRef = ref(-1);
-    const previousIndexRef = ref(-1);
-    const hoverIndexRef = ref(-1);
-    const draggingRef = ref(false);
-    const dotTransitionDisabledRef = ref(false);
-    const styleDirectionRef = computed(() => {
-      const { vertical, reverse } = props;
-      const left = reverse ? "right" : "left";
-      const bottom = reverse ? "top" : "bottom";
-      return vertical ? bottom : left;
-    });
-    const fillStyleRef = computed(() => {
-      if (handleCountExceeds2Ref.value)
-        return;
-      const values = arrifiedValueRef.value;
-      const start = valueToPercentage(props.range ? Math.min(...values) : props.min);
-      const end = valueToPercentage(props.range ? Math.max(...values) : values[0]);
-      const { value: styleDirection } = styleDirectionRef;
-      return props.vertical ? {
-        [styleDirection]: `${start}%`,
-        height: `${end - start}%`
-      } : {
-        [styleDirection]: `${start}%`,
-        width: `${end - start}%`
-      };
-    });
-    const markInfosRef = computed(() => {
-      const mergedMarks = [];
-      const { marks } = props;
-      if (marks) {
-        const orderValues = arrifiedValueRef.value.slice();
-        orderValues.sort((a, b) => a - b);
-        const { value: styleDirection } = styleDirectionRef;
-        const { value: handleCountExceeds2 } = handleCountExceeds2Ref;
-        const { range } = props;
-        const isActive = handleCountExceeds2 ? () => false : (num) => range ? num >= orderValues[0] && num <= orderValues[orderValues.length - 1] : num <= orderValues[0];
-        for (const key of Object.keys(marks)) {
-          const num = Number(key);
-          mergedMarks.push({
-            active: isActive(num),
-            label: marks[key],
-            style: {
-              [styleDirection]: `${valueToPercentage(num)}%`
-            }
-          });
-        }
-      }
-      return mergedMarks;
-    });
-    function getHandleStyle(value, index) {
-      const percentage = valueToPercentage(value);
-      const { value: styleDirection } = styleDirectionRef;
-      return {
-        [styleDirection]: `${percentage}%`,
-        zIndex: index === activeIndexRef.value ? 1 : 0
-      };
-    }
-    function isShowTooltip(index) {
-      return props.showTooltip || hoverIndexRef.value === index || activeIndexRef.value === index && draggingRef.value;
-    }
-    function shouldKeepTooltipTransition(index) {
-      if (!draggingRef.value)
-        return true;
-      return !(activeIndexRef.value === index && previousIndexRef.value === index);
-    }
-    function focusActiveHandle(index) {
-      var _a2;
-      if (~index) {
-        activeIndexRef.value = index;
-        (_a2 = handleRefs.value.get(index)) === null || _a2 === void 0 ? void 0 : _a2.focus();
-      }
-    }
-    function syncPosition() {
-      followerRefs.value.forEach((inst, index) => {
-        if (isShowTooltip(index))
-          inst.syncPosition();
-      });
-    }
-    function doUpdateValue(value) {
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
-      if (onUpdateValue)
-        call(onUpdateValue, value);
-      if (_onUpdateValue)
-        call(_onUpdateValue, value);
-      uncontrolledValueRef.value = value;
-      nTriggerFormInput();
-      nTriggerFormChange();
-    }
-    function dispatchValueUpdate(value) {
-      const { range } = props;
-      if (range) {
-        if (Array.isArray(value)) {
-          const { value: oldValues } = arrifiedValueRef;
-          if (value.join() !== oldValues.join()) {
-            doUpdateValue(value);
-          }
-        }
-      } else if (!Array.isArray(value)) {
-        const oldValue = arrifiedValueRef.value[0];
-        if (oldValue !== value) {
-          doUpdateValue(value);
-        }
-      }
-    }
-    function doDispatchValue(value, index) {
-      if (props.range) {
-        const values = arrifiedValueRef.value.slice();
-        values.splice(index, 1, value);
-        dispatchValueUpdate(values);
-      } else {
-        dispatchValueUpdate(value);
-      }
-    }
-    function sanitizeValue(value, currentValue, stepBuffer) {
-      const stepping = stepBuffer !== void 0;
-      if (!stepBuffer) {
-        stepBuffer = value - currentValue > 0 ? 1 : -1;
-      }
-      const markValues = markValuesRef.value || [];
-      const { step } = props;
-      if (step === "mark") {
-        const closestMark2 = getClosestMark(value, markValues.concat(currentValue), stepping ? stepBuffer : void 0);
-        return closestMark2 ? closestMark2.value : currentValue;
-      }
-      if (step <= 0)
-        return currentValue;
-      const { value: precision } = precisionRef;
-      let closestMark;
-      if (stepping) {
-        const currentStep = Number((currentValue / step).toFixed(precision));
-        const actualStep = Math.floor(currentStep);
-        const leftStep = currentStep > actualStep ? actualStep : actualStep - 1;
-        const rightStep = currentStep < actualStep ? actualStep : actualStep + 1;
-        closestMark = getClosestMark(currentValue, [
-          Number((leftStep * step).toFixed(precision)),
-          Number((rightStep * step).toFixed(precision)),
-          ...markValues
-        ], stepBuffer);
-      } else {
-        const roundValue = getRoundValue(value);
-        closestMark = getClosestMark(value, [...markValues, roundValue]);
-      }
-      return closestMark ? clampValue(closestMark.value) : currentValue;
-    }
-    function clampValue(value) {
-      return Math.min(props.max, Math.max(props.min, value));
-    }
-    function valueToPercentage(value) {
-      const { max, min } = props;
-      return (value - min) / (max - min) * 100;
-    }
-    function percentageToValue(percentage) {
-      const { max, min } = props;
-      return min + (max - min) * percentage;
-    }
-    function getRoundValue(value) {
-      const { step, min } = props;
-      if (step <= 0 || step === "mark")
-        return value;
-      const newValue = Math.round((value - min) / step) * step + min;
-      return Number(newValue.toFixed(precisionRef.value));
-    }
-    function getClosestMark(currentValue, markValues = markValuesRef.value, buffer) {
-      if (!(markValues === null || markValues === void 0 ? void 0 : markValues.length))
-        return null;
-      let closestMark = null;
-      let index = -1;
-      while (++index < markValues.length) {
-        const diff = markValues[index] - currentValue;
-        const distance = Math.abs(diff);
-        if (
-          // find marks in the same direction
-          (buffer === void 0 || diff * buffer > 0) && (closestMark === null || distance < closestMark.distance)
-        ) {
-          closestMark = {
-            index,
-            distance,
-            value: markValues[index]
-          };
-        }
-      }
-      return closestMark;
-    }
-    function getPointValue(event) {
-      const railEl = handleRailRef.value;
-      if (!railEl)
-        return;
-      const touchEvent = isTouchEvent(event) ? event.touches[0] : event;
-      const railRect = railEl.getBoundingClientRect();
-      let percentage;
-      if (props.vertical) {
-        percentage = (railRect.bottom - touchEvent.clientY) / railRect.height;
-      } else {
-        percentage = (touchEvent.clientX - railRect.left) / railRect.width;
-      }
-      if (props.reverse) {
-        percentage = 1 - percentage;
-      }
-      return percentageToValue(percentage);
-    }
-    function handleRailKeyDown(e) {
-      if (mergedDisabledRef.value || !props.keyboard)
-        return;
-      const { vertical, reverse } = props;
-      switch (e.key) {
-        case "ArrowUp":
-          e.preventDefault();
-          handleStepValue(vertical && reverse ? -1 : 1);
-          break;
-        case "ArrowRight":
-          e.preventDefault();
-          handleStepValue(!vertical && reverse ? -1 : 1);
-          break;
-        case "ArrowDown":
-          e.preventDefault();
-          handleStepValue(vertical && reverse ? 1 : -1);
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          handleStepValue(!vertical && reverse ? 1 : -1);
-          break;
-      }
-    }
-    function handleStepValue(ratio) {
-      const activeIndex = activeIndexRef.value;
-      if (activeIndex === -1)
-        return;
-      const { step } = props;
-      const currentValue = arrifiedValueRef.value[activeIndex];
-      const nextValue = step <= 0 || step === "mark" ? currentValue : currentValue + step * ratio;
-      doDispatchValue(
-        // Avoid the number of value does not change when `step` is null
-        sanitizeValue(nextValue, currentValue, ratio > 0 ? 1 : -1),
-        activeIndex
-      );
-    }
-    function handleRailMouseDown(event) {
-      var _a2, _b;
-      if (mergedDisabledRef.value)
-        return;
-      if (!isTouchEvent(event) && event.button !== eventButtonLeft) {
-        return;
-      }
-      const pointValue = getPointValue(event);
-      if (pointValue === void 0)
-        return;
-      const values = arrifiedValueRef.value.slice();
-      const activeIndex = props.range ? (_b = (_a2 = getClosestMark(pointValue, values)) === null || _a2 === void 0 ? void 0 : _a2.index) !== null && _b !== void 0 ? _b : -1 : 0;
-      if (activeIndex !== -1) {
-        event.preventDefault();
-        focusActiveHandle(activeIndex);
-        startDragging();
-        doDispatchValue(sanitizeValue(pointValue, arrifiedValueRef.value[activeIndex]), activeIndex);
-      }
-    }
-    function startDragging() {
-      if (!draggingRef.value) {
-        draggingRef.value = true;
-        on("touchend", document, handleMouseUp);
-        on("mouseup", document, handleMouseUp);
-        on("touchmove", document, handleMouseMove);
-        on("mousemove", document, handleMouseMove);
-      }
-    }
-    function stopDragging() {
-      if (draggingRef.value) {
-        draggingRef.value = false;
-        off("touchend", document, handleMouseUp);
-        off("mouseup", document, handleMouseUp);
-        off("touchmove", document, handleMouseMove);
-        off("mousemove", document, handleMouseMove);
-      }
-    }
-    function handleMouseMove(event) {
-      const { value: activeIndex } = activeIndexRef;
-      if (!draggingRef.value || activeIndex === -1) {
-        stopDragging();
-        return;
-      }
-      const pointValue = getPointValue(event);
-      doDispatchValue(sanitizeValue(pointValue, arrifiedValueRef.value[activeIndex]), activeIndex);
-    }
-    function handleMouseUp() {
-      stopDragging();
-    }
-    function handleHandleFocus(index) {
-      activeIndexRef.value = index;
-      if (!mergedDisabledRef.value) {
-        hoverIndexRef.value = index;
-      }
-    }
-    function handleHandleBlur(index) {
-      if (activeIndexRef.value === index) {
-        activeIndexRef.value = -1;
-        stopDragging();
-      }
-      if (hoverIndexRef.value === index) {
-        hoverIndexRef.value = -1;
-      }
-    }
-    function handleHandleMouseEnter(index) {
-      hoverIndexRef.value = index;
-    }
-    function handleHandleMouseLeave(index) {
-      if (hoverIndexRef.value === index) {
-        hoverIndexRef.value = -1;
-      }
-    }
-    watch(activeIndexRef, (_, previous) => void nextTick(() => previousIndexRef.value = previous));
-    watch(mergedValueRef, () => {
-      if (props.marks) {
-        if (dotTransitionDisabledRef.value)
-          return;
-        dotTransitionDisabledRef.value = true;
-        void nextTick(() => {
-          dotTransitionDisabledRef.value = false;
-        });
-      }
-      void nextTick(syncPosition);
-    });
-    onBeforeUnmount(() => {
-      stopDragging();
-    });
-    const cssVarsRef = computed(() => {
-      const { self: { markFontSize, railColor, railColorHover, fillColor, fillColorHover, handleColor, opacityDisabled, dotColor, dotColorModal, handleBoxShadow, handleBoxShadowHover, handleBoxShadowActive, handleBoxShadowFocus, dotBorder, dotBoxShadow, railHeight, railWidthVertical, handleSize, dotHeight, dotWidth, dotBorderRadius, fontSize: fontSize2, dotBorderActive, dotColorPopover }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
-      return {
-        "--n-bezier": cubicBezierEaseInOut2,
-        "--n-dot-border": dotBorder,
-        "--n-dot-border-active": dotBorderActive,
-        "--n-dot-border-radius": dotBorderRadius,
-        "--n-dot-box-shadow": dotBoxShadow,
-        "--n-dot-color": dotColor,
-        "--n-dot-color-modal": dotColorModal,
-        "--n-dot-color-popover": dotColorPopover,
-        "--n-dot-height": dotHeight,
-        "--n-dot-width": dotWidth,
-        "--n-fill-color": fillColor,
-        "--n-fill-color-hover": fillColorHover,
-        "--n-font-size": fontSize2,
-        "--n-handle-box-shadow": handleBoxShadow,
-        "--n-handle-box-shadow-active": handleBoxShadowActive,
-        "--n-handle-box-shadow-focus": handleBoxShadowFocus,
-        "--n-handle-box-shadow-hover": handleBoxShadowHover,
-        "--n-handle-color": handleColor,
-        "--n-handle-size": handleSize,
-        "--n-opacity-disabled": opacityDisabled,
-        "--n-rail-color": railColor,
-        "--n-rail-color-hover": railColorHover,
-        "--n-rail-height": railHeight,
-        "--n-rail-width-vertical": railWidthVertical,
-        "--n-mark-font-size": markFontSize
-      };
-    });
-    const themeClassHandle = inlineThemeDisabled ? useThemeClass("slider", void 0, cssVarsRef, props) : void 0;
-    const indicatorCssVarsRef = computed(() => {
-      const { self: { fontSize: fontSize2, indicatorColor, indicatorBoxShadow, indicatorTextColor, indicatorBorderRadius } } = themeRef.value;
-      return {
-        "--n-font-size": fontSize2,
-        "--n-indicator-border-radius": indicatorBorderRadius,
-        "--n-indicator-box-shadow": indicatorBoxShadow,
-        "--n-indicator-color": indicatorColor,
-        "--n-indicator-text-color": indicatorTextColor
-      };
-    });
-    const indicatorThemeClassHandle = inlineThemeDisabled ? useThemeClass("slider-indicator", void 0, indicatorCssVarsRef, props) : void 0;
-    return {
-      mergedClsPrefix: mergedClsPrefixRef,
-      namespace: namespaceRef,
-      uncontrolledValue: uncontrolledValueRef,
-      mergedValue: mergedValueRef,
-      mergedDisabled: mergedDisabledRef,
-      mergedPlacement: mergedPlacementRef,
-      isMounted: isMounted(),
-      adjustedTo: useAdjustedTo(props),
-      dotTransitionDisabled: dotTransitionDisabledRef,
-      markInfos: markInfosRef,
-      isShowTooltip,
-      shouldKeepTooltipTransition,
-      handleRailRef,
-      setHandleRefs,
-      setFollowerRefs,
-      fillStyle: fillStyleRef,
-      getHandleStyle,
-      activeIndex: activeIndexRef,
-      arrifiedValues: arrifiedValueRef,
-      followerEnabledIndexSet: followerEnabledIndexSetRef,
-      handleRailMouseDown,
-      handleHandleFocus,
-      handleHandleBlur,
-      handleHandleMouseEnter,
-      handleHandleMouseLeave,
-      handleRailKeyDown,
-      indicatorCssVars: inlineThemeDisabled ? void 0 : indicatorCssVarsRef,
-      indicatorThemeClass: indicatorThemeClassHandle === null || indicatorThemeClassHandle === void 0 ? void 0 : indicatorThemeClassHandle.themeClass,
-      indicatorOnRender: indicatorThemeClassHandle === null || indicatorThemeClassHandle === void 0 ? void 0 : indicatorThemeClassHandle.onRender,
-      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
-      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
-      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
-    };
-  },
-  render() {
-    var _a2;
-    const { mergedClsPrefix, themeClass, formatTooltip } = this;
-    (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-slider`,
-        themeClass,
-        {
-          [`${mergedClsPrefix}-slider--disabled`]: this.mergedDisabled,
-          [`${mergedClsPrefix}-slider--active`]: this.activeIndex !== -1,
-          [`${mergedClsPrefix}-slider--with-mark`]: this.marks,
-          [`${mergedClsPrefix}-slider--vertical`]: this.vertical,
-          [`${mergedClsPrefix}-slider--reverse`]: this.reverse
-        }
-      ], style: this.cssVars, onKeydown: this.handleRailKeyDown, onMousedown: this.handleRailMouseDown, onTouchstart: this.handleRailMouseDown },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-slider-rail` },
-        h("div", { class: `${mergedClsPrefix}-slider-rail__fill`, style: this.fillStyle }),
-        this.marks ? h("div", { class: [
-          `${mergedClsPrefix}-slider-dots`,
-          this.dotTransitionDisabled && `${mergedClsPrefix}-slider-dots--transition-disabled`
-        ] }, this.markInfos.map((mark) => h("div", { key: mark.label, class: [
-          `${mergedClsPrefix}-slider-dot`,
-          {
-            [`${mergedClsPrefix}-slider-dot--active`]: mark.active
-          }
-        ], style: mark.style }))) : null,
-        h("div", { ref: "handleRailRef", class: `${mergedClsPrefix}-slider-handles` }, this.arrifiedValues.map((value, index) => {
-          const showTooltip = this.isShowTooltip(index);
-          return h(VBinder, null, {
-            default: () => [
-              h(VTarget, null, {
-                default: () => h("div", { ref: this.setHandleRefs(index), class: `${mergedClsPrefix}-slider-handle-wrapper`, tabindex: this.mergedDisabled ? -1 : 0, style: this.getHandleStyle(value, index), onFocus: () => this.handleHandleFocus(index), onBlur: () => this.handleHandleBlur(index), onMouseenter: () => this.handleHandleMouseEnter(index), onMouseleave: () => this.handleHandleMouseLeave(index) }, resolveSlot(this.$slots.thumb, () => [
-                  h("div", { class: `${mergedClsPrefix}-slider-handle` })
-                ]))
-              }),
-              this.tooltip && h(VFollower, { ref: this.setFollowerRefs(index), show: showTooltip, to: this.adjustedTo, enabled: this.showTooltip && !this.range || this.followerEnabledIndexSet.has(index), teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey, placement: this.mergedPlacement, containerClass: this.namespace }, {
-                default: () => h(Transition, { name: "fade-in-scale-up-transition", appear: this.isMounted, css: this.shouldKeepTooltipTransition(index), onEnter: () => {
-                  this.followerEnabledIndexSet.add(index);
-                }, onAfterLeave: () => {
-                  this.followerEnabledIndexSet.delete(index);
-                } }, {
-                  default: () => {
-                    var _a3;
-                    if (showTooltip) {
-                      (_a3 = this.indicatorOnRender) === null || _a3 === void 0 ? void 0 : _a3.call(this);
-                      return h("div", { class: [
-                        `${mergedClsPrefix}-slider-handle-indicator`,
-                        this.indicatorThemeClass,
-                        `${mergedClsPrefix}-slider-handle-indicator--${this.mergedPlacement}`
-                      ], style: this.indicatorCssVars }, typeof formatTooltip === "function" ? formatTooltip(value) : value);
-                    }
-                    return null;
-                  }
-                })
-              })
-            ]
-          });
-        })),
-        this.marks ? h("div", { class: `${mergedClsPrefix}-slider-marks` }, this.markInfos.map((mark) => h("div", { key: mark.label, class: `${mergedClsPrefix}-slider-mark`, style: mark.style }, mark.label))) : null
-      )
-    );
-  }
-});
 const tabsInjectionKey = createInjectionKey("n-tabs");
 const tabPaneProps = {
   tab: [String, Number, Object, Function],
@@ -34241,12 +31804,12 @@ const darkTheme = {
   Upload: uploadDark$1,
   Watermark: watermarkDark$1
 };
-const _hoisted_1$e = {
+const _hoisted_1$c = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -34256,7 +31819,7 @@ const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -34266,7 +31829,7 @@ const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -34276,75 +31839,11 @@ const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$d, _hoisted_4$a];
+const _hoisted_5$4 = [_hoisted_2$b, _hoisted_3$b, _hoisted_4$8];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_5$5);
-  }
-});
-const _hoisted_1$d = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M272 48a16 16 0 0 0-32 0v112h32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$9 = [_hoisted_2$c, _hoisted_3$c];
-const Download = defineComponent({
-  name: "Download",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$9);
-  }
-});
-const _hoisted_1$c = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$8 = [_hoisted_2$b, _hoisted_3$b];
-const Duplicate = defineComponent({
-  name: "Duplicate",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$8);
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$4);
   }
 });
 const _hoisted_1$b = {
@@ -34355,7 +31854,7 @@ const _hoisted_1$b = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
+    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
     fill: "currentColor"
   },
   null,
@@ -34365,7 +31864,7 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
+    d: "M272 48a16 16 0 0 0-32 0v112h32z",
     fill: "currentColor"
   },
   null,
@@ -34373,9 +31872,9 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$a];
-const GitCompare = defineComponent({
-  name: "GitCompare",
-  render: function render5(_ctx, _cache) {
+const Download = defineComponent({
+  name: "Download",
+  render: function render3(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$7);
   }
 });
@@ -34387,18 +31886,28 @@ const _hoisted_1$a = {
 const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$9 = [_hoisted_2$9];
-const Image$1 = defineComponent({
-  name: "Image",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$9);
+const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$9];
+const Duplicate = defineComponent({
+  name: "Duplicate",
+  render: function render4(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$6);
   }
 });
 const _hoisted_1$9 = {
@@ -34409,7 +31918,7 @@ const _hoisted_1$9 = {
 const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
+    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
     fill: "currentColor"
   },
   null,
@@ -34419,18 +31928,18 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$6 = [_hoisted_2$8, _hoisted_3$8];
-const Images = defineComponent({
-  name: "Images",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$6);
+const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$8];
+const GitCompare = defineComponent({
+  name: "GitCompare",
+  render: function render5(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
   }
 });
 const _hoisted_1$8 = {
@@ -34441,7 +31950,7 @@ const _hoisted_1$8 = {
 const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
+    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
     fill: "currentColor"
   },
   null,
@@ -34449,9 +31958,9 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$7 = [_hoisted_2$7];
-const SettingsSharp = defineComponent({
-  name: "SettingsSharp",
-  render: function render8(_ctx, _cache) {
+const Image$1 = defineComponent({
+  name: "Image",
+  render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$7);
   }
 });
@@ -34463,18 +31972,28 @@ const _hoisted_1$7 = {
 const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
+    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = [_hoisted_2$6];
-const Speedometer = defineComponent({
-  name: "Speedometer",
-  render: function render9(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$6);
+const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$4 = [_hoisted_2$6, _hoisted_3$6];
+const Images = defineComponent({
+  name: "Images",
+  render: function render7(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$4);
   }
 });
 const _hoisted_1$6 = {
@@ -34485,6 +32004,50 @@ const _hoisted_1$6 = {
 const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
+    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$5 = [_hoisted_2$5];
+const SettingsSharp = defineComponent({
+  name: "SettingsSharp",
+  render: function render8(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$5);
+  }
+});
+const _hoisted_1$5 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$4 = [_hoisted_2$4];
+const Speedometer = defineComponent({
+  name: "Speedometer",
+  render: function render9(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_3$4);
+  }
+});
+const _hoisted_1$4 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
     d: "M104 496H72a24 24 0 0 1-24-24V328a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v144a24 24 0 0 1-24 24z",
     fill: "currentColor"
   },
@@ -34492,7 +32055,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M328 496h-32a24 24 0 0 1-24-24V232a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v240a24 24 0 0 1-24 24z",
@@ -34502,7 +32065,7 @@ const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M440 496h-32a24 24 0 0 1-24-24V120a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v352a24 24 0 0 1-24 24z",
@@ -34512,7 +32075,7 @@ const _hoisted_4$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M216 496h-32a24 24 0 0 1-24-24V40a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v432a24 24 0 0 1-24 24z",
@@ -34522,19 +32085,19 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$5, _hoisted_5$4];
+const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
 const StatsChart = defineComponent({
   name: "StatsChart",
   render: function render10(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$1);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$3 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M434.67 285.59v-29.8c0-98.73-80.24-178.79-179.2-178.79a179 179 0 0 0-140.14 67.36m-38.53 82v29.8C76.8 355 157 435 256 435a180.45 180.45 0 0 0 140-66.92",
@@ -34548,7 +32111,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -34562,7 +32125,7 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -34576,11 +32139,11 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$4, _hoisted_4$4];
+const _hoisted_5$2 = [_hoisted_2$2, _hoisted_3$2, _hoisted_4$2];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
   render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$3);
+    return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_5$2);
   }
 });
 /*!
@@ -35048,7 +32611,7 @@ function tokensToParser(segments, extraOptions) {
   else if (options.strict)
     pattern += "(?:/|$)";
   const re = new RegExp(pattern, options.sensitive ? "" : "i");
-  function parse2(path) {
+  function parse(path) {
     const match2 = path.match(re);
     const params = {};
     if (!match2)
@@ -35098,7 +32661,7 @@ function tokensToParser(segments, extraOptions) {
     re,
     score,
     keys: keys2,
-    parse: parse2,
+    parse,
     stringify
   };
 }
@@ -36366,8 +33929,8 @@ function extractChangingRecords(to, from) {
   }
   return [leavingRecords, updatingRecords, enteringRecords];
 }
-const _hoisted_1$4 = { class: "navbar" };
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const _hoisted_1$2 = { class: "navbar" };
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
   setup(__props) {
     function renderIcon(icon) {
@@ -36425,7 +33988,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     ];
     let collapsed = ref(true);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$4, [
+      return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createVNode(unref(NLayout), {
           style: { "height": "100%", "overflow": "visible" },
           "has-sider": "",
@@ -36484,6 +34047,7 @@ const useState = defineStore("state", () => {
     },
     txt2img: {
       images: [],
+      highres: false,
       currentImage: ""
     },
     img2img: {
@@ -36528,12 +34092,12 @@ const useState = defineStore("state", () => {
   });
   return { state };
 });
-const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
-const _hoisted_3$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
-const _hoisted_5$2 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const _hoisted_1$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
+const _hoisted_3$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
+const _hoisted_5$1 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
   setup(__props) {
     const global2 = useState();
@@ -36570,8 +34134,8 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 2
                     }, 1024),
-                    createBaseVNode("div", _hoisted_1$3, [
-                      _hoisted_2$3,
+                    createBaseVNode("div", _hoisted_1$1, [
+                      _hoisted_2$1,
                       createVNode(unref(NProgress), {
                         percentage: gpu.utilization,
                         type: "line",
@@ -36579,8 +34143,8 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         style: { "flex-grow": "1", "width": "400px" }
                       }, null, 8, ["percentage"])
                     ]),
-                    createBaseVNode("div", _hoisted_3$3, [
-                      _hoisted_4$3,
+                    createBaseVNode("div", _hoisted_3$1, [
+                      _hoisted_4$1,
                       createVNode(unref(NProgress), {
                         percentage: gpu.memory_usage,
                         type: "line",
@@ -36588,7 +34152,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         color: "#63e2b7",
                         "indicator-placement": "inside"
                       }, null, 8, ["percentage"]),
-                      createBaseVNode("p", _hoisted_5$2, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
+                      createBaseVNode("p", _hoisted_5$1, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
                     ])
                   ]),
                   _: 2
@@ -37130,6 +34694,20 @@ const defaultSettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: null,
+  extra: {
+    highres: {
+      scale: 2,
+      latent_scale_mode: "bilinear",
+      strength: 0.7,
+      steps: 50,
+      antialiased: false
+    }
+  },
+  aitDim: {
+    width: void 0,
+    height: void 0,
+    batch_size: void 0
+  },
   txt2img: {
     width: 512,
     height: 512,
@@ -37238,8 +34816,9 @@ try {
   const req = new XMLHttpRequest();
   req.open("GET", `${serverUrl}/api/settings/`, false);
   req.send();
-  console.log("Recieved settings:", req.responseText);
-  rSettings = JSON.parse(req.responseText);
+  const extra = rSettings.extra;
+  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
+  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
 } catch (e) {
   console.error(e);
 }
@@ -37370,13 +34949,13 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _hoisted_1$2 = { class: "top-bar" };
-const _hoisted_2$2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_3$2 = { style: { "display": "inline-flex" } };
-const _hoisted_4$2 = { style: { "display": "inline-flex" } };
-const _hoisted_5$1 = { class: "progress-container" };
-const _hoisted_6$1 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _hoisted_1 = { class: "top-bar" };
+const _hoisted_2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_3 = { style: { "display": "inline-flex" } };
+const _hoisted_4 = { style: { "display": "inline-flex" } };
+const _hoisted_5 = { class: "progress-container" };
+const _hoisted_6 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     const websocketState = useWebsocket();
@@ -37516,6 +35095,26 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
       } else {
         message.error("Model not found");
       }
+      if (conf.data.settings.model) {
+        const spl = conf.data.settings.model.name.split("__")[1];
+        if (spl) {
+          const xspl = spl.split("x");
+          const width = parseInt(xspl[0]);
+          const height = parseInt(xspl[1]);
+          const batch_size = parseInt(xspl[2]);
+          conf.data.settings.aitDim.width = width;
+          conf.data.settings.aitDim.height = height;
+          conf.data.settings.aitDim.batch_size = batch_size;
+        } else {
+          conf.data.settings.aitDim.width = void 0;
+          conf.data.settings.aitDim.height = void 0;
+          conf.data.settings.aitDim.batch_size = void 0;
+        }
+      } else {
+        conf.data.settings.aitDim.width = void 0;
+        conf.data.settings.aitDim.height = void 0;
+        conf.data.settings.aitDim.batch_size = void 0;
+      }
     }
     function resetModels() {
       models.value.splice(0, models.value.length);
@@ -37605,7 +35204,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
-      return openBlock(), createElementBlock("div", _hoisted_1$2, [
+      return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
           options: unref(generatedModelOptions),
@@ -37635,7 +35234,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
           "auto-focus": false
         }, {
           default: withCtx(() => [
-            createBaseVNode("div", _hoisted_2$2, [
+            createBaseVNode("div", _hoisted_2, [
               createVNode(unref(NInput), {
                 value: filter.value,
                 "onUpdate:value": _cache[1] || (_cache[1] = ($event) => filter.value = $event),
@@ -37686,7 +35285,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                                         key: model.path
                                       }, [
                                         createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                        createBaseVNode("div", _hoisted_3$2, [
+                                        createBaseVNode("div", _hoisted_3, [
                                           model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                             key: 0,
                                             type: "error",
@@ -37744,7 +35343,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                                         key: lora.path
                                       }, [
                                         createBaseVNode("p", null, toDisplayString(lora.name), 1),
-                                        createBaseVNode("div", _hoisted_4$2, [
+                                        createBaseVNode("div", _hoisted_4, [
                                           ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(lora.path)) ? (openBlock(), createBlock(unref(NButton), {
                                             key: 0,
                                             type: "error",
@@ -37882,7 +35481,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_5$1, [
+        createBaseVNode("div", _hoisted_5, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -37897,7 +35496,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_6$1, [
+        createBaseVNode("div", _hoisted_6, [
           createVNode(unref(NButton), {
             type: unref(websocketState).color,
             quaternary: "",
@@ -37925,7 +35524,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_6372c5f5_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_e15ed902_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -37933,14 +35532,14 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$6, [["__scopeId", "data-v-6372c5f5"]]);
-const _sfc_main$5 = {};
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-e15ed902"]]);
+const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
   return openBlock(), createBlock(_component_RouterView, { class: "view" });
 }
-const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["render", _sfc_render]]);
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
+const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     const overrides = {
@@ -37959,10 +35558,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$8),
+                  createVNode(_sfc_main$4),
                   createVNode(TopBarVue),
                   createVNode(routerContainerVue),
-                  createVNode(_sfc_main$7)
+                  createVNode(_sfc_main$3)
                 ]),
                 _: 1
               })
@@ -38019,673 +35618,23 @@ const __vitePreload = function preload(baseModule, deps, importerUrl) {
     }
   })).then(() => baseModule());
 };
-const _2img = "";
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
-  __name: "GenerateSection",
-  props: {
-    generate: {
-      type: Function,
-      required: true
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const global2 = useState();
-    function interrupt() {
-      fetch(`${serverUrl}/api/general/interrupt`, {
-        method: "POST"
-      }).then((res) => {
-        if (res.status === 200) {
-          global2.state.generating = false;
-        }
-      });
-    }
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { style: { "margin-bottom": "12px" } }, {
-        default: withCtx(() => [
-          createVNode(unref(NGrid), {
-            cols: "2",
-            "x-gap": "24"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: props.generate,
-                    disabled: unref(global2).state.generating,
-                    loading: unref(global2).state.generating,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Generate")
-                    ]),
-                    _: 1
-                  }, 8, ["onClick", "disabled", "loading"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "error",
-                    onClick: interrupt,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Interrupt")
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _hoisted_1$1 = { style: { "width": "100%", "display": "flex", "justify-content": "center" } };
-const _hoisted_2$1 = {
-  key: 0,
-  style: { "height": "150px", "margin-top": "12px" }
-};
-const _hoisted_3$1 = ["onClick"];
-const _hoisted_4$1 = ["src"];
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
-  __name: "ImageOutput",
-  props: {
-    currentImage: {
-      type: String,
-      required: true
-    },
-    images: {
-      type: Array,
-      required: false,
-      default: () => []
-    }
-  },
-  emits: ["image-clicked"],
-  setup(__props) {
-    const props = __props;
-    const displayedImage = computed(() => {
-      if (props.currentImage) {
-        return props.currentImage;
-      } else if (props.images.length > 0) {
-        return props.images[0];
-      } else {
-        return "";
-      }
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), {
-        title: "Output",
-        hoverable: ""
-      }, {
-        default: withCtx(() => [
-          createBaseVNode("div", _hoisted_1$1, [
-            unref(displayedImage) ? (openBlock(), createBlock(unref(NImage), {
-              key: 0,
-              src: unref(displayedImage).toString(),
-              "img-props": {
-                style: "max-width: 100%; max-height: 70vh; width: 100%"
-              },
-              style: { "max-width": "100%", "max-height": "60vh", "width": "100%", "height": "100%" },
-              "object-fit": "contain"
-            }, null, 8, ["src"])) : createCommentVNode("", true)
-          ]),
-          __props.images.length > 1 ? (openBlock(), createElementBlock("div", _hoisted_2$1, [
-            createVNode(unref(NScrollbar), { "x-scrollable": "" }, {
-              default: withCtx(() => [
-                (openBlock(true), createElementBlock(Fragment, null, renderList(props.images, (image, i) => {
-                  return openBlock(), createElementBlock("span", {
-                    key: i,
-                    onClick: ($event) => _ctx.$emit("image-clicked", image.toString()),
-                    style: { "cursor": "pointer" }
-                  }, [
-                    createBaseVNode("img", {
-                      src: image.toString(),
-                      style: { "height": "100px", "width": "100px", "margin": "5px", "object-fit": "contain" }
-                    }, null, 8, _hoisted_4$1)
-                  ], 8, _hoisted_3$1);
-                }), 128))
-              ]),
-              _: 1
-            })
-          ])) : createCommentVNode("", true)
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "SendOutputTo",
-  props: {
-    output: {
-      type: String,
-      required: true
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const conf = useSettings();
-    const state = useState();
-    async function toImg2Img() {
-      conf.data.settings.img2img.image = props.output;
-      state.state.img2img.tab = "Image to Image";
-      await router.push("/image2image");
-    }
-    async function toControlNet() {
-      conf.data.settings.controlnet.image = props.output;
-      state.state.img2img.tab = "ControlNet";
-      await router.push("/image2image");
-    }
-    async function toInpainting() {
-      conf.data.settings.inpainting.image = props.output;
-      state.state.img2img.tab = "Inpainting";
-      await router.push("/image2image");
-    }
-    async function toUpscale() {
-      conf.data.settings.realesrgan.image = props.output;
-      state.state.extra.tab = "Upscale";
-      await router.push("/extra");
-    }
-    return (_ctx, _cache) => {
-      return __props.output ? (openBlock(), createBlock(unref(NCard), {
-        key: 0,
-        style: { "margin": "12px 0" },
-        title: "Send To"
-      }, {
-        default: withCtx(() => [
-          createVNode(unref(NGrid), {
-            cols: "4",
-            "x-gap": "4",
-            "y-gap": "4"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "default",
-                    onClick: toImg2Img,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Img2Img")
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "default",
-                    onClick: toControlNet,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("ControlNet")
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "default",
-                    onClick: toInpainting,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Inpainting")
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "default",
-                    onClick: toUpscale,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Upscale")
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      })) : createCommentVNode("", true);
-    };
-  }
-});
-let getRandomValues;
-const rnds8 = new Uint8Array(16);
-function rng() {
-  if (!getRandomValues) {
-    getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
-    if (!getRandomValues) {
-      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
-    }
-  }
-  return getRandomValues(rnds8);
-}
-const byteToHex = [];
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 256).toString(16).slice(1));
-}
-function unsafeStringify(arr, offset = 0) {
-  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
-}
-const randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
-const native = {
-  randomUUID
-};
-function v4(options, buf, offset) {
-  if (native.randomUUID && !buf && !options) {
-    return native.randomUUID();
-  }
-  options = options || {};
-  const rnds = options.random || (options.rng || rng)();
-  rnds[6] = rnds[6] & 15 | 64;
-  rnds[8] = rnds[8] & 63 | 128;
-  if (buf) {
-    offset = offset || 0;
-    for (let i = 0; i < 16; ++i) {
-      buf[offset + i] = rnds[i];
-    }
-    return buf;
-  }
-  return unsafeStringify(rnds);
-}
-const _hoisted_1 = { class: "main-container" };
-const _hoisted_2 = { class: "flex-container" };
-const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "100px" } }, "Sampler", -1);
-const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using Euler A for the best results (but it also takes more time). ", -1);
-const _hoisted_5 = /* @__PURE__ */ createBaseVNode("a", {
-  target: "_blank",
-  href: "https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
-}, "Learn more", -1);
-const _hoisted_6 = { class: "flex-container" };
-const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
-const _hoisted_8 = { class: "flex-container" };
-const _hoisted_9 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _hoisted_10 = { class: "flex-container" };
-const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
-const _hoisted_12 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
-const _hoisted_13 = { class: "flex-container" };
-const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1);
-const _hoisted_15 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1);
-const _hoisted_16 = { class: "flex-container" };
-const _hoisted_17 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Count", -1);
-const _hoisted_18 = { class: "flex-container" };
-const _hoisted_19 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _hoisted_20 = { class: "flex-container" };
-const _hoisted_21 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "75px" } }, "Seed", -1);
-const _hoisted_22 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1);
-const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "TextToImageView",
-  setup(__props) {
-    const global2 = useState();
-    const conf = useSettings();
-    const messageHandler = useMessage();
-    const promptCount = computed(() => {
-      return conf.data.settings.txt2img.prompt.split(spaceRegex).length - 1;
-    });
-    const negativePromptCount = computed(() => {
-      return conf.data.settings.txt2img.negative_prompt.split(spaceRegex).length - 1;
-    });
-    const checkSeed = (seed) => {
-      if (seed === -1) {
-        seed = Math.floor(Math.random() * 999999999999);
-      }
-      return seed;
-    };
-    const generate = () => {
-      var _a2;
-      if (conf.data.settings.txt2img.seed === null) {
-        messageHandler.error("Please set a seed");
-        return;
-      }
-      global2.state.generating = true;
-      fetch(`${serverUrl}/api/generate/txt2img`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          data: {
-            id: v4(),
-            prompt: conf.data.settings.txt2img.prompt,
-            negative_prompt: conf.data.settings.txt2img.negative_prompt,
-            width: conf.data.settings.txt2img.width,
-            height: conf.data.settings.txt2img.height,
-            steps: conf.data.settings.txt2img.steps,
-            guidance_scale: conf.data.settings.txt2img.cfg_scale,
-            seed: checkSeed(conf.data.settings.txt2img.seed),
-            batch_size: conf.data.settings.txt2img.batch_size,
-            batch_count: conf.data.settings.txt2img.batch_count,
-            scheduler: conf.data.settings.txt2img.sampler
-          },
-          model: (_a2 = conf.data.settings.model) == null ? void 0 : _a2.name,
-          backend: "PyTorch",
-          autoload: false
-        })
-      }).then((res) => {
-        if (!res.ok) {
-          throw new Error(res.statusText);
-        }
-        global2.state.generating = false;
-        res.json().then((data) => {
-          global2.state.txt2img.images = data.images;
-          global2.state.progress = 0;
-          global2.state.total_steps = 0;
-          global2.state.current_step = 0;
-        });
-      }).catch((err) => {
-        global2.state.generating = false;
-        messageHandler.error(err);
-        console.log(err);
-      });
-    };
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1, [
-        createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "Settings" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NSpace), {
-                      vertical: "",
-                      class: "left-container"
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NInput), {
-                          value: unref(conf).data.settings.txt2img.prompt,
-                          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.txt2img.prompt = $event),
-                          type: "textarea",
-                          placeholder: "Prompt",
-                          "show-count": ""
-                        }, {
-                          count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(promptCount)), 1)
-                          ]),
-                          _: 1
-                        }, 8, ["value"]),
-                        createVNode(unref(NInput), {
-                          value: unref(conf).data.settings.txt2img.negative_prompt,
-                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.txt2img.negative_prompt = $event),
-                          type: "textarea",
-                          placeholder: "Negative prompt",
-                          "show-count": ""
-                        }, {
-                          count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
-                          ]),
-                          _: 1
-                        }, 8, ["value"]),
-                        createBaseVNode("div", _hoisted_2, [
-                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                            trigger: withCtx(() => [
-                              _hoisted_3
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" The sampler is the method used to generate the image. Your result may vary drastically depending on the sampler you choose. "),
-                              _hoisted_4,
-                              _hoisted_5
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSelect), {
-                            options: unref(conf).scheduler_options,
-                            value: unref(conf).data.settings.txt2img.sampler,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.txt2img.sampler = $event),
-                            style: { "flex-grow": "1" }
-                          }, null, 8, ["options", "value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_6, [
-                          _hoisted_7,
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.width,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.txt2img.width = $event),
-                            min: 128,
-                            max: 2048,
-                            step: 8,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.width,
-                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.txt2img.width = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_8, [
-                          _hoisted_9,
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.height,
-                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.txt2img.height = $event),
-                            min: 128,
-                            max: 2048,
-                            step: 8,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.height,
-                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.txt2img.height = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_10, [
-                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                            trigger: withCtx(() => [
-                              _hoisted_11
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                              _hoisted_12
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.steps,
-                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
-                            min: 5,
-                            max: 300,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.steps,
-                            "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 5,
-                            max: 300
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_13, [
-                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                            trigger: withCtx(() => [
-                              _hoisted_14
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(' Guidance scale indicates how much should model stay close to the prompt. Higher values might be exactly what you want, but generated images might have some artefacts. Lower values indicates that model can "dream" about this prompt more. '),
-                              _hoisted_15
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.cfg_scale,
-                            "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
-                            min: 1,
-                            max: 30,
-                            step: 0.5,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.cfg_scale,
-                            "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 30,
-                            step: 0.5
-                          }, null, 8, ["value", "step"])
-                        ]),
-                        createBaseVNode("div", _hoisted_16, [
-                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                            trigger: withCtx(() => [
-                              _hoisted_17
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Number of images to generate after each other. ")
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.batch_count,
-                            "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.txt2img.batch_count = $event),
-                            min: 1,
-                            max: 9,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.batch_count,
-                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.txt2img.batch_count = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 9
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_18, [
-                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                            trigger: withCtx(() => [
-                              _hoisted_19
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Number of images to generate in paralel. ")
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.batch_size,
-                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.txt2img.batch_size = $event),
-                            min: 1,
-                            max: 9,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.batch_size,
-                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.txt2img.batch_size = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 9
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_20, [
-                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                            trigger: withCtx(() => [
-                              _hoisted_21
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
-                              _hoisted_22
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.seed,
-                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.txt2img.seed = $event),
-                            size: "small",
-                            min: -1,
-                            max: 999999999999,
-                            style: { "flex-grow": "1" }
-                          }, null, 8, ["value"])
-                        ])
-                      ]),
-                      _: 1
-                    })
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(_sfc_main$3, { generate }),
-                createVNode(_sfc_main$2, {
-                  "current-image": unref(global2).state.txt2img.currentImage,
-                  images: unref(global2).state.txt2img.images,
-                  onImageClicked: _cache[16] || (_cache[16] = ($event) => unref(global2).state.txt2img.currentImage = $event)
-                }, null, 8, ["current-image", "images"]),
-                createVNode(_sfc_main$1, {
-                  output: unref(global2).state.txt2img.currentImage
-                }, null, 8, ["output"])
-              ]),
-              _: 1
-            })
-          ]),
-          _: 1
-        })
-      ]);
-    };
-  }
-});
 const router = createRouter({
   history: createWebHistory("/"),
   routes: [
     {
       path: "/",
       name: "text2image",
-      component: _sfc_main
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageOutput.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageOutput.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/ExtraView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageOutput.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/Slider.js","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
     },
     {
       path: "/download",
@@ -38700,7 +35649,7 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/test",
@@ -38715,162 +35664,178 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
     }
   ]
 });
 const main = "";
 const pinia = createPinia();
-const app = createApp(_sfc_main$4);
+const app = createApp(_sfc_main);
 app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  insidePopover as $,
-  pushScopeId as A,
-  popScopeId as B,
-  _export_sfc as C,
-  h as D,
-  ref as E,
-  NButton as F,
-  NIcon as G,
-  createBlock as H,
-  NTabPane as I,
-  NTabs as J,
-  onMounted as K,
-  withModifiers as L,
-  useConfig as M,
+  inject as $,
+  ref as A,
+  NButton as B,
+  NIcon as C,
+  NTabPane as D,
+  NTabs as E,
+  router as F,
+  onMounted as G,
+  withModifiers as H,
+  Fragment as I,
+  renderList as J,
+  NScrollbar as K,
+  useConfig as L,
+  useFormItem as M,
   NGi as N,
-  useFormItem as O,
-  useMergedState as P,
-  provide as Q,
-  toRef as R,
-  createInjectionKey as S,
-  call as T,
-  c$1 as U,
-  cB as V,
-  cE as W,
-  cM as X,
-  iconSwitchTransition as Y,
-  insideModal as Z,
-  _sfc_main$3 as _,
-  createBaseVNode as a,
-  stepsLight$1 as a$,
-  inject as a0,
-  useMemo as a1,
-  useTheme as a2,
-  checkboxLight$1 as a3,
-  useRtl as a4,
-  createKey as a5,
-  useThemeClass as a6,
-  createId as a7,
-  NIconSwitchTransition as a8,
-  on as a9,
-  resolveWrappedSlot as aA,
-  flatten$2 as aB,
-  getSlot$1 as aC,
-  depx as aD,
-  formatLength as aE,
-  NScrollbar$1 as aF,
-  onBeforeUnmount as aG,
-  off as aH,
-  ChevronDownIcon as aI,
-  NDropdown as aJ,
-  pxfy as aK,
-  get as aL,
-  NBaseLoading as aM,
-  ChevronRightIcon as aN,
-  onUnmounted as aO,
-  VVirtualList as aP,
-  VResizeObserver as aQ,
-  warn$2 as aR,
-  cssrAnchorMetaName as aS,
-  repeat as aT,
-  NEmpty as aU,
-  beforeNextFrameOnce as aV,
-  fadeInScaleUpTransition as aW,
-  Transition as aX,
-  dataTableLight$1 as aY,
-  reactive as aZ,
-  NTag as a_,
-  popselectLight$1 as aa,
-  watch as ab,
-  NInternalSelectMenu as ac,
-  keysOf as ad,
-  createTreeMate as ae,
-  happensIn as af,
-  nextTick as ag,
-  createTmOptions as ah,
-  keep as ai,
-  createRefSetter as aj,
-  mergeEventHandlers as ak,
-  omit as al,
-  NPopover as am,
-  popoverBaseProps as an,
-  cNotM as ao,
-  useLocale as ap,
-  watchEffect as aq,
-  resolveSlot as ar,
-  Fragment as as,
-  NBaseIcon as at,
-  useAdjustedTo as au,
-  paginationLight$1 as av,
-  ellipsisLight$1 as aw,
-  onDeactivated as ax,
-  mergeProps as ay,
-  radioLight$1 as az,
-  useSettings as b,
-  throwError as b0,
-  FinishedIcon as b1,
-  ErrorIcon$1 as b2,
-  NModal as b3,
-  InfoIcon as b4,
-  SuccessIcon as b5,
-  WarningIcon as b6,
-  ErrorIcon as b7,
-  resultLight$1 as b8,
-  getCurrentInstance as b9,
-  formLight$1 as ba,
-  commonVariables$m as bb,
-  formItemInjectionKey as bc,
-  defaultSettings as bd,
-  commonLight as be,
-  commonVars$1 as bf,
-  changeColor as bg,
-  isSlotEmpty as bh,
-  useCompitable as bi,
-  descriptionsLight$1 as bj,
-  NImage as bk,
-  createCommentVNode as bl,
-  NScrollbar as bm,
-  renderList as bn,
-  createElementBlock as c,
+  useMergedState as O,
+  provide as P,
+  toRef as Q,
+  createInjectionKey as R,
+  call as S,
+  c$1 as T,
+  cB as U,
+  cE as V,
+  cM as W,
+  iconSwitchTransition as X,
+  insideModal as Y,
+  insidePopover as Z,
+  _export_sfc as _,
+  useSettings as a,
+  FinishedIcon as a$,
+  useMemo as a0,
+  useTheme as a1,
+  checkboxLight$1 as a2,
+  useRtl as a3,
+  createKey as a4,
+  useThemeClass as a5,
+  createId as a6,
+  NIconSwitchTransition as a7,
+  on as a8,
+  popselectLight$1 as a9,
+  getSlot$1 as aA,
+  depx as aB,
+  formatLength as aC,
+  NScrollbar$1 as aD,
+  onBeforeUnmount as aE,
+  off as aF,
+  ChevronDownIcon as aG,
+  NDropdown as aH,
+  pxfy as aI,
+  get as aJ,
+  NBaseLoading as aK,
+  ChevronRightIcon as aL,
+  onUnmounted as aM,
+  VVirtualList as aN,
+  VResizeObserver as aO,
+  warn$2 as aP,
+  cssrAnchorMetaName as aQ,
+  repeat as aR,
+  NEmpty as aS,
+  beforeNextFrameOnce as aT,
+  fadeInScaleUpTransition as aU,
+  Transition as aV,
+  dataTableLight$1 as aW,
+  reactive as aX,
+  NTag as aY,
+  stepsLight$1 as aZ,
+  throwError as a_,
+  watch as aa,
+  NInternalSelectMenu as ab,
+  keysOf as ac,
+  createTreeMate as ad,
+  happensIn as ae,
+  nextTick as af,
+  createTmOptions as ag,
+  keep as ah,
+  createRefSetter as ai,
+  mergeEventHandlers as aj,
+  omit as ak,
+  NPopover as al,
+  popoverBaseProps as am,
+  cNotM as an,
+  useLocale as ao,
+  watchEffect as ap,
+  resolveSlot as aq,
+  NBaseIcon as ar,
+  useAdjustedTo as as,
+  paginationLight$1 as at,
+  ellipsisLight$1 as au,
+  onDeactivated as av,
+  mergeProps as aw,
+  radioLight$1 as ax,
+  resolveWrappedSlot as ay,
+  flatten$2 as az,
+  useMessage as b,
+  ErrorIcon$1 as b0,
+  NModal as b1,
+  commonLight as b2,
+  sizeVariables$3 as b3,
+  onBeforeUpdate as b4,
+  isMounted as b5,
+  VBinder as b6,
+  VTarget as b7,
+  VFollower as b8,
+  InfoIcon as b9,
+  withDirectives as bA,
+  zindexable$1 as bB,
+  vShow as bC,
+  normalizeStyle as bD,
+  SuccessIcon as ba,
+  WarningIcon as bb,
+  ErrorIcon as bc,
+  resultLight$1 as bd,
+  getCurrentInstance as be,
+  formLight$1 as bf,
+  commonVariables$m as bg,
+  formItemInjectionKey as bh,
+  defaultSettings as bi,
+  createTheme as bj,
+  buttonLight$1 as bk,
+  inputLight$1 as bl,
+  rgba as bm,
+  XButton as bn,
+  AddIcon as bo,
+  commonVars$1 as bp,
+  changeColor as bq,
+  isSlotEmpty as br,
+  useCompitable as bs,
+  descriptionsLight$1 as bt,
+  toString as bu,
+  replaceable as bv,
+  isBrowser$3 as bw,
+  tooltipLight$1 as bx,
+  fadeInTransition as by,
+  LazyTeleport as bz,
+  computed as c,
   defineComponent as d,
-  useMessage as e,
-  computed as f,
-  createVNode as g,
-  unref as h,
-  NCard as i,
-  NSpace as j,
-  NInput as k,
-  createTextVNode as l,
+  createElementBlock as e,
+  createVNode as f,
+  unref as g,
+  NCard as h,
+  NSpace as i,
+  NInput as j,
+  createTextVNode as k,
+  createBaseVNode as l,
   NTooltip as m,
   NSelect as n,
   openBlock as o,
-  NSlider as p,
-  NInputNumber as q,
-  _sfc_main$2 as r,
-  _sfc_main$1 as s,
+  createBlock as p,
+  createCommentVNode as q,
+  NGrid as r,
+  spaceRegex as s,
   toDisplayString as t,
   useState as u,
-  NGrid as v,
+  serverUrl as v,
   withCtx as w,
-  spaceRegex as x,
-  serverUrl as y,
-  v4 as z
+  pushScopeId as x,
+  popScopeId as y,
+  h as z
 };

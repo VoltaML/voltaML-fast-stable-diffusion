@@ -15,6 +15,11 @@ disable=
     invalid-name,
     relative-beyond-top-level,
     no-name-in-module,
+    too-many-instance-attributes,
+    too-few-public-methods,
+    too-many-branches,
+    too-many-arguments,
+    too-many-locals
 
 [TYPECHECK]
 generated-members=

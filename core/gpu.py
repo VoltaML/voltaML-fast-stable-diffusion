@@ -93,6 +93,9 @@ class GPU:
                 "OnnxStableDiffusion",
             ] = self.loaded_models[job.model]
 
+            if job.flags:
+                logger.debug(f"Job flags: {job.flags}")
+
             if not isinstance(job, RealESRGANQueueEntry):
                 shared.current_steps = job.data.steps * job.data.batch_count
                 shared.current_done_steps = 0
@@ -218,6 +221,7 @@ class GPU:
             )
 
             logger.debug("Model not loaded on any GPU. Raising error")
+            logger.debug(err)
             raise ModelNotLoadedError("Model not loaded on any GPU") from err
 
         except Exception as e:  # pylint: disable=broad-except
