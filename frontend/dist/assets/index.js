@@ -35038,6 +35038,26 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 conf.data.settings.model = null;
               }
             }
+            if (conf.data.settings.model) {
+              const spl = conf.data.settings.model.name.split("__")[1];
+              if (spl) {
+                const xspl = spl.split("x");
+                const width = parseInt(xspl[0]);
+                const height = parseInt(xspl[1]);
+                const batch_size = parseInt(xspl[2]);
+                conf.data.settings.aitDim.width = width;
+                conf.data.settings.aitDim.height = height;
+                conf.data.settings.aitDim.batch_size = batch_size;
+              } else {
+                conf.data.settings.aitDim.width = void 0;
+                conf.data.settings.aitDim.height = void 0;
+                conf.data.settings.aitDim.batch_size = void 0;
+              }
+            } else {
+              conf.data.settings.aitDim.width = void 0;
+              conf.data.settings.aitDim.height = void 0;
+              conf.data.settings.aitDim.batch_size = void 0;
+            }
           });
         });
       });
@@ -35524,7 +35544,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_e15ed902_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_2b1345cd_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -35532,7 +35552,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-e15ed902"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2b1345cd"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

@@ -350,6 +350,27 @@ function refreshModels() {
               conf.data.settings.model = null;
             }
           }
+          if (conf.data.settings.model) {
+            const spl = conf.data.settings.model.name.split("__")[1];
+            if (spl) {
+              const xspl = spl.split("x");
+              const width = parseInt(xspl[0]);
+              const height = parseInt(xspl[1]);
+              const batch_size = parseInt(xspl[2]);
+
+              conf.data.settings.aitDim.width = width;
+              conf.data.settings.aitDim.height = height;
+              conf.data.settings.aitDim.batch_size = batch_size;
+            } else {
+              conf.data.settings.aitDim.width = undefined;
+              conf.data.settings.aitDim.height = undefined;
+              conf.data.settings.aitDim.batch_size = undefined;
+            }
+          } else {
+            conf.data.settings.aitDim.width = undefined;
+            conf.data.settings.aitDim.height = undefined;
+            conf.data.settings.aitDim.batch_size = undefined;
+          }
         });
       });
     });
