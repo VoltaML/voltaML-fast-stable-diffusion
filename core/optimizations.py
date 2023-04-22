@@ -22,7 +22,6 @@ gpu_module = None
 _device = None
 
 
-
 def optimize_model(
     pipe: Union[StableDiffusionPipeline, StableDiffusionUpscalePipeline],
     device,
@@ -120,7 +119,8 @@ def optimize_model(
                                 str(
                                     get_full_model_path(
                                         "offload-dir", model_folder="temp"
-                                    ) / m.__name__
+                                    )
+                                    / m.__name__
                                 ),
                                 device,
                                 offload_buffers=True,

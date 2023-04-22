@@ -4,8 +4,14 @@ from PIL import Image
 import numpy as np
 
 from torch.ao.quantization import default_qconfig, get_default_qconfig_mapping
-from torch.ao.quantization.backend_config.tensorrt import get_tensorrt_backend_config_dict
-from torch.ao.quantization.quantize_fx import prepare_fx, convert_to_reference_fx, convert_fx
+from torch.ao.quantization.backend_config.tensorrt import (
+    get_tensorrt_backend_config_dict,
+)
+from torch.ao.quantization.quantize_fx import (
+    prepare_fx,
+    convert_to_reference_fx,
+    convert_fx,
+)
 import torch
 from tqdm import tqdm
 
@@ -21,18 +27,33 @@ DEEPDANBOORU_URL = "https://github.com/AUTOMATIC1111/TorchDeepDanbooru/releases/
 
 class DeepdanbooruInterrogator(InterrogationModel):
     "internal"
-    def __init__(self, device: str = "cuda", use_fp32: bool = False, quantized: bool = False, autoload: bool = False):
+
+    def __init__(
+        self,
+        device: str = "cuda",
+        use_fp32: bool = False,
+        quantized: bool = False,
+        autoload: bool = False,
+    ):
         super().__init__(device)
 
         self.tags = []
         self.model: DeepDanbooruModel
         self.model_location = Path("data") / "models" / "deepdanbooru.pt"
-        self.dtype = torch.float32 if use_fp32 else (torch.quint8 if quantized else (torch.bfloat16 if is_cpu(device) else torch.float16))
+        self.dtype = (
+            torch.float32
+            if use_fp32
+            else (
+                torch.quint8
+                if quantized
+                else (torch.bfloat16 if is_cpu(device) else torch.float16)
+            )
+        )
         self.device: torch.device
         if isinstance(self.device, str):
             self.device = torch.device(device)
         else:
-            self.device = device # type: ignore
+            self.device = device  # type: ignore
         self.quantized = quantized
         if autoload:
             self.load()
@@ -54,7 +75,9 @@ class DeepdanbooruInterrogator(InterrogationModel):
                 qconfig_dict = get_default_qconfig_mapping()
 
             # Images will be ( forcefully :) ) resized to 512x512 with only 3 channels, so [1, 512, 512, 3]'s the shape
-            prepared = prepare_fx(self.model, qconfig_dict, (torch.randn(1, 512, 512, 3),))
+            prepared = prepare_fx(
+                self.model, qconfig_dict, (torch.randn(1, 512, 512, 3),)
+            )
             for _ in tqdm(range(25), unit="it", unit_scale=False):
                 prepared(torch.randn(1, 512, 512, 3))
 
@@ -63,7 +86,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
             else:
                 self.model = convert_to_reference_fx(prepared, backend_config=get_tensorrt_backend_config_dict())  # type: ignore
         else:
-            self.model.to(self.device, dtype=self.dtype) # type: ignore
+            self.model.to(self.device, dtype=self.dtype)  # type: ignore
 
     def _infer(self, image: Image.Image, alpha_sort: bool = True) -> str:
         pic = image.convert("RGB").resize((512, 512))
@@ -84,7 +107,9 @@ class DeepdanbooruInterrogator(InterrogationModel):
         if alpha_sort:
             tags = sorted(probability_dict)
         else:
-            tags = [tag for tag, _ in sorted(probability_dict.items(), key=lambda x: -x[1])]
+            tags = [
+                tag for tag, _ in sorted(probability_dict.items(), key=lambda x: -x[1])
+            ]
         res = []
 
         for tag in tags:
@@ -95,7 +120,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
 
     def generate(self, job: Job) -> InterrogationResult:
         if not isinstance(job, InterrogatorQueueEntry):
-            return None # type: ignore
+            return None  # type: ignore
         return InterrogationResult(self._infer(convert_to_image(job.data.image)), "")
 
     def unload(self):

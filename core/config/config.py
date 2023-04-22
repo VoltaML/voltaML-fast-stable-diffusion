@@ -146,11 +146,13 @@ class InterrogatorConfig:
     caption_model: str = "Salesforce/blip-image-captioning-large"
     visualizer_model: str = "ViT-L-14/openai"
 
-    offload_captioner: bool = False # should net a very big vram save for minimal performance cost
-    offload_visualizer: bool = False # should net a somewhat big vram save for a bigger performance cost compared to captioner
+    offload_captioner: bool = (
+        False  # should net a very big vram save for minimal performance cost
+    )
+    offload_visualizer: bool = False  # should net a somewhat big vram save for a bigger performance cost compared to captioner
 
-    chunk_size: int = 2048 # set to 1024 for lower vram usage
-    flavor_intermediate_count: int = 2048 # set to 1024 for lower vram usage
+    chunk_size: int = 2048  # set to 1024 for lower vram usage
+    flavor_intermediate_count: int = 2048  # set to 1024 for lower vram usage
 
     flamingo_model: str = "dhansmair/flamingo-mini"
 

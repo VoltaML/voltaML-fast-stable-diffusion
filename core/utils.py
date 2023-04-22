@@ -153,7 +153,10 @@ def convert_bytes_to_image_stream(data: bytes) -> str:
 
     return img
 
-def download_file(url: str, filepath, chunk_size: int = 2*1024*1024, quiet: bool = False):
+
+def download_file(
+    url: str, filepath, chunk_size: int = 2 * 1024 * 1024, quiet: bool = False
+):
     "Download a file from the given url in chunks and display progress using tqdm"
     r = requests.get(url, stream=True)  # pylint: disable=missing-timeout
     if r.status_code != 200:
@@ -161,7 +164,9 @@ def download_file(url: str, filepath, chunk_size: int = 2*1024*1024, quiet: bool
 
     file_size = int(r.headers.get("Content-Length", 0))
     filename = url.split("/")[-1]
-    progress = tqdm(total=file_size, unit="B", unit_scale=True, desc=filename, disable=quiet)
+    progress = tqdm(
+        total=file_size, unit="B", unit_scale=True, desc=filename, disable=quiet
+    )
     with open(filepath, "wb") as f:
         for chunk in r.iter_content(chunk_size=chunk_size):
             if chunk:

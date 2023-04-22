@@ -1,26 +1,34 @@
 from typing import Optional
 
 import torch
-from PIL import Image
 from flamingo_mini import FlamingoModel, FlamingoProcessor
+from PIL import Image
 
-from core.utils import convert_to_image
-from core.interrogation.clip import is_cpu
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
-from core.types import Job, InterrogatorQueueEntry
+from core.interrogation.clip import is_cpu
+from core.types import InterrogatorQueueEntry, Job
+from core.utils import convert_to_image
 
 
 class FlamingoInterrogator(InterrogationModel):
+    "Model that uses Flamingo Mini to generate image captions."
+
     def __init__(self, device: str = "cuda", use_fp32: bool = False):
         super().__init__(device)
 
         self.device = device
-        self.dtype = torch.float32 if use_fp32 else (torch.bfloat16 if is_cpu(device) else torch.float16)
+        self.dtype = (
+            torch.float32
+            if use_fp32
+            else (torch.bfloat16 if is_cpu(device) else torch.float16)
+        )
         self.model: FlamingoModel
-        self.processor = FlamingoProcessor
-    
+        self.processor: FlamingoProcessor
+
     def load(self):
-        self.model = FlamingoModel.from_pretrained("")
+        model = FlamingoModel.from_pretrained("")
+        assert isinstance(model, FlamingoModel)
+        self.model = model
         self.model.to(self.device, dtype=self.dtype)
         self.model.eval()
 
@@ -30,19 +38,24 @@ class FlamingoInterrogator(InterrogationModel):
         del self.model, self.processor
         self.memory_cleanup()
 
-    def _infer(self, image: Image.Image, caption = Optional[str] = None):
+    def _infer(self, image: Image.Image, caption: Optional[str] = None):
         caption = caption if caption else "<image>"
-        caption = self.model.generate_captions(
-            self.processor,
+        output_caption = self.model.generate_captions(
+            processor=self.processor,
             images=image,
             prompt=caption,
         )
-        if isinstance(caption, list):
-            caption = caption[0]
+        if isinstance(output_caption, list):
+            output_caption = output_caption[0]
         self.memory_cleanup()
-        return caption
-    
+        return output_caption
+
     def generate(self, job: Job) -> InterrogationResult:
         if not isinstance(job, InterrogatorQueueEntry):
-            return None  # type: ignore
-        return InterrogationResult(self._infer(convert_to_image(job.data.image), job.data.caption), "") # type: ignore
+            raise ValueError(
+                "FlamingoInterrogator only supports InterrogatorQueueEntry"
+            )
+        return InterrogationResult(
+            positive=self._infer(convert_to_image(job.data.image), job.data.caption),
+            negative="",
+        )
