@@ -11,6 +11,7 @@ renamed_requirements = {
     "opencv-contrib-python-headless": "cv2",
     "fastapi-analytics": "api_analytics",
     "cuda-python": "cuda",
+    "open_clip_torch": "open_clip",
 }
 logger = logging.getLogger(__name__)
 
