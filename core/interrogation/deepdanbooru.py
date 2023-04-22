@@ -1,32 +1,30 @@
 from pathlib import Path
-from PIL import Image
 
 import numpy as np
-
+import torch
+from PIL import Image
 from torch.ao.quantization import default_qconfig, get_default_qconfig_mapping
 from torch.ao.quantization.backend_config.tensorrt import (
     get_tensorrt_backend_config_dict,
 )
 from torch.ao.quantization.quantize_fx import (
-    prepare_fx,
-    convert_to_reference_fx,
     convert_fx,
+    convert_to_reference_fx,
+    prepare_fx,
 )
-import torch
 from tqdm import tqdm
 
-from core.utils import convert_to_image, download_file
-from core.interrogation.clip import is_cpu
-from core.types import Job, InterrogatorQueueEntry
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
+from core.interrogation.clip import is_cpu
 from core.interrogation.models.deepdanbooru_model import DeepDanbooruModel
-
+from core.types import InterrogatorQueueEntry, Job
+from core.utils import convert_to_image, download_file
 
 DEEPDANBOORU_URL = "https://github.com/AUTOMATIC1111/TorchDeepDanbooru/releases/download/v1/model-resnet_custom_v3.pt"
 
 
 class DeepdanbooruInterrogator(InterrogationModel):
-    "internal"
+    "Interrogator that will generate captions for images (Anime)"
 
     def __init__(
         self,
@@ -88,7 +86,9 @@ class DeepdanbooruInterrogator(InterrogationModel):
         else:
             self.model.to(self.device, dtype=self.dtype)  # type: ignore
 
-    def _infer(self, image: Image.Image, alpha_sort: bool = True) -> str:
+    def _infer(
+        self, image: Image.Image, sort: bool = True, treshold: float = 0.5
+    ) -> str:
         pic = image.convert("RGB").resize((512, 512))
         a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
 
@@ -98,13 +98,13 @@ class DeepdanbooruInterrogator(InterrogationModel):
 
         probability_dict = {}
         for tag, probability in zip(self.tags, y):
-            if probability < 0.5:
+            if probability < treshold:
                 continue
             if tag.startswith("rating:"):
                 continue
             probability_dict[tag] = probability
 
-        if alpha_sort:
+        if sort:
             tags = sorted(probability_dict)
         else:
             tags = [
@@ -120,7 +120,9 @@ class DeepdanbooruInterrogator(InterrogationModel):
 
     def generate(self, job: Job) -> InterrogationResult:
         if not isinstance(job, InterrogatorQueueEntry):
-            return None  # type: ignore
+            raise ValueError(
+                "DeepdanbooruInterrogator only supports InterrogatorQueueEntry"
+            )
         return InterrogationResult(self._infer(convert_to_image(job.data.image)), "")
 
     def unload(self):

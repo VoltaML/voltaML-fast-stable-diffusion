@@ -47,6 +47,9 @@ class FlamingoInterrogator(InterrogationModel):
         )
         if isinstance(output_caption, list):
             output_caption = output_caption[0]
+
+        # We are doing singe image caption only, so we can assert that the output is a string
+        assert isinstance(output_caption, str)
         self.memory_cleanup()
         return output_caption
 

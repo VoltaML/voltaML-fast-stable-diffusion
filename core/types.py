@@ -66,6 +66,7 @@ class InterrogationData:
 
     image: Union[bytes, str]
     caption: Optional[str] = field(default=None)
+    treshold: float = field(default=0.5)
     id: str = field(default_factory=lambda: uuid4().hex)
 
 

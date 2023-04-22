@@ -12,6 +12,7 @@ from core.types import (
     ConvertModelRequest,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
+    InterrogatorQueueEntry,
     ONNXBuildRequest,
     RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
@@ -262,3 +263,11 @@ async def convert_model(request: ConvertModelRequest):
     await gpu.convert_model(model=request.model, safetensors=request.safetensors)
 
     return {"message": "Success"}
+
+
+@router.post("/interrogate")
+async def interrogate(request: InterrogatorQueueEntry):
+    "Interrogate a model"
+
+    result = await gpu.interrogate(request)
+    return result

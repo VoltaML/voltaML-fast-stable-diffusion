@@ -17,6 +17,7 @@ from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.pytorch_upscale import PyTorchSDUpscaler
 from core.inference.real_esrgan import RealESRGAN
+from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
@@ -25,6 +26,7 @@ from core.types import (
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
+    InterrogatorQueueEntry,
     Job,
     ONNXBuildRequest,
     RealESRGANQueueEntry,
@@ -546,3 +548,40 @@ class GPU:
                 )
             )
             logger.error(f"Model {model} not found")
+
+    async def interrogate(self, job: InterrogatorQueueEntry):
+        "Generate captions for image"
+
+        def generate_call(job: InterrogatorQueueEntry):
+            if job.model == "deepdanbooru":
+                from core.interrogation.deepdanbooru import DeepdanbooruInterrogator
+
+                model = DeepdanbooruInterrogator(
+                    device=config.api.device, autoload=True
+                )
+                out = model.generate(job)
+                model.unload()
+                return out
+
+            elif job.model == "clip":
+                from core.interrogation.clip import CLIPInterrogator
+
+                model = CLIPInterrogator(device=config.api.device, autoload=True)
+                out = model.generate(job)
+                model.unload()
+                return out
+
+            elif job.model == "flamingo":
+                from core.interrogation.flamingo import FlamingoInterrogator
+
+                model = FlamingoInterrogator(device=config.api.device)
+                out = model.generate(job)
+                model.unload()
+                return out
+            else:
+                raise ValueError(f"Model {job.model} not implemented")
+
+        output: InterrogationResult = await run_in_thread_async(
+            generate_call, args=(job,)
+        )
+        return output

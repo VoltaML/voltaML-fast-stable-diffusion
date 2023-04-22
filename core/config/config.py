@@ -138,7 +138,6 @@ class BotConfig:
     use_default_negative_prompt: bool = True
 
 
-@dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
 class InterrogatorConfig:
     "Configuration for interrogation models"
@@ -160,6 +159,7 @@ class InterrogatorConfig:
     caption_max_length: int = 32
 
 
+@dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
 class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"

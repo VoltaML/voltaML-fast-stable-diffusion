@@ -36,6 +36,7 @@
 <script lang="ts" setup>
 import {
   Albums,
+  Create,
   Download,
   Duplicate,
   GitCompare,
@@ -97,6 +98,11 @@ const menuOptionsMain: MenuOption[] = [
       ),
     key: "imageBrowser",
     icon: renderIcon(Albums),
+  },
+  {
+    label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
+    key: "tagger",
+    icon: renderIcon(Create),
   },
   {
     label: () =>

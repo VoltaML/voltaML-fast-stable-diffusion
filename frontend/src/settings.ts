@@ -116,6 +116,11 @@ export interface SettingsInterface {
     scale_factor: number;
     model: string;
   };
+  tagger: {
+    image: string;
+    model: string;
+    treshold: number;
+  };
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
@@ -236,6 +241,11 @@ export const defaultSettings: SettingsInterface = {
     image: "",
     scale_factor: 4,
     model: "RealESRGAN_x4plus_anime_6B",
+  },
+  tagger: {
+    image: "",
+    model: "deepdanbooru",
+    treshold: 0.5,
   },
   api: {
     websocket_sync_interval: 0.02,
