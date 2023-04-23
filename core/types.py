@@ -61,6 +61,16 @@ class ControlNetMode(Enum):
 
 
 @dataclass
+class InterrogationData:
+    "Dataclass for the data of an interrogation request"
+
+    image: Union[bytes, str]
+    caption: Optional[str] = field(default=None)
+    treshold: float = field(default=0.5)
+    id: str = field(default_factory=lambda: uuid4().hex)
+
+
+@dataclass
 class Txt2imgData:
     "Dataclass for the data of a txt2img request"
 
@@ -169,6 +179,13 @@ class SDUpscaleData:
     tile_border: int = field(default=32)
     original_image_slice: int = field(default=32)
     noise_level: int = field(default=40)
+
+
+@dataclass
+class InterrogatorQueueEntry(Job):
+    "Dataclass for an interrogation queue entry"
+
+    data: InterrogationData
 
 
 @dataclass

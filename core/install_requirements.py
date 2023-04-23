@@ -11,6 +11,7 @@ renamed_requirements = {
     "opencv-contrib-python-headless": "cv2",
     "fastapi-analytics": "api_analytics",
     "cuda-python": "cuda",
+    "open_clip_torch": "open_clip",
 }
 logger = logging.getLogger(__name__)
 
@@ -174,6 +175,7 @@ def install_pytorch():
     # Install other requirements
     install_requirements("requirements/pytorch.txt")
     install_requirements("requirements/api.txt")
+    install_requirements("requirements/interrogation.txt")
 
 
 def install_bot():

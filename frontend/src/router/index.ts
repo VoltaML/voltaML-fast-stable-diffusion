@@ -53,6 +53,11 @@ const router = createRouter({
       name: "imageBrowser",
       component: () => import("../views/ImageBrowserView.vue"),
     },
+    {
+      path: "/tagger",
+      name: "tagger",
+      component: () => import("../views/TaggerView.vue"),
+    },
   ],
 });
 
