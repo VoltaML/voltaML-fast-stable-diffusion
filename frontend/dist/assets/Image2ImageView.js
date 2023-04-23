@@ -1,8 +1,10 @@
 import { _ as _sfc_main$8 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$5, a as _sfc_main$6 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$5 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$6 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { _ as _sfc_main$7, v as v4 } from "./v4.js";
+import { _ as _sfc_main$7 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, a as useSettings, b as useMessage, c as computed, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, k as createTextVNode, t as toDisplayString, m as NTooltip, n as NSelect, r as NGrid, s as spaceRegex, v as serverUrl, x as pushScopeId, y as popScopeId, _ as _export_sfc, z as h, A as ref, B as NButton, C as NIcon, p as createBlock, D as NTabPane, E as NTabs } from "./index.js";
+import { v as v4 } from "./v4.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";

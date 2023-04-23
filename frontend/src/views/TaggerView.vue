@@ -104,6 +104,7 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import { serverUrl } from "@/env";
+import { spaceRegex } from "@/functions";
 import {
   NCard,
   NGi,
@@ -170,8 +171,6 @@ const generate = () => {
       console.log(err);
     });
 };
-
-import { spaceRegex } from "@/functions";
 
 const weighted = ref(false);
 

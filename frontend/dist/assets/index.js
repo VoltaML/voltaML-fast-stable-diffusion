@@ -1507,27 +1507,27 @@ function withCtx(fn, ctx2 = currentRenderingInstance, isNonScopedSlot) {
 function markAttrsAccessed() {
 }
 function renderComponentRoot(instance) {
-  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit: emit2, render: render12, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
+  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit: emit2, render: render13, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
   let result;
   let fallthroughAttrs;
   const prev = setCurrentRenderingInstance(instance);
   try {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
-      result = normalizeVNode(render12.call(proxyToUse, proxyToUse, renderCache, props, setupState, data, ctx2));
+      result = normalizeVNode(render13.call(proxyToUse, proxyToUse, renderCache, props, setupState, data, ctx2));
       fallthroughAttrs = attrs;
     } else {
-      const render13 = Component;
+      const render14 = Component;
       if (false)
         ;
-      result = normalizeVNode(render13.length > 1 ? render13(props, false ? {
+      result = normalizeVNode(render14.length > 1 ? render14(props, false ? {
         get attrs() {
           markAttrsAccessed();
           return attrs;
         },
         slots,
         emit: emit2
-      } : { attrs, slots, emit: emit2 }) : render13(
+      } : { attrs, slots, emit: emit2 }) : render14(
         props,
         null
         /* we know it doesn't need it */
@@ -2598,7 +2598,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render12,
+    render: render13,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2702,8 +2702,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render12 && instance.render === NOOP) {
-    instance.render = render12;
+  if (render13 && instance.render === NOOP) {
+    instance.render = render13;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3262,7 +3262,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render12, hydrate) {
+function createAppAPI(render13, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = Object.assign({}, rootComponent);
@@ -3328,7 +3328,7 @@ function createAppAPI(render12, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render12(vnode, rootContainer, isSVG2);
+            render13(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3338,7 +3338,7 @@ function createAppAPI(render12, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render12(null, app2._container);
+          render13(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4224,7 +4224,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render12 = (vnode, container, isSVG2) => {
+  const render13 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4254,9 +4254,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     [hydrate, hydrateNode] = createHydrationFns(internals);
   }
   return {
-    render: render12,
+    render: render13,
     hydrate,
-    createApp: createAppAPI(render12, hydrate)
+    createApp: createAppAPI(render13, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -23554,8 +23554,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render12, props } } = this.tmNode;
-    return h("div", props, [render12 === null || render12 === void 0 ? void 0 : render12()]);
+    const { rawNode: { render: render13, props } } = this.tmNode;
+    return h("div", props, [render13 === null || render13 === void 0 ? void 0 : render13()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -31804,12 +31804,12 @@ const darkTheme = {
   Upload: uploadDark$1,
   Watermark: watermarkDark$1
 };
-const _hoisted_1$c = {
+const _hoisted_1$d = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -31819,7 +31819,7 @@ const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -31829,7 +31829,7 @@ const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -31839,10 +31839,52 @@ const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$4 = [_hoisted_2$b, _hoisted_3$b, _hoisted_4$8];
+const _hoisted_5$5 = [_hoisted_2$c, _hoisted_3$c, _hoisted_4$9];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_5$5);
+  }
+});
+const _hoisted_1$c = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$4 = [_hoisted_2$b, _hoisted_3$b, _hoisted_4$8];
+const Create = defineComponent({
+  name: "Create",
+  render: function render3(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$4);
   }
 });
@@ -31874,7 +31916,7 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$a];
 const Download = defineComponent({
   name: "Download",
-  render: function render3(_ctx, _cache) {
+  render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$7);
   }
 });
@@ -31906,7 +31948,7 @@ const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$9];
 const Duplicate = defineComponent({
   name: "Duplicate",
-  render: function render4(_ctx, _cache) {
+  render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$6);
   }
 });
@@ -31938,7 +31980,7 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$8];
 const GitCompare = defineComponent({
   name: "GitCompare",
-  render: function render5(_ctx, _cache) {
+  render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
   }
 });
@@ -31960,7 +32002,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$7 = [_hoisted_2$7];
 const Image$1 = defineComponent({
   name: "Image",
-  render: function render6(_ctx, _cache) {
+  render: function render7(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$7);
   }
 });
@@ -31992,7 +32034,7 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$4 = [_hoisted_2$6, _hoisted_3$6];
 const Images = defineComponent({
   name: "Images",
-  render: function render7(_ctx, _cache) {
+  render: function render8(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$4);
   }
 });
@@ -32014,7 +32056,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$5 = [_hoisted_2$5];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
-  render: function render8(_ctx, _cache) {
+  render: function render9(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$5);
   }
 });
@@ -32036,7 +32078,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$4 = [_hoisted_2$4];
 const Speedometer = defineComponent({
   name: "Speedometer",
-  render: function render9(_ctx, _cache) {
+  render: function render10(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_3$4);
   }
 });
@@ -32088,7 +32130,7 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render10(_ctx, _cache) {
+  render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$1);
   }
 });
@@ -32142,7 +32184,7 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$2 = [_hoisted_2$2, _hoisted_3$2, _hoisted_4$2];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render11(_ctx, _cache) {
+  render: function render12(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_5$2);
   }
 });
@@ -33976,6 +34018,11 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Albums)
       },
       {
+        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
+        key: "tagger",
+        icon: renderIcon(Create)
+      },
+      {
         label: () => h(RouterLink, { to: "/convert" }, { default: () => "Convert" }),
         key: "convert",
         icon: renderIcon(GitCompare)
@@ -34075,6 +34122,10 @@ const useState = defineStore("state", () => {
       images: [],
       currentImage: "",
       tab: "Upscale"
+    },
+    tagger: {
+      positivePrompt: /* @__PURE__ */ new Map(),
+      negativePrompt: /* @__PURE__ */ new Map()
     },
     current_step: 0,
     total_steps: 0,
@@ -34784,6 +34835,11 @@ const defaultSettings = {
     image: "",
     scale_factor: 4,
     model: "RealESRGAN_x4plus_anime_6B"
+  },
+  tagger: {
+    image: "",
+    model: "deepdanbooru",
+    treshold: 0.5
   },
   api: {
     websocket_sync_interval: 0.02,
@@ -35644,17 +35700,17 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageOutput.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageOutput.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageOutput.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/Slider.js","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/Slider.js","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
     },
     {
       path: "/download",
@@ -35690,6 +35746,11 @@ const router = createRouter({
       path: "/imageBrowser",
       name: "imageBrowser",
       component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
+    },
+    {
+      path: "/tagger",
+      name: "tagger",
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
     }
   ]
 });
@@ -35700,140 +35761,141 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  inject as $,
+  useTheme as $,
   ref as A,
   NButton as B,
   NIcon as C,
   NTabPane as D,
   NTabs as E,
   router as F,
-  onMounted as G,
-  withModifiers as H,
-  Fragment as I,
-  renderList as J,
-  NScrollbar as K,
-  useConfig as L,
-  useFormItem as M,
+  Fragment as G,
+  renderList as H,
+  NScrollbar as I,
+  useConfig as J,
+  useFormItem as K,
+  useMergedState as L,
+  provide as M,
   NGi as N,
-  useMergedState as O,
-  provide as P,
-  toRef as Q,
-  createInjectionKey as R,
-  call as S,
-  c$1 as T,
-  cB as U,
-  cE as V,
-  cM as W,
-  iconSwitchTransition as X,
-  insideModal as Y,
-  insidePopover as Z,
+  toRef as O,
+  createInjectionKey as P,
+  call as Q,
+  c$1 as R,
+  cB as S,
+  cE as T,
+  cM as U,
+  iconSwitchTransition as V,
+  insideModal as W,
+  insidePopover as X,
+  inject as Y,
+  useMemo as Z,
   _export_sfc as _,
   useSettings as a,
-  FinishedIcon as a$,
-  useMemo as a0,
-  useTheme as a1,
-  checkboxLight$1 as a2,
-  useRtl as a3,
-  createKey as a4,
-  useThemeClass as a5,
-  createId as a6,
-  NIconSwitchTransition as a7,
-  on as a8,
-  popselectLight$1 as a9,
-  getSlot$1 as aA,
-  depx as aB,
-  formatLength as aC,
-  NScrollbar$1 as aD,
-  onBeforeUnmount as aE,
-  off as aF,
-  ChevronDownIcon as aG,
-  NDropdown as aH,
-  pxfy as aI,
-  get as aJ,
-  NBaseLoading as aK,
-  ChevronRightIcon as aL,
-  onUnmounted as aM,
-  VVirtualList as aN,
-  VResizeObserver as aO,
-  warn$2 as aP,
-  cssrAnchorMetaName as aQ,
-  repeat as aR,
-  NEmpty as aS,
-  beforeNextFrameOnce as aT,
-  fadeInScaleUpTransition as aU,
-  Transition as aV,
-  dataTableLight$1 as aW,
-  reactive as aX,
-  NTag as aY,
-  stepsLight$1 as aZ,
-  throwError as a_,
-  watch as aa,
-  NInternalSelectMenu as ab,
-  keysOf as ac,
-  createTreeMate as ad,
-  happensIn as ae,
-  nextTick as af,
-  createTmOptions as ag,
-  keep as ah,
-  createRefSetter as ai,
-  mergeEventHandlers as aj,
-  omit as ak,
-  NPopover as al,
-  popoverBaseProps as am,
-  cNotM as an,
-  useLocale as ao,
-  watchEffect as ap,
-  resolveSlot as aq,
-  NBaseIcon as ar,
-  useAdjustedTo as as,
-  paginationLight$1 as at,
-  ellipsisLight$1 as au,
-  onDeactivated as av,
-  mergeProps as aw,
-  radioLight$1 as ax,
-  resolveWrappedSlot as ay,
-  flatten$2 as az,
+  NModal as a$,
+  checkboxLight$1 as a0,
+  useRtl as a1,
+  createKey as a2,
+  useThemeClass as a3,
+  createId as a4,
+  NIconSwitchTransition as a5,
+  on as a6,
+  popselectLight$1 as a7,
+  watch as a8,
+  NInternalSelectMenu as a9,
+  formatLength as aA,
+  NScrollbar$1 as aB,
+  onBeforeUnmount as aC,
+  off as aD,
+  ChevronDownIcon as aE,
+  NDropdown as aF,
+  pxfy as aG,
+  get as aH,
+  NBaseLoading as aI,
+  ChevronRightIcon as aJ,
+  onUnmounted as aK,
+  VVirtualList as aL,
+  VResizeObserver as aM,
+  warn$2 as aN,
+  cssrAnchorMetaName as aO,
+  repeat as aP,
+  NEmpty as aQ,
+  beforeNextFrameOnce as aR,
+  fadeInScaleUpTransition as aS,
+  Transition as aT,
+  dataTableLight$1 as aU,
+  reactive as aV,
+  NTag as aW,
+  stepsLight$1 as aX,
+  throwError as aY,
+  FinishedIcon as aZ,
+  ErrorIcon$1 as a_,
+  keysOf as aa,
+  createTreeMate as ab,
+  happensIn as ac,
+  nextTick as ad,
+  createTmOptions as ae,
+  keep as af,
+  createRefSetter as ag,
+  mergeEventHandlers as ah,
+  omit as ai,
+  NPopover as aj,
+  popoverBaseProps as ak,
+  cNotM as al,
+  useLocale as am,
+  watchEffect as an,
+  resolveSlot as ao,
+  NBaseIcon as ap,
+  useAdjustedTo as aq,
+  paginationLight$1 as ar,
+  ellipsisLight$1 as as,
+  onDeactivated as at,
+  mergeProps as au,
+  radioLight$1 as av,
+  resolveWrappedSlot as aw,
+  flatten$2 as ax,
+  getSlot$1 as ay,
+  depx as az,
   useMessage as b,
-  ErrorIcon$1 as b0,
-  NModal as b1,
-  commonLight as b2,
-  sizeVariables$3 as b3,
-  onBeforeUpdate as b4,
-  isMounted as b5,
-  VBinder as b6,
-  VTarget as b7,
-  VFollower as b8,
-  InfoIcon as b9,
-  withDirectives as bA,
-  zindexable$1 as bB,
-  vShow as bC,
-  normalizeStyle as bD,
-  SuccessIcon as ba,
-  WarningIcon as bb,
-  ErrorIcon as bc,
-  resultLight$1 as bd,
-  getCurrentInstance as be,
-  formLight$1 as bf,
-  commonVariables$m as bg,
-  formItemInjectionKey as bh,
-  defaultSettings as bi,
-  createTheme as bj,
-  buttonLight$1 as bk,
-  inputLight$1 as bl,
-  rgba as bm,
-  XButton as bn,
-  AddIcon as bo,
-  commonVars$1 as bp,
-  changeColor as bq,
-  isSlotEmpty as br,
-  useCompitable as bs,
-  descriptionsLight$1 as bt,
-  toString as bu,
-  replaceable as bv,
-  isBrowser$3 as bw,
-  tooltipLight$1 as bx,
-  fadeInTransition as by,
-  LazyTeleport as bz,
+  InfoIcon as b0,
+  SuccessIcon as b1,
+  WarningIcon as b2,
+  ErrorIcon as b3,
+  resultLight$1 as b4,
+  getCurrentInstance as b5,
+  formLight$1 as b6,
+  commonVariables$m as b7,
+  formItemInjectionKey as b8,
+  onMounted as b9,
+  XButton as bA,
+  AddIcon as bB,
+  commonVars$1 as bC,
+  changeColor as bD,
+  isSlotEmpty as bE,
+  defaultSettings as ba,
+  useCompitable as bb,
+  descriptionsLight$1 as bc,
+  toString as bd,
+  replaceable as be,
+  isBrowser$3 as bf,
+  createTheme as bg,
+  commonLight as bh,
+  tooltipLight$1 as bi,
+  fadeInTransition as bj,
+  isMounted as bk,
+  LazyTeleport as bl,
+  withDirectives as bm,
+  zindexable$1 as bn,
+  vShow as bo,
+  normalizeStyle as bp,
+  isRef as bq,
+  withModifiers as br,
+  sizeVariables$3 as bs,
+  onBeforeUpdate as bt,
+  VBinder as bu,
+  VTarget as bv,
+  VFollower as bw,
+  buttonLight$1 as bx,
+  inputLight$1 as by,
+  rgba as bz,
   computed as c,
   defineComponent as d,
   createElementBlock as e,
