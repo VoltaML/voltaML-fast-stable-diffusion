@@ -59,6 +59,10 @@ export interface StateInterface {
     images: string[];
     tab: string;
   };
+  tagger: {
+    positivePrompt: Map<string, number>;
+    negativePrompt: Map<string, number>;
+  };
   current_step: number;
   total_steps: number;
   imageBrowser: {
@@ -113,6 +117,10 @@ export const useState = defineStore("state", () => {
       images: [],
       currentImage: "",
       tab: "Upscale",
+    },
+    tagger: {
+      positivePrompt: new Map<string, number>(),
+      negativePrompt: new Map<string, number>(),
     },
     current_step: 0,
     total_steps: 0,

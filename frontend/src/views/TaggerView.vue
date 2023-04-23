@@ -70,6 +70,30 @@
       <!-- Images -->
       <NGi>
         <GenerateSection :generate="generate" />
+
+        <NCard>
+          <div class="flex-container">
+            <p class="slider-label">Weighted</p>
+            <NSwitch v-model:value="weighted" />
+          </div>
+
+          <NInput
+            v-model:value="computedPrompt"
+            type="textarea"
+            placeholder="Prompt"
+            show-count
+          >
+            <template #count>{{ promptCount }}</template>
+          </NInput>
+          <NInput
+            v-model:value="computedNegativePrompt"
+            type="textarea"
+            placeholder="Negative prompt"
+            show-count
+          >
+            <template #count>{{ negativePromptCount }}</template>
+          </NInput>
+        </NCard>
       </NGi>
     </NGrid>
   </div>
@@ -84,14 +108,17 @@ import {
   NCard,
   NGi,
   NGrid,
+  NInput,
   NInputNumber,
   NSelect,
   NSlider,
   NSpace,
+  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
+import { computed, ref } from "vue";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
@@ -99,47 +126,24 @@ const global = useState();
 const conf = useSettings();
 const messageHandler = useMessage();
 
-const checkSeed = (seed: number) => {
-  // If -1 create random seed
-  if (seed === -1) {
-    seed = Math.floor(Math.random() * 999_999_999_999);
-  }
-
-  return seed;
-};
-
 const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.img2img.image = base64Image;
+  conf.data.settings.tagger.image = base64Image;
 };
 
 const generate = () => {
-  if (conf.data.settings.img2img.seed === null) {
-    messageHandler.error("Please set a seed");
-    return;
-  }
   global.state.generating = true;
-  fetch(`${serverUrl}/api/generate/img2img`, {
+  fetch(`${serverUrl}/api/generate/interrogate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
-        prompt: conf.data.settings.img2img.prompt,
-        image: conf.data.settings.img2img.image,
+        image: conf.data.settings.tagger.image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.img2img.negative_prompt,
-        width: conf.data.settings.img2img.width,
-        height: conf.data.settings.img2img.height,
-        steps: conf.data.settings.img2img.steps,
-        guidance_scale: conf.data.settings.img2img.cfg_scale,
-        seed: checkSeed(conf.data.settings.img2img.seed),
-        batch_size: conf.data.settings.img2img.batch_size,
-        batch_count: conf.data.settings.img2img.batch_count,
-        strength: conf.data.settings.img2img.denoising_strength,
-        scheduler: conf.data.settings.img2img.sampler,
+        strength: conf.data.settings.tagger.treshold,
       },
-      model: conf.data.settings.model?.name,
+      model: conf.data.settings.tagger.model,
     }),
   })
     .then((res) => {
@@ -147,12 +151,18 @@ const generate = () => {
         throw new Error(res.statusText);
       }
       global.state.generating = false;
-      res.json().then((data) => {
-        global.state.img2img.images = data.images;
-        global.state.progress = 0;
-        global.state.total_steps = 0;
-        global.state.current_step = 0;
-      });
+      res
+        .json()
+        .then(
+          (data: {
+            positive: Map<string, number>;
+            negative: Map<string, number>;
+          }) => {
+            global.state.tagger.positivePrompt = data.positive;
+            global.state.tagger.negativePrompt = data.negative;
+            console.log(data);
+          }
+        );
     })
     .catch((err) => {
       global.state.generating = false;
@@ -160,6 +170,55 @@ const generate = () => {
       console.log(err);
     });
 };
+
+import { spaceRegex } from "@/functions";
+
+const weighted = ref(false);
+
+function MapToPrompt(map: Map<string, number>) {
+  if (weighted.value) {
+    // Convert to weighted prompt: (token: weight)
+    let weightedPrompt = Array<string>();
+    for (const [key, value] of map) {
+      if (value.toFixed(2) === "1.00") {
+        weightedPrompt.push(`${key}`);
+        continue;
+      } else {
+        weightedPrompt.push(`(${key}: ${value.toFixed(2)})`);
+      }
+    }
+    return weightedPrompt.join(", ");
+  } else {
+    // Append as a string but sorted according to weight
+    let prompt = Array<string>();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    for (const [key, value] of map) {
+      prompt.push(key);
+    }
+    return prompt.join(", ");
+  }
+}
+
+const computedPrompt = computed(() => {
+  const sortedMap = new Map(
+    [...global.state.tagger.positivePrompt].sort((a, b) => b[1] - a[1])
+  );
+  return MapToPrompt(sortedMap);
+});
+
+const computedNegativePrompt = computed(() => {
+  const sortedMap = new Map(
+    [...global.state.tagger.negativePrompt].sort((a, b) => b[1] - a[1])
+  );
+  return MapToPrompt(sortedMap);
+});
+
+const promptCount = computed(() => {
+  return computedPrompt.value.split(spaceRegex).length - 1;
+});
+const negativePromptCount = computed(() => {
+  return computedNegativePrompt.value.split(spaceRegex).length - 1;
+});
 </script>
 <style scoped>
 .image-container img {

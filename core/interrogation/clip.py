@@ -61,7 +61,10 @@ class CLIPInterrogator(InterrogationModel):
         positive = self._interrogate_positive(image=image, caption=job.data.caption)
         negative = self._interrogate_negative(image=image)
         self.memory_cleanup()
-        return InterrogationResult(positive, negative)
+        return InterrogationResult(
+            positive=[(i.strip(), 1) for i in positive.split(",")],
+            negative=[(i.strip(), 1) for i in negative.split(",")],
+        )
 
     def unload(self):
         del (

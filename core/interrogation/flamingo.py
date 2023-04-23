@@ -59,6 +59,11 @@ class FlamingoInterrogator(InterrogationModel):
                 "FlamingoInterrogator only supports InterrogatorQueueEntry"
             )
         return InterrogationResult(
-            positive=self._infer(convert_to_image(job.data.image), job.data.caption),
-            negative="",
+            positive=[
+                (
+                    self._infer(convert_to_image(job.data.image), job.data.caption),
+                    1,
+                )
+            ],
+            negative=[],
         )

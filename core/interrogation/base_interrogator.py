@@ -1,6 +1,7 @@
-from abc import ABC, abstractmethod
 import gc
+from abc import ABC, abstractmethod
 from dataclasses import dataclass
+from typing import List, Tuple
 
 import torch
 
@@ -11,8 +12,8 @@ from core.types import Backend, Job
 @dataclass
 class InterrogationResult:
     "Contains results from the interrogation"
-    positive: str
-    negative: str
+    positive: List[Tuple[str, float]]
+    negative: List[Tuple[str, float]]
 
 
 class InterrogationModel(ABC):

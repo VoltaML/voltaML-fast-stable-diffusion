@@ -269,5 +269,9 @@ async def convert_model(request: ConvertModelRequest):
 async def interrogate(request: InterrogatorQueueEntry):
     "Interrogate a model"
 
+    data = request.data.image
+    assert isinstance(data, bytes)
+    request.data.image = convert_bytes_to_image_stream(data)
+
     result = await gpu.interrogate(request)
     return result

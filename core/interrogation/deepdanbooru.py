@@ -1,4 +1,5 @@
 from pathlib import Path
+from typing import List, Tuple
 
 import numpy as np
 import torch
@@ -14,6 +15,7 @@ from torch.ao.quantization.quantize_fx import (
 )
 from tqdm import tqdm
 
+from core.config import config
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.interrogation.clip import is_cpu
 from core.interrogation.models.deepdanbooru_model import DeepDanbooruModel
@@ -87,13 +89,16 @@ class DeepdanbooruInterrogator(InterrogationModel):
             self.model.to(self.device, dtype=self.dtype)  # type: ignore
 
     def _infer(
-        self, image: Image.Image, sort: bool = True, treshold: float = 0.5
-    ) -> str:
+        self, image: Image.Image, sort: bool = False, treshold: float = 0.5
+    ) -> List[Tuple[str, float]]:
         pic = image.convert("RGB").resize((512, 512))
         a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
 
         with torch.no_grad():
-            x = torch.from_numpy(a).to(self.device)
+            x = torch.from_numpy(a).to(
+                device=self.device,
+                dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+            )
             y = self.model(x)[0].detach().cpu().numpy()
 
         probability_dict = {}
@@ -110,20 +115,22 @@ class DeepdanbooruInterrogator(InterrogationModel):
             tags = [
                 tag for tag, _ in sorted(probability_dict.items(), key=lambda x: -x[1])
             ]
-        res = []
 
+        self.memory_cleanup()
+
+        output = []
         for tag in tags:
             probability = probability_dict[tag]
-            res.append(f"({tag}:{probability:.2f})")
-        self.memory_cleanup()
-        return ", ".join(res)
+            output.append((tag, float(probability)))
+
+        return output
 
     def generate(self, job: Job) -> InterrogationResult:
         if not isinstance(job, InterrogatorQueueEntry):
             raise ValueError(
                 "DeepdanbooruInterrogator only supports InterrogatorQueueEntry"
             )
-        return InterrogationResult(self._infer(convert_to_image(job.data.image)), "")
+        return InterrogationResult(self._infer(convert_to_image(job.data.image)), [])
 
     def unload(self):
         del self.model
