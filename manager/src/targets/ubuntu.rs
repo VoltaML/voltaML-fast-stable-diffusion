@@ -4,7 +4,7 @@ use crate::utils::shell::spawn_command;
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Select};
 
-pub fn install(wsl: bool) {
+pub fn install(wsl: bool, experimental: bool) {
     println!("Selected WSL installation method");
 
     let gpu_types = vec!["NVIDIA", "AMD"];
@@ -19,16 +19,10 @@ pub fn install(wsl: bool) {
     crate::apt::upgrade();
 
     // Clone the repo
-    let branches = vec!["Main", "Experimental"];
-    let branch = Select::with_theme(&ColorfulTheme::default())
-        .default(0)
-        .items(&branches)
-        .interact()
-        .unwrap();
     let res = crate::git::clone::clone_repo(
         "https://github.com/voltaML/voltaML-fast-stable-diffusion",
         "tmp",
-        if branch == 0 { "main" } else { "experimental" },
+        if experimental { "main" } else { "experimental" },
     );
     if res.is_err() {
         println!("{} {}", style("[ERROR]").red(), res.err().unwrap());

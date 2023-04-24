@@ -77,7 +77,7 @@ fn main() {
 
 fn configure() {
     loop {
-        let items = vec!["Exit", "Huggingface Token", "Logging Level"];
+        let items = vec!["Back", "Huggingface Token", "Logging Level"];
         let response = Select::with_theme(&ColorfulTheme::default())
             .default(0)
             .items(&items)
@@ -96,7 +96,7 @@ fn configure() {
 fn debug_menu() {
     loop {
         let items = vec![
-            "Exit",
+            "Back",
             "Check NVCC",
             "Check Python",
             "Detect OS",
@@ -124,7 +124,7 @@ fn debug_menu() {
         let response = items[response_id];
 
         match response {
-            "Exit" => break,
+            "Back" => break,
             "Check NVCC" => {
                 if utils::nvidia::is_nvcc_installed() {
                     let version = utils::nvidia::nvcc_version();
