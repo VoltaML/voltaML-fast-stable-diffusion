@@ -1,6 +1,7 @@
 import torch
 import torch.nn.functional as F
 
+
 def pred_x0(pipe, sample, model_output, timestep):
     """
     Modified from diffusers.schedulers.scheduling_ddim.DDIMScheduler.step
@@ -10,13 +11,19 @@ def pred_x0(pipe, sample, model_output, timestep):
 
     beta_prod_t = 1 - alpha_prod_t
     if pipe.scheduler.config.prediction_type == "epsilon":
-        pred_original_sample = (sample - beta_prod_t ** (0.5) * model_output) / alpha_prod_t ** (0.5)
+        pred_original_sample = (
+            sample - beta_prod_t ** (0.5) * model_output
+        ) / alpha_prod_t ** (0.5)
     elif pipe.scheduler.config.prediction_type == "sample":
         pred_original_sample = model_output
     elif pipe.scheduler.config.prediction_type == "v_prediction":
-        pred_original_sample = (alpha_prod_t**0.5) * sample - (beta_prod_t**0.5) * model_output
+        pred_original_sample = (alpha_prod_t**0.5) * sample - (
+            beta_prod_t**0.5
+        ) * model_output
         # predict V
-        model_output = (alpha_prod_t**0.5) * model_output + (beta_prod_t**0.5) * sample
+        model_output = (alpha_prod_t**0.5) * model_output + (
+            beta_prod_t**0.5
+        ) * sample
     else:
         raise ValueError(
             f"prediction_type given as {pipe.scheduler.config.prediction_type} must be one of `epsilon`, `sample`,"
@@ -24,6 +31,7 @@ def pred_x0(pipe, sample, model_output, timestep):
         )
 
     return pred_original_sample
+
 
 def sag_masking(pipe, original_latents, attn_map, map_size, t, eps):
     "sag_masking"
@@ -50,9 +58,12 @@ def sag_masking(pipe, original_latents, attn_map, map_size, t, eps):
     degraded_latents = degraded_latents * attn_mask + original_latents * (1 - attn_mask)
 
     # Noise it again to match the noise level
-    degraded_latents = pipe.scheduler.add_noise(degraded_latents, noise=eps, timesteps=t)
+    degraded_latents = pipe.scheduler.add_noise(
+        degraded_latents, noise=eps, timesteps=t
+    )
 
     return degraded_latents
+
 
 def pred_epsilon(pipe, sample, model_output, timestep):
     "pred_epsilon"
@@ -62,7 +73,9 @@ def pred_epsilon(pipe, sample, model_output, timestep):
     if pipe.scheduler.config.prediction_type == "epsilon":
         pred_eps = model_output
     elif pipe.scheduler.config.prediction_type == "sample":
-        pred_eps = (sample - (alpha_prod_t**0.5) * model_output) / (beta_prod_t**0.5)
+        pred_eps = (sample - (alpha_prod_t**0.5) * model_output) / (
+            beta_prod_t**0.5
+        )
     elif pipe.scheduler.config.prediction_type == "v_prediction":
         pred_eps = (beta_prod_t**0.5) * sample + (alpha_prod_t**0.5) * model_output
     else:
@@ -72,6 +85,7 @@ def pred_epsilon(pipe, sample, model_output, timestep):
         )
 
     return pred_eps
+
 
 def gaussian_blur_2d(img, kernel_size, sigma):
     "Blurs an image with gaussian blur."

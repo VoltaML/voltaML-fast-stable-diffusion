@@ -1,7 +1,9 @@
 import torch
 
+
 class CrossAttnStoreProcessor:
     "Modified Cross Attention Processor with capabilities to store probabilities."
+
     def __init__(self):
         self.attention_probs = None
 
@@ -13,13 +15,17 @@ class CrossAttnStoreProcessor:
         attention_mask=None,
     ):
         batch_size, sequence_length, _ = hidden_states.shape
-        attention_mask = attn.prepare_attention_mask(attention_mask, sequence_length, batch_size)
+        attention_mask = attn.prepare_attention_mask(
+            attention_mask, sequence_length, batch_size
+        )
         query = attn.to_q(hidden_states)
 
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
         elif attn.norm_cross:
-            encoder_hidden_states = attn.norm_encoder_hidden_states(encoder_hidden_states)
+            encoder_hidden_states = attn.norm_encoder_hidden_states(
+                encoder_hidden_states
+            )
 
         key = attn.to_k(encoder_hidden_states)
         value = attn.to_v(encoder_hidden_states)
