@@ -8,8 +8,7 @@ from diffusers import (
     StableDiffusionUpscalePipeline,
 )
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
-from diffusers.utils import is_accelerate_available
-from diffusers.utils.import_utils import is_xformers_available
+from diffusers.utils import is_accelerate_available, is_xformers_available
 from packaging import version
 
 from core.config import config
@@ -121,6 +120,7 @@ def optimize_model(
                                     get_full_model_path(
                                         "offload-dir", model_folder="temp"
                                     )
+                                    / m.__name__
                                 ),
                                 device,
                                 offload_buffers=True,

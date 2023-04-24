@@ -1,77 +1,5 @@
-import { d as defineComponent, u as useState, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, B as NButton, k as createTextVNode, r as NGrid, h as NCard, v as serverUrl, c as computed, l as createBaseVNode, q as createCommentVNode, e as createElementBlock, I as Fragment, J as renderList, K as NScrollbar } from "./index.js";
 import { N as NImage } from "./Image.js";
-const _2img = "";
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "GenerateSection",
-  props: {
-    generate: {
-      type: Function,
-      required: true
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const global = useState();
-    function interrupt() {
-      fetch(`${serverUrl}/api/general/interrupt`, {
-        method: "POST"
-      }).then((res) => {
-        if (res.status === 200) {
-          global.state.generating = false;
-        }
-      });
-    }
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { style: { "margin-bottom": "12px" } }, {
-        default: withCtx(() => [
-          createVNode(unref(NGrid), {
-            cols: "2",
-            "x-gap": "24"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: props.generate,
-                    disabled: unref(global).state.generating,
-                    loading: unref(global).state.generating,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Generate")
-                    ]),
-                    _: 1
-                  }, 8, ["onClick", "disabled", "loading"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "error",
-                    onClick: interrupt,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Interrupt")
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
+import { d as defineComponent, c as computed, o as openBlock, p as createBlock, w as withCtx, l as createBaseVNode, g as unref, q as createCommentVNode, e as createElementBlock, f as createVNode, G as Fragment, H as renderList, I as NScrollbar, h as NCard } from "./index.js";
 const _hoisted_1 = { style: { "width": "100%", "display": "flex", "justify-content": "center" } };
 const _hoisted_2 = {
   key: 0,
@@ -147,6 +75,5 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-  _sfc_main$1 as _,
-  _sfc_main as a
+  _sfc_main as _
 };
