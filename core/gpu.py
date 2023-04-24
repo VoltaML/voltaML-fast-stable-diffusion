@@ -202,12 +202,14 @@ class GPU:
                         images = out
 
             except Exception as err:  # pylint: disable=broad-except
+                self.memory_cleanup()
                 self.queue.mark_finished()
                 raise err
 
             deltatime = time.time() - start_time
 
             # Mark job as finished, so the next job can start
+            self.memory_cleanup()
             self.queue.mark_finished()
 
             # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
