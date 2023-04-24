@@ -462,7 +462,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             nonlocal map_size
             map_size = output.sample.shape[-2:]
 
-
         # 8. Denoising loop
         with self.unet.mid_block.attentions[0].register_forward_hook(get_map_size):  # type: ignore
             for i, t in enumerate(self.progress_bar(timesteps)):
@@ -507,7 +506,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         if hasattr(self.unet, "main_device"):
                             send_to_gpu(self.unet, None)
                             degraded_prep = self.unet(  # type: ignore
-                                degraded_latents.to(self.unet.device, dtype=self.unet.dtype),
+                                degraded_latents.to(
+                                    self.unet.device, dtype=self.unet.dtype
+                                ),
                                 t.to(self.unet.device, dtype=self.unet.dtype),
                                 encoder_hidden_states=uncond_emb.to(
                                     self.unet.device, dtype=self.unet.dtype
@@ -523,13 +524,20 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         pred = pred_x0(self, latents, noise_pred, t)
                         cond_attn = store_processor.attention_probs  # type: ignore
                         degraded_latents = sag_masking(
-                            self, pred, cond_attn, map_size, t, pred_epsilon(self, latents, noise_pred, t)
+                            self,
+                            pred,
+                            cond_attn,
+                            map_size,
+                            t,
+                            pred_epsilon(self, latents, noise_pred, t),
                         )
                         # predict the noise residual
                         if hasattr(self.unet, "main_device"):
                             send_to_gpu(self.unet, None)
                             degraded_prep = self.unet(  # type: ignore
-                                degraded_latents.to(self.unet.device, dtype=self.unet.dtype),
+                                degraded_latents.to(
+                                    self.unet.device, dtype=self.unet.dtype
+                                ),
                                 t.to(self.unet.device, dtype=self.unet.dtype),
                                 encoder_hidden_states=text_embeddings.to(
                                     self.unet.device, dtype=self.unet.dtype
@@ -538,7 +546,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         else:
                             # this probably could have been done better but honestly fuck this
                             degraded_prep = self.unet(  # type: ignore
-                                degraded_latents, t, encoder_hidden_states=text_embeddings
+                                degraded_latents,
+                                t,
+                                encoder_hidden_states=text_embeddings,
                             ).sample
                         noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
 
