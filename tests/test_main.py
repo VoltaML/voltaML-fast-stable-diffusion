@@ -10,4 +10,4 @@ def test_checks():
 
 
 def test_main():
-    main(testing=True)
+    main(exit_after_init=True)
