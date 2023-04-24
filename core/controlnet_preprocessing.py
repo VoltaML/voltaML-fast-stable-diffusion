@@ -91,7 +91,10 @@ def depth(input_image: Image.Image) -> Image.Image:
     midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
     image = midas_detector(input_image)
 
-    return image[0]
+    if isinstance(image, tuple):
+        return image[0]
+    else:
+        return image
 
 
 def hed(
@@ -135,7 +138,7 @@ def normal(input_image: Image.Image) -> Image.Image:
     "Applies normal estimation to an image"
 
     midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
-    image = midas_detector(input_image)
+    image = midas_detector(input_image, depth_and_normal=True)  # type: ignore
 
     return image[1]
 
