@@ -102,7 +102,7 @@ def is_root():
     return is_admin
 
 
-def main(testing: bool = False):
+def main(exit_after_init: bool = False):
     "Run the API"
 
     # Attach ngrok if requested
@@ -134,8 +134,10 @@ def main(testing: bool = False):
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
 
-    if not testing:
+    if not exit_after_init:
         uvicorn_run(api_app, host=host, port=5003)
+    else:
+        logger.warning("Exit after initialization requested, exiting now")
 
 
 def checks():
@@ -193,8 +195,8 @@ def checks():
         )
         sys.exit(1)
 
-    if args.bot:
-        if not os.getenv("DISCORD_BOT_TOKEN") and not args.install_only:
+    if args.bot and not args.install_only:
+        if not os.getenv("DISCORD_BOT_TOKEN"):
             logger.error(
                 "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
             )
@@ -225,7 +227,8 @@ def checks():
     # Save the token to config
     from core import shared
 
-    if not args.install_only: shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
+    if not args.install_only:
+        shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
 
     # Create the diffusers cache folder
     from diffusers.utils import DIFFUSERS_CACHE
@@ -252,11 +255,9 @@ if __name__ == "__main__":
     print("Starting the API...")
 
     checks()
-    
-    if args.install_only:
-        sys.exit(0)
+
     try:
-        main()
+        main(exit_after_init=args.install_only)
     except KeyboardInterrupt:
         logger.info("Received keyboard interrupt, exiting...")
-        exit(0)
+        sys.exit(0)
