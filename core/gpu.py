@@ -1,4 +1,5 @@
 import logging
+import math
 import multiprocessing
 import time
 from pathlib import Path
@@ -12,6 +13,7 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
+from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
@@ -99,7 +101,17 @@ class GPU:
                 logger.debug(f"Job flags: {job.flags}")
 
             if not isinstance(job, RealESRGANQueueEntry):
-                shared.current_steps = job.data.steps * job.data.batch_count
+                steps = job.data.steps
+
+                strength: float = getattr(job.data, "strength", 1.0)
+                steps = math.floor(steps * strength)
+
+                extra_steps: int = 0
+                if "highres_fix" in job.flags:
+                    flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
+                    extra_steps = math.floor(flag.steps * flag.strength)
+
+                shared.current_steps = steps * job.data.batch_count + extra_steps
                 shared.current_done_steps = 0
 
             if isinstance(model, PyTorchStableDiffusion):
