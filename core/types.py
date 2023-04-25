@@ -47,7 +47,7 @@ class SupportedModel(Enum):
 
 
 class ControlNetMode(Enum):
-    "Enum of modes for the control net"
+    "Enum of modes for the ControlNet"
 
     CANNY = "lllyasviel/sd-controlnet-canny"
     DEPTH = "lllyasviel/sd-controlnet-depth"

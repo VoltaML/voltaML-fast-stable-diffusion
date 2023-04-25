@@ -1,10 +1,14 @@
+import gc
 import logging
+from typing import Any, Tuple
 
 import numpy as np
 import torch
 from PIL import Image
 from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
 
+from core import shared_dependent
+from core.config import config
 from core.controlnet_utils import ade_palette
 from core.types import ControlNetData, ControlNetMode
 
@@ -22,6 +26,27 @@ except ImportError:
     logger.warning(
         "You have old version of controlnet-aux, please run `pip uninstall controlnet-aux && pip install controlnet-aux` to update it to the lates version."
     )
+
+
+def wipe_old():
+    "Wipes old controlnet preprocessor from memory"
+
+    logger.debug("Did not find this controlnet preprocessor cached, wiping old ones")
+    shared_dependent.cached_controlnet_preprocessor = None
+
+    if config.api.device_type == "cuda":
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+    gc.collect()
+
+
+def cache_preprocessor(preprocessor: Any):
+    "Caches controlnet preprocessor"
+
+    logger.debug(
+        f"Caching {preprocessor.__class__.__name__ if not isinstance(preprocessor, tuple) else preprocessor[0].__class__.__name__ + ' + ' + preprocessor[1].__class__.__name__} preprocessor"
+    )
+    shared_dependent.cached_controlnet_preprocessor = preprocessor
 
 
 def image_to_controlnet_input(
@@ -72,23 +97,30 @@ def canny(
 ) -> Image.Image:
     "Applies canny edge detection to an image"
 
-    detector = CannyDetector()
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, CannyDetector):
+        detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        detector = CannyDetector()
+        cache_preprocessor(detector)
+
     canny_image = detector(
         img=input_image, low_threshold=low_threshold, high_threshold=high_threshold
     )
 
-    image = np.array(canny_image)
-    image = image[:, :, None]
-    image = np.concatenate([image, image, image], axis=2)
-    image = Image.fromarray(image)
-
-    return image
+    return canny_image
 
 
 def depth(input_image: Image.Image) -> Image.Image:
     "Applies depth estimation to an image"
 
-    midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, MidasDetector):
+        midas_detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
+        cache_preprocessor(midas_detector)
+
     image = midas_detector(input_image)
 
     if isinstance(image, tuple):
@@ -102,7 +134,13 @@ def hed(
 ) -> Image.Image:
     "Applies hed edge detection to an image"
 
-    hed_detector = HEDdetector.from_pretrained("lllyasviel/ControlNet")
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, HEDdetector):
+        hed_detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        hed_detector = HEDdetector.from_pretrained("lllyasviel/ControlNet")
+        cache_preprocessor(hed_detector)
+
     image = hed_detector(
         input_image,
         detect_resolution=detect_resolution,
@@ -121,7 +159,13 @@ def mlsd(
 ) -> Image.Image:
     "Applies M-LSD edge detection to an image"
 
-    mlsd_detector = MLSDdetector.from_pretrained("lllyasviel/ControlNet")
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, MLSDdetector):
+        mlsd_detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        mlsd_detector = MLSDdetector.from_pretrained("lllyasviel/ControlNet")
+        cache_preprocessor(mlsd_detector)
+
     image = mlsd_detector(
         input_image,
         thr_v=score_thr,
@@ -137,7 +181,13 @@ def mlsd(
 def normal(input_image: Image.Image) -> Image.Image:
     "Applies normal estimation to an image"
 
-    midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, MidasDetector):
+        midas_detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
+        cache_preprocessor(midas_detector)
+
     image = midas_detector(input_image, depth_and_normal=True)  # type: ignore
 
     return image[1]
@@ -146,7 +196,13 @@ def normal(input_image: Image.Image) -> Image.Image:
 def openpose(input_image: Image.Image) -> Image.Image:
     "Applies openpose to an image"
 
-    op_detector = OpenposeDetector.from_pretrained("lllyasviel/ControlNet")
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, OpenposeDetector):
+        op_detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        op_detector = OpenposeDetector.from_pretrained("lllyasviel/ControlNet")
+        cache_preprocessor(op_detector)
+
     image = op_detector(input_image)
 
     assert isinstance(image, Image.Image)
@@ -162,12 +218,20 @@ def scribble(input_image: Image.Image) -> Image.Image:
 def segmentation(input_image: Image.Image) -> Image.Image:
     "Applies segmentation to an image"
 
-    image_processor = AutoImageProcessor.from_pretrained(
-        "openmmlab/upernet-convnext-small"
-    )
-    image_segmentor = UperNetForSemanticSegmentation.from_pretrained(
-        "openmmlab/upernet-convnext-small"
-    )
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, Tuple):
+        (  # pylint: disable=unpacking-non-sequence
+            image_processor,
+            image_segmentor,
+        ) = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        image_processor = AutoImageProcessor.from_pretrained(
+            "openmmlab/upernet-convnext-small"
+        )
+        image_segmentor = UperNetForSemanticSegmentation.from_pretrained(
+            "openmmlab/upernet-convnext-small"
+        )
+        cache_preprocessor((image_processor, image_segmentor))
 
     pixel_values = image_processor(input_image, return_tensors="pt").pixel_values
 

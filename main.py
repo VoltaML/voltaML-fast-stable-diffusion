@@ -76,6 +76,7 @@ logger = logging.getLogger(__name__)
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
+logging.getLogger("PIL.Image").setLevel(logging.INFO)
 
 # Create necessary folders
 Path("data/aitemplate").mkdir(exist_ok=True, parents=True)

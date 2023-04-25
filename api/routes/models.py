@@ -105,3 +105,14 @@ async def download_model(model: str):
     await gpu.download_huggingface_model(model)
     await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model downloaded"}
+
+
+@router.get("/current-cached-preprocessor")
+async def get_current_cached_preprocessor():
+    "Get the current cached preprocessor"
+
+    from core import shared_dependent
+
+    return {
+        "preprocessor": shared_dependent.cached_controlnet_preprocessor.__class__.__name__
+    }
