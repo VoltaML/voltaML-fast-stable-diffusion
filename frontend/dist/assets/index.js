@@ -34095,28 +34095,52 @@ const useState = defineStore("state", () => {
     txt2img: {
       images: [],
       highres: false,
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     img2img: {
       images: [],
       currentImage: "",
-      tab: "Image to Image"
+      tab: "Image to Image",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     inpainting: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     imageVariations: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     controlnet: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     sd_upscale: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     extra: {
       images: [],
@@ -35700,12 +35724,12 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
@@ -35745,7 +35769,7 @@ const router = createRouter({
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/Image.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
     },
     {
       path: "/tagger",

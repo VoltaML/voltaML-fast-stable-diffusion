@@ -1,4 +1,43 @@
-import { d as defineComponent, a as useSettings, u as useState, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, B as NButton, k as createTextVNode, r as NGrid, h as NCard, q as createCommentVNode, F as router } from "./index.js";
+import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
+import { d as defineComponent, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, k as createTextVNode, t as toDisplayString, h as NCard, q as createCommentVNode, a as useSettings, u as useState, N as NGi, B as NButton, r as NGrid, F as router } from "./index.js";
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "OutputStats",
+  props: {
+    genData: {
+      type: Object,
+      required: true
+    }
+  },
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return __props.genData.time_taken || __props.genData.seed ? (openBlock(), createBlock(unref(NCard), {
+        key: 0,
+        title: "Stats"
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NDescriptions), null, {
+            default: withCtx(() => [
+              createVNode(unref(NDescriptionsItem), { label: "Total Time" }, {
+                default: withCtx(() => [
+                  createTextVNode(toDisplayString(__props.genData.time_taken) + "s ", 1)
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NDescriptionsItem), { label: "Seed" }, {
+                default: withCtx(() => [
+                  createTextVNode(toDisplayString(__props.genData.seed), 1)
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      })) : createCommentVNode("", true);
+    };
+  }
+});
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "SendOutputTo",
   props: {
@@ -118,5 +157,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-  _sfc_main as _
+  _sfc_main as _,
+  _sfc_main$1 as a
 };

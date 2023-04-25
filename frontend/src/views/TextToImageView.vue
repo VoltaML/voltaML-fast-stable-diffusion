@@ -396,6 +396,11 @@
         />
 
         <SendOutputTo :output="global.state.txt2img.currentImage" />
+
+        <OutputStats
+          style="margin-top: 12px"
+          :gen-data="global.state.txt2img.genData"
+        />
       </NGi>
     </NGrid>
   </div>
@@ -405,6 +410,7 @@
 import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
+import OutputStats from "@/components/OutputStats.vue";
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
@@ -455,6 +461,8 @@ const generate = () => {
   }
   global.state.generating = true;
 
+  const seed = checkSeed(conf.data.settings.txt2img.seed);
+
   fetch(`${serverUrl}/api/generate/txt2img`, {
     method: "POST",
     headers: {
@@ -473,7 +481,7 @@ const generate = () => {
           : conf.data.settings.txt2img.height,
         steps: conf.data.settings.txt2img.steps,
         guidance_scale: conf.data.settings.txt2img.cfg_scale,
-        seed: checkSeed(conf.data.settings.txt2img.seed),
+        seed: seed,
         batch_size: conf.data.settings.aitDim.batch_size
           ? conf.data.settings.aitDim.batch_size
           : conf.data.settings.txt2img.batch_size,
@@ -507,6 +515,11 @@ const generate = () => {
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
+
+        global.state.txt2img.genData = {
+          time_taken: parseFloat(parseFloat(data.time as string).toFixed(4)),
+          seed: seed,
+        };
       });
     })
     .catch((err) => {

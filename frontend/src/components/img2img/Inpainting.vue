@@ -319,6 +319,11 @@
         />
 
         <SendOutputTo :output="global.state.inpainting.currentImage" />
+
+        <OutputStats
+          style="margin-top: 12px"
+          :gen-data="global.state.inpainting.genData"
+        />
       </NGi>
     </NGrid>
   </div>
@@ -328,6 +333,7 @@
 import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
+import OutputStats from "@/components/OutputStats.vue";
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
@@ -388,6 +394,9 @@ const generate = () => {
   generateMask();
 
   global.state.generating = true;
+
+  const seed = checkSeed(conf.data.settings.inpainting.seed);
+
   fetch(`${serverUrl}/api/generate/inpainting`, {
     method: "POST",
     headers: {
@@ -404,7 +413,7 @@ const generate = () => {
         height: conf.data.settings.inpainting.height,
         steps: conf.data.settings.inpainting.steps,
         guidance_scale: conf.data.settings.inpainting.cfg_scale,
-        seed: checkSeed(conf.data.settings.inpainting.seed),
+        seed: seed,
         batch_size: conf.data.settings.inpainting.batch_size,
         batch_count: conf.data.settings.inpainting.batch_count,
         scheduler: conf.data.settings.inpainting.sampler,
@@ -422,6 +431,11 @@ const generate = () => {
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
+
+        global.state.inpainting.genData = {
+          time_taken: parseFloat(parseFloat(data.time as string).toFixed(4)),
+          seed: seed,
+        };
       });
     })
     .catch((err) => {

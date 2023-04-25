@@ -276,6 +276,11 @@
           :images="global.state.sd_upscale.images"
           @image-clicked="global.state.sd_upscale.currentImage = $event"
         />
+
+        <OutputStats
+          style="margin-top: 12px"
+          :gen-data="global.state.sd_upscale.genData"
+        />
       </NGi>
     </NGrid>
   </div>
@@ -286,6 +291,7 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
+import OutputStats from "@/components/OutputStats.vue";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
 import {
@@ -336,7 +342,11 @@ const generate = () => {
     messageHandler.error("Please set a seed");
     return;
   }
+
   global.state.generating = true;
+
+  const seed = checkSeed(conf.data.settings.sd_upscale.seed);
+
   fetch(`${serverUrl}/api/generate/sd-upscale`, {
     method: "POST",
     headers: {
@@ -351,7 +361,7 @@ const generate = () => {
         negative_prompt: conf.data.settings.sd_upscale.negative_prompt,
         steps: conf.data.settings.sd_upscale.steps,
         guidance_scale: conf.data.settings.sd_upscale.cfg_scale,
-        seed: checkSeed(conf.data.settings.sd_upscale.seed),
+        seed: seed,
         batch_size: conf.data.settings.sd_upscale.batch_size,
         batch_count: conf.data.settings.sd_upscale.batch_count,
         tile_size: conf.data.settings.sd_upscale.tile_size,
@@ -372,6 +382,11 @@ const generate = () => {
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
+
+        global.state.sd_upscale.genData = {
+          time_taken: parseFloat(parseFloat(data.time as string).toFixed(4)),
+          seed: seed,
+        };
       });
     })
     .catch((err) => {
