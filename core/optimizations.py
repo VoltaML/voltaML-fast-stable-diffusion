@@ -1,7 +1,9 @@
 import logging
-from typing import Union
+from typing import Union, Tuple
+import warnings
 
 import torch
+from tqdm.auto import tqdm
 from diffusers import (
     DiffusionPipeline,
     StableDiffusionPipeline,
@@ -31,7 +33,8 @@ def optimize_model(
     "Optimize the model for inference"
     global _device  # pylint: disable=global-statement
 
-    pipe.to(device, torch_dtype=torch.float16 if not use_fp32 else torch.float32)
+    dtype = (torch.bfloat16 if config.api.device == "cpu" else torch.float16) if use_fp32 else torch.float32
+    pipe.to(device, torch_dtype=dtype)
     _device = device
 
     logger.info("Optimizing model")
@@ -60,10 +63,6 @@ def optimize_model(
     # xFormers and SPDA
     if not is_for_aitemplate:
         if is_xformers_available() and config.api.attention_processor == "xformers":
-            if config.api.trace_model:
-                logger.info("Optimization: Tracing model")
-                pipe.unet = trace_model(pipe.unet)  # type: ignore
-                logger.info("Optimization: Model successfully traced")
             pipe.enable_xformers_memory_efficient_attention()
             logger.info("Optimization: Enabled xFormers memory efficient attention")
         elif version.parse(torch.__version__) >= version.parse("2.0.0"):
@@ -157,7 +156,26 @@ def optimize_model(
                 "Optimization: ToMeSD patch failed, despite having it enabled. Please check installation"
             )
 
+    if config.api.trace_model:
+        logger.info("Tracing model.")
+        logger.warning("This will break controlnet and loras!")
+        if config.api.attention_processor == "xformers":
+            logger.warning("Skipping tracing because xformers used for attention processor. Please change to SDPA to enable tracing.")
+        else:
+            pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
+
+    # TODO: warmup?
+    warmup(pipe.unet, 5, dtype, device)  # type: ignore
+
     logger.info("Optimization complete")
+
+
+def generate_inputs(dtype: torch.dtype, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+    "Generate sample inputs for a conditional UNet2D"
+    sample = torch.randn(2, 4, 64, 64).to(device, dtype=dtype)
+    timestep = torch.rand(1).to(device, dtype=dtype) * 999
+    encoder_hidden_states = torch.randn(2, 77, 768).to(device, dtype=dtype)
+    return sample, timestep, encoder_hidden_states
 
 
 def send_everything_to_cpu() -> None:
@@ -182,29 +200,34 @@ def send_to_gpu(module, _) -> None:
     gpu_module = module
 
 
-def trace_model(model: torch.nn.Module) -> torch.nn.Module:
+def warmup(model: torch.nn.Module, amount: int, dtype: torch.dtype, device: torch.device) -> None:
+    "Warms up model with amount generated sample inputs."
+
+    model.eval()
+    with torch.inference_mode():
+        for _ in tqdm(range(amount), unit="it", desc="Warming up", unit_scale=False):
+            model(*generate_inputs(dtype, device))
+
+
+def trace_model(model: torch.nn.Module, dtype: torch.dtype, device: torch.device) -> torch.nn.Module:
     "Traces the model for inference"
 
-    def generate_inputs():
-        sample = torch.randn(2, 4, 64, 64).half().cuda()
-        timestep = torch.rand(1).half().cuda() * 999
-        encoder_hidden_states = torch.randn(2, 77, 768).half().cuda()
-        return sample, timestep, encoder_hidden_states
-
     og = model
-    model.eval()
     from functools import partial
 
     model.forward = partial(model.forward, return_dict=False)
-    with torch.inference_mode():
-        for _ in range(5):
-            model(*generate_inputs())
-    model.to(memory_format=torch.channels_last)  # type: ignore
-    model = torch.jit.trace(model, generate_inputs(), check_trace=False)  # type: ignore
-    model.eval()
-    with torch.inference_mode():
-        for _ in range(5):
-            model(*generate_inputs())
+    warmup(model, 5, dtype, device)
+    if config.api.channels_last:
+        model.to(memory_format=torch.channels_last)  # type: ignore
+    logger.debug("Starting trace")
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+        if config.api.device == "cpu":
+            torch.jit.enable_onednn_fusion(True)
+        model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
+        model = torch.jit.optimize_for_inference(model)  # type: ignore
+    logger.debug("Tracing done")
+    warmup(model, 5, dtype, device)
 
     class TracedUNet(torch.nn.Module):
         "UNet that was JIT traced and should be faster than the original"

@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -334,6 +335,15 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
         text = reader.read()
     return json.loads(text)
 
+class HiddenPrints:
+    "Taken from https://stackoverflow.com/a/45669280. Thank you @alexander-c"
+    def __enter__(self):
+        self._original_stdout = sys.stdout
+        sys.stdout = open(os.devnull, 'w')
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
 
 def load_pytorch_pipeline(
     model_id_or_path: str,
@@ -356,17 +366,21 @@ def load_pytorch_pipeline(
             logger.info("Loading model as checkpoint")
 
         try:
-            pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                from_safetensors=use_safetensors,
-                load_safety_checker=False,
-            )
+            with HiddenPrints():
+                pipe = download_from_original_stable_diffusion_ckpt(
+                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                    from_safetensors=use_safetensors,
+                    extract_ema=True,
+                    load_safety_checker=False,
+                )
         except Exception as e:  # pylint: disable=broad-except
             logger.debug(f"Error: {e}")
-            pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                from_safetensors=use_safetensors,
-            )
+            with HiddenPrints():
+                pipe = download_from_original_stable_diffusion_ckpt(
+                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                    extract_ema=True,
+                    from_safetensors=use_safetensors,
+                )
             pipe.requires_safety_checker = False  # type: ignore
             pipe.safety_checker = None  # type: ignore
             pipe.feature_extractor = None  # type: ignore
