@@ -196,7 +196,7 @@ class OnnxStableDiffusion(InferenceModel):
                     if file.is_dir():
                         if file.stem == "tokenizer":
                             return CLIPTokenizerFast.from_pretrained(file)
-                        elif file.stem == "scheduler"
+                        elif file.stem == "scheduler":
                             # TODO: during conversion save which scheduler was used.
                             scheduler_reg = r"_class_name\": \"(.*)\","
                             with open(
