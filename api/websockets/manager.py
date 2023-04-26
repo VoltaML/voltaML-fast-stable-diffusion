@@ -50,7 +50,9 @@ class WebSocketManager:
                     raise ImportError(  # pylint: disable=raise-missing-from
                         "User doesn't have an AMD gpu"
                     )
-                all_gpus = [pyamdgpuinfo.get_gpu(x) for x in range(pyamdgpuinfo.detect_gpus())]
+                all_gpus = [
+                    pyamdgpuinfo.get_gpu(x) for x in range(pyamdgpuinfo.detect_gpus())
+                ]
                 for stat in all_gpus:
                     # More sane values, I guess... I mean, who needs 100 updates a second...
                     precision = 16

@@ -81,7 +81,7 @@ def is_onnxsim_available():
         return True
     except ImportError:
         return False
-    
+
 
 def is_bitsandbytes_available():
     "Checks whether bitsandbytes is available."
