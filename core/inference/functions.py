@@ -81,6 +81,16 @@ def is_onnxsim_available():
         return True
     except ImportError:
         return False
+    
+
+def is_bitsandbytes_available():
+    "Checks whether bitsandbytes is available."
+    try:
+        import bitsandbytes
+
+        return True
+    except ImportError:
+        return False
 
 
 def load_config(

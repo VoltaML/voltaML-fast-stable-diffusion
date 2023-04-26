@@ -119,6 +119,8 @@ class APIConfig:
         if self.device_type == "cpu":
             return "cpu"
         if self.device_type == "directml":
+            # This should be coming along pretty good... give it a week or two,
+            # I may be able to get this working by then :)
             raise NotImplementedError("DirectML is not supported yet")
 
         return f"{self.device_type}:{self.device_id}"
