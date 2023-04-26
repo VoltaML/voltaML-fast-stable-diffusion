@@ -8,6 +8,7 @@ from psutil import NoSuchProcess
 import torch
 
 from api.websockets.data import Data
+from core.shared import amd, all_gpus
 from core.config import config
 
 
@@ -34,13 +35,11 @@ class WebSocketManager:
 
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
-
-        amd = False
-        gpus = []
+        global amd, all_gpus  # pylint: disable=global-statement
         try:
             from gpustat.core import GPUStatCollection
 
-            gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
+            all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
         except Exception:  # pylint: disable=broad-exception-caught
             logger.info("GPUStat failed to initialize - probably not an NVIDIA GPU")
             logger.info("Trying pyamdgpuinfo...")
@@ -52,9 +51,11 @@ class WebSocketManager:
                         "hello"
                     )
                 else:
-                    gpus = [amdgpu.get_gpu(x) for x in range(amdgpu.detect_gpus())]
-                    for stat in gpus:
-                        stat.start_utilisation_polling()
+                    all_gpus = [amdgpu.get_gpu(x) for x in range(amdgpu.detect_gpus())]
+                    for stat in all_gpus:
+                        # More sane values, I guess... I mean, who needs 100 updates a second...
+                        precision = 16
+                        stat.start_utilisation_polling(ticks_per_second=precision, buffer_size_in_ticks=precision*5)
                 amd = True
             except Exception:  # pylint: disable=broad-exception-caught
                 logger.warning(
@@ -65,7 +66,7 @@ class WebSocketManager:
         while True:
             data = []
             if amd:
-                for stat in gpus:
+                for stat in all_gpus:
                     data.append(
                         {
                             "index": stat.gpu_id,
@@ -93,7 +94,7 @@ class WebSocketManager:
                     )
             else:
                 try:
-                    for stat in gpus:
+                    for stat in all_gpus:
                         data.append(
                             {
                                 "index": stat["index"],
