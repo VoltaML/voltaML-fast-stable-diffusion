@@ -234,7 +234,8 @@ class PyTorchStableDiffusion(InferenceModel):
                     latent_scale_mode=flag.latent_scale_mode,
                 )
 
-                self.memory_cleanup()
+                if config.api.clear_memory_policy == "always":
+                    self.memory_cleanup()
 
                 data = pipe.img2img(
                     prompt=job.data.prompt,
@@ -491,7 +492,8 @@ class PyTorchStableDiffusion(InferenceModel):
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")
-        self.memory_cleanup()
+        if config.api.clear_memory_policy == "always":
+            self.memory_cleanup()
 
         try:
             if isinstance(job, Txt2ImgQueueEntry):
@@ -505,11 +507,13 @@ class PyTorchStableDiffusion(InferenceModel):
             else:
                 raise ValueError("Invalid job type for this pipeline")
         except Exception as e:
-            self.memory_cleanup()
+            if config.api.clear_memory_policy == "always":
+                self.memory_cleanup()
             raise e
 
         # Clean memory and return images
-        self.memory_cleanup()
+        if config.api.clear_memory_policy == "always":
+            self.memory_cleanup()
         return images
 
     def save(self, path: str = "converted", safetensors: bool = False):

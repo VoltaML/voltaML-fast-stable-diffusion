@@ -161,6 +161,7 @@ class RealESRGAN(InferenceModel):
         assert self.upsampler is not None, "Upsampler not loaded"
         output, _ = self.upsampler.enhance(img, outscale=job.data.upscale_factor)
 
-        self.memory_cleanup()
+        if config.api.clear_memory_policy == "always":
+            self.memory_cleanup()
 
         return [Image.fromarray(output)]

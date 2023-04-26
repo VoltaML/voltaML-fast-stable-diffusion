@@ -231,7 +231,8 @@ class AITemplateStableDiffusion(InferenceModel):
         else:
             raise ValueError("Invalid job type for this model")
 
-        self.memory_cleanup()
+        if config.api.clear_memory_policy == "always":
+            self.memory_cleanup()
 
         return images
 
