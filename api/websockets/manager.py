@@ -5,10 +5,11 @@ from typing import Coroutine, List, Optional
 
 from fastapi import WebSocket
 from psutil import NoSuchProcess
+import torch
 
 from api.websockets.data import Data
 from core.config import config
-from core.shared_dependent import gpu
+
 
 logger = logging.getLogger(__name__)
 
@@ -129,7 +130,12 @@ class WebSocketManager:
             len(self.active_connections) == 0
             and config.api.clear_memory_policy == "after_disconnect"
         ):
-            gpu.memory_cleanup()
+            if torch.cuda.is_available():
+                logger.debug(f"Cleaning up GPU memory: {config.api.device_id}")
+
+                with torch.cuda.device(config.api.device_id):
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
 
         self.active_connections.remove(websocket)
 
@@ -157,6 +163,11 @@ class WebSocketManager:
             await connection.close(reason="Server shutdown")
 
         if config.api.clear_memory_policy == "after_disconnect":
-            gpu.memory_cleanup()
+            if torch.cuda.is_available():
+                logger.debug(f"Cleaning up GPU memory: {config.api.device_id}")
+
+                with torch.cuda.device(config.api.device_id):
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
 
         self.active_connections = []
