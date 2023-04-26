@@ -78,6 +78,7 @@ export interface StateInterface {
   total_steps: number;
   imageBrowser: {
     currentImage: imgData;
+    currentImageByte64: string;
     currentImageMetadata: Map<string, string>;
   };
   perf_drawer: {
@@ -162,8 +163,10 @@ export const useState = defineStore("state", () => {
     imageBrowser: {
       currentImage: {
         path: "",
+        id: "",
         time: 0,
       },
+      currentImageByte64: "",
       currentImageMetadata: new Map(),
     },
     perf_drawer: {

@@ -1,5 +1,5 @@
 import { N as NImage } from "./Image.js";
-import { d as defineComponent, c as computed, o as openBlock, p as createBlock, w as withCtx, l as createBaseVNode, g as unref, q as createCommentVNode, e as createElementBlock, f as createVNode, G as Fragment, H as renderList, I as NScrollbar, h as NCard } from "./index.js";
+import { d as defineComponent, c as computed, o as openBlock, p as createBlock, w as withCtx, l as createBaseVNode, g as unref, q as createCommentVNode, e as createElementBlock, f as createVNode, F as Fragment, G as renderList, H as NScrollbar, h as NCard } from "./index.js";
 const _hoisted_1 = { style: { "width": "100%", "display": "flex", "justify-content": "center" } };
 const _hoisted_2 = {
   key: 0,
