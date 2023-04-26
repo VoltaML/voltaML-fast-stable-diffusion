@@ -1,5 +1,6 @@
 # HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 
+from contextlib import ExitStack
 import inspect
 from typing import Callable, List, Literal, Optional, Union
 
@@ -463,7 +464,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             map_size = output.sample.shape[-2:]
 
         # 8. Denoising loop
-        with self.unet.mid_block.attentions[0].register_forward_hook(get_map_size):  # type: ignore
+        with ExitStack() as gs:
+            if do_self_attention_guidance:
+                gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
+
             for i, t in enumerate(self.progress_bar(timesteps)):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
