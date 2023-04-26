@@ -33,7 +33,11 @@ def optimize_model(
     "Optimize the model for inference"
     global _device  # pylint: disable=global-statement
 
-    dtype = (torch.bfloat16 if config.api.device == "cpu" else torch.float16) if use_fp32 else torch.float32
+    dtype = (
+        (torch.bfloat16 if config.api.device == "cpu" else torch.float16)
+        if use_fp32
+        else torch.float32
+    )
     pipe.to(device, torch_dtype=dtype)
     _device = device
 
@@ -160,7 +164,9 @@ def optimize_model(
         logger.info("Tracing model.")
         logger.warning("This will break controlnet and loras!")
         if config.api.attention_processor == "xformers":
-            logger.warning("Skipping tracing because xformers used for attention processor. Please change to SDPA to enable tracing.")
+            logger.warning(
+                "Skipping tracing because xformers used for attention processor. Please change to SDPA to enable tracing."
+            )
         else:
             pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
 
@@ -170,7 +176,9 @@ def optimize_model(
     logger.info("Optimization complete")
 
 
-def generate_inputs(dtype: torch.dtype, device: torch.device) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
+def generate_inputs(
+    dtype: torch.dtype, device: torch.device
+) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
     "Generate sample inputs for a conditional UNet2D"
     sample = torch.randn(2, 4, 64, 64).to(device, dtype=dtype)
     timestep = torch.rand(1).to(device, dtype=dtype) * 999
@@ -200,7 +208,9 @@ def send_to_gpu(module, _) -> None:
     gpu_module = module
 
 
-def warmup(model: torch.nn.Module, amount: int, dtype: torch.dtype, device: torch.device) -> None:
+def warmup(
+    model: torch.nn.Module, amount: int, dtype: torch.dtype, device: torch.device
+) -> None:
     "Warms up model with amount generated sample inputs."
 
     model.eval()
@@ -209,7 +219,9 @@ def warmup(model: torch.nn.Module, amount: int, dtype: torch.dtype, device: torc
             model(*generate_inputs(dtype, device))
 
 
-def trace_model(model: torch.nn.Module, dtype: torch.dtype, device: torch.device) -> torch.nn.Module:
+def trace_model(
+    model: torch.nn.Module, dtype: torch.dtype, device: torch.device
+) -> torch.nn.Module:
     "Traces the model for inference"
 
     og = model

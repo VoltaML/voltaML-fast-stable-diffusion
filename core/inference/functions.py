@@ -335,15 +335,18 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
         text = reader.read()
     return json.loads(text)
 
+
 class HiddenPrints:
     "Taken from https://stackoverflow.com/a/45669280. Thank you @alexander-c"
+
     def __enter__(self):
         self._original_stdout = sys.stdout
-        sys.stdout = open(os.devnull, 'w')
+        sys.stdout = open(os.devnull, "w")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
         sys.stdout = self._original_stdout
+
 
 def load_pytorch_pipeline(
     model_id_or_path: str,
