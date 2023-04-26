@@ -117,22 +117,26 @@ class GPU:
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
+                if config.api.clear_memory_policy == "always":
+                    self.memory_cleanup()
                 return images
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
+                if config.api.clear_memory_policy == "always":
+                    self.memory_cleanup()
                 return images
             elif isinstance(model, PyTorchSDUpscaler):
                 logger.debug("Generating with PyTorchSDUpscaler")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
+                if config.api.clear_memory_policy == "always":
+                    self.memory_cleanup()
                 return images
             elif isinstance(model, RealESRGAN):
                 logger.debug("Generating with RealESRGAN")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
+                if config.api.clear_memory_policy == "always":
+                    self.memory_cleanup()
                 return images
             else:
                 assert not isinstance(job, RealESRGANQueueEntry)
@@ -142,7 +146,8 @@ class GPU:
                 if isinstance(model, OnnxStableDiffusion):
                     logger.debug("Generating with ONNX")
                     images: List[Image.Image] = model.generate(job)
-                    self.memory_cleanup()
+                    if config.api.clear_memory_policy == "always":
+                        self.memory_cleanup()
                     return images
 
                 raise NotImplementedError("TensorRT is not supported at the moment")
@@ -162,7 +167,8 @@ class GPU:
                 #     num_of_infer_steps=job.data.steps,
                 #     scheduler=job.data.scheduler,
                 # )
-                # self.memory_cleanup()
+                # if config.api.clear_memory_policy == "always":
+                #     self.memory_cleanup()
                 # return images
 
         try:
@@ -202,14 +208,16 @@ class GPU:
                         images = out
 
             except Exception as err:  # pylint: disable=broad-except
-                self.memory_cleanup()
+                if config.api.clear_memory_policy == "always":
+                    self.memory_cleanup()
                 self.queue.mark_finished()
                 raise err
 
             deltatime = time.time() - start_time
 
             # Mark job as finished, so the next job can start
-            self.memory_cleanup()
+            if config.api.clear_memory_policy == "always":
+                self.memory_cleanup()
             self.queue.mark_finished()
 
             # Append grid to the list of images as it is appended only if images are strings (R2 bucket)

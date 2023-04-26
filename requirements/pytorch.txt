@@ -9,7 +9,6 @@ accelerate
 ftfy
 tqdm
 OmegaConf
-pynvml
 k-diffusion
 safetensors
 pytorch-lightning

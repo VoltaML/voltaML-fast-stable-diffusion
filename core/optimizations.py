@@ -171,7 +171,7 @@ def optimize_model(
             pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
 
     # TODO: warmup?
-    warmup(pipe.unet, 5, dtype, device)  # type: ignore
+    # warmup(pipe.unet, 5, dtype, device)  # type: ignore
 
     logger.info("Optimization complete")
 

@@ -150,6 +150,15 @@ def install_pytorch():
                         "https://download.pytorch.org/whl/rocm5.4.2",
                     ]
                 )
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "pyamdgpuinfo",
+                    ]
+                )
 
         else:
             logger.info("ROCmInfo check failed, assuming user has NVIDIA GPU")
@@ -169,6 +178,15 @@ def install_pytorch():
                         "torchvision",
                         "--index-url",
                         "https://download.pytorch.org/whl/cu118",
+                    ]
+                )
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "pynvml",
                     ]
                 )
 

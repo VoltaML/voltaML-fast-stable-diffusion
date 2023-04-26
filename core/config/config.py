@@ -102,6 +102,7 @@ class APIConfig:
     channels_last: bool = True
     vae_slicing: bool = True
     trace_model: bool = False
+    clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
     image_preview_delay: float = 2.0
     device_id: int = 0
