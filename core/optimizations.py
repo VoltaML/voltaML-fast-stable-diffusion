@@ -236,7 +236,7 @@ def warmup(
 
 
 def trace_model(
-    model: torch.nn.Module, dtype: torch.dtype, device: torch.device
+    model: torch.nn.Module, dtype: torch.dtype, device: torch.device, iterations: int = 25,
 ) -> torch.nn.Module:
     "Traces the model for inference"
 
@@ -244,18 +244,19 @@ def trace_model(
     from functools import partial
 
     model.forward = partial(model.forward, return_dict=False)
-    warmup(model, 5, dtype, device)
+    warmup(model, iterations, dtype, device)
     if config.api.channels_last:
         model.to(memory_format=torch.channels_last)  # type: ignore
     logger.debug("Starting trace")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        if config.api.device == "cpu":
+        if config.api.device_type == "cpu":
             torch.jit.enable_onednn_fusion(True)
         model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
-        model = torch.jit.optimize_for_inference(model)  # type: ignore
+        if config.api.device_type == "cpu":
+            model = torch.jit.optimize_for_inference(model)  # type: ignore
     logger.debug("Tracing done")
-    warmup(model, 5, dtype, device)
+    warmup(model, iterations // 5, dtype, device)
 
     class TracedUNet(torch.nn.Module):
         "UNet that was JIT traced and should be faster than the original"
