@@ -1,5 +1,18 @@
 <template>
   <div style="margin: 18px">
+    <NModal
+      v-model:show="showDeleteModal"
+      :mask-closable="false"
+      preset="confirm"
+      type="error"
+      title="Delete Image"
+      content="Do you want to delete this image? This action cannot be undone."
+      positive-text="Confirm"
+      negative-text="Cancel"
+      transform-origin="center"
+      @positive-click="deleteImage"
+      @negative-click="showDeleteModal = false"
+    />
     <NGrid cols="1 850:3" x-gap="12px">
       <!-- Top -->
       <NGi
@@ -118,6 +131,10 @@
                     @click="downloadImage"
                     style="width: 100%"
                     ghost
+                    ><template #icon>
+                      <NIcon>
+                        <Download />
+                      </NIcon> </template
                     >Download</NButton
                   >
                 </NGi>
@@ -125,10 +142,16 @@
                 <NGi>
                   <NButton
                     type="error"
-                    @click="deleteImage"
+                    @click="showDeleteModal = true"
                     style="width: 100%"
                     ghost
-                    >Delete</NButton
+                  >
+                    <template #icon>
+                      <NIcon>
+                        <TrashBin />
+                      </NIcon>
+                    </template>
+                    Delete</NButton
                   >
                 </NGi>
               </NGrid>
@@ -139,7 +162,10 @@
 
       <!-- Bottom -->
       <NGi span="3">
-        <NDescriptions bordered>
+        <NDescriptions
+          bordered
+          v-if="global.state.imageBrowser.currentImageMetadata.size !== 0"
+        >
           <NDescriptionsItem
             :label="key.toString()"
             content-style="max-width: 100px"
@@ -159,6 +185,7 @@
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import type { imgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
+import { Download, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
   NCard,
@@ -166,15 +193,18 @@ import {
   NDescriptionsItem,
   NGi,
   NGrid,
+  NIcon,
   NImage,
+  NModal,
   NScrollbar,
   NTabPane,
   NTabs,
 } from "naive-ui";
-import { computed, reactive } from "vue";
+import { computed, reactive, ref } from "vue";
 import { useState } from "../store/state";
 
 const global = useState();
+const showDeleteModal = ref(false);
 
 function urlFromPath(path: string) {
   const url = new URL(path, serverUrl);

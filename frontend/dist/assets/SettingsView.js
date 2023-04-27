@@ -1,4 +1,4 @@
-import { X as inject, b4 as getCurrentInstance, a7 as watch, aB as onBeforeUnmount, R as cB, T as cM, Q as c, O as createInjectionKey, d as defineComponent, I as useConfig, Z as useTheme, A as ref, z as h, b5 as formLight, L as provide, a9 as keysOf, c as computed, az as formatLength, aG as get, b6 as commonVariables, S as cE, M as toRef, a3 as createId, b7 as formItemInjectionKey, b8 as onMounted, a2 as useThemeClass, aS as Transition, av as resolveWrappedSlot, a1 as createKey, aM as warn, a as useSettings, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, n as NSelect, l as createBaseVNode, h as NCard, D as NTabPane, E as NTabs, j as NInput, _ as _export_sfc, b as useMessage, B as NButton, k as createTextVNode, b9 as defaultSettings, v as serverUrl } from "./index.js";
+import { X as inject, b4 as getCurrentInstance, a7 as watch, aB as onBeforeUnmount, R as cB, T as cM, Q as c, O as createInjectionKey, d as defineComponent, I as useConfig, Z as useTheme, A as ref, z as h, b5 as formLight, L as provide, a9 as keysOf, c as computed, az as formatLength, aG as get, b6 as commonVariables, S as cE, M as toRef, a3 as createId, b7 as formItemInjectionKey, b8 as onMounted, a2 as useThemeClass, aS as Transition, av as resolveWrappedSlot, a1 as createKey, aM as warn, a as useSettings, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, n as NSelect, l as createBaseVNode, h as NCard, D as NTabPane, E as NTabs, j as NInput, _ as _export_sfc, b as useMessage, e as createElementBlock, B as NButton, k as createTextVNode, b9 as defaultSettings, v as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1836,7 +1836,7 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _hoisted_1 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
+const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "TomeSD", -1);
 const _sfc_main$a = /* @__PURE__ */ defineComponent({
@@ -1878,7 +1878,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          _hoisted_1,
+          _hoisted_1$1,
           createVNode(unref(NFormItem), { label: "Attention Processor" }, {
             default: withCtx(() => [
               createVNode(unref(NSelect), {
@@ -2749,6 +2749,7 @@ function _sfc_render(_ctx, _cache) {
   return "General Settings";
 }
 const GeneralSettings = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
+const _hoisted_1 = { style: { "margin": "18px" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "SettingsView",
   setup(__props) {
@@ -2775,69 +2776,71 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       });
     }
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { style: { "margin": "16px" } }, {
-        default: withCtx(() => [
-          createVNode(unref(NTabs), null, {
-            suffix: withCtx(() => [
-              createVNode(unref(NButton), {
-                type: "error",
-                ghost: "",
-                style: { "margin-right": "12px" },
-                onClick: resetSettings
-              }, {
-                default: withCtx(() => [
-                  createTextVNode("Reset Settings")
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NButton), {
-                type: "success",
-                ghost: "",
-                onClick: saveSettings
-              }, {
-                default: withCtx(() => [
-                  createTextVNode("Save Settings")
-                ]),
-                _: 1
-              })
-            ]),
-            default: withCtx(() => [
-              createVNode(unref(NTabPane), { name: "Frontend" }, {
-                default: withCtx(() => [
-                  createVNode(_sfc_main$2)
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NTabPane), { name: "API" }, {
-                default: withCtx(() => [
-                  createVNode(_sfc_main$a)
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NTabPane), { name: "Bot" }, {
-                default: withCtx(() => [
-                  createVNode(_sfc_main$9)
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NTabPane), { name: "General" }, {
-                default: withCtx(() => [
-                  createVNode(GeneralSettings)
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NTabPane), { name: "Extra" }, {
-                default: withCtx(() => [
-                  createVNode(_sfc_main$7)
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
+      return openBlock(), createElementBlock("div", _hoisted_1, [
+        createVNode(unref(NCard), null, {
+          default: withCtx(() => [
+            createVNode(unref(NTabs), null, {
+              suffix: withCtx(() => [
+                createVNode(unref(NButton), {
+                  type: "error",
+                  ghost: "",
+                  style: { "margin-right": "12px" },
+                  onClick: resetSettings
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Reset Settings")
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NButton), {
+                  type: "success",
+                  ghost: "",
+                  onClick: saveSettings
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Save Settings")
+                  ]),
+                  _: 1
+                })
+              ]),
+              default: withCtx(() => [
+                createVNode(unref(NTabPane), { name: "Frontend" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$2)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "API" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$a)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Bot" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$9)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "General" }, {
+                  default: withCtx(() => [
+                    createVNode(GeneralSettings)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Extra" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$7)
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        })
+      ]);
     };
   }
 });
