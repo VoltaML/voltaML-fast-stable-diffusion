@@ -43,6 +43,19 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
         requirements = {}
         for i in [r.strip() for r in f.read().splitlines()]:
+            split = i.split(";")
+            i = split[0].strip()
+
+            if len(split) > 1:
+                check = split[1].strip()
+            else:
+                check = ""
+
+            if check == 'platform_system == "Linux"':
+                logger.debug("Install check for Linux only")
+                if platform.system() != "Linux":
+                    continue
+
             if "git+http" in i:
                 logger.debug(f"Skipping git requirement (cannot check version): {i}")
                 continue
@@ -150,15 +163,6 @@ def install_pytorch():
                         "https://download.pytorch.org/whl/rocm5.4.2",
                     ]
                 )
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "pyamdgpuinfo",
-                    ]
-                )
 
         else:
             logger.info("ROCmInfo check failed, assuming user has NVIDIA GPU")
@@ -178,15 +182,6 @@ def install_pytorch():
                         "torchvision",
                         "--index-url",
                         "https://download.pytorch.org/whl/cu118",
-                    ]
-                )
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "pynvml",
                     ]
                 )
 

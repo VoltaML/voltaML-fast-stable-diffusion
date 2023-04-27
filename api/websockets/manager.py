@@ -3,14 +3,13 @@ import logging
 from asyncio import AbstractEventLoop
 from typing import Coroutine, List, Optional
 
+import torch
 from fastapi import WebSocket
 from psutil import NoSuchProcess
-import torch
 
 from api.websockets.data import Data
-from core.shared import amd, all_gpus
 from core.config import config
-
+from core.shared import all_gpus, amd
 
 logger = logging.getLogger(__name__)
 
@@ -122,6 +121,7 @@ class WebSocketManager:
 
                 except NoSuchProcess:
                     logger.debug("HW Stat - No such process, sleeping...")
+
             await self.broadcast(Data(data_type="cluster_stats", data=data))
             await asyncio.sleep(config.api.websocket_perf_interval)
 

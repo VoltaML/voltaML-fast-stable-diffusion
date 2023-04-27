@@ -3,7 +3,7 @@ from typing import List
 import torch
 from fastapi import APIRouter, HTTPException
 
-from core.shared import amd, all_gpus
+from core.shared import all_gpus, amd
 
 router = APIRouter(tags=["hardware"])
 
