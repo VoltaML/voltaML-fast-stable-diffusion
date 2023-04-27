@@ -1,36 +1,38 @@
 <template>
-  <NCard style="margin: 16px">
-    <NTabs>
-      <NTabPane name="Frontend">
-        <FrontendSettings />
-      </NTabPane>
-      <NTabPane name="API">
-        <APISettings />
-      </NTabPane>
-      <NTabPane name="Bot">
-        <BotSettings />
-      </NTabPane>
-      <NTabPane name="General">
-        <GeneralSettings />
-      </NTabPane>
-      <NTabPane name="Extra">
-        <ExtraSettings />
-      </NTabPane>
+  <div style="margin: 18px">
+    <NCard>
+      <NTabs>
+        <NTabPane name="Frontend">
+          <FrontendSettings />
+        </NTabPane>
+        <NTabPane name="API">
+          <APISettings />
+        </NTabPane>
+        <NTabPane name="Bot">
+          <BotSettings />
+        </NTabPane>
+        <NTabPane name="General">
+          <GeneralSettings />
+        </NTabPane>
+        <NTabPane name="Extra">
+          <ExtraSettings />
+        </NTabPane>
 
-      <template #suffix>
-        <NButton
-          type="error"
-          ghost
-          style="margin-right: 12px"
-          @click="resetSettings"
-          >Reset Settings</NButton
-        >
-        <NButton type="success" ghost @click="saveSettings"
-          >Save Settings</NButton
-        >
-      </template>
-    </NTabs>
-  </NCard>
+        <template #suffix>
+          <NButton
+            type="error"
+            ghost
+            style="margin-right: 12px"
+            @click="resetSettings"
+            >Reset Settings</NButton
+          >
+          <NButton type="success" ghost @click="saveSettings"
+            >Save Settings</NButton
+          >
+        </template>
+      </NTabs>
+    </NCard>
+  </div>
 </template>
 
 <script lang="ts" setup>

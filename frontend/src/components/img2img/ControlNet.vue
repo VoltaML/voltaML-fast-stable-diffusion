@@ -346,6 +346,11 @@
         />
 
         <SendOutputTo :output="global.state.controlnet.currentImage" />
+
+        <OutputStats
+          style="margin-top: 12px"
+          :gen-data="global.state.controlnet.genData"
+        />
       </NGi>
     </NGrid>
   </div>
@@ -356,6 +361,7 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
+import OutputStats from "@/components/OutputStats.vue";
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
@@ -409,6 +415,8 @@ const generate = () => {
   }
   global.state.generating = true;
 
+  const seed = checkSeed(conf.data.settings.controlnet.seed);
+
   fetch(`${serverUrl}/api/generate/controlnet`, {
     method: "POST",
     headers: {
@@ -420,11 +428,15 @@ const generate = () => {
         image: conf.data.settings.controlnet.image,
         id: uuidv4(),
         negative_prompt: conf.data.settings.controlnet.negative_prompt,
-        width: conf.data.settings.controlnet.width,
-        height: conf.data.settings.controlnet.height,
+        width: conf.data.settings.aitDim.width
+          ? conf.data.settings.aitDim.width
+          : conf.data.settings.img2img.width,
+        height: conf.data.settings.aitDim.height
+          ? conf.data.settings.aitDim.height
+          : conf.data.settings.img2img.height,
         steps: conf.data.settings.controlnet.steps,
         guidance_scale: conf.data.settings.controlnet.cfg_scale,
-        seed: checkSeed(conf.data.settings.controlnet.seed),
+        seed: seed,
         batch_size: conf.data.settings.controlnet.batch_size,
         batch_count: conf.data.settings.controlnet.batch_count,
         controlnet: conf.data.settings.controlnet.controlnet,
@@ -452,6 +464,11 @@ const generate = () => {
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
+
+        global.state.controlnet.genData = {
+          time_taken: parseFloat(parseFloat(data.time as string).toFixed(4)),
+          seed: seed,
+        };
       });
     })
     .catch((err) => {

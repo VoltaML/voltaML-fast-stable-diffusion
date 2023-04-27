@@ -19,7 +19,12 @@
         </NButton>
       </NGi>
       <NGi>
-        <NButton type="error" @click="interrupt" style="width: 100%" ghost
+        <NButton
+          type="error"
+          @click="interrupt"
+          style="width: 100%"
+          ghost
+          :disabled="!global.state.generating"
           >Interrupt
           <template #icon>
             <NIcon>

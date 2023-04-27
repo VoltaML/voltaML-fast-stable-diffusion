@@ -17,6 +17,11 @@ export interface GPU {
   memory_usage: number;
 }
 
+export interface GenerationData {
+  time_taken: number | null;
+  seed: number | null;
+}
+
 export interface StateInterface {
   progress: number;
   generating: boolean;
@@ -32,27 +37,33 @@ export interface StateInterface {
     currentImage: string;
     highres: boolean;
     images: string[];
+    genData: GenerationData;
   };
   img2img: {
     currentImage: string;
     images: string[];
     tab: string;
+    genData: GenerationData;
   };
   inpainting: {
     currentImage: string;
     images: string[];
+    genData: GenerationData;
   };
   imageVariations: {
     currentImage: string;
     images: string[];
+    genData: GenerationData;
   };
   controlnet: {
     currentImage: string;
     images: string[];
+    genData: GenerationData;
   };
   sd_upscale: {
     currentImage: string;
     images: string[];
+    genData: GenerationData;
   };
   extra: {
     currentImage: string;
@@ -67,6 +78,7 @@ export interface StateInterface {
   total_steps: number;
   imageBrowser: {
     currentImage: imgData;
+    currentImageByte64: string;
     currentImageMetadata: Map<string, string>;
   };
   perf_drawer: {
@@ -91,27 +103,51 @@ export const useState = defineStore("state", () => {
       images: [],
       highres: false,
       currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null,
+      },
     },
     img2img: {
       images: [],
       currentImage: "",
       tab: "Image to Image",
+      genData: {
+        time_taken: null,
+        seed: null,
+      },
     },
     inpainting: {
       images: [],
       currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null,
+      },
     },
     imageVariations: {
       images: [],
       currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null,
+      },
     },
     controlnet: {
       images: [],
       currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null,
+      },
     },
     sd_upscale: {
       images: [],
       currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null,
+      },
     },
     extra: {
       images: [],
@@ -127,8 +163,10 @@ export const useState = defineStore("state", () => {
     imageBrowser: {
       currentImage: {
         path: "",
+        id: "",
         time: 0,
       },
+      currentImageByte64: "",
       currentImageMetadata: new Map(),
     },
     perf_drawer: {

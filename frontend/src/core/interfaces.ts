@@ -1,4 +1,5 @@
 export interface imgData {
+  id: string;
   path: string;
   time: number;
 }

@@ -1,5 +1,6 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$2 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$4 } from "./OutputStats.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, k as createTextVNode, t as toDisplayString, l as createBaseVNode, m as NTooltip, n as NSelect, p as createBlock, q as createCommentVNode, r as NGrid, s as spaceRegex, v as serverUrl } from "./index.js";
 import { N as NSlider } from "./Slider.js";
@@ -96,6 +97,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         return;
       }
       global.state.generating = true;
+      const seed = checkSeed(conf.data.settings.txt2img.seed);
       fetch(`${serverUrl}/api/generate/txt2img`, {
         method: "POST",
         headers: {
@@ -106,11 +108,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             id: v4(),
             prompt: conf.data.settings.txt2img.prompt,
             negative_prompt: conf.data.settings.txt2img.negative_prompt,
-            width: conf.data.settings.aitDim.height ? conf.data.settings.aitDim.height : conf.data.settings.txt2img.width,
-            height: conf.data.settings.aitDim.width ? conf.data.settings.aitDim.width : conf.data.settings.txt2img.height,
+            width: conf.data.settings.aitDim.width ? conf.data.settings.aitDim.width : conf.data.settings.txt2img.width,
+            height: conf.data.settings.aitDim.height ? conf.data.settings.aitDim.height : conf.data.settings.txt2img.height,
             steps: conf.data.settings.txt2img.steps,
             guidance_scale: conf.data.settings.txt2img.cfg_scale,
-            seed: checkSeed(conf.data.settings.txt2img.seed),
+            seed,
             batch_size: conf.data.settings.aitDim.batch_size ? conf.data.settings.aitDim.batch_size : conf.data.settings.txt2img.batch_size,
             batch_count: conf.data.settings.txt2img.batch_count,
             scheduler: conf.data.settings.txt2img.sampler
@@ -138,6 +140,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;
+          global.state.txt2img.genData = {
+            time_taken: parseFloat(parseFloat(data.time).toFixed(4)),
+            seed
+          };
         });
       }).catch((err) => {
         global.state.generating = false;
@@ -562,7 +568,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }, null, 8, ["current-image", "images"]),
                 createVNode(_sfc_main$3, {
                   output: unref(global).state.txt2img.currentImage
-                }, null, 8, ["output"])
+                }, null, 8, ["output"]),
+                createVNode(_sfc_main$4, {
+                  style: { "margin-top": "12px" },
+                  "gen-data": unref(global).state.txt2img.genData
+                }, null, 8, ["gen-data"])
               ]),
               _: 1
             })

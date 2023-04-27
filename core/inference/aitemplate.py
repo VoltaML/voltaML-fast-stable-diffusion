@@ -14,7 +14,6 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets.data import Data
 from core.config import config
-from core.controlnet_preprocessing import image_to_controlnet_input
 from core.functions import init_ait_module
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
@@ -398,6 +397,8 @@ class AITemplateStableDiffusion(InferenceModel):
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
+
+        from core.controlnet_preprocessing import image_to_controlnet_input
 
         input_image = image_to_controlnet_input(input_image, job.data)
 

@@ -42,3 +42,6 @@ docker-compose.yml
 **/**.pyc
 .pytest_cache
 .coverage
+
+# Manager
+/manager

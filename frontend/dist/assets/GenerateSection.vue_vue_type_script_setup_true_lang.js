@@ -104,7 +104,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     type: "error",
                     onClick: interrupt,
                     style: { "width": "100%" },
-                    ghost: ""
+                    ghost: "",
+                    disabled: !unref(global).state.generating
                   }, {
                     icon: withCtx(() => [
                       createVNode(unref(NIcon), null, {
@@ -118,7 +119,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       createTextVNode("Interrupt ")
                     ]),
                     _: 1
-                  })
+                  }, 8, ["disabled"])
                 ]),
                 _: 1
               })

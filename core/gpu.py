@@ -114,6 +114,14 @@ class GPU:
                 shared.current_steps = steps * job.data.batch_count + extra_steps
                 shared.current_done_steps = 0
 
+            if not isinstance(job, ControlNetQueueEntry):
+                from core import shared_dependent
+
+                if shared_dependent.cached_controlnet_preprocessor is not None:
+                    # Wipe cached controlnet preprocessor
+                    shared_dependent.cached_controlnet_preprocessor = None
+                    self.memory_cleanup()
+
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.generate(job)

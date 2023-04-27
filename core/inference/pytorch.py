@@ -17,7 +17,6 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
-from core.controlnet_preprocessing import image_to_controlnet_input
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
@@ -144,11 +143,15 @@ class PyTorchStableDiffusion(InferenceModel):
             self.image_encoder = None
 
         if self.current_controlnet != target_controlnet:
+            logging.debug(f"Old: {self.current_controlnet}, New: {target_controlnet}")
+            logging.debug("Cached controlnet not fould, loading new one")
+
             # Cleanup old controlnet
             self.controlnet = None
             self.memory_cleanup()
 
             if target_controlnet == ControlNetMode.NONE:
+                self.current_controlnet = target_controlnet
                 return
 
             # Load new controlnet if needed
@@ -170,6 +173,9 @@ class PyTorchStableDiffusion(InferenceModel):
 
             cn.to(self.device)
             self.controlnet = cn
+            self.current_controlnet = target_controlnet
+        else:
+            logger.debug("No change in controlnet mode")
 
         # Clean memory
         self.memory_cleanup()
@@ -413,6 +419,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 "ControlNet is not available with traced UNet, please disable tracing and reload the model."
             )
 
+        logger.debug(f"Requested ControlNet: {job.data.controlnet}")
         self.manage_optional_components(target_controlnet=job.data.controlnet)
 
         assert self.controlnet is not None
@@ -434,6 +441,8 @@ class PyTorchStableDiffusion(InferenceModel):
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
         # Preprocess the image
+        from core.controlnet_preprocessing import image_to_controlnet_input
+
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
         input_image = image_to_controlnet_input(input_image, job.data)
