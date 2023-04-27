@@ -99,6 +99,7 @@ class WebSocketManager:
             else:
                 try:
                     from gpustat.core import GPUStatCollection
+
                     all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
                     for stat in all_gpus:
                         data.append(
