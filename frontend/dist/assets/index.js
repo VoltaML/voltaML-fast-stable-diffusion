@@ -34882,7 +34882,11 @@ const defaultSettings = {
     use_fp32: false,
     use_tomesd: true,
     tomesd_ratio: 0.4,
-    tomesd_downsample_layers: 1
+    tomesd_downsample_layers: 1,
+    deterministic_generation: false,
+    reduced_precision: false,
+    cudnn_benchmark: false,
+    clear_memory_policy: "always"
   },
   aitemplate: {
     num_threads: 8
