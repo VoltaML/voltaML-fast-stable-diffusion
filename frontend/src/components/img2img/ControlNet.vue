@@ -428,8 +428,12 @@ const generate = () => {
         image: conf.data.settings.controlnet.image,
         id: uuidv4(),
         negative_prompt: conf.data.settings.controlnet.negative_prompt,
-        width: conf.data.settings.controlnet.width,
-        height: conf.data.settings.controlnet.height,
+        width: conf.data.settings.aitDim.width
+          ? conf.data.settings.aitDim.width
+          : conf.data.settings.img2img.width,
+        height: conf.data.settings.aitDim.height
+          ? conf.data.settings.aitDim.height
+          : conf.data.settings.img2img.height,
         steps: conf.data.settings.controlnet.steps,
         guidance_scale: conf.data.settings.controlnet.cfg_scale,
         seed: seed,

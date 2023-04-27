@@ -473,11 +473,11 @@ const generate = () => {
         id: uuidv4(),
         prompt: conf.data.settings.txt2img.prompt,
         negative_prompt: conf.data.settings.txt2img.negative_prompt,
-        width: conf.data.settings.aitDim.height
-          ? conf.data.settings.aitDim.height
-          : conf.data.settings.txt2img.width,
-        height: conf.data.settings.aitDim.width
+        width: conf.data.settings.aitDim.width
           ? conf.data.settings.aitDim.width
+          : conf.data.settings.txt2img.width,
+        height: conf.data.settings.aitDim.height
+          ? conf.data.settings.aitDim.height
           : conf.data.settings.txt2img.height,
         steps: conf.data.settings.txt2img.steps,
         guidance_scale: conf.data.settings.txt2img.cfg_scale,
