@@ -1,9 +1,8 @@
 import logging
-from typing import Union, Tuple
 import warnings
+from typing import Tuple, Union
 
 import torch
-from tqdm.auto import tqdm
 from diffusers import (
     DiffusionPipeline,
     StableDiffusionPipeline,
@@ -12,6 +11,7 @@ from diffusers import (
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from diffusers.utils import is_accelerate_available, is_xformers_available
 from packaging import version
+from tqdm.auto import tqdm
 
 from core.config import config
 from core.files import get_full_model_path
@@ -55,7 +55,7 @@ def optimize_model(
         )
         torch.backends.cudnn.deterministic = config.api.deterministic_generation  # type: ignore
 
-        if config.api.cudnn_wizardry:
+        if config.api.cudnn_benchmark:
             logger.info("CUDNN wizardry enabled")
             torch.backends.cudnn.benchmark = True  # type: ignore
 
@@ -185,9 +185,6 @@ def optimize_model(
             )
         else:
             pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
-
-    # TODO: warmup?
-    # warmup(pipe.unet, 5, dtype, device)  # type: ignore
 
     logger.info("Optimization complete")
 

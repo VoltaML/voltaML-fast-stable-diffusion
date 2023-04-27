@@ -137,6 +137,10 @@ export interface SettingsInterface {
     use_tomesd: boolean;
     tomesd_ratio: number;
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
+    deterministic_generation: boolean;
+    reduced_precision: boolean;
+    cudnn_benchmark: boolean;
+    clear_memory_policy: "always" | "after_disconnect" | "never";
   };
   aitemplate: {
     num_threads: number;
@@ -263,6 +267,10 @@ export const defaultSettings: SettingsInterface = {
     use_tomesd: true,
     tomesd_ratio: 0.4,
     tomesd_downsample_layers: 1,
+    deterministic_generation: false,
+    reduced_precision: false,
+    cudnn_benchmark: false,
+    clear_memory_policy: "always",
   },
   aitemplate: {
     num_threads: 8,

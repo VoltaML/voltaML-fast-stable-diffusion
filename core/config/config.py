@@ -99,7 +99,7 @@ class APIConfig:
     use_tomesd: bool = True
     deterministic_generation: bool = True
     reduced_precision: bool = False
-    cudnn_wizardry: bool = True
+    cudnn_benchmark: bool = False
     tomesd_ratio: float = 0.4
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
     channels_last: bool = True

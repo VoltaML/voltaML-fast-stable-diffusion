@@ -61,6 +61,43 @@
       <NSwitch v-model:value="settings.defaultSettings.api.channels_last" />
     </NFormItem>
 
+    <NFormItem label="Deterministic generation">
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.deterministic_generation"
+      />
+    </NFormItem>
+
+    <NFormItem label="Reduced Precision (RTX 30xx and newer cards)">
+      <NSwitch v-model:value="settings.defaultSettings.api.reduced_precision" />
+    </NFormItem>
+
+    <NFormItem
+      label="CudNN Benchmark (big VRAM spikes - use on 8GB+ cards only)"
+    >
+      <NSwitch v-model:value="settings.defaultSettings.api.cudnn_benchmark" />
+    </NFormItem>
+
+    <NFormItem label="Clean Memory">
+      <NSelect
+        :options="[
+          {
+            value: 'always',
+            label: 'Always',
+          },
+          {
+            value: 'never',
+            label: 'Never',
+          },
+          {
+            value: 'after_disconnect',
+            label: 'After disconnect',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.clear_memory_policy"
+      >
+      </NSelect>
+    </NFormItem>
+
     <NFormItem label="VAE Slicing">
       <NSwitch v-model:value="settings.defaultSettings.api.vae_slicing" />
     </NFormItem>
