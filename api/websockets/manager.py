@@ -39,7 +39,7 @@ class WebSocketManager:
             from gpustat.core import GPUStatCollection
 
             all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:  # pylint: disable=broad-except
             logger.info("GPUStat failed to initialize - probably not an NVIDIA GPU")
             logger.debug("Trying pyamdgpuinfo...")
             try:
@@ -60,7 +60,7 @@ class WebSocketManager:
                         buffer_size_in_ticks=precision * 5,
                     )
                 amd = True
-            except Exception:  # pylint: disable=broad-exception-caught
+            except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "User doesn't have an AMD nor an NVIDIA card. GPU info will be unavailable."
                 )

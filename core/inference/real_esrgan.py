@@ -20,7 +20,7 @@ class RealESRGAN(InferenceModel):
     def __init__(
         self,
         model_name: str,
-        use_f32: bool = False,
+        use_f32: bool = False,  # pylint: disable=unused-argument
         device: str = "cuda",
         denoise_strength: float = 1.0,
         tile: int = 0,

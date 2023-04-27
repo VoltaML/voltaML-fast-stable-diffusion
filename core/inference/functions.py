@@ -86,7 +86,7 @@ def is_onnxsim_available():
 def is_bitsandbytes_available():
     "Checks whether bitsandbytes is available."
     try:
-        import bitsandbytes
+        import bitsandbytes  # pylint: disable=import-error,unused-import
 
         return True
     except ImportError:
@@ -350,8 +350,10 @@ class HiddenPrints:
     "Taken from https://stackoverflow.com/a/45669280. Thank you @alexander-c"
 
     def __enter__(self):
-        self._original_stdout = sys.stdout
-        sys.stdout = open(os.devnull, "w")
+        self._original_stdout = (  # pylint: disable=attribute-defined-outside-init
+            sys.stdout
+        )
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         sys.stdout.close()
