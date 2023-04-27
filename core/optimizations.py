@@ -45,10 +45,10 @@ def optimize_model(
     if config.api.device_type == "cuda":
         if config.api.reduced_precision:
             logger.info("Enabled reduced precision operations")
-            torch.backends.cuda.matmul.allow_tf32 = True  # type: ignore
-            torch.backends.cudnn.allow_tf32 = True  # type: ignore
-            torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True  # type: ignore
-            torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = True  # type: ignore
+        torch.backends.cuda.matmul.allow_tf32 = config.api.reduced_precision  # type: ignore
+        torch.backends.cudnn.allow_tf32 = config.api.reduced_precision  # type: ignore
+        torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = config.api.reduced_precision  # type: ignore
+        torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = config.api.reduced_precision  # type: ignore
 
         logger.info(
             f"CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
@@ -57,7 +57,7 @@ def optimize_model(
 
         if config.api.cudnn_benchmark:
             logger.info("CUDNN wizardry enabled")
-            torch.backends.cudnn.benchmark = True  # type: ignore
+        torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
     # Attention slicing that should save VRAM (but is slower)
     slicing = config.api.attention_slicing
