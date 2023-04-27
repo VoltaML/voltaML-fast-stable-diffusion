@@ -236,7 +236,10 @@ def warmup(
 
 
 def trace_model(
-    model: torch.nn.Module, dtype: torch.dtype, device: torch.device, iterations: int = 25,
+    model: torch.nn.Module,
+    dtype: torch.dtype,
+    device: torch.device,
+    iterations: int = 25,
 ) -> torch.nn.Module:
     "Traces the model for inference"
 
