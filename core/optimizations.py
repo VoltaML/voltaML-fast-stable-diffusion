@@ -34,32 +34,28 @@ def optimize_model(
     global _device  # pylint: disable=global-statement
 
     dtype = (
-        (torch.bfloat16 if config.api.device == "cpu" else torch.float16)
+        torch.float32
         if use_fp32
-        else torch.float32
+        else (torch.bfloat16 if config.api.device_type == "cpu" else torch.float16)
     )
     pipe.to(device, torch_dtype=dtype)
     _device = device
+    logger.info("Optimizing model")
 
-    if config.api.device == "cuda":
+    if config.api.device_type == "cuda":
         if config.api.reduced_precision:
             logger.info("Enabled reduced precision operations")
             torch.backends.cuda.matmul.allow_tf32 = True  # type: ignore
             torch.backends.cudnn.allow_tf32 = True  # type: ignore
             torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True  # type: ignore
+            torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = True  # type: ignore
 
-        if config.api.deterministic_generation:
-            logger.info("CUDNN using deterministic functions")
-            torch.backends.cudnn.deterministic = True  # type: ignore
-        else:
-            logger.info("CUDNN not using deterministic functions")
-            torch.backends.cudnn.deterministic = False  # type: ignore
+        logger.info(f"CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions")
+        torch.backends.cudnn.deterministic = config.api.deterministic_generation  # type: ignore
 
         if config.api.cudnn_wizardry:
             logger.info("CUDNN wizardry enabled")
             torch.backends.cudnn.benchmark = True  # type: ignore
-
-    logger.info("Optimizing model")
 
     # Attention slicing that should save VRAM (but is slower)
     slicing = config.api.attention_slicing
@@ -75,7 +71,7 @@ def optimize_model(
     # DirectML only supports contiguous memory format
     if (
         config.api.channels_last
-        and config.api.device != "directml"
+        and config.api.device_type != "directml"
         and not is_for_aitemplate
     ):
         pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
@@ -107,7 +103,7 @@ def optimize_model(
         if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
         else None
     )
-    if config.api.device != "directml":
+    if config.api.device_type != "directml":
         if offload == "model":
             # Offload to CPU
 
