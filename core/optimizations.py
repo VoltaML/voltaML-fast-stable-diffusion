@@ -50,7 +50,9 @@ def optimize_model(
             torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = True  # type: ignore
             torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = True  # type: ignore
 
-        logger.info(f"CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions")
+        logger.info(
+            f"CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
+        )
         torch.backends.cudnn.deterministic = config.api.deterministic_generation  # type: ignore
 
         if config.api.cudnn_wizardry:
