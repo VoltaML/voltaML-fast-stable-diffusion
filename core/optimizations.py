@@ -1,6 +1,6 @@
 import logging
 import warnings
-from typing import Tuple, Union
+from typing import Tuple, Union, Optional
 
 import torch
 from diffusers import (
@@ -43,12 +43,18 @@ def optimize_model(
     logger.info("Optimizing model")
 
     if config.api.device_type == "cuda":
-        if config.api.reduced_precision:
-            logger.info("Enabled reduced precision operations")
-        torch.backends.cuda.matmul.allow_tf32 = config.api.reduced_precision  # type: ignore
-        torch.backends.cudnn.allow_tf32 = config.api.reduced_precision  # type: ignore
+        supports_tf = supports_tf32(device)
+        if supports_tf and config.api.reduced_precision:
+            logger.info("Enabled all reduced precision operations")
+        elif not supports_tf and config.api.reduced_precision:
+            logger.warning(
+                "Device capability is not higher than 8.0, skipping most of reduction"
+            )
+            logger.info("Reduced precision operations enabled (only fp16)")
+        torch.backends.cuda.matmul.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
+        torch.backends.cudnn.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
         torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = config.api.reduced_precision  # type: ignore
-        torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = config.api.reduced_precision  # type: ignore
+        torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = config.api.reduced_precision and supports_tf  # type: ignore
 
         logger.info(
             f"CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
@@ -56,7 +62,7 @@ def optimize_model(
         torch.backends.cudnn.deterministic = config.api.deterministic_generation  # type: ignore
 
         if config.api.cudnn_benchmark:
-            logger.info("CUDNN wizardry enabled")
+            logger.info("CUDNN benchmark enabled")
         torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
     # Attention slicing that should save VRAM (but is slower)
@@ -187,6 +193,12 @@ def optimize_model(
             pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
 
     logger.info("Optimization complete")
+
+
+def supports_tf32(device: Optional[torch.device] = None) -> bool:
+    "Checks if device is post-Ampere"
+    major, _ = torch.cuda.get_device_capability(device)
+    return major >= 8
 
 
 def generate_inputs(

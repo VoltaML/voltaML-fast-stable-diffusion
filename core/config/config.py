@@ -96,11 +96,13 @@ class APIConfig:
     websocket_perf_interval: float = 1.0
     attention_processor: Literal["xformers", "spda"] = "xformers"
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
-    use_tomesd: bool = True
-    deterministic_generation: bool = True
+    use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit
+    deterministic_generation: bool = (
+        True  # disabling increases performance on my 3080 by 0.25it/s with batch_size=3
+    )
     reduced_precision: bool = False
     cudnn_benchmark: bool = False
-    tomesd_ratio: float = 0.4
+    tomesd_ratio: float = 0.25  # had to tone this down, 0.4 is too big of a context loss even on short prompts
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
     channels_last: bool = True
     vae_slicing: bool = True
