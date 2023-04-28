@@ -150,6 +150,10 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> None:
         "Cleanup old components"
 
+        logger.debug(
+            f"Current controlnet: {self.current_controlnet}, target: {target_controlnet}"
+        )
+
         if self.current_controlnet != target_controlnet:
             # Cleanup old controlnet
             self.controlnet = None
@@ -173,6 +177,8 @@ class AITemplateStableDiffusion(InferenceModel):
                     )
 
                     logger.info("Done loading basic unet")
+
+                self.current_controlnet = target_controlnet
                 return
             else:
                 # Load controlnet unet if requested
