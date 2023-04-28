@@ -5,7 +5,7 @@ import { d as defineComponent, u as useState, a as useSettings, b as useMessage,
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
-const _withScopeId = (n) => (pushScopeId("data-v-671d08f1"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-23eb17b1"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale Factor", -1));
@@ -73,8 +73,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
+          cols: "1 m:2",
+          "x-gap": "12",
+          responsive: "screen"
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
@@ -151,8 +152,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_671d08f1_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-671d08f1"]]);
+const RealESRGAN_vue_vue_type_style_index_0_scoped_23eb17b1_lang = "";
+const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-23eb17b1"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {
