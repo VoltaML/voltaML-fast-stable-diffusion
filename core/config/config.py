@@ -122,6 +122,7 @@ class APIConfig:
             return "cpu"
         if self.device_type == "directml":
             import torch_directml
+
             return torch_directml.device()
 
         return f"{self.device_type}:{self.device_id}"

@@ -80,17 +80,13 @@ class WebSocketManager:
                             "utilization": stat.query_load(),
                             "power_draw": stat.query_power(),
                             "power_limit": stat.query_power(),
-                            "memory_used": stat.query_vram_usage(),
-                            "memory_total": stat.memory_info["vram_size"]
+                            "memory_used": stat.query_vram_usage() / 1024**2,
+                            "memory_total": stat.memory_info["vram_size"] / 1024**2
                             if stat.memory_info["vram_size"]
                             else 1024,
                             "memory_usage": int(
                                 stat.query_vram_usage()
-                                / (
-                                    stat.memory_info["vram_size"]
-                                    if stat.memory_info["vram_size"]
-                                    else 1024
-                                )
+                                / stat.memory_info["vram_size"]
                                 * 100
                             ),
                         }

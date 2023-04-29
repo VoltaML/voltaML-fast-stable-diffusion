@@ -109,10 +109,17 @@ def optimize_model(
 
     # xFormers and SPDA
     if not is_for_aitemplate:
-        if is_xformers_available() and config.api.attention_processor == "xformers" and config.api.device_type != "directml":
+        if (
+            is_xformers_available()
+            and config.api.attention_processor == "xformers"
+            and config.api.device_type != "directml"
+        ):
             pipe.enable_xformers_memory_efficient_attention()
             logger.info("Optimization: Enabled xFormers memory efficient attention")
-        elif version.parse(torch.__version__) >= version.parse("2.0.0") and config.api.attention_processor == "sdpa":
+        elif (
+            version.parse(torch.__version__) >= version.parse("2.0.0")
+            and config.api.attention_processor == "sdpa"
+        ):
             from diffusers.models.attention_processor import AttnProcessor2_0
 
             pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
@@ -123,9 +130,7 @@ def optimize_model(
             from diffusers.models.attention_processor import AttnProcessor
 
             pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
-            logger.info(
-                "Optimization: Enabled Cross-Attention processor"
-            )
+            logger.info("Optimization: Enabled Cross-Attention processor")
 
     offload = (
         config.api.offload
