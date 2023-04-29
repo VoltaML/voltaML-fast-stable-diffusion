@@ -2,9 +2,10 @@ import logging
 from typing import Optional, Union
 
 import torch
-from diffusers import StableDiffusionPipeline
 from torch.nn.functional import interpolate
+from diffusers import StableDiffusionPipeline
 
+from core.config import config
 from core.flags import LatentScaleModel
 from core.optimizations import send_to_gpu
 
@@ -32,7 +33,7 @@ def prepare_latents(
         )
 
         if latents is None:
-            if device.type == "mps":
+            if device.type == "mps" or config.api.device_type == "directml":
                 # randn does not work reproducibly on mps
                 latents = torch.randn(
                     shape, generator=generator, device="cpu", dtype=dtype  # type: ignore
@@ -68,7 +69,7 @@ def prepare_latents(
         shape = init_latents.shape
 
         # add noise to latents using the timesteps
-        if device.type == "mps":
+        if device.type == "mps" or config.api.device_type == "directml":
             noise = torch.randn(
                 shape, generator=generator, device="cpu", dtype=dtype
             ).to(device)

@@ -198,7 +198,10 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         if job.data.scheduler:
             change_scheduler(
@@ -292,7 +295,10 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -356,7 +362,10 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -436,7 +445,10 @@ class PyTorchStableDiffusion(InferenceModel):
             vae=self.vae,
         )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
