@@ -33,6 +33,16 @@ def optimize_model(
     "Optimize the model for inference"
     global _device  # pylint: disable=global-statement
 
+    # Tuple[Supported, Enabled by default, Enabled]
+    hardware_scheduling = experimental_check_hardware_scheduling()
+
+    if hardware_scheduling[2] == 1 and not is_for_aitemplate:
+        logger.warning("Hardware accelerated scheduling is turned on! This will have a HUGE negative impact on performance")
+        if hardware_scheduling[1] == 1:
+            logger.warning("You most likely didn't even know this was turned on. Windows 11 enables it by default on NVIDIA devices")
+        logger.warning("You can read about this issue on https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/3889")
+        logger.warning("You can disable it by going inside Graphics Settings → \"Default Graphics Settings\" and disabling \"Hardware-accelerated GPU Scheduling\"")
+
     dtype = (
         torch.float32
         if use_fp32
@@ -42,27 +52,30 @@ def optimize_model(
     _device = device
     logger.info("Optimizing model")
 
-    if config.api.device_type == "cuda":
+    if config.api.device_type == "cuda" and not is_for_aitemplate:
         supports_tf = supports_tf32(device)
-        if supports_tf and config.api.reduced_precision:
-            logger.info("Enabled all reduced precision operations")
-        elif not supports_tf and config.api.reduced_precision:
-            logger.warning(
-                "Device capability is not higher than 8.0, skipping most of reduction"
-            )
-            logger.info("Reduced precision operations enabled (only fp16)")
+        if config.api.reduced_precision:
+            if supports_tf:
+                logger.info("Optimization: Enabled all reduced precision operations")
+            else:
+                logger.warning(
+                    "Optimization: Device capability is not higher than 8.0, skipping most of reduction"
+                )
+                logger.info(
+                    "Optimization: Reduced precision operations enabled (fp16 only)"
+                )
         torch.backends.cuda.matmul.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
         torch.backends.cudnn.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
         torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = config.api.reduced_precision  # type: ignore
         torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = config.api.reduced_precision and supports_tf  # type: ignore
 
         logger.info(
-            f"CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
+            f"Optimization: CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
         )
         torch.backends.cudnn.deterministic = config.api.deterministic_generation  # type: ignore
 
         if config.api.cudnn_benchmark:
-            logger.info("CUDNN benchmark enabled")
+            logger.info("Optimization: CUDNN benchmark enabled")
         torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
     # Attention slicing that should save VRAM (but is slower)
@@ -182,7 +195,7 @@ def optimize_model(
                 "Optimization: ToMeSD patch failed, despite having it enabled. Please check installation"
             )
 
-    if config.api.trace_model:
+    if config.api.trace_model and not is_for_aitemplate:
         logger.info("Tracing model.")
         logger.warning("This will break controlnet and loras!")
         if config.api.attention_processor == "xformers":
@@ -266,7 +279,9 @@ def trace_model(
             torch.jit.enable_onednn_fusion(True)
         model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
         if config.api.device_type == "cpu":
+            logger.debug("Running OFI")
             model = torch.jit.optimize_for_inference(model)  # type: ignore
+            logger.debug("Model frozen & merged")
     logger.debug("Tracing done")
     warmup(model, iterations // 5, dtype, device)
 
@@ -291,6 +306,19 @@ def trace_model(
     rn = TracedUNet()
     del og
     return rn
+
+
+def experimental_check_hardware_scheduling() -> Tuple[int, int, int]:
+    "When on windows check if user has hardware scheduling turned on"
+    import sys
+    if sys.platform != "win32":
+        return (-1, -1, -1)
+
+    import ctypes
+    from pathlib import Path
+    hardware_schedule_test = ctypes.WinDLL(str(Path() / "libs" / "hardware-accel-test.dll")).HwSchEnabled
+    hardware_schedule_test.restype = ctypes.POINTER(ctypes.c_int * 3)
+    return [x for x in hardware_schedule_test().contents]  # type: ignore
 
 
 def is_pytorch_pipe(pipe):
