@@ -95,6 +95,7 @@ export interface SettingsInterface {
     controlnet_conditioning_scale: number;
     detection_resolution: number;
     image: string;
+    is_preprocessed: boolean;
   };
   sd_upscale: {
     prompt: string;
@@ -221,6 +222,7 @@ export const defaultSettings: SettingsInterface = {
     batch_count: 1,
     controlnet_conditioning_scale: 1,
     detection_resolution: 512,
+    is_preprocessed: false,
   },
   sd_upscale: {
     prompt: "",

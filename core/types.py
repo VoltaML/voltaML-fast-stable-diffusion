@@ -151,6 +151,8 @@ class ControlNetData:
     mlsd_thr_v: float = field(default=0.1)
     mlsd_thr_d: float = field(default=0.1)
 
+    is_preprocessed: bool = field(default=False)
+
 
 @dataclass
 class RealESRGanData:

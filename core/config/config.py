@@ -78,6 +78,7 @@ class ControlNetConfig:
     controlnet: ControlNetMode = ControlNetMode.CANNY
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512
+    is_preprocessed: bool = False
 
 
 @dataclass

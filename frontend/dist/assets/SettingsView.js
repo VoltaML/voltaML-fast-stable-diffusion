@@ -2321,11 +2321,20 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 1
               }),
+              createVNode(unref(NFormItem), { label: "Is Preprocessed" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.controlnet.is_preprocessed,
+                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.controlnet.is_preprocessed = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
               createVNode(unref(NFormItem), { label: "Steps" }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.controlnet.steps,
-                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.controlnet.steps = $event)
+                    "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.controlnet.steps = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2334,7 +2343,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale,
-                    "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale = $event),
+                    "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale = $event),
                     step: 0.1
                   }, null, 8, ["value", "step"])
                 ]),
@@ -2344,7 +2353,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.controlnet.detection_resolution,
-                    "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.detection_resolution = $event),
+                    "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.controlnet.detection_resolution = $event),
                     step: 8
                   }, null, 8, ["value"])
                 ]),

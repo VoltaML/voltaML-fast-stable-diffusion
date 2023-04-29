@@ -444,7 +444,10 @@ class PyTorchStableDiffusion(InferenceModel):
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
-        input_image = image_to_controlnet_input(input_image, job.data)
+
+        # Preprocess the image if needed
+        if not job.data.is_preprocessed:
+            input_image = image_to_controlnet_input(input_image, job.data)
 
         # Preprocess the prompt
         prompt_embeds, negative_embeds = get_weighted_text_embeddings(

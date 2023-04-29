@@ -8,6 +8,7 @@ import { d as defineComponent, o as openBlock, e as createElementBlock, l as cre
 import { v as v4 } from "./v4.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
+import { N as NSwitch } from "./Switch.js";
 import "./Image.js";
 const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
@@ -142,7 +143,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-aee3dcab"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-51a02a89"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -190,6 +191,8 @@ const _hoisted_29 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createB
 const _hoisted_30 = { class: "flex-container" };
 const _hoisted_31 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Seed", -1));
 const _hoisted_32 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1));
+const _hoisted_33 = { class: "flex-container" };
+const _hoisted_34 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Is Preprocessed", -1));
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "ControlNet",
   setup(__props) {
@@ -244,7 +247,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             canny_low_threshold: 100,
             canny_high_threshold: 200,
             mlsd_thr_v: 0.1,
-            mlsd_thr_d: 0.1
+            mlsd_thr_d: 0.1,
+            is_preprocessed: conf.data.settings.controlnet.is_preprocessed
           },
           model: (_a = conf.data.settings.model) == null ? void 0 : _a.name
         })
@@ -610,6 +614,13 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             max: 999999999999,
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_33, [
+                          _hoisted_34,
+                          createVNode(unref(NSwitch), {
+                            value: unref(conf).data.settings.controlnet.is_preprocessed,
+                            "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(conf).data.settings.controlnet.is_preprocessed = $event)
+                          }, null, 8, ["value"])
                         ])
                       ]),
                       _: 1
@@ -626,7 +637,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                 createVNode(_sfc_main$6, {
                   "current-image": unref(global).state.controlnet.currentImage,
                   images: unref(global).state.controlnet.images,
-                  onImageClicked: _cache[22] || (_cache[22] = ($event) => unref(global).state.controlnet.currentImage = $event)
+                  onImageClicked: _cache[23] || (_cache[23] = ($event) => unref(global).state.controlnet.currentImage = $event)
                 }, null, 8, ["current-image", "images"]),
                 createVNode(_sfc_main$7, {
                   output: unref(global).state.controlnet.currentImage
@@ -645,8 +656,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_aee3dcab_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-aee3dcab"]]);
+const ControlNet_vue_vue_type_style_index_0_scoped_51a02a89_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-51a02a89"]]);
 const _withScopeId$2 = (n) => (pushScopeId("data-v-9640969e"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
