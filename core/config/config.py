@@ -96,7 +96,7 @@ class APIConfig:
     websocket_perf_interval: float = 1.0
     attention_processor: Literal["xformers", "spda"] = "xformers"
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
-    use_tomesd: bool = True
+    use_tomesd: bool = False
     tomesd_ratio: float = 0.4
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
     channels_last: bool = True

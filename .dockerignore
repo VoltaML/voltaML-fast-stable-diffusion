@@ -42,6 +42,7 @@ docker-compose.yml
 **/**.pyc
 .pytest_cache
 .coverage
+/.ruff_cache
 
 # Manager
 /manager
