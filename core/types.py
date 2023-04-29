@@ -1,9 +1,10 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Union
 from uuid import uuid4
 
 from diffusers import (
+    DiffusionPipeline,
     StableDiffusionControlNetPipeline,
     StableDiffusionDepth2ImgPipeline,
     StableDiffusionImg2ImgPipeline,
@@ -14,7 +15,8 @@ from diffusers import (
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate"]
+InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate", "ONNX"]
+Backend = Literal["PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA"]
 
 
 @dataclass
@@ -24,7 +26,9 @@ class Job:
     data: Any
     model: str
     websocket_id: Union[str, None] = field(default=None)
-    save_image: bool = field(default=True)
+    save_image: Literal[True, False, "r2"] = True
+    save_grid: bool = False
+    flags: Dict[str, Dict] = field(default_factory=dict)
 
 
 class SupportedModel(Enum):
@@ -43,7 +47,7 @@ class SupportedModel(Enum):
 
 
 class ControlNetMode(Enum):
-    "Enum of modes for the control net"
+    "Enum of modes for the ControlNet"
 
     CANNY = "lllyasviel/sd-controlnet-canny"
     DEPTH = "lllyasviel/sd-controlnet-depth"
@@ -54,6 +58,16 @@ class ControlNetMode(Enum):
     SCRIBBLE = "lllyasviel/sd-controlnet-scribble"
     SEGMENTATION = "lllyasviel/sd-controlnet-seg"
     NONE = "none"
+
+
+@dataclass
+class InterrogationData:
+    "Dataclass for the data of an interrogation request"
+
+    image: Union[bytes, str]
+    caption: Optional[str] = field(default=None)
+    treshold: float = field(default=0.5)
+    id: str = field(default_factory=lambda: uuid4().hex)
 
 
 @dataclass
@@ -112,20 +126,6 @@ class InpaintData:
 
 
 @dataclass
-class ImageVariationsData:
-    "Dataclass for the data of an img2img request"
-
-    image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
-    id: str = field(default_factory=lambda: uuid4().hex)
-    steps: int = field(default=25)
-    guidance_scale: float = field(default=7)
-    seed: int = field(default=0)
-    batch_size: int = field(default=1)
-    batch_count: int = field(default=1)
-
-
-@dataclass
 class ControlNetData:
     "Dataclass for the data of a control net request"
 
@@ -153,6 +153,42 @@ class ControlNetData:
 
 
 @dataclass
+class RealESRGanData:
+    "Dataclass for the data of a real esrgan request"
+
+    image: Union[bytes, str]
+    id: str = field(default_factory=lambda: uuid4().hex)
+    upscale_factor: int = field(default=4)
+
+
+@dataclass
+class SDUpscaleData:
+    "Dataclass for the data of Stable Diffusion Tiled Upscale request"
+
+    prompt: str
+    image: Union[bytes, str]
+    scheduler: KarrasDiffusionSchedulers
+    id: str = field(default_factory=lambda: uuid4().hex)
+    negative_prompt: str = field(default="")
+    steps: int = field(default=25)
+    guidance_scale: float = field(default=7)
+    seed: int = field(default=0)
+    batch_size: int = field(default=1)
+    batch_count: int = field(default=1)
+    tile_size: int = field(default=128)
+    tile_border: int = field(default=32)
+    original_image_slice: int = field(default=32)
+    noise_level: int = field(default=40)
+
+
+@dataclass
+class InterrogatorQueueEntry(Job):
+    "Dataclass for an interrogation queue entry"
+
+    data: InterrogationData
+
+
+@dataclass
 class Txt2ImgQueueEntry(Job):
     "Dataclass for a text to image queue entry"
 
@@ -174,13 +210,6 @@ class InpaintQueueEntry(Job):
 
 
 @dataclass
-class ImageVariationsQueueEntry(Job):
-    "Dataclass for an image to image queue entry"
-
-    data: ImageVariationsData
-
-
-@dataclass
 class ControlNetQueueEntry(Job):
     "Dataclass for a control net queue entry"
 
@@ -188,7 +217,22 @@ class ControlNetQueueEntry(Job):
 
 
 @dataclass
-class BuildRequest:
+class RealESRGANQueueEntry(Job):
+    "Dataclass for a real esrgan job"
+
+    data: RealESRGanData
+
+
+@dataclass
+class SDUpscaleQueueEntry(Job):
+    "Dataclass for a stable diffusion upscale job"
+
+    data: SDUpscaleData
+    model: str = field(default="stabilityai/stable-diffusion-x4-upscaler")
+
+
+@dataclass
+class TRTBuildRequest:
     "Dataclass for requesting a build of an engine"
 
     model_id: str
@@ -209,7 +253,36 @@ class BuildRequest:
     onnx_minimal_optimization: bool = False
 
 
+@dataclass
+class QuantizationDict:
+    "Dataclass for quantization parameters"
+
+    vae_encoder: Literal[True, False, None] = None
+    vae_decoder: Literal[True, False, None] = None
+    unet: Literal[True, False, None] = None
+    text_encoder: Literal[True, False, None] = None
+
+
+@dataclass
+class ONNXBuildRequest:
+    "Dataclass for requesting a build of an ONNX engine"
+
+    model_id: str
+    simplify_unet: bool = False
+    quant_dict: QuantizationDict = field(default_factory=QuantizationDict)
+
+
+@dataclass
+class ConvertModelRequest:
+    "Dataclass for requesting a conversion of a model"
+
+    model: str
+    use_fp32: bool = False
+    safetensors: bool = False
+
+
 PyTorchModelType = Union[
+    DiffusionPipeline,
     StableDiffusionDepth2ImgPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
@@ -229,3 +302,15 @@ class AITemplateBuildRequest:
     height: int = field(default=512)
     batch_size: int = field(default=1)
     threads: Optional[int] = field(default=None)
+
+
+@dataclass
+class ModelResponse:
+    "Dataclass for a response containing a loaded model info"
+
+    name: str
+    path: str
+    backend: Backend
+    valid: bool
+    state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
+    loras: List[str] = field(default_factory=list)

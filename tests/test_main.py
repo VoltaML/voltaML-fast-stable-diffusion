@@ -1,4 +1,8 @@
-from main import checks, main
+import os
+
+os.environ["TESTING"] = "1"
+
+from main import checks, main  # pylint: disable=wrong-import-position
 
 
 def test_checks():
@@ -6,4 +10,4 @@ def test_checks():
 
 
 def test_main():
-    main(testing=True)
+    main(exit_after_init=True)

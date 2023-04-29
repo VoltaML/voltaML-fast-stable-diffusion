@@ -10,13 +10,28 @@
           :loading="global.state.generating"
           style="width: 100%"
           ghost
-          >Generate</NButton
-        >
+          >Generate
+          <template #icon>
+            <NIcon>
+              <Play />
+            </NIcon>
+          </template>
+        </NButton>
       </NGi>
       <NGi>
-        <NButton type="error" @click="interrupt" style="width: 100%" ghost
-          >Interrupt</NButton
-        >
+        <NButton
+          type="error"
+          @click="interrupt"
+          style="width: 100%"
+          ghost
+          :disabled="!global.state.generating"
+          >Interrupt
+          <template #icon>
+            <NIcon>
+              <Skull />
+            </NIcon>
+          </template>
+        </NButton>
       </NGi>
     </NGrid>
   </NCard>
@@ -25,7 +40,8 @@
 <script lang="ts" setup>
 import { serverUrl } from "@/env";
 import { useState } from "@/store/state";
-import { NButton, NCard, NGi, NGrid } from "naive-ui";
+import { Play, Skull } from "@vicons/ionicons5";
+import { NButton, NCard, NGi, NGrid, NIcon } from "naive-ui";
 import type { MaybeArray } from "naive-ui/es/_utils";
 import { defineProps, type PropType } from "vue";
 

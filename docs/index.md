@@ -11,7 +11,7 @@ hero:
   actions:
     - theme: brand
       text: Get Started
-      link: /introduction
+      link: /getting-started/introduction
     - theme: alt
       text: View on GitHub
       link: https://github.com/voltaML/voltaML-fast-stable-diffusion
@@ -25,5 +25,5 @@ features:
     details: Docker makes it easy to install and run VoltaML in a few minutes.
   - icon: 🚀
     title: Model acceleration
-    details: Speed up your models with AITemplate. Save your time and mo
+    details: Speed up your models with AITemplate. Save your time and money.
 ---

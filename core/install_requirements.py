@@ -11,6 +11,7 @@ renamed_requirements = {
     "opencv-contrib-python-headless": "cv2",
     "fastapi-analytics": "api_analytics",
     "cuda-python": "cuda",
+    "open_clip_torch": "open_clip",
 }
 logger = logging.getLogger(__name__)
 
@@ -42,6 +43,10 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
         requirements = {}
         for i in [r.strip() for r in f.read().splitlines()]:
+            if "git+http" in i:
+                logger.debug(f"Skipping git requirement (cannot check version): {i}")
+                continue
+
             if "==" in i:
                 requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
             elif ">=" in i:
@@ -108,23 +113,69 @@ def install_pytorch():
                     "https://download.pytorch.org/whl/cu118",
                 ]
             )
-    else:
-        if not is_installed("torch") or not is_installed("torchvision"):
+    elif platform.system() == "Darwin":
+        if not is_installed("torch", version="==2.0.0") or not is_installed(
+            "torchvision"
+        ):
             logger.info("Installing PyTorch")
             subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "torch==2.0.0",
-                    "torchvision",
-                ]
+                [sys.executable, "-m", "pip", "install", "torch==2.0.0", "torchvision"]
             )
+    else:
+        if (
+            subprocess.run(  # pylint: disable=subprocess-run-check
+                "rocminfo",
+                stdout=subprocess.DEVNULL,
+                stderr=subprocess.DEVNULL,
+                shell=True,
+            ).returncode
+            == 0
+        ):
+            logger.info("ROCmInfo success, assuming user has AMD GPU")
+
+            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
+                "torchvision", "==0.15.1+cu118"
+            ):
+                logger.info("Installing PyTorch")
+
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "torch==2.0.0",
+                        "torchvision",
+                        "--index-url",
+                        "https://download.pytorch.org/whl/rocm5.4.2",
+                    ]
+                )
+
+        else:
+            logger.info("ROCmInfo check failed, assuming user has NVIDIA GPU")
+
+            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
+                "torchvision", "==0.15.1+cu118"
+            ):
+                logger.info("Installing PyTorch")
+
+                subprocess.check_call(
+                    [
+                        sys.executable,
+                        "-m",
+                        "pip",
+                        "install",
+                        "torch==2.0.0",
+                        "torchvision",
+                        "--index-url",
+                        "https://download.pytorch.org/whl/cu118",
+                    ]
+                )
 
     # Install other requirements
     install_requirements("requirements/pytorch.txt")
     install_requirements("requirements/api.txt")
+    install_requirements("requirements/interrogation.txt")
 
 
 def install_bot():

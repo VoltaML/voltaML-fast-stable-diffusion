@@ -8,6 +8,7 @@ from PIL import Image
 from api import websocket_manager
 from api.websockets.data import Data
 from core import shared
+from core.config import config
 from core.errors import InferenceInterruptedError
 from core.utils import convert_images_to_base64_grid
 
@@ -54,7 +55,11 @@ def txt2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -74,7 +79,11 @@ def img2img_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -94,7 +103,11 @@ def inpaint_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -114,7 +127,11 @@ def image_variations_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -134,7 +151,11 @@ def controlnet_callback(step: int, _timestep: int, tensor: torch.Tensor):
                 ),
                 "current_step": shared.current_done_steps,
                 "total_steps": shared.current_steps,
-                "image": convert_images_to_base64_grid(images) if send_image else "",
+                "image": convert_images_to_base64_grid(
+                    images, quality=60, image_format="webp"
+                )
+                if send_image
+                else "",
             },
         )
     )
@@ -152,7 +173,7 @@ def pytorch_callback(
         raise InferenceInterruptedError
 
     shared.current_done_steps += 1
-    send_image: bool = time.time() - last_image_time > 2
+    send_image: bool = time.time() - last_image_time > config.api.image_preview_delay
     images: List[Image.Image] = []
 
     if send_image:

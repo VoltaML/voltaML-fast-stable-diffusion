@@ -9,6 +9,12 @@
   
   
   <p>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docker_build_main.yml">
+      <img src="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docker_build_main.yml/badge.svg" alt="docker build" />
+    </a>
+    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docs.yml">
+      <img src="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docs.yml/badge.svg" alt="docs" />
+    </a>
     <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/graphs/contributors">
       <img src="https://img.shields.io/github/contributors/VoltaML/voltaML-fast-stable-diffusion" alt="contributors" />
     </a>
@@ -37,7 +43,7 @@
   <a href="https://discord.gg/pY5SVyHmWm"> <img src="https://dcbadge.vercel.app/api/server/pY5SVyHmWm" /> </a> 
     
   <h4>
-      <a href="https://stax124.github.io/voltaML-fast-stable-diffusion/">Documentation</a>
+      <a href="https://voltaml.github.io/voltaML-fast-stable-diffusion/">Documentation</a>
     <span> · </span>
       <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/issues/new/choose">Report Bug</a>
     <span> · </span>
@@ -45,6 +51,10 @@
   </h4>
 
 </div>
+
+<hr>
+<h3 align="center">Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a></h3>
+<hr>
 
 <br />
 
@@ -128,11 +138,11 @@
 
 The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
 
-| GPU (it/s) | T4  | A10  | A100 | 4090 | 3090 | 2080Ti | 3050 |
-| ---------- | --- | ---- | ---- | ---- | ---- | ------ | ---- |
-| PyTorch    | 4.3 | 8.8  | 15.1 | 19   | 11   | 8      | 4.1  |
-| xFormers   | 5.5 | 15.6 | 27.5 | 28   | 15.7 | N/A    | 5.1  |
-| AITemplate | N/A | 23   | N/A  | N/A  | N/A  | N/A    | 10.2 |
+| GPU (it/s) | T4  | A10  | A100 | 4090 | 4080 | 3090 | 2080Ti | 3050 |
+| ---------- | --- | ---- | ---- | ---- | ---- | ---- | ------ | ---- |
+| PyTorch    | 4.3 | 8.8  | 15.1 | 19   | 15.5 | 11   | 8      | 4.1  |
+| xFormers   | 5.5 | 15.6 | 27.5 | 28   | 20.2 | 15.7 | N/A    | 5.1  |
+| AITemplate | N/A | 23   | N/A  | N/A  | 40.5 | N/A  | N/A    | 10.2 |
 
 ## Installation
 
@@ -161,8 +171,3 @@ Distributed under the <b>GPL v3</b>. See [License](https://github.com/VoltaML/vo
 Feel free to contact us on discord: https://discord.gg/pY5SVyHmWm
 
 Project Link: [https://github.com/VoltaML/voltaML-fast-stable-diffusion](https://github.com/VoltaML/voltaML-fast-stable-diffusion)
-
-<hr>
-<p align="center">
-  Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a>
-</p>

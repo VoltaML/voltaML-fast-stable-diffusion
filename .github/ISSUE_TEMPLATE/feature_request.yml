@@ -1,5 +1,10 @@
 name: "\U0001F680 New feature proposal"
 description: Suggest an idea for this project
+title: "[Feature]: "
+assignees:
+  - Stax124
+labels:
+  - "Feature Request"
 body:
   - type: markdown
     attributes:

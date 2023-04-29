@@ -1,19 +1,11 @@
 {
 	"python.linting.pylintEnabled": true,
 	"python.linting.enabled": true,
-	"grammarly.selectors": [
-		{
-			"language": "markdown",
-			"scheme": "file",
-			"pattern": "docs/index.md"
-		},
-		{
-			"language": "markdown",
-			"scheme": "file",
-			"pattern": "docs/developers/documentation.md"
-		}
-	],
 	"python.testing.pytestArgs": ["."],
 	"python.testing.unittestEnabled": false,
-	"python.testing.pytestEnabled": true
+	"python.testing.pytestEnabled": true,
+	"python.analysis.typeCheckingMode": "basic",
+	"python.formatting.provider": "black",
+	"python.languageServer": "Pylance",
+	"rust-analyzer.linkedProjects": ["./manager/Cargo.toml"]
 }

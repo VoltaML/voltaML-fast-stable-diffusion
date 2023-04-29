@@ -1,11 +1,12 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any, Dict, List, Optional, Union
+from typing import List, Optional, Union
 
+from diffusers.utils.constants import DIFFUSERS_CACHE
 from huggingface_hub.file_download import repo_folder_name
 
-from core.config import config
+from core.types import ModelResponse
 
 logger = logging.getLogger(__name__)
 
@@ -14,17 +15,16 @@ class CachedModelList:
     "List of models downloaded for PyTorch and (or) converted to TRT"
 
     def __init__(self):
-        self.pytorch_path = Path(config.cache_dir)
+        self.pytorch_path = Path(DIFFUSERS_CACHE)
         self.checkpoint_converted_path = Path("data/models")
-        self.tensorrt_engine_path = Path(
-            os.environ.get("TENSORRT_ENGINE_PATH", "engine")
-        )
+        self.tensorrt_engine_path = Path("data/tensorrt")
         self.aitemplate_path = Path("data/aitemplate")
+        self.lora_path = Path("data/lora")
 
-    def pytorch(self) -> List[Dict[str, Any]]:
+    def pytorch(self) -> List[ModelResponse]:
         "List of models downloaded for PyTorch"
 
-        models: List[Dict[str, Any]] = []
+        models: List[ModelResponse] = []
 
         # Diffusers cached models
         logger.debug(f"Looking for PyTorch models in {self.pytorch_path}")
@@ -38,41 +38,62 @@ class CachedModelList:
             name: str = "/".join(model_name.split("--")[1:3])
             try:
                 models.append(
-                    {
-                        "name": name,
-                        "path": name,
-                        "backend": "PyTorch",
-                        "valid": is_valid_diffusers_model(get_full_model_path(name)),
-                    }
+                    ModelResponse(
+                        name=name,
+                        path=name,
+                        backend="PyTorch",
+                        valid=is_valid_diffusers_model(get_full_model_path(name)),
+                        loras=[],
+                        state="not loaded",
+                    )
                 )
             except ValueError:
                 logger.debug(f"Invalid model {name}, skipping...")
                 continue
 
         # Localy stored models
-        logger.debug(
-            f"Looking for converted models in {self.checkpoint_converted_path}"
-        )
+        logger.debug(f"Looking for local models in {self.checkpoint_converted_path}")
         for model_name in os.listdir(self.checkpoint_converted_path):
             logger.debug(f"Found model {model_name}")
 
-            models.append(
-                {
-                    "name": model_name,
-                    "path": str(self.checkpoint_converted_path.joinpath(model_name)),
-                    "backend": "PyTorch",
-                    "valid": is_valid_diffusers_model(
-                        self.checkpoint_converted_path.joinpath(model_name)
-                    ),
-                }
-            )
+            if self.checkpoint_converted_path.joinpath(model_name).is_dir():
+                # Assuming that model is in Diffusers format
+                models.append(
+                    ModelResponse(
+                        name=model_name,
+                        path=model_name,
+                        backend="PyTorch",
+                        valid=is_valid_diffusers_model(
+                            self.checkpoint_converted_path.joinpath(model_name)
+                        ),
+                        loras=[],
+                        state="not loaded",
+                    )
+                )
+            elif ".safetensors" in model_name or ".ckpt" in model_name:
+                # Assuming that model is in Checkpoint / Safetensors format
+                models.append(
+                    ModelResponse(
+                        name=model_name,
+                        path=model_name,
+                        backend="PyTorch",
+                        valid=True,
+                        loras=[],
+                        state="not loaded",
+                    )
+                )
+            else:
+                # Junk file, notify user
+                logger.debug(
+                    f"Found junk file {model_name} in {self.checkpoint_converted_path}, skipping..."
+                )
 
         return models
 
-    def tensorrt(self) -> List[Dict[str, Any]]:
+    def tensorrt(self) -> List[ModelResponse]:
         "List of models converted to TRT"
 
-        models: List[Dict[str, Any]] = []
+        models: List[ModelResponse] = []
 
         logger.debug(f"Looking for TensorRT models in {self.tensorrt_engine_path}")
 
@@ -81,22 +102,24 @@ class CachedModelList:
             for model_name in os.listdir(self.tensorrt_engine_path.joinpath(author)):
                 logger.debug(f"Found model {model_name}")
                 models.append(
-                    {
-                        "name": "/".join([author, model_name]),
-                        "path": "/".join([author, model_name]),
-                        "backend": "TensorRT",
-                        "valid": is_valid_tensorrt_model(
+                    ModelResponse(
+                        name="/".join([author, model_name]),
+                        path="/".join([author, model_name]),
+                        backend="TensorRT",
+                        valid=is_valid_tensorrt_model(
                             self.tensorrt_engine_path.joinpath(author, model_name)
                         ),
-                    }
+                        loras=[],
+                        state="not loaded",
+                    )
                 )
 
         return models
 
-    def aitemplate(self) -> List[Dict[str, Any]]:
+    def aitemplate(self) -> List[ModelResponse]:
         "List of models converted to TRT"
 
-        models: List[Dict[str, Any]] = []
+        models: List[ModelResponse] = []
 
         logger.debug(f"Looking for AITemplate models in {self.aitemplate_path}")
 
@@ -105,14 +128,38 @@ class CachedModelList:
             model_name = model.replace("--", "/")
 
             models.append(
-                {
-                    "name": model_name,
-                    "path": model,
-                    "backend": "AITemplate",
-                    "valid": is_valid_aitemplate_model(
+                ModelResponse(
+                    name=model_name,
+                    path=model,
+                    backend="AITemplate",
+                    valid=is_valid_aitemplate_model(
                         self.aitemplate_path.joinpath(model)
                     ),
-                }
+                    loras=[],
+                    state="not loaded",
+                )
+            )
+
+        return models
+
+    def lora(self):
+        "List of LoRA models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.lora_path):
+            logger.debug(f"Found LoRA {model}")
+            model_name = model.replace(".safetensors", "").replace(".ckpt", "")
+
+            models.append(
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.lora_path, model),
+                    backend="LoRA",
+                    valid=True,
+                    loras=[],
+                    state="not loaded",
+                )
             )
 
         return models
@@ -120,7 +167,7 @@ class CachedModelList:
     def all(self):
         "List PyTorch, TensorRT and AITemplate models"
 
-        return self.pytorch() + self.tensorrt() + self.aitemplate()
+        return self.pytorch() + self.tensorrt() + self.aitemplate() + self.lora()
 
 
 def is_valid_diffusers_model(model_path: Union[str, Path]):
@@ -146,35 +193,31 @@ def is_valid_diffusers_model(model_path: Union[str, Path]):
     for folder in binary_folders:
         # Check if the folder exists
         if not os.path.exists(path / folder):
-            logger.debug(f"Folder {path / folder} not found: model is not valid")
             is_valid = False
             break
 
         # Check if there is at least one .bin file in the folder
         has_binaries = True
         found_files = os.listdir(path / folder)
-        if [path / folder / i for i in found_files if i.endswith(".bin")].__len__() < 1:
+        if len([path / folder / i for i in found_files if i.endswith(".bin")]) < 1:
             has_binaries = False
 
         # Check if there is at least one .safetensor file in the folder
         has_safetensors = True
         found_files = os.listdir(path / folder)
-        if [
-            path / folder / i for i in found_files if i.endswith(".safetensors")
-        ].__len__() < 1:
+        if (
+            len([path / folder / i for i in found_files if i.endswith(".safetensors")])
+            < 1
+        ):
             has_safetensors = False
 
         # If there is no binary or safetensor file, the model is not valid
         if not has_binaries and not has_safetensors:
-            logger.debug(
-                f"No binary files or safetensors found in {path / folder}: model is not valid"
-            )
             is_valid = False
 
     # Check all the other files that should be present
     for file in files:
         if not os.path.exists(path / file):
-            logger.debug(f"File {path / file} not found: model is not valid")
             is_valid = False
 
     return is_valid
@@ -196,7 +239,6 @@ def is_valid_tensorrt_model(model_path: Union[str, Path]):
     # Check all the files that should be present
     for file in files:
         if not os.path.exists(path / file):
-            logger.debug(f"File {path / file} not found: model is not valid")
             is_valid = False
 
     return is_valid
@@ -217,7 +259,6 @@ def is_valid_aitemplate_model(model_path: Union[str, Path]):
     # Check all the files that should be present
     for file in files:
         if not os.path.exists(path / file):
-            logger.debug(f"File {path / file} not found: model is not valid")
             is_valid = False
 
     return is_valid
@@ -227,7 +268,7 @@ def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
     "Return the name of the folder where the diffusers model is stored"
 
     return os.path.join(
-        config.cache_dir, repo_folder_name(repo_id=repo_id, repo_type=repo_type)
+        DIFFUSERS_CACHE, repo_folder_name(repo_id=repo_id, repo_type=repo_type)
     )
 
 
@@ -248,7 +289,12 @@ def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
             return snapshot
 
 
-def get_full_model_path(repo_id: str, revision: str = "main") -> Path:
+def get_full_model_path(
+    repo_id: str,
+    revision: str = "main",
+    model_folder: str = "models",
+    force: bool = False,
+) -> Path:
     "Return the path to the actual model"
 
     # Replace -- with / and remove the __dim part
@@ -257,12 +303,18 @@ def get_full_model_path(repo_id: str, revision: str = "main") -> Path:
 
     # 1. Check for the exact path
     if repo_path.exists():
+        logger.debug(f"Found model in {repo_path}")
         return repo_path
 
     # 2. Check if model is stored in local storage
-    alt_path = Path("data/models") / repo_id
-    if alt_path.exists():
+    alt_path = Path("data") / model_folder / repo_id
+    if alt_path.exists() or force:
+        logger.debug(f"Found model in {alt_path}")
         return alt_path
+
+    logger.debug(
+        f"Model not found in {repo_path} or {alt_path}, checking diffusers cache..."
+    )
 
     # 3. Check if model is stored in diffusers cache
     storage = diffusers_storage_name(repo_id)

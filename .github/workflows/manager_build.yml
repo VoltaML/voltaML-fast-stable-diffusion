@@ -1,0 +1,29 @@
+name: Build Manager
+
+on:
+  push:
+    branches: ["main", "experimental"]
+    paths:
+      - "**.rs"
+  pull_request:
+    branches: ["main", "experimental"]
+    paths:
+      - "**.rs"
+
+env:
+  CARGO_TERM_COLOR: always
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build
+        run: cd manager && cargo build --verbose --release
+      - name: Output binary
+        uses: actions/upload-artifact@v3
+        with:
+          name: volta-manager
+          path: manager/target/release/voltaml-manager
+          retention-days: 3

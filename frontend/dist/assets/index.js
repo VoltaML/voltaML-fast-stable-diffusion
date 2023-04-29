@@ -202,7 +202,7 @@ const looseToNumber = (val) => {
   const n = parseFloat(val);
   return isNaN(n) ? val : n;
 };
-const toNumber = (val) => {
+const toNumber$1 = (val) => {
   const n = isString$1(val) ? Number(val) : NaN;
   return isNaN(n) ? val : n;
 };
@@ -5514,7 +5514,7 @@ function normalizeDuration(duration) {
   }
 }
 function NumberOf(val) {
-  const res = toNumber(val);
+  const res = toNumber$1(val);
   return res;
 }
 function addTransitionClass(el, cls) {
@@ -5726,6 +5726,30 @@ function hasCSSTransform(el, root2, moveClass) {
   container.removeChild(clone);
   return hasTransform;
 }
+const systemModifiers = ["ctrl", "shift", "alt", "meta"];
+const modifierGuards = {
+  stop: (e) => e.stopPropagation(),
+  prevent: (e) => e.preventDefault(),
+  self: (e) => e.target !== e.currentTarget,
+  ctrl: (e) => !e.ctrlKey,
+  shift: (e) => !e.shiftKey,
+  alt: (e) => !e.altKey,
+  meta: (e) => !e.metaKey,
+  left: (e) => "button" in e && e.button !== 0,
+  middle: (e) => "button" in e && e.button !== 1,
+  right: (e) => "button" in e && e.button !== 2,
+  exact: (e, modifiers) => systemModifiers.some((m) => e[`${m}Key`] && !modifiers.includes(m))
+};
+const withModifiers = (fn, modifiers) => {
+  return (event, ...args) => {
+    for (let i = 0; i < modifiers.length; i++) {
+      const guard = modifierGuards[modifiers[i]];
+      if (guard && guard(event, modifiers))
+        return;
+    }
+    return fn(event, ...args);
+  };
+};
 const vShow = {
   beforeMount(el, { value }, { transition }) {
     el._vod = el.style.display === "none" ? "" : el.style.display;
@@ -5799,7 +5823,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.33
+  * pinia v2.0.34
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -6703,13 +6727,13 @@ function isMediaOrSupports(selector) {
   return /^\s*@(s|m)/.test(selector);
 }
 const kebabRegex = /[A-Z]/g;
-function kebabCase$2(pattern) {
+function kebabCase(pattern) {
   return pattern.replace(kebabRegex, (match2) => "-" + match2.toLowerCase());
 }
 function unwrapProperty(prop, indent = "  ") {
   if (typeof prop === "object" && prop !== null) {
     return " {\n" + Object.entries(prop).map((v) => {
-      return indent + `  ${kebabCase$2(v[0])}: ${v[1]};`;
+      return indent + `  ${kebabCase(v[0])}: ${v[1]};`;
     }).join("\n") + "\n" + indent + "}";
   }
   return `: ${prop};`;
@@ -6749,7 +6773,7 @@ ${unwrappedProps}
       statements.push("\n" + property2 + "\n");
       return;
     }
-    propertyName = kebabCase$2(propertyName);
+    propertyName = kebabCase(propertyName);
     if (property2 !== null && property2 !== void 0) {
       statements.push(`  ${propertyName}${unwrapProperty(property2)}`);
     }
@@ -7578,6 +7602,96 @@ function createDelegate() {
   };
 }
 const { on, off } = createDelegate();
+const mousePositionRef = ref(null);
+function clickHandler(e) {
+  if (e.clientX > 0 || e.clientY > 0) {
+    mousePositionRef.value = {
+      x: e.clientX,
+      y: e.clientY
+    };
+  } else {
+    const { target } = e;
+    if (target instanceof Element) {
+      const { left, top, width, height } = target.getBoundingClientRect();
+      if (left > 0 || top > 0) {
+        mousePositionRef.value = {
+          x: left + width / 2,
+          y: top + height / 2
+        };
+      } else {
+        mousePositionRef.value = { x: 0, y: 0 };
+      }
+    } else {
+      mousePositionRef.value = null;
+    }
+  }
+}
+let usedCount$1 = 0;
+let managable$1 = true;
+function useClickPosition() {
+  if (!isBrowser$2)
+    return readonly(ref(null));
+  if (usedCount$1 === 0)
+    on("click", document, clickHandler, true);
+  const setup = () => {
+    usedCount$1 += 1;
+  };
+  if (managable$1 && (managable$1 = hasInstance())) {
+    onBeforeMount(setup);
+    onBeforeUnmount(() => {
+      usedCount$1 -= 1;
+      if (usedCount$1 === 0)
+        off("click", document, clickHandler, true);
+    });
+  } else {
+    setup();
+  }
+  return readonly(mousePositionRef);
+}
+const clickedTimeRef = ref(void 0);
+let usedCount = 0;
+function handleClick() {
+  clickedTimeRef.value = Date.now();
+}
+let managable = true;
+function useClicked(timeout) {
+  if (!isBrowser$2)
+    return readonly(ref(false));
+  const clickedRef = ref(false);
+  let timerId = null;
+  function clearTimer() {
+    if (timerId !== null)
+      window.clearTimeout(timerId);
+  }
+  function clickedHandler() {
+    clearTimer();
+    clickedRef.value = true;
+    timerId = window.setTimeout(() => {
+      clickedRef.value = false;
+    }, timeout);
+  }
+  if (usedCount === 0) {
+    on("click", window, handleClick, true);
+  }
+  const setup = () => {
+    usedCount += 1;
+    on("click", window, clickedHandler, true);
+  };
+  if (managable && (managable = hasInstance())) {
+    onBeforeMount(setup);
+    onBeforeUnmount(() => {
+      usedCount -= 1;
+      if (usedCount === 0) {
+        off("click", window, handleClick, true);
+      }
+      off("click", window, clickedHandler, true);
+      clearTimer();
+    });
+  } else {
+    setup();
+  }
+  return readonly(clickedRef);
+}
 function useMergedState(controlledStateRef, uncontrolledStateRef) {
   watch(controlledStateRef, (value) => {
     if (value !== void 0) {
@@ -9576,7 +9690,7 @@ function ensureWheelScale() {
   }
   return wheelScale;
 }
-const styles = c(".v-vl", {
+const styles$1 = c(".v-vl", {
   maxHeight: "inherit",
   height: "100%",
   overflow: "auto",
@@ -9641,7 +9755,7 @@ const VVirtualList = defineComponent({
   },
   setup(props) {
     const ssrAdapter2 = useSsrAdapter();
-    styles.mount({
+    styles$1.mount({
       id: "vueuc/virtual-list",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -9718,15 +9832,15 @@ const VVirtualList = defineComponent({
         scrollToPosition2(options, y, "auto");
         return;
       }
-      const { left, top, index, key, position, behavior, debounce = true } = options;
+      const { left, top, index, key, position, behavior, debounce: debounce2 = true } = options;
       if (left !== void 0 || top !== void 0) {
         scrollToPosition2(left, top, behavior);
       } else if (index !== void 0) {
-        scrollToIndex(index, behavior, debounce);
+        scrollToIndex(index, behavior, debounce2);
       } else if (key !== void 0) {
         const toIndex = keyIndexMapRef.value.get(key);
         if (toIndex !== void 0)
-          scrollToIndex(toIndex, behavior, debounce);
+          scrollToIndex(toIndex, behavior, debounce2);
       } else if (position === "bottom") {
         scrollToPosition2(0, Number.MAX_SAFE_INTEGER, behavior);
       } else if (position === "top") {
@@ -9735,10 +9849,10 @@ const VVirtualList = defineComponent({
     };
     let anchorIndex;
     let anchorTimerId = null;
-    function scrollToIndex(index, behavior, debounce) {
+    function scrollToIndex(index, behavior, debounce2) {
       const { value: ft } = finweckTreeRef;
       const targetTop = ft.sum(index) + depx(props.paddingTop);
-      if (!debounce) {
+      if (!debounce2) {
         listElRef.value.scrollTo({
           left: 0,
           top: targetTop,
@@ -9972,6 +10086,57 @@ const VVirtualList = defineComponent({
         ]);
       }
     });
+  }
+});
+const styles = c(".v-x-scroll", {
+  overflow: "auto",
+  scrollbarWidth: "none"
+}, [
+  c("&::-webkit-scrollbar", {
+    width: 0,
+    height: 0
+  })
+]);
+const VXScroll = defineComponent({
+  name: "XScroll",
+  props: {
+    disabled: Boolean,
+    onScroll: Function
+  },
+  setup() {
+    const selfRef = ref(null);
+    function handleWheel(e) {
+      const preventYWheel = e.currentTarget.offsetWidth < e.currentTarget.scrollWidth;
+      if (!preventYWheel || e.deltaY === 0)
+        return;
+      e.currentTarget.scrollLeft += e.deltaY + e.deltaX;
+      e.preventDefault();
+    }
+    const ssrAdapter2 = useSsrAdapter();
+    styles.mount({
+      id: "vueuc/x-scroll",
+      head: true,
+      anchorMetaName: cssrAnchorMetaName$1,
+      ssr: ssrAdapter2
+    });
+    const exposedMethods = {
+      scrollTo(...args) {
+        var _a2;
+        (_a2 = selfRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollTo(...args);
+      }
+    };
+    return Object.assign({
+      selfRef,
+      handleWheel
+    }, exposedMethods);
+  },
+  render() {
+    return h("div", {
+      ref: "selfRef",
+      onScroll: this.onScroll,
+      onWheel: this.disabled ? void 0 : this.handleWheel,
+      class: "v-x-scroll"
+    }, this.$slots);
   }
 });
 const hiddenAttr = "v-hidden";
@@ -10611,9 +10776,43 @@ function baseToString(value) {
   var result = value + "";
   return result == "0" && 1 / value == -INFINITY$1 ? "-0" : result;
 }
+var reWhitespace = /\s/;
+function trimmedEndIndex(string) {
+  var index = string.length;
+  while (index-- && reWhitespace.test(string.charAt(index))) {
+  }
+  return index;
+}
+var reTrimStart = /^\s+/;
+function baseTrim(string) {
+  return string ? string.slice(0, trimmedEndIndex(string) + 1).replace(reTrimStart, "") : string;
+}
 function isObject(value) {
   var type = typeof value;
   return value != null && (type == "object" || type == "function");
+}
+var NAN = 0 / 0;
+var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+var reIsBinary = /^0b[01]+$/i;
+var reIsOctal = /^0o[0-7]+$/i;
+var freeParseInt = parseInt;
+function toNumber(value) {
+  if (typeof value == "number") {
+    return value;
+  }
+  if (isSymbol(value)) {
+    return NAN;
+  }
+  if (isObject(value)) {
+    var other = typeof value.valueOf == "function" ? value.valueOf() : value;
+    value = isObject(other) ? other + "" : other;
+  }
+  if (typeof value != "string") {
+    return value === 0 ? value : +value;
+  }
+  value = baseTrim(value);
+  var isBinary = reIsBinary.test(value);
+  return isBinary || reIsOctal.test(value) ? freeParseInt(value.slice(2), isBinary ? 2 : 8) : reIsBadHex.test(value) ? NAN : +value;
 }
 function identity$1(value) {
   return value;
@@ -10803,11 +11002,11 @@ function copyObject(source, props, object, customizer) {
   }
   return object;
 }
-var nativeMax = Math.max;
+var nativeMax$1 = Math.max;
 function overRest(func, start, transform) {
-  start = nativeMax(start === void 0 ? func.length - 1 : start, 0);
+  start = nativeMax$1(start === void 0 ? func.length - 1 : start, 0);
   return function() {
-    var args = arguments, index = -1, length = nativeMax(args.length - start, 0), array = Array(length);
+    var args = arguments, index = -1, length = nativeMax$1(args.length - start, 0), array = Array(length);
     while (++index < length) {
       array[index] = args[start + index];
     }
@@ -11155,10 +11354,10 @@ MapCache.prototype["delete"] = mapCacheDelete;
 MapCache.prototype.get = mapCacheGet;
 MapCache.prototype.has = mapCacheHas;
 MapCache.prototype.set = mapCacheSet;
-var FUNC_ERROR_TEXT = "Expected a function";
+var FUNC_ERROR_TEXT$2 = "Expected a function";
 function memoize(func, resolver) {
   if (typeof func != "function" || resolver != null && typeof resolver != "function") {
-    throw new TypeError(FUNC_ERROR_TEXT);
+    throw new TypeError(FUNC_ERROR_TEXT$2);
   }
   var memoized = function() {
     var args = arguments, key = resolver ? resolver.apply(this, args) : args[0], cache2 = memoized.cache;
@@ -11273,19 +11472,19 @@ function castSlice(array, start, end) {
   end = end === void 0 ? length : end;
   return !start && end >= length ? array : baseSlice(array, start, end);
 }
-var rsAstralRange$2 = "\\ud800-\\udfff", rsComboMarksRange$3 = "\\u0300-\\u036f", reComboHalfMarksRange$3 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$3 = "\\u20d0-\\u20ff", rsComboRange$3 = rsComboMarksRange$3 + reComboHalfMarksRange$3 + rsComboSymbolsRange$3, rsVarRange$2 = "\\ufe0e\\ufe0f";
-var rsZWJ$2 = "\\u200d";
-var reHasUnicode = RegExp("[" + rsZWJ$2 + rsAstralRange$2 + rsComboRange$3 + rsVarRange$2 + "]");
+var rsAstralRange$1 = "\\ud800-\\udfff", rsComboMarksRange$1 = "\\u0300-\\u036f", reComboHalfMarksRange$1 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$1 = "\\u20d0-\\u20ff", rsComboRange$1 = rsComboMarksRange$1 + reComboHalfMarksRange$1 + rsComboSymbolsRange$1, rsVarRange$1 = "\\ufe0e\\ufe0f";
+var rsZWJ$1 = "\\u200d";
+var reHasUnicode = RegExp("[" + rsZWJ$1 + rsAstralRange$1 + rsComboRange$1 + rsVarRange$1 + "]");
 function hasUnicode(string) {
   return reHasUnicode.test(string);
 }
 function asciiToArray(string) {
   return string.split("");
 }
-var rsAstralRange$1 = "\\ud800-\\udfff", rsComboMarksRange$2 = "\\u0300-\\u036f", reComboHalfMarksRange$2 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$2 = "\\u20d0-\\u20ff", rsComboRange$2 = rsComboMarksRange$2 + reComboHalfMarksRange$2 + rsComboSymbolsRange$2, rsVarRange$1 = "\\ufe0e\\ufe0f";
-var rsAstral = "[" + rsAstralRange$1 + "]", rsCombo$2 = "[" + rsComboRange$2 + "]", rsFitz$1 = "\\ud83c[\\udffb-\\udfff]", rsModifier$1 = "(?:" + rsCombo$2 + "|" + rsFitz$1 + ")", rsNonAstral$1 = "[^" + rsAstralRange$1 + "]", rsRegional$1 = "(?:\\ud83c[\\udde6-\\uddff]){2}", rsSurrPair$1 = "[\\ud800-\\udbff][\\udc00-\\udfff]", rsZWJ$1 = "\\u200d";
-var reOptMod$1 = rsModifier$1 + "?", rsOptVar$1 = "[" + rsVarRange$1 + "]?", rsOptJoin$1 = "(?:" + rsZWJ$1 + "(?:" + [rsNonAstral$1, rsRegional$1, rsSurrPair$1].join("|") + ")" + rsOptVar$1 + reOptMod$1 + ")*", rsSeq$1 = rsOptVar$1 + reOptMod$1 + rsOptJoin$1, rsSymbol = "(?:" + [rsNonAstral$1 + rsCombo$2 + "?", rsCombo$2, rsRegional$1, rsSurrPair$1, rsAstral].join("|") + ")";
-var reUnicode = RegExp(rsFitz$1 + "(?=" + rsFitz$1 + ")|" + rsSymbol + rsSeq$1, "g");
+var rsAstralRange = "\\ud800-\\udfff", rsComboMarksRange = "\\u0300-\\u036f", reComboHalfMarksRange = "\\ufe20-\\ufe2f", rsComboSymbolsRange = "\\u20d0-\\u20ff", rsComboRange = rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange, rsVarRange = "\\ufe0e\\ufe0f";
+var rsAstral = "[" + rsAstralRange + "]", rsCombo = "[" + rsComboRange + "]", rsFitz = "\\ud83c[\\udffb-\\udfff]", rsModifier = "(?:" + rsCombo + "|" + rsFitz + ")", rsNonAstral = "[^" + rsAstralRange + "]", rsRegional = "(?:\\ud83c[\\udde6-\\uddff]){2}", rsSurrPair = "[\\ud800-\\udbff][\\udc00-\\udfff]", rsZWJ = "\\u200d";
+var reOptMod = rsModifier + "?", rsOptVar = "[" + rsVarRange + "]?", rsOptJoin = "(?:" + rsZWJ + "(?:" + [rsNonAstral, rsRegional, rsSurrPair].join("|") + ")" + rsOptVar + reOptMod + ")*", rsSeq = rsOptVar + reOptMod + rsOptJoin, rsSymbol = "(?:" + [rsNonAstral + rsCombo + "?", rsCombo, rsRegional, rsSurrPair, rsAstral].join("|") + ")";
+var reUnicode = RegExp(rsFitz + "(?=" + rsFitz + ")|" + rsSymbol + rsSeq, "g");
 function unicodeToArray(string) {
   return string.match(reUnicode) || [];
 }
@@ -11303,264 +11502,6 @@ function createCaseFirst(methodName) {
 }
 var upperFirst = createCaseFirst("toUpperCase");
 const upperFirst$1 = upperFirst;
-function arrayReduce(array, iteratee, accumulator, initAccum) {
-  var index = -1, length = array == null ? 0 : array.length;
-  if (initAccum && length) {
-    accumulator = array[++index];
-  }
-  while (++index < length) {
-    accumulator = iteratee(accumulator, array[index], index, array);
-  }
-  return accumulator;
-}
-function basePropertyOf(object) {
-  return function(key) {
-    return object == null ? void 0 : object[key];
-  };
-}
-var deburredLetters = {
-  // Latin-1 Supplement block.
-  "À": "A",
-  "Á": "A",
-  "Â": "A",
-  "Ã": "A",
-  "Ä": "A",
-  "Å": "A",
-  "à": "a",
-  "á": "a",
-  "â": "a",
-  "ã": "a",
-  "ä": "a",
-  "å": "a",
-  "Ç": "C",
-  "ç": "c",
-  "Ð": "D",
-  "ð": "d",
-  "È": "E",
-  "É": "E",
-  "Ê": "E",
-  "Ë": "E",
-  "è": "e",
-  "é": "e",
-  "ê": "e",
-  "ë": "e",
-  "Ì": "I",
-  "Í": "I",
-  "Î": "I",
-  "Ï": "I",
-  "ì": "i",
-  "í": "i",
-  "î": "i",
-  "ï": "i",
-  "Ñ": "N",
-  "ñ": "n",
-  "Ò": "O",
-  "Ó": "O",
-  "Ô": "O",
-  "Õ": "O",
-  "Ö": "O",
-  "Ø": "O",
-  "ò": "o",
-  "ó": "o",
-  "ô": "o",
-  "õ": "o",
-  "ö": "o",
-  "ø": "o",
-  "Ù": "U",
-  "Ú": "U",
-  "Û": "U",
-  "Ü": "U",
-  "ù": "u",
-  "ú": "u",
-  "û": "u",
-  "ü": "u",
-  "Ý": "Y",
-  "ý": "y",
-  "ÿ": "y",
-  "Æ": "Ae",
-  "æ": "ae",
-  "Þ": "Th",
-  "þ": "th",
-  "ß": "ss",
-  // Latin Extended-A block.
-  "Ā": "A",
-  "Ă": "A",
-  "Ą": "A",
-  "ā": "a",
-  "ă": "a",
-  "ą": "a",
-  "Ć": "C",
-  "Ĉ": "C",
-  "Ċ": "C",
-  "Č": "C",
-  "ć": "c",
-  "ĉ": "c",
-  "ċ": "c",
-  "č": "c",
-  "Ď": "D",
-  "Đ": "D",
-  "ď": "d",
-  "đ": "d",
-  "Ē": "E",
-  "Ĕ": "E",
-  "Ė": "E",
-  "Ę": "E",
-  "Ě": "E",
-  "ē": "e",
-  "ĕ": "e",
-  "ė": "e",
-  "ę": "e",
-  "ě": "e",
-  "Ĝ": "G",
-  "Ğ": "G",
-  "Ġ": "G",
-  "Ģ": "G",
-  "ĝ": "g",
-  "ğ": "g",
-  "ġ": "g",
-  "ģ": "g",
-  "Ĥ": "H",
-  "Ħ": "H",
-  "ĥ": "h",
-  "ħ": "h",
-  "Ĩ": "I",
-  "Ī": "I",
-  "Ĭ": "I",
-  "Į": "I",
-  "İ": "I",
-  "ĩ": "i",
-  "ī": "i",
-  "ĭ": "i",
-  "į": "i",
-  "ı": "i",
-  "Ĵ": "J",
-  "ĵ": "j",
-  "Ķ": "K",
-  "ķ": "k",
-  "ĸ": "k",
-  "Ĺ": "L",
-  "Ļ": "L",
-  "Ľ": "L",
-  "Ŀ": "L",
-  "Ł": "L",
-  "ĺ": "l",
-  "ļ": "l",
-  "ľ": "l",
-  "ŀ": "l",
-  "ł": "l",
-  "Ń": "N",
-  "Ņ": "N",
-  "Ň": "N",
-  "Ŋ": "N",
-  "ń": "n",
-  "ņ": "n",
-  "ň": "n",
-  "ŋ": "n",
-  "Ō": "O",
-  "Ŏ": "O",
-  "Ő": "O",
-  "ō": "o",
-  "ŏ": "o",
-  "ő": "o",
-  "Ŕ": "R",
-  "Ŗ": "R",
-  "Ř": "R",
-  "ŕ": "r",
-  "ŗ": "r",
-  "ř": "r",
-  "Ś": "S",
-  "Ŝ": "S",
-  "Ş": "S",
-  "Š": "S",
-  "ś": "s",
-  "ŝ": "s",
-  "ş": "s",
-  "š": "s",
-  "Ţ": "T",
-  "Ť": "T",
-  "Ŧ": "T",
-  "ţ": "t",
-  "ť": "t",
-  "ŧ": "t",
-  "Ũ": "U",
-  "Ū": "U",
-  "Ŭ": "U",
-  "Ů": "U",
-  "Ű": "U",
-  "Ų": "U",
-  "ũ": "u",
-  "ū": "u",
-  "ŭ": "u",
-  "ů": "u",
-  "ű": "u",
-  "ų": "u",
-  "Ŵ": "W",
-  "ŵ": "w",
-  "Ŷ": "Y",
-  "ŷ": "y",
-  "Ÿ": "Y",
-  "Ź": "Z",
-  "Ż": "Z",
-  "Ž": "Z",
-  "ź": "z",
-  "ż": "z",
-  "ž": "z",
-  "Ĳ": "IJ",
-  "ĳ": "ij",
-  "Œ": "Oe",
-  "œ": "oe",
-  "ŉ": "'n",
-  "ſ": "s"
-};
-var deburrLetter = basePropertyOf(deburredLetters);
-const deburrLetter$1 = deburrLetter;
-var reLatin = /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g;
-var rsComboMarksRange$1 = "\\u0300-\\u036f", reComboHalfMarksRange$1 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$1 = "\\u20d0-\\u20ff", rsComboRange$1 = rsComboMarksRange$1 + reComboHalfMarksRange$1 + rsComboSymbolsRange$1;
-var rsCombo$1 = "[" + rsComboRange$1 + "]";
-var reComboMark = RegExp(rsCombo$1, "g");
-function deburr(string) {
-  string = toString(string);
-  return string && string.replace(reLatin, deburrLetter$1).replace(reComboMark, "");
-}
-var reAsciiWord = /[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;
-function asciiWords(string) {
-  return string.match(reAsciiWord) || [];
-}
-var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
-function hasUnicodeWord(string) {
-  return reHasUnicodeWord.test(string);
-}
-var rsAstralRange = "\\ud800-\\udfff", rsComboMarksRange = "\\u0300-\\u036f", reComboHalfMarksRange = "\\ufe20-\\ufe2f", rsComboSymbolsRange = "\\u20d0-\\u20ff", rsComboRange = rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange, rsDingbatRange = "\\u2700-\\u27bf", rsLowerRange = "a-z\\xdf-\\xf6\\xf8-\\xff", rsMathOpRange = "\\xac\\xb1\\xd7\\xf7", rsNonCharRange = "\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf", rsPunctuationRange = "\\u2000-\\u206f", rsSpaceRange = " \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000", rsUpperRange = "A-Z\\xc0-\\xd6\\xd8-\\xde", rsVarRange = "\\ufe0e\\ufe0f", rsBreakRange = rsMathOpRange + rsNonCharRange + rsPunctuationRange + rsSpaceRange;
-var rsApos$1 = "['’]", rsBreak = "[" + rsBreakRange + "]", rsCombo = "[" + rsComboRange + "]", rsDigits = "\\d+", rsDingbat = "[" + rsDingbatRange + "]", rsLower = "[" + rsLowerRange + "]", rsMisc = "[^" + rsAstralRange + rsBreakRange + rsDigits + rsDingbatRange + rsLowerRange + rsUpperRange + "]", rsFitz = "\\ud83c[\\udffb-\\udfff]", rsModifier = "(?:" + rsCombo + "|" + rsFitz + ")", rsNonAstral = "[^" + rsAstralRange + "]", rsRegional = "(?:\\ud83c[\\udde6-\\uddff]){2}", rsSurrPair = "[\\ud800-\\udbff][\\udc00-\\udfff]", rsUpper = "[" + rsUpperRange + "]", rsZWJ = "\\u200d";
-var rsMiscLower = "(?:" + rsLower + "|" + rsMisc + ")", rsMiscUpper = "(?:" + rsUpper + "|" + rsMisc + ")", rsOptContrLower = "(?:" + rsApos$1 + "(?:d|ll|m|re|s|t|ve))?", rsOptContrUpper = "(?:" + rsApos$1 + "(?:D|LL|M|RE|S|T|VE))?", reOptMod = rsModifier + "?", rsOptVar = "[" + rsVarRange + "]?", rsOptJoin = "(?:" + rsZWJ + "(?:" + [rsNonAstral, rsRegional, rsSurrPair].join("|") + ")" + rsOptVar + reOptMod + ")*", rsOrdLower = "\\d*(?:1st|2nd|3rd|(?![123])\\dth)(?=\\b|[A-Z_])", rsOrdUpper = "\\d*(?:1ST|2ND|3RD|(?![123])\\dTH)(?=\\b|[a-z_])", rsSeq = rsOptVar + reOptMod + rsOptJoin, rsEmoji = "(?:" + [rsDingbat, rsRegional, rsSurrPair].join("|") + ")" + rsSeq;
-var reUnicodeWord = RegExp([
-  rsUpper + "?" + rsLower + "+" + rsOptContrLower + "(?=" + [rsBreak, rsUpper, "$"].join("|") + ")",
-  rsMiscUpper + "+" + rsOptContrUpper + "(?=" + [rsBreak, rsUpper + rsMiscLower, "$"].join("|") + ")",
-  rsUpper + "?" + rsMiscLower + "+" + rsOptContrLower,
-  rsUpper + "+" + rsOptContrUpper,
-  rsOrdUpper,
-  rsOrdLower,
-  rsDigits,
-  rsEmoji
-].join("|"), "g");
-function unicodeWords(string) {
-  return string.match(reUnicodeWord) || [];
-}
-function words(string, pattern, guard) {
-  string = toString(string);
-  pattern = guard ? void 0 : pattern;
-  if (pattern === void 0) {
-    return hasUnicodeWord(string) ? unicodeWords(string) : asciiWords(string);
-  }
-  return string.match(pattern) || [];
-}
-var rsApos = "['’]";
-var reApos = RegExp(rsApos, "g");
-function createCompounder(callback) {
-  return function(string) {
-    return arrayReduce(words(deburr(string).replace(reApos, "")), callback, "");
-  };
-}
 function stackClear() {
   this.__data__ = new ListCache();
   this.size = 0;
@@ -12070,6 +12011,93 @@ function createBaseEach(eachFunc, fromRight) {
 }
 var baseEach = createBaseEach(baseForOwn);
 const baseEach$1 = baseEach;
+var now = function() {
+  return root$1.Date.now();
+};
+const now$1 = now;
+var FUNC_ERROR_TEXT$1 = "Expected a function";
+var nativeMax = Math.max, nativeMin = Math.min;
+function debounce(func, wait, options) {
+  var lastArgs, lastThis, maxWait, result, timerId, lastCallTime, lastInvokeTime = 0, leading = false, maxing = false, trailing = true;
+  if (typeof func != "function") {
+    throw new TypeError(FUNC_ERROR_TEXT$1);
+  }
+  wait = toNumber(wait) || 0;
+  if (isObject(options)) {
+    leading = !!options.leading;
+    maxing = "maxWait" in options;
+    maxWait = maxing ? nativeMax(toNumber(options.maxWait) || 0, wait) : maxWait;
+    trailing = "trailing" in options ? !!options.trailing : trailing;
+  }
+  function invokeFunc(time2) {
+    var args = lastArgs, thisArg = lastThis;
+    lastArgs = lastThis = void 0;
+    lastInvokeTime = time2;
+    result = func.apply(thisArg, args);
+    return result;
+  }
+  function leadingEdge(time2) {
+    lastInvokeTime = time2;
+    timerId = setTimeout(timerExpired, wait);
+    return leading ? invokeFunc(time2) : result;
+  }
+  function remainingWait(time2) {
+    var timeSinceLastCall = time2 - lastCallTime, timeSinceLastInvoke = time2 - lastInvokeTime, timeWaiting = wait - timeSinceLastCall;
+    return maxing ? nativeMin(timeWaiting, maxWait - timeSinceLastInvoke) : timeWaiting;
+  }
+  function shouldInvoke(time2) {
+    var timeSinceLastCall = time2 - lastCallTime, timeSinceLastInvoke = time2 - lastInvokeTime;
+    return lastCallTime === void 0 || timeSinceLastCall >= wait || timeSinceLastCall < 0 || maxing && timeSinceLastInvoke >= maxWait;
+  }
+  function timerExpired() {
+    var time2 = now$1();
+    if (shouldInvoke(time2)) {
+      return trailingEdge(time2);
+    }
+    timerId = setTimeout(timerExpired, remainingWait(time2));
+  }
+  function trailingEdge(time2) {
+    timerId = void 0;
+    if (trailing && lastArgs) {
+      return invokeFunc(time2);
+    }
+    lastArgs = lastThis = void 0;
+    return result;
+  }
+  function cancel() {
+    if (timerId !== void 0) {
+      clearTimeout(timerId);
+    }
+    lastInvokeTime = 0;
+    lastArgs = lastCallTime = lastThis = timerId = void 0;
+  }
+  function flush() {
+    return timerId === void 0 ? result : trailingEdge(now$1());
+  }
+  function debounced() {
+    var time2 = now$1(), isInvoking = shouldInvoke(time2);
+    lastArgs = arguments;
+    lastThis = this;
+    lastCallTime = time2;
+    if (isInvoking) {
+      if (timerId === void 0) {
+        return leadingEdge(lastCallTime);
+      }
+      if (maxing) {
+        clearTimeout(timerId);
+        timerId = setTimeout(timerExpired, wait);
+        return invokeFunc(lastCallTime);
+      }
+    }
+    if (timerId === void 0) {
+      timerId = setTimeout(timerExpired, wait);
+    }
+    return result;
+  }
+  debounced.cancel = cancel;
+  debounced.flush = flush;
+  return debounced;
+}
 function assignMergeValue(object, key, value) {
   if (value !== void 0 && !eq(object[key], value) || value === void 0 && !(key in object)) {
     baseAssignValue(object, key, value);
@@ -12161,14 +12189,26 @@ function map(collection, iteratee) {
   var func = isArray$2(collection) ? arrayMap : baseMap;
   return func(collection, baseIteratee(iteratee));
 }
-var kebabCase = createCompounder(function(result, word, index) {
-  return result + (index ? "-" : "") + word.toLowerCase();
-});
-const kebabCase$1 = kebabCase;
 var merge$1 = createAssigner(function(object, source, srcIndex) {
   baseMerge(object, source, srcIndex);
 });
 const merge$2 = merge$1;
+var FUNC_ERROR_TEXT = "Expected a function";
+function throttle(func, wait, options) {
+  var leading = true, trailing = true;
+  if (typeof func != "function") {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  if (isObject(options)) {
+    leading = "leading" in options ? !!options.leading : leading;
+    trailing = "trailing" in options ? !!options.trailing : trailing;
+  }
+  return debounce(func, wait, {
+    "leading": leading,
+    "maxWait": wait,
+    "trailing": trailing
+  });
+}
 const commonVariables$m = {
   fontFamily: 'v-sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"',
   fontFamilyMono: "v-mono, SFMono-Regular, Menlo, Consolas, Courier, monospace",
@@ -12424,8 +12464,8 @@ function buildFormatLongFn(args) {
   return function() {
     var options = arguments.length > 0 && arguments[0] !== void 0 ? arguments[0] : {};
     var width = options.width ? String(options.width) : args.defaultWidth;
-    var format2 = args.formats[width] || args.formats[args.defaultWidth];
-    return format2;
+    var format = args.formats[width] || args.formats[args.defaultWidth];
+    return format;
   };
 }
 function buildLocalizeFn(args) {
@@ -13137,16 +13177,6 @@ const InfoIcon = replaceable("info", h(
     )
   )
 ));
-const RemoveIcon = defineComponent({
-  name: "Remove",
-  render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 512 512" },
-      h("line", { x1: "400", y1: "256", x2: "112", y2: "256", style: "\n        fill: none;\n        stroke: currentColor;\n        stroke-linecap: round;\n        stroke-linejoin: round;\n        stroke-width: 32px;\n      " })
-    );
-  }
-});
 const SuccessIcon = replaceable("success", h(
   "svg",
   { viewBox: "0 0 48 48", version: "1.1", xmlns: "http://www.w3.org/2000/svg" },
@@ -13203,44 +13233,6 @@ const ChevronDownFilledIcon = defineComponent({
       "svg",
       { viewBox: "0 0 16 16", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
       h("path", { d: "M3.20041 5.73966C3.48226 5.43613 3.95681 5.41856 4.26034 5.70041L8 9.22652L11.7397 5.70041C12.0432 5.41856 12.5177 5.43613 12.7996 5.73966C13.0815 6.0432 13.0639 6.51775 12.7603 6.7996L8.51034 10.7996C8.22258 11.0668 7.77743 11.0668 7.48967 10.7996L3.23966 6.7996C2.93613 6.51775 2.91856 6.0432 3.20041 5.73966Z", fill: "currentColor" })
-    );
-  }
-});
-const RotateClockwiseIcon = replaceable("rotateClockwise", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M3 10C3 6.13401 6.13401 3 10 3C13.866 3 17 6.13401 17 10C17 12.7916 15.3658 15.2026 13 16.3265V14.5C13 14.2239 12.7761 14 12.5 14C12.2239 14 12 14.2239 12 14.5V17.5C12 17.7761 12.2239 18 12.5 18H15.5C15.7761 18 16 17.7761 16 17.5C16 17.2239 15.7761 17 15.5 17H13.8758C16.3346 15.6357 18 13.0128 18 10C18 5.58172 14.4183 2 10 2C5.58172 2 2 5.58172 2 10C2 10.2761 2.22386 10.5 2.5 10.5C2.77614 10.5 3 10.2761 3 10Z", fill: "currentColor" }),
-  h("path", { d: "M10 12C11.1046 12 12 11.1046 12 10C12 8.89543 11.1046 8 10 8C8.89543 8 8 8.89543 8 10C8 11.1046 8.89543 12 10 12ZM10 11C9.44772 11 9 10.5523 9 10C9 9.44772 9.44772 9 10 9C10.5523 9 11 9.44772 11 10C11 10.5523 10.5523 11 10 11Z", fill: "currentColor" })
-));
-const RotateCounterclockwiseIcon = replaceable("rotateClockwise", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M17 10C17 6.13401 13.866 3 10 3C6.13401 3 3 6.13401 3 10C3 12.7916 4.63419 15.2026 7 16.3265V14.5C7 14.2239 7.22386 14 7.5 14C7.77614 14 8 14.2239 8 14.5V17.5C8 17.7761 7.77614 18 7.5 18H4.5C4.22386 18 4 17.7761 4 17.5C4 17.2239 4.22386 17 4.5 17H6.12422C3.66539 15.6357 2 13.0128 2 10C2 5.58172 5.58172 2 10 2C14.4183 2 18 5.58172 18 10C18 10.2761 17.7761 10.5 17.5 10.5C17.2239 10.5 17 10.2761 17 10Z", fill: "currentColor" }),
-  h("path", { d: "M10 12C8.89543 12 8 11.1046 8 10C8 8.89543 8.89543 8 10 8C11.1046 8 12 8.89543 12 10C12 11.1046 11.1046 12 10 12ZM10 11C10.5523 11 11 10.5523 11 10C11 9.44772 10.5523 9 10 9C9.44772 9 9 9.44772 9 10C9 10.5523 9.44772 11 10 11Z", fill: "currentColor" })
-));
-const ZoomInIcon = replaceable("zoomIn", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M11.5 8.5C11.5 8.22386 11.2761 8 11 8H9V6C9 5.72386 8.77614 5.5 8.5 5.5C8.22386 5.5 8 5.72386 8 6V8H6C5.72386 8 5.5 8.22386 5.5 8.5C5.5 8.77614 5.72386 9 6 9H8V11C8 11.2761 8.22386 11.5 8.5 11.5C8.77614 11.5 9 11.2761 9 11V9H11C11.2761 9 11.5 8.77614 11.5 8.5Z", fill: "currentColor" }),
-  h("path", { d: "M8.5 3C11.5376 3 14 5.46243 14 8.5C14 9.83879 13.5217 11.0659 12.7266 12.0196L16.8536 16.1464C17.0488 16.3417 17.0488 16.6583 16.8536 16.8536C16.68 17.0271 16.4106 17.0464 16.2157 16.9114L16.1464 16.8536L12.0196 12.7266C11.0659 13.5217 9.83879 14 8.5 14C5.46243 14 3 11.5376 3 8.5C3 5.46243 5.46243 3 8.5 3ZM8.5 4C6.01472 4 4 6.01472 4 8.5C4 10.9853 6.01472 13 8.5 13C10.9853 13 13 10.9853 13 8.5C13 6.01472 10.9853 4 8.5 4Z", fill: "currentColor" })
-));
-const ZoomOutIcon = replaceable("zoomOut", h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M11 8C11.2761 8 11.5 8.22386 11.5 8.5C11.5 8.77614 11.2761 9 11 9H6C5.72386 9 5.5 8.77614 5.5 8.5C5.5 8.22386 5.72386 8 6 8H11Z", fill: "currentColor" }),
-  h("path", { d: "M14 8.5C14 5.46243 11.5376 3 8.5 3C5.46243 3 3 5.46243 3 8.5C3 11.5376 5.46243 14 8.5 14C9.83879 14 11.0659 13.5217 12.0196 12.7266L16.1464 16.8536L16.2157 16.9114C16.4106 17.0464 16.68 17.0271 16.8536 16.8536C17.0488 16.6583 17.0488 16.3417 16.8536 16.1464L12.7266 12.0196C13.5217 11.0659 14 9.83879 14 8.5ZM4 8.5C4 6.01472 6.01472 4 8.5 4C10.9853 4 13 6.01472 13 8.5C13 10.9853 10.9853 13 8.5 13C6.01472 13 4 10.9853 4 8.5Z", fill: "currentColor" })
-));
-const ResizeSmallIcon = defineComponent({
-  name: "ResizeSmall",
-  render() {
-    return h(
-      "svg",
-      { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 20 20" },
-      h(
-        "g",
-        { fill: "none" },
-        h("path", { d: "M5.5 4A1.5 1.5 0 0 0 4 5.5v1a.5.5 0 0 1-1 0v-1A2.5 2.5 0 0 1 5.5 3h1a.5.5 0 0 1 0 1h-1zM16 5.5A1.5 1.5 0 0 0 14.5 4h-1a.5.5 0 0 1 0-1h1A2.5 2.5 0 0 1 17 5.5v1a.5.5 0 0 1-1 0v-1zm0 9a1.5 1.5 0 0 1-1.5 1.5h-1a.5.5 0 0 0 0 1h1a2.5 2.5 0 0 0 2.5-2.5v-1a.5.5 0 0 0-1 0v1zm-12 0A1.5 1.5 0 0 0 5.5 16h1.25a.5.5 0 0 1 0 1H5.5A2.5 2.5 0 0 1 3 14.5v-1.25a.5.5 0 0 1 1 0v1.25zM8.5 7A1.5 1.5 0 0 0 7 8.5v3A1.5 1.5 0 0 0 8.5 13h3a1.5 1.5 0 0 0 1.5-1.5v-3A1.5 1.5 0 0 0 11.5 7h-3zM8 8.5a.5.5 0 0 1 .5-.5h3a.5.5 0 0 1 .5.5v3a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-3z", fill: "currentColor" })
-      )
     );
   }
 });
@@ -14683,7 +14675,7 @@ const commonVars$c = {
   iconSizeLarge: "46px",
   iconSizeHuge: "52px"
 };
-const self$Z = (vars) => {
+const self$W = (vars) => {
   const { textColorDisabled, iconColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge } = vars;
   return Object.assign(Object.assign({}, commonVars$c), {
     fontSizeSmall,
@@ -14698,13 +14690,13 @@ const self$Z = (vars) => {
 const emptyLight = {
   name: "Empty",
   common: commonLight,
-  self: self$Z
+  self: self$W
 };
 const emptyLight$1 = emptyLight;
 const emptyDark = {
   name: "Empty",
   common: commonDark,
-  self: self$Z
+  self: self$W
 };
 const emptyDark$1 = emptyDark;
 const style$n = cB("empty", `
@@ -14798,7 +14790,7 @@ const NEmpty = defineComponent({
     );
   }
 });
-const self$Y = (vars) => {
+const self$V = (vars) => {
   const { scrollbarColor, scrollbarColorHover } = vars;
   return {
     color: scrollbarColor,
@@ -14808,13 +14800,13 @@ const self$Y = (vars) => {
 const scrollbarLight = {
   name: "Scrollbar",
   common: commonLight,
-  self: self$Y
+  self: self$V
 };
 const scrollbarLight$1 = scrollbarLight;
 const scrollbarDark = {
   name: "Scrollbar",
   common: commonDark,
-  self: self$Y
+  self: self$V
 };
 const scrollbarDark$1 = scrollbarDark;
 const {
@@ -14890,7 +14882,7 @@ const style$m = cB("scrollbar", `
  `, [fadeInTransition(), c$1("&:hover", {
   backgroundColor: "var(--n-scrollbar-color-hover)"
 })])])])])]);
-const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), {
+const scrollbarProps$1 = Object.assign(Object.assign({}, useTheme.props), {
   size: {
     type: Number,
     default: 5
@@ -14925,9 +14917,9 @@ const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), {
   internalOnUpdateScrollLeft: Function,
   internalHoistYRail: Boolean
 });
-const Scrollbar = defineComponent({
+const Scrollbar$1 = defineComponent({
   name: "Scrollbar",
-  props: scrollbarProps,
+  props: scrollbarProps$1,
   inheritAttrs: false,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
@@ -15074,14 +15066,14 @@ const Scrollbar = defineComponent({
         scrollToPosition2(y !== null && y !== void 0 ? y : 0, options, 0, false, "auto");
         return;
       }
-      const { left, top, index, elSize, position, behavior, el, debounce = true } = options;
+      const { left, top, index, elSize, position, behavior, el, debounce: debounce2 = true } = options;
       if (left !== void 0 || top !== void 0) {
         scrollToPosition2(left !== null && left !== void 0 ? left : 0, top !== null && top !== void 0 ? top : 0, 0, false, behavior);
       }
       if (el !== void 0) {
-        scrollToPosition2(0, el.offsetTop, el.offsetHeight, debounce, behavior);
+        scrollToPosition2(0, el.offsetTop, el.offsetHeight, debounce2, behavior);
       } else if (index !== void 0 && elSize !== void 0) {
-        scrollToPosition2(0, index * elSize, elSize, debounce, behavior);
+        scrollToPosition2(0, index * elSize, elSize, debounce2, behavior);
       } else if (position === "bottom") {
         scrollToPosition2(0, Number.MAX_SAFE_INTEGER, 0, false, behavior);
       } else if (position === "top") {
@@ -15100,11 +15092,11 @@ const Scrollbar = defineComponent({
         container.scrollBy(options, y || 0);
       }
     };
-    function scrollToPosition2(left, top, elSize, debounce, behavior) {
+    function scrollToPosition2(left, top, elSize, debounce2, behavior) {
       const { value: container } = mergedContainerRef;
       if (!container)
         return;
-      if (debounce) {
+      if (debounce2) {
         const { scrollTop, offsetHeight } = container;
         if (top > scrollTop) {
           if (top + elSize <= scrollTop + offsetHeight)
@@ -15487,8 +15479,8 @@ const Scrollbar = defineComponent({
     }
   }
 });
-const NScrollbar = Scrollbar;
-const XScrollbar = Scrollbar;
+const NScrollbar$1 = Scrollbar$1;
+const XScrollbar = Scrollbar$1;
 const commonVariables$l = {
   height: "calc(var(--n-option-height) * 7.6)",
   paddingSmall: "4px 0",
@@ -15501,7 +15493,7 @@ const commonVariables$l = {
   optionPaddingHuge: "0 12px",
   loadingSize: "18px"
 };
-const self$X = (vars) => {
+const self$U = (vars) => {
   const { borderRadius, popoverColor, textColor3, dividerColor, textColor2, primaryColorPressed, textColorDisabled, primaryColor, opacityDisabled, hoverColor, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge } = vars;
   return Object.assign(Object.assign({}, commonVariables$l), { optionFontSizeSmall: fontSizeSmall, optionFontSizeMedium: fontSizeMedium, optionFontSizeLarge: fontSizeLarge, optionFontSizeHuge: fontSizeHuge, optionHeightSmall: heightSmall, optionHeightMedium: heightMedium, optionHeightLarge: heightLarge, optionHeightHuge: heightHuge, borderRadius, color: popoverColor, groupHeaderTextColor: textColor3, actionDividerColor: dividerColor, optionTextColor: textColor2, optionTextColorPressed: primaryColorPressed, optionTextColorDisabled: textColorDisabled, optionTextColorActive: primaryColor, optionOpacityDisabled: opacityDisabled, optionCheckColor: primaryColor, optionColorPending: hoverColor, optionColorActive: "rgba(0, 0, 0, 0)", optionColorActivePending: hoverColor, actionTextColor: textColor2, loadingColor: primaryColor });
 };
@@ -15512,7 +15504,7 @@ const internalSelectMenuLight = createTheme({
     Scrollbar: scrollbarLight$1,
     Empty: emptyLight$1
   },
-  self: self$X
+  self: self$U
 });
 const internalSelectMenuLight$1 = internalSelectMenuLight;
 const internalSelectMenuDark = {
@@ -15522,7 +15514,7 @@ const internalSelectMenuDark = {
     Scrollbar: scrollbarDark$1,
     Empty: emptyDark$1
   },
-  self: self$X
+  self: self$U
 };
 const internalSelectMenuDark$1 = internalSelectMenuDark;
 function renderCheckMark(show, clsPrefix) {
@@ -15566,7 +15558,7 @@ const NSelectOption = defineComponent({
         return false;
       return props.tmNode.key === pendingTmNode.key;
     });
-    function handleClick(e) {
+    function handleClick2(e) {
       const { tmNode } = props;
       if (tmNode.disabled)
         return;
@@ -15613,11 +15605,11 @@ const NSelectOption = defineComponent({
       renderOption: renderOptionRef,
       handleMouseMove,
       handleMouseEnter,
-      handleClick
+      handleClick: handleClick2
     };
   },
   render() {
-    const { clsPrefix, tmNode: { rawNode }, isSelected, isPending, isGrouped, showCheckmark, nodeProps, renderOption, renderLabel, handleClick, handleMouseEnter, handleMouseMove } = this;
+    const { clsPrefix, tmNode: { rawNode }, isSelected, isPending, isGrouped, showCheckmark, nodeProps, renderOption, renderLabel, handleClick: handleClick2, handleMouseEnter, handleMouseMove } = this;
     const checkmark = renderCheckMark(isSelected, clsPrefix);
     const children = renderLabel ? [renderLabel(rawNode, isSelected), showCheckmark && checkmark] : [
       render$1(rawNode[this.labelField], rawNode, isSelected),
@@ -15637,7 +15629,7 @@ const NSelectOption = defineComponent({
           [`${clsPrefix}-base-select-option--pending`]: isPending,
           [`${clsPrefix}-base-select-option--show-checkmark`]: showCheckmark
         }
-      ], style: [(attrs === null || attrs === void 0 ? void 0 : attrs.style) || "", rawNode.style || ""], onClick: mergeEventHandlers([handleClick, attrs === null || attrs === void 0 ? void 0 : attrs.onClick]), onMouseenter: mergeEventHandlers([
+      ], style: [(attrs === null || attrs === void 0 ? void 0 : attrs.style) || "", rawNode.style || ""], onClick: mergeEventHandlers([handleClick2, attrs === null || attrs === void 0 ? void 0 : attrs.onClick]), onMouseenter: mergeEventHandlers([
         handleMouseEnter,
         attrs === null || attrs === void 0 ? void 0 : attrs.onMouseenter
       ]), onMousemove: mergeEventHandlers([handleMouseMove, attrs === null || attrs === void 0 ? void 0 : attrs.onMousemove]) }),
@@ -16153,7 +16145,7 @@ const NInternalSelectMenu = defineComponent({
         "div",
         { class: `${clsPrefix}-base-select-menu__loading` },
         h(NBaseLoading, { clsPrefix, strokeWidth: 20 })
-      ) : !this.empty ? h(NScrollbar, { ref: "scrollbarRef", theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, scrollable: this.scrollable, container: virtualScroll ? this.virtualListContainer : void 0, content: virtualScroll ? this.virtualListContent : void 0, onScroll: virtualScroll ? void 0 : this.doScroll }, {
+      ) : !this.empty ? h(NScrollbar$1, { ref: "scrollbarRef", theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, scrollable: this.scrollable, container: virtualScroll ? this.virtualListContainer : void 0, content: virtualScroll ? this.virtualListContent : void 0, onScroll: virtualScroll ? void 0 : this.doScroll }, {
         default: () => {
           return virtualScroll ? h(VVirtualList, { ref: "virtualListRef", class: `${clsPrefix}-virtual-list`, items: this.flattenedNodes, itemSize: this.itemSize, showScrollbar: false, paddingTop: this.padding.top, paddingBottom: this.padding.bottom, onResize: this.handleVirtualListResize, onScroll: this.handleVirtualListScroll, itemResizable: true }, {
             default: ({ item: tmNode }) => {
@@ -16237,7 +16229,7 @@ const commonVariables$k = {
   arrowHeight: "6px",
   padding: "8px 14px"
 };
-const self$W = (vars) => {
+const self$T = (vars) => {
   const { boxShadow2, popoverColor, textColor2, borderRadius, fontSize: fontSize2, dividerColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$k), {
     fontSize: fontSize2,
@@ -16251,13 +16243,13 @@ const self$W = (vars) => {
 const popoverLight = {
   name: "Popover",
   common: commonLight,
-  self: self$W
+  self: self$T
 };
 const popoverLight$1 = popoverLight;
 const popoverDark = {
   name: "Popover",
   common: commonDark,
-  self: self$W
+  self: self$T
 };
 const popoverDark$1 = popoverDark;
 const oppositePlacement = {
@@ -16959,7 +16951,7 @@ const NPopover = defineComponent({
       }
       (_a2 = props.onClickoutside) === null || _a2 === void 0 ? void 0 : _a2.call(props, e);
     }
-    function handleClick() {
+    function handleClick2() {
       if (props.trigger === "click" && !getMergedDisabled()) {
         clearShowTimer();
         clearHideTimer();
@@ -17014,7 +17006,7 @@ const NPopover = defineComponent({
       mergedShowArrow: mergedShowArrowRef,
       getMergedShow,
       setShow,
-      handleClick,
+      handleClick: handleClick2,
       handleMouseEnter,
       handleMouseLeave,
       handleFocus,
@@ -17236,7 +17228,7 @@ const tagDark = {
   }
 };
 const tagDark$1 = tagDark;
-const self$V = (vars) => {
+const self$S = (vars) => {
   const { textColor2, primaryColorHover, primaryColorPressed, primaryColor, infoColor, successColor, warningColor, errorColor, baseColor, borderColor, opacityDisabled, tagColor, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadiusSmall: borderRadius, fontSizeMini, fontSizeTiny, fontSizeSmall, fontSizeMedium, heightMini, heightTiny, heightSmall, heightMedium, closeColorHover, closeColorPressed, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$j), {
     closeBorderRadius: borderRadius,
@@ -17322,7 +17314,7 @@ const self$V = (vars) => {
 const tagLight = {
   name: "Tag",
   common: commonLight,
-  self: self$V
+  self: self$S
 };
 const tagLight$1 = tagLight;
 const commonProps = {
@@ -17449,7 +17441,7 @@ const NTag = defineComponent({
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
-    function handleClick(e) {
+    function handleClick2(e) {
       if (!props.disabled) {
         if (props.checkable) {
           const { checked, onCheckedChange, onUpdateChecked, "onUpdate:checked": _onUpdateChecked } = props;
@@ -17539,7 +17531,7 @@ const NTag = defineComponent({
       mergedClsPrefix: mergedClsPrefixRef,
       contentRef,
       mergedBordered: mergedBorderedRef,
-      handleClick,
+      handleClick: handleClick2,
       handleCloseClick,
       cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
       themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
@@ -17683,7 +17675,7 @@ const commonVars$b = {
   clearSize: "16px",
   arrowSize: "16px"
 };
-const self$U = (vars) => {
+const self$R = (vars) => {
   const { borderRadius, textColor2, textColorDisabled, inputColor, inputColorDisabled, primaryColor, primaryColorHover, warningColor, warningColorHover, errorColor, errorColorHover, borderColor, iconColor, iconColorDisabled, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge } = vars;
   return Object.assign(Object.assign({}, commonVars$b), {
     fontSizeTiny,
@@ -17757,7 +17749,7 @@ const internalSelectionLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$U
+  self: self$R
 });
 const internalSelectionLight$1 = internalSelectionLight;
 const internalSelectionDark = {
@@ -18816,7 +18808,7 @@ const commonVars$9 = {
   linkPadding: "0 0 0 16px",
   railWidth: "4px"
 };
-const self$T = (vars) => {
+const self$Q = (vars) => {
   const { borderRadius, railColor, primaryColor, primaryColorHover, primaryColorPressed, textColor2 } = vars;
   return Object.assign(Object.assign({}, commonVars$9), {
     borderRadius,
@@ -18832,7 +18824,7 @@ const self$T = (vars) => {
 const anchorDark = {
   name: "Anchor",
   common: commonDark,
-  self: self$T
+  self: self$Q
 };
 const anchorDark$1 = anchorDark;
 function getIsGroup(option) {
@@ -18982,7 +18974,7 @@ const inputDark = {
   }
 };
 const inputDark$1 = inputDark;
-const self$S = (vars) => {
+const self$P = (vars) => {
   const { textColor2, textColor3, textColorDisabled, primaryColor, primaryColorHover, inputColor, inputColorDisabled, borderColor, warningColor, warningColorHover, errorColor, errorColorHover, borderRadius, lineHeight: lineHeight2, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge, actionColor, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, iconColor, iconColorDisabled, iconColorHover, iconColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$i), {
     countTextColorDisabled: textColorDisabled,
@@ -19050,7 +19042,7 @@ const self$S = (vars) => {
 const inputLight = {
   name: "Input",
   common: commonLight,
-  self: self$S
+  self: self$P
 };
 const inputLight$1 = inputLight;
 const inputInjectionKey = createInjectionKey("n-input");
@@ -19827,7 +19819,7 @@ const NInput = defineComponent({
     function handleChange(e, index) {
       handleInput(e, index, "change");
     }
-    function handleClick(e) {
+    function handleClick2(e) {
       doClick(e);
     }
     function handleClear(e) {
@@ -20167,7 +20159,7 @@ const NInput = defineComponent({
       handleMouseLeave,
       handleMouseDown,
       handleChange,
-      handleClick,
+      handleClick: handleClick2,
       handleClear,
       handlePasswordToggleClick,
       handlePasswordToggleMousedown,
@@ -20209,7 +20201,7 @@ const NInput = defineComponent({
         "div",
         { class: `${mergedClsPrefix}-input-wrapper` },
         resolveWrappedSlot($slots.prefix, (children) => children && h("div", { class: `${mergedClsPrefix}-input__prefix` }, children)),
-        type === "textarea" ? h(NScrollbar, { ref: "textareaScrollbarInstRef", class: `${mergedClsPrefix}-input__textarea`, container: this.getTextareaScrollContainer, triggerDisplayManually: true, useUnifiedContainer: true, internalHoistYRail: true }, {
+        type === "textarea" ? h(NScrollbar$1, { ref: "textareaScrollbarInstRef", class: `${mergedClsPrefix}-input__textarea`, container: this.getTextareaScrollContainer, triggerDisplayManually: true, useUnifiedContainer: true, internalHoistYRail: true }, {
           default: () => {
             var _a3, _b2;
             const { textAreaScrollContainerWidth } = this;
@@ -20326,7 +20318,7 @@ const NInput = defineComponent({
     );
   }
 });
-function self$R(vars) {
+function self$O(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -20339,86 +20331,10 @@ const autoCompleteDark = {
     InternalSelectMenu: internalSelectMenuDark$1,
     Input: inputDark$1
   },
-  self: self$R
+  self: self$O
 };
 const autoCompleteDark$1 = autoCompleteDark;
-const isImageSupportNativeLazy = isBrowser$3 && "loading" in document.createElement("img");
-const resolveOptionsAndHash = (options = {}) => {
-  var _a2;
-  const { root: root2 = null } = options;
-  return {
-    hash: `${options.rootMargin || "0px 0px 0px 0px"}-${Array.isArray(options.threshold) ? options.threshold.join(",") : (_a2 = options.threshold) !== null && _a2 !== void 0 ? _a2 : "0"}`,
-    options: Object.assign(Object.assign({}, options), { root: (typeof root2 === "string" ? document.querySelector(root2) : root2) || document.documentElement })
-  };
-};
-const observers = /* @__PURE__ */ new WeakMap();
-const unobserveHandleMap = /* @__PURE__ */ new WeakMap();
-const shouldStartLoadingRefMap = /* @__PURE__ */ new WeakMap();
-const observeIntersection = (el, options, shouldStartLoadingRef) => {
-  if (!el)
-    return () => {
-    };
-  const resolvedOptionsAndHash = resolveOptionsAndHash(options);
-  const { root: root2 } = resolvedOptionsAndHash.options;
-  let rootObservers;
-  const _rootObservers = observers.get(root2);
-  if (_rootObservers) {
-    rootObservers = _rootObservers;
-  } else {
-    rootObservers = /* @__PURE__ */ new Map();
-    observers.set(root2, rootObservers);
-  }
-  let observer;
-  let observerAndObservedElements;
-  if (rootObservers.has(resolvedOptionsAndHash.hash)) {
-    observerAndObservedElements = // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    rootObservers.get(resolvedOptionsAndHash.hash);
-    if (!observerAndObservedElements[1].has(el)) {
-      observer = observerAndObservedElements[0];
-      observerAndObservedElements[1].add(el);
-      observer.observe(el);
-    }
-  } else {
-    observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const _unobserve = unobserveHandleMap.get(entry.target);
-          const _shouldStartLoadingRef = shouldStartLoadingRefMap.get(entry.target);
-          if (_unobserve)
-            _unobserve();
-          if (_shouldStartLoadingRef) {
-            _shouldStartLoadingRef.value = true;
-          }
-        }
-      });
-    }, resolvedOptionsAndHash.options);
-    observer.observe(el);
-    observerAndObservedElements = [observer, /* @__PURE__ */ new Set([el])];
-    rootObservers.set(resolvedOptionsAndHash.hash, observerAndObservedElements);
-  }
-  let unobservered = false;
-  const unobserve = () => {
-    if (unobservered)
-      return;
-    unobserveHandleMap.delete(el);
-    shouldStartLoadingRefMap.delete(el);
-    unobservered = true;
-    if (observerAndObservedElements[1].has(el)) {
-      observerAndObservedElements[0].unobserve(el);
-      observerAndObservedElements[1].delete(el);
-    }
-    if (observerAndObservedElements[1].size <= 0) {
-      rootObservers.delete(resolvedOptionsAndHash.hash);
-    }
-    if (!rootObservers.size) {
-      observers.delete(root2);
-    }
-  };
-  unobserveHandleMap.set(el, unobserve);
-  shouldStartLoadingRefMap.set(el, shouldStartLoadingRef);
-  return unobserve;
-};
-const self$Q = (vars) => {
+const self$N = (vars) => {
   const { borderRadius, avatarColor, cardColor, fontSize: fontSize2, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, modalColor, popoverColor } = vars;
   return {
     borderRadius,
@@ -20437,10 +20353,10 @@ const self$Q = (vars) => {
 const avatarDark = {
   name: "Avatar",
   common: commonDark,
-  self: self$Q
+  self: self$N
 };
 const avatarDark$1 = avatarDark;
-const self$P = () => {
+const self$M = () => {
   return {
     gap: "-12px"
   };
@@ -20451,7 +20367,7 @@ const avatarGroupDark = {
   peers: {
     Avatar: avatarDark$1
   },
-  self: self$P
+  self: self$M
 };
 const avatarGroupDark$1 = avatarGroupDark;
 const commonVariables$h = {
@@ -20489,14 +20405,14 @@ const badgeDark$1 = badgeDark;
 const commonVariables$g = {
   fontWeightActive: "400"
 };
-const self$O = (vars) => {
+const self$L = (vars) => {
   const { fontSize: fontSize2, textColor3, textColor2, borderRadius, buttonColor2Hover, buttonColor2Pressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$g), { fontSize: fontSize2, itemLineHeight: "1.25", itemTextColor: textColor3, itemTextColorHover: textColor2, itemTextColorPressed: textColor2, itemTextColorActive: textColor2, itemBorderRadius: borderRadius, itemColorHover: buttonColor2Hover, itemColorPressed: buttonColor2Pressed, separatorColor: textColor3 });
 };
 const breadcrumbDark = {
   name: "Breadcrumb",
   common: commonDark,
-  self: self$O
+  self: self$L
 };
 const breadcrumbDark$1 = breadcrumbDark;
 function createHoverColor(rgb) {
@@ -20525,7 +20441,7 @@ const commonVariables$f = {
   iconSizeLarge: "20px",
   rippleDuration: ".6s"
 };
-const self$N = (vars) => {
+const self$K = (vars) => {
   const { heightTiny, heightSmall, heightMedium, heightLarge, borderRadius, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, opacityDisabled, textColor2, textColor3, primaryColorHover, primaryColorPressed, borderColor, primaryColor, baseColor, infoColor, infoColorHover, infoColorPressed, successColor, successColorHover, successColorPressed, warningColor, warningColorHover, warningColorPressed, errorColor, errorColorHover, errorColorPressed, fontWeight, buttonColor2, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$f), {
     heightTiny,
@@ -20727,14 +20643,14 @@ const self$N = (vars) => {
 const buttonLight = {
   name: "Button",
   common: commonLight,
-  self: self$N
+  self: self$K
 };
 const buttonLight$1 = buttonLight;
 const buttonDark = {
   name: "Button",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$N(vars);
+    const commonSelf = self$K(vars);
     commonSelf.waveOpacity = "0.8";
     commonSelf.colorOpacitySecondary = "0.16";
     commonSelf.colorOpacitySecondaryHover = "0.2";
@@ -20966,7 +20882,7 @@ const Button = defineComponent({
         (_a2 = selfElRef.value) === null || _a2 === void 0 ? void 0 : _a2.focus({ preventScroll: true });
       }
     };
-    const handleClick = (e) => {
+    const handleClick2 = (e) => {
       var _a2;
       if (!props.disabled && !props.loading) {
         const { onClick } = props;
@@ -21199,7 +21115,7 @@ const Button = defineComponent({
       handleKeydown,
       handleBlur,
       handleKeyup,
-      handleClick,
+      handleClick: handleClick2,
       customColorCssVars: computed(() => {
         const { color } = props;
         if (!color)
@@ -21264,7 +21180,7 @@ const XButton = Button;
 const commonVariables$e = {
   titleFontSize: "22px"
 };
-const self$M = (vars) => {
+const self$J = (vars) => {
   const { borderRadius, fontSize: fontSize2, lineHeight: lineHeight2, textColor2, textColor1, textColorDisabled, dividerColor, fontWeightStrong, primaryColor, baseColor, hoverColor, cardColor, modalColor, popoverColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$e), {
     borderRadius,
@@ -21294,10 +21210,10 @@ const calendarDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$M
+  self: self$J
 };
 const calendarDark$1 = calendarDark;
-const self$L = (vars) => {
+const self$I = (vars) => {
   const { fontSize: fontSize2, boxShadow2, popoverColor, textColor2, borderRadius, borderColor, heightSmall, heightMedium, heightLarge, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor } = vars;
   return {
     panelFontSize: fontSize2,
@@ -21322,7 +21238,7 @@ const colorPickerDark = {
     Input: inputDark$1,
     Button: buttonDark$1
   },
-  self: self$L
+  self: self$I
 };
 const colorPickerDark$1 = colorPickerDark;
 const commonVariables$d = {
@@ -21337,7 +21253,7 @@ const commonVariables$d = {
   closeIconSize: "18px",
   closeSize: "22px"
 };
-const self$K = (vars) => {
+const self$H = (vars) => {
   const { primaryColor, borderRadius, lineHeight: lineHeight2, fontSize: fontSize2, cardColor, textColor2, textColor1, dividerColor, fontWeightStrong, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, modalColor, boxShadow1, popoverColor, actionColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$d), {
     lineHeight: lineHeight2,
@@ -21370,14 +21286,14 @@ const self$K = (vars) => {
 const cardLight = {
   name: "Card",
   common: commonLight,
-  self: self$K
+  self: self$H
 };
 const cardLight$1 = cardLight;
 const cardDark = {
   name: "Card",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$K(vars);
+    const commonSelf = self$H(vars);
     const { cardColor, modalColor, popoverColor } = vars;
     commonSelf.colorEmbedded = cardColor;
     commonSelf.colorEmbeddedModal = modalColor;
@@ -21619,7 +21535,7 @@ const NCard = defineComponent({
     );
   }
 });
-const self$J = (vars) => {
+const self$G = (vars) => {
   return {
     dotSize: "8px",
     dotColor: "rgba(255, 255, 255, .3)",
@@ -21633,7 +21549,7 @@ const self$J = (vars) => {
 const carouselDark = {
   name: "Carousel",
   common: commonDark,
-  self: self$J
+  self: self$G
 };
 const carouselDark$1 = carouselDark;
 const commonVariables$c = {
@@ -21643,7 +21559,7 @@ const commonVariables$c = {
   labelPadding: "0 8px",
   labelFontWeight: "400"
 };
-const self$I = (vars) => {
+const self$F = (vars) => {
   const { baseColor, inputColorDisabled, cardColor, modalColor, popoverColor, textColorDisabled, borderColor, primaryColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, borderRadiusSmall, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$c), {
     labelLineHeight: lineHeight2,
@@ -21674,7 +21590,7 @@ const self$I = (vars) => {
 const checkboxLight = {
   name: "Checkbox",
   common: commonLight,
-  self: self$I
+  self: self$F
 };
 const checkboxLight$1 = checkboxLight;
 const checkboxDark = {
@@ -21682,14 +21598,14 @@ const checkboxDark = {
   common: commonDark,
   self(vars) {
     const { cardColor } = vars;
-    const commonSelf = self$I(vars);
+    const commonSelf = self$F(vars);
     commonSelf.color = "#0000";
     commonSelf.checkMarkColor = cardColor;
     return commonSelf;
   }
 };
 const checkboxDark$1 = checkboxDark;
-const self$H = (vars) => {
+const self$E = (vars) => {
   const { borderRadius, boxShadow2, popoverColor, textColor2, textColor3, primaryColor, textColorDisabled, dividerColor, hoverColor, fontSizeMedium, heightMedium } = vars;
   return {
     menuBorderRadius: borderRadius,
@@ -21719,7 +21635,7 @@ const cascaderDark = {
     Checkbox: checkboxDark$1,
     Empty: emptyLight$1
   },
-  self: self$H
+  self: self$E
 };
 const cascaderDark$1 = cascaderDark;
 const codeDark = {
@@ -21747,7 +21663,7 @@ const codeDark = {
   }
 };
 const codeDark$1 = codeDark;
-const self$G = (vars) => {
+const self$D = (vars) => {
   const { fontWeight, textColor1, textColor2, textColorDisabled, dividerColor, fontSize: fontSize2 } = vars;
   return {
     titleFontSize: fontSize2,
@@ -21765,10 +21681,10 @@ const self$G = (vars) => {
 const collapseDark = {
   name: "Collapse",
   common: commonDark,
-  self: self$G
+  self: self$D
 };
 const collapseDark$1 = collapseDark;
-const self$F = (vars) => {
+const self$C = (vars) => {
   const { cubicBezierEaseInOut: cubicBezierEaseInOut2 } = vars;
   return {
     bezier: cubicBezierEaseInOut2
@@ -21777,7 +21693,7 @@ const self$F = (vars) => {
 const collapseTransitionDark = {
   name: "CollapseTransition",
   common: commonDark,
-  self: self$F
+  self: self$C
 };
 const collapseTransitionDark$1 = collapseTransitionDark;
 const configProviderProps = {
@@ -21966,7 +21882,7 @@ const popselect = {
   }
 };
 const popselectDark = popselect;
-function self$E(vars) {
+function self$B(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -21979,10 +21895,10 @@ const popselectLight = createTheme({
     Popover: popoverLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$E
+  self: self$B
 });
 const popselectLight$1 = popselectLight;
-function self$D(vars) {
+function self$A(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -21995,7 +21911,7 @@ const selectLight = createTheme({
     InternalSelection: internalSelectionLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$D
+  self: self$A
 });
 const selectLight$1 = selectLight;
 const selectDark = {
@@ -22005,7 +21921,7 @@ const selectDark = {
     InternalSelection: internalSelectionDark$1,
     InternalSelectMenu: internalSelectMenuDark$1
   },
-  self: self$D
+  self: self$A
 };
 const selectDark$1 = selectDark;
 const style$c = c$1([cB("select", `
@@ -22772,7 +22688,7 @@ const commonVariables$b = {
   prefixMarginLarge: "0 8px 0 0",
   suffixMarginLarge: "0 0 0 8px"
 };
-const self$C = (vars) => {
+const self$z = (vars) => {
   const {
     textColor2,
     primaryColor,
@@ -22801,7 +22717,7 @@ const paginationLight = createTheme({
     Input: inputLight$1,
     Popselect: popselectLight$1
   },
-  self: self$C
+  self: self$z
 });
 const paginationLight$1 = paginationLight;
 const paginationDark = {
@@ -22817,7 +22733,7 @@ const paginationDark = {
     const borderColorActive = changeColor(primaryColor, {
       alpha: Number(opacity3)
     });
-    const commonSelf = self$C(vars);
+    const commonSelf = self$z(vars);
     commonSelf.itemBorderActive = `1px solid ${borderColorActive}`;
     commonSelf.itemBorderDisabled = "1px solid #0000";
     return commonSelf;
@@ -22839,7 +22755,7 @@ const tooltipDark = {
   }
 };
 const tooltipDark$1 = tooltipDark;
-const self$B = (vars) => {
+const self$y = (vars) => {
   const { borderRadius, boxShadow2, baseColor } = vars;
   return Object.assign(Object.assign({}, commonVars$8), { borderRadius, boxShadow: boxShadow2, color: composite(baseColor, "rgba(0, 0, 0, .85)"), textColor: baseColor });
 };
@@ -22849,7 +22765,7 @@ const tooltipLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$B
+  self: self$y
 });
 const tooltipLight$1 = tooltipLight;
 const ellipsisDark = {
@@ -22917,7 +22833,7 @@ const radioDark = {
   }
 };
 const radioDark$1 = radioDark;
-const self$A = (vars) => {
+const self$x = (vars) => {
   const { borderColor, primaryColor, baseColor, textColorDisabled, inputColorDisabled, textColor2, opacityDisabled, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightSmall, heightMedium, heightLarge, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$a), {
     labelLineHeight: lineHeight2,
@@ -22957,7 +22873,7 @@ const self$A = (vars) => {
 const radioLight = {
   name: "Radio",
   common: commonLight,
-  self: self$A
+  self: self$x
 };
 const radioLight$1 = radioLight;
 const commonVariables$9 = {
@@ -22983,7 +22899,7 @@ const commonVariables$9 = {
   optionIconPrefixWidthLarge: "40px",
   optionIconPrefixWidthHuge: "40px"
 };
-const self$z = (vars) => {
+const self$w = (vars) => {
   const { primaryColor, textColor2, dividerColor, hoverColor, popoverColor, invertedColor, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge, textColor3, opacityDisabled } = vars;
   return Object.assign(Object.assign({}, commonVariables$9), {
     optionHeightSmall: heightSmall,
@@ -23028,7 +22944,7 @@ const dropdownLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$z
+  self: self$w
 });
 const dropdownLight$1 = dropdownLight;
 const dropdownDark = {
@@ -23039,7 +22955,7 @@ const dropdownDark = {
   },
   self(vars) {
     const { primaryColorSuppl, primaryColor, popoverColor } = vars;
-    const commonSelf = self$z(vars);
+    const commonSelf = self$w(vars);
     commonSelf.colorInverted = popoverColor;
     commonSelf.optionColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.optionColorActiveInverted = primaryColorSuppl;
@@ -23064,7 +22980,7 @@ const commonVariables$8 = {
   actionPadding: "8px 12px",
   actionButtonMargin: "0 8px 0 0"
 };
-const self$y = (vars) => {
+const self$v = (vars) => {
   const { cardColor, modalColor, popoverColor, textColor2, textColor1, tableHeaderColor, tableColorHover, iconColor, primaryColor, fontWeightStrong, borderRadius, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor, heightSmall, opacityDisabled, tableColorStriped } = vars;
   return Object.assign(Object.assign({}, commonVariables$8), {
     actionDividerColor: dividerColor,
@@ -23121,7 +23037,7 @@ const dataTableLight = createTheme({
     Ellipsis: ellipsisLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$y
+  self: self$v
 });
 const dataTableLight$1 = dataTableLight;
 const dataTableDark = {
@@ -23139,7 +23055,7 @@ const dataTableDark = {
     Dropdown: dropdownDark$1
   },
   self(vars) {
-    const commonSelf = self$y(vars);
+    const commonSelf = self$v(vars);
     commonSelf.boxShadowAfter = "inset 12px 0 8px -12px rgba(0, 0, 0, .36)";
     commonSelf.boxShadowBefore = "inset -12px 0 8px -12px rgba(0, 0, 0, .36)";
     return commonSelf;
@@ -23183,7 +23099,7 @@ const NDropdownDivider = defineComponent({
     return h("div", { class: `${this.clsPrefix}-dropdown-divider` });
   }
 });
-const self$x = (vars) => {
+const self$u = (vars) => {
   const { textColorBase, opacity1, opacity2, opacity3, opacity4, opacity5 } = vars;
   return {
     color: textColorBase,
@@ -23197,13 +23113,13 @@ const self$x = (vars) => {
 const iconLight = {
   name: "Icon",
   common: commonLight,
-  self: self$x
+  self: self$u
 };
 const iconLight$1 = iconLight;
 const iconDark$1 = {
   name: "Icon",
   common: commonDark,
-  self: self$x
+  self: self$u
 };
 const iconDark$2 = iconDark$1;
 const style$b = cB("icon", `
@@ -23406,7 +23322,7 @@ const NDropdownOption = defineComponent({
         hoverKeyRef.value = null;
       }
     }
-    function handleClick() {
+    function handleClick2() {
       const { value: hasSubmenu } = hasSubmenuRef;
       const { tmNode } = props;
       if (!mergedShowRef.value)
@@ -23454,7 +23370,7 @@ const NDropdownOption = defineComponent({
       mergedDisabled: mergedDisabledRef,
       renderOption: renderOptionRef,
       nodeProps: nodePropsRef,
-      handleClick,
+      handleClick: handleClick2,
       handleMouseMove,
       handleMouseEnter,
       handleMouseLeave,
@@ -24171,7 +24087,7 @@ const commonVars$7 = {
   itemWidth: "52px",
   panelActionPadding: "8px 0"
 };
-const self$w = (vars) => {
+const self$t = (vars) => {
   const { popoverColor, textColor2, primaryColor, hoverColor, dividerColor, opacityDisabled, boxShadow2, borderRadius, iconColor, iconColorDisabled } = vars;
   return Object.assign(Object.assign({}, commonVars$7), {
     panelColor: popoverColor,
@@ -24195,7 +24111,7 @@ const timePickerDark = {
     Button: buttonDark$1,
     Input: inputDark$1
   },
-  self: self$w
+  self: self$t
 };
 const timePickerDark$1 = timePickerDark;
 const commonVars$6 = {
@@ -24234,7 +24150,7 @@ const commonVars$6 = {
   calendarRightPaddingQuarterrange: "0",
   calendarRightPaddingYearrange: "0"
 };
-const self$v = (vars) => {
+const self$s = (vars) => {
   const { hoverColor, fontSize: fontSize2, textColor2, textColorDisabled, popoverColor, primaryColor, borderRadiusSmall, iconColor, iconColorDisabled, textColor1, dividerColor, boxShadow2, borderRadius, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVars$6), {
     itemFontSize: fontSize2,
@@ -24278,7 +24194,7 @@ const datePickerDark = {
   },
   self(vars) {
     const { popoverColor, hoverColor, primaryColor } = vars;
-    const commonSelf = self$v(vars);
+    const commonSelf = self$s(vars);
     commonSelf.itemColorDisabled = composite(popoverColor, hoverColor);
     commonSelf.itemColorIncluded = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorHover = composite(popoverColor, hoverColor);
@@ -24300,7 +24216,7 @@ const commonVariables$7 = {
   tdPaddingMedium: "0 0 12px 0",
   tdPaddingLarge: "0 0 16px 0"
 };
-const self$u = (vars) => {
+const self$r = (vars) => {
   const { tableHeaderColor, textColor2, textColor1, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge } = vars;
   return Object.assign(Object.assign({}, commonVariables$7), {
     lineHeight: lineHeight2,
@@ -24326,13 +24242,13 @@ const self$u = (vars) => {
 const descriptionsLight = {
   name: "Descriptions",
   common: commonLight,
-  self: self$u
+  self: self$r
 };
 const descriptionsLight$1 = descriptionsLight;
 const descriptionsDark = {
   name: "Descriptions",
   common: commonDark,
-  self: self$u
+  self: self$r
 };
 const descriptionsDark$1 = descriptionsDark;
 const commonVars$5 = {
@@ -24348,7 +24264,7 @@ const commonVars$5 = {
   closeMargin: "20px 26px 0 0",
   closeMarginIconTop: "10px 16px 0 0"
 };
-const self$t = (vars) => {
+const self$q = (vars) => {
   const { textColor1, textColor2, modalColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, infoColor, successColor, warningColor, errorColor, primaryColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$5), {
     fontSize: fontSize2,
@@ -24378,7 +24294,7 @@ const dialogLight = createTheme({
   peers: {
     Button: buttonLight$1
   },
-  self: self$t
+  self: self$q
 });
 const dialogLight$1 = dialogLight;
 const dialogDark = {
@@ -24387,10 +24303,234 @@ const dialogDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$t
+  self: self$q
 };
 const dialogDark$1 = dialogDark;
-const self$s = (vars) => {
+const dialogProps = {
+  icon: Function,
+  type: {
+    type: String,
+    default: "default"
+  },
+  title: [String, Function],
+  closable: {
+    type: Boolean,
+    default: true
+  },
+  negativeText: String,
+  positiveText: String,
+  positiveButtonProps: Object,
+  negativeButtonProps: Object,
+  content: [String, Function],
+  action: Function,
+  showIcon: {
+    type: Boolean,
+    default: true
+  },
+  loading: Boolean,
+  bordered: Boolean,
+  iconPlacement: String,
+  onPositiveClick: Function,
+  onNegativeClick: Function,
+  onClose: Function
+};
+const dialogPropKeys = keysOf(dialogProps);
+const style$9 = c$1([cB("dialog", `
+ word-break: break-word;
+ line-height: var(--n-line-height);
+ position: relative;
+ background: var(--n-color);
+ color: var(--n-text-color);
+ box-sizing: border-box;
+ margin: auto;
+ border-radius: var(--n-border-radius);
+ padding: var(--n-padding);
+ transition: 
+ border-color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ `, [cE("icon", {
+  color: "var(--n-icon-color)"
+}), cM("bordered", {
+  border: "var(--n-border)"
+}), cM("icon-top", [cE("close", {
+  margin: "var(--n-close-margin)"
+}), cE("icon", {
+  margin: "var(--n-icon-margin)"
+}), cE("content", {
+  textAlign: "center"
+}), cE("title", {
+  justifyContent: "center"
+}), cE("action", {
+  justifyContent: "center"
+})]), cM("icon-left", [cE("icon", {
+  margin: "var(--n-icon-margin)"
+}), cM("closable", [cE("title", `
+ padding-right: calc(var(--n-close-size) + 6px);
+ `)])]), cE("close", `
+ position: absolute;
+ right: 0;
+ top: 0;
+ margin: var(--n-close-margin);
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ z-index: 1;
+ `), cE("content", `
+ font-size: var(--n-font-size);
+ margin: var(--n-content-margin);
+ position: relative;
+ word-break: break-word;
+ `, [cM("last", "margin-bottom: 0;")]), cE("action", `
+ display: flex;
+ justify-content: flex-end;
+ `, [c$1("> *:not(:last-child)", {
+  marginRight: "var(--n-action-space)"
+})]), cE("icon", {
+  fontSize: "var(--n-icon-size)",
+  transition: "color .3s var(--n-bezier)"
+}), cE("title", `
+ transition: color .3s var(--n-bezier);
+ display: flex;
+ align-items: center;
+ font-size: var(--n-title-font-size);
+ font-weight: var(--n-title-font-weight);
+ color: var(--n-title-text-color);
+ `), cB("dialog-icon-container", {
+  display: "flex",
+  justifyContent: "center"
+})]), insideModal(cB("dialog", `
+ width: 446px;
+ max-width: calc(100vw - 32px);
+ `)), cB("dialog", [asModal(`
+ width: 446px;
+ max-width: calc(100vw - 32px);
+ `)])]);
+const iconRenderMap$2 = {
+  default: () => h(InfoIcon, null),
+  info: () => h(InfoIcon, null),
+  success: () => h(SuccessIcon, null),
+  warning: () => h(WarningIcon, null),
+  error: () => h(ErrorIcon, null)
+};
+const NDialog = defineComponent({
+  name: "Dialog",
+  alias: [
+    "NimbusConfirmCard",
+    "Confirm"
+    // deprecated
+  ],
+  props: Object.assign(Object.assign({}, useTheme.props), dialogProps),
+  setup(props) {
+    const { mergedComponentPropsRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const mergedIconPlacementRef = computed(() => {
+      var _a2, _b;
+      const { iconPlacement } = props;
+      return iconPlacement || ((_b = (_a2 = mergedComponentPropsRef === null || mergedComponentPropsRef === void 0 ? void 0 : mergedComponentPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.Dialog) === null || _b === void 0 ? void 0 : _b.iconPlacement) || "left";
+    });
+    function handlePositiveClick(e) {
+      const { onPositiveClick } = props;
+      if (onPositiveClick)
+        onPositiveClick(e);
+    }
+    function handleNegativeClick(e) {
+      const { onNegativeClick } = props;
+      if (onNegativeClick)
+        onNegativeClick(e);
+    }
+    function handleCloseClick() {
+      const { onClose } = props;
+      if (onClose)
+        onClose();
+    }
+    const themeRef = useTheme("Dialog", "-dialog", style$9, dialogLight$1, props, mergedClsPrefixRef);
+    const cssVarsRef = computed(() => {
+      const { type } = props;
+      const iconPlacement = mergedIconPlacementRef.value;
+      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, lineHeight: lineHeight2, border, titleTextColor, textColor, color, closeBorderRadius, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, closeIconSize, borderRadius, titleFontWeight, titleFontSize, padding, iconSize, actionSpace, contentMargin, closeSize, [iconPlacement === "top" ? "iconMarginIconTop" : "iconMargin"]: iconMargin, [iconPlacement === "top" ? "closeMarginIconTop" : "closeMargin"]: closeMargin, [createKey("iconColor", type)]: iconColor } } = themeRef.value;
+      return {
+        "--n-font-size": fontSize2,
+        "--n-icon-color": iconColor,
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-close-margin": closeMargin,
+        "--n-icon-margin": iconMargin,
+        "--n-icon-size": iconSize,
+        "--n-close-size": closeSize,
+        "--n-close-icon-size": closeIconSize,
+        "--n-close-border-radius": closeBorderRadius,
+        "--n-close-color-hover": closeColorHover,
+        "--n-close-color-pressed": closeColorPressed,
+        "--n-close-icon-color": closeIconColor,
+        "--n-close-icon-color-hover": closeIconColorHover,
+        "--n-close-icon-color-pressed": closeIconColorPressed,
+        "--n-color": color,
+        "--n-text-color": textColor,
+        "--n-border-radius": borderRadius,
+        "--n-padding": padding,
+        "--n-line-height": lineHeight2,
+        "--n-border": border,
+        "--n-content-margin": contentMargin,
+        "--n-title-font-size": titleFontSize,
+        "--n-title-font-weight": titleFontWeight,
+        "--n-title-text-color": titleTextColor,
+        "--n-action-space": actionSpace
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("dialog", computed(() => `${props.type[0]}${mergedIconPlacementRef.value[0]}`), cssVarsRef, props) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      mergedIconPlacement: mergedIconPlacementRef,
+      mergedTheme: themeRef,
+      handlePositiveClick,
+      handleNegativeClick,
+      handleCloseClick,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    var _a2;
+    const { bordered, mergedIconPlacement, cssVars, closable, showIcon, title, content, action, negativeText, positiveText, positiveButtonProps, negativeButtonProps, handlePositiveClick, handleNegativeClick, mergedTheme, loading, type, mergedClsPrefix } = this;
+    (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+    const icon = showIcon ? h(NBaseIcon, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-dialog__icon` }, {
+      default: () => resolveWrappedSlot(this.$slots.icon, (children) => children || (this.icon ? render$1(this.icon) : iconRenderMap$2[this.type]()))
+    }) : null;
+    const actionNode = resolveWrappedSlot(this.$slots.action, (children) => children || positiveText || negativeText || action ? h("div", { class: `${mergedClsPrefix}-dialog__action` }, children || (action ? [render$1(action)] : [
+      this.negativeText && h(NButton, Object.assign({ theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, ghost: true, size: "small", onClick: handleNegativeClick }, negativeButtonProps), {
+        default: () => render$1(this.negativeText)
+      }),
+      this.positiveText && h(NButton, Object.assign({ theme: mergedTheme.peers.Button, themeOverrides: mergedTheme.peerOverrides.Button, size: "small", type: type === "default" ? "primary" : type, disabled: loading, loading, onClick: handlePositiveClick }, positiveButtonProps), {
+        default: () => render$1(this.positiveText)
+      })
+    ])) : null);
+    return h(
+      "div",
+      { class: [
+        `${mergedClsPrefix}-dialog`,
+        this.themeClass,
+        this.closable && `${mergedClsPrefix}-dialog--closable`,
+        `${mergedClsPrefix}-dialog--icon-${mergedIconPlacement}`,
+        bordered && `${mergedClsPrefix}-dialog--bordered`
+      ], style: cssVars, role: "dialog" },
+      closable ? h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-dialog__close`, onClick: this.handleCloseClick }) : null,
+      showIcon && mergedIconPlacement === "top" ? h("div", { class: `${mergedClsPrefix}-dialog-icon-container` }, icon) : null,
+      h(
+        "div",
+        { class: `${mergedClsPrefix}-dialog__title` },
+        showIcon && mergedIconPlacement === "left" ? icon : null,
+        resolveSlot(this.$slots.header, () => [render$1(title)])
+      ),
+      h("div", { class: [
+        `${mergedClsPrefix}-dialog__content`,
+        actionNode ? "" : `${mergedClsPrefix}-dialog__content--last`
+      ] }, resolveSlot(this.$slots.default, () => [render$1(content)])),
+      actionNode
+    );
+  }
+});
+const dialogProviderInjectionKey = createInjectionKey("n-dialog-provider");
+const self$p = (vars) => {
   const { modalColor, textColor2, boxShadow3 } = vars;
   return {
     color: modalColor,
@@ -24406,7 +24546,7 @@ const modalLight = createTheme({
     Dialog: dialogLight$1,
     Card: cardLight$1
   },
-  self: self$s
+  self: self$p
 });
 const modalLight$1 = modalLight;
 const modalDark = {
@@ -24417,10 +24557,481 @@ const modalDark = {
     Dialog: dialogDark$1,
     Card: cardDark$1
   },
-  self: self$s
+  self: self$p
 };
 const modalDark$1 = modalDark;
-const self$r = (vars) => {
+const presetProps = Object.assign(Object.assign({}, cardBaseProps), dialogProps);
+const presetPropsKeys = keysOf(presetProps);
+const NModalBodyWrapper = defineComponent({
+  name: "ModalBody",
+  inheritAttrs: false,
+  props: Object.assign(Object.assign({ show: {
+    type: Boolean,
+    required: true
+  }, preset: String, displayDirective: {
+    type: String,
+    required: true
+  }, trapFocus: {
+    type: Boolean,
+    default: true
+  }, autoFocus: {
+    type: Boolean,
+    default: true
+  }, blockScroll: Boolean }, presetProps), {
+    renderMask: Function,
+    // events
+    onClickoutside: Function,
+    onBeforeLeave: {
+      type: Function,
+      required: true
+    },
+    onAfterLeave: {
+      type: Function,
+      required: true
+    },
+    onPositiveClick: {
+      type: Function,
+      required: true
+    },
+    onNegativeClick: {
+      type: Function,
+      required: true
+    },
+    onClose: {
+      type: Function,
+      required: true
+    },
+    onAfterEnter: Function,
+    onEsc: Function
+  }),
+  setup(props) {
+    const bodyRef = ref(null);
+    const scrollbarRef = ref(null);
+    const displayedRef = ref(props.show);
+    const transformOriginXRef = ref(null);
+    const transformOriginYRef = ref(null);
+    watch(toRef(props, "show"), (value) => {
+      if (value)
+        displayedRef.value = true;
+    });
+    useLockHtmlScroll(computed(() => props.blockScroll && displayedRef.value));
+    const NModal2 = inject(modalInjectionKey);
+    function styleTransformOrigin() {
+      if (NModal2.transformOriginRef.value === "center") {
+        return "";
+      }
+      const { value: transformOriginX } = transformOriginXRef;
+      const { value: transformOriginY } = transformOriginYRef;
+      if (transformOriginX === null || transformOriginY === null) {
+        return "";
+      } else if (scrollbarRef.value) {
+        const scrollTop = scrollbarRef.value.containerScrollTop;
+        return `${transformOriginX}px ${transformOriginY + scrollTop}px`;
+      }
+      return "";
+    }
+    function syncTransformOrigin(el) {
+      if (NModal2.transformOriginRef.value === "center") {
+        return;
+      }
+      const mousePosition = NModal2.getMousePosition();
+      if (!mousePosition) {
+        return;
+      }
+      if (!scrollbarRef.value)
+        return;
+      const scrollTop = scrollbarRef.value.containerScrollTop;
+      const { offsetLeft, offsetTop } = el;
+      if (mousePosition) {
+        const top = mousePosition.y;
+        const left = mousePosition.x;
+        transformOriginXRef.value = -(offsetLeft - left);
+        transformOriginYRef.value = -(offsetTop - top - scrollTop);
+      }
+      el.style.transformOrigin = styleTransformOrigin();
+    }
+    function handleEnter(el) {
+      void nextTick(() => {
+        syncTransformOrigin(el);
+      });
+    }
+    function handleBeforeLeave(el) {
+      el.style.transformOrigin = styleTransformOrigin();
+      props.onBeforeLeave();
+    }
+    function handleAfterLeave() {
+      displayedRef.value = false;
+      transformOriginXRef.value = null;
+      transformOriginYRef.value = null;
+      props.onAfterLeave();
+    }
+    function handleCloseClick() {
+      const { onClose } = props;
+      if (onClose) {
+        onClose();
+      }
+    }
+    function handleNegativeClick() {
+      props.onNegativeClick();
+    }
+    function handlePositiveClick() {
+      props.onPositiveClick();
+    }
+    const childNodeRef = ref(null);
+    watch(childNodeRef, (node) => {
+      if (node) {
+        void nextTick(() => {
+          const el = node.el;
+          if (el && bodyRef.value !== el) {
+            bodyRef.value = el;
+          }
+        });
+      }
+    });
+    provide(modalBodyInjectionKey, bodyRef);
+    provide(drawerBodyInjectionKey, null);
+    provide(popoverBodyInjectionKey, null);
+    return {
+      mergedTheme: NModal2.mergedThemeRef,
+      appear: NModal2.appearRef,
+      isMounted: NModal2.isMountedRef,
+      mergedClsPrefix: NModal2.mergedClsPrefixRef,
+      bodyRef,
+      scrollbarRef,
+      displayed: displayedRef,
+      childNodeRef,
+      handlePositiveClick,
+      handleNegativeClick,
+      handleCloseClick,
+      handleAfterLeave,
+      handleBeforeLeave,
+      handleEnter
+    };
+  },
+  render() {
+    const { $slots, $attrs, handleEnter, handleAfterLeave, handleBeforeLeave, preset, mergedClsPrefix } = this;
+    let childNode = null;
+    if (!preset) {
+      childNode = getFirstSlotVNode($slots);
+      if (!childNode) {
+        warn$2("modal", "default slot is empty");
+        return;
+      }
+      childNode = cloneVNode(childNode);
+      childNode.props = mergeProps({
+        class: `${mergedClsPrefix}-modal`
+      }, $attrs, childNode.props || {});
+    }
+    return this.displayDirective === "show" || this.displayed || this.show ? withDirectives(h(
+      "div",
+      { role: "none", class: `${mergedClsPrefix}-modal-body-wrapper` },
+      h(NScrollbar$1, { ref: "scrollbarRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentClass: `${mergedClsPrefix}-modal-scroll-content` }, {
+        default: () => {
+          var _a2;
+          return [
+            (_a2 = this.renderMask) === null || _a2 === void 0 ? void 0 : _a2.call(this),
+            h(FocusTrap, { disabled: !this.trapFocus, active: this.show, onEsc: this.onEsc, autoFocus: this.autoFocus }, {
+              default: () => {
+                var _a3;
+                return h(Transition, { name: "fade-in-scale-up-transition", appear: (_a3 = this.appear) !== null && _a3 !== void 0 ? _a3 : this.isMounted, onEnter: handleEnter, onAfterEnter: this.onAfterEnter, onAfterLeave: handleAfterLeave, onBeforeLeave: handleBeforeLeave }, {
+                  default: () => {
+                    const dirs = [
+                      [vShow, this.show]
+                    ];
+                    const { onClickoutside } = this;
+                    if (onClickoutside) {
+                      dirs.push([
+                        clickoutside$1,
+                        this.onClickoutside,
+                        void 0,
+                        { capture: true }
+                      ]);
+                    }
+                    return withDirectives(this.preset === "confirm" || this.preset === "dialog" ? h(NDialog, Object.assign({}, this.$attrs, { class: [
+                      `${mergedClsPrefix}-modal`,
+                      this.$attrs.class
+                    ], ref: "bodyRef", theme: this.mergedTheme.peers.Dialog, themeOverrides: this.mergedTheme.peerOverrides.Dialog }, keep(this.$props, dialogPropKeys), { "aria-modal": "true" }), $slots) : this.preset === "card" ? h(NCard, Object.assign({}, this.$attrs, { ref: "bodyRef", class: [
+                      `${mergedClsPrefix}-modal`,
+                      this.$attrs.class
+                    ], theme: this.mergedTheme.peers.Card, themeOverrides: this.mergedTheme.peerOverrides.Card }, keep(this.$props, cardBasePropKeys), { "aria-modal": "true", role: "dialog" }), $slots) : this.childNodeRef = childNode, dirs);
+                  }
+                });
+              }
+            })
+          ];
+        }
+      })
+    ), [
+      [
+        vShow,
+        this.displayDirective === "if" || this.displayed || this.show
+      ]
+    ]) : null;
+  }
+});
+const style$8 = c$1([cB("modal-container", `
+ position: fixed;
+ left: 0;
+ top: 0;
+ height: 0;
+ width: 0;
+ display: flex;
+ `), cB("modal-mask", `
+ position: fixed;
+ left: 0;
+ right: 0;
+ top: 0;
+ bottom: 0;
+ background-color: rgba(0, 0, 0, .4);
+ `, [fadeInTransition({
+  enterDuration: ".25s",
+  leaveDuration: ".25s",
+  enterCubicBezier: "var(--n-bezier-ease-out)",
+  leaveCubicBezier: "var(--n-bezier-ease-out)"
+})]), cB("modal-body-wrapper", `
+ position: fixed;
+ left: 0;
+ right: 0;
+ top: 0;
+ bottom: 0;
+ overflow: visible;
+ `, [cB("modal-scroll-content", `
+ min-height: 100%;
+ display: flex;
+ position: relative;
+ `)]), cB("modal", `
+ position: relative;
+ align-self: center;
+ color: var(--n-text-color);
+ margin: auto;
+ box-shadow: var(--n-box-shadow);
+ `, [fadeInScaleUpTransition({
+  duration: ".25s",
+  enterScale: ".5"
+})])]);
+const modalProps = Object.assign(Object.assign(Object.assign(Object.assign({}, useTheme.props), { show: Boolean, unstableShowMask: {
+  type: Boolean,
+  default: true
+}, maskClosable: {
+  type: Boolean,
+  default: true
+}, preset: String, to: [String, Object], displayDirective: {
+  type: String,
+  default: "if"
+}, transformOrigin: {
+  type: String,
+  default: "mouse"
+}, zIndex: Number, autoFocus: {
+  type: Boolean,
+  default: true
+}, trapFocus: {
+  type: Boolean,
+  default: true
+}, closeOnEsc: {
+  type: Boolean,
+  default: true
+}, blockScroll: { type: Boolean, default: true } }), presetProps), {
+  // events
+  onEsc: Function,
+  "onUpdate:show": [Function, Array],
+  onUpdateShow: [Function, Array],
+  onAfterEnter: Function,
+  onBeforeLeave: Function,
+  onAfterLeave: Function,
+  onClose: Function,
+  onPositiveClick: Function,
+  onNegativeClick: Function,
+  onMaskClick: Function,
+  // private
+  internalDialog: Boolean,
+  internalAppear: {
+    type: Boolean,
+    default: void 0
+  },
+  // deprecated
+  overlayStyle: [String, Object],
+  onBeforeHide: Function,
+  onAfterHide: Function,
+  onHide: Function
+});
+const NModal = defineComponent({
+  name: "Modal",
+  inheritAttrs: false,
+  props: modalProps,
+  setup(props) {
+    const containerRef = ref(null);
+    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const themeRef = useTheme("Modal", "-modal", style$8, modalLight$1, props, mergedClsPrefixRef);
+    const clickedRef = useClicked(64);
+    const clickedPositionRef = useClickPosition();
+    const isMountedRef = isMounted();
+    const NDialogProvider = props.internalDialog ? inject(dialogProviderInjectionKey, null) : null;
+    const isComposingRef2 = useIsComposing();
+    function doUpdateShow(show) {
+      const { onUpdateShow, "onUpdate:show": _onUpdateShow, onHide } = props;
+      if (onUpdateShow)
+        call(onUpdateShow, show);
+      if (_onUpdateShow)
+        call(_onUpdateShow, show);
+      if (onHide && !show)
+        onHide(show);
+    }
+    function handleCloseClick() {
+      const { onClose } = props;
+      if (onClose) {
+        void Promise.resolve(onClose()).then((value) => {
+          if (value === false)
+            return;
+          doUpdateShow(false);
+        });
+      } else {
+        doUpdateShow(false);
+      }
+    }
+    function handlePositiveClick() {
+      const { onPositiveClick } = props;
+      if (onPositiveClick) {
+        void Promise.resolve(onPositiveClick()).then((value) => {
+          if (value === false)
+            return;
+          doUpdateShow(false);
+        });
+      } else {
+        doUpdateShow(false);
+      }
+    }
+    function handleNegativeClick() {
+      const { onNegativeClick } = props;
+      if (onNegativeClick) {
+        void Promise.resolve(onNegativeClick()).then((value) => {
+          if (value === false)
+            return;
+          doUpdateShow(false);
+        });
+      } else {
+        doUpdateShow(false);
+      }
+    }
+    function handleBeforeLeave() {
+      const { onBeforeLeave, onBeforeHide } = props;
+      if (onBeforeLeave)
+        call(onBeforeLeave);
+      if (onBeforeHide)
+        onBeforeHide();
+    }
+    function handleAfterLeave() {
+      const { onAfterLeave, onAfterHide } = props;
+      if (onAfterLeave)
+        call(onAfterLeave);
+      if (onAfterHide)
+        onAfterHide();
+    }
+    function handleClickoutside(e) {
+      var _a2;
+      const { onMaskClick } = props;
+      if (onMaskClick) {
+        onMaskClick(e);
+      }
+      if (props.maskClosable) {
+        if ((_a2 = containerRef.value) === null || _a2 === void 0 ? void 0 : _a2.contains(getPreciseEventTarget(e))) {
+          doUpdateShow(false);
+        }
+      }
+    }
+    function handleEsc(e) {
+      var _a2;
+      (_a2 = props.onEsc) === null || _a2 === void 0 ? void 0 : _a2.call(props);
+      if (props.show && props.closeOnEsc && eventEffectNotPerformed(e)) {
+        !isComposingRef2.value && doUpdateShow(false);
+      }
+    }
+    provide(modalInjectionKey, {
+      getMousePosition: () => {
+        if (NDialogProvider) {
+          const { clickedRef: clickedRef2, clickPositionRef } = NDialogProvider;
+          if (clickedRef2.value && clickPositionRef.value) {
+            return clickPositionRef.value;
+          }
+        }
+        if (clickedRef.value) {
+          return clickedPositionRef.value;
+        }
+        return null;
+      },
+      mergedClsPrefixRef,
+      mergedThemeRef: themeRef,
+      isMountedRef,
+      appearRef: toRef(props, "internalAppear"),
+      transformOriginRef: toRef(props, "transformOrigin")
+    });
+    const cssVarsRef = computed(() => {
+      const { common: { cubicBezierEaseOut: cubicBezierEaseOut2 }, self: { boxShadow, color, textColor } } = themeRef.value;
+      return {
+        "--n-bezier-ease-out": cubicBezierEaseOut2,
+        "--n-box-shadow": boxShadow,
+        "--n-color": color,
+        "--n-text-color": textColor
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("theme-class", void 0, cssVarsRef, props) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      namespace: namespaceRef,
+      isMounted: isMountedRef,
+      containerRef,
+      presetProps: computed(() => {
+        const pickedProps = keep(props, presetPropsKeys);
+        return pickedProps;
+      }),
+      handleEsc,
+      handleAfterLeave,
+      handleClickoutside,
+      handleBeforeLeave,
+      doUpdateShow,
+      handleNegativeClick,
+      handlePositiveClick,
+      handleCloseClick,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    const { mergedClsPrefix } = this;
+    return h(LazyTeleport, { to: this.to, show: this.show }, {
+      default: () => {
+        var _a2;
+        (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+        const { unstableShowMask } = this;
+        return withDirectives(h(
+          "div",
+          { role: "none", ref: "containerRef", class: [
+            `${mergedClsPrefix}-modal-container`,
+            this.themeClass,
+            this.namespace
+          ], style: this.cssVars },
+          h(NModalBodyWrapper, Object.assign({ style: this.overlayStyle }, this.$attrs, { ref: "bodyWrapper", displayDirective: this.displayDirective, show: this.show, preset: this.preset, autoFocus: this.autoFocus, trapFocus: this.trapFocus, blockScroll: this.blockScroll }, this.presetProps, { onEsc: this.handleEsc, onClose: this.handleCloseClick, onNegativeClick: this.handleNegativeClick, onPositiveClick: this.handlePositiveClick, onBeforeLeave: this.handleBeforeLeave, onAfterEnter: this.onAfterEnter, onAfterLeave: this.handleAfterLeave, onClickoutside: unstableShowMask ? void 0 : this.handleClickoutside, renderMask: unstableShowMask ? () => {
+            var _a3;
+            return h(Transition, { name: "fade-in-transition", key: "mask", appear: (_a3 = this.internalAppear) !== null && _a3 !== void 0 ? _a3 : this.isMounted }, {
+              default: () => {
+                return this.show ? h("div", { "aria-hidden": true, ref: "containerRef", class: `${mergedClsPrefix}-modal-mask`, onClick: this.handleClickoutside }) : null;
+              }
+            });
+          } : void 0 }), this.$slots)
+        ), [
+          [
+            zindexable$1,
+            {
+              zIndex: this.zIndex,
+              enabled: this.show
+            }
+          ]
+        ]);
+      }
+    });
+  }
+});
+const self$o = (vars) => {
   const { textColor1, dividerColor, fontWeightStrong } = vars;
   return {
     textColor: textColor1,
@@ -24431,10 +25042,10 @@ const self$r = (vars) => {
 const dividerDark = {
   name: "Divider",
   common: commonDark,
-  self: self$r
+  self: self$o
 };
 const dividerDark$1 = dividerDark;
-const self$q = (vars) => {
+const self$n = (vars) => {
   const { modalColor, textColor1, textColor2, boxShadow3, lineHeight: lineHeight2, fontWeightStrong, dividerColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadius, primaryColorHover } = vars;
   return {
     bodyPadding: "16px 24px",
@@ -24466,7 +25077,7 @@ const drawerLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$q
+  self: self$n
 });
 const drawerLight$1 = drawerLight;
 const drawerDark = {
@@ -24475,7 +25086,7 @@ const drawerDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$q
+  self: self$n
 };
 const drawerDark$1 = drawerDark;
 const NDrawerBodyWrapper = defineComponent({
@@ -24680,7 +25291,7 @@ const NDrawerBodyWrapper = defineComponent({
                 `${mergedClsPrefix}-drawer__resize-trigger`,
                 (this.isDragging || this.isHoverOnResizeTrigger) && `${mergedClsPrefix}-drawer__resize-trigger--hover`
               ], onMouseenter: this.handleMouseenterResizeTrigger, onMouseleave: this.handleMouseleaveResizeTrigger, onMousedown: this.handleMousedownResizeTrigger }) : null,
-              this.nativeScrollbar ? h("div", { class: `${mergedClsPrefix}-drawer-content-wrapper`, style: this.contentStyle, role: "none" }, $slots) : h(NScrollbar, Object.assign({}, this.scrollbarProps, { contentStyle: this.contentStyle, contentClass: `${mergedClsPrefix}-drawer-content-wrapper`, theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar }), $slots)
+              this.nativeScrollbar ? h("div", { class: `${mergedClsPrefix}-drawer-content-wrapper`, style: this.contentStyle, role: "none" }, $slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, { contentStyle: this.contentStyle, contentClass: `${mergedClsPrefix}-drawer-content-wrapper`, theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar }), $slots)
             ]), this.bodyDirectives)
           })
         })
@@ -24786,7 +25397,7 @@ function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s"
     })
   ];
 }
-const style$9 = c$1([cB("drawer", `
+const style$7 = c$1([cB("drawer", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: absolute;
@@ -24996,7 +25607,7 @@ const NDrawer = defineComponent({
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
     const isMountedRef = isMounted();
-    const themeRef = useTheme("Drawer", "-drawer", style$9, drawerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Drawer", "-drawer", style$7, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
     const uncontrolledHeightRef = ref(props.defaultHeight);
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
@@ -25187,7 +25798,7 @@ const NDrawerContent = defineComponent({
         "div",
         { class: `${mergedClsPrefix}-drawer-body`, style: bodyStyle, role: "none" },
         h("div", { class: `${mergedClsPrefix}-drawer-body-content-wrapper`, style: bodyContentStyle, role: "none" }, $slots)
-      ) : h(NScrollbar, Object.assign({ themeOverrides: mergedTheme.peerOverrides.Scrollbar, theme: mergedTheme.peers.Scrollbar }, scrollbarProps2, { class: `${mergedClsPrefix}-drawer-body`, contentClass: `${mergedClsPrefix}-drawer-body-content-wrapper`, contentStyle: bodyContentStyle }), $slots),
+      ) : h(NScrollbar$1, Object.assign({ themeOverrides: mergedTheme.peerOverrides.Scrollbar, theme: mergedTheme.peers.Scrollbar }, scrollbarProps2, { class: `${mergedClsPrefix}-drawer-body`, contentClass: `${mergedClsPrefix}-drawer-body-content-wrapper`, contentStyle: bodyContentStyle }), $slots),
       $slots.footer ? h("div", { class: `${mergedClsPrefix}-drawer-footer`, style: footerStyle, role: "none" }, $slots.footer()) : null
     );
   }
@@ -25220,12 +25831,12 @@ const spaceDark = {
   }
 };
 const spaceDark$1 = spaceDark;
-const self$p = () => {
+const self$m = () => {
   return commonVars$4;
 };
 const spaceLight = {
   name: "Space",
-  self: self$p
+  self: self$m
 };
 const spaceLight$1 = spaceLight;
 let supportFlexGap;
@@ -25395,14 +26006,20 @@ const commonVariables$5 = {
   labelTextAlignHorizontal: "right",
   labelFontWeight: "400"
 };
-const self$o = (vars) => {
+const self$l = (vars) => {
   const { heightSmall, heightMedium, heightLarge, textColor1, errorColor, warningColor, lineHeight: lineHeight2, textColor3 } = vars;
   return Object.assign(Object.assign({}, commonVariables$5), { blankHeightSmall: heightSmall, blankHeightMedium: heightMedium, blankHeightLarge: heightLarge, lineHeight: lineHeight2, labelTextColor: textColor1, asteriskColor: errorColor, feedbackTextColorError: errorColor, feedbackTextColorWarning: warningColor, feedbackTextColor: textColor3 });
 };
+const formLight = {
+  name: "Form",
+  common: commonLight,
+  self: self$l
+};
+const formLight$1 = formLight;
 const formItemDark = {
   name: "Form",
   common: commonDark,
-  self: self$o
+  self: self$l
 };
 const formDark = formItemDark;
 const defaultSpan$1 = 1;
@@ -25737,7 +26354,7 @@ const NGrid = defineComponent({
     }) : renderContent();
   }
 });
-const self$n = (vars) => {
+const self$k = (vars) => {
   const { primaryColor, baseColor } = vars;
   return {
     color: primaryColor,
@@ -25747,27 +26364,9 @@ const self$n = (vars) => {
 const iconDark = {
   name: "IconWrapper",
   common: commonDark,
-  self: self$n
+  self: self$k
 };
 const iconWrapperDark = iconDark;
-const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), { showToolbar: { type: Boolean, default: true }, showToolbarTooltip: Boolean });
-const imageContextKey = createInjectionKey("n-image");
-function self$m() {
-  return {
-    toolbarIconColor: "rgba(255, 255, 255, .9)",
-    toolbarColor: "rgba(0, 0, 0, .35)",
-    toolbarBoxShadow: "none",
-    toolbarBorderRadius: "24px"
-  };
-}
-const imageLight = createTheme({
-  name: "Image",
-  common: commonLight,
-  peers: {
-    Tooltip: tooltipLight$1
-  },
-  self: self$m
-});
 const commonVars$3 = {
   closeMargin: "16px 12px",
   closeSize: "20px",
@@ -25778,7 +26377,7 @@ const commonVars$3 = {
   metaFontSize: "12px",
   descriptionFontSize: "12px"
 };
-const self$l = (vars) => {
+const self$j = (vars) => {
   const { textColor2, successColor, infoColor, warningColor, errorColor, popoverColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, textColor1, textColor3, borderRadius, fontWeightStrong, boxShadow2, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$3), {
     borderRadius,
@@ -25810,7 +26409,7 @@ const notificationLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$l
+  self: self$j
 });
 const notificationLight$1 = notificationLight;
 const notificationDark = {
@@ -25819,7 +26418,7 @@ const notificationDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$l
+  self: self$j
 };
 const notificationDark$1 = notificationDark;
 const commonVariables$4 = {
@@ -25834,7 +26433,7 @@ const commonVariables$4 = {
   iconSize: "20px",
   fontSize: "14px"
 };
-const self$k = (vars) => {
+const self$i = (vars) => {
   const { textColor2, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, errorColor, warningColor, popoverColor, boxShadow2, primaryColor, lineHeight: lineHeight2, borderRadius, closeColorHover, closeColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$4), {
     closeBorderRadius: borderRadius,
@@ -25900,13 +26499,13 @@ const self$k = (vars) => {
 const messageLight = {
   name: "Message",
   common: commonLight,
-  self: self$k
+  self: self$i
 };
 const messageLight$1 = messageLight;
 const messageDark = {
   name: "Message",
   common: commonDark,
-  self: self$k
+  self: self$i
 };
 const messageDark$1 = messageDark;
 const buttonGroupDark = {
@@ -25929,22 +26528,6 @@ const inputNumberDark = {
   }
 };
 const inputNumberDark$1 = inputNumberDark;
-const self$j = (vars) => {
-  const { textColorDisabled } = vars;
-  return {
-    iconColorDisabled: textColorDisabled
-  };
-};
-const inputNumberLight = createTheme({
-  name: "InputNumber",
-  common: commonLight,
-  peers: {
-    Button: buttonLight$1,
-    Input: inputLight$1
-  },
-  self: self$j
-});
-const inputNumberLight$1 = inputNumberLight;
 const layoutDark = {
   name: "Layout",
   common: commonDark,
@@ -25981,7 +26564,7 @@ const layoutDark = {
   }
 };
 const layoutDark$1 = layoutDark;
-const self$i = (vars) => {
+const self$h = (vars) => {
   const { baseColor, textColor2, bodyColor, cardColor, dividerColor, actionColor, scrollbarColor, scrollbarColorHover, invertedColor } = vars;
   return {
     textColor: textColor2,
@@ -26016,10 +26599,10 @@ const layoutLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$i
+  self: self$h
 });
 const layoutLight$1 = layoutLight;
-const self$h = (vars) => {
+const self$g = (vars) => {
   const { textColor2, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontSize: fontSize2, hoverColor } = vars;
   return {
     textColor: textColor2,
@@ -26039,7 +26622,7 @@ const self$h = (vars) => {
 const listDark$1 = {
   name: "List",
   common: commonDark,
-  self: self$h
+  self: self$g
 };
 const listDark$2 = listDark$1;
 const loadingBarDark = {
@@ -26129,7 +26712,7 @@ function createPartialInvertedVars(color, activeItemColor, activeTextColor, grou
     groupTextColorInverted: groupTextColor
   };
 }
-const self$g = (vars) => {
+const self$f = (vars) => {
   const { borderRadius, textColor3, primaryColor, textColor2, textColor1, fontSize: fontSize2, dividerColor, hoverColor, primaryColorHover } = vars;
   return Object.assign({
     borderRadius,
@@ -26184,7 +26767,7 @@ const menuLight = createTheme({
     Tooltip: tooltipLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$g
+  self: self$f
 });
 const menuLight$1 = menuLight;
 const menuDark = {
@@ -26196,7 +26779,7 @@ const menuDark = {
   },
   self(vars) {
     const { primaryColor, primaryColorSuppl } = vars;
-    const commonSelf = self$g(vars);
+    const commonSelf = self$f(vars);
     commonSelf.itemColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveHover = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveCollapsed = changeColor(primaryColor, {
@@ -26213,19 +26796,19 @@ const common = {
   titleFontSize: "18px",
   backSize: "22px"
 };
-function self$f(vars) {
+function self$e(vars) {
   const { textColor1, textColor2, textColor3, fontSize: fontSize2, fontWeightStrong, primaryColorHover, primaryColorPressed } = vars;
   return Object.assign(Object.assign({}, common), { titleFontWeight: fontWeightStrong, fontSize: fontSize2, titleTextColor: textColor1, backColor: textColor2, backColorHover: primaryColorHover, backColorPressed: primaryColorPressed, subtitleTextColor: textColor3 });
 }
 const pageHeaderDark = {
   name: "PageHeader",
   common: commonDark,
-  self: self$f
+  self: self$e
 };
 const commonVars$2 = {
   iconSize: "22px"
 };
-const self$e = (vars) => {
+const self$d = (vars) => {
   const { fontSize: fontSize2, warningColor } = vars;
   return Object.assign(Object.assign({}, commonVars$2), { fontSize: fontSize2, iconColor: warningColor });
 };
@@ -26236,10 +26819,10 @@ const popconfirmDark = {
     Button: buttonDark$1,
     Popover: popoverDark$1
   },
-  self: self$e
+  self: self$d
 };
 const popconfirmDark$1 = popconfirmDark;
-const self$d = (vars) => {
+const self$c = (vars) => {
   const { infoColor, successColor, warningColor, errorColor, textColor2, progressRailColor, fontSize: fontSize2, fontWeight } = vars;
   return {
     fontSize: fontSize2,
@@ -26268,14 +26851,14 @@ const self$d = (vars) => {
 const progressLight = {
   name: "Progress",
   common: commonLight,
-  self: self$d
+  self: self$c
 };
 const progressLight$1 = progressLight;
 const progressDark = {
   name: "Progress",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$d(vars);
+    const commonSelf = self$c(vars);
     commonSelf.textColorLineInner = "rgb(0, 0, 0)";
     commonSelf.lineBgProcessing = "linear-gradient(90deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .5) 100%)";
     return commonSelf;
@@ -26316,20 +26899,20 @@ const commonVariables$3 = {
   iconColor403: void 0,
   iconColor500: void 0
 };
-const self$c = (vars) => {
+const self$b = (vars) => {
   const { textColor2, textColor1, errorColor, successColor, infoColor, warningColor, lineHeight: lineHeight2, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$3), { lineHeight: lineHeight2, titleFontWeight: fontWeightStrong, titleTextColor: textColor1, textColor: textColor2, iconColorError: errorColor, iconColorSuccess: successColor, iconColorInfo: infoColor, iconColorWarning: warningColor });
 };
 const resultLight = {
   name: "Result",
   common: commonLight,
-  self: self$c
+  self: self$b
 };
 const resultLight$1 = resultLight;
 const resultDark = {
   name: "Result",
   common: commonDark,
-  self: self$c
+  self: self$b
 };
 const resultDark$1 = resultDark;
 const sizeVariables$3 = {
@@ -26350,18 +26933,6 @@ const sliderDark = {
   }
 };
 const sliderDark$1 = sliderDark;
-const self$b = (vars) => {
-  const indicatorColor = "rgba(0, 0, 0, .85)";
-  const boxShadow = "0 2px 8px 0 rgba(0, 0, 0, 0.12)";
-  const { railColor, primaryColor, baseColor, cardColor, modalColor, popoverColor, borderRadius, fontSize: fontSize2, opacityDisabled } = vars;
-  return Object.assign(Object.assign({}, sizeVariables$3), { fontSize: fontSize2, markFontSize: fontSize2, railColor, railColorHover: railColor, fillColor: primaryColor, fillColorHover: primaryColor, opacityDisabled, handleColor: "#FFF", dotColor: cardColor, dotColorModal: modalColor, dotColorPopover: popoverColor, handleBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowHover: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowActive: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowFocus: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", indicatorColor, indicatorBoxShadow: boxShadow, indicatorTextColor: baseColor, indicatorBorderRadius: borderRadius, dotBorder: `2px solid ${railColor}`, dotBorderActive: `2px solid ${primaryColor}`, dotBoxShadow: "" });
-};
-const sliderLight = {
-  name: "Slider",
-  common: commonLight,
-  self: self$b
-};
-const sliderLight$1 = sliderLight;
 const self$a = (vars) => {
   const { opacityDisabled, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, primaryColor, fontSize: fontSize2 } = vars;
   return {
@@ -26833,1298 +27404,6 @@ const imageDark = {
     };
   }
 };
-const prevIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M6 5C5.75454 5 5.55039 5.17688 5.50806 5.41012L5.5 5.5V14.5C5.5 14.7761 5.72386 15 6 15C6.24546 15 6.44961 14.8231 6.49194 14.5899L6.5 14.5V5.5C6.5 5.22386 6.27614 5 6 5ZM13.8536 5.14645C13.68 4.97288 13.4106 4.9536 13.2157 5.08859L13.1464 5.14645L8.64645 9.64645C8.47288 9.82001 8.4536 10.0894 8.58859 10.2843L8.64645 10.3536L13.1464 14.8536C13.3417 15.0488 13.6583 15.0488 13.8536 14.8536C14.0271 14.68 14.0464 14.4106 13.9114 14.2157L13.8536 14.1464L9.70711 10L13.8536 5.85355C14.0488 5.65829 14.0488 5.34171 13.8536 5.14645Z", fill: "currentColor" })
-);
-const nextIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M13.5 5C13.7455 5 13.9496 5.17688 13.9919 5.41012L14 5.5V14.5C14 14.7761 13.7761 15 13.5 15C13.2545 15 13.0504 14.8231 13.0081 14.5899L13 14.5V5.5C13 5.22386 13.2239 5 13.5 5ZM5.64645 5.14645C5.82001 4.97288 6.08944 4.9536 6.28431 5.08859L6.35355 5.14645L10.8536 9.64645C11.0271 9.82001 11.0464 10.0894 10.9114 10.2843L10.8536 10.3536L6.35355 14.8536C6.15829 15.0488 5.84171 15.0488 5.64645 14.8536C5.47288 14.68 5.4536 14.4106 5.58859 14.2157L5.64645 14.1464L9.79289 10L5.64645 5.85355C5.45118 5.65829 5.45118 5.34171 5.64645 5.14645Z", fill: "currentColor" })
-);
-const closeIcon = h(
-  "svg",
-  { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
-  h("path", { d: "M4.089 4.216l.057-.07a.5.5 0 0 1 .638-.057l.07.057L10 9.293l5.146-5.147a.5.5 0 0 1 .638-.057l.07.057a.5.5 0 0 1 .057.638l-.057.07L10.707 10l5.147 5.146a.5.5 0 0 1 .057.638l-.057.07a.5.5 0 0 1-.638.057l-.07-.057L10 10.707l-5.146 5.147a.5.5 0 0 1-.638.057l-.07-.057a.5.5 0 0 1-.057-.638l.057-.07L9.293 10L4.146 4.854a.5.5 0 0 1-.057-.638l.057-.07l-.057.07z", fill: "currentColor" })
-);
-const style$8 = c$1([c$1("body >", [cB("image-container", "position: fixed;")]), cB("image-preview-container", `
- position: fixed;
- left: 0;
- right: 0;
- top: 0;
- bottom: 0;
- display: flex;
- `), cB("image-preview-overlay", `
- z-index: -1;
- position: absolute;
- left: 0;
- right: 0;
- top: 0;
- bottom: 0;
- background: rgba(0, 0, 0, .3);
- `, [fadeInTransition()]), cB("image-preview-toolbar", `
- z-index: 1;
- position: absolute;
- left: 50%;
- transform: translateX(-50%);
- border-radius: var(--n-toolbar-border-radius);
- height: 48px;
- bottom: 40px;
- padding: 0 12px;
- background: var(--n-toolbar-color);
- box-shadow: var(--n-toolbar-box-shadow);
- color: var(--n-toolbar-icon-color);
- transition: color .3s var(--n-bezier);
- display: flex;
- align-items: center;
- `, [cB("base-icon", `
- padding: 0 8px;
- font-size: 28px;
- cursor: pointer;
- `), fadeInTransition()]), cB("image-preview-wrapper", `
- position: absolute;
- left: 0;
- right: 0;
- top: 0;
- bottom: 0;
- display: flex;
- pointer-events: none;
- `, [fadeInScaleUpTransition()]), cB("image-preview", `
- user-select: none;
- -webkit-user-select: none;
- pointer-events: all;
- margin: auto;
- max-height: calc(100vh - 32px);
- max-width: calc(100vw - 32px);
- transition: transform .3s var(--n-bezier);
- `), cB("image", `
- display: inline-flex;
- max-height: 100%;
- max-width: 100%;
- `, [cNotM("preview-disabled", `
- cursor: pointer;
- `), c$1("img", `
- border-radius: inherit;
- `)])]);
-const BLEEDING = 32;
-const NImagePreview = defineComponent({
-  name: "ImagePreview",
-  props: Object.assign(Object.assign({}, imagePreviewSharedProps), { onNext: Function, onPrev: Function, clsPrefix: {
-    type: String,
-    required: true
-  } }),
-  setup(props) {
-    const themeRef = useTheme("Image", "-image", style$8, imageLight, props, toRef(props, "clsPrefix"));
-    let thumbnailEl = null;
-    const previewRef = ref(null);
-    const previewWrapperRef = ref(null);
-    const previewSrcRef = ref(void 0);
-    const showRef = ref(false);
-    const displayedRef = ref(false);
-    const { localeRef } = useLocale("Image");
-    function syncTransformOrigin() {
-      const { value: previewWrapper } = previewWrapperRef;
-      if (!thumbnailEl || !previewWrapper)
-        return;
-      const { style: style2 } = previewWrapper;
-      const tbox = thumbnailEl.getBoundingClientRect();
-      const tx = tbox.left + tbox.width / 2;
-      const ty = tbox.top + tbox.height / 2;
-      style2.transformOrigin = `${tx}px ${ty}px`;
-    }
-    function handleKeydown(e) {
-      var _a2, _b;
-      switch (e.key) {
-        case " ":
-          e.preventDefault();
-          break;
-        case "ArrowLeft":
-          (_a2 = props.onPrev) === null || _a2 === void 0 ? void 0 : _a2.call(props);
-          break;
-        case "ArrowRight":
-          (_b = props.onNext) === null || _b === void 0 ? void 0 : _b.call(props);
-          break;
-        case "Escape":
-          toggleShow();
-          break;
-      }
-    }
-    watch(showRef, (value) => {
-      if (value) {
-        on("keydown", document, handleKeydown);
-      } else
-        off("keydown", document, handleKeydown);
-    });
-    onBeforeUnmount(() => {
-      off("keydown", document, handleKeydown);
-    });
-    let startX = 0;
-    let startY = 0;
-    let offsetX = 0;
-    let offsetY = 0;
-    let startOffsetX = 0;
-    let startOffsetY = 0;
-    let mouseDownClientX = 0;
-    let mouseDownClientY = 0;
-    let dragging = false;
-    function handleMouseMove(e) {
-      const { clientX, clientY } = e;
-      offsetX = clientX - startX;
-      offsetY = clientY - startY;
-      beforeNextFrameOnce(derivePreviewStyle);
-    }
-    function getMoveStrategy(opts) {
-      const { mouseUpClientX, mouseUpClientY, mouseDownClientX: mouseDownClientX2, mouseDownClientY: mouseDownClientY2 } = opts;
-      const deltaHorizontal = mouseDownClientX2 - mouseUpClientX;
-      const deltaVertical = mouseDownClientY2 - mouseUpClientY;
-      const moveVerticalDirection = `vertical${deltaVertical > 0 ? "Top" : "Bottom"}`;
-      const moveHorizontalDirection = `horizontal${deltaHorizontal > 0 ? "Left" : "Right"}`;
-      return {
-        moveVerticalDirection,
-        moveHorizontalDirection,
-        deltaHorizontal,
-        deltaVertical
-      };
-    }
-    function getDerivedOffset(moveStrategy) {
-      const { value: preview } = previewRef;
-      if (!preview)
-        return { offsetX: 0, offsetY: 0 };
-      const pbox = preview.getBoundingClientRect();
-      const { moveVerticalDirection, moveHorizontalDirection, deltaHorizontal, deltaVertical } = moveStrategy || {};
-      let nextOffsetX = 0;
-      let nextOffsetY = 0;
-      if (pbox.width <= window.innerWidth) {
-        nextOffsetX = 0;
-      } else if (pbox.left > 0) {
-        nextOffsetX = (pbox.width - window.innerWidth) / 2;
-      } else if (pbox.right < window.innerWidth) {
-        nextOffsetX = -(pbox.width - window.innerWidth) / 2;
-      } else if (moveHorizontalDirection === "horizontalRight") {
-        nextOffsetX = Math.min((pbox.width - window.innerWidth) / 2, startOffsetX - (deltaHorizontal !== null && deltaHorizontal !== void 0 ? deltaHorizontal : 0));
-      } else {
-        nextOffsetX = Math.max(-((pbox.width - window.innerWidth) / 2), startOffsetX - (deltaHorizontal !== null && deltaHorizontal !== void 0 ? deltaHorizontal : 0));
-      }
-      if (pbox.height <= window.innerHeight) {
-        nextOffsetY = 0;
-      } else if (pbox.top > 0) {
-        nextOffsetY = (pbox.height - window.innerHeight) / 2;
-      } else if (pbox.bottom < window.innerHeight) {
-        nextOffsetY = -(pbox.height - window.innerHeight) / 2;
-      } else if (moveVerticalDirection === "verticalBottom") {
-        nextOffsetY = Math.min((pbox.height - window.innerHeight) / 2, startOffsetY - (deltaVertical !== null && deltaVertical !== void 0 ? deltaVertical : 0));
-      } else {
-        nextOffsetY = Math.max(-((pbox.height - window.innerHeight) / 2), startOffsetY - (deltaVertical !== null && deltaVertical !== void 0 ? deltaVertical : 0));
-      }
-      return {
-        offsetX: nextOffsetX,
-        offsetY: nextOffsetY
-      };
-    }
-    function handleMouseUp(e) {
-      off("mousemove", document, handleMouseMove);
-      off("mouseup", document, handleMouseUp);
-      const { clientX: mouseUpClientX, clientY: mouseUpClientY } = e;
-      dragging = false;
-      const moveStrategy = getMoveStrategy({
-        mouseUpClientX,
-        mouseUpClientY,
-        mouseDownClientX,
-        mouseDownClientY
-      });
-      const offset = getDerivedOffset(moveStrategy);
-      offsetX = offset.offsetX;
-      offsetY = offset.offsetY;
-      derivePreviewStyle();
-    }
-    const imageContext = inject(imageContextKey, null);
-    function handlePreviewMousedown(e) {
-      var _a2, _b;
-      (_b = (_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.onMousedown) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-      if (e.button !== 0)
-        return;
-      const { clientX, clientY } = e;
-      dragging = true;
-      startX = clientX - offsetX;
-      startY = clientY - offsetY;
-      startOffsetX = offsetX;
-      startOffsetY = offsetY;
-      mouseDownClientX = clientX;
-      mouseDownClientY = clientY;
-      derivePreviewStyle();
-      on("mousemove", document, handleMouseMove);
-      on("mouseup", document, handleMouseUp);
-    }
-    function handlePreviewDblclick(e) {
-      var _a2, _b;
-      (_b = (_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.onDblclick) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-      const originalImageSizeScale = getOrignalImageSizeScale();
-      scale = scale === originalImageSizeScale ? 1 : originalImageSizeScale;
-      derivePreviewStyle();
-    }
-    const scaleRadix = 1.5;
-    let scaleExp = 0;
-    let scale = 1;
-    let rotate = 0;
-    function resetScale() {
-      scale = 1;
-      scaleExp = 0;
-    }
-    function handleSwitchPrev() {
-      var _a2;
-      resetScale();
-      rotate = 0;
-      (_a2 = props.onPrev) === null || _a2 === void 0 ? void 0 : _a2.call(props);
-    }
-    function handleSwitchNext() {
-      var _a2;
-      resetScale();
-      rotate = 0;
-      (_a2 = props.onNext) === null || _a2 === void 0 ? void 0 : _a2.call(props);
-    }
-    function rotateCounterclockwise() {
-      rotate -= 90;
-      derivePreviewStyle();
-    }
-    function rotateClockwise() {
-      rotate += 90;
-      derivePreviewStyle();
-    }
-    function getMaxScale() {
-      const { value: preview } = previewRef;
-      if (!preview)
-        return 1;
-      const { innerWidth, innerHeight } = window;
-      const heightMaxScale = Math.max(1, preview.naturalHeight / (innerHeight - BLEEDING));
-      const widthMaxScale = Math.max(1, preview.naturalWidth / (innerWidth - BLEEDING));
-      return Math.max(3, heightMaxScale * 2, widthMaxScale * 2);
-    }
-    function getOrignalImageSizeScale() {
-      const { value: preview } = previewRef;
-      if (!preview)
-        return 1;
-      const { innerWidth, innerHeight } = window;
-      const heightScale = preview.naturalHeight / (innerHeight - BLEEDING);
-      const widthScale = preview.naturalWidth / (innerWidth - BLEEDING);
-      if (heightScale < 1 && widthScale < 1) {
-        return 1;
-      }
-      return Math.max(heightScale, widthScale);
-    }
-    function zoomIn() {
-      const maxScale = getMaxScale();
-      if (scale < maxScale) {
-        scaleExp += 1;
-        scale = Math.min(maxScale, Math.pow(scaleRadix, scaleExp));
-        derivePreviewStyle();
-      }
-    }
-    function zoomOut() {
-      if (scale > 0.5) {
-        const originalScale = scale;
-        scaleExp -= 1;
-        scale = Math.max(0.5, Math.pow(scaleRadix, scaleExp));
-        const diff = originalScale - scale;
-        derivePreviewStyle(false);
-        const offset = getDerivedOffset();
-        scale += diff;
-        derivePreviewStyle(false);
-        scale -= diff;
-        offsetX = offset.offsetX;
-        offsetY = offset.offsetY;
-        derivePreviewStyle();
-      }
-    }
-    function derivePreviewStyle(transition = true) {
-      var _a2;
-      const { value: preview } = previewRef;
-      if (!preview)
-        return;
-      const { style: style2 } = preview;
-      const controlledStyle = normalizeStyle((_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.style);
-      let controlledStyleString = "";
-      if (typeof controlledStyle === "string") {
-        controlledStyleString = controlledStyle + ";";
-      } else {
-        for (const key in controlledStyle) {
-          controlledStyleString += `${kebabCase$1(key)}: ${controlledStyle[key]};`;
-        }
-      }
-      const transformStyle = `transform-origin: center; transform: translateX(${offsetX}px) translateY(${offsetY}px) rotate(${rotate}deg) scale(${scale});`;
-      if (dragging) {
-        style2.cssText = controlledStyleString + "cursor: grabbing; transition: none;" + transformStyle;
-      } else {
-        style2.cssText = controlledStyleString + "cursor: grab;" + transformStyle + (transition ? "" : "transition: none;");
-      }
-      if (!transition) {
-        void preview.offsetHeight;
-      }
-    }
-    function toggleShow() {
-      showRef.value = !showRef.value;
-      displayedRef.value = true;
-    }
-    function resizeToOrignalImageSize() {
-      scale = getOrignalImageSizeScale();
-      scaleExp = Math.ceil(Math.log(scale) / Math.log(scaleRadix));
-      offsetX = 0;
-      offsetY = 0;
-      derivePreviewStyle();
-    }
-    const exposedMethods = {
-      setPreviewSrc: (src) => {
-        previewSrcRef.value = src;
-      },
-      setThumbnailEl: (el) => {
-        thumbnailEl = el;
-      },
-      toggleShow
-    };
-    function withTooltip(node, tooltipKey) {
-      if (props.showToolbarTooltip) {
-        const { value: theme } = themeRef;
-        return h(NTooltip, { to: false, theme: theme.peers.Tooltip, themeOverrides: theme.peerOverrides.Tooltip, keepAliveOnHover: false }, {
-          default: () => {
-            return localeRef.value[tooltipKey];
-          },
-          trigger: () => node
-        });
-      } else {
-        return node;
-      }
-    }
-    const cssVarsRef = computed(() => {
-      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { toolbarIconColor, toolbarBorderRadius, toolbarBoxShadow, toolbarColor } } = themeRef.value;
-      return {
-        "--n-bezier": cubicBezierEaseInOut2,
-        "--n-toolbar-icon-color": toolbarIconColor,
-        "--n-toolbar-color": toolbarColor,
-        "--n-toolbar-border-radius": toolbarBorderRadius,
-        "--n-toolbar-box-shadow": toolbarBoxShadow
-      };
-    });
-    const { inlineThemeDisabled } = useConfig();
-    const themeClassHandle = inlineThemeDisabled ? useThemeClass("image-preview", void 0, cssVarsRef, props) : void 0;
-    return Object.assign({
-      previewRef,
-      previewWrapperRef,
-      previewSrc: previewSrcRef,
-      show: showRef,
-      appear: isMounted(),
-      displayed: displayedRef,
-      previewedImgProps: imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef,
-      handleWheel(e) {
-        e.preventDefault();
-      },
-      handlePreviewMousedown,
-      handlePreviewDblclick,
-      syncTransformOrigin,
-      handleAfterLeave: () => {
-        resetScale();
-        rotate = 0;
-        displayedRef.value = false;
-      },
-      handleDragStart: (e) => {
-        var _a2, _b;
-        (_b = (_a2 = imageContext === null || imageContext === void 0 ? void 0 : imageContext.previewedImgPropsRef.value) === null || _a2 === void 0 ? void 0 : _a2.onDragstart) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-        e.preventDefault();
-      },
-      zoomIn,
-      zoomOut,
-      rotateCounterclockwise,
-      rotateClockwise,
-      handleSwitchPrev,
-      handleSwitchNext,
-      withTooltip,
-      resizeToOrignalImageSize,
-      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
-      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
-      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
-    }, exposedMethods);
-  },
-  render() {
-    var _a2, _b;
-    const { clsPrefix } = this;
-    return h(
-      Fragment,
-      null,
-      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2),
-      h(LazyTeleport, { show: this.show }, {
-        default: () => {
-          var _a3;
-          if (!(this.show || this.displayed)) {
-            return null;
-          }
-          (_a3 = this.onRender) === null || _a3 === void 0 ? void 0 : _a3.call(this);
-          return withDirectives(h(
-            "div",
-            { class: [
-              `${clsPrefix}-image-preview-container`,
-              this.themeClass
-            ], style: this.cssVars, onWheel: this.handleWheel },
-            h(Transition, { name: "fade-in-transition", appear: this.appear }, {
-              default: () => this.show ? h("div", { class: `${clsPrefix}-image-preview-overlay`, onClick: this.toggleShow }) : null
-            }),
-            this.showToolbar ? h(Transition, { name: "fade-in-transition", appear: this.appear }, {
-              default: () => {
-                if (!this.show)
-                  return null;
-                const { withTooltip } = this;
-                return h(
-                  "div",
-                  { class: `${clsPrefix}-image-preview-toolbar` },
-                  this.onPrev ? h(
-                    Fragment,
-                    null,
-                    withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleSwitchPrev }, { default: () => prevIcon }), "tipPrevious"),
-                    withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleSwitchNext }, { default: () => nextIcon }), "tipNext")
-                  ) : null,
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.rotateCounterclockwise }, {
-                    default: () => h(RotateCounterclockwiseIcon, null)
-                  }), "tipCounterclockwise"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.rotateClockwise }, {
-                    default: () => h(RotateClockwiseIcon, null)
-                  }), "tipClockwise"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.resizeToOrignalImageSize }, {
-                    default: () => {
-                      return h(ResizeSmallIcon, null);
-                    }
-                  }), "tipOriginalSize"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomOut }, { default: () => h(ZoomOutIcon, null) }), "tipZoomOut"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomIn }, { default: () => h(ZoomInIcon, null) }), "tipZoomIn"),
-                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.toggleShow }, { default: () => closeIcon }), "tipClose")
-                );
-              }
-            }) : null,
-            h(Transition, {
-              name: "fade-in-scale-up-transition",
-              onAfterLeave: this.handleAfterLeave,
-              appear: this.appear,
-              // BUG:
-              // onEnter will be called twice, I don't know why
-              // Maybe it is a bug of vue
-              onEnter: this.syncTransformOrigin,
-              onBeforeLeave: this.syncTransformOrigin
-            }, {
-              default: () => {
-                const { previewedImgProps = {} } = this;
-                return withDirectives(h(
-                  "div",
-                  { class: `${clsPrefix}-image-preview-wrapper`, ref: "previewWrapperRef" },
-                  h("img", Object.assign({}, previewedImgProps, { draggable: false, onMousedown: this.handlePreviewMousedown, onDblclick: this.handlePreviewDblclick, class: [
-                    `${clsPrefix}-image-preview`,
-                    previewedImgProps.class
-                  ], key: this.previewSrc, src: this.previewSrc, ref: "previewRef", onDragstart: this.handleDragStart }))
-                ), [[vShow, this.show]]);
-              }
-            })
-          ), [[zindexable$1, { enabled: this.show }]]);
-        }
-      })
-    );
-  }
-});
-const imageGroupInjectionKey = createInjectionKey("n-image-group");
-const imageGroupProps = imagePreviewSharedProps;
-const NImageGroup = defineComponent({
-  name: "ImageGroup",
-  props: imageGroupProps,
-  setup(props) {
-    let currentSrc;
-    const { mergedClsPrefixRef } = useConfig(props);
-    const groupId = `c${createId()}`;
-    const vm = getCurrentInstance();
-    const setPreviewSrc = (src) => {
-      var _a2;
-      currentSrc = src;
-      (_a2 = previewInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.setPreviewSrc(src);
-    };
-    function go(step) {
-      if (!(vm === null || vm === void 0 ? void 0 : vm.proxy))
-        return;
-      const container = vm.proxy.$el.parentElement;
-      const imgs = container.querySelectorAll(`[data-group-id=${groupId}]:not([data-error=true])`);
-      if (!imgs.length)
-        return;
-      const index = Array.from(imgs).findIndex((img) => img.dataset.previewSrc === currentSrc);
-      if (~index) {
-        setPreviewSrc(imgs[(index + step + imgs.length) % imgs.length].dataset.previewSrc);
-      } else {
-        setPreviewSrc(imgs[0].dataset.previewSrc);
-      }
-    }
-    provide(imageGroupInjectionKey, {
-      mergedClsPrefixRef,
-      setPreviewSrc,
-      setThumbnailEl: (el) => {
-        var _a2;
-        (_a2 = previewInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.setThumbnailEl(el);
-      },
-      toggleShow: () => {
-        var _a2;
-        (_a2 = previewInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.toggleShow();
-      },
-      groupId
-    });
-    const previewInstRef = ref(null);
-    return {
-      mergedClsPrefix: mergedClsPrefixRef,
-      previewInstRef,
-      next: () => go(1),
-      prev: () => go(-1)
-    };
-  },
-  render() {
-    return h(NImagePreview, { theme: this.theme, themeOverrides: this.themeOverrides, clsPrefix: this.mergedClsPrefix, ref: "previewInstRef", onPrev: this.prev, onNext: this.next, showToolbar: this.showToolbar, showToolbarTooltip: this.showToolbarTooltip }, this.$slots);
-  }
-});
-const imageProps = Object.assign({ alt: String, height: [String, Number], imgProps: Object, previewedImgProps: Object, lazy: Boolean, intersectionObserverOptions: Object, objectFit: {
-  type: String,
-  default: "fill"
-}, previewSrc: String, fallbackSrc: String, width: [String, Number], src: String, previewDisabled: Boolean, loadDescription: String, onError: Function, onLoad: Function }, imagePreviewSharedProps);
-const NImage = defineComponent({
-  name: "Image",
-  props: imageProps,
-  inheritAttrs: false,
-  setup(props) {
-    const imageRef = ref(null);
-    const showErrorRef = ref(false);
-    const previewInstRef = ref(null);
-    const imageGroupHandle = inject(imageGroupInjectionKey, null);
-    const { mergedClsPrefixRef } = imageGroupHandle || useConfig(props);
-    const exposedMethods = {
-      click: () => {
-        if (props.previewDisabled || showErrorRef.value)
-          return;
-        const mergedPreviewSrc = props.previewSrc || props.src;
-        if (imageGroupHandle) {
-          imageGroupHandle.setPreviewSrc(mergedPreviewSrc);
-          imageGroupHandle.setThumbnailEl(imageRef.value);
-          imageGroupHandle.toggleShow();
-          return;
-        }
-        const { value: previewInst } = previewInstRef;
-        if (!previewInst)
-          return;
-        previewInst.setPreviewSrc(mergedPreviewSrc);
-        previewInst.setThumbnailEl(imageRef.value);
-        previewInst.toggleShow();
-      }
-    };
-    const shouldStartLoadingRef = ref(!props.lazy);
-    onMounted(() => {
-      var _a2;
-      (_a2 = imageRef.value) === null || _a2 === void 0 ? void 0 : _a2.setAttribute("data-group-id", (imageGroupHandle === null || imageGroupHandle === void 0 ? void 0 : imageGroupHandle.groupId) || "");
-    });
-    onMounted(() => {
-      if (isImageSupportNativeLazy) {
-        return;
-      }
-      let unobserve;
-      const stopWatchHandle = watchEffect(() => {
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-        unobserve = void 0;
-        if (props.lazy) {
-          unobserve = observeIntersection(imageRef.value, props.intersectionObserverOptions, shouldStartLoadingRef);
-        }
-      });
-      onBeforeUnmount(() => {
-        stopWatchHandle();
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-      });
-    });
-    watchEffect(() => {
-      var _a2;
-      void props.src;
-      void ((_a2 = props.imgProps) === null || _a2 === void 0 ? void 0 : _a2.src);
-      showErrorRef.value = false;
-    });
-    const loadedRef = ref(false);
-    provide(imageContextKey, {
-      previewedImgPropsRef: toRef(props, "previewedImgProps")
-    });
-    return Object.assign({
-      mergedClsPrefix: mergedClsPrefixRef,
-      groupId: imageGroupHandle === null || imageGroupHandle === void 0 ? void 0 : imageGroupHandle.groupId,
-      previewInstRef,
-      imageRef,
-      showError: showErrorRef,
-      shouldStartLoading: shouldStartLoadingRef,
-      loaded: loadedRef,
-      mergedOnClick: (e) => {
-        var _a2, _b;
-        exposedMethods.click();
-        (_b = (_a2 = props.imgProps) === null || _a2 === void 0 ? void 0 : _a2.onClick) === null || _b === void 0 ? void 0 : _b.call(_a2, e);
-      },
-      mergedOnError: (e) => {
-        if (!shouldStartLoadingRef.value)
-          return;
-        showErrorRef.value = true;
-        const { onError, imgProps: { onError: imgPropsOnError } = {} } = props;
-        onError === null || onError === void 0 ? void 0 : onError(e);
-        imgPropsOnError === null || imgPropsOnError === void 0 ? void 0 : imgPropsOnError(e);
-      },
-      mergedOnLoad: (e) => {
-        const { onLoad, imgProps: { onLoad: imgPropsOnLoad } = {} } = props;
-        onLoad === null || onLoad === void 0 ? void 0 : onLoad(e);
-        imgPropsOnLoad === null || imgPropsOnLoad === void 0 ? void 0 : imgPropsOnLoad(e);
-        loadedRef.value = true;
-      }
-    }, exposedMethods);
-  },
-  render() {
-    var _a2, _b;
-    const { mergedClsPrefix, imgProps = {}, loaded, $attrs, lazy } = this;
-    const placeholderNode = (_b = (_a2 = this.$slots).placeholder) === null || _b === void 0 ? void 0 : _b.call(_a2);
-    const loadSrc = this.src || imgProps.src || "";
-    const imgNode = h("img", Object.assign(Object.assign({}, imgProps), {
-      ref: "imageRef",
-      width: this.width || imgProps.width,
-      height: this.height || imgProps.height,
-      src: isImageSupportNativeLazy ? loadSrc : this.showError ? this.fallbackSrc : this.shouldStartLoading ? loadSrc : void 0,
-      alt: this.alt || imgProps.alt,
-      "aria-label": this.alt || imgProps.alt,
-      onClick: this.mergedOnClick,
-      onError: this.mergedOnError,
-      onLoad: this.mergedOnLoad,
-      // If interseciton observer options is set, do not use native lazy
-      loading: isImageSupportNativeLazy && lazy && !this.intersectionObserverOptions ? "lazy" : "eager",
-      style: [
-        imgProps.style || "",
-        placeholderNode && !loaded ? { height: "0", width: "0", visibility: "hidden" } : "",
-        { objectFit: this.objectFit }
-      ],
-      "data-error": this.showError,
-      "data-preview-src": this.previewSrc || this.src
-    }));
-    return h(
-      "div",
-      Object.assign({}, $attrs, { role: "none", class: [
-        $attrs.class,
-        `${mergedClsPrefix}-image`,
-        (this.previewDisabled || this.showError) && `${mergedClsPrefix}-image--preview-disabled`
-      ] }),
-      this.groupId ? imgNode : h(NImagePreview, { theme: this.theme, themeOverrides: this.themeOverrides, clsPrefix: mergedClsPrefix, ref: "previewInstRef", showToolbar: this.showToolbar, showToolbarTooltip: this.showToolbarTooltip }, {
-        default: () => imgNode
-      }),
-      !loaded && placeholderNode
-    );
-  }
-});
-function parse(value) {
-  if (value === void 0 || value === null || typeof value === "string" && value.trim() === "") {
-    return null;
-  }
-  return Number(value);
-}
-function isWipValue(value) {
-  return value.includes(".") && (/^(-)?\d+.*(\.|0)$/.test(value) || /^\.\d+$/.test(value));
-}
-function validator(value) {
-  if (value === void 0 || value === null)
-    return true;
-  if (Number.isNaN(value))
-    return false;
-  return true;
-}
-function format(value, precision) {
-  if (value === void 0 || value === null)
-    return "";
-  return precision === void 0 ? String(value) : value.toFixed(precision);
-}
-function parseNumber(number) {
-  if (number === null)
-    return null;
-  if (typeof number === "number") {
-    return number;
-  } else {
-    const parsedNumber = Number(number);
-    if (Number.isNaN(parsedNumber))
-      return null;
-    else {
-      return parsedNumber;
-    }
-  }
-}
-const style$7 = c$1([cB("input-number-suffix", `
- display: inline-block;
- margin-right: 10px;
- `), cB("input-number-prefix", `
- display: inline-block;
- margin-left: 10px;
- `)]);
-const HOLDING_CHANGE_THRESHOLD = 800;
-const HOLDING_CHANGE_INTERVAL = 100;
-const inputNumberProps = Object.assign(Object.assign({}, useTheme.props), {
-  autofocus: Boolean,
-  loading: {
-    type: Boolean,
-    default: void 0
-  },
-  placeholder: String,
-  defaultValue: {
-    type: Number,
-    default: null
-  },
-  value: Number,
-  step: {
-    type: [Number, String],
-    default: 1
-  },
-  min: [Number, String],
-  max: [Number, String],
-  size: String,
-  disabled: {
-    type: Boolean,
-    default: void 0
-  },
-  validator: Function,
-  bordered: {
-    type: Boolean,
-    default: void 0
-  },
-  showButton: {
-    type: Boolean,
-    default: true
-  },
-  buttonPlacement: {
-    type: String,
-    default: "right"
-  },
-  readonly: Boolean,
-  clearable: Boolean,
-  keyboard: {
-    type: Object,
-    default: {}
-  },
-  updateValueOnInput: {
-    type: Boolean,
-    default: true
-  },
-  parse: Function,
-  format: Function,
-  precision: Number,
-  status: String,
-  "onUpdate:value": [Function, Array],
-  onUpdateValue: [Function, Array],
-  onFocus: [Function, Array],
-  onBlur: [Function, Array],
-  onClear: [Function, Array],
-  // deprecated
-  onChange: [Function, Array]
-});
-const NInputNumber = defineComponent({
-  name: "InputNumber",
-  props: inputNumberProps,
-  setup(props) {
-    const { mergedBorderedRef, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("InputNumber", "-input-number", style$7, inputNumberLight$1, props, mergedClsPrefixRef);
-    const { localeRef } = useLocale("InputNumber");
-    const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef, mergedStatusRef } = formItem;
-    const inputInstRef = ref(null);
-    const minusButtonInstRef = ref(null);
-    const addButtonInstRef = ref(null);
-    const uncontrolledValueRef = ref(props.defaultValue);
-    const controlledValueRef = toRef(props, "value");
-    const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
-    const displayedValueRef = ref("");
-    const getPrecision = (value) => {
-      const fraction = String(value).split(".")[1];
-      return fraction ? fraction.length : 0;
-    };
-    const getMaxPrecision = (currentValue) => {
-      const precisions = [props.min, props.max, props.step, currentValue].map((value) => {
-        if (value === void 0)
-          return 0;
-        return getPrecision(value);
-      });
-      return Math.max(...precisions);
-    };
-    const mergedPlaceholderRef = useMemo(() => {
-      const { placeholder } = props;
-      if (placeholder !== void 0)
-        return placeholder;
-      return localeRef.value.placeholder;
-    });
-    const mergedStepRef = useMemo(() => {
-      const parsedNumber = parseNumber(props.step);
-      if (parsedNumber !== null) {
-        return parsedNumber === 0 ? 1 : Math.abs(parsedNumber);
-      }
-      return 1;
-    });
-    const mergedMinRef = useMemo(() => {
-      const parsedNumber = parseNumber(props.min);
-      if (parsedNumber !== null)
-        return parsedNumber;
-      else
-        return null;
-    });
-    const mergedMaxRef = useMemo(() => {
-      const parsedNumber = parseNumber(props.max);
-      if (parsedNumber !== null)
-        return parsedNumber;
-      else
-        return null;
-    });
-    const doUpdateValue = (value) => {
-      const { value: mergedValue } = mergedValueRef;
-      if (value === mergedValue) {
-        deriveDisplayedValueFromValue();
-        return;
-      }
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue, onChange } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
-      if (onChange)
-        call(onChange, value);
-      if (onUpdateValue)
-        call(onUpdateValue, value);
-      if (_onUpdateValue)
-        call(_onUpdateValue, value);
-      uncontrolledValueRef.value = value;
-      nTriggerFormInput();
-      nTriggerFormChange();
-    };
-    const deriveValueFromDisplayedValue = ({ offset, doUpdateIfValid, fixPrecision, isInputing }) => {
-      const { value: displayedValue } = displayedValueRef;
-      if (isInputing && isWipValue(displayedValue)) {
-        return false;
-      }
-      const parsedValue = (props.parse || parse)(displayedValue);
-      if (parsedValue === null) {
-        if (doUpdateIfValid)
-          doUpdateValue(null);
-        return null;
-      }
-      if (validator(parsedValue)) {
-        const currentPrecision = getPrecision(parsedValue);
-        const { precision } = props;
-        if (precision !== void 0 && precision < currentPrecision && !fixPrecision) {
-          return false;
-        }
-        let nextValue = parseFloat((parsedValue + offset).toFixed(precision !== null && precision !== void 0 ? precision : getMaxPrecision(parsedValue)));
-        if (validator(nextValue)) {
-          const { value: mergedMax } = mergedMaxRef;
-          const { value: mergedMin } = mergedMinRef;
-          if (mergedMax !== null && nextValue > mergedMax) {
-            if (!doUpdateIfValid || isInputing)
-              return false;
-            nextValue = mergedMax;
-          }
-          if (mergedMin !== null && nextValue < mergedMin) {
-            if (!doUpdateIfValid || isInputing)
-              return false;
-            nextValue = mergedMin;
-          }
-          if (props.validator && !props.validator(nextValue))
-            return false;
-          if (doUpdateIfValid)
-            doUpdateValue(nextValue);
-          return nextValue;
-        }
-      }
-      return false;
-    };
-    const deriveDisplayedValueFromValue = () => {
-      const { value: mergedValue } = mergedValueRef;
-      if (validator(mergedValue)) {
-        const { format: formatProp, precision } = props;
-        if (formatProp) {
-          displayedValueRef.value = formatProp(mergedValue);
-        } else {
-          if (mergedValue === null || precision === void 0 || // precision overflow
-          getPrecision(mergedValue) > precision) {
-            displayedValueRef.value = format(mergedValue, void 0);
-          } else {
-            displayedValueRef.value = format(mergedValue, precision);
-          }
-        }
-      } else {
-        displayedValueRef.value = String(mergedValue);
-      }
-    };
-    deriveDisplayedValueFromValue();
-    const displayedValueInvalidRef = useMemo(() => {
-      const derivedValue = deriveValueFromDisplayedValue({
-        offset: 0,
-        doUpdateIfValid: false,
-        isInputing: false,
-        fixPrecision: false
-      });
-      return derivedValue === false;
-    });
-    const minusableRef = useMemo(() => {
-      const { value: mergedValue } = mergedValueRef;
-      if (props.validator && mergedValue === null) {
-        return false;
-      }
-      const { value: mergedStep } = mergedStepRef;
-      const derivedNextValue = deriveValueFromDisplayedValue({
-        offset: -mergedStep,
-        doUpdateIfValid: false,
-        isInputing: false,
-        fixPrecision: false
-      });
-      return derivedNextValue !== false;
-    });
-    const addableRef = useMemo(() => {
-      const { value: mergedValue } = mergedValueRef;
-      if (props.validator && mergedValue === null) {
-        return false;
-      }
-      const { value: mergedStep } = mergedStepRef;
-      const derivedNextValue = deriveValueFromDisplayedValue({
-        offset: +mergedStep,
-        doUpdateIfValid: false,
-        isInputing: false,
-        fixPrecision: false
-      });
-      return derivedNextValue !== false;
-    });
-    function doFocus(e) {
-      const { onFocus } = props;
-      const { nTriggerFormFocus } = formItem;
-      if (onFocus)
-        call(onFocus, e);
-      nTriggerFormFocus();
-    }
-    function doBlur(e) {
-      var _a2, _b;
-      if (e.target === ((_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.wrapperElRef)) {
-        return;
-      }
-      const value = deriveValueFromDisplayedValue({
-        offset: 0,
-        doUpdateIfValid: true,
-        isInputing: false,
-        fixPrecision: true
-      });
-      if (value !== false) {
-        const inputElRef = (_b = inputInstRef.value) === null || _b === void 0 ? void 0 : _b.inputElRef;
-        if (inputElRef) {
-          inputElRef.value = String(value || "");
-        }
-        if (mergedValueRef.value === value) {
-          deriveDisplayedValueFromValue();
-        }
-      } else {
-        deriveDisplayedValueFromValue();
-      }
-      const { onBlur } = props;
-      const { nTriggerFormBlur } = formItem;
-      if (onBlur)
-        call(onBlur, e);
-      nTriggerFormBlur();
-      void nextTick(() => {
-        deriveDisplayedValueFromValue();
-      });
-    }
-    function doClear(e) {
-      const { onClear } = props;
-      if (onClear)
-        call(onClear, e);
-    }
-    function doAdd() {
-      const { value: addable } = addableRef;
-      if (!addable) {
-        clearAddHoldTimeout();
-        return;
-      }
-      const { value: mergedValue } = mergedValueRef;
-      if (mergedValue === null) {
-        if (!props.validator) {
-          doUpdateValue(createValidValue());
-        }
-      } else {
-        const { value: mergedStep } = mergedStepRef;
-        deriveValueFromDisplayedValue({
-          offset: mergedStep,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-      }
-    }
-    function doMinus() {
-      const { value: minusable } = minusableRef;
-      if (!minusable) {
-        clearMinusHoldTimeout();
-        return;
-      }
-      const { value: mergedValue } = mergedValueRef;
-      if (mergedValue === null) {
-        if (!props.validator) {
-          doUpdateValue(createValidValue());
-        }
-      } else {
-        const { value: mergedStep } = mergedStepRef;
-        deriveValueFromDisplayedValue({
-          offset: -mergedStep,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-      }
-    }
-    const handleFocus = doFocus;
-    const handleBlur = doBlur;
-    function createValidValue() {
-      if (props.validator)
-        return null;
-      const { value: mergedMin } = mergedMinRef;
-      const { value: mergedMax } = mergedMaxRef;
-      if (mergedMin !== null) {
-        return Math.max(0, mergedMin);
-      } else if (mergedMax !== null) {
-        return Math.min(0, mergedMax);
-      } else {
-        return 0;
-      }
-    }
-    function handleClear(e) {
-      doClear(e);
-      doUpdateValue(null);
-    }
-    function handleMouseDown(e) {
-      var _a2, _b, _c;
-      if ((_a2 = addButtonInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.$el.contains(e.target)) {
-        e.preventDefault();
-      }
-      if ((_b = minusButtonInstRef.value) === null || _b === void 0 ? void 0 : _b.$el.contains(e.target)) {
-        e.preventDefault();
-      }
-      (_c = inputInstRef.value) === null || _c === void 0 ? void 0 : _c.activate();
-    }
-    let minusHoldStateIntervalId = null;
-    let addHoldStateIntervalId = null;
-    let firstMinusMousedownId = null;
-    function clearMinusHoldTimeout() {
-      if (firstMinusMousedownId) {
-        window.clearTimeout(firstMinusMousedownId);
-        firstMinusMousedownId = null;
-      }
-      if (minusHoldStateIntervalId) {
-        window.clearInterval(minusHoldStateIntervalId);
-        minusHoldStateIntervalId = null;
-      }
-    }
-    function clearAddHoldTimeout() {
-      if (firstAddMousedownId) {
-        window.clearTimeout(firstAddMousedownId);
-        firstAddMousedownId = null;
-      }
-      if (addHoldStateIntervalId) {
-        window.clearInterval(addHoldStateIntervalId);
-        addHoldStateIntervalId = null;
-      }
-    }
-    function handleMinusMousedown() {
-      clearMinusHoldTimeout();
-      firstMinusMousedownId = window.setTimeout(() => {
-        minusHoldStateIntervalId = window.setInterval(() => {
-          doMinus();
-        }, HOLDING_CHANGE_INTERVAL);
-      }, HOLDING_CHANGE_THRESHOLD);
-      on("mouseup", document, clearMinusHoldTimeout, {
-        once: true
-      });
-    }
-    let firstAddMousedownId = null;
-    function handleAddMousedown() {
-      clearAddHoldTimeout();
-      firstAddMousedownId = window.setTimeout(() => {
-        addHoldStateIntervalId = window.setInterval(() => {
-          doAdd();
-        }, HOLDING_CHANGE_INTERVAL);
-      }, HOLDING_CHANGE_THRESHOLD);
-      on("mouseup", document, clearAddHoldTimeout, {
-        once: true
-      });
-    }
-    const handleAddClick = () => {
-      if (addHoldStateIntervalId)
-        return;
-      doAdd();
-    };
-    const handleMinusClick = () => {
-      if (minusHoldStateIntervalId)
-        return;
-      doMinus();
-    };
-    function handleKeyDown(e) {
-      var _a2, _b;
-      if (e.key === "Enter") {
-        if (e.target === ((_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.wrapperElRef)) {
-          return;
-        }
-        const value = deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-        if (value !== false) {
-          (_b = inputInstRef.value) === null || _b === void 0 ? void 0 : _b.deactivate();
-        }
-      } else if (e.key === "ArrowUp") {
-        if (!addableRef.value)
-          return;
-        if (props.keyboard.ArrowUp === false)
-          return;
-        e.preventDefault();
-        const value = deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-        if (value !== false) {
-          doAdd();
-        }
-      } else if (e.key === "ArrowDown") {
-        if (!minusableRef.value)
-          return;
-        if (props.keyboard.ArrowDown === false)
-          return;
-        e.preventDefault();
-        const value = deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: false,
-          fixPrecision: true
-        });
-        if (value !== false) {
-          doMinus();
-        }
-      }
-    }
-    function handleUpdateDisplayedValue(value) {
-      displayedValueRef.value = value;
-      if (props.updateValueOnInput && !props.format && !props.parse && props.precision === void 0) {
-        deriveValueFromDisplayedValue({
-          offset: 0,
-          doUpdateIfValid: true,
-          isInputing: true,
-          fixPrecision: false
-        });
-      }
-    }
-    watch(mergedValueRef, () => {
-      deriveDisplayedValueFromValue();
-    });
-    const exposedMethods = {
-      focus: () => {
-        var _a2;
-        return (_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.focus();
-      },
-      blur: () => {
-        var _a2;
-        return (_a2 = inputInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.blur();
-      }
-    };
-    const rtlEnabledRef = useRtl("InputNumber", mergedRtlRef, mergedClsPrefixRef);
-    return Object.assign(Object.assign({}, exposedMethods), {
-      rtlEnabled: rtlEnabledRef,
-      inputInstRef,
-      minusButtonInstRef,
-      addButtonInstRef,
-      mergedClsPrefix: mergedClsPrefixRef,
-      mergedBordered: mergedBorderedRef,
-      uncontrolledValue: uncontrolledValueRef,
-      mergedValue: mergedValueRef,
-      mergedPlaceholder: mergedPlaceholderRef,
-      displayedValueInvalid: displayedValueInvalidRef,
-      mergedSize: mergedSizeRef,
-      mergedDisabled: mergedDisabledRef,
-      displayedValue: displayedValueRef,
-      addable: addableRef,
-      minusable: minusableRef,
-      mergedStatus: mergedStatusRef,
-      handleFocus,
-      handleBlur,
-      handleClear,
-      handleMouseDown,
-      handleAddClick,
-      handleMinusClick,
-      handleAddMousedown,
-      handleMinusMousedown,
-      handleKeyDown,
-      handleUpdateDisplayedValue,
-      // theme
-      mergedTheme: themeRef,
-      inputThemeOverrides: {
-        paddingSmall: "0 8px 0 10px",
-        paddingMedium: "0 8px 0 12px",
-        paddingLarge: "0 8px 0 14px"
-      },
-      buttonThemeOverrides: computed(() => {
-        const { self: { iconColorDisabled } } = themeRef.value;
-        const [r, g, b, a] = rgba(iconColorDisabled);
-        return {
-          textColorTextDisabled: `rgb(${r}, ${g}, ${b})`,
-          opacityDisabled: `${a}`
-        };
-      })
-    });
-  },
-  render() {
-    const { mergedClsPrefix, $slots } = this;
-    const renderMinusButton = () => {
-      return h(XButton, { text: true, disabled: !this.minusable || this.mergedDisabled || this.readonly, focusable: false, theme: this.mergedTheme.peers.Button, themeOverrides: this.mergedTheme.peerOverrides.Button, builtinThemeOverrides: this.buttonThemeOverrides, onClick: this.handleMinusClick, onMousedown: this.handleMinusMousedown, ref: "minusButtonInstRef" }, {
-        icon: () => resolveSlot($slots["minus-icon"], () => [
-          h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-            default: () => h(RemoveIcon, null)
-          })
-        ])
-      });
-    };
-    const renderAddButton = () => {
-      return h(XButton, { text: true, disabled: !this.addable || this.mergedDisabled || this.readonly, focusable: false, theme: this.mergedTheme.peers.Button, themeOverrides: this.mergedTheme.peerOverrides.Button, builtinThemeOverrides: this.buttonThemeOverrides, onClick: this.handleAddClick, onMousedown: this.handleAddMousedown, ref: "addButtonInstRef" }, {
-        icon: () => resolveSlot($slots["add-icon"], () => [
-          h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
-            default: () => h(AddIcon, null)
-          })
-        ])
-      });
-    };
-    return h(
-      "div",
-      { class: [
-        `${mergedClsPrefix}-input-number`,
-        this.rtlEnabled && `${mergedClsPrefix}-input-number--rtl`
-      ] },
-      h(NInput, { ref: "inputInstRef", autofocus: this.autofocus, status: this.mergedStatus, bordered: this.mergedBordered, loading: this.loading, value: this.displayedValue, onUpdateValue: this.handleUpdateDisplayedValue, theme: this.mergedTheme.peers.Input, themeOverrides: this.mergedTheme.peerOverrides.Input, builtinThemeOverrides: this.inputThemeOverrides, size: this.mergedSize, placeholder: this.mergedPlaceholder, disabled: this.mergedDisabled, readonly: this.readonly, textDecoration: this.displayedValueInvalid ? "line-through" : void 0, onFocus: this.handleFocus, onBlur: this.handleBlur, onKeydown: this.handleKeyDown, onMousedown: this.handleMouseDown, onClear: this.handleClear, clearable: this.clearable, internalLoadingBeforeSuffix: true }, {
-        prefix: () => {
-          var _a2;
-          return this.showButton && this.buttonPlacement === "both" ? [
-            renderMinusButton(),
-            resolveWrappedSlot($slots.prefix, (children) => {
-              if (children) {
-                return h("span", { class: `${mergedClsPrefix}-input-number-prefix` }, children);
-              }
-              return null;
-            })
-          ] : (_a2 = $slots.prefix) === null || _a2 === void 0 ? void 0 : _a2.call($slots);
-        },
-        suffix: () => {
-          var _a2;
-          return this.showButton ? [
-            resolveWrappedSlot($slots.suffix, (children) => {
-              if (children) {
-                return h("span", { class: `${mergedClsPrefix}-input-number-suffix` }, children);
-              }
-              return null;
-            }),
-            this.buttonPlacement === "right" ? renderMinusButton() : null,
-            renderAddButton()
-          ] : (_a2 = $slots.suffix) === null || _a2 === void 0 ? void 0 : _a2.call($slots);
-        }
-      })
-    );
-  }
-});
 const layoutSiderInjectionKey = createInjectionKey("n-layout-sider");
 const positionProp = {
   type: String,
@@ -28261,7 +27540,7 @@ function createLayoutComponent(isContent) {
         `${mergedClsPrefix}-layout`,
         `${mergedClsPrefix}-layout--${this.position}-positioned`
       ];
-      return h("div", { class: layoutClass, style: this.cssVars }, this.nativeScrollbar ? h("div", { ref: "scrollableElRef", class: `${mergedClsPrefix}-layout-scroll-container`, style: [this.contentStyle, hasSiderStyle], onScroll: this.handleNativeElScroll }, this.$slots) : h(NScrollbar, Object.assign({}, this.scrollbarProps, { onScroll: this.onScroll, ref: "scrollbarInstRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentStyle: [this.contentStyle, hasSiderStyle] }), this.$slots));
+      return h("div", { class: layoutClass, style: this.cssVars }, this.nativeScrollbar ? h("div", { ref: "scrollableElRef", class: `${mergedClsPrefix}-layout-scroll-container`, style: [this.contentStyle, hasSiderStyle], onScroll: this.handleNativeElScroll }, this.$slots) : h(NScrollbar$1, Object.assign({}, this.scrollbarProps, { onScroll: this.onScroll, ref: "scrollbarInstRef", theme: this.mergedTheme.peers.Scrollbar, themeOverrides: this.mergedTheme.peerOverrides.Scrollbar, contentStyle: [this.contentStyle, hasSiderStyle] }), this.$slots));
     }
   });
 }
@@ -28648,7 +27927,7 @@ const NLayoutSider = defineComponent({
           width: formatLength(this.width)
         }
       ] },
-      !this.nativeScrollbar ? h(NScrollbar, Object.assign({}, this.scrollbarProps, {
+      !this.nativeScrollbar ? h(NScrollbar$1, Object.assign({}, this.scrollbarProps, {
         onScroll: this.onScroll,
         ref: "scrollbarInstRef",
         style: this.scrollContainerStyle,
@@ -28976,7 +28255,7 @@ const NSubmenu = defineComponent({
       if (onClick)
         onClick();
     }
-    function handleClick() {
+    function handleClick2() {
       if (!mergedDisabledRef.value) {
         if (!mergedCollapsedRef.value) {
           NMenu2.toggleExpand(props.internalKey);
@@ -29017,19 +28296,19 @@ const NSubmenu = defineComponent({
         return !mergedDisabledRef.value && (menuProps2.mode === "horizontal" || mergedCollapsedRef.value);
       }),
       handlePopoverShowChange,
-      handleClick
+      handleClick: handleClick2
     };
   },
   render() {
     var _a2;
     const { mergedClsPrefix, menuProps: { renderIcon, renderLabel } } = this;
     const createSubmenuItem = () => {
-      const { isHorizontal, paddingLeft, collapsed, mergedDisabled, maxIconSize, activeIconSize, title, childActive, icon, handleClick, menuProps: { nodeProps }, dropdownShow, iconMarginRight, tmNode, mergedClsPrefix: mergedClsPrefix2 } = this;
+      const { isHorizontal, paddingLeft, collapsed, mergedDisabled, maxIconSize, activeIconSize, title, childActive, icon, handleClick: handleClick2, menuProps: { nodeProps }, dropdownShow, iconMarginRight, tmNode, mergedClsPrefix: mergedClsPrefix2 } = this;
       const attrs = nodeProps === null || nodeProps === void 0 ? void 0 : nodeProps(tmNode.rawNode);
       return h(
         "div",
         Object.assign({}, attrs, { class: [`${mergedClsPrefix2}-menu-item`, attrs === null || attrs === void 0 ? void 0 : attrs.class], role: "menuitem" }),
-        h(NMenuOptionContent, { tmNode, paddingLeft, collapsed, disabled: mergedDisabled, iconMarginRight, maxIconSize, activeIconSize, title, extra: this.extra, showArrow: !isHorizontal, childActive, clsPrefix: mergedClsPrefix2, icon, hover: dropdownShow, onClick: handleClick })
+        h(NMenuOptionContent, { tmNode, paddingLeft, collapsed, disabled: mergedDisabled, iconMarginRight, maxIconSize, activeIconSize, title, extra: this.extra, showArrow: !isHorizontal, childActive, clsPrefix: mergedClsPrefix2, icon, hover: dropdownShow, onClick: handleClick2 })
       );
     };
     const createSubmenuChildren = () => {
@@ -29078,7 +28357,7 @@ const NMenuOption = defineComponent({
       if (onClick)
         onClick(e);
     }
-    function handleClick(e) {
+    function handleClick2(e) {
       if (!mergedDisabledRef.value) {
         NMenu2.doSelect(props.internalKey, props.tmNode.rawNode);
         doClick(e);
@@ -29102,7 +28381,7 @@ const NMenuOption = defineComponent({
         return false;
       }),
       mergedDisabled: mergedDisabledRef,
-      handleClick
+      handleClick: handleClick2
     };
   },
   render() {
@@ -30173,7 +29452,7 @@ const NotificationContainer = defineComponent({
       `${mergedClsPrefix}-notification-container`,
       scrollable && `${mergedClsPrefix}-notification-container--scrollable`,
       `${mergedClsPrefix}-notification-container--${placement}`
-    ] }, scrollable ? h(NScrollbar, { theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, contentStyle: { overflow: "hidden" } }, $slots) : $slots);
+    ] }, scrollable ? h(NScrollbar$1, { theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, contentStyle: { overflow: "hidden" } }, $slots) : $slots);
   }
 });
 const iconRenderMap = {
@@ -31402,6 +30681,29 @@ const NProgress = defineComponent({
     ], style: cssVars, "aria-valuemax": 100, "aria-valuemin": 0, "aria-valuenow": percentage, role: type === "circle" || type === "line" || type === "dashboard" ? "progressbar" : "none" }, type === "circle" || type === "dashboard" ? h(Circle, { clsPrefix: mergedClsPrefix, status, showIndicator, indicatorTextColor, railColor, fillColor: color, railStyle, offsetDegree: this.offsetDegree, percentage, viewBoxWidth, strokeWidth, gapDegree: gapDeg === void 0 ? type === "dashboard" ? 75 : 0 : gapDeg, gapOffsetDegree, unit }, $slots) : type === "line" ? h(Line, { clsPrefix: mergedClsPrefix, status, showIndicator, indicatorTextColor, railColor, fillColor: color, railStyle, percentage, processing, indicatorPlacement: mergedIndicatorPlacement, unit, fillBorderRadius, railBorderRadius: borderRadius, height }, $slots) : type === "multiple-circle" ? h(MultipleCircle, { clsPrefix: mergedClsPrefix, strokeWidth, railColor, fillColor: color, railStyle, viewBoxWidth, percentage, showIndicator, circleGap }, $slots) : null);
   }
 });
+const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), { trigger: String, xScrollable: Boolean, onScroll: Function });
+const Scrollbar = defineComponent({
+  name: "Scrollbar",
+  props: scrollbarProps,
+  setup() {
+    const scrollbarInstRef = ref(null);
+    const exposedMethods = {
+      scrollTo: (...args) => {
+        var _a2;
+        (_a2 = scrollbarInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollTo(args[0], args[1]);
+      },
+      scrollBy: (...args) => {
+        var _a2;
+        (_a2 = scrollbarInstRef.value) === null || _a2 === void 0 ? void 0 : _a2.scrollBy(args[0], args[1]);
+      }
+    };
+    return Object.assign(Object.assign({}, exposedMethods), { scrollbarInstRef });
+  },
+  render() {
+    return h(NScrollbar$1, Object.assign({ ref: "scrollbarInstRef" }, this.$props), this.$slots);
+  }
+});
+const NScrollbar = Scrollbar;
 const skeletonDark = {
   name: "Skeleton",
   common: commonDark,
@@ -31417,719 +30719,999 @@ const skeletonDark = {
     };
   }
 };
-function isTouchEvent(e) {
-  return window.TouchEvent && e instanceof window.TouchEvent;
-}
-function useRefs() {
-  const refs = ref(/* @__PURE__ */ new Map());
-  const setRefs = (index) => (el) => {
-    refs.value.set(index, el);
-  };
-  onBeforeUpdate(() => refs.value.clear());
-  return [refs, setRefs];
-}
-const style = c$1([cB("slider", `
- display: block;
- padding: calc((var(--n-handle-size) - var(--n-rail-height)) / 2) 0;
- position: relative;
- z-index: 0;
- width: 100%;
- cursor: pointer;
- user-select: none;
- -webkit-user-select: none;
- `, [cM("reverse", [cB("slider-handles", [cB("slider-handle-wrapper", `
- transform: translate(50%, -50%);
- `)]), cB("slider-dots", [cB("slider-dot", `
- transform: translateX(50%, -50%);
- `)]), cM("vertical", [cB("slider-handles", [cB("slider-handle-wrapper", `
- transform: translate(-50%, -50%);
- `)]), cB("slider-marks", [cB("slider-mark", `
- transform: translateY(calc(-50% + var(--n-dot-height) / 2));
- `)]), cB("slider-dots", [cB("slider-dot", `
- transform: translateX(-50%) translateY(0);
- `)])])]), cM("vertical", `
- padding: 0 calc((var(--n-handle-size) - var(--n-rail-height)) / 2);
- width: var(--n-rail-width-vertical);
- height: 100%;
- `, [cB("slider-handles", `
- top: calc(var(--n-handle-size) / 2);
- right: 0;
- bottom: calc(var(--n-handle-size) / 2);
- left: 0;
- `, [cB("slider-handle-wrapper", `
- top: unset;
- left: 50%;
- transform: translate(-50%, 50%);
- `)]), cB("slider-rail", `
- height: 100%;
- `, [cE("fill", `
- top: unset;
- right: 0;
- bottom: unset;
- left: 0;
- `)]), cM("with-mark", `
- width: var(--n-rail-width-vertical);
- margin: 0 32px 0 8px;
- `), cB("slider-marks", `
- top: calc(var(--n-handle-size) / 2);
- right: unset;
- bottom: calc(var(--n-handle-size) / 2);
- left: 22px;
- font-size: var(--n-mark-font-size);
- `, [cB("slider-mark", `
- transform: translateY(50%);
- white-space: nowrap;
- `)]), cB("slider-dots", `
- top: calc(var(--n-handle-size) / 2);
- right: unset;
- bottom: calc(var(--n-handle-size) / 2);
- left: 50%;
- `, [cB("slider-dot", `
- transform: translateX(-50%) translateY(50%);
- `)])]), cM("disabled", `
- cursor: not-allowed;
- opacity: var(--n-opacity-disabled);
- `, [cB("slider-handle", `
- cursor: not-allowed;
- `)]), cM("with-mark", `
- width: 100%;
- margin: 8px 0 32px 0;
- `), c$1("&:hover", [cB("slider-rail", {
-  backgroundColor: "var(--n-rail-color-hover)"
-}, [cE("fill", {
-  backgroundColor: "var(--n-fill-color-hover)"
-})]), cB("slider-handle", {
-  boxShadow: "var(--n-handle-box-shadow-hover)"
-})]), cM("active", [cB("slider-rail", {
-  backgroundColor: "var(--n-rail-color-hover)"
-}, [cE("fill", {
-  backgroundColor: "var(--n-fill-color-hover)"
-})]), cB("slider-handle", {
-  boxShadow: "var(--n-handle-box-shadow-hover)"
-})]), cB("slider-marks", `
- position: absolute;
- top: 18px;
- left: calc(var(--n-handle-size) / 2);
- right: calc(var(--n-handle-size) / 2);
- `, [cB("slider-mark", `
- position: absolute;
- transform: translateX(-50%);
- white-space: nowrap;
- `)]), cB("slider-rail", `
- width: 100%;
- position: relative;
- height: var(--n-rail-height);
- background-color: var(--n-rail-color);
- transition: background-color .3s var(--n-bezier);
- border-radius: calc(var(--n-rail-height) / 2);
- `, [cE("fill", `
- position: absolute;
- top: 0;
- bottom: 0;
- border-radius: calc(var(--n-rail-height) / 2);
- transition: background-color .3s var(--n-bezier);
- background-color: var(--n-fill-color);
- `)]), cB("slider-handles", `
- position: absolute;
- top: 0;
- right: calc(var(--n-handle-size) / 2);
- bottom: 0;
- left: calc(var(--n-handle-size) / 2);
- `, [cB("slider-handle-wrapper", `
- outline: none;
- position: absolute;
- top: 50%;
- transform: translate(-50%, -50%);
- cursor: pointer;
- display: flex;
- `, [cB("slider-handle", `
- height: var(--n-handle-size);
- width: var(--n-handle-size);
- border-radius: 50%;
- overflow: hidden;
- transition: box-shadow .2s var(--n-bezier), background-color .3s var(--n-bezier);
- background-color: var(--n-handle-color);
- box-shadow: var(--n-handle-box-shadow);
- `, [c$1("&:hover", `
- box-shadow: var(--n-handle-box-shadow-hover);
- `)]), c$1("&:focus", [cB("slider-handle", `
- box-shadow: var(--n-handle-box-shadow-focus);
- `, [c$1("&:hover", `
- box-shadow: var(--n-handle-box-shadow-active);
- `)])])])]), cB("slider-dots", `
- position: absolute;
- top: 50%;
- left: calc(var(--n-handle-size) / 2);
- right: calc(var(--n-handle-size) / 2);
- `, [cM("transition-disabled", [cB("slider-dot", "transition: none;")]), cB("slider-dot", `
- transition:
- border-color .3s var(--n-bezier),
- box-shadow .3s var(--n-bezier),
- background-color .3s var(--n-bezier);
- position: absolute;
- transform: translate(-50%, -50%);
- height: var(--n-dot-height);
- width: var(--n-dot-width);
- border-radius: var(--n-dot-border-radius);
- overflow: hidden;
- box-sizing: border-box;
- border: var(--n-dot-border);
- background-color: var(--n-dot-color);
- `, [cM("active", "border: var(--n-dot-border-active);")])])]), cB("slider-handle-indicator", `
- font-size: var(--n-font-size);
- padding: 6px 10px;
- border-radius: var(--n-indicator-border-radius);
- color: var(--n-indicator-text-color);
- background-color: var(--n-indicator-color);
- box-shadow: var(--n-indicator-box-shadow);
- `, [fadeInScaleUpTransition()]), cB("slider-handle-indicator", `
- font-size: var(--n-font-size);
- padding: 6px 10px;
- border-radius: var(--n-indicator-border-radius);
- color: var(--n-indicator-text-color);
- background-color: var(--n-indicator-color);
- box-shadow: var(--n-indicator-box-shadow);
- `, [cM("top", `
- margin-bottom: 12px;
- `), cM("right", `
- margin-left: 12px;
- `), cM("bottom", `
- margin-top: 12px;
- `), cM("left", `
- margin-right: 12px;
- `), fadeInScaleUpTransition()]), insideModal(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-modal);")])), insidePopover(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-popover);")]))]);
-const eventButtonLeft = 0;
-const sliderProps = Object.assign(Object.assign({}, useTheme.props), { to: useAdjustedTo.propTo, defaultValue: {
-  type: [Number, Array],
-  default: 0
-}, marks: Object, disabled: {
-  type: Boolean,
-  default: void 0
-}, formatTooltip: Function, keyboard: {
-  type: Boolean,
-  default: true
-}, min: {
-  type: Number,
-  default: 0
-}, max: {
-  type: Number,
-  default: 100
-}, step: {
-  type: [Number, String],
-  default: 1
-}, range: Boolean, value: [Number, Array], placement: String, showTooltip: {
-  type: Boolean,
-  default: void 0
-}, tooltip: {
-  type: Boolean,
-  default: true
-}, vertical: Boolean, reverse: Boolean, "onUpdate:value": [Function, Array], onUpdateValue: [Function, Array] });
-const NSlider = defineComponent({
-  name: "Slider",
-  props: sliderProps,
+const tabsInjectionKey = createInjectionKey("n-tabs");
+const tabPaneProps = {
+  tab: [String, Number, Object, Function],
+  name: {
+    type: [String, Number],
+    required: true
+  },
+  disabled: Boolean,
+  displayDirective: {
+    type: String,
+    default: "if"
+  },
+  closable: {
+    type: Boolean,
+    default: void 0
+  },
+  tabProps: Object,
+  /** @deprecated */
+  label: [String, Number, Object, Function]
+};
+const NTabPane = defineComponent({
+  __TAB_PANE__: true,
+  name: "TabPane",
+  alias: ["TabPanel"],
+  props: tabPaneProps,
   setup(props) {
-    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Slider", "-slider", style, sliderLight$1, props, mergedClsPrefixRef);
-    const handleRailRef = ref(null);
-    const [handleRefs, setHandleRefs] = useRefs();
-    const [followerRefs, setFollowerRefs] = useRefs();
-    const followerEnabledIndexSetRef = ref(/* @__PURE__ */ new Set());
-    const formItem = useFormItem(props);
-    const { mergedDisabledRef } = formItem;
-    const precisionRef = computed(() => {
-      const { step } = props;
-      if (step <= 0 || step === "mark")
-        return 0;
-      const stepString = step.toString();
-      let precision = 0;
-      if (stepString.includes(".")) {
-        precision = stepString.length - stepString.indexOf(".") - 1;
-      }
-      return precision;
-    });
-    const uncontrolledValueRef = ref(props.defaultValue);
-    const controlledValueRef = toRef(props, "value");
-    const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
-    const arrifiedValueRef = computed(() => {
-      const { value: mergedValue } = mergedValueRef;
-      return (props.range ? mergedValue : [mergedValue]).map(clampValue);
-    });
-    const handleCountExceeds2Ref = computed(() => arrifiedValueRef.value.length > 2);
-    const mergedPlacementRef = computed(() => {
-      return props.placement === void 0 ? props.vertical ? "right" : "top" : props.placement;
-    });
-    const markValuesRef = computed(() => {
-      const { marks } = props;
-      return marks ? Object.keys(marks).map(parseFloat) : null;
-    });
-    const activeIndexRef = ref(-1);
-    const previousIndexRef = ref(-1);
-    const hoverIndexRef = ref(-1);
-    const draggingRef = ref(false);
-    const dotTransitionDisabledRef = ref(false);
-    const styleDirectionRef = computed(() => {
-      const { vertical, reverse } = props;
-      const left = reverse ? "right" : "left";
-      const bottom = reverse ? "top" : "bottom";
-      return vertical ? bottom : left;
-    });
-    const fillStyleRef = computed(() => {
-      if (handleCountExceeds2Ref.value)
-        return;
-      const values = arrifiedValueRef.value;
-      const start = valueToPercentage(props.range ? Math.min(...values) : props.min);
-      const end = valueToPercentage(props.range ? Math.max(...values) : values[0]);
-      const { value: styleDirection } = styleDirectionRef;
-      return props.vertical ? {
-        [styleDirection]: `${start}%`,
-        height: `${end - start}%`
-      } : {
-        [styleDirection]: `${start}%`,
-        width: `${end - start}%`
-      };
-    });
-    const markInfosRef = computed(() => {
-      const mergedMarks = [];
-      const { marks } = props;
-      if (marks) {
-        const orderValues = arrifiedValueRef.value.slice();
-        orderValues.sort((a, b) => a - b);
-        const { value: styleDirection } = styleDirectionRef;
-        const { value: handleCountExceeds2 } = handleCountExceeds2Ref;
-        const { range } = props;
-        const isActive = handleCountExceeds2 ? () => false : (num) => range ? num >= orderValues[0] && num <= orderValues[orderValues.length - 1] : num <= orderValues[0];
-        for (const key of Object.keys(marks)) {
-          const num = Number(key);
-          mergedMarks.push({
-            active: isActive(num),
-            label: marks[key],
-            style: {
-              [styleDirection]: `${valueToPercentage(num)}%`
-            }
-          });
-        }
-      }
-      return mergedMarks;
-    });
-    function getHandleStyle(value, index) {
-      const percentage = valueToPercentage(value);
-      const { value: styleDirection } = styleDirectionRef;
-      return {
-        [styleDirection]: `${percentage}%`,
-        zIndex: index === activeIndexRef.value ? 1 : 0
-      };
+    const NTab = inject(tabsInjectionKey, null);
+    if (!NTab) {
+      throwError("tab-pane", "`n-tab-pane` must be placed inside `n-tabs`.");
     }
-    function isShowTooltip(index) {
-      return props.showTooltip || hoverIndexRef.value === index || activeIndexRef.value === index && draggingRef.value;
-    }
-    function shouldKeepTooltipTransition(index) {
-      if (!draggingRef.value)
-        return true;
-      return !(activeIndexRef.value === index && previousIndexRef.value === index);
-    }
-    function focusActiveHandle(index) {
-      var _a2;
-      if (~index) {
-        activeIndexRef.value = index;
-        (_a2 = handleRefs.value.get(index)) === null || _a2 === void 0 ? void 0 : _a2.focus();
-      }
-    }
-    function syncPosition() {
-      followerRefs.value.forEach((inst, index) => {
-        if (isShowTooltip(index))
-          inst.syncPosition();
-      });
-    }
-    function doUpdateValue(value) {
-      const { "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
-      if (onUpdateValue)
-        call(onUpdateValue, value);
-      if (_onUpdateValue)
-        call(_onUpdateValue, value);
-      uncontrolledValueRef.value = value;
-      nTriggerFormInput();
-      nTriggerFormChange();
-    }
-    function dispatchValueUpdate(value) {
-      const { range } = props;
-      if (range) {
-        if (Array.isArray(value)) {
-          const { value: oldValues } = arrifiedValueRef;
-          if (value.join() !== oldValues.join()) {
-            doUpdateValue(value);
-          }
-        }
-      } else if (!Array.isArray(value)) {
-        const oldValue = arrifiedValueRef.value[0];
-        if (oldValue !== value) {
-          doUpdateValue(value);
-        }
-      }
-    }
-    function doDispatchValue(value, index) {
-      if (props.range) {
-        const values = arrifiedValueRef.value.slice();
-        values.splice(index, 1, value);
-        dispatchValueUpdate(values);
-      } else {
-        dispatchValueUpdate(value);
-      }
-    }
-    function sanitizeValue(value, currentValue, stepBuffer) {
-      const stepping = stepBuffer !== void 0;
-      if (!stepBuffer) {
-        stepBuffer = value - currentValue > 0 ? 1 : -1;
-      }
-      const markValues = markValuesRef.value || [];
-      const { step } = props;
-      if (step === "mark") {
-        const closestMark2 = getClosestMark(value, markValues.concat(currentValue), stepping ? stepBuffer : void 0);
-        return closestMark2 ? closestMark2.value : currentValue;
-      }
-      if (step <= 0)
-        return currentValue;
-      const { value: precision } = precisionRef;
-      let closestMark;
-      if (stepping) {
-        const currentStep = Number((currentValue / step).toFixed(precision));
-        const actualStep = Math.floor(currentStep);
-        const leftStep = currentStep > actualStep ? actualStep : actualStep - 1;
-        const rightStep = currentStep < actualStep ? actualStep : actualStep + 1;
-        closestMark = getClosestMark(currentValue, [
-          Number((leftStep * step).toFixed(precision)),
-          Number((rightStep * step).toFixed(precision)),
-          ...markValues
-        ], stepBuffer);
-      } else {
-        const roundValue = getRoundValue(value);
-        closestMark = getClosestMark(value, [...markValues, roundValue]);
-      }
-      return closestMark ? clampValue(closestMark.value) : currentValue;
-    }
-    function clampValue(value) {
-      return Math.min(props.max, Math.max(props.min, value));
-    }
-    function valueToPercentage(value) {
-      const { max, min } = props;
-      return (value - min) / (max - min) * 100;
-    }
-    function percentageToValue(percentage) {
-      const { max, min } = props;
-      return min + (max - min) * percentage;
-    }
-    function getRoundValue(value) {
-      const { step, min } = props;
-      if (step <= 0 || step === "mark")
-        return value;
-      const newValue = Math.round((value - min) / step) * step + min;
-      return Number(newValue.toFixed(precisionRef.value));
-    }
-    function getClosestMark(currentValue, markValues = markValuesRef.value, buffer) {
-      if (!(markValues === null || markValues === void 0 ? void 0 : markValues.length))
-        return null;
-      let closestMark = null;
-      let index = -1;
-      while (++index < markValues.length) {
-        const diff = markValues[index] - currentValue;
-        const distance = Math.abs(diff);
-        if (
-          // find marks in the same direction
-          (buffer === void 0 || diff * buffer > 0) && (closestMark === null || distance < closestMark.distance)
-        ) {
-          closestMark = {
-            index,
-            distance,
-            value: markValues[index]
-          };
-        }
-      }
-      return closestMark;
-    }
-    function getPointValue(event) {
-      const railEl = handleRailRef.value;
-      if (!railEl)
-        return;
-      const touchEvent = isTouchEvent(event) ? event.touches[0] : event;
-      const railRect = railEl.getBoundingClientRect();
-      let percentage;
-      if (props.vertical) {
-        percentage = (railRect.bottom - touchEvent.clientY) / railRect.height;
-      } else {
-        percentage = (touchEvent.clientX - railRect.left) / railRect.width;
-      }
-      if (props.reverse) {
-        percentage = 1 - percentage;
-      }
-      return percentageToValue(percentage);
-    }
-    function handleRailKeyDown(e) {
-      if (mergedDisabledRef.value || !props.keyboard)
-        return;
-      const { vertical, reverse } = props;
-      switch (e.key) {
-        case "ArrowUp":
-          e.preventDefault();
-          handleStepValue(vertical && reverse ? -1 : 1);
-          break;
-        case "ArrowRight":
-          e.preventDefault();
-          handleStepValue(!vertical && reverse ? -1 : 1);
-          break;
-        case "ArrowDown":
-          e.preventDefault();
-          handleStepValue(vertical && reverse ? 1 : -1);
-          break;
-        case "ArrowLeft":
-          e.preventDefault();
-          handleStepValue(!vertical && reverse ? 1 : -1);
-          break;
-      }
-    }
-    function handleStepValue(ratio) {
-      const activeIndex = activeIndexRef.value;
-      if (activeIndex === -1)
-        return;
-      const { step } = props;
-      const currentValue = arrifiedValueRef.value[activeIndex];
-      const nextValue = step <= 0 || step === "mark" ? currentValue : currentValue + step * ratio;
-      doDispatchValue(
-        // Avoid the number of value does not change when `step` is null
-        sanitizeValue(nextValue, currentValue, ratio > 0 ? 1 : -1),
-        activeIndex
-      );
-    }
-    function handleRailMouseDown(event) {
-      var _a2, _b;
-      if (mergedDisabledRef.value)
-        return;
-      if (!isTouchEvent(event) && event.button !== eventButtonLeft) {
-        return;
-      }
-      const pointValue = getPointValue(event);
-      if (pointValue === void 0)
-        return;
-      const values = arrifiedValueRef.value.slice();
-      const activeIndex = props.range ? (_b = (_a2 = getClosestMark(pointValue, values)) === null || _a2 === void 0 ? void 0 : _a2.index) !== null && _b !== void 0 ? _b : -1 : 0;
-      if (activeIndex !== -1) {
-        event.preventDefault();
-        focusActiveHandle(activeIndex);
-        startDragging();
-        doDispatchValue(sanitizeValue(pointValue, arrifiedValueRef.value[activeIndex]), activeIndex);
-      }
-    }
-    function startDragging() {
-      if (!draggingRef.value) {
-        draggingRef.value = true;
-        on("touchend", document, handleMouseUp);
-        on("mouseup", document, handleMouseUp);
-        on("touchmove", document, handleMouseMove);
-        on("mousemove", document, handleMouseMove);
-      }
-    }
-    function stopDragging() {
-      if (draggingRef.value) {
-        draggingRef.value = false;
-        off("touchend", document, handleMouseUp);
-        off("mouseup", document, handleMouseUp);
-        off("touchmove", document, handleMouseMove);
-        off("mousemove", document, handleMouseMove);
-      }
-    }
-    function handleMouseMove(event) {
-      const { value: activeIndex } = activeIndexRef;
-      if (!draggingRef.value || activeIndex === -1) {
-        stopDragging();
-        return;
-      }
-      const pointValue = getPointValue(event);
-      doDispatchValue(sanitizeValue(pointValue, arrifiedValueRef.value[activeIndex]), activeIndex);
-    }
-    function handleMouseUp() {
-      stopDragging();
-    }
-    function handleHandleFocus(index) {
-      activeIndexRef.value = index;
-      if (!mergedDisabledRef.value) {
-        hoverIndexRef.value = index;
-      }
-    }
-    function handleHandleBlur(index) {
-      if (activeIndexRef.value === index) {
-        activeIndexRef.value = -1;
-        stopDragging();
-      }
-      if (hoverIndexRef.value === index) {
-        hoverIndexRef.value = -1;
-      }
-    }
-    function handleHandleMouseEnter(index) {
-      hoverIndexRef.value = index;
-    }
-    function handleHandleMouseLeave(index) {
-      if (hoverIndexRef.value === index) {
-        hoverIndexRef.value = -1;
-      }
-    }
-    watch(activeIndexRef, (_, previous) => void nextTick(() => previousIndexRef.value = previous));
-    watch(mergedValueRef, () => {
-      if (props.marks) {
-        if (dotTransitionDisabledRef.value)
-          return;
-        dotTransitionDisabledRef.value = true;
-        void nextTick(() => {
-          dotTransitionDisabledRef.value = false;
-        });
-      }
-      void nextTick(syncPosition);
-    });
-    onBeforeUnmount(() => {
-      stopDragging();
-    });
-    const cssVarsRef = computed(() => {
-      const { self: { markFontSize, railColor, railColorHover, fillColor, fillColorHover, handleColor, opacityDisabled, dotColor, dotColorModal, handleBoxShadow, handleBoxShadowHover, handleBoxShadowActive, handleBoxShadowFocus, dotBorder, dotBoxShadow, railHeight, railWidthVertical, handleSize, dotHeight, dotWidth, dotBorderRadius, fontSize: fontSize2, dotBorderActive, dotColorPopover }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
-      return {
-        "--n-bezier": cubicBezierEaseInOut2,
-        "--n-dot-border": dotBorder,
-        "--n-dot-border-active": dotBorderActive,
-        "--n-dot-border-radius": dotBorderRadius,
-        "--n-dot-box-shadow": dotBoxShadow,
-        "--n-dot-color": dotColor,
-        "--n-dot-color-modal": dotColorModal,
-        "--n-dot-color-popover": dotColorPopover,
-        "--n-dot-height": dotHeight,
-        "--n-dot-width": dotWidth,
-        "--n-fill-color": fillColor,
-        "--n-fill-color-hover": fillColorHover,
-        "--n-font-size": fontSize2,
-        "--n-handle-box-shadow": handleBoxShadow,
-        "--n-handle-box-shadow-active": handleBoxShadowActive,
-        "--n-handle-box-shadow-focus": handleBoxShadowFocus,
-        "--n-handle-box-shadow-hover": handleBoxShadowHover,
-        "--n-handle-color": handleColor,
-        "--n-handle-size": handleSize,
-        "--n-opacity-disabled": opacityDisabled,
-        "--n-rail-color": railColor,
-        "--n-rail-color-hover": railColorHover,
-        "--n-rail-height": railHeight,
-        "--n-rail-width-vertical": railWidthVertical,
-        "--n-mark-font-size": markFontSize
-      };
-    });
-    const themeClassHandle = inlineThemeDisabled ? useThemeClass("slider", void 0, cssVarsRef, props) : void 0;
-    const indicatorCssVarsRef = computed(() => {
-      const { self: { fontSize: fontSize2, indicatorColor, indicatorBoxShadow, indicatorTextColor, indicatorBorderRadius } } = themeRef.value;
-      return {
-        "--n-font-size": fontSize2,
-        "--n-indicator-border-radius": indicatorBorderRadius,
-        "--n-indicator-box-shadow": indicatorBoxShadow,
-        "--n-indicator-color": indicatorColor,
-        "--n-indicator-text-color": indicatorTextColor
-      };
-    });
-    const indicatorThemeClassHandle = inlineThemeDisabled ? useThemeClass("slider-indicator", void 0, indicatorCssVarsRef, props) : void 0;
     return {
-      mergedClsPrefix: mergedClsPrefixRef,
-      namespace: namespaceRef,
-      uncontrolledValue: uncontrolledValueRef,
-      mergedValue: mergedValueRef,
-      mergedDisabled: mergedDisabledRef,
-      mergedPlacement: mergedPlacementRef,
-      isMounted: isMounted(),
-      adjustedTo: useAdjustedTo(props),
-      dotTransitionDisabled: dotTransitionDisabledRef,
-      markInfos: markInfosRef,
-      isShowTooltip,
-      shouldKeepTooltipTransition,
-      handleRailRef,
-      setHandleRefs,
-      setFollowerRefs,
-      fillStyle: fillStyleRef,
-      getHandleStyle,
-      activeIndex: activeIndexRef,
-      arrifiedValues: arrifiedValueRef,
-      followerEnabledIndexSet: followerEnabledIndexSetRef,
-      handleRailMouseDown,
-      handleHandleFocus,
-      handleHandleBlur,
-      handleHandleMouseEnter,
-      handleHandleMouseLeave,
-      handleRailKeyDown,
-      indicatorCssVars: inlineThemeDisabled ? void 0 : indicatorCssVarsRef,
-      indicatorThemeClass: indicatorThemeClassHandle === null || indicatorThemeClassHandle === void 0 ? void 0 : indicatorThemeClassHandle.themeClass,
-      indicatorOnRender: indicatorThemeClassHandle === null || indicatorThemeClassHandle === void 0 ? void 0 : indicatorThemeClassHandle.onRender,
-      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
-      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
-      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+      style: NTab.paneStyleRef,
+      class: NTab.paneClassRef,
+      mergedClsPrefix: NTab.mergedClsPrefixRef
     };
   },
   render() {
-    var _a2;
-    const { mergedClsPrefix, themeClass, formatTooltip } = this;
-    (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+    return h("div", { class: [`${this.mergedClsPrefix}-tab-pane`, this.class], style: this.style }, this.$slots);
+  }
+});
+const tabProps = Object.assign({ internalLeftPadded: Boolean, internalAddable: Boolean, internalCreatedByPane: Boolean }, omit(tabPaneProps, ["displayDirective"]));
+const Tab = defineComponent({
+  __TAB__: true,
+  inheritAttrs: false,
+  name: "Tab",
+  props: tabProps,
+  setup(props) {
+    const {
+      mergedClsPrefixRef,
+      valueRef,
+      typeRef,
+      closableRef,
+      tabStyleRef,
+      tabChangeIdRef,
+      onBeforeLeaveRef,
+      triggerRef,
+      handleAdd,
+      activateTab,
+      handleClose
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    } = inject(tabsInjectionKey);
+    return {
+      trigger: triggerRef,
+      mergedClosable: computed(() => {
+        if (props.internalAddable)
+          return false;
+        const { closable } = props;
+        if (closable === void 0)
+          return closableRef.value;
+        return closable;
+      }),
+      style: tabStyleRef,
+      clsPrefix: mergedClsPrefixRef,
+      value: valueRef,
+      type: typeRef,
+      handleClose(e) {
+        e.stopPropagation();
+        if (props.disabled)
+          return;
+        handleClose(props.name);
+      },
+      activateTab() {
+        if (props.disabled)
+          return;
+        if (props.internalAddable) {
+          handleAdd();
+          return;
+        }
+        const { name: nameProp } = props;
+        const id = ++tabChangeIdRef.id;
+        if (nameProp !== valueRef.value) {
+          const { value: onBeforeLeave } = onBeforeLeaveRef;
+          if (!onBeforeLeave) {
+            activateTab(nameProp);
+          } else {
+            void Promise.resolve(onBeforeLeave(props.name, valueRef.value)).then((allowLeave) => {
+              if (allowLeave && tabChangeIdRef.id === id) {
+                activateTab(nameProp);
+              }
+            });
+          }
+        }
+      }
+    };
+  },
+  render() {
+    const { internalAddable, clsPrefix, name, disabled, label, tab, value, mergedClosable, style: style2, trigger: trigger2, $slots: { default: defaultSlot } } = this;
+    const mergedTab = label !== null && label !== void 0 ? label : tab;
     return h(
       "div",
-      { class: [
-        `${mergedClsPrefix}-slider`,
-        themeClass,
-        {
-          [`${mergedClsPrefix}-slider--disabled`]: this.mergedDisabled,
-          [`${mergedClsPrefix}-slider--active`]: this.activeIndex !== -1,
-          [`${mergedClsPrefix}-slider--with-mark`]: this.marks,
-          [`${mergedClsPrefix}-slider--vertical`]: this.vertical,
-          [`${mergedClsPrefix}-slider--reverse`]: this.reverse
-        }
-      ], style: this.cssVars, onKeydown: this.handleRailKeyDown, onMousedown: this.handleRailMouseDown, onTouchstart: this.handleRailMouseDown },
+      { class: `${clsPrefix}-tabs-tab-wrapper` },
+      this.internalLeftPadded ? h("div", { class: `${clsPrefix}-tabs-tab-pad` }) : null,
       h(
         "div",
-        { class: `${mergedClsPrefix}-slider-rail` },
-        h("div", { class: `${mergedClsPrefix}-slider-rail__fill`, style: this.fillStyle }),
-        this.marks ? h("div", { class: [
-          `${mergedClsPrefix}-slider-dots`,
-          this.dotTransitionDisabled && `${mergedClsPrefix}-slider-dots--transition-disabled`
-        ] }, this.markInfos.map((mark) => h("div", { key: mark.label, class: [
-          `${mergedClsPrefix}-slider-dot`,
-          {
-            [`${mergedClsPrefix}-slider-dot--active`]: mark.active
-          }
-        ], style: mark.style }))) : null,
-        h("div", { ref: "handleRailRef", class: `${mergedClsPrefix}-slider-handles` }, this.arrifiedValues.map((value, index) => {
-          const showTooltip = this.isShowTooltip(index);
-          return h(VBinder, null, {
-            default: () => [
-              h(VTarget, null, {
-                default: () => h("div", { ref: this.setHandleRefs(index), class: `${mergedClsPrefix}-slider-handle-wrapper`, tabindex: this.mergedDisabled ? -1 : 0, style: this.getHandleStyle(value, index), onFocus: () => this.handleHandleFocus(index), onBlur: () => this.handleHandleBlur(index), onMouseenter: () => this.handleHandleMouseEnter(index), onMouseleave: () => this.handleHandleMouseLeave(index) }, resolveSlot(this.$slots.thumb, () => [
-                  h("div", { class: `${mergedClsPrefix}-slider-handle` })
-                ]))
-              }),
-              this.tooltip && h(VFollower, { ref: this.setFollowerRefs(index), show: showTooltip, to: this.adjustedTo, enabled: this.showTooltip && !this.range || this.followerEnabledIndexSet.has(index), teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey, placement: this.mergedPlacement, containerClass: this.namespace }, {
-                default: () => h(Transition, { name: "fade-in-scale-up-transition", appear: this.isMounted, css: this.shouldKeepTooltipTransition(index), onEnter: () => {
-                  this.followerEnabledIndexSet.add(index);
-                }, onAfterLeave: () => {
-                  this.followerEnabledIndexSet.delete(index);
-                } }, {
-                  default: () => {
-                    var _a3;
-                    if (showTooltip) {
-                      (_a3 = this.indicatorOnRender) === null || _a3 === void 0 ? void 0 : _a3.call(this);
-                      return h("div", { class: [
-                        `${mergedClsPrefix}-slider-handle-indicator`,
-                        this.indicatorThemeClass,
-                        `${mergedClsPrefix}-slider-handle-indicator--${this.mergedPlacement}`
-                      ], style: this.indicatorCssVars }, typeof formatTooltip === "function" ? formatTooltip(value) : value);
-                    }
-                    return null;
-                  }
-                })
-              })
-            ]
-          });
-        })),
-        this.marks ? h("div", { class: `${mergedClsPrefix}-slider-marks` }, this.markInfos.map((mark) => h("div", { key: mark.label, class: `${mergedClsPrefix}-slider-mark`, style: mark.style }, mark.label))) : null
+        Object.assign({ key: name, "data-name": name, "data-disabled": disabled ? true : void 0 }, mergeProps({
+          class: [
+            `${clsPrefix}-tabs-tab`,
+            value === name && `${clsPrefix}-tabs-tab--active`,
+            disabled && `${clsPrefix}-tabs-tab--disabled`,
+            mergedClosable && `${clsPrefix}-tabs-tab--closable`,
+            internalAddable && `${clsPrefix}-tabs-tab--addable`
+          ],
+          onClick: trigger2 === "click" ? this.activateTab : void 0,
+          onMouseenter: trigger2 === "hover" ? this.activateTab : void 0,
+          style: internalAddable ? void 0 : style2
+        }, this.internalCreatedByPane ? this.tabProps || {} : this.$attrs)),
+        h("span", { class: `${clsPrefix}-tabs-tab__label` }, internalAddable ? h(
+          Fragment,
+          null,
+          h("div", { class: `${clsPrefix}-tabs-tab__height-placeholder` }, " "),
+          h(NBaseIcon, { clsPrefix }, {
+            default: () => h(AddIcon, null)
+          })
+        ) : defaultSlot ? defaultSlot() : typeof mergedTab === "object" ? mergedTab : render$1(mergedTab !== null && mergedTab !== void 0 ? mergedTab : name)),
+        mergedClosable && this.type === "card" ? h(NBaseClose, { clsPrefix, class: `${clsPrefix}-tabs-tab__close`, onClick: this.handleClose, disabled }) : null
       )
     );
   }
 });
+const style = cB("tabs", `
+ box-sizing: border-box;
+ width: 100%;
+ display: flex;
+ flex-direction: column;
+ transition:
+ background-color .3s var(--n-bezier),
+ border-color .3s var(--n-bezier);
+`, [cM("segment-type", [cB("tabs-rail", [c$1("&.transition-disabled", "color: red;", [cB("tabs-tab", `
+ transition: none;
+ `)])])]), cM("left, right", `
+ flex-direction: row;
+ `, [cB("tabs-bar", `
+ width: 2px;
+ right: 0;
+ transition:
+ top .2s var(--n-bezier),
+ max-height .2s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ `), cB("tabs-tab", `
+ padding: var(--n-tab-padding-vertical); 
+ `)]), cM("right", `
+ flex-direction: row-reverse;
+ `, [cB("tabs-bar", `
+ left: 0;
+ `)]), cM("bottom", `
+ flex-direction: column-reverse;
+ justify-content: flex-end;
+ `, [cB("tabs-bar", `
+ top: 0;
+ `)]), cB("tabs-rail", `
+ padding: 3px;
+ border-radius: var(--n-tab-border-radius);
+ width: 100%;
+ background-color: var(--n-color-segment);
+ transition: background-color .3s var(--n-bezier);
+ display: flex;
+ align-items: center;
+ `, [cB("tabs-tab-wrapper", `
+ flex-basis: 0;
+ flex-grow: 1;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ `, [cB("tabs-tab", `
+ overflow: hidden;
+ border-radius: var(--n-tab-border-radius);
+ width: 100%;
+ display: flex;
+ align-items: center;
+ justify-content: center;
+ `, [cM("active", `
+ font-weight: var(--n-font-weight-strong);
+ color: var(--n-tab-text-color-active);
+ background-color: var(--n-tab-color-segment);
+ box-shadow: 0 1px 3px 0 rgba(0, 0, 0, .08);
+ `), c$1("&:hover", `
+ color: var(--n-tab-text-color-hover);
+ `)])])]), cM("flex", [cB("tabs-nav", {
+  width: "100%"
+}, [cB("tabs-wrapper", {
+  width: "100%"
+}, [cB("tabs-tab", {
+  marginRight: 0
+})])])]), cB("tabs-nav", `
+ box-sizing: border-box;
+ line-height: 1.5;
+ display: flex;
+ transition: border-color .3s var(--n-bezier);
+ `, [cE("prefix, suffix", `
+ display: flex;
+ align-items: center;
+ `), cE("prefix", "padding-right: 16px;"), cE("suffix", "padding-left: 16px;")]), cB("tabs-nav-scroll-wrapper", `
+ flex: 1;
+ position: relative;
+ overflow: hidden;
+ `, [cM("shadow-before", [c$1("&::before", `
+ box-shadow: inset 10px 0 8px -8px rgba(0, 0, 0, .12);
+ `)]), cM("shadow-after", [c$1("&::after", `
+ box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, .12);
+ `)]), cB("tabs-nav-y-scroll", `
+ height: 100%;
+ width: 100%;
+ overflow-y: auto; 
+ scrollbar-width: none;
+ `, [c$1("&::-webkit-scrollbar", `
+ width: 0;
+ height: 0;
+ `)]), c$1("&::before, &::after", `
+ transition: box-shadow .3s var(--n-bezier);
+ pointer-events: none;
+ content: "";
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ width: 20px;
+ z-index: 1;
+ `), c$1("&::before", `
+ left: 0;
+ `), c$1("&::after", `
+ right: 0;
+ `)]), cB("tabs-nav-scroll-content", `
+ display: flex;
+ position: relative;
+ min-width: 100%;
+ width: fit-content;
+ `), cB("tabs-wrapper", `
+ display: inline-flex;
+ flex-wrap: nowrap;
+ position: relative;
+ `), cB("tabs-tab-wrapper", `
+ display: flex;
+ flex-wrap: nowrap;
+ flex-shrink: 0;
+ flex-grow: 0;
+ `), cB("tabs-tab", `
+ cursor: pointer;
+ white-space: nowrap;
+ flex-wrap: nowrap;
+ display: inline-flex;
+ align-items: center;
+ color: var(--n-tab-text-color);
+ font-size: var(--n-tab-font-size);
+ background-clip: padding-box;
+ padding: var(--n-tab-padding);
+ transition:
+ box-shadow .3s var(--n-bezier),
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ border-color .3s var(--n-bezier);
+ `, [cM("disabled", {
+  cursor: "not-allowed"
+}), cE("close", `
+ margin-left: 6px;
+ transition:
+ background-color .3s var(--n-bezier),
+ color .3s var(--n-bezier);
+ `), cE("label", `
+ display: flex;
+ align-items: center;
+ `)]), cB("tabs-bar", `
+ position: absolute;
+ bottom: 0;
+ height: 2px;
+ border-radius: 1px;
+ background-color: var(--n-bar-color);
+ transition:
+ left .2s var(--n-bezier),
+ max-width .2s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ `, [c$1("&.transition-disabled", `
+ transition: none;
+ `), cM("disabled", `
+ background-color: var(--n-tab-text-color-disabled)
+ `)]), cB("tabs-pane-wrapper", `
+ position: relative;
+ overflow: hidden;
+ transition: max-height .2s var(--n-bezier);
+ `), cB("tab-pane", `
+ color: var(--n-pane-text-color);
+ width: 100%;
+ padding: var(--n-pane-padding);
+ transition:
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ opacity .2s var(--n-bezier);
+ left: 0;
+ right: 0;
+ top: 0;
+ `, [c$1("&.next-transition-leave-active, &.prev-transition-leave-active, &.next-transition-enter-active, &.prev-transition-enter-active", `
+ transition:
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ transform .2s var(--n-bezier),
+ opacity .2s var(--n-bezier);
+ `), c$1("&.next-transition-leave-active, &.prev-transition-leave-active", `
+ position: absolute;
+ `), c$1("&.next-transition-enter-from, &.prev-transition-leave-to", `
+ transform: translateX(32px);
+ opacity: 0;
+ `), c$1("&.next-transition-leave-to, &.prev-transition-enter-from", `
+ transform: translateX(-32px);
+ opacity: 0;
+ `), c$1("&.next-transition-leave-from, &.next-transition-enter-to, &.prev-transition-leave-from, &.prev-transition-enter-to", `
+ transform: translateX(0);
+ opacity: 1;
+ `)]), cB("tabs-tab-pad", `
+ width: var(--n-tab-gap);
+ flex-grow: 0;
+ flex-shrink: 0;
+ `), cM("line-type, bar-type", [cB("tabs-tab", `
+ font-weight: var(--n-tab-font-weight);
+ box-sizing: border-box;
+ vertical-align: bottom;
+ `, [c$1("&:hover", {
+  color: "var(--n-tab-text-color-hover)"
+}), cM("active", `
+ color: var(--n-tab-text-color-active);
+ font-weight: var(--n-tab-font-weight-active);
+ `), cM("disabled", {
+  color: "var(--n-tab-text-color-disabled)"
+})])]), cB("tabs-nav", [cM("line-type", [cE("prefix, suffix", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-nav-scroll-content", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-bar", `
+ border-radius: 0;
+ bottom: -1px;
+ `)]), cM("card-type", [cE("prefix, suffix", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-pad", `
+ flex-grow: 1;
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-tab-pad", `
+ transition: border-color .3s var(--n-bezier);
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-tab", `
+ font-weight: var(--n-tab-font-weight);
+ border: 1px solid var(--n-tab-border-color);
+ border-top-left-radius: var(--n-tab-border-radius);
+ border-top-right-radius: var(--n-tab-border-radius);
+ background-color: var(--n-tab-color);
+ box-sizing: border-box;
+ position: relative;
+ vertical-align: bottom;
+ display: flex;
+ justify-content: space-between;
+ font-size: var(--n-tab-font-size);
+ color: var(--n-tab-text-color);
+ `, [cM("addable", `
+ padding-left: 8px;
+ padding-right: 8px;
+ font-size: 16px;
+ `, [cE("height-placeholder", `
+ width: 0;
+ font-size: var(--n-tab-font-size);
+ `), cNotM("disabled", [c$1("&:hover", `
+ color: var(--n-tab-text-color-hover);
+ `)])]), cM("closable", "padding-right: 6px;"), cM("active", `
+ border-bottom: 1px solid #0000;
+ background-color: #0000;
+ font-weight: var(--n-tab-font-weight-active);
+ color: var(--n-tab-text-color-active);
+ `), cM("disabled", "color: var(--n-tab-text-color-disabled);")]), cB("tabs-scroll-padding", "border-bottom: 1px solid var(--n-tab-border-color);")]), cM("left, right", [cB("tabs-wrapper", `
+ flex-direction: column;
+ `, [cB("tabs-tab-wrapper", `
+ flex-direction: column;
+ `, [cB("tabs-tab-pad", `
+ height: var(--n-tab-gap);
+ width: 100%;
+ `)])]), cB("tabs-nav-scroll-content", `
+ border-bottom: none;
+ `)]), cM("left", [cB("tabs-nav-scroll-content", `
+ box-sizing: border-box;
+ border-right: 1px solid var(--n-tab-border-color);
+ `)]), cM("right", [cB("tabs-nav-scroll-content", `
+ border-left: 1px solid var(--n-tab-border-color);
+ `)]), cM("bottom", [cB("tabs-nav-scroll-content", `
+ border-top: 1px solid var(--n-tab-border-color);
+ border-bottom: none;
+ `)])])]);
+const tabsProps = Object.assign(Object.assign({}, useTheme.props), {
+  value: [String, Number],
+  defaultValue: [String, Number],
+  trigger: {
+    type: String,
+    default: "click"
+  },
+  type: {
+    type: String,
+    default: "bar"
+  },
+  closable: Boolean,
+  justifyContent: String,
+  size: {
+    type: String,
+    default: "medium"
+  },
+  placement: {
+    type: String,
+    default: "top"
+  },
+  tabStyle: [String, Object],
+  barWidth: Number,
+  paneClass: String,
+  paneStyle: [String, Object],
+  addable: [Boolean, Object],
+  tabsPadding: {
+    type: Number,
+    default: 0
+  },
+  animated: Boolean,
+  onBeforeLeave: Function,
+  onAdd: Function,
+  "onUpdate:value": [Function, Array],
+  onUpdateValue: [Function, Array],
+  onClose: [Function, Array],
+  // deprecated
+  labelSize: String,
+  activeName: [String, Number],
+  onActiveNameChange: [Function, Array]
+});
+const NTabs = defineComponent({
+  name: "Tabs",
+  props: tabsProps,
+  setup(props, { slots }) {
+    var _a2, _b, _c, _d;
+    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const themeRef = useTheme("Tabs", "-tabs", style, tabsLight$1, props, mergedClsPrefixRef);
+    const tabsElRef = ref(null);
+    const barElRef = ref(null);
+    const scrollWrapperElRef = ref(null);
+    const addTabInstRef = ref(null);
+    const xScrollInstRef = ref(null);
+    const leftReachedRef = ref(true);
+    const rightReachedRef = ref(true);
+    const compitableSizeRef = useCompitable(props, ["labelSize", "size"]);
+    const compitableValueRef = useCompitable(props, ["activeName", "value"]);
+    const uncontrolledValueRef = ref((_b = (_a2 = compitableValueRef.value) !== null && _a2 !== void 0 ? _a2 : props.defaultValue) !== null && _b !== void 0 ? _b : slots.default ? (_d = (_c = flatten$2(slots.default())[0]) === null || _c === void 0 ? void 0 : _c.props) === null || _d === void 0 ? void 0 : _d.name : null);
+    const mergedValueRef = useMergedState(compitableValueRef, uncontrolledValueRef);
+    const tabChangeIdRef = { id: 0 };
+    const tabWrapperStyleRef = computed(() => {
+      if (!props.justifyContent || props.type === "card")
+        return void 0;
+      return {
+        display: "flex",
+        justifyContent: props.justifyContent
+      };
+    });
+    watch(mergedValueRef, () => {
+      tabChangeIdRef.id = 0;
+      updateCurrentBarStyle();
+      updateCurrentScrollPosition();
+    });
+    function getCurrentEl() {
+      var _a3;
+      const { value } = mergedValueRef;
+      if (value === null)
+        return null;
+      const tabEl = (_a3 = tabsElRef.value) === null || _a3 === void 0 ? void 0 : _a3.querySelector(`[data-name="${value}"]`);
+      return tabEl;
+    }
+    function updateBarStyle(tabEl) {
+      if (props.type === "card")
+        return;
+      const { value: barEl } = barElRef;
+      if (!barEl)
+        return;
+      if (tabEl) {
+        const disabledClassName = `${mergedClsPrefixRef.value}-tabs-bar--disabled`;
+        const { barWidth, placement } = props;
+        if (tabEl.dataset.disabled === "true") {
+          barEl.classList.add(disabledClassName);
+        } else {
+          barEl.classList.remove(disabledClassName);
+        }
+        if (["top", "bottom"].includes(placement)) {
+          clearBarStyle(["top", "maxHeight", "height"]);
+          if (typeof barWidth === "number" && tabEl.offsetWidth >= barWidth) {
+            const offsetDiffLeft = Math.floor((tabEl.offsetWidth - barWidth) / 2) + tabEl.offsetLeft;
+            barEl.style.left = `${offsetDiffLeft}px`;
+            barEl.style.maxWidth = `${barWidth}px`;
+          } else {
+            barEl.style.left = `${tabEl.offsetLeft}px`;
+            barEl.style.maxWidth = `${tabEl.offsetWidth}px`;
+          }
+          barEl.style.width = "8192px";
+          void barEl.offsetWidth;
+        } else {
+          clearBarStyle(["left", "maxWidth", "width"]);
+          if (typeof barWidth === "number" && tabEl.offsetHeight >= barWidth) {
+            const offsetDiffTop = Math.floor((tabEl.offsetHeight - barWidth) / 2) + tabEl.offsetTop;
+            barEl.style.top = `${offsetDiffTop}px`;
+            barEl.style.maxHeight = `${barWidth}px`;
+          } else {
+            barEl.style.top = `${tabEl.offsetTop}px`;
+            barEl.style.maxHeight = `${tabEl.offsetHeight}px`;
+          }
+          barEl.style.height = "8192px";
+          void barEl.offsetHeight;
+        }
+      }
+    }
+    function clearBarStyle(styleProps) {
+      const { value: barEl } = barElRef;
+      if (!barEl)
+        return;
+      for (const prop of styleProps) {
+        barEl.style[prop] = "";
+      }
+    }
+    function updateCurrentBarStyle() {
+      if (props.type === "card")
+        return;
+      const tabEl = getCurrentEl();
+      if (tabEl) {
+        updateBarStyle(tabEl);
+      }
+    }
+    function updateCurrentScrollPosition(smooth) {
+      var _a3;
+      const scrollWrapperEl = (_a3 = xScrollInstRef.value) === null || _a3 === void 0 ? void 0 : _a3.$el;
+      if (!scrollWrapperEl)
+        return;
+      const tabEl = getCurrentEl();
+      if (!tabEl)
+        return;
+      const { scrollLeft: scrollWrapperElScrollLeft, offsetWidth: scrollWrapperElOffsetWidth } = scrollWrapperEl;
+      const { offsetLeft: tabElOffsetLeft, offsetWidth: tabElOffsetWidth } = tabEl;
+      if (scrollWrapperElScrollLeft > tabElOffsetLeft) {
+        scrollWrapperEl.scrollTo({
+          top: 0,
+          left: tabElOffsetLeft,
+          behavior: "smooth"
+        });
+      } else if (tabElOffsetLeft + tabElOffsetWidth > scrollWrapperElScrollLeft + scrollWrapperElOffsetWidth) {
+        scrollWrapperEl.scrollTo({
+          top: 0,
+          left: tabElOffsetLeft + tabElOffsetWidth - scrollWrapperElOffsetWidth,
+          behavior: "smooth"
+        });
+      }
+    }
+    const tabsPaneWrapperRef = ref(null);
+    let fromHeight = 0;
+    let hangingTransition = null;
+    function onAnimationBeforeLeave(el) {
+      const tabsPaneWrapperEl = tabsPaneWrapperRef.value;
+      if (tabsPaneWrapperEl) {
+        fromHeight = el.getBoundingClientRect().height;
+        const fromHeightPx = `${fromHeight}px`;
+        const applyFromStyle = () => {
+          tabsPaneWrapperEl.style.height = fromHeightPx;
+          tabsPaneWrapperEl.style.maxHeight = fromHeightPx;
+        };
+        if (!hangingTransition) {
+          hangingTransition = applyFromStyle;
+        } else {
+          applyFromStyle();
+          hangingTransition();
+          hangingTransition = null;
+        }
+      }
+    }
+    function onAnimationEnter(el) {
+      const tabsPaneWrapperEl = tabsPaneWrapperRef.value;
+      if (tabsPaneWrapperEl) {
+        const targetHeight = el.getBoundingClientRect().height;
+        const applyTargetStyle = () => {
+          void document.body.offsetHeight;
+          tabsPaneWrapperEl.style.maxHeight = `${targetHeight}px`;
+          tabsPaneWrapperEl.style.height = `${Math.max(fromHeight, targetHeight)}px`;
+        };
+        if (!hangingTransition) {
+          hangingTransition = applyTargetStyle;
+        } else {
+          hangingTransition();
+          hangingTransition = null;
+          applyTargetStyle();
+        }
+      }
+    }
+    function onAnimationAfterEnter() {
+      const tabsPaneWrapperEl = tabsPaneWrapperRef.value;
+      if (tabsPaneWrapperEl) {
+        tabsPaneWrapperEl.style.maxHeight = "";
+        tabsPaneWrapperEl.style.height = "";
+      }
+    }
+    const renderNameListRef = { value: [] };
+    const animationDirectionRef = ref("next");
+    function activateTab(panelName) {
+      const currentValue = mergedValueRef.value;
+      let dir = "next";
+      for (const name of renderNameListRef.value) {
+        if (name === currentValue) {
+          break;
+        }
+        if (name === panelName) {
+          dir = "prev";
+          break;
+        }
+      }
+      animationDirectionRef.value = dir;
+      doUpdateValue(panelName);
+    }
+    function doUpdateValue(panelName) {
+      const { onActiveNameChange, onUpdateValue, "onUpdate:value": _onUpdateValue } = props;
+      if (onActiveNameChange) {
+        call(onActiveNameChange, panelName);
+      }
+      if (onUpdateValue)
+        call(onUpdateValue, panelName);
+      if (_onUpdateValue)
+        call(_onUpdateValue, panelName);
+      uncontrolledValueRef.value = panelName;
+    }
+    function handleClose(panelName) {
+      const { onClose } = props;
+      if (onClose)
+        call(onClose, panelName);
+    }
+    function updateBarPositionInstantly() {
+      const { value: barEl } = barElRef;
+      if (!barEl)
+        return;
+      const disableTransitionClassName = "transition-disabled";
+      barEl.classList.add(disableTransitionClassName);
+      updateCurrentBarStyle();
+      barEl.classList.remove(disableTransitionClassName);
+    }
+    let memorizedWidth = 0;
+    function _handleNavResize(entry) {
+      var _b2;
+      if (entry.contentRect.width === 0 && entry.contentRect.height === 0) {
+        return;
+      }
+      if (memorizedWidth === entry.contentRect.width) {
+        return;
+      }
+      memorizedWidth = entry.contentRect.width;
+      const { type } = props;
+      if (type === "line" || type === "bar") {
+        {
+          updateBarPositionInstantly();
+        }
+      }
+      if (type !== "segment") {
+        deriveScrollShadow((_b2 = xScrollInstRef.value) === null || _b2 === void 0 ? void 0 : _b2.$el);
+      }
+    }
+    const handleNavResize = throttle(_handleNavResize, 64);
+    watch([() => props.justifyContent, () => props.size], () => {
+      void nextTick(() => {
+        const { type } = props;
+        if (type === "line" || type === "bar") {
+          updateBarPositionInstantly();
+        }
+      });
+    });
+    const addTabFixedRef = ref(false);
+    function _handleTabsResize(entry) {
+      var _a3;
+      const { target, contentRect: { width } } = entry;
+      const containerWidth = target.parentElement.offsetWidth;
+      if (!addTabFixedRef.value) {
+        if (containerWidth < width) {
+          addTabFixedRef.value = true;
+        }
+      } else {
+        const { value: addTabInst } = addTabInstRef;
+        if (!addTabInst)
+          return;
+        if (containerWidth - width > addTabInst.$el.offsetWidth) {
+          addTabFixedRef.value = false;
+        }
+      }
+      deriveScrollShadow((_a3 = xScrollInstRef.value) === null || _a3 === void 0 ? void 0 : _a3.$el);
+    }
+    const handleTabsResize = throttle(_handleTabsResize, 64);
+    function handleAdd() {
+      const { onAdd } = props;
+      if (onAdd)
+        onAdd();
+      void nextTick(() => {
+        const currentEl = getCurrentEl();
+        const { value: xScrollInst } = xScrollInstRef;
+        if (!currentEl || !xScrollInst)
+          return;
+        xScrollInst.scrollTo({
+          left: currentEl.offsetLeft,
+          top: 0,
+          behavior: "smooth"
+        });
+      });
+    }
+    function deriveScrollShadow(el) {
+      if (!el)
+        return;
+      const { scrollLeft, scrollWidth, offsetWidth } = el;
+      leftReachedRef.value = scrollLeft <= 0;
+      rightReachedRef.value = scrollLeft + offsetWidth >= scrollWidth;
+    }
+    const handleScroll = throttle((e) => {
+      deriveScrollShadow(e.target);
+    }, 64);
+    provide(tabsInjectionKey, {
+      triggerRef: toRef(props, "trigger"),
+      tabStyleRef: toRef(props, "tabStyle"),
+      paneClassRef: toRef(props, "paneClass"),
+      paneStyleRef: toRef(props, "paneStyle"),
+      mergedClsPrefixRef,
+      typeRef: toRef(props, "type"),
+      closableRef: toRef(props, "closable"),
+      valueRef: mergedValueRef,
+      tabChangeIdRef,
+      onBeforeLeaveRef: toRef(props, "onBeforeLeave"),
+      activateTab,
+      handleClose,
+      handleAdd
+    });
+    onFontsReady(() => {
+      updateCurrentBarStyle();
+      updateCurrentScrollPosition();
+    });
+    watchEffect(() => {
+      const { value: el } = scrollWrapperElRef;
+      if (!el || ["left", "right"].includes(props.placement))
+        return;
+      const { value: clsPrefix } = mergedClsPrefixRef;
+      const shadowBeforeClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-before`;
+      const shadowAfterClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-after`;
+      if (leftReachedRef.value) {
+        el.classList.remove(shadowBeforeClass);
+      } else {
+        el.classList.add(shadowBeforeClass);
+      }
+      if (rightReachedRef.value) {
+        el.classList.remove(shadowAfterClass);
+      } else {
+        el.classList.add(shadowAfterClass);
+      }
+    });
+    const tabsRailElRef = ref(null);
+    watch(mergedValueRef, () => {
+      if (props.type === "segment") {
+        const tabsRailEl = tabsRailElRef.value;
+        if (tabsRailEl) {
+          void nextTick(() => {
+            tabsRailEl.classList.add("transition-disabled");
+            void tabsRailEl.offsetWidth;
+            tabsRailEl.classList.remove("transition-disabled");
+          });
+        }
+      }
+    });
+    const exposedMethods = {
+      syncBarPosition: () => {
+        updateCurrentBarStyle();
+      }
+    };
+    const cssVarsRef = computed(() => {
+      const { value: size2 } = compitableSizeRef;
+      const { type } = props;
+      const typeSuffix = {
+        card: "Card",
+        bar: "Bar",
+        line: "Line",
+        segment: "Segment"
+      }[type];
+      const sizeType = `${size2}${typeSuffix}`;
+      const { self: { barColor, closeIconColor, closeIconColorHover, closeIconColorPressed, tabColor, tabBorderColor, paneTextColor, tabFontWeight, tabBorderRadius, tabFontWeightActive, colorSegment, fontWeightStrong, tabColorSegment, closeSize, closeIconSize, closeColorHover, closeColorPressed, closeBorderRadius, [createKey("panePadding", size2)]: panePadding, [createKey("tabPadding", sizeType)]: tabPadding, [createKey("tabPaddingVertical", sizeType)]: tabPaddingVertical, [createKey("tabGap", sizeType)]: tabGap, [createKey("tabTextColor", type)]: tabTextColor, [createKey("tabTextColorActive", type)]: tabTextColorActive, [createKey("tabTextColorHover", type)]: tabTextColorHover, [createKey("tabTextColorDisabled", type)]: tabTextColorDisabled, [createKey("tabFontSize", size2)]: tabFontSize }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
+      return {
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-color-segment": colorSegment,
+        "--n-bar-color": barColor,
+        "--n-tab-font-size": tabFontSize,
+        "--n-tab-text-color": tabTextColor,
+        "--n-tab-text-color-active": tabTextColorActive,
+        "--n-tab-text-color-disabled": tabTextColorDisabled,
+        "--n-tab-text-color-hover": tabTextColorHover,
+        "--n-pane-text-color": paneTextColor,
+        "--n-tab-border-color": tabBorderColor,
+        "--n-tab-border-radius": tabBorderRadius,
+        "--n-close-size": closeSize,
+        "--n-close-icon-size": closeIconSize,
+        "--n-close-color-hover": closeColorHover,
+        "--n-close-color-pressed": closeColorPressed,
+        "--n-close-border-radius": closeBorderRadius,
+        "--n-close-icon-color": closeIconColor,
+        "--n-close-icon-color-hover": closeIconColorHover,
+        "--n-close-icon-color-pressed": closeIconColorPressed,
+        "--n-tab-color": tabColor,
+        "--n-tab-font-weight": tabFontWeight,
+        "--n-tab-font-weight-active": tabFontWeightActive,
+        "--n-tab-padding": tabPadding,
+        "--n-tab-padding-vertical": tabPaddingVertical,
+        "--n-tab-gap": tabGap,
+        "--n-pane-padding": panePadding,
+        "--n-font-weight-strong": fontWeightStrong,
+        "--n-tab-color-segment": tabColorSegment
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("tabs", computed(() => {
+      return `${compitableSizeRef.value[0]}${props.type[0]}`;
+    }), cssVarsRef, props) : void 0;
+    return Object.assign({
+      mergedClsPrefix: mergedClsPrefixRef,
+      mergedValue: mergedValueRef,
+      renderedNames: /* @__PURE__ */ new Set(),
+      tabsRailElRef,
+      tabsPaneWrapperRef,
+      tabsElRef,
+      barElRef,
+      addTabInstRef,
+      xScrollInstRef,
+      scrollWrapperElRef,
+      addTabFixed: addTabFixedRef,
+      tabWrapperStyle: tabWrapperStyleRef,
+      handleNavResize,
+      mergedSize: compitableSizeRef,
+      handleScroll,
+      handleTabsResize,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      animationDirection: animationDirectionRef,
+      renderNameListRef,
+      onAnimationBeforeLeave,
+      onAnimationEnter,
+      onAnimationAfterEnter,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    }, exposedMethods);
+  },
+  render() {
+    const { mergedClsPrefix, type, placement, addTabFixed, addable, mergedSize, renderNameListRef, onRender, $slots: { default: defaultSlot, prefix: prefixSlot, suffix: suffixSlot } } = this;
+    onRender === null || onRender === void 0 ? void 0 : onRender();
+    const tabPaneChildren = defaultSlot ? flatten$2(defaultSlot()).filter((v) => {
+      return v.type.__TAB_PANE__ === true;
+    }) : [];
+    const tabChildren = defaultSlot ? flatten$2(defaultSlot()).filter((v) => {
+      return v.type.__TAB__ === true;
+    }) : [];
+    const showPane = !tabChildren.length;
+    const isCard = type === "card";
+    const isSegment = type === "segment";
+    const mergedJustifyContent = !isCard && !isSegment && this.justifyContent;
+    renderNameListRef.value = [];
+    const scrollContent = () => {
+      const tabs = h(
+        "div",
+        { style: this.tabWrapperStyle, class: [`${mergedClsPrefix}-tabs-wrapper`] },
+        mergedJustifyContent ? null : h("div", { class: `${mergedClsPrefix}-tabs-scroll-padding`, style: { width: `${this.tabsPadding}px` } }),
+        showPane ? tabPaneChildren.map((tabPaneVNode, index) => {
+          renderNameListRef.value.push(tabPaneVNode.props.name);
+          return justifyTabDynamicProps(h(Tab, Object.assign({}, tabPaneVNode.props, { internalCreatedByPane: true, internalLeftPadded: index !== 0 && (!mergedJustifyContent || mergedJustifyContent === "center" || mergedJustifyContent === "start" || mergedJustifyContent === "end") }), tabPaneVNode.children ? {
+            default: tabPaneVNode.children.tab
+          } : void 0));
+        }) : tabChildren.map((tabVNode, index) => {
+          renderNameListRef.value.push(tabVNode.props.name);
+          if (index !== 0 && !mergedJustifyContent) {
+            return justifyTabDynamicProps(createLeftPaddedTabVNode(tabVNode));
+          } else {
+            return justifyTabDynamicProps(tabVNode);
+          }
+        }),
+        !addTabFixed && addable && isCard ? createAddTag(addable, (showPane ? tabPaneChildren.length : tabChildren.length) !== 0) : null,
+        mergedJustifyContent ? null : h("div", { class: `${mergedClsPrefix}-tabs-scroll-padding`, style: { width: `${this.tabsPadding}px` } })
+      );
+      return h(
+        "div",
+        { ref: "tabsElRef", class: `${mergedClsPrefix}-tabs-nav-scroll-content` },
+        isCard && addable ? h(VResizeObserver, { onResize: this.handleTabsResize }, {
+          default: () => tabs
+        }) : tabs,
+        isCard ? h("div", { class: `${mergedClsPrefix}-tabs-pad` }) : null,
+        isCard ? null : h("div", { ref: "barElRef", class: `${mergedClsPrefix}-tabs-bar` })
+      );
+    };
+    return h(
+      "div",
+      { class: [
+        `${mergedClsPrefix}-tabs`,
+        this.themeClass,
+        `${mergedClsPrefix}-tabs--${type}-type`,
+        `${mergedClsPrefix}-tabs--${mergedSize}-size`,
+        mergedJustifyContent && `${mergedClsPrefix}-tabs--flex`,
+        `${mergedClsPrefix}-tabs--${placement}`
+      ], style: this.cssVars },
+      h(
+        "div",
+        { class: [
+          // the class should be applied here since it's possible
+          // to make tabs nested in tabs, style may influence each
+          // other. adding a class will make it easy to write the
+          // style.
+          `${mergedClsPrefix}-tabs-nav--${type}-type`,
+          `${mergedClsPrefix}-tabs-nav--${placement}`,
+          `${mergedClsPrefix}-tabs-nav`
+        ] },
+        resolveWrappedSlot(prefixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__prefix` }, children)),
+        isSegment ? h("div", { class: `${mergedClsPrefix}-tabs-rail`, ref: "tabsRailElRef" }, showPane ? tabPaneChildren.map((tabPaneVNode, index) => {
+          renderNameListRef.value.push(tabPaneVNode.props.name);
+          return h(Tab, Object.assign({}, tabPaneVNode.props, { internalCreatedByPane: true, internalLeftPadded: index !== 0 }), tabPaneVNode.children ? {
+            default: tabPaneVNode.children.tab
+          } : void 0);
+        }) : tabChildren.map((tabVNode, index) => {
+          renderNameListRef.value.push(tabVNode.props.name);
+          if (index === 0) {
+            return tabVNode;
+          } else {
+            return createLeftPaddedTabVNode(tabVNode);
+          }
+        })) : h(VResizeObserver, { onResize: this.handleNavResize }, {
+          default: () => h("div", { class: `${mergedClsPrefix}-tabs-nav-scroll-wrapper`, ref: "scrollWrapperElRef" }, ["top", "bottom"].includes(placement) ? h(VXScroll, { ref: "xScrollInstRef", onScroll: this.handleScroll }, {
+            default: scrollContent
+          }) : h("div", { class: `${mergedClsPrefix}-tabs-nav-y-scroll` }, scrollContent()))
+        }),
+        addTabFixed && addable && isCard ? createAddTag(addable, true) : null,
+        resolveWrappedSlot(suffixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__suffix` }, children))
+      ),
+      showPane && (this.animated ? h("div", { ref: "tabsPaneWrapperRef", class: `${mergedClsPrefix}-tabs-pane-wrapper` }, filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames, this.onAnimationBeforeLeave, this.onAnimationEnter, this.onAnimationAfterEnter, this.animationDirection)) : filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames))
+    );
+  }
+});
+function filterMapTabPanes(tabPaneVNodes, value, renderedNames, onBeforeLeave, onEnter, onAfterEnter, animationDirection) {
+  const children = [];
+  tabPaneVNodes.forEach((vNode) => {
+    const { name, displayDirective, "display-directive": _displayDirective } = vNode.props;
+    const matchDisplayDirective = (directive) => displayDirective === directive || _displayDirective === directive;
+    const show = value === name;
+    if (vNode.key !== void 0) {
+      vNode.key = name;
+    }
+    if (show || matchDisplayDirective("show") || matchDisplayDirective("show:lazy") && renderedNames.has(name)) {
+      if (!renderedNames.has(name)) {
+        renderedNames.add(name);
+      }
+      const useVShow = !matchDisplayDirective("if");
+      children.push(useVShow ? withDirectives(vNode, [[vShow, show]]) : vNode);
+    }
+  });
+  if (!animationDirection) {
+    return children;
+  }
+  return h(TransitionGroup, { name: `${animationDirection}-transition`, onBeforeLeave, onEnter, onAfterEnter }, { default: () => children });
+}
+function createAddTag(addable, internalLeftPadded) {
+  return h(Tab, { ref: "addTabInstRef", key: "__addable", name: "__addable", internalCreatedByPane: true, internalAddable: true, internalLeftPadded, disabled: typeof addable === "object" && addable.disabled });
+}
+function createLeftPaddedTabVNode(tabVNode) {
+  const modifiedVNode = cloneVNode(tabVNode);
+  if (modifiedVNode.props) {
+    modifiedVNode.props.internalLeftPadded = true;
+  } else {
+    modifiedVNode.props = {
+      internalLeftPadded: true
+    };
+  }
+  return modifiedVNode;
+}
+function justifyTabDynamicProps(tabVNode) {
+  if (Array.isArray(tabVNode.dynamicProps)) {
+    if (!tabVNode.dynamicProps.includes("internalLeftPadded")) {
+      tabVNode.dynamicProps.push("internalLeftPadded");
+    }
+  } else {
+    tabVNode.dynamicProps = ["internalLeftPadded"];
+  }
+  return tabVNode;
+}
 const self$1 = () => ({});
 const equationDark = {
   name: "Equation",
@@ -32222,12 +31804,12 @@ const darkTheme = {
   Upload: uploadDark$1,
   Watermark: watermarkDark$1
 };
-const _hoisted_1$f = {
+const _hoisted_1$d = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -32237,7 +31819,7 @@ const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -32257,75 +31839,11 @@ const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$4 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$9];
+const _hoisted_5$5 = [_hoisted_2$c, _hoisted_3$c, _hoisted_4$9];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$4);
-  }
-});
-const _hoisted_1$e = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M272 48a16 16 0 0 0-32 0v112h32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$8 = [_hoisted_2$d, _hoisted_3$c];
-const Download = defineComponent({
-  name: "Download",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
-  }
-});
-const _hoisted_1$d = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$7 = [_hoisted_2$c, _hoisted_3$b];
-const Duplicate = defineComponent({
-  name: "Duplicate",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_5$5);
   }
 });
 const _hoisted_1$c = {
@@ -32336,28 +31854,38 @@ const _hoisted_1$c = {
 const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
+    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
+    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$6 = [_hoisted_2$b, _hoisted_3$a];
-const GitCompare = defineComponent({
-  name: "GitCompare",
-  render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$6);
+const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$4 = [_hoisted_2$b, _hoisted_3$b, _hoisted_4$8];
+const Create = defineComponent({
+  name: "Create",
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$4);
   }
 });
 const _hoisted_1$b = {
@@ -32368,18 +31896,28 @@ const _hoisted_1$b = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
+    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$9 = [_hoisted_2$a];
-const Image$1 = defineComponent({
-  name: "Image",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_3$9);
+const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M272 48a16 16 0 0 0-32 0v112h32z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$a];
+const Download = defineComponent({
+  name: "Download",
+  render: function render4(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$7);
   }
 });
 const _hoisted_1$a = {
@@ -32390,28 +31928,28 @@ const _hoisted_1$a = {
 const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = [_hoisted_2$9, _hoisted_3$8];
-const Images = defineComponent({
-  name: "Images",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
+const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$9];
+const Duplicate = defineComponent({
+  name: "Duplicate",
+  render: function render5(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$6);
   }
 });
 const _hoisted_1$9 = {
@@ -32422,32 +31960,28 @@ const _hoisted_1$9 = {
 const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M400 148l-21.12-24.57A191.43 191.43 0 0 0 240 64C134 64 48 150 48 256s86 192 192 192a192.09 192.09 0 0 0 181.07-128",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-miterlimit": "10",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M464 97.42V208a16 16 0 0 1-16 16H337.42c-14.26 0-21.4-17.23-11.32-27.31L436.69 86.1C446.77 76 464 83.16 464 97.42z",
+    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = [_hoisted_2$8, _hoisted_3$7];
-const ReloadOutline = defineComponent({
-  name: "ReloadOutline",
-  render: function render8(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$4);
+const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$8];
+const GitCompare = defineComponent({
+  name: "GitCompare",
+  render: function render6(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
   }
 });
 const _hoisted_1$8 = {
@@ -32458,18 +31992,18 @@ const _hoisted_1$8 = {
 const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
+    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = [_hoisted_2$7];
-const SettingsSharp = defineComponent({
-  name: "SettingsSharp",
-  render: function render9(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$6);
+const _hoisted_3$7 = [_hoisted_2$7];
+const Image$1 = defineComponent({
+  name: "Image",
+  render: function render7(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$7);
   }
 });
 const _hoisted_1$7 = {
@@ -32480,18 +32014,28 @@ const _hoisted_1$7 = {
 const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
+    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$5 = [_hoisted_2$6];
-const Speedometer = defineComponent({
-  name: "Speedometer",
-  render: function render10(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$5);
+const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$4 = [_hoisted_2$6, _hoisted_3$6];
+const Images = defineComponent({
+  name: "Images",
+  render: function render8(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$4);
   }
 });
 const _hoisted_1$6 = {
@@ -32502,6 +32046,50 @@ const _hoisted_1$6 = {
 const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
+    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$5 = [_hoisted_2$5];
+const SettingsSharp = defineComponent({
+  name: "SettingsSharp",
+  render: function render9(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$5);
+  }
+});
+const _hoisted_1$5 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$4 = [_hoisted_2$4];
+const Speedometer = defineComponent({
+  name: "Speedometer",
+  render: function render10(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_3$4);
+  }
+});
+const _hoisted_1$4 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
     d: "M104 496H72a24 24 0 0 1-24-24V328a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v144a24 24 0 0 1-24 24z",
     fill: "currentColor"
   },
@@ -32509,7 +32097,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M328 496h-32a24 24 0 0 1-24-24V232a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v240a24 24 0 0 1-24 24z",
@@ -32539,19 +32127,19 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$1 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$3, _hoisted_5$3];
+const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
 const StatsChart = defineComponent({
   name: "StatsChart",
   render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$1);
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$1);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$3 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M434.67 285.59v-29.8c0-98.73-80.24-178.79-179.2-178.79a179 179 0 0 0-140.14 67.36m-38.53 82v29.8C76.8 355 157 435 256 435a180.45 180.45 0 0 0 140-66.92",
@@ -32565,7 +32153,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -32593,11 +32181,11 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$2 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$2];
+const _hoisted_5$2 = [_hoisted_2$2, _hoisted_3$2, _hoisted_4$2];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
   render: function render12(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$2);
+    return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_5$2);
   }
 });
 /*!
@@ -33065,7 +32653,7 @@ function tokensToParser(segments, extraOptions) {
   else if (options.strict)
     pattern += "(?:/|$)";
   const re = new RegExp(pattern, options.sensitive ? "" : "i");
-  function parse2(path) {
+  function parse(path) {
     const match2 = path.match(re);
     const params = {};
     if (!match2)
@@ -33115,7 +32703,7 @@ function tokensToParser(segments, extraOptions) {
     re,
     score,
     keys: keys2,
-    parse: parse2,
+    parse,
     stringify
   };
 }
@@ -34383,8 +33971,8 @@ function extractChangingRecords(to, from) {
   }
   return [leavingRecords, updatingRecords, enteringRecords];
 }
-const _hoisted_1$4 = { class: "navbar" };
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const _hoisted_1$2 = { class: "navbar" };
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
   setup(__props) {
     function renderIcon(icon) {
@@ -34430,6 +34018,11 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Albums)
       },
       {
+        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
+        key: "tagger",
+        icon: renderIcon(Create)
+      },
+      {
         label: () => h(RouterLink, { to: "/convert" }, { default: () => "Convert" }),
         key: "convert",
         icon: renderIcon(GitCompare)
@@ -34442,7 +34035,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     ];
     let collapsed = ref(true);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$4, [
+      return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createVNode(unref(NLayout), {
           style: { "height": "100%", "overflow": "visible" },
           "has-sider": "",
@@ -34494,37 +34087,79 @@ const useState = defineStore("state", () => {
     downloading: false,
     aitBuildStep: {
       unet: "wait",
+      controlnet_unet: "wait",
       clip: "wait",
       vae: "wait",
       cleanup: "wait"
     },
     txt2img: {
       images: [],
-      currentImage: ""
+      highres: false,
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     img2img: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      tab: "Image to Image",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     inpainting: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     imageVariations: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
     },
     controlnet: {
       images: [],
-      currentImage: ""
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
+    },
+    sd_upscale: {
+      images: [],
+      currentImage: "",
+      genData: {
+        time_taken: null,
+        seed: null
+      }
+    },
+    extra: {
+      images: [],
+      currentImage: "",
+      tab: "Upscale"
+    },
+    tagger: {
+      positivePrompt: /* @__PURE__ */ new Map(),
+      negativePrompt: /* @__PURE__ */ new Map()
     },
     current_step: 0,
     total_steps: 0,
     imageBrowser: {
       currentImage: {
         path: "",
+        id: "",
         time: 0
       },
+      currentImageByte64: "",
       currentImageMetadata: /* @__PURE__ */ new Map()
     },
     perf_drawer: {
@@ -34534,12 +34169,12 @@ const useState = defineStore("state", () => {
   });
   return { state };
 });
-const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
-const _hoisted_3$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_1$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
+const _hoisted_3$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
 const _hoisted_5$1 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
   setup(__props) {
     const global2 = useState();
@@ -34576,8 +34211,8 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 2
                     }, 1024),
-                    createBaseVNode("div", _hoisted_1$3, [
-                      _hoisted_2$3,
+                    createBaseVNode("div", _hoisted_1$1, [
+                      _hoisted_2$1,
                       createVNode(unref(NProgress), {
                         percentage: gpu.utilization,
                         type: "line",
@@ -34585,7 +34220,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                         style: { "flex-grow": "1", "width": "400px" }
                       }, null, 8, ["percentage"])
                     ]),
-                    createBaseVNode("div", _hoisted_3$2, [
+                    createBaseVNode("div", _hoisted_3$1, [
                       _hoisted_4$1,
                       createVNode(unref(NProgress), {
                         percentage: gpu.memory_usage,
@@ -35029,6 +34664,98 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
+const useWebsocket = defineStore("websocket", () => {
+  const notificationProvider = useNotification();
+  const messageProvider = useMessage();
+  const global2 = useState();
+  const onConnectedCallbacks = [];
+  const onDisconnectedCallbacks = [];
+  const onRefreshCallbacks = [];
+  const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
+    heartbeat: {
+      message: "ping",
+      interval: 3e4
+    },
+    immediate: false,
+    onMessage: (ws, event) => {
+      if (event.data === "pong") {
+        return;
+      }
+      const data = JSON.parse(event.data);
+      if (data.type === "refresh_models") {
+        onRefreshCallbacks.forEach((callback) => callback());
+        console.log("Models refreshed");
+        return;
+      }
+      processWebSocket(data, global2, notificationProvider);
+    },
+    onConnected: () => {
+      messageProvider.success("Connected to server");
+      onConnectedCallbacks.forEach((callback) => callback());
+    },
+    onDisconnected: () => {
+      messageProvider.error("Disconnected from server");
+      onDisconnectedCallbacks.forEach((callback) => callback());
+    }
+  });
+  function ws_text() {
+    switch (readyState.value) {
+      case "CLOSED":
+        return "Closed";
+      case "CONNECTING":
+        return "Connecting";
+      case "OPEN":
+        return "Connected";
+    }
+  }
+  function get_color() {
+    switch (readyState.value) {
+      case "CLOSED":
+        return "error";
+      case "CONNECTING":
+        return "warning";
+      case "OPEN":
+        return "success";
+    }
+  }
+  const readyState = ref(websocket.status);
+  const loading = computed(() => readyState.value === "CONNECTING");
+  const text = computed(() => ws_text());
+  const color = computed(() => get_color());
+  return {
+    websocket,
+    readyState,
+    loading,
+    text,
+    ws_open: websocket.open,
+    color,
+    onConnectedCallbacks,
+    onDisconnectedCallbacks,
+    onRefreshCallbacks
+  };
+});
+const spaceRegex = new RegExp("[\\s,]+");
+async function startWebsocket(messageProvider) {
+  const websocketState = useWebsocket();
+  const timeout = 1e3;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(`${serverUrl}/api/test/alive`, {
+    signal: controller.signal
+  }).catch(() => {
+    messageProvider.error("Server is not responding");
+  });
+  clearTimeout(id);
+  if (response === void 0) {
+    return;
+  }
+  if (response.status !== 200) {
+    messageProvider.error("Server is not responding");
+    return;
+  }
+  console.log("Starting websocket");
+  websocketState.ws_open();
+}
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
   ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
@@ -35040,79 +34767,145 @@ var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
   return ControlNetType2;
 })(ControlNetType || {});
-const defaultNegativePrompt = "(((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing, broken legs censor, censored, censor_bar, multiple breasts, (mutated hands and fingers:1.5), (long body :1.3), (mutation, poorly drawn :1.2), black-white, bad anatomy, liquid body, liquidtongue, disfigured, malformed, mutated, anatomical nonsense, text font ui, error, malformed hands, long neck, blurred, lowers, low res, bad anatomy, bad proportions, bad shadow, uncoordinated body, unnatural body, fused breasts, bad breasts, huge breasts, poorly drawn breasts, extra breasts, liquid breasts, heavy breasts, missingbreasts, huge haunch, huge thighs, huge calf, bad hands, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, fusedears, bad ears, poorly drawn ears, extra ears, liquid ears, heavy ears, missing ears, old photo, low res, black and white, black and white filter, colorless";
 const defaultSettings = {
-  $schema: "./schema/ui_settings.json",
+  $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
-  model: "none:PyTorch",
+  model: null,
+  extra: {
+    highres: {
+      scale: 2,
+      latent_scale_mode: "bilinear",
+      strength: 0.7,
+      steps: 50,
+      antialiased: false
+    }
+  },
+  aitDim: {
+    width: void 0,
+    height: void 0,
+    batch_size: void 0
+  },
   txt2img: {
     width: 512,
     height: 512,
     seed: -1,
-    cfgScale: 7,
-    sampler: 7,
+    cfg_scale: 7,
+    sampler: 8,
     prompt: "",
     steps: 25,
-    batchCount: 1,
-    batchSize: 1,
-    negativePrompt: defaultNegativePrompt
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: ""
   },
   img2img: {
     width: 512,
     height: 512,
     seed: -1,
-    cfgScale: 7,
-    sampler: 7,
+    cfg_scale: 7,
+    sampler: 8,
     prompt: "",
     steps: 25,
-    batchCount: 1,
-    batchSize: 1,
-    negativePrompt: defaultNegativePrompt,
-    denoisingStrength: 0.6,
-    resizeMethod: 0,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    denoising_strength: 0.6,
     image: ""
-  },
-  imageVariations: {
-    batchCount: 1,
-    batchSize: 1,
-    cfgScale: 7,
-    image: "",
-    seed: -1,
-    sampler: 7,
-    steps: 25
   },
   inpainting: {
     prompt: "",
-    negativePrompt: defaultNegativePrompt,
+    negative_prompt: "",
     image: "",
-    maskImage: "",
+    mask_image: "",
     width: 512,
     height: 512,
     steps: 25,
-    cfgScale: 7,
+    cfg_scale: 7,
     seed: -1,
-    batchCount: 1,
-    batchSize: 1,
-    sampler: 7
-    /* EulerAncestralDiscrete */
+    batch_count: 1,
+    batch_size: 1,
+    sampler: 8
+    /* DPMSolverMultistep */
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: 7,
+    sampler: 8,
     controlnet: ControlNetType.CANNY,
-    negativePrompt: defaultNegativePrompt,
+    negative_prompt: "",
     width: 512,
     height: 512,
     steps: 25,
-    cfgScale: 7,
+    cfg_scale: 7,
     seed: -1,
-    batchSize: 1,
-    batchCount: 1,
-    controlnetConditioningScale: 1,
-    detectionResolution: 512
+    batch_size: 1,
+    batch_count: 1,
+    controlnet_conditioning_scale: 1,
+    detection_resolution: 512
+  },
+  sd_upscale: {
+    prompt: "",
+    negative_prompt: "",
+    seed: -1,
+    cfg_scale: 7,
+    steps: 75,
+    batch_count: 1,
+    batch_size: 1,
+    sampler: 8,
+    tile_size: 128,
+    tile_border: 32,
+    original_image_slice: 32,
+    noise_level: 40,
+    image: ""
+  },
+  realesrgan: {
+    image: "",
+    scale_factor: 4,
+    model: "RealESRGAN_x4plus_anime_6B"
+  },
+  tagger: {
+    image: "",
+    model: "deepdanbooru",
+    treshold: 0.5
+  },
+  api: {
+    websocket_sync_interval: 0.02,
+    websocket_perf_interval: 1,
+    attention_processor: "xformers",
+    attention_slicing: "disabled",
+    channels_last: true,
+    vae_slicing: false,
+    trace_model: false,
+    offload: "disabled",
+    image_preview_delay: 2,
+    device_id: 0,
+    device_type: "cuda",
+    use_fp32: false,
+    use_tomesd: true,
+    tomesd_ratio: 0.4,
+    tomesd_downsample_layers: 1
+  },
+  aitemplate: {
+    num_threads: 8
+  },
+  bot: {
+    default_scheduler: 8,
+    verbose: false,
+    use_default_negative_prompt: true
   }
 };
+let rSettings = JSON.parse(JSON.stringify(defaultSettings));
+try {
+  const req = new XMLHttpRequest();
+  req.open("GET", `${serverUrl}/api/settings/`, false);
+  req.send();
+  const extra = rSettings.extra;
+  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
+  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
+} catch (e) {
+  console.error(e);
+}
+console.log("Settings:", rSettings);
+const recievedSettings = rSettings;
 class Settings {
   constructor(settings_override) {
     __publicField(this, "settings");
@@ -35216,203 +35009,218 @@ function getControlNetOptions() {
   ];
   return controlnet_options;
 }
+const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
 const useSettings = defineStore("settings", () => {
-  const data = reactive(new Settings({}));
+  const data = reactive(new Settings(recievedSettings));
   const scheduler_options = computed(() => {
     return getSchedulerOptions();
   });
   const controlnet_options = computed(() => {
     return getControlNetOptions();
   });
-  return { data, scheduler_options, controlnet_options };
-});
-const useWebsocket = defineStore("websocket", () => {
-  const notificationProvider = useNotification();
-  const messageProvider = useMessage();
-  const global2 = useState();
-  const conf = useSettings();
-  const onConnectedCallbacks = [];
-  const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
-    heartbeat: {
-      message: "ping",
-      interval: 3e4
-    },
-    immediate: false,
-    onMessage: (ws, event) => {
-      if (event.data === "pong") {
-        return;
-      }
-      const data = JSON.parse(event.data);
-      processWebSocket(data, global2, notificationProvider);
-    },
-    onConnected: () => {
-      messageProvider.success("Connected to server");
-      onConnectedCallbacks.forEach((callback) => callback());
-      fetch(`${serverUrl}/api/models/loaded`).then((response) => {
-        if (response.status === 200) {
-          response.json().then((data) => {
-            console.log(
-              "Loaded models on the backend: " + data[0].length.toString()
-            );
-            if (data[0].length === 0) {
-              conf.data.settings.model = "none:PyTorch";
-              return;
-            }
-            conf.data.settings.model = data[0][0];
-          });
-        }
-      });
-    },
-    onDisconnected: () => {
-      messageProvider.error("Disconnected from server");
-      conf.data.settings.model = "none:PyTorch";
-    }
-  });
-  function ws_text() {
-    switch (readyState.value) {
-      case "CLOSED":
-        return "Closed";
-      case "CONNECTING":
-        return "Connecting";
-      case "OPEN":
-        return "Connected";
-    }
+  function resetSettings() {
+    console.log("Resetting settings to default");
+    Object.assign(defaultSettings$1, defaultSettings);
   }
-  function get_color() {
-    switch (readyState.value) {
-      case "CLOSED":
-        return "error";
-      case "CONNECTING":
-        return "warning";
-      case "OPEN":
-        return "success";
-    }
-  }
-  const readyState = ref(websocket.status);
-  const loading = computed(() => readyState.value === "CONNECTING");
-  const text = computed(() => ws_text());
-  const color = computed(() => get_color());
+  const defaultSettings$1 = reactive(deepcopiedSettings);
   return {
-    websocket,
-    readyState,
-    loading,
-    text,
-    ws_open: websocket.open,
-    color,
-    onConnectedCallbacks
+    data,
+    scheduler_options,
+    controlnet_options,
+    defaultSettings: defaultSettings$1,
+    resetSettings
   };
 });
-async function startWebsocket(messageProvider) {
-  const websocketState = useWebsocket();
-  const timeout = 1e3;
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(`${serverUrl}/api/test/alive`, {
-    signal: controller.signal
-  }).catch(() => {
-    messageProvider.error("Server is not responding");
-  });
-  clearTimeout(id);
-  if (response === void 0) {
-    return;
-  }
-  if (response.status !== 200) {
-    messageProvider.error("Server is not responding");
-    return;
-  }
-  console.log("Starting websocket");
-  websocketState.ws_open();
-}
-const _hoisted_1$2 = { class: "top-bar" };
-const _hoisted_2$2 = { class: "progress-container" };
-const _hoisted_3$1 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+const _hoisted_1 = { class: "top-bar" };
+const _hoisted_2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_3 = { style: { "display": "inline-flex" } };
+const _hoisted_4 = { style: { "display": "inline-flex" } };
+const _hoisted_5 = { class: "progress-container" };
+const _hoisted_6 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     const websocketState = useWebsocket();
     const global2 = useState();
     const conf = useSettings();
     const modelsLoading = ref(false);
+    const filter = ref("");
+    const models = ref([]);
+    const filteredModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.path.toLowerCase().includes(filter.value.toLowerCase()) || filter.value === "";
+      });
+    });
+    const pyTorchModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "PyTorch" && model.valid === true;
+      });
+    });
+    const aitModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "AITemplate";
+      });
+    });
+    const trtModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "TensorRT";
+      });
+    });
+    const loraModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "LoRA";
+      });
+    });
     function refreshModels() {
+      console.log("Refreshing models");
       modelsLoading.value = true;
-      fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
+      fetch(`${serverUrl}/api/models/available`).then((res) => {
         res.json().then((data) => {
-          modelOptions.splice(0, modelOptions.length);
-          const pytorchGroup = {
-            type: "group",
-            label: "PyTorch",
-            key: "pytorch",
-            children: []
-          };
-          const tensorrtGroup = {
-            type: "group",
-            label: "TensorRT",
-            key: "tensorrt",
-            children: []
-          };
-          const aitemplatesGroup = {
-            type: "group",
-            label: "AITemplate",
-            key: "aitemplate",
-            children: []
-          };
-          data.forEach((item) => {
-            var _a2, _b, _c;
-            if (item.backend === "PyTorch") {
-              (_a2 = pytorchGroup.children) == null ? void 0 : _a2.push({
-                label: item.name,
-                value: item.path + ":" + item.backend,
-                style: item.valid ? "color: #eb7028" : "text-decoration: line-through"
+          models.value.splice(0, models.value.length);
+          data.forEach((model) => {
+            models.value.push(model);
+          });
+          modelsLoading.value = false;
+        });
+      }).then(() => {
+        fetch(`${serverUrl}/api/models/loaded`).then((res) => {
+          res.json().then((data) => {
+            if (conf.data.settings.model) {
+              if (!data.find((model) => {
+                var _a2;
+                return model.path === ((_a2 = conf.data.settings.model) == null ? void 0 : _a2.path);
+              })) {
+                console.log("Current model is not loaded anymore");
+                conf.data.settings.model = null;
+              }
+            }
+            data.forEach((loadedModel) => {
+              const model = models.value.find((model2) => {
+                return model2.path === loadedModel.path;
               });
-            } else if (item.backend === "TensorRT") {
-              (_b = tensorrtGroup.children) == null ? void 0 : _b.push({
-                label: item.name,
-                value: item.path + ":" + item.backend,
-                style: item.valid ? "color: #28eb6c" : "text-decoration: line-through"
-              });
-            } else if (item.backend === "AITemplate") {
-              (_c = aitemplatesGroup.children) == null ? void 0 : _c.push({
-                label: item.name,
-                value: item.path + ":" + item.backend,
-                style: item.valid ? "color: #48bdf0" : "text-decoration: line-through"
-              });
+              if (model) {
+                Object.assign(model, loadedModel);
+              }
+            });
+            if (!conf.data.settings.model) {
+              const allLoaded = [
+                ...loadedPyTorchModels.value,
+                ...loadedAitModels.value,
+                ...loadedExtraModels.value
+              ];
+              console.log("All loaded models: ", allLoaded);
+              if (allLoaded.length > 0) {
+                conf.data.settings.model = allLoaded[0];
+                console.log(
+                  "Set current model to first available model: ",
+                  conf.data.settings.model
+                );
+              } else {
+                console.log("No models available");
+                conf.data.settings.model = null;
+              }
+            }
+            if (conf.data.settings.model) {
+              const spl = conf.data.settings.model.name.split("__")[1];
+              if (spl) {
+                const xspl = spl.split("x");
+                const width = parseInt(xspl[0]);
+                const height = parseInt(xspl[1]);
+                const batch_size = parseInt(xspl[2]);
+                conf.data.settings.aitDim.width = width;
+                conf.data.settings.aitDim.height = height;
+                conf.data.settings.aitDim.batch_size = batch_size;
+              } else {
+                conf.data.settings.aitDim.width = void 0;
+                conf.data.settings.aitDim.height = void 0;
+                conf.data.settings.aitDim.batch_size = void 0;
+              }
+            } else {
+              conf.data.settings.aitDim.width = void 0;
+              conf.data.settings.aitDim.height = void 0;
+              conf.data.settings.aitDim.batch_size = void 0;
             }
           });
-          modelOptions.push(tensorrtGroup);
-          modelOptions.push(aitemplatesGroup);
-          modelOptions.push(pytorchGroup);
-          modelOptions.push(defaultOptions);
-          modelsLoading.value = false;
         });
       });
     }
-    async function onModelChange(value) {
-      const model = value.split(":")[0];
-      const x = value.split(":")[1];
-      if (x !== "PyTorch" && x !== "TensorRT" && x !== "AITemplate") {
-        throw new Error("Invalid backend");
-      }
-      const backend = x;
-      await fetch(`${serverUrl}/api/models/unload-all`, {
-        method: "POST"
-      });
-      if (model === "none") {
-        conf.data.settings.model = value;
-        return;
-      }
-      conf.data.settings.backend = backend;
+    async function loadModel(model) {
+      model.state = "loading";
       const load_url = new URL(`${serverUrl}/api/models/load`);
-      const params = { model, backend };
+      const params = { model: model.path, backend: model.backend };
       load_url.search = new URLSearchParams(params).toString();
-      modelsLoading.value = true;
-      await fetch(load_url, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" }
-      }).catch(() => {
-        modelsLoading.value = false;
+      try {
+        await fetch(load_url, {
+          method: "POST"
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    async function unloadModel(model) {
+      const load_url = new URL(`${serverUrl}/api/models/unload`);
+      const params = { model: model.name };
+      load_url.search = new URLSearchParams(params).toString();
+      try {
+        await fetch(load_url, {
+          method: "POST"
+        });
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    async function loadLoRA(lora) {
+      const load_url = new URL(`${serverUrl}/api/models/load-lora`);
+      if (selectedModel.value) {
+        const params = { model: selectedModel.value.name, lora: lora.path };
+        load_url.search = new URLSearchParams(params).toString();
+        try {
+          await fetch(load_url, {
+            method: "POST"
+          });
+          selectedModel.value.loras.push(lora.path);
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        message.error("No model selected");
+      }
+    }
+    async function onModelChange(modelStr) {
+      const modelName = modelStr.split(":")[0];
+      const modelBackend = modelStr.split(":")[1];
+      const model = models.value.find((model2) => {
+        return model2.path === modelName && model2.backend === modelBackend;
       });
-      modelsLoading.value = false;
-      conf.data.settings.model = model;
+      if (model) {
+        conf.data.settings.model = model;
+      } else {
+        message.error("Model not found");
+      }
+      if (conf.data.settings.model) {
+        const spl = conf.data.settings.model.name.split("__")[1];
+        if (spl) {
+          const xspl = spl.split("x");
+          const width = parseInt(xspl[0]);
+          const height = parseInt(xspl[1]);
+          const batch_size = parseInt(xspl[2]);
+          conf.data.settings.aitDim.width = width;
+          conf.data.settings.aitDim.height = height;
+          conf.data.settings.aitDim.batch_size = batch_size;
+        } else {
+          conf.data.settings.aitDim.width = void 0;
+          conf.data.settings.aitDim.height = void 0;
+          conf.data.settings.aitDim.batch_size = void 0;
+        }
+      } else {
+        conf.data.settings.aitDim.width = void 0;
+        conf.data.settings.aitDim.height = void 0;
+        conf.data.settings.aitDim.batch_size = void 0;
+      }
+    }
+    function resetModels() {
+      models.value.splice(0, models.value.length);
+      console.log("Reset models");
     }
     const syncIcon = () => {
       return h(SyncSharp);
@@ -35420,56 +35228,362 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     const perfIcon = () => {
       return h(StatsChart);
     };
-    const defaultOptions = {
-      type: "group",
-      label: "Unload",
-      key: "unload",
-      children: [
-        {
-          label: "No model selected",
-          value: "none:PyTorch"
-        }
-      ]
-    };
-    const modelOptions = reactive([defaultOptions]);
     websocketState.onConnectedCallbacks.push(() => {
+      refreshModels();
+    });
+    websocketState.onDisconnectedCallbacks.push(() => {
+      resetModels();
+    });
+    websocketState.onRefreshCallbacks.push(() => {
       refreshModels();
     });
     if (websocketState.readyState === "OPEN") {
       refreshModels();
     }
+    const loadedPyTorchModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.backend === "PyTorch" && model.state === "loaded";
+      });
+    });
+    const loadedAitModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.backend === "AITemplate" && model.state === "loaded";
+      });
+    });
+    const loadedExtraModels = computed(() => {
+      return models.value.filter((model) => {
+        return model.backend === "unknown" && model.state === "loaded";
+      });
+    });
+    const pyTorchOptions = computed(() => {
+      return {
+        type: "group",
+        label: "PyTorch",
+        key: "pytorch",
+        children: loadedPyTorchModels.value.map((model) => {
+          return {
+            label: model.name,
+            value: `${model.path}:PyTorch`
+          };
+        })
+      };
+    });
+    const aitOptions = computed(() => {
+      return {
+        type: "group",
+        label: "AITemplate",
+        key: "ait",
+        children: loadedAitModels.value.map((model) => {
+          return {
+            label: model.name,
+            value: `${model.path}:AITemplate`
+          };
+        })
+      };
+    });
+    const extraOptions = computed(() => {
+      return {
+        type: "group",
+        label: "Extra",
+        key: "extra",
+        children: loadedExtraModels.value.map((model) => {
+          return {
+            label: model.name,
+            value: `${model.path}:PyTorch`
+          };
+        })
+      };
+    });
+    const generatedModelOptions = computed(() => {
+      return [pyTorchOptions.value, aitOptions.value, extraOptions.value];
+    });
     const message = useMessage();
+    const showModal = ref(false);
+    const selectedModel = ref();
+    const lora_title = computed(() => {
+      return `LoRA (${selectedModel.value ? selectedModel.value.name : "No model selected"})`;
+    });
     startWebsocket(message);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$2, [
+      var _a2;
+      return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
-          options: modelOptions,
+          options: unref(generatedModelOptions),
           "onUpdate:value": onModelChange,
           loading: modelsLoading.value,
-          placeholder: "Select model",
-          "default-value": "none:PyTorch",
-          value: unref(conf).data.settings.model,
+          placeholder: "",
+          value: unref(conf).data.settings.model !== null ? (_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name : "",
           "consistent-menu-width": false,
           filterable: ""
         }, null, 8, ["options", "loading", "value"]),
         createVNode(unref(NButton), {
-          quaternary: "",
-          circle: "",
-          type: "default",
-          onClick: refreshModels
+          onClick: _cache[0] || (_cache[0] = ($event) => showModal.value = true)
         }, {
-          icon: withCtx(() => [
-            createVNode(unref(NIcon), null, {
+          default: withCtx(() => [
+            createTextVNode("Load Model")
+          ]),
+          _: 1
+        }),
+        createVNode(unref(NModal), {
+          show: showModal.value,
+          "onUpdate:show": _cache[2] || (_cache[2] = ($event) => showModal.value = $event),
+          closable: "",
+          "mask-closable": "",
+          preset: "card",
+          style: { "width": "85vw" },
+          title: "Models",
+          "auto-focus": false
+        }, {
+          default: withCtx(() => [
+            createBaseVNode("div", _hoisted_2, [
+              createVNode(unref(NInput), {
+                value: filter.value,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => filter.value = $event),
+                clearable: "",
+                placeholder: "Filter Models"
+              }, null, 8, ["value"]),
+              createVNode(unref(NButton), {
+                ghost: "",
+                type: "success",
+                style: { "margin-left": "4px" },
+                onClick: refreshModels
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("Refresh")
+                ]),
+                _: 1
+              })
+            ]),
+            createVNode(unref(NScrollbar), null, {
               default: withCtx(() => [
-                createVNode(unref(ReloadOutline))
+                createVNode(unref(NTabs), {
+                  type: "segment",
+                  style: { "height": "70vh" }
+                }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NTabPane), {
+                      name: "PyTorch",
+                      style: { "height": "100%" }
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NGrid), {
+                          cols: "1 900:2",
+                          "x-gap": 8,
+                          "y-gap": 8,
+                          style: { "height": "100%" }
+                        }, {
+                          default: withCtx(() => [
+                            createVNode(unref(NGi), null, {
+                              default: withCtx(() => [
+                                createVNode(unref(NCard), {
+                                  title: "Models",
+                                  style: { "height": "100%" }
+                                }, {
+                                  default: withCtx(() => [
+                                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(pyTorchModels), (model) => {
+                                      return openBlock(), createElementBlock("div", {
+                                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                        key: model.path
+                                      }, [
+                                        createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                        createBaseVNode("div", _hoisted_3, [
+                                          model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                            key: 0,
+                                            type: "error",
+                                            ghost: "",
+                                            onClick: ($event) => unloadModel(model)
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Unload")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                            key: 1,
+                                            type: "success",
+                                            ghost: "",
+                                            onClick: ($event) => loadModel(model),
+                                            loading: model.state === "loading"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Load")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick", "loading"])),
+                                          createVNode(unref(NButton), {
+                                            type: "info",
+                                            style: { "margin-left": "4px" },
+                                            ghost: "",
+                                            onClick: ($event) => selectedModel.value = model,
+                                            disabled: model.state !== "loaded"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Select")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick", "disabled"])
+                                        ])
+                                      ]);
+                                    }), 128))
+                                  ]),
+                                  _: 1
+                                })
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(NGi), null, {
+                              default: withCtx(() => [
+                                createVNode(unref(NCard), {
+                                  title: unref(lora_title),
+                                  style: { "height": "100%" }
+                                }, {
+                                  default: withCtx(() => [
+                                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(loraModels), (lora) => {
+                                      var _a3;
+                                      return openBlock(), createElementBlock("div", {
+                                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                        key: lora.path
+                                      }, [
+                                        createBaseVNode("p", null, toDisplayString(lora.name), 1),
+                                        createBaseVNode("div", _hoisted_4, [
+                                          ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(lora.path)) ? (openBlock(), createBlock(unref(NButton), {
+                                            key: 0,
+                                            type: "error",
+                                            ghost: "",
+                                            disabled: ""
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Loaded")
+                                            ]),
+                                            _: 1
+                                          })) : (openBlock(), createBlock(unref(NButton), {
+                                            key: 1,
+                                            type: "success",
+                                            ghost: "",
+                                            onClick: ($event) => loadLoRA(lora),
+                                            disabled: selectedModel.value === void 0,
+                                            loading: lora.state === "loading"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Load")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick", "disabled", "loading"]))
+                                        ])
+                                      ]);
+                                    }), 128))
+                                  ]),
+                                  _: 1
+                                }, 8, ["title"])
+                              ]),
+                              _: 1
+                            })
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(unref(NTabPane), { name: "AITemplate" }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NCard), {
+                          title: "Models",
+                          style: { "height": "100%" }
+                        }, {
+                          default: withCtx(() => [
+                            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(aitModels), (model) => {
+                              return openBlock(), createElementBlock("div", {
+                                style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                key: model.path
+                              }, [
+                                createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                createBaseVNode("div", null, [
+                                  model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                    key: 0,
+                                    type: "error",
+                                    ghost: "",
+                                    onClick: ($event) => unloadModel(model)
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Unload")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                    key: 1,
+                                    type: "success",
+                                    ghost: "",
+                                    onClick: ($event) => loadModel(model),
+                                    loading: model.state === "loading"
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Load")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick", "loading"]))
+                                ])
+                              ]);
+                            }), 128))
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(unref(NTabPane), { name: "Extra" }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NCard), {
+                          title: "Models",
+                          style: { "height": "100%" }
+                        }, {
+                          default: withCtx(() => [
+                            (openBlock(true), createElementBlock(Fragment, null, renderList(unref(trtModels), (model) => {
+                              return openBlock(), createElementBlock("div", {
+                                style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                key: model.path
+                              }, [
+                                createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                createBaseVNode("div", null, [
+                                  model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                    key: 0,
+                                    type: "error",
+                                    ghost: "",
+                                    onClick: ($event) => unloadModel(model)
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Unload")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                    key: 1,
+                                    type: "success",
+                                    ghost: "",
+                                    onClick: ($event) => loadModel(model),
+                                    loading: model.state === "loading"
+                                  }, {
+                                    default: withCtx(() => [
+                                      createTextVNode("Load")
+                                    ]),
+                                    _: 2
+                                  }, 1032, ["onClick", "loading"]))
+                                ])
+                              ]);
+                            }), 128))
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
               ]),
               _: 1
             })
           ]),
           _: 1
-        }),
-        createBaseVNode("div", _hoisted_2$2, [
+        }, 8, ["show"]),
+        createBaseVNode("div", _hoisted_5, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -35484,14 +35598,14 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_3$1, [
+        createBaseVNode("div", _hoisted_6, [
           createVNode(unref(NButton), {
             type: unref(websocketState).color,
             quaternary: "",
             "icon-placement": "left",
             "render-icon": syncIcon,
             loading: unref(websocketState).loading,
-            onClick: _cache[0] || (_cache[0] = ($event) => unref(startWebsocket)(unref(message)))
+            onClick: _cache[3] || (_cache[3] = ($event) => unref(startWebsocket)(unref(message)))
           }, {
             default: withCtx(() => [
               createTextVNode(toDisplayString(unref(websocketState).text), 1)
@@ -35504,7 +35618,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
             "icon-placement": "left",
             "render-icon": perfIcon,
             style: { "margin-right": "8px" },
-            onClick: _cache[1] || (_cache[1] = ($event) => unref(global2).state.perf_drawer.enabled = true),
+            onClick: _cache[4] || (_cache[4] = ($event) => unref(global2).state.perf_drawer.enabled = true),
             disabled: unref(global2).state.perf_drawer.enabled
           }, null, 8, ["disabled"])
         ])
@@ -35512,7 +35626,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_1a90d7a4_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_2b1345cd_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -35520,19 +35634,19 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-1a90d7a4"]]);
-const _sfc_main$4 = {};
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2b1345cd"]]);
+const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
-  return openBlock(), createBlock(_component_RouterView, { class: "view" });
+  return openBlock(), createBlock(_component_RouterView);
 }
-const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["render", _sfc_render]]);
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
+const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     const overrides = {
       common: {
-        fontSize: "10",
+        fontSize: "15px",
         fontWeight: "600"
       }
     };
@@ -35546,10 +35660,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$7),
+                  createVNode(_sfc_main$4),
                   createVNode(TopBarVue),
                   createVNode(routerContainerVue),
-                  createVNode(_sfc_main$6)
+                  createVNode(_sfc_main$3)
                 ]),
                 _: 1
               })
@@ -35606,521 +35720,23 @@ const __vitePreload = function preload(baseModule, deps, importerUrl) {
     }
   })).then(() => baseModule());
 };
-const _2img = "";
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
-  __name: "GenerateSection",
-  props: {
-    generate: {
-      type: Function,
-      required: true
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const global2 = useState();
-    function interrupt() {
-      fetch(`${serverUrl}/api/general/interrupt`, {
-        method: "POST"
-      }).then((res) => {
-        if (res.status === 200) {
-          global2.state.generating = false;
-        }
-      });
-    }
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { style: { "margin-bottom": "12px" } }, {
-        default: withCtx(() => [
-          createVNode(unref(NGrid), {
-            cols: "2",
-            "x-gap": "24"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: props.generate,
-                    disabled: unref(global2).state.generating,
-                    loading: unref(global2).state.generating,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Generate")
-                    ]),
-                    _: 1
-                  }, 8, ["onClick", "disabled", "loading"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "error",
-                    onClick: interrupt,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    default: withCtx(() => [
-                      createTextVNode("Interrupt")
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _hoisted_1$1 = { style: { "width": "100%", "display": "flex", "justify-content": "center" } };
-const _hoisted_2$1 = {
-  key: 0,
-  style: { "height": "100px", "margin-top": "12px" }
-};
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "ImageOutput",
-  props: {
-    currentImage: {
-      type: String,
-      required: true
-    },
-    images: {
-      type: Array,
-      required: false,
-      default: () => []
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const allImages = computed(() => [props.currentImage, ...props.images]);
-    const displayedImage = computed(() => props.currentImage);
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), {
-        title: "Output",
-        hoverable: ""
-      }, {
-        default: withCtx(() => [
-          createBaseVNode("div", _hoisted_1$1, [
-            unref(displayedImage) ? (openBlock(), createBlock(unref(NImage), {
-              key: 0,
-              src: unref(displayedImage).startsWith("data:image/png") ? unref(displayedImage).toString() : `data:image/png;base64,${unref(displayedImage)}`,
-              "img-props": {
-                style: "max-width: 100%; max-height: 70vh; width: 100%"
-              },
-              style: { "max-width": "100%", "max-height": "60vh", "width": "100%", "height": "100%" },
-              "object-fit": "contain"
-            }, null, 8, ["src"])) : createCommentVNode("", true)
-          ]),
-          __props.images.length > 1 ? (openBlock(), createElementBlock("div", _hoisted_2$1, [
-            createVNode(unref(NImageGroup), null, {
-              default: withCtx(() => [
-                (openBlock(true), createElementBlock(Fragment, null, renderList(unref(allImages), (image, i) => {
-                  return openBlock(), createBlock(unref(NImage), {
-                    key: i,
-                    src: `data:image/png;base64,${image}`,
-                    class: "bottom-images",
-                    "img-props": {
-                      style: "height: 100px; width: 100px; margin: 5px;"
-                    },
-                    "object-fit": "contain",
-                    onClick: () => displayedImage.value = image.toString()
-                  }, null, 8, ["src", "onClick"]);
-                }), 128))
-              ]),
-              _: 1
-            })
-          ])) : createCommentVNode("", true)
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const ImageOutput_vue_vue_type_style_index_0_scoped_83e92014_lang = "";
-const ImageOutput = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-83e92014"]]);
-let getRandomValues;
-const rnds8 = new Uint8Array(16);
-function rng() {
-  if (!getRandomValues) {
-    getRandomValues = typeof crypto !== "undefined" && crypto.getRandomValues && crypto.getRandomValues.bind(crypto);
-    if (!getRandomValues) {
-      throw new Error("crypto.getRandomValues() not supported. See https://github.com/uuidjs/uuid#getrandomvalues-not-supported");
-    }
-  }
-  return getRandomValues(rnds8);
-}
-const byteToHex = [];
-for (let i = 0; i < 256; ++i) {
-  byteToHex.push((i + 256).toString(16).slice(1));
-}
-function unsafeStringify(arr, offset = 0) {
-  return (byteToHex[arr[offset + 0]] + byteToHex[arr[offset + 1]] + byteToHex[arr[offset + 2]] + byteToHex[arr[offset + 3]] + "-" + byteToHex[arr[offset + 4]] + byteToHex[arr[offset + 5]] + "-" + byteToHex[arr[offset + 6]] + byteToHex[arr[offset + 7]] + "-" + byteToHex[arr[offset + 8]] + byteToHex[arr[offset + 9]] + "-" + byteToHex[arr[offset + 10]] + byteToHex[arr[offset + 11]] + byteToHex[arr[offset + 12]] + byteToHex[arr[offset + 13]] + byteToHex[arr[offset + 14]] + byteToHex[arr[offset + 15]]).toLowerCase();
-}
-const randomUUID = typeof crypto !== "undefined" && crypto.randomUUID && crypto.randomUUID.bind(crypto);
-const native = {
-  randomUUID
-};
-function v4(options, buf, offset) {
-  if (native.randomUUID && !buf && !options) {
-    return native.randomUUID();
-  }
-  options = options || {};
-  const rnds = options.random || (options.rng || rng)();
-  rnds[6] = rnds[6] & 15 | 64;
-  rnds[8] = rnds[8] & 63 | 128;
-  if (buf) {
-    offset = offset || 0;
-    for (let i = 0; i < 16; ++i) {
-      buf[offset + i] = rnds[i];
-    }
-    return buf;
-  }
-  return unsafeStringify(rnds);
-}
-const _hoisted_1 = { class: "main-container" };
-const _hoisted_2 = { class: "flex-container" };
-const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "100px" } }, "Sampler", -1);
-const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using Euler A for the best results (but it also takes more time). ", -1);
-const _hoisted_5 = /* @__PURE__ */ createBaseVNode("a", {
-  target: "_blank",
-  href: "https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
-}, "Learn more", -1);
-const _hoisted_6 = { class: "flex-container" };
-const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
-const _hoisted_8 = { class: "flex-container" };
-const _hoisted_9 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _hoisted_10 = { class: "flex-container" };
-const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
-const _hoisted_12 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
-const _hoisted_13 = { class: "flex-container" };
-const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1);
-const _hoisted_15 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1);
-const _hoisted_16 = { class: "flex-container" };
-const _hoisted_17 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Count", -1);
-const _hoisted_18 = { class: "flex-container" };
-const _hoisted_19 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _hoisted_20 = { class: "flex-container" };
-const _hoisted_21 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "75px" } }, "Seed", -1);
-const _hoisted_22 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1);
-const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "TextToImageView",
-  setup(__props) {
-    const global2 = useState();
-    const conf = useSettings();
-    const messageHandler = useMessage();
-    const checkSeed = (seed) => {
-      if (seed === -1) {
-        seed = Math.floor(Math.random() * 999999999999);
-      }
-      return seed;
-    };
-    const generate = () => {
-      if (conf.data.settings.txt2img.seed === null) {
-        messageHandler.error("Please set a seed");
-        return;
-      }
-      global2.state.generating = true;
-      fetch(`${serverUrl}/api/generate/txt2img`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          data: {
-            id: v4(),
-            prompt: conf.data.settings.txt2img.prompt,
-            negative_prompt: conf.data.settings.txt2img.negativePrompt,
-            width: conf.data.settings.txt2img.width,
-            height: conf.data.settings.txt2img.height,
-            steps: conf.data.settings.txt2img.steps,
-            guidance_scale: conf.data.settings.txt2img.cfgScale,
-            seed: checkSeed(conf.data.settings.txt2img.seed),
-            batch_size: conf.data.settings.txt2img.batchSize,
-            batch_count: conf.data.settings.txt2img.batchCount,
-            scheduler: conf.data.settings.txt2img.sampler
-          },
-          model: conf.data.settings.model,
-          backend: "PyTorch",
-          autoload: false
-        })
-      }).then((res) => {
-        global2.state.generating = false;
-        res.json().then((data) => {
-          global2.state.txt2img.images = data.images;
-          global2.state.progress = 0;
-          global2.state.total_steps = 0;
-          global2.state.current_step = 0;
-        });
-      }).catch((err) => {
-        global2.state.generating = false;
-        messageHandler.error(err);
-        console.log(err);
-      });
-    };
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1, [
-        createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "Settings" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NSpace), {
-                      vertical: "",
-                      class: "left-container"
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NInput), {
-                          value: unref(conf).data.settings.txt2img.prompt,
-                          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.txt2img.prompt = $event),
-                          type: "textarea",
-                          placeholder: "Prompt"
-                        }, null, 8, ["value"]),
-                        createVNode(unref(NInput), {
-                          value: unref(conf).data.settings.txt2img.negativePrompt,
-                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.txt2img.negativePrompt = $event),
-                          type: "textarea",
-                          placeholder: "Negative prompt"
-                        }, null, 8, ["value"]),
-                        createBaseVNode("div", _hoisted_2, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
-                            trigger: withCtx(() => [
-                              _hoisted_3
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" The sampler is the method used to generate the image. Your result may vary drastically depending on the sampler you choose. "),
-                              _hoisted_4,
-                              _hoisted_5
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSelect), {
-                            options: unref(conf).scheduler_options,
-                            value: unref(conf).data.settings.txt2img.sampler,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.txt2img.sampler = $event),
-                            style: { "flex-grow": "1" }
-                          }, null, 8, ["options", "value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_6, [
-                          _hoisted_7,
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.width,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.txt2img.width = $event),
-                            min: 128,
-                            max: 2048,
-                            step: 8,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.width,
-                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.txt2img.width = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_8, [
-                          _hoisted_9,
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.height,
-                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.txt2img.height = $event),
-                            min: 128,
-                            max: 2048,
-                            step: 8,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.height,
-                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.txt2img.height = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_10, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
-                            trigger: withCtx(() => [
-                              _hoisted_11
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                              _hoisted_12
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.steps,
-                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
-                            min: 5,
-                            max: 300,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.steps,
-                            "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 5,
-                            max: 300
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_13, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
-                            trigger: withCtx(() => [
-                              _hoisted_14
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(' Guidance scale indicates how much should model stay close to the prompt. Higher values might be exactly what you want, but generated images might have some artefacts. Lower values indicates that model can "dream" about this prompt more. '),
-                              _hoisted_15
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.cfgScale,
-                            "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.txt2img.cfgScale = $event),
-                            min: 1,
-                            max: 30,
-                            step: 0.5,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.cfgScale,
-                            "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.txt2img.cfgScale = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 30,
-                            step: 0.5
-                          }, null, 8, ["value", "step"])
-                        ]),
-                        createBaseVNode("div", _hoisted_16, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
-                            trigger: withCtx(() => [
-                              _hoisted_17
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Number of images to generate after each other. ")
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.batchCount,
-                            "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.txt2img.batchCount = $event),
-                            min: 1,
-                            max: 9,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.batchCount,
-                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.txt2img.batchCount = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 9
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_18, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
-                            trigger: withCtx(() => [
-                              _hoisted_19
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Number of images to generate in paralel. ")
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.txt2img.batchSize,
-                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.txt2img.batchSize = $event),
-                            min: 1,
-                            max: 9,
-                            style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.batchSize,
-                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.txt2img.batchSize = $event),
-                            size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 9
-                          }, null, 8, ["value"])
-                        ]),
-                        createBaseVNode("div", _hoisted_20, [
-                          createVNode(unref(NTooltip), { "max-width": 600 }, {
-                            trigger: withCtx(() => [
-                              _hoisted_21
-                            ]),
-                            default: withCtx(() => [
-                              createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
-                              _hoisted_22
-                            ]),
-                            _: 1
-                          }),
-                          createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.txt2img.seed,
-                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.txt2img.seed = $event),
-                            size: "small",
-                            min: -1,
-                            max: 999999999999,
-                            style: { "flex-grow": "1" }
-                          }, null, 8, ["value"])
-                        ])
-                      ]),
-                      _: 1
-                    })
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(_sfc_main$2, { generate }),
-                createVNode(ImageOutput, {
-                  "current-image": unref(global2).state.txt2img.currentImage,
-                  images: unref(global2).state.txt2img.images
-                }, null, 8, ["current-image", "images"])
-              ]),
-              _: 1
-            })
-          ]),
-          _: 1
-        })
-      ]);
-    };
-  }
-});
 const router = createRouter({
   history: createWebHistory("/"),
   routes: [
     {
       path: "/",
       name: "text2image",
-      component: _sfc_main
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Tabs.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/Slider.js","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
     },
     {
       path: "/download",
@@ -36135,7 +35751,7 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Tabs.js"] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/test",
@@ -36145,196 +35761,190 @@ const router = createRouter({
     {
       path: "/convert",
       name: "convert",
-      component: () => __vitePreload(() => import("./ConvertView.js"), true ? ["assets/ConvertView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
+      component: () => __vitePreload(() => import("./ConvertView.js"), true ? ["assets/ConvertView.js","assets/Switch.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
     },
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/Tabs.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
+    },
+    {
+      path: "/tagger",
+      name: "tagger",
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
     }
   ]
 });
 const main = "";
 const pinia = createPinia();
-const app = createApp(_sfc_main$3);
+const app = createApp(_sfc_main);
 app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  ImageOutput as $,
-  createBaseVNode as A,
-  createBlock as B,
-  withCtx as C,
-  createVNode as D,
-  ErrorIcon as E,
-  toDisplayString as F,
-  unref as G,
-  NSpace as H,
-  InfoIcon as I,
-  NCard as J,
-  pushScopeId as K,
-  popScopeId as L,
-  useState as M,
-  NBaseClose as N,
-  useSettings as O,
-  useMessage as P,
-  NGi as Q,
-  NInput as R,
-  SuccessIcon as S,
-  NTooltip as T,
-  createTextVNode as U,
-  NSelect as V,
-  WarningIcon as W,
-  NSlider as X,
-  NInputNumber as Y,
-  _sfc_main$2 as Z,
+  checkboxLight$1 as $,
+  ref as A,
+  NButton as B,
+  NIcon as C,
+  NTabPane as D,
+  NTabs as E,
+  Fragment as F,
+  renderList as G,
+  NScrollbar as H,
+  useConfig as I,
+  useFormItem as J,
+  useMergedState as K,
+  provide as L,
+  toRef as M,
+  NGi as N,
+  createInjectionKey as O,
+  call as P,
+  c$1 as Q,
+  cB as R,
+  cE as S,
+  cM as T,
+  iconSwitchTransition as U,
+  insideModal as V,
+  insidePopover as W,
+  inject as X,
+  useMemo as Y,
+  useTheme as Z,
   _export_sfc as _,
-  commonVars$a as a,
-  beforeNextFrameOnce as a$,
-  NGrid as a0,
-  serverUrl as a1,
-  v4 as a2,
-  Fragment as a3,
-  NButton as a4,
-  NIcon as a5,
-  useFormItem as a6,
-  useMergedState as a7,
-  provide as a8,
-  toRef as a9,
-  useLocale as aA,
-  watchEffect as aB,
-  useAdjustedTo as aC,
-  paginationLight$1 as aD,
-  ellipsisLight$1 as aE,
-  onDeactivated as aF,
-  radioLight$1 as aG,
-  flatten$2 as aH,
-  getSlot$1 as aI,
-  depx as aJ,
-  formatLength as aK,
-  NScrollbar as aL,
-  onBeforeUnmount as aM,
-  off as aN,
-  ChevronDownIcon as aO,
-  NDropdown as aP,
-  pxfy as aQ,
-  get as aR,
-  NBaseLoading as aS,
-  ChevronRightIcon as aT,
-  onUnmounted as aU,
-  VVirtualList as aV,
-  VResizeObserver as aW,
-  warn$2 as aX,
-  cssrAnchorMetaName as aY,
-  repeat as aZ,
-  NEmpty as a_,
-  createInjectionKey as aa,
-  call as ab,
-  iconSwitchTransition as ac,
-  insideModal as ad,
-  insidePopover as ae,
-  inject as af,
-  useMemo as ag,
-  checkboxLight$1 as ah,
-  createId as ai,
-  NIconSwitchTransition as aj,
-  on as ak,
-  popselectLight$1 as al,
-  watch as am,
-  NInternalSelectMenu as an,
-  keysOf as ao,
-  createTreeMate as ap,
-  happensIn as aq,
-  nextTick as ar,
-  createTmOptions as as,
-  keep as at,
-  createRefSetter as au,
-  mergeEventHandlers as av,
-  omit as aw,
-  NPopover as ax,
-  popoverBaseProps as ay,
-  cNotM as az,
-  composite as b,
-  fadeInScaleUpTransition as b0,
-  Transition as b1,
-  dataTableLight$1 as b2,
-  reactive as b3,
-  NTag as b4,
-  isBrowser$2 as b5,
-  readonly as b6,
-  hasInstance as b7,
-  onBeforeMount as b8,
-  asModal as b9,
-  ErrorIcon$1 as bA,
-  resultLight$1 as bB,
-  useCompitable as bC,
-  descriptionsLight$1 as bD,
-  NImage as bE,
-  createCommentVNode as bF,
-  renderList as bG,
-  useSsrAdapter as bH,
-  cssrAnchorMetaName$1 as bI,
-  c as bJ,
-  isSymbol as bK,
-  isObject as bL,
-  root$1 as bM,
-  AddIcon as bN,
-  onFontsReady as bO,
-  tabsLight$1 as bP,
-  TransitionGroup as bQ,
-  dialogLight$1 as ba,
-  render$1 as bb,
-  cardBaseProps as bc,
-  useLockHtmlScroll as bd,
-  getFirstSlotVNode as be,
-  cloneVNode as bf,
-  withDirectives as bg,
-  vShow as bh,
-  FocusTrap as bi,
-  clickoutside$1 as bj,
-  cardBasePropKeys as bk,
-  modalInjectionKey as bl,
-  modalBodyInjectionKey as bm,
-  drawerBodyInjectionKey as bn,
-  popoverBodyInjectionKey as bo,
-  fadeInTransition as bp,
-  isMounted as bq,
-  useIsComposing as br,
-  zindexable$1 as bs,
-  LazyTeleport as bt,
-  modalLight$1 as bu,
-  getPreciseEventTarget as bv,
-  eventEffectNotPerformed as bw,
-  stepsLight$1 as bx,
-  throwError as by,
-  FinishedIcon as bz,
-  commonLight as c,
-  changeColor as d,
-  cB as e,
-  cE as f,
-  cM as g,
-  fadeInHeightExpandTransition as h,
-  c$1 as i,
-  defineComponent as j,
-  useTheme as k,
-  useRtl as l,
-  computed as m,
-  useThemeClass as n,
-  h as o,
-  mergeProps as p,
-  resolveSlot as q,
-  ref as r,
-  resolveWrappedSlot as s,
-  NFadeInExpandTransition as t,
-  useConfig as u,
-  getMargin as v,
-  createKey as w,
-  NBaseIcon as x,
-  openBlock as y,
-  createElementBlock as z
+  useSettings as a,
+  InfoIcon as a$,
+  useRtl as a0,
+  createKey as a1,
+  useThemeClass as a2,
+  createId as a3,
+  NIconSwitchTransition as a4,
+  on as a5,
+  popselectLight$1 as a6,
+  watch as a7,
+  NInternalSelectMenu as a8,
+  keysOf as a9,
+  NScrollbar$1 as aA,
+  onBeforeUnmount as aB,
+  off as aC,
+  ChevronDownIcon as aD,
+  NDropdown as aE,
+  pxfy as aF,
+  get as aG,
+  NBaseLoading as aH,
+  ChevronRightIcon as aI,
+  onUnmounted as aJ,
+  VVirtualList as aK,
+  VResizeObserver as aL,
+  warn$2 as aM,
+  cssrAnchorMetaName as aN,
+  repeat as aO,
+  NEmpty as aP,
+  beforeNextFrameOnce as aQ,
+  fadeInScaleUpTransition as aR,
+  Transition as aS,
+  dataTableLight$1 as aT,
+  reactive as aU,
+  NTag as aV,
+  stepsLight$1 as aW,
+  throwError as aX,
+  FinishedIcon as aY,
+  ErrorIcon$1 as aZ,
+  NModal as a_,
+  createTreeMate as aa,
+  happensIn as ab,
+  nextTick as ac,
+  createTmOptions as ad,
+  keep as ae,
+  createRefSetter as af,
+  mergeEventHandlers as ag,
+  omit as ah,
+  NPopover as ai,
+  popoverBaseProps as aj,
+  cNotM as ak,
+  useLocale as al,
+  watchEffect as am,
+  resolveSlot as an,
+  NBaseIcon as ao,
+  useAdjustedTo as ap,
+  paginationLight$1 as aq,
+  ellipsisLight$1 as ar,
+  onDeactivated as as,
+  mergeProps as at,
+  radioLight$1 as au,
+  resolveWrappedSlot as av,
+  flatten$2 as aw,
+  getSlot$1 as ax,
+  depx as ay,
+  formatLength as az,
+  useMessage as b,
+  SuccessIcon as b0,
+  WarningIcon as b1,
+  ErrorIcon as b2,
+  resultLight$1 as b3,
+  getCurrentInstance as b4,
+  formLight$1 as b5,
+  commonVariables$m as b6,
+  formItemInjectionKey as b7,
+  onMounted as b8,
+  defaultSettings as b9,
+  rgba as bA,
+  XButton as bB,
+  AddIcon as bC,
+  commonVars$1 as bD,
+  changeColor as bE,
+  isSlotEmpty as bF,
+  Download as ba,
+  useCompitable as bb,
+  descriptionsLight$1 as bc,
+  router as bd,
+  toString as be,
+  replaceable as bf,
+  isBrowser$3 as bg,
+  createTheme as bh,
+  commonLight as bi,
+  tooltipLight$1 as bj,
+  fadeInTransition as bk,
+  isMounted as bl,
+  LazyTeleport as bm,
+  withDirectives as bn,
+  zindexable$1 as bo,
+  vShow as bp,
+  normalizeStyle as bq,
+  isRef as br,
+  withModifiers as bs,
+  sizeVariables$3 as bt,
+  onBeforeUpdate as bu,
+  VBinder as bv,
+  VTarget as bw,
+  VFollower as bx,
+  buttonLight$1 as by,
+  inputLight$1 as bz,
+  computed as c,
+  defineComponent as d,
+  createElementBlock as e,
+  createVNode as f,
+  unref as g,
+  NCard as h,
+  NSpace as i,
+  NInput as j,
+  createTextVNode as k,
+  createBaseVNode as l,
+  NTooltip as m,
+  NSelect as n,
+  openBlock as o,
+  createBlock as p,
+  createCommentVNode as q,
+  NGrid as r,
+  spaceRegex as s,
+  toDisplayString as t,
+  useState as u,
+  serverUrl as v,
+  withCtx as w,
+  pushScopeId as x,
+  popScopeId as y,
+  h as z
 };

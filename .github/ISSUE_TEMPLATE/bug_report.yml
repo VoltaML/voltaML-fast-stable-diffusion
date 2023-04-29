@@ -1,10 +1,19 @@
 name: "\U0001F41E Bug report"
 description: Create a report to help us improve
+title: "[Bug]: "
+labels:
+  - bug
+assignees:
+  - Stax124
 body:
   - type: markdown
     attributes:
       value: |
-        "Thanks for taking the time to fill out this bug report!"
+        Thanks for taking the time to fill out this bug report!
+        In order to help us fix the bug as quickly as possible, please make sure to follow the template and include all the information requested.
+        - 1. Be precise and descriptive in your report.
+        - 2. Try to include reproducible example.
+        - 3. Be laser focused on the bug and the bug only. If there is more then one bug, please report them separately.
   - type: textarea
     id: bug-description
     attributes:
@@ -31,6 +40,14 @@ body:
       required: true
   - type: dropdown
     attributes:
+      label: Installation Method
+      description: How did you install this project and how you are running it.
+      multiple: false
+      options:
+        - "Local"
+        - "Docker"
+  - type: dropdown
+    attributes:
       label: Branch
       description: What branch are you using. If you don't know, it is probably Main.
       multiple: false
@@ -48,6 +65,12 @@ body:
     validations:
       required: true
   - type: textarea
+    id: logs
+    attributes:
+      label: Logs
+      description: "Please include the Python logs if you can."
+      render: bash
+  - type: textarea
     id: additional-context
     attributes:
       label: Additional context
@@ -61,4 +84,6 @@ body:
         - label: Read the [docs](https://voltaml.github.io/voltaML-fast-stable-diffusion/).
           required: true
         - label: Check that there isn't already an issue that reports the same bug to avoid creating a duplicate.
+          required: true
+        - label: I am writing the issue in English.
           required: true

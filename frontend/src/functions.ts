@@ -1,6 +1,8 @@
 import { serverUrl } from "./env";
 import { useWebsocket } from "./store/websockets";
 
+export const spaceRegex = new RegExp("[\\s,]+");
+
 export function dimensionValidator(value: number) {
   return value % 8 === 0;
 }

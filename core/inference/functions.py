@@ -4,6 +4,11 @@ import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 
+import torch
+from diffusers import StableDiffusionPipeline
+from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
+    download_from_original_stable_diffusion_ckpt,
+)
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils.constants import (
     CONFIG_NAME,
@@ -25,8 +30,56 @@ from huggingface_hub.utils._errors import (
 )
 from requests import HTTPError
 
+from core.config import config
+from core.files import get_full_model_path
+from core.optimizations import optimize_model
+
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
+
+
+def is_onnxconverter_available():
+    "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
+    try:
+        import onnxconverter_common  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnx_available():
+    "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
+    try:
+        import onnx  # pylint: disable=unused-import
+        from onnxruntime.quantization import (  # pylint: disable=unused-import
+            QuantType,
+            quantize_dynamic,
+        )
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnxscript_available():
+    "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
+    try:
+        import onnxscript  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_onnxsim_available():
+    "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
+    try:
+        from onnxsim import simplify  # pylint: disable=import-error,unused-import
+
+        return True
+    except ImportError:
+        return False
 
 
 def load_config(
@@ -280,3 +333,67 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
     with open(json_file, "r", encoding="utf-8") as reader:
         text = reader.read()
     return json.loads(text)
+
+
+def load_pytorch_pipeline(
+    model_id_or_path: str,
+    auth: str = os.environ["HUGGINGFACE_TOKEN"],
+    device: str = "cuda",
+    optimize: bool = True,
+    is_for_aitemplate: bool = False,
+) -> StableDiffusionPipeline:
+    "Load the model from HuggingFace"
+
+    logger.info(
+        f"Loading {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"
+    )
+
+    if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
+        use_safetensors = ".safetensors" in model_id_or_path
+        if use_safetensors:
+            logger.info("Loading model as safetensors")
+        else:
+            logger.info("Loading model as checkpoint")
+
+        try:
+            pipe = download_from_original_stable_diffusion_ckpt(
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+                load_safety_checker=False,
+            )
+        except Exception as e:  # pylint: disable=broad-except
+            logger.debug(f"Error: {e}")
+            pipe = download_from_original_stable_diffusion_ckpt(
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+            )
+            pipe.requires_safety_checker = False  # type: ignore
+            pipe.safety_checker = None  # type: ignore
+            pipe.feature_extractor = None  # type: ignore
+    else:
+        pipe = StableDiffusionPipeline.from_pretrained(
+            pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
+            torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+            use_auth_token=auth,
+            safety_checker=None,
+            requires_safety_checker=False,
+            feature_extractor=None,
+            low_cpu_mem_usage=True,
+        )
+        assert isinstance(pipe, StableDiffusionPipeline)
+
+    logger.debug(
+        f"Loaded {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"
+    )
+
+    if optimize:
+        optimize_model(
+            pipe=pipe,
+            device=device,
+            use_fp32=config.api.use_fp32,
+            is_for_aitemplate=is_for_aitemplate,
+        )
+    else:
+        pipe.to(device)
+
+    return pipe

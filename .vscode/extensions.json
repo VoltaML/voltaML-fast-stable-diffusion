@@ -1,0 +1,15 @@
+{
+	"recommendations": [
+		"ms-python.python",
+		"dbaeumer.vscode-eslint",
+		"github.copilot",
+		"ecmel.vscode-html-css",
+		"ms-python.isort",
+		"ms-vscode.vscode-typescript-next",
+		"esbenp.prettier-vscode",
+		"ms-python.vscode-pylance",
+		"vue.volar",
+		"christian-kohler.path-intellisense",
+		"rust-lang.rust-analyzer"
+	]
+}

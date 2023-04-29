@@ -4,6 +4,7 @@ from asyncio import AbstractEventLoop
 from typing import Coroutine, List, Optional
 
 from fastapi import WebSocket
+from psutil import NoSuchProcess
 
 from api.websockets.data import Data
 from core.config import config
@@ -32,33 +33,42 @@ class WebSocketManager:
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
 
-        from core.shared_dependent import cluster
+        try:
+            from gpustat.core import GPUStatCollection
+        except ImportError:
+            logger.warning("GPUStat failed to initialize - probably not an NVIDIA GPU")
+            return
 
         while True:
-            stats = await cluster.stats()
+            try:
+                stats = [i.entry for i in GPUStatCollection.new_query().gpus]
 
-            data = []
-            for stat in stats:
-                data.append(
-                    {
-                        "index": stat["index"],
-                        "uuid": stat["uuid"],
-                        "name": stat["name"],
-                        "temperature": stat["temperature.gpu"],
-                        "fan_speed": stat["fan.speed"],
-                        "utilization": stat["utilization.gpu"],
-                        "power_draw": stat["power.draw"],
-                        "power_limit": stat["enforced.power.limit"],
-                        "memory_used": stat["memory.used"],
-                        "memory_total": stat["memory.total"],
-                        "memory_usage": int(
-                            stat["memory.used"] / stat["memory.total"] * 100
-                        ),
-                    }
-                )
+                data = []
+                for stat in stats:
+                    data.append(
+                        {
+                            "index": stat["index"],
+                            "uuid": stat["uuid"],
+                            "name": stat["name"],
+                            "temperature": stat["temperature.gpu"],
+                            "fan_speed": stat["fan.speed"],
+                            "utilization": stat["utilization.gpu"],
+                            "power_draw": stat["power.draw"],
+                            "power_limit": stat["enforced.power.limit"],
+                            "memory_used": stat["memory.used"],
+                            "memory_total": stat["memory.total"],
+                            "memory_usage": int(
+                                stat["memory.used"] / stat["memory.total"] * 100
+                            ),
+                        }
+                    )
 
-            await self.broadcast(Data(data_type="cluster_stats", data=data))
-            await asyncio.sleep(config.api.websocket_perf_interval)
+                await self.broadcast(Data(data_type="cluster_stats", data=data))
+                await asyncio.sleep(config.api.websocket_perf_interval)
+
+            except NoSuchProcess:
+                logger.debug("HW Stat - No such process, sleeping...")
+                await asyncio.sleep(config.api.websocket_perf_interval)
 
     async def connect(self, websocket: WebSocket):
         "Accepts a new websocket connection and adds it to the list of active connections"

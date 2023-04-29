@@ -10,11 +10,24 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
+from fastapi_simple_cachecontrol.types import CacheControl
 from starlette import status
 from starlette.responses import JSONResponse
 
 from api import websocket_manager
-from api.routes import general, generate, hardware, models, outputs, static, test, ws
+from api.routes import (
+    general,
+    generate,
+    hardware,
+    models,
+    outputs,
+    settings,
+    static,
+    test,
+    ws,
+)
+from api.websockets.notification import Notification
 from core import shared
 
 logger = logging.getLogger(__name__)
@@ -42,6 +55,19 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
     "Output validation errors into debug log for debugging purposes"
 
     logger.debug(exc)
+
+    try:
+        why = str(exc).split(":")[1].strip()
+        await websocket_manager.broadcast(
+            data=Notification(
+                severity="error",
+                message=f"Validation error: {why}",
+                title="Validation Error",
+            )
+        )
+    except IndexError:
+        logger.debug("Unable to parse validation error, skipping the error broadcast")
+
     content = {
         "status_code": 10422,
         "message": f"{exc}".replace("\n", " ").replace("   ", " "),
@@ -69,7 +95,7 @@ async def startup_event():
     logger.info("Started WebSocketManager sync loop")
     asyncio.create_task(websocket_manager.perf_loop())
     logger.info("Started WebSocketManager performance monitoring loop")
-    logger.info("UI Avaliable at: http://localhost:5003/")
+    logger.info("UI Available at: http://localhost:5003/")
 
 
 @app.on_event("shutdown")
@@ -101,6 +127,7 @@ else:
     logger.info("No FastAPI Analytics key provided, skipping")
 
 # Mount routers
+## HTTP
 app.include_router(static.router)
 app.include_router(test.router, prefix="/api/test")
 app.include_router(generate.router, prefix="/api/generate")
@@ -108,11 +135,28 @@ app.include_router(hardware.router, prefix="/api/hardware")
 app.include_router(models.router, prefix="/api/models")
 app.include_router(outputs.router, prefix="/api/output")
 app.include_router(general.router, prefix="/api/general")
+app.include_router(settings.router, prefix="/api/settings")
+
+## WebSockets
 app.include_router(ws.router, prefix="/api/websockets")
 
-# Mount static files (css, js, images, etc.)
-app.mount("/assets", StaticFiles(directory="frontend/dist/assets"), name="assets")
-
+# Mount outputs folder
 output_folder = Path("data/outputs")
 output_folder.mkdir(exist_ok=True)
 app.mount("/data/outputs", StaticFiles(directory="data/outputs"), name="outputs")
+
+# Mount static files (css, js, images, etc.)
+static_app = FastAPI()
+static_app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+static_app.add_middleware(
+    CacheControlMiddleware, cache_control=CacheControl("no-cache")
+)
+static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
+app.mount("/assets", static_app)

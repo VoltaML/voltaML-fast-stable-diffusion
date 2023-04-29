@@ -2,9 +2,11 @@
 __pycache__/
 *.py[cod]
 *$py.class
+.ruff_cache
 
 # Distribution / packaging
 .Python
+onnx-script/
 build/
 develop-eggs/
 /dist
@@ -78,6 +80,11 @@ docs/.vitepress/dist
 external
 /tmp
 /data
+/data/settings.json
+/AITemplate
 
 # Ignore for black
 core/submodules
+
+# Manager
+manager/target

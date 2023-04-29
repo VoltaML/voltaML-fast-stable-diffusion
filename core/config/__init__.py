@@ -1,8 +1,25 @@
-import os
+from pathlib import Path
 
-from .config import Configuration, Img2ImgConfig, Txt2ImgConfig
+from diffusers.utils.constants import DIFFUSERS_CACHE
 
-config = Configuration()
-config.cache_dir = os.environ.get("DIFFUSERS_CACHE", config.cache_dir)
+from .config import (
+    Configuration,
+    Img2ImgConfig,
+    Txt2ImgConfig,
+    load_config,
+    save_config,
+)
 
-__all__ = ["config", "Img2ImgConfig", "Txt2ImgConfig", "Configuration"]
+config = load_config()
+
+# Create cache directory if it doesn't exist
+Path(DIFFUSERS_CACHE).mkdir(parents=True, exist_ok=True)
+
+__all__ = [
+    "config",
+    "Img2ImgConfig",
+    "Txt2ImgConfig",
+    "Configuration",
+    "save_config",
+    "load_config",
+]

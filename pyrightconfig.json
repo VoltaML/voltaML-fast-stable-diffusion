@@ -4,6 +4,8 @@
         "venv/",
         "core/submodules/",
         "typings/",
-        "core/tensorrt"
-    ]
+        "core/tensorrt",
+        "AITemplate"
+    ],
+    "reportMissingImports": "none"
 }

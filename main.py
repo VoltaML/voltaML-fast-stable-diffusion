@@ -4,6 +4,7 @@ import shlex
 import subprocess
 import sys
 import threading
+import warnings
 from argparse import ArgumentParser
 from pathlib import Path
 
@@ -16,12 +17,14 @@ from core.install_requirements import (  # pylint: disable=wrong-import-position
     version_check,
 )
 
-app_args = sys.argv[1:]
+# Handle arguments passed to the script
+app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]
 extra_args = os.getenv("EXTRA_ARGS")
 
 if extra_args:
     app_args.extend(shlex.split(extra_args))
 
+# Parse arguments
 parser = ArgumentParser(
     prog="VoltaML Fast Stable Diffusion",
     epilog="""
@@ -51,41 +54,45 @@ parser.add_argument(
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
-parser.add_argument("--low-vram", action="store_true", help="Use low VRAM mode")
 parser.add_argument(
     "--bot", action="store_true", help="Run in tandem with the Discord bot"
+)
+parser.add_argument(
+    "--enable-r2",
+    action="store_true",
+    help="Enable Cloudflare R2 bucket upload support",
+)
+
+parser.add_argument(
+    "--install-only",
+    action="store_true",
+    help="Only install requirements and exit",
 )
 args = parser.parse_args(args=app_args)
 
 logging.basicConfig(level=args.log_level)
 logger = logging.getLogger(__name__)
 
-if not os.getenv("HUGGINGFACE_TOKEN"):
-    logger.error(
-        "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
-    )
-    sys.exit(1)
-
-if args.bot:
-    if not os.getenv("DISCORD_BOT_TOKEN"):
-        logger.error(
-            "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
-        )
-        sys.exit(1)
-
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
+logging.getLogger("PIL.Image").setLevel(logging.INFO)
 
 # Create necessary folders
 Path("data/aitemplate").mkdir(exist_ok=True, parents=True)
+Path("data/onnx").mkdir(exist_ok=True)
 Path("data/models").mkdir(exist_ok=True)
 Path("data/outputs").mkdir(exist_ok=True)
-Path("engine").mkdir(exist_ok=True)
+Path("data/lora").mkdir(exist_ok=True)
+Path("data/tensorrt").mkdir(exist_ok=True)
+
+# Suppress some annoying warnings
+warnings.filterwarnings("ignore", category=UserWarning)
 
 
 def is_root():
     "Check if user has elevated privileges"
+
     try:
         is_admin = os.getuid() == 0  # type: ignore
     except AttributeError:
@@ -96,7 +103,7 @@ def is_root():
     return is_admin
 
 
-def main(testing: bool = False):
+def main(exit_after_init: bool = False):
     "Run the API"
 
     # Attach ngrok if requested
@@ -128,8 +135,10 @@ def main(testing: bool = False):
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
 
-    if not testing:
+    if not exit_after_init:
         uvicorn_run(api_app, host=host, port=5003)
+    else:
+        logger.warning("Exit after initialization requested, exiting now")
 
 
 def checks():
@@ -165,6 +174,35 @@ def checks():
             ]
         )
 
+    if not is_installed("dotenv"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "python-dotenv",
+            ]
+        )
+
+    import dotenv
+
+    dotenv.load_dotenv()
+
+    # Check tokens
+    if not os.getenv("HUGGINGFACE_TOKEN") and not args.install_only:
+        logger.error(
+            "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
+        )
+        sys.exit(1)
+
+    if args.bot and not args.install_only:
+        if not os.getenv("DISCORD_BOT_TOKEN"):
+            logger.error(
+                "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
+            )
+            sys.exit(1)
+
     # Inject coloredlogs
     import coloredlogs
 
@@ -190,23 +228,37 @@ def checks():
     # Save the token to config
     from core import shared
 
-    shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
+    if not args.install_only:
+        shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
 
     # Create the diffusers cache folder
     from diffusers.utils import DIFFUSERS_CACHE
 
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
 
-    # Config
     from core.config import config
 
-    config.low_vram = True if args.low_vram else bool(os.environ.get("LOW_VRAM", False))
-    if config.low_vram:
-        logger.warning("Using low VRAM mode")
+    logger.info(f"Device: {config.api.device}")
+    logger.info(f"Precision: {'FP32' if config.api.use_fp32 else 'FP16'}")
+
+    # Initialize R2 bucket if needed
+    if args.enable_r2:
+        from core import shared_dependent
+        from core.extra.cloudflare_r2 import R2Bucket
+
+        endpoint = os.environ["R2_ENDPOINT"]
+        bucket_name = os.environ["R2_BUCKET_NAME"]
+
+        shared_dependent.r2 = R2Bucket(endpoint=endpoint, bucket_name=bucket_name)
 
 
 if __name__ == "__main__":
     print("Starting the API...")
 
     checks()
-    main()
+
+    try:
+        main(exit_after_init=args.install_only)
+    except KeyboardInterrupt:
+        logger.info("Received keyboard interrupt, exiting...")
+        sys.exit(0)

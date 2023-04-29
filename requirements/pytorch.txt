@@ -2,9 +2,9 @@
 colored
 coloredlogs
 dataclasses-json
-diffusers>=0.14.0
+diffusers>=0.15.0
 scipy
-transformers
+transformers>=4.28.1
 accelerate
 ftfy
 tqdm
@@ -13,6 +13,10 @@ pynvml
 k-diffusion
 safetensors
 pytorch-lightning
-gpustat
+gpustat==1.0.0
 opencv-contrib-python-headless
-controlnet_aux
+controlnet-aux>=0.0.2
+realesrgan
+timm
+boto3
+tomesd==0.1.2

@@ -4,6 +4,7 @@ from diffusers import (
     DDIMScheduler,
     DDPMScheduler,
     DEISMultistepScheduler,
+    DiffusionPipeline,
     DPMSolverMultistepScheduler,
     DPMSolverSinglestepScheduler,
     EulerAncestralDiscreteScheduler,
@@ -40,6 +41,7 @@ def change_scheduler(
     if not isinstance(
         model,
         (
+            DiffusionPipeline,
             StableDiffusionDepth2ImgPipeline,
             StableDiffusionImg2ImgPipeline,
             StableDiffusionInpaintPipeline,

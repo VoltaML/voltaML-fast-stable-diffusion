@@ -1,4 +1,5 @@
-import { ControlNetType } from "./core/interfaces";
+import { ControlNetType, type ModelEntry } from "./core/interfaces";
+import { serverUrl } from "./env";
 
 export enum Sampler {
   DDIM = 1,
@@ -18,150 +19,280 @@ export enum Sampler {
 
 export interface SettingsInterface {
   $schema: string;
-  backend: "PyTorch" | "TensorRT" | "AITemplate";
-  model: string;
+  backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
+  model: ModelEntry | null;
+  extra: {
+    highres: {
+      scale: number;
+      latent_scale_mode:
+        | "nearest"
+        | "linear"
+        | "bilinear"
+        | "bicubic"
+        | "nearest-exact";
+      strength: number;
+      steps: 50;
+      antialiased: boolean;
+    };
+  };
+  aitDim: {
+    width: number | undefined;
+    height: number | undefined;
+    batch_size: number | undefined;
+  };
   txt2img: {
+    prompt: string;
+    negative_prompt: string;
     width: number;
     height: number;
     seed: number;
-    cfgScale: number;
+    cfg_scale: number;
     sampler: Sampler;
-    prompt: string;
-    negativePrompt: string;
     steps: number;
-    batchCount: number;
-    batchSize: number;
+    batch_count: number;
+    batch_size: number;
   };
   img2img: {
+    prompt: string;
+    negative_prompt: string;
     width: number;
     height: number;
     seed: number;
-    cfgScale: number;
+    cfg_scale: number;
     sampler: Sampler;
-    prompt: string;
-    negativePrompt: string;
     steps: number;
-    batchCount: number;
-    batchSize: number;
-    resizeMethod: number;
-    denoisingStrength: number;
+    batch_count: number;
+    batch_size: number;
+    denoising_strength: number;
     image: string;
-  };
-  imageVariations: {
-    image: string;
-    steps: number;
-    cfgScale: number;
-    seed: number;
-    batchCount: number;
-    batchSize: number;
-    sampler: Sampler;
   };
   inpainting: {
     prompt: string;
-    negativePrompt: string;
-    image: string;
-    maskImage: string;
+    negative_prompt: string;
     width: number;
     height: number;
-    steps: number;
-    cfgScale: number;
     seed: number;
-    batchCount: number;
-    batchSize: number;
+    cfg_scale: number;
+    steps: number;
+    batch_count: number;
+    batch_size: number;
     sampler: Sampler;
+    image: string;
+    mask_image: string;
   };
   controlnet: {
     prompt: string;
-    image: string;
-    sampler: Sampler;
-    controlnet: ControlNetType;
-    negativePrompt: string;
+    negative_prompt: string;
     width: number;
     height: number;
-    steps: number;
-    cfgScale: number;
     seed: number;
-    batchSize: number;
-    batchCount: number;
-    controlnetConditioningScale: number;
-    detectionResolution: number;
+    cfg_scale: number;
+    steps: number;
+    batch_count: number;
+    batch_size: number;
+    sampler: Sampler;
+    controlnet: ControlNetType;
+    controlnet_conditioning_scale: number;
+    detection_resolution: number;
+    image: string;
+  };
+  sd_upscale: {
+    prompt: string;
+    negative_prompt: string;
+    seed: number;
+    cfg_scale: number;
+    steps: number;
+    batch_count: number;
+    batch_size: number;
+    sampler: Sampler;
+    tile_size: number;
+    tile_border: number;
+    original_image_slice: number;
+    noise_level: number;
+    image: string;
+  };
+  realesrgan: {
+    image: string;
+    scale_factor: number;
+    model: string;
+  };
+  tagger: {
+    image: string;
+    model: string;
+    treshold: number;
+  };
+  api: {
+    websocket_sync_interval: number;
+    websocket_perf_interval: number;
+    attention_processor: "xformers" | "spda";
+    attention_slicing: "auto" | number | "disabled";
+    channels_last: boolean;
+    vae_slicing: boolean;
+    trace_model: boolean;
+    offload: "module" | "model" | "disabled";
+    image_preview_delay: number;
+    device_id: number;
+    device_type: "cpu" | "cuda" | "mps" | "directml";
+    use_fp32: boolean;
+    use_tomesd: boolean;
+    tomesd_ratio: number;
+    tomesd_downsample_layers: 1 | 2 | 4 | 8;
+  };
+  aitemplate: {
+    num_threads: number;
+  };
+  bot: {
+    default_scheduler: Sampler;
+    verbose: boolean;
+    use_default_negative_prompt: boolean;
   };
 }
 
-export const defaultNegativePrompt =
-  "(((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing, broken legs censor, censored, censor_bar, multiple breasts, (mutated hands and fingers:1.5), (long body :1.3), (mutation, poorly drawn :1.2), black-white, bad anatomy, liquid body, liquidtongue, disfigured, malformed, mutated, anatomical nonsense, text font ui, error, malformed hands, long neck, blurred, lowers, low res, bad anatomy, bad proportions, bad shadow, uncoordinated body, unnatural body, fused breasts, bad breasts, huge breasts, poorly drawn breasts, extra breasts, liquid breasts, heavy breasts, missingbreasts, huge haunch, huge thighs, huge calf, bad hands, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, fusedears, bad ears, poorly drawn ears, extra ears, liquid ears, heavy ears, missing ears, old photo, low res, black and white, black and white filter, colorless";
-
-const defaultSettings: SettingsInterface = {
-  $schema: "./schema/ui_settings.json",
+export const defaultSettings: SettingsInterface = {
+  $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
-  model: "none:PyTorch",
+  model: null,
+  extra: {
+    highres: {
+      scale: 2,
+      latent_scale_mode: "bilinear",
+      strength: 0.7,
+      steps: 50,
+      antialiased: false,
+    },
+  },
+  aitDim: {
+    width: undefined,
+    height: undefined,
+    batch_size: undefined,
+  },
   txt2img: {
     width: 512,
     height: 512,
     seed: -1,
-    cfgScale: 7,
-    sampler: Sampler.EulerAncestralDiscrete,
+    cfg_scale: 7,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
-    batchCount: 1,
-    batchSize: 1,
-    negativePrompt: defaultNegativePrompt,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
   },
   img2img: {
     width: 512,
     height: 512,
     seed: -1,
-    cfgScale: 7,
-    sampler: Sampler.EulerAncestralDiscrete,
+    cfg_scale: 7,
+    sampler: Sampler.DPMSolverMultistep,
     prompt: "",
     steps: 25,
-    batchCount: 1,
-    batchSize: 1,
-    negativePrompt: defaultNegativePrompt,
-    denoisingStrength: 0.6,
-    resizeMethod: 0,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    denoising_strength: 0.6,
     image: "",
-  },
-  imageVariations: {
-    batchCount: 1,
-    batchSize: 1,
-    cfgScale: 7,
-    image: "",
-    seed: -1,
-    sampler: Sampler.EulerAncestralDiscrete,
-    steps: 25,
   },
   inpainting: {
     prompt: "",
-    negativePrompt: defaultNegativePrompt,
+    negative_prompt: "",
     image: "",
-    maskImage: "",
+    mask_image: "",
     width: 512,
     height: 512,
     steps: 25,
-    cfgScale: 7,
+    cfg_scale: 7,
     seed: -1,
-    batchCount: 1,
-    batchSize: 1,
-    sampler: Sampler.EulerAncestralDiscrete,
+    batch_count: 1,
+    batch_size: 1,
+    sampler: Sampler.DPMSolverMultistep,
   },
   controlnet: {
     prompt: "",
     image: "",
-    sampler: Sampler.EulerAncestralDiscrete,
+    sampler: Sampler.DPMSolverMultistep,
     controlnet: ControlNetType.CANNY,
-    negativePrompt: defaultNegativePrompt,
+    negative_prompt: "",
     width: 512,
     height: 512,
     steps: 25,
-    cfgScale: 7,
+    cfg_scale: 7,
     seed: -1,
-    batchSize: 1,
-    batchCount: 1,
-    controlnetConditioningScale: 1,
-    detectionResolution: 512,
+    batch_size: 1,
+    batch_count: 1,
+    controlnet_conditioning_scale: 1,
+    detection_resolution: 512,
+  },
+  sd_upscale: {
+    prompt: "",
+    negative_prompt: "",
+    seed: -1,
+    cfg_scale: 7,
+    steps: 75,
+    batch_count: 1,
+    batch_size: 1,
+    sampler: Sampler.DPMSolverMultistep,
+    tile_size: 128,
+    tile_border: 32,
+    original_image_slice: 32,
+    noise_level: 40,
+    image: "",
+  },
+  realesrgan: {
+    image: "",
+    scale_factor: 4,
+    model: "RealESRGAN_x4plus_anime_6B",
+  },
+  tagger: {
+    image: "",
+    model: "deepdanbooru",
+    treshold: 0.5,
+  },
+  api: {
+    websocket_sync_interval: 0.02,
+    websocket_perf_interval: 1,
+    attention_processor: "xformers",
+    attention_slicing: "disabled",
+    channels_last: true,
+    vae_slicing: false,
+    trace_model: false,
+    offload: "disabled",
+    image_preview_delay: 2.0,
+    device_id: 0,
+    device_type: "cuda",
+    use_fp32: false,
+    use_tomesd: true,
+    tomesd_ratio: 0.4,
+    tomesd_downsample_layers: 1,
+  },
+  aitemplate: {
+    num_threads: 8,
+  },
+  bot: {
+    default_scheduler: Sampler.DPMSolverMultistep,
+    verbose: false,
+    use_default_negative_prompt: true,
   },
 };
+
+let rSettings: SettingsInterface = JSON.parse(JSON.stringify(defaultSettings));
+
+try {
+  const req = new XMLHttpRequest();
+  req.open("GET", `${serverUrl}/api/settings/`, false);
+  req.send();
+
+  // Extra is CatchAll property, so we need to keep ours and merge the rest
+  const extra = rSettings.extra;
+  // Merge the recieved settings with the default settings
+  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
+  // Overwrite the extra property as it is store for frontend only
+  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
+} catch (e) {
+  console.error(e);
+}
+
+console.log("Settings:", rSettings);
+export const recievedSettings = rSettings;
 
 export class Settings {
   public settings: SettingsInterface;

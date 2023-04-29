@@ -1,0 +1,16 @@
+[package]
+name = "voltaml-manager"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+indicatif = "0.17.2"
+dialoguer = "0.10.3"
+shlex = "1.1.0"
+console = "0.15.5"
+prettytable-rs = "0.10.0"
+regex = "1.7.3"
+shellexpand = "3.1.0"
+git2 = { version = "0.17.0", features = ["vendored-openssl"] }

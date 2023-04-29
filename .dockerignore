@@ -15,15 +15,15 @@ pyproject.toml
 /traced_unet
 
 # Documentation
-docs/
+/docs
 yarn.lock
-node_modules/
+/node_modules
 
 # Frontend
-!frontend/dist/
+frontend/dist/
 
 # Static files
-static/
+/static
 
 # Python
 /venv
@@ -35,5 +35,14 @@ docker-compose.yml
 # Jupyter
 *.ipynb
 
-# TensorRT
-/lib/trt/lib/*
+# Installer
+/installer
+
+# Other
+**/**.pyc
+.pytest_cache
+.coverage
+/.ruff_cache
+
+# Manager
+/manager

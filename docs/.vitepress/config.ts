@@ -1,8 +1,8 @@
 import { defineConfig } from "vitepress";
 
 export default defineConfig({
-	title: "VoltaML documentation",
-	description: "VoltaML fast Stable Diffusion",
+	title: "VoltaML",
+	description: "Easy to use, yet feature-rich WebUI",
 	lang: "en-US",
 	appearance: "dark",
 	lastUpdated: true,
@@ -14,6 +14,13 @@ export default defineConfig({
 				rel: "shortcut icon",
 				type: "image/x-icon",
 				href: "/voltaML-fast-stable-diffusion/favicon.ico",
+			},
+		],
+		[
+			"meta",
+			{
+				property: "og:image",
+				content: "/voltaML-fast-stable-diffusion/volta-og-image.webp",
 			},
 		],
 	],
@@ -40,14 +47,18 @@ export default defineConfig({
 		sidebar: [
 			{
 				text: "Introduction",
-				items: [{ text: "Introduction", link: "/introduction" }],
+				items: [
+					{ text: "Introduction", link: "/getting-started/introduction" },
+					{ text: "Features", link: "/getting-started/features" },
+					{ text: "First image", link: "/getting-started/first-image" },
+				],
 				collapsed: false,
 			},
 			{
 				text: "Installation",
 				items: [
+					{ text: "Local", link: "/installation/local" },
 					{ text: "Docker", link: "/installation/docker" },
-					{ text: "Local", link: "/developers/pytorch" },
 					{ text: "Old", link: "/installation/old" },
 				],
 				collapsed: false,
@@ -55,6 +66,7 @@ export default defineConfig({
 			{
 				text: "WebUI",
 				items: [
+					{ text: "Models", link: "/webui/models" },
 					{ text: "Text to Image", link: "/webui/txt2img" },
 					{ text: "Image to Image", link: "/webui/img2img" },
 					{ text: "Extra", link: "/webui/extra" },
@@ -78,6 +90,18 @@ export default defineConfig({
 				collapsed: false,
 			},
 			{
+				text: "Experimental",
+				items: [
+					{ text: "xFormers", link: "/experimental/xformers" },
+					{ text: "Settings", link: "/experimental/settings" },
+					{
+						text: "Safetensors/CKPT support",
+						link: "/experimental/checkpoints",
+					},
+				],
+				collapsed: false,
+			},
+			{
 				text: "API",
 				items: [{ text: "API", link: "/api/" }],
 				collapsed: false,
@@ -93,6 +117,10 @@ export default defineConfig({
 					{
 						text: "Documentation",
 						link: "/developers/documentation",
+					},
+					{
+						text: "Testing",
+						link: "/developers/testing",
 					},
 				],
 				collapsed: false,

@@ -24,7 +24,9 @@ def txt2img() -> List[Dict[str, Any]]:
 
     data: List[Dict[str, Any]] = []
     for i in path.rglob("**/*.png"):
-        data.append({"path": i.as_posix(), "time": os.path.getmtime(i)})
+        data.append(
+            {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
+        )
 
     return data
 
@@ -40,7 +42,9 @@ def img2img() -> List[Dict[str, Any]]:
 
     data: List[Dict[str, Any]] = []
     for i in path.rglob("**/*.png"):
-        data.append({"path": i.as_posix(), "time": os.path.getmtime(i)})
+        data.append(
+            {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
+        )
 
     return data
 
@@ -56,7 +60,9 @@ def extra() -> List[Dict[str, Any]]:
 
     data: List[Dict[str, Any]] = []
     for i in path.rglob("**/*.png"):
-        data.append({"path": i.as_posix(), "time": os.path.getmtime(i)})
+        data.append(
+            {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
+        )
 
     return data
 
@@ -76,3 +82,22 @@ async def image_data(filename: str) -> Dict[str, str]:
         raise HTTPException(status_code=404, detail="File not found")
 
     return image_meta_from_file(path)
+
+
+@router.delete("/delete")
+async def delete_image(filename: str) -> Dict[str, str]:
+    "Delete a generated image (does not purge the directory)"
+
+    path = Path(filename)
+    path_str = path.as_posix()
+
+    # CodeQl: Path Traversal fix
+    if not path_str.startswith("data/outputs"):
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="File not found")
+
+    path.unlink()
+
+    return {"message": "File deleted"}

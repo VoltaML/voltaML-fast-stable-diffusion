@@ -1,6 +1,6 @@
 import logging
+import math
 import multiprocessing
-import os
 import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Optional, Union
@@ -12,27 +12,35 @@ from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.convert.convert import load_pipeline_from_original_stable_diffusion_ckpt
-from core.errors import DimensionError
+from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
+from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
+from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
+from core.inference.pytorch_upscale import PyTorchSDUpscaler
+from core.inference.real_esrgan import RealESRGAN
+from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
-    BuildRequest,
     ControlNetQueueEntry,
-    ImageVariationsQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
+    InterrogatorQueueEntry,
     Job,
+    ONNXBuildRequest,
+    RealESRGANQueueEntry,
+    SDUpscaleQueueEntry,
+    TRTBuildRequest,
     Txt2ImgQueueEntry,
 )
-from core.utils import run_in_thread_async
+from core.utils import image_grid, run_in_thread_async
 
 if TYPE_CHECKING:
-    from core.tensorrt.volta_accelerate import TRTModel
+    from core.inference.onnx_sd import OnnxStableDiffusion
+    from core.inference.tensorrt import TensorRTModel
 
 logger = logging.getLogger(__name__)
 
@@ -44,13 +52,16 @@ class GPU:
         self.gpu_id = torch_gpu_id
         self.queue: Queue = Queue()
         self.loaded_models: Dict[
-            str, Union["TRTModel", PyTorchStableDiffusion, "AITemplateStableDiffusion"]
+            str,
+            Union[
+                "TensorRTModel",
+                PyTorchStableDiffusion,
+                "AITemplateStableDiffusion",
+                "RealESRGAN",
+                PyTorchSDUpscaler,
+                "OnnxStableDiffusion",
+            ],
         ] = {}
-
-    @property
-    def cuda_id(self) -> str:
-        "Returns the CUDA ID of the GPU."
-        return f"cuda:{self.gpu_id}"
 
     def vram_free(self) -> float:
         "Returns the amount of free VRAM on the GPU in MB."
@@ -69,19 +80,47 @@ class GPU:
             Txt2ImgQueueEntry,
             Img2ImgQueueEntry,
             InpaintQueueEntry,
-            ImageVariationsQueueEntry,
             ControlNetQueueEntry,
+            RealESRGANQueueEntry,
+            SDUpscaleQueueEntry,
         ],
     ):
         "Generate images from the queue"
 
-        def generate_thread_call(job: Job) -> List[Image.Image]:
+        def generate_thread_call(job: Job) -> Union[List[Image.Image], List[str]]:
             model: Union[
-                "TRTModel", PyTorchStableDiffusion, AITemplateStableDiffusion
+                "TensorRTModel",
+                PyTorchStableDiffusion,
+                AITemplateStableDiffusion,
+                RealESRGAN,
+                PyTorchSDUpscaler,
+                "OnnxStableDiffusion",
             ] = self.loaded_models[job.model]
 
-            shared.current_steps = job.data.steps * job.data.batch_count
-            shared.current_done_steps = 0
+            if job.flags:
+                logger.debug(f"Job flags: {job.flags}")
+
+            if not isinstance(job, RealESRGANQueueEntry):
+                steps = job.data.steps
+
+                strength: float = getattr(job.data, "strength", 1.0)
+                steps = math.floor(steps * strength)
+
+                extra_steps: int = 0
+                if "highres_fix" in job.flags:
+                    flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
+                    extra_steps = math.floor(flag.steps * flag.strength)
+
+                shared.current_steps = steps * job.data.batch_count + extra_steps
+                shared.current_done_steps = 0
+
+            if not isinstance(job, ControlNetQueueEntry):
+                from core import shared_dependent
+
+                if shared_dependent.cached_controlnet_preprocessor is not None:
+                    # Wipe cached controlnet preprocessor
+                    shared_dependent.cached_controlnet_preprocessor = None
+                    self.memory_cleanup()
 
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
@@ -93,52 +132,132 @@ class GPU:
                 images: List[Image.Image] = model.generate(job)
                 self.memory_cleanup()
                 return images
-            else:
-                logger.debug("Generating with TensorRT")
-                images: List[Image.Image]
-
-                _, images = model.infer(
-                    [job.data.prompt],
-                    [job.data.negative_prompt],
-                    job.data.height,
-                    job.data.width,
-                    guidance_scale=job.data.guidance_scale,
-                    verbose=False,
-                    seed=job.data.seed,
-                    output_dir="output",
-                    num_of_infer_steps=job.data.steps,
-                    scheduler=job.data.scheduler,
-                )
+            elif isinstance(model, PyTorchSDUpscaler):
+                logger.debug("Generating with PyTorchSDUpscaler")
+                images: List[Image.Image] = model.generate(job)
                 self.memory_cleanup()
                 return images
+            elif isinstance(model, RealESRGAN):
+                logger.debug("Generating with RealESRGAN")
+                images: List[Image.Image] = model.generate(job)
+                self.memory_cleanup()
+                return images
+            else:
+                assert not isinstance(job, RealESRGANQueueEntry)
 
-        # Check width and height passed by the user
-        if not isinstance(job, ImageVariationsQueueEntry):
-            if job.data.width % 8 != 0 or job.data.height % 8 != 0:
-                raise DimensionError("Width and height must be divisible by 8")
+                from core.inference.onnx_sd import OnnxStableDiffusion
 
-        # Wait for turn
-        await self.queue.wait_for_turn(job.data.id)
+                if isinstance(model, OnnxStableDiffusion):
+                    logger.debug("Generating with ONNX")
+                    images: List[Image.Image] = model.generate(job)
+                    self.memory_cleanup()
+                    return images
 
-        start_time = time.time()
+                raise NotImplementedError("TensorRT is not supported at the moment")
+
+                # logger.debug("Generating with TensorRT")
+                # images: List[Image.Image]
+
+                # _, images = model.infer(
+                #     [job.data.prompt],
+                #     [job.data.negative_prompt],
+                #     job.data.height,
+                #     job.data.width,
+                #     guidance_scale=job.data.guidance_scale,
+                #     verbose=False,
+                #     seed=job.data.seed,
+                #     output_dir="output",
+                #     num_of_infer_steps=job.data.steps,
+                #     scheduler=job.data.scheduler,
+                # )
+                # self.memory_cleanup()
+                # return images
 
         try:
-            images: Optional[List[Image.Image]]
-            images = await run_in_thread_async(func=generate_thread_call, args=(job,))
+            # Check width and height passed by the user
+            if not isinstance(
+                job,
+                (RealESRGANQueueEntry, SDUpscaleQueueEntry),
+            ):
+                if job.data.width % 8 != 0 or job.data.height % 8 != 0:
+                    raise DimensionError("Width and height must be divisible by 8")
 
-            assert images is not None
+            # Wait for turn in the queue
+            await self.queue.wait_for_turn(job.data.id)
 
-            if job.save_image:
-                save_images(images, job)
-        except Exception as err:  # pylint: disable=broad-except
+            start_time = time.time()
+
+            # Generate images
+            try:
+                generated_images: Optional[List[Image.Image]]
+                generated_images = await run_in_thread_async(
+                    func=generate_thread_call, args=(job,)
+                )
+
+                assert generated_images is not None
+
+                images = generated_images
+
+                # Save Grid
+                grid = image_grid(images)
+                if job.save_grid and len(images) > 1:
+                    images = [grid, *images]
+
+                # Save Images
+                if job.save_image:
+                    out = save_images(generated_images, job)
+                    if out:
+                        images = out
+
+            except Exception as err:  # pylint: disable=broad-except
+                self.memory_cleanup()
+                self.queue.mark_finished()
+                raise err
+
+            deltatime = time.time() - start_time
+
+            # Mark job as finished, so the next job can start
+            self.memory_cleanup()
             self.queue.mark_finished()
-            raise err
 
-        deltatime = time.time() - start_time
+            # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
+            if isinstance(images[0], Image.Image) and len(images) > 1:
+                images = [grid, *images]
 
-        self.queue.mark_finished()
+            return (images, deltatime)
+        except InferenceInterruptedError:
+            await websocket_manager.broadcast(
+                Notification(
+                    "warning",
+                    "Inference interrupted",
+                    "The inference was forcefully interrupted",
+                )
+            )
+            return ([], 0.0)
 
-        return (images, deltatime)
+        except ValueError as err:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not loaded",
+                    "The model you are trying to use is not loaded, please load it first",
+                )
+            )
+
+            logger.debug("Model not loaded on any GPU. Raising error")
+            logger.debug(err)
+            raise ModelNotLoadedError("Model not loaded on any GPU") from err
+
+        except Exception as e:  # pylint: disable=broad-except
+            await websocket_manager.broadcast(
+                Notification(
+                    "error",
+                    "Inference error",
+                    f"An error occurred: {type(e).__name__} - {e}",
+                )
+            )
+
+            raise e
 
     async def load_model(
         self,
@@ -146,6 +265,17 @@ class GPU:
         backend: InferenceBackend,
     ):
         "Load a model into memory"
+
+        if model in self.loaded_models:
+            logger.debug(f"{model} is already loaded")
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "info",
+                    "Model already loaded",
+                    f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchStableDiffusion) else 'TensorRT'} backend",
+                )
+            )
+            return
 
         logger.debug(f"Loading {model} with {backend} backend")
 
@@ -177,31 +307,11 @@ class GPU:
                     )
                 )
 
-                from core.tensorrt.volta_accelerate import TRTModel
+                from core.inference.tensorrt import TensorRTModel
 
-                trt_model = TRTModel(
-                    model_path=model,
-                    denoising_steps=25,
-                    denoising_fp16=True,
-                    hf_token=os.environ["HUGGINGFACE_TOKEN"],
-                    verbose=False,
-                    nvtx_profile=False,
-                    max_batch_size=9,
+                trt_model = TensorRTModel(
+                    model_id=model,
                 )
-                logger.debug("Loading engines...")
-                trt_model.loadEngines(
-                    engine_dir="engine/" + model,
-                    onnx_dir="onnx",
-                    onnx_opset=16,
-                    opt_batch_size=1,
-                    opt_image_height=512,
-                    opt_image_width=512,
-                    enable_preview=True,
-                    static_batch=True,
-                    static_shape=True,
-                )
-                logger.debug("Loading modules")
-                trt_model.loadModules()
                 self.loaded_models[model] = trt_model
                 logger.debug("Loading done")
 
@@ -218,10 +328,27 @@ class GPU:
 
                 pt_model = AITemplateStableDiffusion(
                     model_id=model,
-                    device=self.cuda_id,
+                    device=config.api.device,
                 )
                 self.loaded_models[model] = pt_model
+            elif backend == "ONNX":
+                logger.debug("Selecting ONNX")
 
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "info",
+                        "ONNX",
+                        f"Loading {model} into memory, this may take a while",
+                    )
+                )
+
+                from core.inference.onnx_sd import OnnxStableDiffusion
+
+                pt_model = OnnxStableDiffusion(
+                    model_id=model,
+                    use_fp32=config.api.use_fp32,
+                )
+                self.loaded_models[model] = pt_model
             else:
                 logger.debug("Selecting PyTorch")
 
@@ -233,10 +360,24 @@ class GPU:
                     )
                 )
 
-                pt_model = PyTorchStableDiffusion(
-                    model_id=model,
-                    device=self.cuda_id,
-                )
+                if model in [
+                    "RealESRGAN_x4plus",
+                    "RealESRNet_x4plus",
+                    "RealESRGAN_x4plus_anime_6B",
+                    "RealESRGAN_x2plus",
+                    "RealESR-general-x4v3",
+                ]:
+                    pt_model = RealESRGAN(
+                        model_name=model,
+                    )
+                elif model in ["stabilityai/stable-diffusion-x4-upscaler"]:
+                    pt_model = PyTorchSDUpscaler()
+
+                else:
+                    pt_model = PyTorchStableDiffusion(
+                        model_id=model,
+                        device=config.api.device,
+                    )
                 self.loaded_models[model] = pt_model
 
             logger.info(f"Finished loading in {time.time() - start_time:.2f}s")
@@ -298,66 +439,12 @@ class GPU:
 
         self.memory_cleanup()
 
-    async def convert_from_checkpoint(self, checkpoint: str, is_sd2: bool):
-        "Convert a checkpoint to a proper model structure that can be loaded"
-
-        from_safetensors = ".safetensors" in checkpoint
-
-        def convert_from_ckpt_thread_call(**kwargs):
-            save_path = kwargs.pop("dump_path")
-            pipe = load_pipeline_from_original_stable_diffusion_ckpt(**kwargs)
-            pipe.save_pretrained(save_path, safe_serialization=True)
-
-        await run_in_thread_async(
-            func=convert_from_ckpt_thread_call,
-            kwarkgs={
-                "checkpoint_path": checkpoint,
-                "device": self.cuda_id,
-                "extract_ema": True,
-                "from_safetensors": from_safetensors,
-                "original_config_file": "v1-inference.yaml",
-                "upcast_attention": is_sd2,
-                "image_size": 768 if is_sd2 else 512,
-                "dump_path": f"converted/{Path(checkpoint).name}",
-            },
-        )
-
-    async def accelerate(self, model: str):
-        "Convert a model to a TensorRT model"
-
-        def trt_accelerate_thread_call():
-            from core.tensorrt.volta_accelerate import TRTModel
-
-            trt_model = TRTModel(
-                model_path=model,
-                denoising_steps=25,
-                denoising_fp16=True,
-                hf_token=os.environ["HUGGINGFACE_TOKEN"],
-                verbose=False,
-                nvtx_profile=False,
-                max_batch_size=9,
-            )
-
-            trt_model.loadEngines(
-                engine_dir="engine/" + model,
-                onnx_dir="onnx",
-                onnx_opset=16,
-                opt_batch_size=1,
-                opt_image_height=512,
-                opt_image_width=512,
-                force_build=True,
-                static_batch=True,
-                static_shape=True,
-            )
-            trt_model.teardown()
-            del trt_model
-
-        await run_in_thread_async(func=trt_accelerate_thread_call)
-
-    async def build_trt_engine(self, request: BuildRequest):
+    async def build_trt_engine(self, request: TRTBuildRequest):
         "Build a TensorRT engine from a request"
 
         from .inference.tensorrt import TensorRTModel
+
+        logger.debug(f"Building engine for {request.model_id}...")
 
         def trt_build_thread_call():
             model = TensorRTModel(model_id=request.model_id, use_f32=False)
@@ -369,6 +456,8 @@ class GPU:
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
         "Convert a model to a AITemplate engine"
 
+        logger.debug(f"Building AI Template for {request.model_id}...")
+
         # Set the number of threads to use and keep them within boundaries of the system
         if request.threads:
             if request.threads < 1:
@@ -379,7 +468,7 @@ class GPU:
                 config.aitemplate.num_threads = request.threads
 
         def ait_build_thread_call():
-            from core.aitemplate.scripts.compile import compile_diffusers
+            from core.aitemplate.compile import compile_diffusers
 
             compile_diffusers(
                 batch_size=request.batch_size,
@@ -392,17 +481,129 @@ class GPU:
 
         await run_in_thread_async(func=ait_build_thread_call)
 
+        logger.debug(f"AI Template built for {request.model_id}.")
+
         logger.info("AITemplate engine successfully built")
 
-    async def to_fp16(self, model: str):
+    async def build_onnx_engine(self, request: ONNXBuildRequest):
+        "Convert a model to a ONNX engine"
+
+        from core.inference.onnx_sd import OnnxStableDiffusion
+
+        logger.debug(f"Building ONNX for {request.model_id}...")
+
+        def onnx_build_thread_call():
+            pipe = OnnxStableDiffusion(
+                model_id=request.model_id,
+                use_fp32=config.api.use_fp32,
+                autoload=False,
+            )
+
+            pipe.convert_pytorch_to_onnx(
+                device=config.api.device,
+                model_id=request.model_id,
+                simplify_unet=request.simplify_unet,
+                target=request.quant_dict,
+            )
+
+            self.memory_cleanup()
+
+        await run_in_thread_async(func=onnx_build_thread_call)
+
+        logger.info(f"ONNX engine successfully built for {request.model_id}.")
+
+    async def convert_model(self, model: str, safetensors: bool = False):
         "Convert a model to FP16"
+
+        logger.debug(f"Converting {model}...")
 
         def model_to_f16_thread_call():
             pt_model = PyTorchStableDiffusion(
                 model_id=model,
-                device=self.cuda_id,
+                device=config.api.device,
+                autoload=True,
             )
 
-            pt_model.save(path="converted/" + model.split("/")[-1])
+            model_name = model.split("/")[-1]
+            model_name = model_name.split(".")[0]
+
+            pt_model.save(
+                path=str(Path("data/models").joinpath(model_name)),
+                safetensors=safetensors,
+            )
+            pt_model.unload()
 
         await run_in_thread_async(func=model_to_f16_thread_call)
+
+        logger.debug(f"Converted {model}.")
+
+    async def download_huggingface_model(self, model: str):
+        "Download a model from the internet."
+
+        await run_in_thread_async(download_model, args=(model,))
+
+    async def load_lora(self, model: str, lora: str):
+        "Inject a Lora model into a model"
+
+        if model in self.loaded_models:
+            internal_model = self.loaded_models[model]
+
+            if isinstance(internal_model, PyTorchStableDiffusion):
+                logger.debug(f"Loading Lora model: {lora}")
+
+                internal_model.load_lora(lora)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Lora model loaded",
+                        f"Lora model {lora} loaded",
+                    )
+                )
+
+        else:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not found",
+                    f"Model {model} not found",
+                )
+            )
+            logger.error(f"Model {model} not found")
+
+    async def interrogate(self, job: InterrogatorQueueEntry):
+        "Generate captions for image"
+
+        def generate_call(job: InterrogatorQueueEntry):
+            if job.model == "deepdanbooru":
+                from core.interrogation.deepdanbooru import DeepdanbooruInterrogator
+
+                model = DeepdanbooruInterrogator(
+                    device=config.api.device, autoload=True
+                )
+                out = model.generate(job)
+                model.unload()
+                return out
+
+            elif job.model == "clip":
+                from core.interrogation.clip import CLIPInterrogator
+
+                model = CLIPInterrogator(device=config.api.device, autoload=True)
+                out = model.generate(job)
+                model.unload()
+                return out
+
+            elif job.model == "flamingo":
+                from core.interrogation.flamingo import FlamingoInterrogator
+
+                model = FlamingoInterrogator(device=config.api.device)
+                out = model.generate(job)
+                model.unload()
+                return out
+            else:
+                raise ValueError(f"Model {job.model} not implemented")
+
+        output: InterrogationResult = await run_in_thread_async(
+            generate_call, args=(job,)
+        )
+        return output

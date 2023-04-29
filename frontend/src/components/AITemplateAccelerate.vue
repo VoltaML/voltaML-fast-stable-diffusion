@@ -1,26 +1,17 @@
 <template>
   <div style="margin: 16px">
-    <NCard title="Acceleration progress">
+    <NCard title="Acceleration progress (around 20 minutes)">
       <NSpace vertical justify="center">
         <NSteps>
+          <NStep title="UNet" :status="state.state.aitBuildStep.unet" />
           <NStep
-            title="UNet"
-            description="The 'make a better guess' machine (takes a while)"
-            :status="state.state.aitBuildStep.unet"
+            title="ControlNet UNet"
+            :status="state.state.aitBuildStep.controlnet_unet"
           />
-          <NStep
-            title="CLIP"
-            description="Text encoder (usually quite fast)"
-            :status="state.state.aitBuildStep.clip"
-          />
-          <NStep
-            title="VAE"
-            description="Upscaler (something in between)"
-            :status="state.state.aitBuildStep.vae"
-          />
+          <NStep title="CLIP" :status="state.state.aitBuildStep.clip" />
+          <NStep title="VAE" :status="state.state.aitBuildStep.vae" />
           <NStep
             title="Cleanup"
-            description="Get rid of the temporary build files"
             :status="state.state.aitBuildStep.cleanup"
           /> </NSteps></NSpace
     ></NCard>
@@ -177,7 +168,7 @@ const modelOptions: Array<SelectOption> = reactive([]);
 const building = ref(false);
 const showUnloadModal = ref(false);
 
-fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
+fetch(`${serverUrl}/api/models/available`).then((res) => {
   res.json().then((data: Array<ModelEntry>) => {
     modelOptions.splice(0, modelOptions.length);
 
@@ -188,12 +179,12 @@ fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
         modelOptions.push({
           label: model.name,
           value: model.name,
+          disabled: !model.valid,
         });
       }
-    }
-
-    if (modelOptions.length > 0) {
-      model.value = pyTorch[0].name;
+      if (pyTorch.length > 0) {
+        model.value = pyTorch[0].name;
+      }
     }
   });
 });
@@ -213,6 +204,7 @@ const accelerateUnload = async () => {
 };
 
 const accelerate = async () => {
+  showUnloadModal.value = false;
   building.value = true;
   await fetch(`${serverUrl}/api/generate/generate-aitemplate`, {
     method: "POST",

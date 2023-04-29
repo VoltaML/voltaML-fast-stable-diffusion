@@ -2,22 +2,190 @@
   <div class="top-bar">
     <NSelect
       style="max-width: 250px; padding-left: 12px; padding-right: 12px"
-      :options="modelOptions"
+      :options="generatedModelOptions"
       @update:value="onModelChange"
       :loading="modelsLoading"
-      placeholder="Select model"
-      default-value="none:PyTorch"
-      :value="conf.data.settings.model"
+      placeholder=""
+      :value="
+        conf.data.settings.model !== null ? conf.data.settings.model?.name : ''
+      "
       :consistent-menu-width="false"
       filterable
     />
-    <NButton quaternary circle type="default" @click="refreshModels">
-      <template #icon>
-        <NIcon>
-          <ReloadOutline />
-        </NIcon>
-      </template>
-    </NButton>
+    <NButton @click="showModal = true">Load Model</NButton>
+    <NModal
+      v-model:show="showModal"
+      closable
+      mask-closable
+      preset="card"
+      style="width: 85vw"
+      title="Models"
+      :auto-focus="false"
+    >
+      <div style="display: inline-flex; width: 100%; margin-bottom: 12px">
+        <NInput v-model:value="filter" clearable placeholder="Filter Models" />
+        <NButton
+          ghost
+          type="success"
+          style="margin-left: 4px"
+          @click="refreshModels"
+          >Refresh</NButton
+        >
+      </div>
+      <NScrollbar>
+        <NTabs type="segment" style="height: 70vh">
+          <NTabPane name="PyTorch" style="height: 100%">
+            <NGrid cols="1 900:2" :x-gap="8" :y-gap="8" style="height: 100%">
+              <NGi>
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in pyTorchModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div style="display: inline-flex">
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload</NButton
+                      >
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                        >Load</NButton
+                      >
+                      <NButton
+                        type="info"
+                        style="margin-left: 4px"
+                        ghost
+                        @click="selectedModel = model"
+                        :disabled="model.state !== 'loaded'"
+                        >Select</NButton
+                      >
+                    </div>
+                  </div>
+                </NCard>
+              </NGi>
+              <NGi>
+                <NCard :title="lora_title" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="lora in loraModels"
+                    v-bind:key="lora.path"
+                  >
+                    <p>{{ lora.name }}</p>
+                    <div style="display: inline-flex">
+                      <NButton
+                        type="error"
+                        ghost
+                        disabled
+                        v-if="selectedModel?.loras.includes(lora.path)"
+                        >Loaded</NButton
+                      >
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadLoRA(lora)"
+                        :disabled="selectedModel === undefined"
+                        :loading="lora.state === 'loading'"
+                        v-else
+                        >Load</NButton
+                      >
+                    </div>
+                  </div>
+                </NCard>
+              </NGi>
+            </NGrid>
+          </NTabPane>
+          <NTabPane name="AITemplate">
+            <NCard title="Models" style="height: 100%">
+              <div
+                style="
+                  display: inline-flex;
+                  width: 100%;
+                  align-items: center;
+                  justify-content: space-between;
+                  border-bottom: 1px solid rgb(66, 66, 71);
+                "
+                v-for="model in aitModels"
+                v-bind:key="model.path"
+              >
+                <p>{{ model.name }}</p>
+                <div>
+                  <NButton
+                    type="error"
+                    ghost
+                    @click="unloadModel(model)"
+                    v-if="model.state === 'loaded'"
+                    >Unload</NButton
+                  >
+                  <NButton
+                    type="success"
+                    ghost
+                    @click="loadModel(model)"
+                    :loading="model.state === 'loading'"
+                    v-else
+                    >Load</NButton
+                  >
+                </div>
+              </div>
+            </NCard>
+          </NTabPane>
+          <NTabPane name="Extra">
+            <NCard title="Models" style="height: 100%">
+              <div
+                style="
+                  display: inline-flex;
+                  width: 100%;
+                  align-items: center;
+                  justify-content: space-between;
+                  border-bottom: 1px solid rgb(66, 66, 71);
+                "
+                v-for="model in trtModels"
+                v-bind:key="model.path"
+              >
+                <p>{{ model.name }}</p>
+                <div>
+                  <NButton
+                    type="error"
+                    ghost
+                    @click="unloadModel(model)"
+                    v-if="model.state === 'loaded'"
+                    >Unload</NButton
+                  >
+                  <NButton
+                    type="success"
+                    ghost
+                    @click="loadModel(model)"
+                    :loading="model.state === 'loading'"
+                    v-else
+                    >Load</NButton
+                  >
+                </div>
+              </div>
+            </NCard>
+          </NTabPane>
+        </NTabs>
+      </NScrollbar>
+    </NModal>
 
     <!-- Progress bar -->
     <div class="progress-container">
@@ -57,124 +225,246 @@
 
 <script lang="ts" setup>
 import type { ModelEntry } from "@/core/interfaces";
+import {
+  NCard,
+  NGi,
+  NGrid,
+  NInput,
+  NModal,
+  NScrollbar,
+  NSelect,
+  NTabPane,
+  NTabs,
+} from "naive-ui";
+
 import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
-import { ReloadOutline, StatsChart, SyncSharp } from "@vicons/ionicons5";
-import { NButton, NIcon, NProgress, NSelect, useMessage } from "naive-ui";
-import type { SelectGroupOption } from "naive-ui/es/select/src/interface";
-import { h, reactive, ref } from "vue";
+import { StatsChart, SyncSharp } from "@vicons/ionicons5";
+import { NButton, NProgress, useMessage } from "naive-ui";
+import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
+import { computed, h, ref, type ComputedRef } from "vue";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const websocketState = useWebsocket();
 const global = useState();
 const conf = useSettings();
+
 const modelsLoading = ref(false);
+const filter = ref("");
+
+const models = ref<Array<ModelEntry>>([]);
+
+const filteredModels = computed(() => {
+  return models.value.filter((model) => {
+    return (
+      model.path.toLowerCase().includes(filter.value.toLowerCase()) ||
+      filter.value === ""
+    );
+  });
+});
+
+const pyTorchModels = computed(() => {
+  return filteredModels.value.filter((model) => {
+    return model.backend === "PyTorch" && model.valid === true;
+  });
+});
+
+const aitModels = computed(() => {
+  return filteredModels.value.filter((model) => {
+    return model.backend === "AITemplate";
+  });
+});
+
+const trtModels = computed(() => {
+  return filteredModels.value.filter((model) => {
+    return model.backend === "TensorRT";
+  });
+});
+
+const loraModels = computed(() => {
+  return filteredModels.value.filter((model) => {
+    return model.backend === "LoRA";
+  });
+});
 
 function refreshModels() {
+  console.log("Refreshing models");
   modelsLoading.value = true;
-  fetch(`${serverUrl}/api/models/avaliable`).then((res) => {
-    res.json().then((data: Array<ModelEntry>) => {
-      // add all the strings from the list to model options
-      modelOptions.splice(0, modelOptions.length);
-
-      const pytorchGroup: SelectGroupOption = {
-        type: "group",
-        label: "PyTorch",
-        key: "pytorch",
-        children: [],
-      };
-
-      const tensorrtGroup: SelectGroupOption = {
-        type: "group",
-        label: "TensorRT",
-        key: "tensorrt",
-        children: [],
-      };
-
-      const aitemplatesGroup: SelectGroupOption = {
-        type: "group",
-        label: "AITemplate",
-        key: "aitemplate",
-        children: [],
-      };
-
-      data.forEach((item) => {
-        if (item.backend === "PyTorch") {
-          pytorchGroup.children?.push({
-            label: item.name,
-            value: item.path + ":" + item.backend,
-            style: item.valid
-              ? "color: #eb7028"
-              : "text-decoration: line-through",
-          });
-        } else if (item.backend === "TensorRT") {
-          tensorrtGroup.children?.push({
-            label: item.name,
-            value: item.path + ":" + item.backend,
-            style: item.valid
-              ? "color: #28eb6c"
-              : "text-decoration: line-through",
-          });
-        } else if (item.backend === "AITemplate") {
-          aitemplatesGroup.children?.push({
-            label: item.name,
-            value: item.path + ":" + item.backend,
-            style: item.valid
-              ? "color: #48bdf0"
-              : "text-decoration: line-through",
-          });
-        }
+  fetch(`${serverUrl}/api/models/available`)
+    .then((res) => {
+      res.json().then((data: Array<ModelEntry>) => {
+        // TODO: Lora loaded state isnt updated
+        models.value.splice(0, models.value.length);
+        data.forEach((model) => {
+          models.value.push(model);
+        });
+        modelsLoading.value = false;
       });
+    })
+    .then(() => {
+      fetch(`${serverUrl}/api/models/loaded`).then((res) => {
+        res.json().then((data: Array<ModelEntry>) => {
+          // Check if the current model is still loaded, if not, set it to null
+          if (conf.data.settings.model) {
+            if (
+              !data.find((model) => {
+                return model.path === conf.data.settings.model?.path;
+              })
+            ) {
+              console.log("Current model is not loaded anymore");
+              conf.data.settings.model = null;
+            }
+          }
 
-      modelOptions.push(tensorrtGroup);
-      modelOptions.push(aitemplatesGroup);
-      modelOptions.push(pytorchGroup);
-      modelOptions.push(defaultOptions);
+          // Update the state of the models
+          data.forEach((loadedModel) => {
+            const model = models.value.find((model) => {
+              return model.path === loadedModel.path;
+            });
+            if (model) {
+              // Update all the keys
+              Object.assign(model, loadedModel);
+            }
+          });
 
-      modelsLoading.value = false;
+          // Set the current model to the first available model if it was null
+          if (!conf.data.settings.model) {
+            const allLoaded = [
+              ...loadedPyTorchModels.value,
+              ...loadedAitModels.value,
+              ...loadedExtraModels.value,
+            ];
+
+            console.log("All loaded models: ", allLoaded);
+
+            if (allLoaded.length > 0) {
+              conf.data.settings.model = allLoaded[0];
+              console.log(
+                "Set current model to first available model: ",
+                conf.data.settings.model
+              );
+            } else {
+              console.log("No models available");
+              conf.data.settings.model = null;
+            }
+          }
+          if (conf.data.settings.model) {
+            const spl = conf.data.settings.model.name.split("__")[1];
+            if (spl) {
+              const xspl = spl.split("x");
+              const width = parseInt(xspl[0]);
+              const height = parseInt(xspl[1]);
+              const batch_size = parseInt(xspl[2]);
+
+              conf.data.settings.aitDim.width = width;
+              conf.data.settings.aitDim.height = height;
+              conf.data.settings.aitDim.batch_size = batch_size;
+            } else {
+              conf.data.settings.aitDim.width = undefined;
+              conf.data.settings.aitDim.height = undefined;
+              conf.data.settings.aitDim.batch_size = undefined;
+            }
+          } else {
+            conf.data.settings.aitDim.width = undefined;
+            conf.data.settings.aitDim.height = undefined;
+            conf.data.settings.aitDim.batch_size = undefined;
+          }
+        });
+      });
     });
-  });
 }
 
-async function onModelChange(value: string) {
-  const model = value.split(":")[0];
-  const x = value.split(":")[1];
-
-  if (x !== "PyTorch" && x !== "TensorRT" && x !== "AITemplate") {
-    throw new Error("Invalid backend");
-  }
-
-  const backend: "PyTorch" | "TensorRT" | "AITemplate" = x;
-
-  await fetch(`${serverUrl}/api/models/unload-all`, {
-    method: "POST",
-  });
-
-  if (model === "none") {
-    conf.data.settings.model = value;
-    return;
-  }
-
-  conf.data.settings.backend = backend;
-
+async function loadModel(model: ModelEntry) {
+  model.state = "loading";
   const load_url = new URL(`${serverUrl}/api/models/load`);
-  const params = { model: model, backend: backend };
+  const params = { model: model.path, backend: model.backend };
   load_url.search = new URLSearchParams(params).toString();
 
-  modelsLoading.value = true;
+  try {
+    await fetch(load_url, {
+      method: "POST",
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
 
-  await fetch(load_url, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-  }).catch(() => {
-    modelsLoading.value = false;
+async function unloadModel(model: ModelEntry) {
+  const load_url = new URL(`${serverUrl}/api/models/unload`);
+  const params = { model: model.name };
+  load_url.search = new URLSearchParams(params).toString();
+
+  try {
+    await fetch(load_url, {
+      method: "POST",
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+async function loadLoRA(lora: ModelEntry) {
+  const load_url = new URL(`${serverUrl}/api/models/load-lora`);
+
+  if (selectedModel.value) {
+    const params = { model: selectedModel.value.name, lora: lora.path };
+    load_url.search = new URLSearchParams(params).toString();
+
+    try {
+      await fetch(load_url, {
+        method: "POST",
+      });
+      selectedModel.value.loras.push(lora.path);
+    } catch (e) {
+      console.error(e);
+    }
+  } else {
+    message.error("No model selected");
+  }
+}
+
+async function onModelChange(modelStr: string) {
+  const modelName = modelStr.split(":")[0];
+  const modelBackend = modelStr.split(":")[1];
+
+  const model = models.value.find((model) => {
+    return model.path === modelName && model.backend === modelBackend;
   });
 
-  modelsLoading.value = false;
+  if (model) {
+    conf.data.settings.model = model;
+  } else {
+    message.error("Model not found");
+  }
 
-  conf.data.settings.model = model;
+  if (conf.data.settings.model) {
+    const spl = conf.data.settings.model.name.split("__")[1];
+    if (spl) {
+      const xspl = spl.split("x");
+      const width = parseInt(xspl[0]);
+      const height = parseInt(xspl[1]);
+      const batch_size = parseInt(xspl[2]);
+
+      conf.data.settings.aitDim.width = width;
+      conf.data.settings.aitDim.height = height;
+      conf.data.settings.aitDim.batch_size = batch_size;
+    } else {
+      conf.data.settings.aitDim.width = undefined;
+      conf.data.settings.aitDim.height = undefined;
+      conf.data.settings.aitDim.batch_size = undefined;
+    }
+  } else {
+    conf.data.settings.aitDim.width = undefined;
+    conf.data.settings.aitDim.height = undefined;
+    conf.data.settings.aitDim.batch_size = undefined;
+  }
+}
+
+function resetModels() {
+  models.value.splice(0, models.value.length);
+  console.log("Reset models");
 }
 
 const syncIcon = () => {
@@ -185,27 +475,91 @@ const perfIcon = () => {
   return h(StatsChart);
 };
 
-const defaultOptions: SelectGroupOption = {
-  type: "group",
-  label: "Unload",
-  key: "unload",
-  children: [
-    {
-      label: "No model selected",
-      value: "none:PyTorch",
-    },
-  ],
-};
-const modelOptions: Array<SelectGroupOption> = reactive([defaultOptions]);
-
 websocketState.onConnectedCallbacks.push(() => {
+  refreshModels();
+});
+websocketState.onDisconnectedCallbacks.push(() => {
+  resetModels();
+});
+websocketState.onRefreshCallbacks.push(() => {
   refreshModels();
 });
 if (websocketState.readyState === "OPEN") {
   refreshModels();
 }
 
+const loadedPyTorchModels = computed(() => {
+  return models.value.filter((model) => {
+    return model.backend === "PyTorch" && model.state === "loaded";
+  });
+});
+const loadedAitModels = computed(() => {
+  return models.value.filter((model) => {
+    return model.backend === "AITemplate" && model.state === "loaded";
+  });
+});
+const loadedExtraModels = computed(() => {
+  return models.value.filter((model) => {
+    return model.backend === "unknown" && model.state === "loaded";
+  });
+});
+
+const pyTorchOptions: ComputedRef<SelectMixedOption> = computed(() => {
+  return {
+    type: "group",
+    label: "PyTorch",
+    key: "pytorch",
+    children: loadedPyTorchModels.value.map((model) => {
+      return {
+        label: model.name,
+        value: `${model.path}:PyTorch`,
+      };
+    }),
+  };
+});
+
+const aitOptions: ComputedRef<SelectMixedOption> = computed(() => {
+  return {
+    type: "group",
+    label: "AITemplate",
+    key: "ait",
+    children: loadedAitModels.value.map((model) => {
+      return {
+        label: model.name,
+        value: `${model.path}:AITemplate`,
+      };
+    }),
+  };
+});
+
+const extraOptions: ComputedRef<SelectMixedOption> = computed(() => {
+  return {
+    type: "group",
+    label: "Extra",
+    key: "extra",
+    children: loadedExtraModels.value.map((model) => {
+      return {
+        label: model.name,
+        value: `${model.path}:PyTorch`,
+      };
+    }),
+  };
+});
+
+const generatedModelOptions: ComputedRef<SelectMixedOption[]> = computed(() => {
+  return [pyTorchOptions.value, aitOptions.value, extraOptions.value];
+});
+
 const message = useMessage();
+
+const showModal = ref(false);
+const selectedModel = ref<ModelEntry>();
+const lora_title = computed(() => {
+  return `LoRA (${
+    selectedModel.value ? selectedModel.value.name : "No model selected"
+  })`;
+});
+
 startWebsocket(message);
 </script>
 

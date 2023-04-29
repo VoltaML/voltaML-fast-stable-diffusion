@@ -3,7 +3,8 @@ init-hook="import sys; sys.path.insert(0, '.')"
 ignore=
     core/submodules,
     typings,
-    core/tensorrt
+    core/tensorrt,
+    AITemplate,
 disable=
     C0114, # Missing module docstring
     W1203, # Use lazy % formatting in logging functions
@@ -13,7 +14,13 @@ disable=
     consider-using-dict-items,
     import-outside-toplevel,
     invalid-name,
-    relative-beyond-top-level
+    relative-beyond-top-level,
+    no-name-in-module,
+    too-many-instance-attributes,
+    too-few-public-methods,
+    too-many-branches,
+    too-many-arguments,
+    too-many-locals
 
 [TYPECHECK]
 generated-members=

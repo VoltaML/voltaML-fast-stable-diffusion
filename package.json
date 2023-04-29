@@ -13,7 +13,18 @@
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
-    "test": "pytest",
-    "test:full": "pytest --run-optional-tests=slow --cov=core"
+    "api:test": "pytest",
+    "api:fulltest": "pytest --run-optional-tests=slow --cov=core -x",
+    "api:lint": "pylint **/**.py --output-format=colorized",
+    "api:dev": "python main.py --log-level DEBUG",
+    "frontend:dev": "cd frontend && yarn dev",
+    "frontend:build": "cd frontend && yarn build",
+    "format": "black .",
+    "manager:build": "cd manager && cargo build --release",
+    "lines": "tokei . -e frontend/dist -e venv -e node_modules -e manager/target -e frontend/node_modules -e docs/.vitepress/dist -e docs/.vitepress/cache",
+    "docker:build": "docker build -t volta -f ./dockerfile . && docker tag volta:latest stax124/volta:experimental && docker rmi $(docker images --filter \"dangling=true\" -q --no-trunc)",
+    "docker:clean": "docker rm $(docker ps -aq) -f && docker rmi $(docker images --filter \"dangling=true\" -q --no-trunc)",
+    "docker:test-compose": "docker compose -f test.docker-compose.yml up --force-recreate --remove-orphans",
+    "docker:run": "docker compose run --service-ports --rm voltaml"
   }
 }
