@@ -154,8 +154,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
+          cols: "1 m:2",
+          "x-gap": "12",
+          responsive: "screen"
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {

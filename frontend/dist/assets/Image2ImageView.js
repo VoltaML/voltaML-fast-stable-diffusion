@@ -142,7 +142,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-ca330f94"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-aee3dcab"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -273,8 +273,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$3, [
         createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
+          cols: "1 m:2",
+          "x-gap": "12",
+          responsive: "screen"
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
@@ -644,9 +645,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_ca330f94_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-ca330f94"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-acf9ffb9"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_aee3dcab_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-aee3dcab"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-9640969e"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -766,8 +767,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
+          cols: "1 m:2",
+          "x-gap": "12",
+          responsive: "screen"
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
@@ -1092,8 +1094,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_acf9ffb9_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-acf9ffb9"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_9640969e_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-9640969e"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1669,7 +1671,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-ff1619db"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-f8f0434e"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1853,8 +1855,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
+          cols: "1 m:2",
+          "x-gap": "12",
+          responsive: "screen"
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
@@ -2239,9 +2242,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_ff1619db_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-ff1619db"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-d7de55a6"), n = n(), popScopeId(), n);
+const Inpainting_vue_vue_type_style_index_0_scoped_f8f0434e_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-f8f0434e"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-79ae31d4"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -2346,8 +2349,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
+          cols: "1 m:2",
+          "x-gap": "12",
+          responsive: "screen"
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
@@ -2645,8 +2649,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const SDUpscale_vue_vue_type_style_index_0_scoped_d7de55a6_lang = "";
-const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-d7de55a6"]]);
+const SDUpscale_vue_vue_type_style_index_0_scoped_79ae31d4_lang = "";
+const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-79ae31d4"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

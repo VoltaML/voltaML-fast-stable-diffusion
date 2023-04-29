@@ -27,6 +27,7 @@ from api.routes import (
     test,
     ws,
 )
+from api.websockets.notification import Notification
 from core import shared
 
 logger = logging.getLogger(__name__)
@@ -54,6 +55,19 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
     "Output validation errors into debug log for debugging purposes"
 
     logger.debug(exc)
+
+    try:
+        why = str(exc).split(":")[1].strip()
+        await websocket_manager.broadcast(
+            data=Notification(
+                severity="error",
+                message=f"Validation error: {why}",
+                title="Validation Error",
+            )
+        )
+    except IndexError:
+        logger.debug("Unable to parse validation error, skipping the error broadcast")
+
     content = {
         "status_code": 10422,
         "message": f"{exc}".replace("\n", " ").replace("   ", " "),

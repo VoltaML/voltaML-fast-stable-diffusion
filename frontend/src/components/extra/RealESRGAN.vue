@@ -1,7 +1,7 @@
 <template>
   <div style="margin: 0 12px">
     <!-- Main -->
-    <NGrid cols="1 850:2" x-gap="12">
+    <NGrid cols="1 m:2" x-gap="12" responsive="screen">
       <NGi>
         <NButton @click="loadUpscaler"> Load Upscaler </NButton>
 

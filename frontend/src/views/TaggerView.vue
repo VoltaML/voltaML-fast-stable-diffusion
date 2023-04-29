@@ -1,7 +1,7 @@
 <template>
   <div class="main-container">
     <!-- Main -->
-    <NGrid cols="1 850:2" x-gap="12">
+    <NGrid cols="1 m:2" x-gap="12" responsive="screen">
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"

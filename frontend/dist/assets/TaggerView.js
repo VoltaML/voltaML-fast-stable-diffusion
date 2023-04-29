@@ -5,7 +5,7 @@ import { v as v4 } from "./v4.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
-const _withScopeId = (n) => (pushScopeId("data-v-3489d744"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-eb4929f6"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -97,8 +97,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NGrid), {
-          cols: "1 850:2",
-          "x-gap": "12"
+          cols: "1 m:2",
+          "x-gap": "12",
+          responsive: "screen"
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
@@ -224,8 +225,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_3489d744_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-3489d744"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_eb4929f6_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-eb4929f6"]]);
 export {
   TaggerView as default
 };
