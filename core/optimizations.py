@@ -37,11 +37,19 @@ def optimize_model(
     hardware_scheduling = experimental_check_hardware_scheduling()
 
     if hardware_scheduling[2] == 1 and not is_for_aitemplate:
-        logger.warning("Hardware accelerated scheduling is turned on! This will have a HUGE negative impact on performance")
+        logger.warning(
+            "Hardware accelerated scheduling is turned on! This will have a HUGE negative impact on performance"
+        )
         if hardware_scheduling[1] == 1:
-            logger.warning("You most likely didn't even know this was turned on. Windows 11 enables it by default on NVIDIA devices")
-        logger.warning("You can read about this issue on https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/3889")
-        logger.warning("You can disable it by going inside Graphics Settings → \"Default Graphics Settings\" and disabling \"Hardware-accelerated GPU Scheduling\"")
+            logger.warning(
+                "You most likely didn't even know this was turned on. Windows 11 enables it by default on NVIDIA devices"
+            )
+        logger.warning(
+            "You can read about this issue on https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/3889"
+        )
+        logger.warning(
+            'You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
+        )
 
     dtype = (
         torch.float32
@@ -311,12 +319,16 @@ def trace_model(
 def experimental_check_hardware_scheduling() -> Tuple[int, int, int]:
     "When on windows check if user has hardware scheduling turned on"
     import sys
+
     if sys.platform != "win32":
         return (-1, -1, -1)
 
     import ctypes
     from pathlib import Path
-    hardware_schedule_test = ctypes.WinDLL(str(Path() / "libs" / "hardware-accel-test.dll")).HwSchEnabled
+
+    hardware_schedule_test = ctypes.WinDLL(
+        str(Path() / "libs" / "hardware-accel-test.dll")
+    ).HwSchEnabled
     hardware_schedule_test.restype = ctypes.POINTER(ctypes.c_int * 3)
     return [x for x in hardware_schedule_test().contents]  # type: ignore
 
