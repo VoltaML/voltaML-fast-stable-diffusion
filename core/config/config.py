@@ -111,6 +111,8 @@ class APIConfig:
     device_id: int = 0
     device_type: Literal["cpu", "cuda", "mps", "directml"] = "cuda"
     use_fp32: bool = False
+    lora_text_encoder_weight: float = 0.5
+    lora_unet_weight: float = 0.5
 
     @property
     def device(self):

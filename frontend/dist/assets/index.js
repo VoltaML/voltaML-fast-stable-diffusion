@@ -8863,7 +8863,7 @@ function getOffset(placement, offsetRect, targetRect, offsetTopToStandardPlaceme
       };
   }
 }
-const style$s = c([
+const style$t = c([
   c(".v-binder-follower-container", {
     position: "absolute",
     left: "0",
@@ -8945,7 +8945,7 @@ const VFollower = defineComponent({
       }
     });
     const ssrAdapter2 = useSsrAdapter();
-    style$s.mount({
+    style$t.mount({
       id: "vueuc/binder",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -10140,7 +10140,7 @@ const VXScroll = defineComponent({
   }
 });
 const hiddenAttr = "v-hidden";
-const style$r = c("[v-hidden]", {
+const style$s = c("[v-hidden]", {
   display: "none!important"
 });
 const VOverflow = defineComponent({
@@ -10230,7 +10230,7 @@ const VOverflow = defineComponent({
       }
     }
     const ssrAdapter2 = useSsrAdapter();
-    style$r.mount({
+    style$s.mount({
       id: "vueuc/overflow",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -13337,7 +13337,7 @@ const NFadeInExpandTransition = defineComponent({
     };
   }
 });
-const style$q = cB("base-icon", `
+const style$r = cB("base-icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -13372,13 +13372,13 @@ const NBaseIcon = defineComponent({
     onMouseup: Function
   },
   setup(props) {
-    useStyle("-base-icon", style$q, toRef(props, "clsPrefix"));
+    useStyle("-base-icon", style$r, toRef(props, "clsPrefix"));
   },
   render() {
     return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
   }
 });
-const style$p = cB("base-close", `
+const style$q = cB("base-close", `
  display: flex;
  align-items: center;
  justify-content: center;
@@ -13447,7 +13447,7 @@ const NBaseClose = defineComponent({
     absolute: Boolean
   },
   setup(props) {
-    useStyle("-base-close", style$p, toRef(props, "clsPrefix"));
+    useStyle("-base-close", style$q, toRef(props, "clsPrefix"));
     return () => {
       const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
       const Tag = isButtonTag ? "button" : "div";
@@ -13506,7 +13506,7 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$o = c$1([c$1("@keyframes loading-container-rotate", `
+const style$p = c$1([c$1("@keyframes loading-container-rotate", `
  to {
  -webkit-transform: rotate(360deg);
  transform: rotate(360deg);
@@ -13669,7 +13669,7 @@ const NBaseLoading = defineComponent({
     default: 100
   } }, exposedLoadingProps),
   setup(props) {
-    useStyle("-base-loading", style$o, toRef(props, "clsPrefix"));
+    useStyle("-base-loading", style$p, toRef(props, "clsPrefix"));
   },
   render() {
     const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
@@ -14675,7 +14675,7 @@ const commonVars$c = {
   iconSizeLarge: "46px",
   iconSizeHuge: "52px"
 };
-const self$W = (vars) => {
+const self$X = (vars) => {
   const { textColorDisabled, iconColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge } = vars;
   return Object.assign(Object.assign({}, commonVars$c), {
     fontSizeSmall,
@@ -14690,16 +14690,16 @@ const self$W = (vars) => {
 const emptyLight = {
   name: "Empty",
   common: commonLight,
-  self: self$W
+  self: self$X
 };
 const emptyLight$1 = emptyLight;
 const emptyDark = {
   name: "Empty",
   common: commonDark,
-  self: self$W
+  self: self$X
 };
 const emptyDark$1 = emptyDark;
-const style$n = cB("empty", `
+const style$o = cB("empty", `
  display: flex;
  flex-direction: column;
  align-items: center;
@@ -14738,7 +14738,7 @@ const NEmpty = defineComponent({
   props: emptyProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Empty", "-empty", style$n, emptyLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Empty", "-empty", style$o, emptyLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
@@ -14790,7 +14790,7 @@ const NEmpty = defineComponent({
     );
   }
 });
-const self$V = (vars) => {
+const self$W = (vars) => {
   const { scrollbarColor, scrollbarColorHover } = vars;
   return {
     color: scrollbarColor,
@@ -14800,13 +14800,13 @@ const self$V = (vars) => {
 const scrollbarLight = {
   name: "Scrollbar",
   common: commonLight,
-  self: self$V
+  self: self$W
 };
 const scrollbarLight$1 = scrollbarLight;
 const scrollbarDark = {
   name: "Scrollbar",
   common: commonDark,
-  self: self$V
+  self: self$W
 };
 const scrollbarDark$1 = scrollbarDark;
 const {
@@ -14829,7 +14829,7 @@ function fadeInTransition({
     opacity: 1
   })];
 }
-const style$m = cB("scrollbar", `
+const style$n = cB("scrollbar", `
  overflow: hidden;
  position: relative;
  z-index: auto;
@@ -15352,7 +15352,7 @@ const Scrollbar$1 = defineComponent({
       off("mousemove", window, handleYScrollMouseMove, true);
       off("mouseup", window, handleYScrollMouseUp, true);
     });
-    const themeRef = useTheme("Scrollbar", "-scrollbar", style$m, scrollbarLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Scrollbar", "-scrollbar", style$n, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
       return {
@@ -15493,7 +15493,7 @@ const commonVariables$l = {
   optionPaddingHuge: "0 12px",
   loadingSize: "18px"
 };
-const self$U = (vars) => {
+const self$V = (vars) => {
   const { borderRadius, popoverColor, textColor3, dividerColor, textColor2, primaryColorPressed, textColorDisabled, primaryColor, opacityDisabled, hoverColor, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge } = vars;
   return Object.assign(Object.assign({}, commonVariables$l), { optionFontSizeSmall: fontSizeSmall, optionFontSizeMedium: fontSizeMedium, optionFontSizeLarge: fontSizeLarge, optionFontSizeHuge: fontSizeHuge, optionHeightSmall: heightSmall, optionHeightMedium: heightMedium, optionHeightLarge: heightLarge, optionHeightHuge: heightHuge, borderRadius, color: popoverColor, groupHeaderTextColor: textColor3, actionDividerColor: dividerColor, optionTextColor: textColor2, optionTextColorPressed: primaryColorPressed, optionTextColorDisabled: textColorDisabled, optionTextColorActive: primaryColor, optionOpacityDisabled: opacityDisabled, optionCheckColor: primaryColor, optionColorPending: hoverColor, optionColorActive: "rgba(0, 0, 0, 0)", optionColorActivePending: hoverColor, actionTextColor: textColor2, loadingColor: primaryColor });
 };
@@ -15504,7 +15504,7 @@ const internalSelectMenuLight = createTheme({
     Scrollbar: scrollbarLight$1,
     Empty: emptyLight$1
   },
-  self: self$U
+  self: self$V
 });
 const internalSelectMenuLight$1 = internalSelectMenuLight;
 const internalSelectMenuDark = {
@@ -15514,7 +15514,7 @@ const internalSelectMenuDark = {
     Scrollbar: scrollbarDark$1,
     Empty: emptyDark$1
   },
-  self: self$U
+  self: self$V
 };
 const internalSelectMenuDark$1 = internalSelectMenuDark;
 function renderCheckMark(show, clsPrefix) {
@@ -15698,7 +15698,7 @@ function fadeInScaleUpTransition({
     transform: `${originalTransform} scale(1)`
   })];
 }
-const style$l = cB("base-select-menu", `
+const style$m = cB("base-select-menu", `
  line-height: 1.5;
  outline: none;
  z-index: 0;
@@ -15867,7 +15867,7 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
-    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$l, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$m, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
     const scrollbarRef = ref(null);
@@ -16166,7 +16166,7 @@ const NInternalSelectMenu = defineComponent({
     );
   }
 });
-const style$k = cB("base-wave", `
+const style$l = cB("base-wave", `
  position: absolute;
  left: 0;
  right: 0;
@@ -16183,7 +16183,7 @@ const NBaseWave = defineComponent({
     }
   },
   setup(props) {
-    useStyle("-base-wave", style$k, toRef(props, "clsPrefix"));
+    useStyle("-base-wave", style$l, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const activeRef = ref(false);
     let animationTimerId = null;
@@ -16229,7 +16229,7 @@ const commonVariables$k = {
   arrowHeight: "6px",
   padding: "8px 14px"
 };
-const self$T = (vars) => {
+const self$U = (vars) => {
   const { boxShadow2, popoverColor, textColor2, borderRadius, fontSize: fontSize2, dividerColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$k), {
     fontSize: fontSize2,
@@ -16243,13 +16243,13 @@ const self$T = (vars) => {
 const popoverLight = {
   name: "Popover",
   common: commonLight,
-  self: self$T
+  self: self$U
 };
 const popoverLight$1 = popoverLight;
 const popoverDark = {
   name: "Popover",
   common: commonDark,
-  self: self$T
+  self: self$U
 };
 const popoverDark$1 = popoverDark;
 const oppositePlacement = {
@@ -16259,7 +16259,7 @@ const oppositePlacement = {
   right: "left"
 };
 const arrowSize = "var(--n-arrow-height) * 1.414";
-const style$j = c$1([cB("popover", `
+const style$k = c$1([cB("popover", `
  transition:
  box-shadow .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -16451,7 +16451,7 @@ const NPopoverBody = defineComponent({
   props: popoverBodyProps,
   setup(props, { slots, attrs }) {
     const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Popover", "-popover", style$j, popoverLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Popover", "-popover", style$k, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
     const bodyRef = ref(null);
@@ -17228,7 +17228,7 @@ const tagDark = {
   }
 };
 const tagDark$1 = tagDark;
-const self$S = (vars) => {
+const self$T = (vars) => {
   const { textColor2, primaryColorHover, primaryColorPressed, primaryColor, infoColor, successColor, warningColor, errorColor, baseColor, borderColor, opacityDisabled, tagColor, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadiusSmall: borderRadius, fontSizeMini, fontSizeTiny, fontSizeSmall, fontSizeMedium, heightMini, heightTiny, heightSmall, heightMedium, closeColorHover, closeColorPressed, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$j), {
     closeBorderRadius: borderRadius,
@@ -17314,7 +17314,7 @@ const self$S = (vars) => {
 const tagLight = {
   name: "Tag",
   common: commonLight,
-  self: self$S
+  self: self$T
 };
 const tagLight$1 = tagLight;
 const commonProps = {
@@ -17334,7 +17334,7 @@ const commonProps = {
     default: void 0
   }
 };
-const style$i = cB("tag", `
+const style$j = cB("tag", `
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -17437,7 +17437,7 @@ const NTag = defineComponent({
   setup(props) {
     const contentRef = ref(null);
     const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Tag", "-tag", style$i, tagLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tag", "-tag", style$j, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
@@ -17568,7 +17568,7 @@ const NTag = defineComponent({
     );
   }
 });
-const style$h = cB("base-clear", `
+const style$i = cB("base-clear", `
  flex-shrink: 0;
  height: 1em;
  width: 1em;
@@ -17608,7 +17608,7 @@ const NBaseClear = defineComponent({
     onClear: Function
   },
   setup(props) {
-    useStyle("-base-clear", style$h, toRef(props, "clsPrefix"));
+    useStyle("-base-clear", style$i, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
         e.preventDefault();
@@ -17675,7 +17675,7 @@ const commonVars$b = {
   clearSize: "16px",
   arrowSize: "16px"
 };
-const self$R = (vars) => {
+const self$S = (vars) => {
   const { borderRadius, textColor2, textColorDisabled, inputColor, inputColorDisabled, primaryColor, primaryColorHover, warningColor, warningColorHover, errorColor, errorColorHover, borderColor, iconColor, iconColorDisabled, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge } = vars;
   return Object.assign(Object.assign({}, commonVars$b), {
     fontSizeTiny,
@@ -17749,7 +17749,7 @@ const internalSelectionLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$R
+  self: self$S
 });
 const internalSelectionLight$1 = internalSelectionLight;
 const internalSelectionDark = {
@@ -17828,7 +17828,7 @@ const internalSelectionDark = {
   }
 };
 const internalSelectionDark$1 = internalSelectionDark;
-const style$g = c$1([cB("base-selection", `
+const style$h = c$1([cB("base-selection", `
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -18068,7 +18068,7 @@ const NInternalSelection = defineComponent({
     const showTagsPopoverRef = ref(false);
     const patternInputFocusedRef = ref(false);
     const hoverRef = ref(false);
-    const themeRef = useTheme("InternalSelection", "-internal-selection", style$g, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelection", "-internal-selection", style$h, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
     const mergedClearableRef = computed(() => {
       return props.clearable && !props.disabled && (hoverRef.value || props.active);
     });
@@ -18808,7 +18808,7 @@ const commonVars$9 = {
   linkPadding: "0 0 0 16px",
   railWidth: "4px"
 };
-const self$Q = (vars) => {
+const self$R = (vars) => {
   const { borderRadius, railColor, primaryColor, primaryColorHover, primaryColorPressed, textColor2 } = vars;
   return Object.assign(Object.assign({}, commonVars$9), {
     borderRadius,
@@ -18824,7 +18824,7 @@ const self$Q = (vars) => {
 const anchorDark = {
   name: "Anchor",
   common: commonDark,
-  self: self$Q
+  self: self$R
 };
 const anchorDark$1 = anchorDark;
 function getIsGroup(option) {
@@ -18974,7 +18974,7 @@ const inputDark = {
   }
 };
 const inputDark$1 = inputDark;
-const self$P = (vars) => {
+const self$Q = (vars) => {
   const { textColor2, textColor3, textColorDisabled, primaryColor, primaryColorHover, inputColor, inputColorDisabled, borderColor, warningColor, warningColorHover, errorColor, errorColorHover, borderRadius, lineHeight: lineHeight2, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge, actionColor, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, iconColor, iconColorDisabled, iconColorHover, iconColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$i), {
     countTextColorDisabled: textColorDisabled,
@@ -19042,7 +19042,7 @@ const self$P = (vars) => {
 const inputLight = {
   name: "Input",
   common: commonLight,
-  self: self$P
+  self: self$Q
 };
 const inputLight$1 = inputLight;
 const inputInjectionKey = createInjectionKey("n-input");
@@ -19132,7 +19132,7 @@ const WordCount = defineComponent({
     };
   }
 });
-const style$f = cB("input", `
+const style$g = cB("input", `
  max-width: 100%;
  cursor: text;
  line-height: 1.5;
@@ -19487,7 +19487,7 @@ const NInput = defineComponent({
   props: inputProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Input", "-input", style$f, inputLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Input", "-input", style$g, inputLight$1, props, mergedClsPrefixRef);
     if (isSafari) {
       useStyle("-input-safari", safariStyle, mergedClsPrefixRef);
     }
@@ -20318,7 +20318,7 @@ const NInput = defineComponent({
     );
   }
 });
-function self$O(vars) {
+function self$P(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -20331,10 +20331,10 @@ const autoCompleteDark = {
     InternalSelectMenu: internalSelectMenuDark$1,
     Input: inputDark$1
   },
-  self: self$O
+  self: self$P
 };
 const autoCompleteDark$1 = autoCompleteDark;
-const self$N = (vars) => {
+const self$O = (vars) => {
   const { borderRadius, avatarColor, cardColor, fontSize: fontSize2, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, modalColor, popoverColor } = vars;
   return {
     borderRadius,
@@ -20353,10 +20353,10 @@ const self$N = (vars) => {
 const avatarDark = {
   name: "Avatar",
   common: commonDark,
-  self: self$N
+  self: self$O
 };
 const avatarDark$1 = avatarDark;
-const self$M = () => {
+const self$N = () => {
   return {
     gap: "-12px"
   };
@@ -20367,7 +20367,7 @@ const avatarGroupDark = {
   peers: {
     Avatar: avatarDark$1
   },
-  self: self$M
+  self: self$N
 };
 const avatarGroupDark$1 = avatarGroupDark;
 const commonVariables$h = {
@@ -20405,14 +20405,14 @@ const badgeDark$1 = badgeDark;
 const commonVariables$g = {
   fontWeightActive: "400"
 };
-const self$L = (vars) => {
+const self$M = (vars) => {
   const { fontSize: fontSize2, textColor3, textColor2, borderRadius, buttonColor2Hover, buttonColor2Pressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$g), { fontSize: fontSize2, itemLineHeight: "1.25", itemTextColor: textColor3, itemTextColorHover: textColor2, itemTextColorPressed: textColor2, itemTextColorActive: textColor2, itemBorderRadius: borderRadius, itemColorHover: buttonColor2Hover, itemColorPressed: buttonColor2Pressed, separatorColor: textColor3 });
 };
 const breadcrumbDark = {
   name: "Breadcrumb",
   common: commonDark,
-  self: self$L
+  self: self$M
 };
 const breadcrumbDark$1 = breadcrumbDark;
 function createHoverColor(rgb) {
@@ -20441,7 +20441,7 @@ const commonVariables$f = {
   iconSizeLarge: "20px",
   rippleDuration: ".6s"
 };
-const self$K = (vars) => {
+const self$L = (vars) => {
   const { heightTiny, heightSmall, heightMedium, heightLarge, borderRadius, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, opacityDisabled, textColor2, textColor3, primaryColorHover, primaryColorPressed, borderColor, primaryColor, baseColor, infoColor, infoColorHover, infoColorPressed, successColor, successColorHover, successColorPressed, warningColor, warningColorHover, warningColorPressed, errorColor, errorColorHover, errorColorPressed, fontWeight, buttonColor2, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$f), {
     heightTiny,
@@ -20643,14 +20643,14 @@ const self$K = (vars) => {
 const buttonLight = {
   name: "Button",
   common: commonLight,
-  self: self$K
+  self: self$L
 };
 const buttonLight$1 = buttonLight;
 const buttonDark = {
   name: "Button",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$K(vars);
+    const commonSelf = self$L(vars);
     commonSelf.waveOpacity = "0.8";
     commonSelf.colorOpacitySecondary = "0.16";
     commonSelf.colorOpacitySecondaryHover = "0.2";
@@ -20659,7 +20659,7 @@ const buttonDark = {
   }
 };
 const buttonDark$1 = buttonDark;
-const style$e = c$1([cB("button", `
+const style$f = c$1([cB("button", `
  margin: 0;
  font-weight: var(--n-font-weight);
  line-height: 1;
@@ -20916,7 +20916,7 @@ const Button = defineComponent({
       enterPressedRef.value = false;
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Button", "-button", style$e, buttonLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Button", "-button", style$f, buttonLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Button", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const theme = themeRef.value;
@@ -21180,7 +21180,7 @@ const XButton = Button;
 const commonVariables$e = {
   titleFontSize: "22px"
 };
-const self$J = (vars) => {
+const self$K = (vars) => {
   const { borderRadius, fontSize: fontSize2, lineHeight: lineHeight2, textColor2, textColor1, textColorDisabled, dividerColor, fontWeightStrong, primaryColor, baseColor, hoverColor, cardColor, modalColor, popoverColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$e), {
     borderRadius,
@@ -21210,10 +21210,10 @@ const calendarDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$J
+  self: self$K
 };
 const calendarDark$1 = calendarDark;
-const self$I = (vars) => {
+const self$J = (vars) => {
   const { fontSize: fontSize2, boxShadow2, popoverColor, textColor2, borderRadius, borderColor, heightSmall, heightMedium, heightLarge, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor } = vars;
   return {
     panelFontSize: fontSize2,
@@ -21238,7 +21238,7 @@ const colorPickerDark = {
     Input: inputDark$1,
     Button: buttonDark$1
   },
-  self: self$I
+  self: self$J
 };
 const colorPickerDark$1 = colorPickerDark;
 const commonVariables$d = {
@@ -21253,7 +21253,7 @@ const commonVariables$d = {
   closeIconSize: "18px",
   closeSize: "22px"
 };
-const self$H = (vars) => {
+const self$I = (vars) => {
   const { primaryColor, borderRadius, lineHeight: lineHeight2, fontSize: fontSize2, cardColor, textColor2, textColor1, dividerColor, fontWeightStrong, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, modalColor, boxShadow1, popoverColor, actionColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$d), {
     lineHeight: lineHeight2,
@@ -21286,14 +21286,14 @@ const self$H = (vars) => {
 const cardLight = {
   name: "Card",
   common: commonLight,
-  self: self$H
+  self: self$I
 };
 const cardLight$1 = cardLight;
 const cardDark = {
   name: "Card",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$H(vars);
+    const commonSelf = self$I(vars);
     const { cardColor, modalColor, popoverColor } = vars;
     commonSelf.colorEmbedded = cardColor;
     commonSelf.colorEmbeddedModal = modalColor;
@@ -21302,7 +21302,7 @@ const cardDark = {
   }
 };
 const cardDark$1 = cardDark;
-const style$d = c$1([cB("card", `
+const style$e = c$1([cB("card", `
  font-size: var(--n-font-size);
  line-height: var(--n-line-height);
  display: flex;
@@ -21447,7 +21447,7 @@ const NCard = defineComponent({
         call(onClose);
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Card", "-card", style$d, cardLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Card", "-card", style$e, cardLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Card", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { size: size2 } = props;
@@ -21535,7 +21535,7 @@ const NCard = defineComponent({
     );
   }
 });
-const self$G = (vars) => {
+const self$H = (vars) => {
   return {
     dotSize: "8px",
     dotColor: "rgba(255, 255, 255, .3)",
@@ -21549,7 +21549,7 @@ const self$G = (vars) => {
 const carouselDark = {
   name: "Carousel",
   common: commonDark,
-  self: self$G
+  self: self$H
 };
 const carouselDark$1 = carouselDark;
 const commonVariables$c = {
@@ -21559,7 +21559,7 @@ const commonVariables$c = {
   labelPadding: "0 8px",
   labelFontWeight: "400"
 };
-const self$F = (vars) => {
+const self$G = (vars) => {
   const { baseColor, inputColorDisabled, cardColor, modalColor, popoverColor, textColorDisabled, borderColor, primaryColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, borderRadiusSmall, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$c), {
     labelLineHeight: lineHeight2,
@@ -21590,7 +21590,7 @@ const self$F = (vars) => {
 const checkboxLight = {
   name: "Checkbox",
   common: commonLight,
-  self: self$F
+  self: self$G
 };
 const checkboxLight$1 = checkboxLight;
 const checkboxDark = {
@@ -21598,14 +21598,14 @@ const checkboxDark = {
   common: commonDark,
   self(vars) {
     const { cardColor } = vars;
-    const commonSelf = self$F(vars);
+    const commonSelf = self$G(vars);
     commonSelf.color = "#0000";
     commonSelf.checkMarkColor = cardColor;
     return commonSelf;
   }
 };
 const checkboxDark$1 = checkboxDark;
-const self$E = (vars) => {
+const self$F = (vars) => {
   const { borderRadius, boxShadow2, popoverColor, textColor2, textColor3, primaryColor, textColorDisabled, dividerColor, hoverColor, fontSizeMedium, heightMedium } = vars;
   return {
     menuBorderRadius: borderRadius,
@@ -21635,7 +21635,7 @@ const cascaderDark = {
     Checkbox: checkboxDark$1,
     Empty: emptyLight$1
   },
-  self: self$E
+  self: self$F
 };
 const cascaderDark$1 = cascaderDark;
 const codeDark = {
@@ -21663,7 +21663,7 @@ const codeDark = {
   }
 };
 const codeDark$1 = codeDark;
-const self$D = (vars) => {
+const self$E = (vars) => {
   const { fontWeight, textColor1, textColor2, textColorDisabled, dividerColor, fontSize: fontSize2 } = vars;
   return {
     titleFontSize: fontSize2,
@@ -21681,10 +21681,10 @@ const self$D = (vars) => {
 const collapseDark = {
   name: "Collapse",
   common: commonDark,
-  self: self$D
+  self: self$E
 };
 const collapseDark$1 = collapseDark;
-const self$C = (vars) => {
+const self$D = (vars) => {
   const { cubicBezierEaseInOut: cubicBezierEaseInOut2 } = vars;
   return {
     bezier: cubicBezierEaseInOut2
@@ -21693,7 +21693,7 @@ const self$C = (vars) => {
 const collapseTransitionDark = {
   name: "CollapseTransition",
   common: commonDark,
-  self: self$C
+  self: self$D
 };
 const collapseTransitionDark$1 = collapseTransitionDark;
 const configProviderProps = {
@@ -21882,7 +21882,7 @@ const popselect = {
   }
 };
 const popselectDark = popselect;
-function self$B(vars) {
+function self$C(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -21895,10 +21895,10 @@ const popselectLight = createTheme({
     Popover: popoverLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$B
+  self: self$C
 });
 const popselectLight$1 = popselectLight;
-function self$A(vars) {
+function self$B(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -21911,7 +21911,7 @@ const selectLight = createTheme({
     InternalSelection: internalSelectionLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$A
+  self: self$B
 });
 const selectLight$1 = selectLight;
 const selectDark = {
@@ -21921,10 +21921,10 @@ const selectDark = {
     InternalSelection: internalSelectionDark$1,
     InternalSelectMenu: internalSelectMenuDark$1
   },
-  self: self$A
+  self: self$B
 };
 const selectDark$1 = selectDark;
-const style$c = c$1([cB("select", `
+const style$d = c$1([cB("select", `
  z-index: auto;
  outline: none;
  width: 100%;
@@ -22049,7 +22049,7 @@ const NSelect = defineComponent({
   props: selectProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Select", "-select", style$c, selectLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Select", "-select", style$d, selectLight$1, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -22688,7 +22688,7 @@ const commonVariables$b = {
   prefixMarginLarge: "0 8px 0 0",
   suffixMarginLarge: "0 0 0 8px"
 };
-const self$z = (vars) => {
+const self$A = (vars) => {
   const {
     textColor2,
     primaryColor,
@@ -22717,7 +22717,7 @@ const paginationLight = createTheme({
     Input: inputLight$1,
     Popselect: popselectLight$1
   },
-  self: self$z
+  self: self$A
 });
 const paginationLight$1 = paginationLight;
 const paginationDark = {
@@ -22733,7 +22733,7 @@ const paginationDark = {
     const borderColorActive = changeColor(primaryColor, {
       alpha: Number(opacity3)
     });
-    const commonSelf = self$z(vars);
+    const commonSelf = self$A(vars);
     commonSelf.itemBorderActive = `1px solid ${borderColorActive}`;
     commonSelf.itemBorderDisabled = "1px solid #0000";
     return commonSelf;
@@ -22755,7 +22755,7 @@ const tooltipDark = {
   }
 };
 const tooltipDark$1 = tooltipDark;
-const self$y = (vars) => {
+const self$z = (vars) => {
   const { borderRadius, boxShadow2, baseColor } = vars;
   return Object.assign(Object.assign({}, commonVars$8), { borderRadius, boxShadow: boxShadow2, color: composite(baseColor, "rgba(0, 0, 0, .85)"), textColor: baseColor });
 };
@@ -22765,7 +22765,7 @@ const tooltipLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$y
+  self: self$z
 });
 const tooltipLight$1 = tooltipLight;
 const ellipsisDark = {
@@ -22833,7 +22833,7 @@ const radioDark = {
   }
 };
 const radioDark$1 = radioDark;
-const self$x = (vars) => {
+const self$y = (vars) => {
   const { borderColor, primaryColor, baseColor, textColorDisabled, inputColorDisabled, textColor2, opacityDisabled, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightSmall, heightMedium, heightLarge, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$a), {
     labelLineHeight: lineHeight2,
@@ -22873,7 +22873,7 @@ const self$x = (vars) => {
 const radioLight = {
   name: "Radio",
   common: commonLight,
-  self: self$x
+  self: self$y
 };
 const radioLight$1 = radioLight;
 const commonVariables$9 = {
@@ -22899,7 +22899,7 @@ const commonVariables$9 = {
   optionIconPrefixWidthLarge: "40px",
   optionIconPrefixWidthHuge: "40px"
 };
-const self$w = (vars) => {
+const self$x = (vars) => {
   const { primaryColor, textColor2, dividerColor, hoverColor, popoverColor, invertedColor, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge, textColor3, opacityDisabled } = vars;
   return Object.assign(Object.assign({}, commonVariables$9), {
     optionHeightSmall: heightSmall,
@@ -22944,7 +22944,7 @@ const dropdownLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$w
+  self: self$x
 });
 const dropdownLight$1 = dropdownLight;
 const dropdownDark = {
@@ -22955,7 +22955,7 @@ const dropdownDark = {
   },
   self(vars) {
     const { primaryColorSuppl, primaryColor, popoverColor } = vars;
-    const commonSelf = self$w(vars);
+    const commonSelf = self$x(vars);
     commonSelf.colorInverted = popoverColor;
     commonSelf.optionColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.optionColorActiveInverted = primaryColorSuppl;
@@ -22980,7 +22980,7 @@ const commonVariables$8 = {
   actionPadding: "8px 12px",
   actionButtonMargin: "0 8px 0 0"
 };
-const self$v = (vars) => {
+const self$w = (vars) => {
   const { cardColor, modalColor, popoverColor, textColor2, textColor1, tableHeaderColor, tableColorHover, iconColor, primaryColor, fontWeightStrong, borderRadius, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor, heightSmall, opacityDisabled, tableColorStriped } = vars;
   return Object.assign(Object.assign({}, commonVariables$8), {
     actionDividerColor: dividerColor,
@@ -23037,7 +23037,7 @@ const dataTableLight = createTheme({
     Ellipsis: ellipsisLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$v
+  self: self$w
 });
 const dataTableLight$1 = dataTableLight;
 const dataTableDark = {
@@ -23055,7 +23055,7 @@ const dataTableDark = {
     Dropdown: dropdownDark$1
   },
   self(vars) {
-    const commonSelf = self$v(vars);
+    const commonSelf = self$w(vars);
     commonSelf.boxShadowAfter = "inset 12px 0 8px -12px rgba(0, 0, 0, .36)";
     commonSelf.boxShadowBefore = "inset -12px 0 8px -12px rgba(0, 0, 0, .36)";
     return commonSelf;
@@ -23099,7 +23099,7 @@ const NDropdownDivider = defineComponent({
     return h("div", { class: `${this.clsPrefix}-dropdown-divider` });
   }
 });
-const self$u = (vars) => {
+const self$v = (vars) => {
   const { textColorBase, opacity1, opacity2, opacity3, opacity4, opacity5 } = vars;
   return {
     color: textColorBase,
@@ -23113,16 +23113,16 @@ const self$u = (vars) => {
 const iconLight = {
   name: "Icon",
   common: commonLight,
-  self: self$u
+  self: self$v
 };
 const iconLight$1 = iconLight;
 const iconDark$1 = {
   name: "Icon",
   common: commonDark,
-  self: self$u
+  self: self$v
 };
 const iconDark$2 = iconDark$1;
-const style$b = cB("icon", `
+const style$c = cB("icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -23150,7 +23150,7 @@ const NIcon = defineComponent({
   props: iconProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Icon", "-icon", style$b, iconLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Icon", "-icon", style$c, iconLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { depth } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -23644,7 +23644,7 @@ const NDropdownMenu = defineComponent({
     );
   }
 });
-const style$a = cB("dropdown-menu", `
+const style$b = cB("dropdown-menu", `
  transform-origin: var(--v-transform-origin);
  background-color: var(--n-color);
  border-radius: var(--n-border-radius);
@@ -23872,7 +23872,7 @@ const NDropdown = defineComponent({
       }
     }, keyboardEnabledRef);
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Dropdown", "-dropdown", style$a, dropdownLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dropdown", "-dropdown", style$b, dropdownLight$1, props, mergedClsPrefixRef);
     provide(dropdownInjectionKey, {
       labelFieldRef: toRef(props, "labelField"),
       childrenFieldRef: toRef(props, "childrenField"),
@@ -24087,7 +24087,7 @@ const commonVars$7 = {
   itemWidth: "52px",
   panelActionPadding: "8px 0"
 };
-const self$t = (vars) => {
+const self$u = (vars) => {
   const { popoverColor, textColor2, primaryColor, hoverColor, dividerColor, opacityDisabled, boxShadow2, borderRadius, iconColor, iconColorDisabled } = vars;
   return Object.assign(Object.assign({}, commonVars$7), {
     panelColor: popoverColor,
@@ -24111,7 +24111,7 @@ const timePickerDark = {
     Button: buttonDark$1,
     Input: inputDark$1
   },
-  self: self$t
+  self: self$u
 };
 const timePickerDark$1 = timePickerDark;
 const commonVars$6 = {
@@ -24150,7 +24150,7 @@ const commonVars$6 = {
   calendarRightPaddingQuarterrange: "0",
   calendarRightPaddingYearrange: "0"
 };
-const self$s = (vars) => {
+const self$t = (vars) => {
   const { hoverColor, fontSize: fontSize2, textColor2, textColorDisabled, popoverColor, primaryColor, borderRadiusSmall, iconColor, iconColorDisabled, textColor1, dividerColor, boxShadow2, borderRadius, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVars$6), {
     itemFontSize: fontSize2,
@@ -24194,7 +24194,7 @@ const datePickerDark = {
   },
   self(vars) {
     const { popoverColor, hoverColor, primaryColor } = vars;
-    const commonSelf = self$s(vars);
+    const commonSelf = self$t(vars);
     commonSelf.itemColorDisabled = composite(popoverColor, hoverColor);
     commonSelf.itemColorIncluded = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorHover = composite(popoverColor, hoverColor);
@@ -24216,7 +24216,7 @@ const commonVariables$7 = {
   tdPaddingMedium: "0 0 12px 0",
   tdPaddingLarge: "0 0 16px 0"
 };
-const self$r = (vars) => {
+const self$s = (vars) => {
   const { tableHeaderColor, textColor2, textColor1, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge } = vars;
   return Object.assign(Object.assign({}, commonVariables$7), {
     lineHeight: lineHeight2,
@@ -24242,13 +24242,13 @@ const self$r = (vars) => {
 const descriptionsLight = {
   name: "Descriptions",
   common: commonLight,
-  self: self$r
+  self: self$s
 };
 const descriptionsLight$1 = descriptionsLight;
 const descriptionsDark = {
   name: "Descriptions",
   common: commonDark,
-  self: self$r
+  self: self$s
 };
 const descriptionsDark$1 = descriptionsDark;
 const commonVars$5 = {
@@ -24264,7 +24264,7 @@ const commonVars$5 = {
   closeMargin: "20px 26px 0 0",
   closeMarginIconTop: "10px 16px 0 0"
 };
-const self$q = (vars) => {
+const self$r = (vars) => {
   const { textColor1, textColor2, modalColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, infoColor, successColor, warningColor, errorColor, primaryColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$5), {
     fontSize: fontSize2,
@@ -24294,7 +24294,7 @@ const dialogLight = createTheme({
   peers: {
     Button: buttonLight$1
   },
-  self: self$q
+  self: self$r
 });
 const dialogLight$1 = dialogLight;
 const dialogDark = {
@@ -24303,7 +24303,7 @@ const dialogDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$q
+  self: self$r
 };
 const dialogDark$1 = dialogDark;
 const dialogProps = {
@@ -24335,7 +24335,7 @@ const dialogProps = {
   onClose: Function
 };
 const dialogPropKeys = keysOf(dialogProps);
-const style$9 = c$1([cB("dialog", `
+const style$a = c$1([cB("dialog", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: relative;
@@ -24443,7 +24443,7 @@ const NDialog = defineComponent({
       if (onClose)
         onClose();
     }
-    const themeRef = useTheme("Dialog", "-dialog", style$9, dialogLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dialog", "-dialog", style$a, dialogLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const iconPlacement = mergedIconPlacementRef.value;
@@ -24530,7 +24530,7 @@ const NDialog = defineComponent({
   }
 });
 const dialogProviderInjectionKey = createInjectionKey("n-dialog-provider");
-const self$p = (vars) => {
+const self$q = (vars) => {
   const { modalColor, textColor2, boxShadow3 } = vars;
   return {
     color: modalColor,
@@ -24546,7 +24546,7 @@ const modalLight = createTheme({
     Dialog: dialogLight$1,
     Card: cardLight$1
   },
-  self: self$p
+  self: self$q
 });
 const modalLight$1 = modalLight;
 const modalDark = {
@@ -24557,7 +24557,7 @@ const modalDark = {
     Dialog: dialogDark$1,
     Card: cardDark$1
   },
-  self: self$p
+  self: self$q
 };
 const modalDark$1 = modalDark;
 const presetProps = Object.assign(Object.assign({}, cardBaseProps), dialogProps);
@@ -24769,7 +24769,7 @@ const NModalBodyWrapper = defineComponent({
     ]) : null;
   }
 });
-const style$8 = c$1([cB("modal-container", `
+const style$9 = c$1([cB("modal-container", `
  position: fixed;
  left: 0;
  top: 0;
@@ -24861,7 +24861,7 @@ const NModal = defineComponent({
   setup(props) {
     const containerRef = ref(null);
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Modal", "-modal", style$8, modalLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Modal", "-modal", style$9, modalLight$1, props, mergedClsPrefixRef);
     const clickedRef = useClicked(64);
     const clickedPositionRef = useClickPosition();
     const isMountedRef = isMounted();
@@ -25031,7 +25031,7 @@ const NModal = defineComponent({
     });
   }
 });
-const self$o = (vars) => {
+const self$p = (vars) => {
   const { textColor1, dividerColor, fontWeightStrong } = vars;
   return {
     textColor: textColor1,
@@ -25042,10 +25042,10 @@ const self$o = (vars) => {
 const dividerDark = {
   name: "Divider",
   common: commonDark,
-  self: self$o
+  self: self$p
 };
 const dividerDark$1 = dividerDark;
-const self$n = (vars) => {
+const self$o = (vars) => {
   const { modalColor, textColor1, textColor2, boxShadow3, lineHeight: lineHeight2, fontWeightStrong, dividerColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadius, primaryColorHover } = vars;
   return {
     bodyPadding: "16px 24px",
@@ -25077,7 +25077,7 @@ const drawerLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$n
+  self: self$o
 });
 const drawerLight$1 = drawerLight;
 const drawerDark = {
@@ -25086,7 +25086,7 @@ const drawerDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$n
+  self: self$o
 };
 const drawerDark$1 = drawerDark;
 const NDrawerBodyWrapper = defineComponent({
@@ -25397,7 +25397,7 @@ function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s"
     })
   ];
 }
-const style$7 = c$1([cB("drawer", `
+const style$8 = c$1([cB("drawer", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: absolute;
@@ -25607,7 +25607,7 @@ const NDrawer = defineComponent({
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
     const isMountedRef = isMounted();
-    const themeRef = useTheme("Drawer", "-drawer", style$7, drawerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Drawer", "-drawer", style$8, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
     const uncontrolledHeightRef = ref(props.defaultHeight);
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
@@ -25831,12 +25831,12 @@ const spaceDark = {
   }
 };
 const spaceDark$1 = spaceDark;
-const self$m = () => {
+const self$n = () => {
   return commonVars$4;
 };
 const spaceLight = {
   name: "Space",
-  self: self$m
+  self: self$n
 };
 const spaceLight$1 = spaceLight;
 let supportFlexGap;
@@ -26006,20 +26006,20 @@ const commonVariables$5 = {
   labelTextAlignHorizontal: "right",
   labelFontWeight: "400"
 };
-const self$l = (vars) => {
+const self$m = (vars) => {
   const { heightSmall, heightMedium, heightLarge, textColor1, errorColor, warningColor, lineHeight: lineHeight2, textColor3 } = vars;
   return Object.assign(Object.assign({}, commonVariables$5), { blankHeightSmall: heightSmall, blankHeightMedium: heightMedium, blankHeightLarge: heightLarge, lineHeight: lineHeight2, labelTextColor: textColor1, asteriskColor: errorColor, feedbackTextColorError: errorColor, feedbackTextColorWarning: warningColor, feedbackTextColor: textColor3 });
 };
 const formLight = {
   name: "Form",
   common: commonLight,
-  self: self$l
+  self: self$m
 };
 const formLight$1 = formLight;
 const formItemDark = {
   name: "Form",
   common: commonDark,
-  self: self$l
+  self: self$m
 };
 const formDark = formItemDark;
 const defaultSpan$1 = 1;
@@ -26354,7 +26354,7 @@ const NGrid = defineComponent({
     }) : renderContent();
   }
 });
-const self$k = (vars) => {
+const self$l = (vars) => {
   const { primaryColor, baseColor } = vars;
   return {
     color: primaryColor,
@@ -26364,7 +26364,7 @@ const self$k = (vars) => {
 const iconDark = {
   name: "IconWrapper",
   common: commonDark,
-  self: self$k
+  self: self$l
 };
 const iconWrapperDark = iconDark;
 const commonVars$3 = {
@@ -26377,7 +26377,7 @@ const commonVars$3 = {
   metaFontSize: "12px",
   descriptionFontSize: "12px"
 };
-const self$j = (vars) => {
+const self$k = (vars) => {
   const { textColor2, successColor, infoColor, warningColor, errorColor, popoverColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, textColor1, textColor3, borderRadius, fontWeightStrong, boxShadow2, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$3), {
     borderRadius,
@@ -26409,7 +26409,7 @@ const notificationLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$j
+  self: self$k
 });
 const notificationLight$1 = notificationLight;
 const notificationDark = {
@@ -26418,7 +26418,7 @@ const notificationDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$j
+  self: self$k
 };
 const notificationDark$1 = notificationDark;
 const commonVariables$4 = {
@@ -26433,7 +26433,7 @@ const commonVariables$4 = {
   iconSize: "20px",
   fontSize: "14px"
 };
-const self$i = (vars) => {
+const self$j = (vars) => {
   const { textColor2, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, errorColor, warningColor, popoverColor, boxShadow2, primaryColor, lineHeight: lineHeight2, borderRadius, closeColorHover, closeColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$4), {
     closeBorderRadius: borderRadius,
@@ -26499,13 +26499,13 @@ const self$i = (vars) => {
 const messageLight = {
   name: "Message",
   common: commonLight,
-  self: self$i
+  self: self$j
 };
 const messageLight$1 = messageLight;
 const messageDark = {
   name: "Message",
   common: commonDark,
-  self: self$i
+  self: self$j
 };
 const messageDark$1 = messageDark;
 const buttonGroupDark = {
@@ -26564,7 +26564,7 @@ const layoutDark = {
   }
 };
 const layoutDark$1 = layoutDark;
-const self$h = (vars) => {
+const self$i = (vars) => {
   const { baseColor, textColor2, bodyColor, cardColor, dividerColor, actionColor, scrollbarColor, scrollbarColorHover, invertedColor } = vars;
   return {
     textColor: textColor2,
@@ -26599,10 +26599,10 @@ const layoutLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$h
+  self: self$i
 });
 const layoutLight$1 = layoutLight;
-const self$g = (vars) => {
+const self$h = (vars) => {
   const { textColor2, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontSize: fontSize2, hoverColor } = vars;
   return {
     textColor: textColor2,
@@ -26622,7 +26622,7 @@ const self$g = (vars) => {
 const listDark$1 = {
   name: "List",
   common: commonDark,
-  self: self$g
+  self: self$h
 };
 const listDark$2 = listDark$1;
 const loadingBarDark = {
@@ -26712,7 +26712,7 @@ function createPartialInvertedVars(color, activeItemColor, activeTextColor, grou
     groupTextColorInverted: groupTextColor
   };
 }
-const self$f = (vars) => {
+const self$g = (vars) => {
   const { borderRadius, textColor3, primaryColor, textColor2, textColor1, fontSize: fontSize2, dividerColor, hoverColor, primaryColorHover } = vars;
   return Object.assign({
     borderRadius,
@@ -26767,7 +26767,7 @@ const menuLight = createTheme({
     Tooltip: tooltipLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$f
+  self: self$g
 });
 const menuLight$1 = menuLight;
 const menuDark = {
@@ -26779,7 +26779,7 @@ const menuDark = {
   },
   self(vars) {
     const { primaryColor, primaryColorSuppl } = vars;
-    const commonSelf = self$f(vars);
+    const commonSelf = self$g(vars);
     commonSelf.itemColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveHover = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveCollapsed = changeColor(primaryColor, {
@@ -26796,19 +26796,19 @@ const common = {
   titleFontSize: "18px",
   backSize: "22px"
 };
-function self$e(vars) {
+function self$f(vars) {
   const { textColor1, textColor2, textColor3, fontSize: fontSize2, fontWeightStrong, primaryColorHover, primaryColorPressed } = vars;
   return Object.assign(Object.assign({}, common), { titleFontWeight: fontWeightStrong, fontSize: fontSize2, titleTextColor: textColor1, backColor: textColor2, backColorHover: primaryColorHover, backColorPressed: primaryColorPressed, subtitleTextColor: textColor3 });
 }
 const pageHeaderDark = {
   name: "PageHeader",
   common: commonDark,
-  self: self$e
+  self: self$f
 };
 const commonVars$2 = {
   iconSize: "22px"
 };
-const self$d = (vars) => {
+const self$e = (vars) => {
   const { fontSize: fontSize2, warningColor } = vars;
   return Object.assign(Object.assign({}, commonVars$2), { fontSize: fontSize2, iconColor: warningColor });
 };
@@ -26819,10 +26819,10 @@ const popconfirmDark = {
     Button: buttonDark$1,
     Popover: popoverDark$1
   },
-  self: self$d
+  self: self$e
 };
 const popconfirmDark$1 = popconfirmDark;
-const self$c = (vars) => {
+const self$d = (vars) => {
   const { infoColor, successColor, warningColor, errorColor, textColor2, progressRailColor, fontSize: fontSize2, fontWeight } = vars;
   return {
     fontSize: fontSize2,
@@ -26851,14 +26851,14 @@ const self$c = (vars) => {
 const progressLight = {
   name: "Progress",
   common: commonLight,
-  self: self$c
+  self: self$d
 };
 const progressLight$1 = progressLight;
 const progressDark = {
   name: "Progress",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$c(vars);
+    const commonSelf = self$d(vars);
     commonSelf.textColorLineInner = "rgb(0, 0, 0)";
     commonSelf.lineBgProcessing = "linear-gradient(90deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .5) 100%)";
     return commonSelf;
@@ -26899,20 +26899,20 @@ const commonVariables$3 = {
   iconColor403: void 0,
   iconColor500: void 0
 };
-const self$b = (vars) => {
+const self$c = (vars) => {
   const { textColor2, textColor1, errorColor, successColor, infoColor, warningColor, lineHeight: lineHeight2, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$3), { lineHeight: lineHeight2, titleFontWeight: fontWeightStrong, titleTextColor: textColor1, textColor: textColor2, iconColorError: errorColor, iconColorSuccess: successColor, iconColorInfo: infoColor, iconColorWarning: warningColor });
 };
 const resultLight = {
   name: "Result",
   common: commonLight,
-  self: self$b
+  self: self$c
 };
 const resultLight$1 = resultLight;
 const resultDark = {
   name: "Result",
   common: commonDark,
-  self: self$b
+  self: self$c
 };
 const resultDark$1 = resultDark;
 const sizeVariables$3 = {
@@ -26933,6 +26933,18 @@ const sliderDark = {
   }
 };
 const sliderDark$1 = sliderDark;
+const self$b = (vars) => {
+  const indicatorColor = "rgba(0, 0, 0, .85)";
+  const boxShadow = "0 2px 8px 0 rgba(0, 0, 0, 0.12)";
+  const { railColor, primaryColor, baseColor, cardColor, modalColor, popoverColor, borderRadius, fontSize: fontSize2, opacityDisabled } = vars;
+  return Object.assign(Object.assign({}, sizeVariables$3), { fontSize: fontSize2, markFontSize: fontSize2, railColor, railColorHover: railColor, fillColor: primaryColor, fillColorHover: primaryColor, opacityDisabled, handleColor: "#FFF", dotColor: cardColor, dotColorModal: modalColor, dotColorPopover: popoverColor, handleBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowHover: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowActive: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", handleBoxShadowFocus: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", indicatorColor, indicatorBoxShadow: boxShadow, indicatorTextColor: baseColor, indicatorBorderRadius: borderRadius, dotBorder: `2px solid ${railColor}`, dotBorderActive: `2px solid ${primaryColor}`, dotBoxShadow: "" });
+};
+const sliderLight = {
+  name: "Slider",
+  common: commonLight,
+  self: self$b
+};
+const sliderLight$1 = sliderLight;
 const self$a = (vars) => {
   const { opacityDisabled, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, primaryColor, fontSize: fontSize2 } = vars;
   return {
@@ -27409,7 +27421,7 @@ const positionProp = {
   type: String,
   default: "static"
 };
-const style$6 = cB("layout", `
+const style$7 = cB("layout", `
  color: var(--n-text-color);
  background-color: var(--n-color);
  box-sizing: border-box;
@@ -27460,7 +27472,7 @@ function createLayoutComponent(isContent) {
       const scrollableElRef = ref(null);
       const scrollbarInstRef = ref(null);
       const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-      const themeRef = useTheme("Layout", "-layout", style$6, layoutLight$1, props, mergedClsPrefixRef);
+      const themeRef = useTheme("Layout", "-layout", style$7, layoutLight$1, props, mergedClsPrefixRef);
       function scrollTo(options, y) {
         if (props.nativeScrollbar) {
           const { value: scrollableEl } = scrollableElRef;
@@ -27545,7 +27557,7 @@ function createLayoutComponent(isContent) {
   });
 }
 const NLayout = createLayoutComponent(false);
-const style$5 = cB("layout-sider", `
+const style$6 = cB("layout-sider", `
  flex-shrink: 0;
  box-sizing: border-box;
  position: relative;
@@ -27849,7 +27861,7 @@ const NLayoutSider = defineComponent({
       collapseModeRef: toRef(props, "collapseMode")
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Layout", "-layout-sider", style$5, layoutLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Layout", "-layout-sider", style$6, layoutLight$1, props, mergedClsPrefixRef);
     function handleTransitionend(e) {
       var _a2, _b;
       if (e.propertyName === "max-width") {
@@ -28475,7 +28487,7 @@ const horizontalHoverStyleChildren = [cE("icon", `
  `), cE("extra", `
  color: var(--n-item-text-color-hover-horizontal);
  `)])];
-const style$4 = c$1([cB("menu", `
+const style$5 = c$1([cB("menu", `
  background-color: var(--n-color);
  color: var(--n-item-text-color);
  overflow: hidden;
@@ -28730,7 +28742,7 @@ const NMenu = defineComponent({
   props: menuProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Menu", "-menu", style$4, menuLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Menu", "-menu", style$5, menuLight$1, props, mergedClsPrefixRef);
     const layoutSider = inject(layoutSiderInjectionKey, null);
     const mergedCollapsedRef = computed(() => {
       var _a2;
@@ -29014,7 +29026,7 @@ const messageProps = {
 };
 const messageApiInjectionKey = createInjectionKey("n-message-api");
 const messageProviderInjectionKey = createInjectionKey("n-message-provider");
-const style$3 = c$1([cB("message-wrapper", `
+const style$4 = c$1([cB("message-wrapper", `
  margin: var(--n-margin);
  z-index: 0;
  transform-origin: top center;
@@ -29135,7 +29147,7 @@ const NMessage = defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(messageProviderInjectionKey);
     const rtlEnabledRef = useRtl("Message", mergedRtlRef, mergedClsPrefixRef);
-    const themeRef = useTheme("Message", "-message", style$3, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
+    const themeRef = useTheme("Message", "-message", style$4, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { padding, margin, maxWidth, iconMargin, closeMargin, closeSize, iconSize, fontSize: fontSize2, lineHeight: lineHeight2, borderRadius, iconColorInfo, iconColorSuccess, iconColorWarning, iconColorError, iconColorLoading, closeIconSize, closeBorderRadius, [createKey("textColor", type)]: textColor, [createKey("boxShadow", type)]: boxShadow, [createKey("color", type)]: color, [createKey("closeColorHover", type)]: closeColorHover, [createKey("closeColorPressed", type)]: closeColorPressed, [createKey("closeIconColor", type)]: closeIconColor, [createKey("closeIconColorPressed", type)]: closeIconColorPressed, [createKey("closeIconColorHover", type)]: closeIconColorHover } } = themeRef.value;
@@ -29736,7 +29748,7 @@ const NotificationEnvironment = defineComponent({
     });
   }
 });
-const style$2 = c$1([cB("notification-container", `
+const style$3 = c$1([cB("notification-container", `
  z-index: 4000;
  position: fixed;
  overflow: visible;
@@ -29989,7 +30001,7 @@ const NNotificationProvider = defineComponent({
       leavingKeySet.delete(key);
       notificationListRef.value.splice(notificationListRef.value.findIndex((notification) => notification.key === key), 1);
     }
-    const themeRef = useTheme("Notification", "-notification", style$2, notificationLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Notification", "-notification", style$3, notificationLight$1, props, mergedClsPrefixRef);
     const api = {
       create,
       info: apis[0],
@@ -30060,7 +30072,7 @@ function useNotification() {
   }
   return api;
 }
-const style$1 = c$1([cB("progress", {
+const style$2 = c$1([cB("progress", {
   display: "inline-block"
 }, [cB("progress-icon", `
  color: var(--n-icon-color);
@@ -30639,7 +30651,7 @@ const NProgress = defineComponent({
       return void 0;
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Progress", "-progress", style$1, progressLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Progress", "-progress", style$2, progressLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { status } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, fontSizeCircle, railColor, railHeight, iconSizeCircle, iconSizeLine, textColorCircle, textColorLineInner, textColorLineOuter, lineBgProcessing, fontWeightCircle, [createKey("iconColor", status)]: iconColor, [createKey("fillColor", status)]: fillColor } } = themeRef.value;
@@ -30719,6 +30731,719 @@ const skeletonDark = {
     };
   }
 };
+function isTouchEvent(e) {
+  return window.TouchEvent && e instanceof window.TouchEvent;
+}
+function useRefs() {
+  const refs = ref(/* @__PURE__ */ new Map());
+  const setRefs = (index) => (el) => {
+    refs.value.set(index, el);
+  };
+  onBeforeUpdate(() => refs.value.clear());
+  return [refs, setRefs];
+}
+const style$1 = c$1([cB("slider", `
+ display: block;
+ padding: calc((var(--n-handle-size) - var(--n-rail-height)) / 2) 0;
+ position: relative;
+ z-index: 0;
+ width: 100%;
+ cursor: pointer;
+ user-select: none;
+ -webkit-user-select: none;
+ `, [cM("reverse", [cB("slider-handles", [cB("slider-handle-wrapper", `
+ transform: translate(50%, -50%);
+ `)]), cB("slider-dots", [cB("slider-dot", `
+ transform: translateX(50%, -50%);
+ `)]), cM("vertical", [cB("slider-handles", [cB("slider-handle-wrapper", `
+ transform: translate(-50%, -50%);
+ `)]), cB("slider-marks", [cB("slider-mark", `
+ transform: translateY(calc(-50% + var(--n-dot-height) / 2));
+ `)]), cB("slider-dots", [cB("slider-dot", `
+ transform: translateX(-50%) translateY(0);
+ `)])])]), cM("vertical", `
+ padding: 0 calc((var(--n-handle-size) - var(--n-rail-height)) / 2);
+ width: var(--n-rail-width-vertical);
+ height: 100%;
+ `, [cB("slider-handles", `
+ top: calc(var(--n-handle-size) / 2);
+ right: 0;
+ bottom: calc(var(--n-handle-size) / 2);
+ left: 0;
+ `, [cB("slider-handle-wrapper", `
+ top: unset;
+ left: 50%;
+ transform: translate(-50%, 50%);
+ `)]), cB("slider-rail", `
+ height: 100%;
+ `, [cE("fill", `
+ top: unset;
+ right: 0;
+ bottom: unset;
+ left: 0;
+ `)]), cM("with-mark", `
+ width: var(--n-rail-width-vertical);
+ margin: 0 32px 0 8px;
+ `), cB("slider-marks", `
+ top: calc(var(--n-handle-size) / 2);
+ right: unset;
+ bottom: calc(var(--n-handle-size) / 2);
+ left: 22px;
+ font-size: var(--n-mark-font-size);
+ `, [cB("slider-mark", `
+ transform: translateY(50%);
+ white-space: nowrap;
+ `)]), cB("slider-dots", `
+ top: calc(var(--n-handle-size) / 2);
+ right: unset;
+ bottom: calc(var(--n-handle-size) / 2);
+ left: 50%;
+ `, [cB("slider-dot", `
+ transform: translateX(-50%) translateY(50%);
+ `)])]), cM("disabled", `
+ cursor: not-allowed;
+ opacity: var(--n-opacity-disabled);
+ `, [cB("slider-handle", `
+ cursor: not-allowed;
+ `)]), cM("with-mark", `
+ width: 100%;
+ margin: 8px 0 32px 0;
+ `), c$1("&:hover", [cB("slider-rail", {
+  backgroundColor: "var(--n-rail-color-hover)"
+}, [cE("fill", {
+  backgroundColor: "var(--n-fill-color-hover)"
+})]), cB("slider-handle", {
+  boxShadow: "var(--n-handle-box-shadow-hover)"
+})]), cM("active", [cB("slider-rail", {
+  backgroundColor: "var(--n-rail-color-hover)"
+}, [cE("fill", {
+  backgroundColor: "var(--n-fill-color-hover)"
+})]), cB("slider-handle", {
+  boxShadow: "var(--n-handle-box-shadow-hover)"
+})]), cB("slider-marks", `
+ position: absolute;
+ top: 18px;
+ left: calc(var(--n-handle-size) / 2);
+ right: calc(var(--n-handle-size) / 2);
+ `, [cB("slider-mark", `
+ position: absolute;
+ transform: translateX(-50%);
+ white-space: nowrap;
+ `)]), cB("slider-rail", `
+ width: 100%;
+ position: relative;
+ height: var(--n-rail-height);
+ background-color: var(--n-rail-color);
+ transition: background-color .3s var(--n-bezier);
+ border-radius: calc(var(--n-rail-height) / 2);
+ `, [cE("fill", `
+ position: absolute;
+ top: 0;
+ bottom: 0;
+ border-radius: calc(var(--n-rail-height) / 2);
+ transition: background-color .3s var(--n-bezier);
+ background-color: var(--n-fill-color);
+ `)]), cB("slider-handles", `
+ position: absolute;
+ top: 0;
+ right: calc(var(--n-handle-size) / 2);
+ bottom: 0;
+ left: calc(var(--n-handle-size) / 2);
+ `, [cB("slider-handle-wrapper", `
+ outline: none;
+ position: absolute;
+ top: 50%;
+ transform: translate(-50%, -50%);
+ cursor: pointer;
+ display: flex;
+ `, [cB("slider-handle", `
+ height: var(--n-handle-size);
+ width: var(--n-handle-size);
+ border-radius: 50%;
+ overflow: hidden;
+ transition: box-shadow .2s var(--n-bezier), background-color .3s var(--n-bezier);
+ background-color: var(--n-handle-color);
+ box-shadow: var(--n-handle-box-shadow);
+ `, [c$1("&:hover", `
+ box-shadow: var(--n-handle-box-shadow-hover);
+ `)]), c$1("&:focus", [cB("slider-handle", `
+ box-shadow: var(--n-handle-box-shadow-focus);
+ `, [c$1("&:hover", `
+ box-shadow: var(--n-handle-box-shadow-active);
+ `)])])])]), cB("slider-dots", `
+ position: absolute;
+ top: 50%;
+ left: calc(var(--n-handle-size) / 2);
+ right: calc(var(--n-handle-size) / 2);
+ `, [cM("transition-disabled", [cB("slider-dot", "transition: none;")]), cB("slider-dot", `
+ transition:
+ border-color .3s var(--n-bezier),
+ box-shadow .3s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ position: absolute;
+ transform: translate(-50%, -50%);
+ height: var(--n-dot-height);
+ width: var(--n-dot-width);
+ border-radius: var(--n-dot-border-radius);
+ overflow: hidden;
+ box-sizing: border-box;
+ border: var(--n-dot-border);
+ background-color: var(--n-dot-color);
+ `, [cM("active", "border: var(--n-dot-border-active);")])])]), cB("slider-handle-indicator", `
+ font-size: var(--n-font-size);
+ padding: 6px 10px;
+ border-radius: var(--n-indicator-border-radius);
+ color: var(--n-indicator-text-color);
+ background-color: var(--n-indicator-color);
+ box-shadow: var(--n-indicator-box-shadow);
+ `, [fadeInScaleUpTransition()]), cB("slider-handle-indicator", `
+ font-size: var(--n-font-size);
+ padding: 6px 10px;
+ border-radius: var(--n-indicator-border-radius);
+ color: var(--n-indicator-text-color);
+ background-color: var(--n-indicator-color);
+ box-shadow: var(--n-indicator-box-shadow);
+ `, [cM("top", `
+ margin-bottom: 12px;
+ `), cM("right", `
+ margin-left: 12px;
+ `), cM("bottom", `
+ margin-top: 12px;
+ `), cM("left", `
+ margin-right: 12px;
+ `), fadeInScaleUpTransition()]), insideModal(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-modal);")])), insidePopover(cB("slider", [cB("slider-dot", "background-color: var(--n-dot-color-popover);")]))]);
+const eventButtonLeft = 0;
+const sliderProps = Object.assign(Object.assign({}, useTheme.props), { to: useAdjustedTo.propTo, defaultValue: {
+  type: [Number, Array],
+  default: 0
+}, marks: Object, disabled: {
+  type: Boolean,
+  default: void 0
+}, formatTooltip: Function, keyboard: {
+  type: Boolean,
+  default: true
+}, min: {
+  type: Number,
+  default: 0
+}, max: {
+  type: Number,
+  default: 100
+}, step: {
+  type: [Number, String],
+  default: 1
+}, range: Boolean, value: [Number, Array], placement: String, showTooltip: {
+  type: Boolean,
+  default: void 0
+}, tooltip: {
+  type: Boolean,
+  default: true
+}, vertical: Boolean, reverse: Boolean, "onUpdate:value": [Function, Array], onUpdateValue: [Function, Array] });
+const NSlider = defineComponent({
+  name: "Slider",
+  props: sliderProps,
+  setup(props) {
+    const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
+    const themeRef = useTheme("Slider", "-slider", style$1, sliderLight$1, props, mergedClsPrefixRef);
+    const handleRailRef = ref(null);
+    const [handleRefs, setHandleRefs] = useRefs();
+    const [followerRefs, setFollowerRefs] = useRefs();
+    const followerEnabledIndexSetRef = ref(/* @__PURE__ */ new Set());
+    const formItem = useFormItem(props);
+    const { mergedDisabledRef } = formItem;
+    const precisionRef = computed(() => {
+      const { step } = props;
+      if (step <= 0 || step === "mark")
+        return 0;
+      const stepString = step.toString();
+      let precision = 0;
+      if (stepString.includes(".")) {
+        precision = stepString.length - stepString.indexOf(".") - 1;
+      }
+      return precision;
+    });
+    const uncontrolledValueRef = ref(props.defaultValue);
+    const controlledValueRef = toRef(props, "value");
+    const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
+    const arrifiedValueRef = computed(() => {
+      const { value: mergedValue } = mergedValueRef;
+      return (props.range ? mergedValue : [mergedValue]).map(clampValue);
+    });
+    const handleCountExceeds2Ref = computed(() => arrifiedValueRef.value.length > 2);
+    const mergedPlacementRef = computed(() => {
+      return props.placement === void 0 ? props.vertical ? "right" : "top" : props.placement;
+    });
+    const markValuesRef = computed(() => {
+      const { marks } = props;
+      return marks ? Object.keys(marks).map(parseFloat) : null;
+    });
+    const activeIndexRef = ref(-1);
+    const previousIndexRef = ref(-1);
+    const hoverIndexRef = ref(-1);
+    const draggingRef = ref(false);
+    const dotTransitionDisabledRef = ref(false);
+    const styleDirectionRef = computed(() => {
+      const { vertical, reverse } = props;
+      const left = reverse ? "right" : "left";
+      const bottom = reverse ? "top" : "bottom";
+      return vertical ? bottom : left;
+    });
+    const fillStyleRef = computed(() => {
+      if (handleCountExceeds2Ref.value)
+        return;
+      const values = arrifiedValueRef.value;
+      const start = valueToPercentage(props.range ? Math.min(...values) : props.min);
+      const end = valueToPercentage(props.range ? Math.max(...values) : values[0]);
+      const { value: styleDirection } = styleDirectionRef;
+      return props.vertical ? {
+        [styleDirection]: `${start}%`,
+        height: `${end - start}%`
+      } : {
+        [styleDirection]: `${start}%`,
+        width: `${end - start}%`
+      };
+    });
+    const markInfosRef = computed(() => {
+      const mergedMarks = [];
+      const { marks } = props;
+      if (marks) {
+        const orderValues = arrifiedValueRef.value.slice();
+        orderValues.sort((a, b) => a - b);
+        const { value: styleDirection } = styleDirectionRef;
+        const { value: handleCountExceeds2 } = handleCountExceeds2Ref;
+        const { range } = props;
+        const isActive = handleCountExceeds2 ? () => false : (num) => range ? num >= orderValues[0] && num <= orderValues[orderValues.length - 1] : num <= orderValues[0];
+        for (const key of Object.keys(marks)) {
+          const num = Number(key);
+          mergedMarks.push({
+            active: isActive(num),
+            label: marks[key],
+            style: {
+              [styleDirection]: `${valueToPercentage(num)}%`
+            }
+          });
+        }
+      }
+      return mergedMarks;
+    });
+    function getHandleStyle(value, index) {
+      const percentage = valueToPercentage(value);
+      const { value: styleDirection } = styleDirectionRef;
+      return {
+        [styleDirection]: `${percentage}%`,
+        zIndex: index === activeIndexRef.value ? 1 : 0
+      };
+    }
+    function isShowTooltip(index) {
+      return props.showTooltip || hoverIndexRef.value === index || activeIndexRef.value === index && draggingRef.value;
+    }
+    function shouldKeepTooltipTransition(index) {
+      if (!draggingRef.value)
+        return true;
+      return !(activeIndexRef.value === index && previousIndexRef.value === index);
+    }
+    function focusActiveHandle(index) {
+      var _a2;
+      if (~index) {
+        activeIndexRef.value = index;
+        (_a2 = handleRefs.value.get(index)) === null || _a2 === void 0 ? void 0 : _a2.focus();
+      }
+    }
+    function syncPosition() {
+      followerRefs.value.forEach((inst, index) => {
+        if (isShowTooltip(index))
+          inst.syncPosition();
+      });
+    }
+    function doUpdateValue(value) {
+      const { "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
+      const { nTriggerFormInput, nTriggerFormChange } = formItem;
+      if (onUpdateValue)
+        call(onUpdateValue, value);
+      if (_onUpdateValue)
+        call(_onUpdateValue, value);
+      uncontrolledValueRef.value = value;
+      nTriggerFormInput();
+      nTriggerFormChange();
+    }
+    function dispatchValueUpdate(value) {
+      const { range } = props;
+      if (range) {
+        if (Array.isArray(value)) {
+          const { value: oldValues } = arrifiedValueRef;
+          if (value.join() !== oldValues.join()) {
+            doUpdateValue(value);
+          }
+        }
+      } else if (!Array.isArray(value)) {
+        const oldValue = arrifiedValueRef.value[0];
+        if (oldValue !== value) {
+          doUpdateValue(value);
+        }
+      }
+    }
+    function doDispatchValue(value, index) {
+      if (props.range) {
+        const values = arrifiedValueRef.value.slice();
+        values.splice(index, 1, value);
+        dispatchValueUpdate(values);
+      } else {
+        dispatchValueUpdate(value);
+      }
+    }
+    function sanitizeValue(value, currentValue, stepBuffer) {
+      const stepping = stepBuffer !== void 0;
+      if (!stepBuffer) {
+        stepBuffer = value - currentValue > 0 ? 1 : -1;
+      }
+      const markValues = markValuesRef.value || [];
+      const { step } = props;
+      if (step === "mark") {
+        const closestMark2 = getClosestMark(value, markValues.concat(currentValue), stepping ? stepBuffer : void 0);
+        return closestMark2 ? closestMark2.value : currentValue;
+      }
+      if (step <= 0)
+        return currentValue;
+      const { value: precision } = precisionRef;
+      let closestMark;
+      if (stepping) {
+        const currentStep = Number((currentValue / step).toFixed(precision));
+        const actualStep = Math.floor(currentStep);
+        const leftStep = currentStep > actualStep ? actualStep : actualStep - 1;
+        const rightStep = currentStep < actualStep ? actualStep : actualStep + 1;
+        closestMark = getClosestMark(currentValue, [
+          Number((leftStep * step).toFixed(precision)),
+          Number((rightStep * step).toFixed(precision)),
+          ...markValues
+        ], stepBuffer);
+      } else {
+        const roundValue = getRoundValue(value);
+        closestMark = getClosestMark(value, [...markValues, roundValue]);
+      }
+      return closestMark ? clampValue(closestMark.value) : currentValue;
+    }
+    function clampValue(value) {
+      return Math.min(props.max, Math.max(props.min, value));
+    }
+    function valueToPercentage(value) {
+      const { max, min } = props;
+      return (value - min) / (max - min) * 100;
+    }
+    function percentageToValue(percentage) {
+      const { max, min } = props;
+      return min + (max - min) * percentage;
+    }
+    function getRoundValue(value) {
+      const { step, min } = props;
+      if (step <= 0 || step === "mark")
+        return value;
+      const newValue = Math.round((value - min) / step) * step + min;
+      return Number(newValue.toFixed(precisionRef.value));
+    }
+    function getClosestMark(currentValue, markValues = markValuesRef.value, buffer) {
+      if (!(markValues === null || markValues === void 0 ? void 0 : markValues.length))
+        return null;
+      let closestMark = null;
+      let index = -1;
+      while (++index < markValues.length) {
+        const diff = markValues[index] - currentValue;
+        const distance = Math.abs(diff);
+        if (
+          // find marks in the same direction
+          (buffer === void 0 || diff * buffer > 0) && (closestMark === null || distance < closestMark.distance)
+        ) {
+          closestMark = {
+            index,
+            distance,
+            value: markValues[index]
+          };
+        }
+      }
+      return closestMark;
+    }
+    function getPointValue(event) {
+      const railEl = handleRailRef.value;
+      if (!railEl)
+        return;
+      const touchEvent = isTouchEvent(event) ? event.touches[0] : event;
+      const railRect = railEl.getBoundingClientRect();
+      let percentage;
+      if (props.vertical) {
+        percentage = (railRect.bottom - touchEvent.clientY) / railRect.height;
+      } else {
+        percentage = (touchEvent.clientX - railRect.left) / railRect.width;
+      }
+      if (props.reverse) {
+        percentage = 1 - percentage;
+      }
+      return percentageToValue(percentage);
+    }
+    function handleRailKeyDown(e) {
+      if (mergedDisabledRef.value || !props.keyboard)
+        return;
+      const { vertical, reverse } = props;
+      switch (e.key) {
+        case "ArrowUp":
+          e.preventDefault();
+          handleStepValue(vertical && reverse ? -1 : 1);
+          break;
+        case "ArrowRight":
+          e.preventDefault();
+          handleStepValue(!vertical && reverse ? -1 : 1);
+          break;
+        case "ArrowDown":
+          e.preventDefault();
+          handleStepValue(vertical && reverse ? 1 : -1);
+          break;
+        case "ArrowLeft":
+          e.preventDefault();
+          handleStepValue(!vertical && reverse ? 1 : -1);
+          break;
+      }
+    }
+    function handleStepValue(ratio) {
+      const activeIndex = activeIndexRef.value;
+      if (activeIndex === -1)
+        return;
+      const { step } = props;
+      const currentValue = arrifiedValueRef.value[activeIndex];
+      const nextValue = step <= 0 || step === "mark" ? currentValue : currentValue + step * ratio;
+      doDispatchValue(
+        // Avoid the number of value does not change when `step` is null
+        sanitizeValue(nextValue, currentValue, ratio > 0 ? 1 : -1),
+        activeIndex
+      );
+    }
+    function handleRailMouseDown(event) {
+      var _a2, _b;
+      if (mergedDisabledRef.value)
+        return;
+      if (!isTouchEvent(event) && event.button !== eventButtonLeft) {
+        return;
+      }
+      const pointValue = getPointValue(event);
+      if (pointValue === void 0)
+        return;
+      const values = arrifiedValueRef.value.slice();
+      const activeIndex = props.range ? (_b = (_a2 = getClosestMark(pointValue, values)) === null || _a2 === void 0 ? void 0 : _a2.index) !== null && _b !== void 0 ? _b : -1 : 0;
+      if (activeIndex !== -1) {
+        event.preventDefault();
+        focusActiveHandle(activeIndex);
+        startDragging();
+        doDispatchValue(sanitizeValue(pointValue, arrifiedValueRef.value[activeIndex]), activeIndex);
+      }
+    }
+    function startDragging() {
+      if (!draggingRef.value) {
+        draggingRef.value = true;
+        on("touchend", document, handleMouseUp);
+        on("mouseup", document, handleMouseUp);
+        on("touchmove", document, handleMouseMove);
+        on("mousemove", document, handleMouseMove);
+      }
+    }
+    function stopDragging() {
+      if (draggingRef.value) {
+        draggingRef.value = false;
+        off("touchend", document, handleMouseUp);
+        off("mouseup", document, handleMouseUp);
+        off("touchmove", document, handleMouseMove);
+        off("mousemove", document, handleMouseMove);
+      }
+    }
+    function handleMouseMove(event) {
+      const { value: activeIndex } = activeIndexRef;
+      if (!draggingRef.value || activeIndex === -1) {
+        stopDragging();
+        return;
+      }
+      const pointValue = getPointValue(event);
+      doDispatchValue(sanitizeValue(pointValue, arrifiedValueRef.value[activeIndex]), activeIndex);
+    }
+    function handleMouseUp() {
+      stopDragging();
+    }
+    function handleHandleFocus(index) {
+      activeIndexRef.value = index;
+      if (!mergedDisabledRef.value) {
+        hoverIndexRef.value = index;
+      }
+    }
+    function handleHandleBlur(index) {
+      if (activeIndexRef.value === index) {
+        activeIndexRef.value = -1;
+        stopDragging();
+      }
+      if (hoverIndexRef.value === index) {
+        hoverIndexRef.value = -1;
+      }
+    }
+    function handleHandleMouseEnter(index) {
+      hoverIndexRef.value = index;
+    }
+    function handleHandleMouseLeave(index) {
+      if (hoverIndexRef.value === index) {
+        hoverIndexRef.value = -1;
+      }
+    }
+    watch(activeIndexRef, (_, previous) => void nextTick(() => previousIndexRef.value = previous));
+    watch(mergedValueRef, () => {
+      if (props.marks) {
+        if (dotTransitionDisabledRef.value)
+          return;
+        dotTransitionDisabledRef.value = true;
+        void nextTick(() => {
+          dotTransitionDisabledRef.value = false;
+        });
+      }
+      void nextTick(syncPosition);
+    });
+    onBeforeUnmount(() => {
+      stopDragging();
+    });
+    const cssVarsRef = computed(() => {
+      const { self: { markFontSize, railColor, railColorHover, fillColor, fillColorHover, handleColor, opacityDisabled, dotColor, dotColorModal, handleBoxShadow, handleBoxShadowHover, handleBoxShadowActive, handleBoxShadowFocus, dotBorder, dotBoxShadow, railHeight, railWidthVertical, handleSize, dotHeight, dotWidth, dotBorderRadius, fontSize: fontSize2, dotBorderActive, dotColorPopover }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
+      return {
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-dot-border": dotBorder,
+        "--n-dot-border-active": dotBorderActive,
+        "--n-dot-border-radius": dotBorderRadius,
+        "--n-dot-box-shadow": dotBoxShadow,
+        "--n-dot-color": dotColor,
+        "--n-dot-color-modal": dotColorModal,
+        "--n-dot-color-popover": dotColorPopover,
+        "--n-dot-height": dotHeight,
+        "--n-dot-width": dotWidth,
+        "--n-fill-color": fillColor,
+        "--n-fill-color-hover": fillColorHover,
+        "--n-font-size": fontSize2,
+        "--n-handle-box-shadow": handleBoxShadow,
+        "--n-handle-box-shadow-active": handleBoxShadowActive,
+        "--n-handle-box-shadow-focus": handleBoxShadowFocus,
+        "--n-handle-box-shadow-hover": handleBoxShadowHover,
+        "--n-handle-color": handleColor,
+        "--n-handle-size": handleSize,
+        "--n-opacity-disabled": opacityDisabled,
+        "--n-rail-color": railColor,
+        "--n-rail-color-hover": railColorHover,
+        "--n-rail-height": railHeight,
+        "--n-rail-width-vertical": railWidthVertical,
+        "--n-mark-font-size": markFontSize
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("slider", void 0, cssVarsRef, props) : void 0;
+    const indicatorCssVarsRef = computed(() => {
+      const { self: { fontSize: fontSize2, indicatorColor, indicatorBoxShadow, indicatorTextColor, indicatorBorderRadius } } = themeRef.value;
+      return {
+        "--n-font-size": fontSize2,
+        "--n-indicator-border-radius": indicatorBorderRadius,
+        "--n-indicator-box-shadow": indicatorBoxShadow,
+        "--n-indicator-color": indicatorColor,
+        "--n-indicator-text-color": indicatorTextColor
+      };
+    });
+    const indicatorThemeClassHandle = inlineThemeDisabled ? useThemeClass("slider-indicator", void 0, indicatorCssVarsRef, props) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      namespace: namespaceRef,
+      uncontrolledValue: uncontrolledValueRef,
+      mergedValue: mergedValueRef,
+      mergedDisabled: mergedDisabledRef,
+      mergedPlacement: mergedPlacementRef,
+      isMounted: isMounted(),
+      adjustedTo: useAdjustedTo(props),
+      dotTransitionDisabled: dotTransitionDisabledRef,
+      markInfos: markInfosRef,
+      isShowTooltip,
+      shouldKeepTooltipTransition,
+      handleRailRef,
+      setHandleRefs,
+      setFollowerRefs,
+      fillStyle: fillStyleRef,
+      getHandleStyle,
+      activeIndex: activeIndexRef,
+      arrifiedValues: arrifiedValueRef,
+      followerEnabledIndexSet: followerEnabledIndexSetRef,
+      handleRailMouseDown,
+      handleHandleFocus,
+      handleHandleBlur,
+      handleHandleMouseEnter,
+      handleHandleMouseLeave,
+      handleRailKeyDown,
+      indicatorCssVars: inlineThemeDisabled ? void 0 : indicatorCssVarsRef,
+      indicatorThemeClass: indicatorThemeClassHandle === null || indicatorThemeClassHandle === void 0 ? void 0 : indicatorThemeClassHandle.themeClass,
+      indicatorOnRender: indicatorThemeClassHandle === null || indicatorThemeClassHandle === void 0 ? void 0 : indicatorThemeClassHandle.onRender,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    var _a2;
+    const { mergedClsPrefix, themeClass, formatTooltip } = this;
+    (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+    return h(
+      "div",
+      { class: [
+        `${mergedClsPrefix}-slider`,
+        themeClass,
+        {
+          [`${mergedClsPrefix}-slider--disabled`]: this.mergedDisabled,
+          [`${mergedClsPrefix}-slider--active`]: this.activeIndex !== -1,
+          [`${mergedClsPrefix}-slider--with-mark`]: this.marks,
+          [`${mergedClsPrefix}-slider--vertical`]: this.vertical,
+          [`${mergedClsPrefix}-slider--reverse`]: this.reverse
+        }
+      ], style: this.cssVars, onKeydown: this.handleRailKeyDown, onMousedown: this.handleRailMouseDown, onTouchstart: this.handleRailMouseDown },
+      h(
+        "div",
+        { class: `${mergedClsPrefix}-slider-rail` },
+        h("div", { class: `${mergedClsPrefix}-slider-rail__fill`, style: this.fillStyle }),
+        this.marks ? h("div", { class: [
+          `${mergedClsPrefix}-slider-dots`,
+          this.dotTransitionDisabled && `${mergedClsPrefix}-slider-dots--transition-disabled`
+        ] }, this.markInfos.map((mark) => h("div", { key: mark.label, class: [
+          `${mergedClsPrefix}-slider-dot`,
+          {
+            [`${mergedClsPrefix}-slider-dot--active`]: mark.active
+          }
+        ], style: mark.style }))) : null,
+        h("div", { ref: "handleRailRef", class: `${mergedClsPrefix}-slider-handles` }, this.arrifiedValues.map((value, index) => {
+          const showTooltip = this.isShowTooltip(index);
+          return h(VBinder, null, {
+            default: () => [
+              h(VTarget, null, {
+                default: () => h("div", { ref: this.setHandleRefs(index), class: `${mergedClsPrefix}-slider-handle-wrapper`, tabindex: this.mergedDisabled ? -1 : 0, style: this.getHandleStyle(value, index), onFocus: () => this.handleHandleFocus(index), onBlur: () => this.handleHandleBlur(index), onMouseenter: () => this.handleHandleMouseEnter(index), onMouseleave: () => this.handleHandleMouseLeave(index) }, resolveSlot(this.$slots.thumb, () => [
+                  h("div", { class: `${mergedClsPrefix}-slider-handle` })
+                ]))
+              }),
+              this.tooltip && h(VFollower, { ref: this.setFollowerRefs(index), show: showTooltip, to: this.adjustedTo, enabled: this.showTooltip && !this.range || this.followerEnabledIndexSet.has(index), teleportDisabled: this.adjustedTo === useAdjustedTo.tdkey, placement: this.mergedPlacement, containerClass: this.namespace }, {
+                default: () => h(Transition, { name: "fade-in-scale-up-transition", appear: this.isMounted, css: this.shouldKeepTooltipTransition(index), onEnter: () => {
+                  this.followerEnabledIndexSet.add(index);
+                }, onAfterLeave: () => {
+                  this.followerEnabledIndexSet.delete(index);
+                } }, {
+                  default: () => {
+                    var _a3;
+                    if (showTooltip) {
+                      (_a3 = this.indicatorOnRender) === null || _a3 === void 0 ? void 0 : _a3.call(this);
+                      return h("div", { class: [
+                        `${mergedClsPrefix}-slider-handle-indicator`,
+                        this.indicatorThemeClass,
+                        `${mergedClsPrefix}-slider-handle-indicator--${this.mergedPlacement}`
+                      ], style: this.indicatorCssVars }, typeof formatTooltip === "function" ? formatTooltip(value) : value);
+                    }
+                    return null;
+                  }
+                })
+              })
+            ]
+          });
+        })),
+        this.marks ? h("div", { class: `${mergedClsPrefix}-slider-marks` }, this.markInfos.map((mark) => h("div", { key: mark.label, class: `${mergedClsPrefix}-slider-mark`, style: mark.style }, mark.label))) : null
+      )
+    );
+  }
+});
 const tabsInjectionKey = createInjectionKey("n-tabs");
 const tabPaneProps = {
   tab: [String, Number, Object, Function],
@@ -34885,7 +35610,9 @@ const defaultSettings = {
     use_fp32: false,
     use_tomesd: true,
     tomesd_ratio: 0.4,
-    tomesd_downsample_layers: 1
+    tomesd_downsample_layers: 1,
+    lora_text_encoder_weight: 0.5,
+    lora_unet_weight: 0.5
   },
   aitemplate: {
     num_threads: 8
@@ -35034,12 +35761,17 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
+const _withScopeId = (n) => (pushScopeId("data-v-5a31e52f"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
 const _hoisted_3 = { style: { "display": "inline-flex" } };
-const _hoisted_4 = { style: { "display": "inline-flex" } };
-const _hoisted_5 = { class: "progress-container" };
-const _hoisted_6 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
+const _hoisted_4 = { class: "flex-container" };
+const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Text Encoder", -1));
+const _hoisted_6 = { class: "flex-container" };
+const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1));
+const _hoisted_8 = { style: { "display": "inline-flex" } };
+const _hoisted_9 = { class: "progress-container" };
+const _hoisted_10 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -35173,13 +35905,19 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     }
     async function loadLoRA(lora) {
-      const load_url = new URL(`${serverUrl}/api/models/load-lora`);
       if (selectedModel.value) {
-        const params = { model: selectedModel.value.name, lora: lora.path };
-        load_url.search = new URLSearchParams(params).toString();
         try {
-          await fetch(load_url, {
-            method: "POST"
+          await fetch(`${serverUrl}/api/models/load-lora`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: selectedModel.value.name,
+              lora: lora.path,
+              unet_weight: conf.data.settings.api.lora_unet_weight,
+              text_encoder_weight: conf.data.settings.api.lora_text_encoder_weight
+            })
           });
           selectedModel.value.loras.push(lora.path);
         } catch (e) {
@@ -35330,7 +36068,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         }),
         createVNode(unref(NModal), {
           show: showModal.value,
-          "onUpdate:show": _cache[2] || (_cache[2] = ($event) => showModal.value = $event),
+          "onUpdate:show": _cache[4] || (_cache[4] = ($event) => showModal.value = $event),
           closable: "",
           "mask-closable": "",
           preset: "card",
@@ -35437,9 +36175,36 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             createVNode(unref(NGi), null, {
                               default: withCtx(() => [
                                 createVNode(unref(NCard), {
-                                  title: unref(lora_title),
-                                  style: { "height": "100%" }
+                                  title: "Lora weights",
+                                  style: { "width": "100%", "margin-bottom": "8px" }
                                 }, {
+                                  default: withCtx(() => [
+                                    createBaseVNode("div", _hoisted_4, [
+                                      _hoisted_5,
+                                      createVNode(unref(NSlider), {
+                                        value: unref(conf).data.settings.api.lora_text_encoder_weight,
+                                        "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.api.lora_text_encoder_weight = $event),
+                                        min: 0.1,
+                                        max: 1,
+                                        step: 0.01,
+                                        style: { "margin-right": "12px" }
+                                      }, null, 8, ["value", "min", "step"])
+                                    ]),
+                                    createBaseVNode("div", _hoisted_6, [
+                                      _hoisted_7,
+                                      createVNode(unref(NSlider), {
+                                        value: unref(conf).data.settings.api.lora_unet_weight,
+                                        "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.api.lora_unet_weight = $event),
+                                        min: 0.1,
+                                        max: 1,
+                                        step: 0.01,
+                                        style: { "margin-right": "12px" }
+                                      }, null, 8, ["value", "min", "step"])
+                                    ])
+                                  ]),
+                                  _: 1
+                                }),
+                                createVNode(unref(NCard), { title: unref(lora_title) }, {
                                   default: withCtx(() => [
                                     (openBlock(true), createElementBlock(Fragment, null, renderList(unref(loraModels), (lora) => {
                                       var _a3;
@@ -35448,7 +36213,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         key: lora.path
                                       }, [
                                         createBaseVNode("p", null, toDisplayString(lora.name), 1),
-                                        createBaseVNode("div", _hoisted_4, [
+                                        createBaseVNode("div", _hoisted_8, [
                                           ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(lora.path)) ? (openBlock(), createBlock(unref(NButton), {
                                             key: 0,
                                             type: "error",
@@ -35586,7 +36351,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_5, [
+        createBaseVNode("div", _hoisted_9, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -35601,14 +36366,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_6, [
+        createBaseVNode("div", _hoisted_10, [
           createVNode(unref(NButton), {
             type: unref(websocketState).color,
             quaternary: "",
             "icon-placement": "left",
             "render-icon": syncIcon,
             loading: unref(websocketState).loading,
-            onClick: _cache[3] || (_cache[3] = ($event) => unref(startWebsocket)(unref(message)))
+            onClick: _cache[5] || (_cache[5] = ($event) => unref(startWebsocket)(unref(message)))
           }, {
             default: withCtx(() => [
               createTextVNode(toDisplayString(unref(websocketState).text), 1)
@@ -35621,7 +36386,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "icon-placement": "left",
             "render-icon": perfIcon,
             style: { "margin-right": "8px" },
-            onClick: _cache[4] || (_cache[4] = ($event) => unref(global2).state.perf_drawer.enabled = true),
+            onClick: _cache[6] || (_cache[6] = ($event) => unref(global2).state.perf_drawer.enabled = true),
             disabled: unref(global2).state.perf_drawer.enabled
           }, null, 8, ["disabled"])
         ])
@@ -35629,7 +36394,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_2b1345cd_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_5a31e52f_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -35637,7 +36402,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2b1345cd"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5a31e52f"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -35729,17 +36494,17 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/Slider.js","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
     },
     {
       path: "/download",
@@ -35754,7 +36519,7 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/test",
@@ -35779,7 +36544,7 @@ const router = createRouter({
     {
       path: "/tagger",
       name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
     }
   ]
 });
@@ -35790,142 +36555,138 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  checkboxLight$1 as $,
-  ref as A,
-  NButton as B,
-  NIcon as C,
-  NTabPane as D,
-  NTabs as E,
-  Fragment as F,
-  renderList as G,
-  NScrollbar as H,
-  useConfig as I,
-  useFormItem as J,
-  useMergedState as K,
-  provide as L,
-  toRef as M,
+  useTheme as $,
+  h as A,
+  ref as B,
+  NButton as C,
+  NIcon as D,
+  NTabPane as E,
+  NTabs as F,
+  Fragment as G,
+  renderList as H,
+  NScrollbar as I,
+  useConfig as J,
+  useFormItem as K,
+  useMergedState as L,
+  provide as M,
   NGi as N,
-  createInjectionKey as O,
-  call as P,
-  c$1 as Q,
-  cB as R,
-  cE as S,
-  cM as T,
-  iconSwitchTransition as U,
-  insideModal as V,
-  insidePopover as W,
-  inject as X,
-  useMemo as Y,
-  useTheme as Z,
+  toRef as O,
+  createInjectionKey as P,
+  call as Q,
+  c$1 as R,
+  cB as S,
+  cE as T,
+  cM as U,
+  iconSwitchTransition as V,
+  insideModal as W,
+  insidePopover as X,
+  inject as Y,
+  useMemo as Z,
   _export_sfc as _,
   useSettings as a,
-  InfoIcon as a$,
-  useRtl as a0,
-  createKey as a1,
-  useThemeClass as a2,
-  createId as a3,
-  NIconSwitchTransition as a4,
-  on as a5,
-  popselectLight$1 as a6,
-  watch as a7,
-  NInternalSelectMenu as a8,
-  keysOf as a9,
-  NScrollbar$1 as aA,
-  onBeforeUnmount as aB,
-  off as aC,
-  ChevronDownIcon as aD,
-  NDropdown as aE,
-  pxfy as aF,
-  get as aG,
-  NBaseLoading as aH,
-  ChevronRightIcon as aI,
-  onUnmounted as aJ,
-  VVirtualList as aK,
-  VResizeObserver as aL,
-  warn$2 as aM,
-  cssrAnchorMetaName as aN,
-  repeat as aO,
-  NEmpty as aP,
-  beforeNextFrameOnce as aQ,
-  fadeInScaleUpTransition as aR,
-  Transition as aS,
-  dataTableLight$1 as aT,
-  reactive as aU,
-  NTag as aV,
-  stepsLight$1 as aW,
-  throwError as aX,
-  FinishedIcon as aY,
-  ErrorIcon$1 as aZ,
-  NModal as a_,
-  createTreeMate as aa,
-  happensIn as ab,
-  nextTick as ac,
-  createTmOptions as ad,
-  keep as ae,
-  createRefSetter as af,
-  mergeEventHandlers as ag,
-  omit as ah,
-  NPopover as ai,
-  popoverBaseProps as aj,
-  cNotM as ak,
-  useLocale as al,
-  watchEffect as am,
-  resolveSlot as an,
-  NBaseIcon as ao,
-  useAdjustedTo as ap,
-  paginationLight$1 as aq,
-  ellipsisLight$1 as ar,
-  onDeactivated as as,
-  mergeProps as at,
-  radioLight$1 as au,
-  resolveWrappedSlot as av,
-  flatten$2 as aw,
-  getSlot$1 as ax,
-  depx as ay,
-  formatLength as az,
+  NModal as a$,
+  checkboxLight$1 as a0,
+  useRtl as a1,
+  createKey as a2,
+  useThemeClass as a3,
+  createId as a4,
+  NIconSwitchTransition as a5,
+  on as a6,
+  popselectLight$1 as a7,
+  watch as a8,
+  NInternalSelectMenu as a9,
+  formatLength as aA,
+  NScrollbar$1 as aB,
+  onBeforeUnmount as aC,
+  off as aD,
+  ChevronDownIcon as aE,
+  NDropdown as aF,
+  pxfy as aG,
+  get as aH,
+  NBaseLoading as aI,
+  ChevronRightIcon as aJ,
+  onUnmounted as aK,
+  VVirtualList as aL,
+  VResizeObserver as aM,
+  warn$2 as aN,
+  cssrAnchorMetaName as aO,
+  repeat as aP,
+  NEmpty as aQ,
+  beforeNextFrameOnce as aR,
+  fadeInScaleUpTransition as aS,
+  Transition as aT,
+  dataTableLight$1 as aU,
+  reactive as aV,
+  NTag as aW,
+  stepsLight$1 as aX,
+  throwError as aY,
+  FinishedIcon as aZ,
+  ErrorIcon$1 as a_,
+  keysOf as aa,
+  createTreeMate as ab,
+  happensIn as ac,
+  nextTick as ad,
+  createTmOptions as ae,
+  keep as af,
+  createRefSetter as ag,
+  mergeEventHandlers as ah,
+  omit as ai,
+  NPopover as aj,
+  popoverBaseProps as ak,
+  cNotM as al,
+  useLocale as am,
+  watchEffect as an,
+  resolveSlot as ao,
+  NBaseIcon as ap,
+  useAdjustedTo as aq,
+  paginationLight$1 as ar,
+  ellipsisLight$1 as as,
+  onDeactivated as at,
+  mergeProps as au,
+  radioLight$1 as av,
+  resolveWrappedSlot as aw,
+  flatten$2 as ax,
+  getSlot$1 as ay,
+  depx as az,
   useMessage as b,
-  SuccessIcon as b0,
-  WarningIcon as b1,
-  ErrorIcon as b2,
-  resultLight$1 as b3,
-  getCurrentInstance as b4,
-  formLight$1 as b5,
-  commonVariables$m as b6,
-  formItemInjectionKey as b7,
-  onMounted as b8,
-  defaultSettings as b9,
-  rgba as bA,
-  XButton as bB,
-  AddIcon as bC,
-  commonVars$1 as bD,
-  changeColor as bE,
-  isSlotEmpty as bF,
-  Download as ba,
-  useCompitable as bb,
-  descriptionsLight$1 as bc,
-  router as bd,
-  toString as be,
-  replaceable as bf,
-  isBrowser$3 as bg,
-  createTheme as bh,
-  commonLight as bi,
-  tooltipLight$1 as bj,
-  fadeInTransition as bk,
-  isMounted as bl,
-  LazyTeleport as bm,
-  withDirectives as bn,
-  zindexable$1 as bo,
-  vShow as bp,
-  normalizeStyle as bq,
-  isRef as br,
-  withModifiers as bs,
-  sizeVariables$3 as bt,
-  onBeforeUpdate as bu,
-  VBinder as bv,
-  VTarget as bw,
-  VFollower as bx,
-  buttonLight$1 as by,
-  inputLight$1 as bz,
+  InfoIcon as b0,
+  SuccessIcon as b1,
+  WarningIcon as b2,
+  ErrorIcon as b3,
+  resultLight$1 as b4,
+  getCurrentInstance as b5,
+  formLight$1 as b6,
+  commonVariables$m as b7,
+  formItemInjectionKey as b8,
+  onMounted as b9,
+  changeColor as bA,
+  isSlotEmpty as bB,
+  defaultSettings as ba,
+  Download as bb,
+  useCompitable as bc,
+  descriptionsLight$1 as bd,
+  router as be,
+  toString as bf,
+  replaceable as bg,
+  isBrowser$3 as bh,
+  createTheme as bi,
+  commonLight as bj,
+  tooltipLight$1 as bk,
+  fadeInTransition as bl,
+  isMounted as bm,
+  LazyTeleport as bn,
+  withDirectives as bo,
+  zindexable$1 as bp,
+  vShow as bq,
+  normalizeStyle as br,
+  isRef as bs,
+  withModifiers as bt,
+  buttonLight$1 as bu,
+  inputLight$1 as bv,
+  rgba as bw,
+  XButton as bx,
+  AddIcon as by,
+  commonVars$1 as bz,
   computed as c,
   defineComponent as d,
   createElementBlock as e,
@@ -35939,15 +36700,15 @@ export {
   NTooltip as m,
   NSelect as n,
   openBlock as o,
-  createBlock as p,
-  createCommentVNode as q,
-  NGrid as r,
-  spaceRegex as s,
+  NSlider as p,
+  createBlock as q,
+  createCommentVNode as r,
+  NGrid as s,
   toDisplayString as t,
   useState as u,
-  serverUrl as v,
+  spaceRegex as v,
   withCtx as w,
-  pushScopeId as x,
-  popScopeId as y,
-  h as z
+  serverUrl as x,
+  pushScopeId as y,
+  popScopeId as z
 };

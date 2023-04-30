@@ -319,3 +319,11 @@ class ModelResponse:
     valid: bool
     state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
     loras: List[str] = field(default_factory=list)
+
+
+@dataclass
+class LoraLoadRequest:
+    model: str
+    lora: str
+    unet_weight: float = 0.5
+    text_encoder_weight: float = 0.5

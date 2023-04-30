@@ -90,13 +90,19 @@ class WebSocketManager:
         "Broadcasts data message to all active websocket connections"
 
         for connection in self.active_connections:
-            await connection.send_json(data.to_json())
+            if connection.application_state.CONNECTED:
+                await connection.send_json(data.to_json())
+            else:
+                self.active_connections.remove(connection)
 
     def broadcast_sync(self, data: Data):
         "Broadcasts data message to all active websocket connections synchronously"
 
         for connection in self.active_connections:
-            self.to_run.append(connection.send_json(data.to_json()))
+            if connection.application_state.CONNECTED:
+                self.to_run.append(connection.send_json(data.to_json()))
+            else:
+                self.active_connections.remove(connection)
 
     async def close_all(self):
         "Closes all active websocket connections"

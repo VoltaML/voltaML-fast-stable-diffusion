@@ -141,6 +141,8 @@ export interface SettingsInterface {
     use_tomesd: boolean;
     tomesd_ratio: number;
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
+    lora_text_encoder_weight: number;
+    lora_unet_weight: number;
   };
   aitemplate: {
     num_threads: number;
@@ -271,6 +273,8 @@ export const defaultSettings: SettingsInterface = {
     use_tomesd: true,
     tomesd_ratio: 0.4,
     tomesd_downsample_layers: 1,
+    lora_text_encoder_weight: 0.5,
+    lora_unet_weight: 0.5,
   },
   aitemplate: {
     num_threads: 8,

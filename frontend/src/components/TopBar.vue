@@ -79,7 +79,35 @@
                 </NCard>
               </NGi>
               <NGi>
-                <NCard :title="lora_title" style="height: 100%">
+                <NCard
+                  title="Lora weights"
+                  style="width: 100%; margin-bottom: 8px"
+                >
+                  <div class="flex-container">
+                    <p class="slider-label">Text Encoder</p>
+                    <NSlider
+                      v-model:value="
+                        conf.data.settings.api.lora_text_encoder_weight
+                      "
+                      :min="0.1"
+                      :max="1"
+                      :step="0.01"
+                      style="margin-right: 12px"
+                    />
+                  </div>
+
+                  <div class="flex-container">
+                    <p class="slider-label">UNet</p>
+                    <NSlider
+                      v-model:value="conf.data.settings.api.lora_unet_weight"
+                      :min="0.1"
+                      :max="1"
+                      :step="0.01"
+                      style="margin-right: 12px"
+                    />
+                  </div>
+                </NCard>
+                <NCard :title="lora_title">
                   <div
                     style="
                       display: inline-flex;
@@ -233,6 +261,7 @@ import {
   NModal,
   NScrollbar,
   NSelect,
+  NSlider,
   NTabPane,
   NTabs,
 } from "naive-ui";
@@ -406,15 +435,19 @@ async function unloadModel(model: ModelEntry) {
 }
 
 async function loadLoRA(lora: ModelEntry) {
-  const load_url = new URL(`${serverUrl}/api/models/load-lora`);
-
   if (selectedModel.value) {
-    const params = { model: selectedModel.value.name, lora: lora.path };
-    load_url.search = new URLSearchParams(params).toString();
-
     try {
-      await fetch(load_url, {
+      await fetch(`${serverUrl}/api/models/load-lora`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: selectedModel.value.name,
+          lora: lora.path,
+          unet_weight: conf.data.settings.api.lora_unet_weight,
+          text_encoder_weight: conf.data.settings.api.lora_text_encoder_weight,
+        }),
       });
       selectedModel.value.loras.push(lora.path);
     } catch (e) {

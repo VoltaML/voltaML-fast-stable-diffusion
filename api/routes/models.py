@@ -8,7 +8,7 @@ from fastapi import APIRouter, HTTPException
 from api import websocket_manager
 from api.websockets.data import Data
 from core.shared_dependent import cached_model_list, gpu
-from core.types import InferenceBackend, ModelResponse
+from core.types import InferenceBackend, LoraLoadRequest, ModelResponse
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
@@ -82,10 +82,10 @@ async def unload_all_models():
 
 
 @router.post("/load-lora")
-async def load_lora(model: str, lora: str):
+async def load_lora(req: LoraLoadRequest):
     "Load a LoRA model into a model"
 
-    await gpu.load_lora(model, lora)
+    await gpu.load_lora(req)
     await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "LoRA model loaded"}
 

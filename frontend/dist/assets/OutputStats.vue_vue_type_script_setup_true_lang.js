@@ -1,5 +1,5 @@
 import { N as NDescriptionsItem, a as NDescriptions } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, k as createTextVNode, t as toDisplayString, h as NCard, q as createCommentVNode } from "./index.js";
+import { d as defineComponent, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, k as createTextVNode, t as toDisplayString, h as NCard, r as createCommentVNode } from "./index.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "OutputStats",
   props: {
