@@ -2,6 +2,7 @@ import logging
 import warnings
 from typing import Tuple, Union, Optional
 
+from cpufeature import CPUFeature as cpu
 import torch
 from diffusers import (
     DiffusionPipeline,
@@ -51,10 +52,17 @@ def optimize_model(
             'You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
         )
 
+    # Took me an hour to understand why CPU stopped working...
+    # Turns out AMD just lacks support for BF16...
+    # Not mad, not mad at all... to be fair, I'm just disappointed
     dtype = (
         torch.float32
         if use_fp32
-        else (torch.bfloat16 if config.api.device_type == "cpu" else torch.float16)
+        else (
+            (torch.bfloat16 if "AMD" not in cpu["VendorId"] else torch.float32)
+            if config.api.device_type == "cpu"
+            else torch.float16
+        )
     )
     pipe.to(device, torch_dtype=dtype)
     _device = device
@@ -118,7 +126,7 @@ def optimize_model(
             logger.info("Optimization: Enabled xFormers memory efficient attention")
         elif (
             version.parse(torch.__version__) >= version.parse("2.0.0")
-            and config.api.attention_processor == "sdpa"
+            and config.api.attention_processor == "spda"
         ):
             from diffusers.models.attention_processor import AttnProcessor2_0
 
@@ -209,7 +217,40 @@ def optimize_model(
                 "Optimization: ToMeSD patch failed, despite having it enabled. Please check installation"
             )
 
-    if config.api.trace_model and not is_for_aitemplate:
+    from core.inference.functions import is_ipex_available
+
+    if config.api.device_type == "cpu":
+        n = (cpu["num_virtual_cores"] // 4) * 3
+        torch.set_num_threads(n)
+        torch.set_num_interop_threads(n)
+
+        logger.info(
+            f"Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
+        )
+
+    if (
+        is_ipex_available()
+        and config.api.device_type == "cpu"
+        and not is_for_aitemplate
+    ):
+        import intel_extension_for_pytorch as ipex  # pylint: disable=import-error
+
+        ipex.enable_auto_channels_last()
+        ipex.set_fp32_math_mode(
+            ipex.FP32MathMode.BF32
+            if "AMD" not in cpu["VendorId"]
+            else ipex.FP32MathMode.FP32
+        )
+        pipe.unet = ipex.optimize(
+            pipe.unet,  # type: ignore
+            dtype=dtype,
+            conv_bn_folding=True,
+            linear_bn_folding=True,
+            weights_prepack=True,
+            replace_dropout_with_identity=True,
+        )
+
+    if config.api.trace_model and not is_ipex_available() and not is_for_aitemplate:
         logger.info("Tracing model.")
         logger.warning("This will break controlnet and loras!")
         if config.api.attention_processor == "xformers":
@@ -218,6 +259,13 @@ def optimize_model(
             )
         else:
             pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
+    elif is_ipex_available() and not is_for_aitemplate:
+        logger.warning(
+            "Skipping tracing because IPEX optimizations have already been done"
+        )
+        logger.warning(
+            "This is a temporary measure, tracing will work with IPEX-enabled devices later on"
+        )
 
     logger.info("Optimization complete")
 
@@ -276,6 +324,7 @@ def trace_model(
     dtype: torch.dtype,
     device: torch.device,
     iterations: int = 25,
+    ipex: bool = False,
 ) -> torch.nn.Module:
     "Traces the model for inference"
 
@@ -284,7 +333,7 @@ def trace_model(
 
     model.forward = partial(model.forward, return_dict=False)
     warmup(model, iterations, dtype, device)
-    if config.api.channels_last:
+    if config.api.channels_last and not ipex:
         model.to(memory_format=torch.channels_last)  # type: ignore
     logger.debug("Starting trace")
     with warnings.catch_warnings():
@@ -292,10 +341,7 @@ def trace_model(
         if config.api.device_type == "cpu":
             torch.jit.enable_onednn_fusion(True)
         model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
-        if config.api.device_type == "cpu":
-            logger.debug("Running OFI")
-            model = torch.jit.optimize_for_inference(model)  # type: ignore
-            logger.debug("Model frozen & merged")
+        model = torch.jit.freeze(model)  # type: ignore
     logger.debug("Tracing done")
     warmup(model, iterations // 5, dtype, device)
 

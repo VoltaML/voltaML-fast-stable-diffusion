@@ -20,4 +20,5 @@ realesrgan
 timm
 boto3
 tomesd==0.1.2
+cpufeature
 pyamdgpuinfo; platform_system == "Linux"

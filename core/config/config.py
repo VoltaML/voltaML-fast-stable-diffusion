@@ -7,8 +7,7 @@ from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import ControlNetMode
-from core.utils import get_cpu_vendor
-from core.inference.functions import is_ipex_available
+
 
 logger = logging.getLogger(__name__)
 
@@ -122,8 +121,12 @@ class APIConfig:
         "Return the device string"
 
         if self.device_type == "cpu":
+            from core.inference.functions import is_ipex_available
+
             if is_ipex_available():
-                return "xpu"
+                # Requires xpu-master branch pytorch... gonna take a while...
+                # return "xpu"
+                pass
             return "cpu"
         if self.device_type == "directml":
             import torch_directml
