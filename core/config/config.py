@@ -96,7 +96,7 @@ class APIConfig:
 
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    attention_processor: Literal["xformers", "spda"] = "xformers"
+    attention_processor: Literal["xformers", "spda", "cross_attention"] = "xformers"
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit
     deterministic_generation: bool = (
@@ -126,9 +126,9 @@ class APIConfig:
                 return "xpu"
             return "cpu"
         if self.device_type == "directml":
-            # This should be coming along pretty good... give it a week or two,
-            # I may be able to get this working by then :)
-            raise NotImplementedError("DirectML is not supported yet")
+            import torch_directml
+
+            return torch_directml.device()
 
         return f"{self.device_type}:{self.device_id}"
 

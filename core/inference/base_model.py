@@ -32,7 +32,7 @@ class InferenceModel(ABC):
     def memory_cleanup(self) -> None:
         "Cleanup the GPU memory"
 
-        if config.api.device_type == "cpu":
+        if config.api.device_type == "cpu" or config.api.device_type == "directml":
             gc.collect()
         else:
             torch.cuda.empty_cache()

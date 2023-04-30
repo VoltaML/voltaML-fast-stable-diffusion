@@ -109,29 +109,35 @@ def optimize_model(
 
     # xFormers and SPDA
     if not is_for_aitemplate:
-        if is_xformers_available() and config.api.attention_processor == "xformers":
+        if (
+            is_xformers_available()
+            and config.api.attention_processor == "xformers"
+            and config.api.device_type != "directml"
+        ):
             pipe.enable_xformers_memory_efficient_attention()
             logger.info("Optimization: Enabled xFormers memory efficient attention")
-        elif version.parse(torch.__version__) >= version.parse("2.0.0"):
+        elif (
+            version.parse(torch.__version__) >= version.parse("2.0.0")
+            and config.api.attention_processor == "sdpa"
+        ):
             from diffusers.models.attention_processor import AttnProcessor2_0
 
             pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
-            logger.info("Optimization: Enabled SDPA, because xformers is not installed")
+            logger.info("Optimization: Enabled SDPA")
         else:
-            # This should only be the case if pytorch_directml is to be used
+            # This should only be the case if an old version of torch_directml is used
             # This isn't a hot-spot either, so it's fine (imo) to put in safety nets.
             from diffusers.models.attention_processor import AttnProcessor
 
             pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
-            logger.info(
-                "Optimization: Pytorch STILL not newer than 2.0.0, using Cross-Attention"
-            )
+            logger.info("Optimization: Enabled Cross-Attention processor")
 
     offload = (
         config.api.offload
         if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
         else None
     )
+    # Tested with torch-directml 0.2.0, does not work, so this stays...
     if config.api.device_type != "directml":
         if offload == "model":
             # Offload to CPU
