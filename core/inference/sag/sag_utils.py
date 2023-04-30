@@ -7,7 +7,9 @@ def pred_x0(pipe, sample, model_output, timestep):
     Modified from diffusers.schedulers.scheduling_ddim.DDIMScheduler.step
     Note: there are some schedulers that clip or do not return x_0 (PNDMScheduler, DDIMScheduler, etc.)
     """
-    alpha_prod_t = pipe.scheduler.alphas_cumprod[timestep]
+    alpha_prod_t = pipe.scheduler.alphas_cumprod[
+        timestep.to(pipe.scheduler.alphas_cumprod.device, dtype=torch.int64)
+    ]
 
     beta_prod_t = 1 - alpha_prod_t
     if pipe.scheduler.config.prediction_type == "epsilon":
@@ -59,7 +61,7 @@ def sag_masking(pipe, original_latents, attn_map, map_size, t, eps):
 
     # Noise it again to match the noise level
     degraded_latents = pipe.scheduler.add_noise(
-        degraded_latents, noise=eps, timesteps=t
+        degraded_latents, noise=eps, timesteps=torch.tensor([t])
     )
 
     return degraded_latents
@@ -67,7 +69,9 @@ def sag_masking(pipe, original_latents, attn_map, map_size, t, eps):
 
 def pred_epsilon(pipe, sample, model_output, timestep):
     "pred_epsilon"
-    alpha_prod_t = pipe.scheduler.alphas_cumprod[timestep]
+    alpha_prod_t = pipe.scheduler.alphas_cumprod[
+        timestep.to(pipe.scheduler.alphas_cumprod.device, dtype=torch.int64)
+    ]
 
     beta_prod_t = 1 - alpha_prod_t
     if pipe.scheduler.config.prediction_type == "epsilon":
