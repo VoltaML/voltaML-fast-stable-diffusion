@@ -3,6 +3,9 @@ import base64
 import logging
 import math
 import re
+import os
+import platform
+import subprocess
 from io import BytesIO
 from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
 import requests
@@ -13,6 +16,22 @@ from PIL import Image
 from core.thread import ThreadWithReturnValue
 
 logger = logging.getLogger(__name__)
+
+
+def get_cpu_vendor() -> str:
+    if platform.system() == "Windows":
+        return platform.processor().split(" ")[0].lower()
+    elif platform.system() == "Darwin":
+        os.environ["PATH"] = os.environ["PATH"] + os.pathsep + "/usr/sbin"
+        command = "sysctl -n machdep.cpu.brand_string"
+        return subprocess.check_output(command).split(" ")[0].lower()  # type: ignore
+    elif platform.system() == "Linux":
+        command = "cat /proc/cpuinfo"
+        all_info = subprocess.check_output(command, shell=True).decode().strip().lower()
+        for line in all_info.split("\n"):
+            if "model name" in line:
+                return re.sub(".*model name.*:", "", line, 1).split(" ")[0].lower()
+    return ""
 
 
 def get_grid_dimension(length: int) -> Tuple[int, int]:

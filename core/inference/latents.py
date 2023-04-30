@@ -32,7 +32,7 @@ def prepare_latents(
         )
 
         if latents is None:
-            if device.type == "mps":
+            if device.type == "mps" or device.type == "privateuseone":
                 # randn does not work reproducibly on mps
                 latents = torch.randn(
                     shape, generator=generator, device="cpu", dtype=dtype  # type: ignore

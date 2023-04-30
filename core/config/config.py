@@ -7,6 +7,8 @@ from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import ControlNetMode
+from core.utils import get_cpu_vendor
+from core.inference.functions import is_ipex_available
 
 logger = logging.getLogger(__name__)
 
@@ -100,6 +102,7 @@ class APIConfig:
     deterministic_generation: bool = (
         True  # disabling increases performance on my 3080 by 0.25it/s with batch_size=3
     )
+    quantize_to_int8: bool = False  # preferably will also be able to port this over to gpu, but cpu only for now
     reduced_precision: bool = False
     cudnn_benchmark: bool = False
     tomesd_ratio: float = 0.25  # had to tone this down, 0.4 is too big of a context loss even on short prompts
@@ -119,6 +122,8 @@ class APIConfig:
         "Return the device string"
 
         if self.device_type == "cpu":
+            if is_ipex_available():
+                return "xpu"
             return "cpu"
         if self.device_type == "directml":
             # This should be coming along pretty good... give it a week or two,

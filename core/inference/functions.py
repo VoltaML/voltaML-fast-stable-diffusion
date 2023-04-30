@@ -39,6 +39,16 @@ logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
 
+def is_ipex_available():
+    "Checks whether Intel Pytorch EXtensions are available/installed."
+    try:
+        import intel_extension_for_pytorch  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
 def is_onnxconverter_available():
     "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
     try:
