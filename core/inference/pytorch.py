@@ -208,7 +208,7 @@ class PyTorchStableDiffusion(InferenceModel):
             if "highres_fix" in job.flags:
                 output_type = "latent"
 
-            data = pipe(
+            data = pipe.text2img(
                 prompt=job.data.prompt,
                 height=job.data.height,
                 width=job.data.width,
