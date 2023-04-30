@@ -1,6 +1,7 @@
 # HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 
 import inspect
+from contextlib import ExitStack
 from typing import Callable, List, Literal, Optional, Union
 
 import numpy as np
@@ -17,6 +18,8 @@ from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from core.inference.latents import prepare_latents
 from core.inference.lwp import get_weighted_text_embeddings
+from core.inference.sag.cross_attn import CrossAttnStoreProcessor
+from core.inference.sag.sag_utils import pred_epsilon, pred_x0, sag_masking
 from core.optimizations import send_everything_to_cpu, send_to_gpu
 
 # ------------------------------------------------------------------------------
@@ -298,6 +301,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         width: int = 512,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
+        self_attention_scale: float = 0.0,
         strength: float = 0.8,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
@@ -399,6 +403,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         # corresponds to doing no classifier free guidance.
         do_classifier_free_guidance = guidance_scale > 1.0
 
+        do_self_attention_guidance = self_attention_scale > 0.0
+
         # 3. Encode input prompt
         text_embeddings = self._encode_prompt(
             prompt,
@@ -447,55 +453,127 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
         extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
+        if do_self_attention_guidance:
+            store_processor = CrossAttnStoreProcessor()
+            self.unet.mid_block.attentions[0].transformer_blocks[0].attn1.processor = store_processor  # type: ignore
+
+        map_size = None
+
+        def get_map_size(_, __, output):
+            nonlocal map_size
+            map_size = output.sample.shape[-2:]
+
         # 8. Denoising loop
-        for i, t in enumerate(self.progress_bar(timesteps)):
-            # expand the latents if we are doing classifier free guidance
-            latent_model_input = (
-                torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
-            )
-            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+        with ExitStack() as gs:
+            if do_self_attention_guidance:
+                gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-            # predict the noise residual
-            if hasattr(self.unet, "main_device"):
-                send_to_gpu(self.unet, None)
-                noise_pred = self.unet(  # type: ignore
-                    latent_model_input.to(self.unet.device, dtype=self.unet.dtype),
-                    t.to(self.unet.device, dtype=self.unet.dtype),
-                    encoder_hidden_states=text_embeddings.to(
-                        self.unet.device, dtype=self.unet.dtype
-                    ),
-                ).sample
-            else:
-                # this probably could have been done better but honestly fuck this
-                noise_pred = self.unet(  # type: ignore
-                    latent_model_input, t, encoder_hidden_states=text_embeddings
-                ).sample
-
-            # perform guidance
-            if do_classifier_free_guidance:
-                noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                noise_pred = noise_pred_uncond + guidance_scale * (
-                    noise_pred_text - noise_pred_uncond
+            for i, t in enumerate(self.progress_bar(timesteps)):
+                # expand the latents if we are doing classifier free guidance
+                latent_model_input = (
+                    torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
                 )
+                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
-            # compute the previous noisy sample x_t -> x_t-1
-            latents = self.scheduler.step(  # type: ignore
-                noise_pred, t, latents, **extra_step_kwargs  # type: ignore
-            ).prev_sample  # type: ignore
+                # predict the noise residual
+                if hasattr(self.unet, "main_device"):
+                    send_to_gpu(self.unet, None)
+                    noise_pred = self.unet(  # type: ignore
+                        latent_model_input.to(self.unet.device, dtype=self.unet.dtype),
+                        t.to(self.unet.device, dtype=self.unet.dtype),
+                        encoder_hidden_states=text_embeddings.to(
+                            self.unet.device, dtype=self.unet.dtype
+                        ),
+                    ).sample
+                else:
+                    # this probably could have been done better but honestly fuck this
+                    noise_pred = self.unet(  # type: ignore
+                        latent_model_input, t, encoder_hidden_states=text_embeddings
+                    ).sample
 
-            if mask is not None:
-                # masking
-                init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                    init_latents_orig, noise, torch.tensor([t])  # type: ignore
-                )
-                latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
+                # perform guidance
+                if do_classifier_free_guidance:
+                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                    noise_pred = noise_pred_uncond + guidance_scale * (
+                        noise_pred_text - noise_pred_uncond
+                    )
 
-            # call the callback, if provided
-            if i % callback_steps == 0:
-                if callback is not None:
-                    callback(i, t, latents)  # type: ignore
-                if is_cancelled_callback is not None and is_cancelled_callback():
-                    return None
+                if do_self_attention_guidance:
+                    if do_classifier_free_guidance:
+                        pred = pred_x0(self, latents, noise_pred_uncond, t)  # type: ignore
+                        uncond_attn, cond_attn = store_processor.attention_probs.chunk(2)  # type: ignore
+                        degraded_latents = sag_masking(
+                            self, pred, uncond_attn, map_size, t, pred_epsilon(self, latents, noise_pred_uncond, t)  # type: ignore
+                        )
+                        uncond_emb, _ = text_embeddings.chunk(2)
+                        # predict the noise residual
+                        if hasattr(self.unet, "main_device"):
+                            send_to_gpu(self.unet, None)
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents.to(
+                                    self.unet.device, dtype=self.unet.dtype
+                                ),
+                                t.to(self.unet.device, dtype=self.unet.dtype),
+                                encoder_hidden_states=uncond_emb.to(
+                                    self.unet.device, dtype=self.unet.dtype
+                                ),
+                            ).sample
+                        else:
+                            # this probably could have been done better but honestly fuck this
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents, t, encoder_hidden_states=uncond_emb
+                            ).sample
+                        noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
+                    else:
+                        pred = pred_x0(self, latents, noise_pred, t)
+                        cond_attn = store_processor.attention_probs  # type: ignore
+                        degraded_latents = sag_masking(
+                            self,
+                            pred,
+                            cond_attn,
+                            map_size,
+                            t,
+                            pred_epsilon(self, latents, noise_pred, t),
+                        )
+                        # predict the noise residual
+                        if hasattr(self.unet, "main_device"):
+                            send_to_gpu(self.unet, None)
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents.to(
+                                    self.unet.device, dtype=self.unet.dtype
+                                ),
+                                t.to(self.unet.device, dtype=self.unet.dtype),
+                                encoder_hidden_states=text_embeddings.to(
+                                    self.unet.device, dtype=self.unet.dtype
+                                ),
+                            ).sample
+                        else:
+                            # this probably could have been done better but honestly fuck this
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents,
+                                t,
+                                encoder_hidden_states=text_embeddings,
+                            ).sample
+                        noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
+
+                # compute the previous noisy sample x_t -> x_t-1
+                latents = self.scheduler.step(  # type: ignore
+                    noise_pred, t, latents, **extra_step_kwargs  # type: ignore
+                ).prev_sample  # type: ignore
+
+                if mask is not None:
+                    # masking
+                    init_latents_proper = self.scheduler.add_noise(  # type: ignore
+                        init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                    )
+                    latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
+
+                # call the callback, if provided
+                if i % callback_steps == 0:
+                    if callback is not None:
+                        callback(i, t, latents)  # type: ignore
+                    if is_cancelled_callback is not None and is_cancelled_callback():
+                        return None
 
         # 9. Post-processing
         if output_type == "latent":
@@ -529,6 +607,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         width: int = 512,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
+        self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
         generator: Optional[torch.Generator] = None,
@@ -604,6 +683,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             width=width,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
+            self_attention_scale=self_attention_scale,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,
             generator=generator,
@@ -624,6 +704,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,
+        self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
@@ -698,6 +779,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             image=image,
             num_inference_steps=num_inference_steps,  # type: ignore
             guidance_scale=guidance_scale,  # type: ignore
+            self_attention_scale=self_attention_scale,
             strength=strength,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,  # type: ignore
@@ -719,6 +801,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,
+        self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
@@ -804,6 +887,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             mask_image=mask_image,
             num_inference_steps=num_inference_steps,  # type: ignore
             guidance_scale=guidance_scale,  # type: ignore
+            self_attention_scale=self_attention_scale,
             strength=strength,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,  # type: ignore

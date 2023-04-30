@@ -214,12 +214,13 @@ class PyTorchStableDiffusion(InferenceModel):
             if "highres_fix" in job.flags:
                 output_type = "latent"
 
-            data = pipe(
+            data = pipe.text2img(
                 prompt=job.data.prompt,
                 height=job.data.height,
                 width=job.data.width,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
+                self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
                 generator=generator,
@@ -247,6 +248,7 @@ class PyTorchStableDiffusion(InferenceModel):
                     image=latents,
                     num_inference_steps=flag.steps,
                     guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
                     negative_prompt=job.data.negative_prompt,
                     output_type="pil",
                     generator=generator,
@@ -307,6 +309,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
+                self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
@@ -376,6 +379,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 mask_image=input_mask_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
+                self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,

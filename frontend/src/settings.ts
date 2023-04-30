@@ -51,6 +51,7 @@ export interface SettingsInterface {
     steps: number;
     batch_count: number;
     batch_size: number;
+    self_attention_scale: number;
   };
   img2img: {
     prompt: string;
@@ -65,6 +66,7 @@ export interface SettingsInterface {
     batch_size: number;
     denoising_strength: number;
     image: string;
+    self_attention_scale: number;
   };
   inpainting: {
     prompt: string;
@@ -79,6 +81,7 @@ export interface SettingsInterface {
     sampler: Sampler;
     image: string;
     mask_image: string;
+    self_attention_scale: number;
   };
   controlnet: {
     prompt: string;
@@ -178,6 +181,7 @@ export const defaultSettings: SettingsInterface = {
     batch_count: 1,
     batch_size: 1,
     negative_prompt: "",
+    self_attention_scale: 0,
   },
   img2img: {
     width: 512,
@@ -192,6 +196,7 @@ export const defaultSettings: SettingsInterface = {
     negative_prompt: "",
     denoising_strength: 0.6,
     image: "",
+    self_attention_scale: 0,
   },
   inpainting: {
     prompt: "",
@@ -206,6 +211,7 @@ export const defaultSettings: SettingsInterface = {
     batch_count: 1,
     batch_size: 1,
     sampler: Sampler.DPMSolverMultistep,
+    self_attention_scale: 0,
   },
   controlnet: {
     prompt: "",
