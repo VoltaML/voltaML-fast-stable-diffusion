@@ -173,7 +173,8 @@ def install_pytorch(force_distribution: int = -1):
                     "pip",
                     "install",
                     "torch==1.13.0a0",
-                    "intel_extension_for_pytorch==1.13.10+xpu",
+                    "torchvision==0.14.1a0",
+                    "intel_extension_for_pytorch==1.13.120+xpu",
                     "-f",
                     "https://developer.intel.com/ipex-whl-stable-xpu",
                 ],
@@ -205,6 +206,7 @@ def install_pytorch(force_distribution: int = -1):
                 ) or not (
                     is_installed("torchvision", "==0.15.1")
                     or is_installed("torchvision", "==0.15.1+cu118")
+                    or is_installed("torchvision", "==0.14.1a0")
                 ):
                     logger.info("Installing Pytorch")
                     for cmd in c[2:]:
