@@ -34795,7 +34795,8 @@ const defaultSettings = {
     steps: 25,
     batch_count: 1,
     batch_size: 1,
-    negative_prompt: ""
+    negative_prompt: "",
+    self_attention_scale: 0
   },
   img2img: {
     width: 512,
@@ -34809,7 +34810,8 @@ const defaultSettings = {
     batch_size: 1,
     negative_prompt: "",
     denoising_strength: 0.6,
-    image: ""
+    image: "",
+    self_attention_scale: 0
   },
   inpainting: {
     prompt: "",
@@ -34823,8 +34825,8 @@ const defaultSettings = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
-    sampler: 8
-    /* DPMSolverMultistep */
+    sampler: 8,
+    self_attention_scale: 0
   },
   controlnet: {
     prompt: "",
@@ -34840,7 +34842,8 @@ const defaultSettings = {
     batch_size: 1,
     batch_count: 1,
     controlnet_conditioning_scale: 1,
-    detection_resolution: 512
+    detection_resolution: 512,
+    is_preprocessed: false
   },
   sd_upscale: {
     prompt: "",
@@ -35735,7 +35738,7 @@ const router = createRouter({
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",

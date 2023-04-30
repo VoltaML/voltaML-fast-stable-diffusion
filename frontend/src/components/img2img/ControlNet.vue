@@ -329,6 +329,14 @@
                 style="flex-grow: 1"
               />
             </div>
+
+            <!-- Is preprocessed -->
+            <div class="flex-container">
+              <p class="slider-label">Is Preprocessed</p>
+              <NSwitch
+                v-model:value="conf.data.settings.controlnet.is_preprocessed"
+              />
+            </div>
           </NSpace>
         </NCard>
       </NGi>
@@ -374,6 +382,7 @@ import {
   NSelect,
   NSlider,
   NSpace,
+  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";
@@ -449,6 +458,7 @@ const generate = () => {
         canny_high_threshold: 200,
         mlsd_thr_v: 0.1,
         mlsd_thr_d: 0.1,
+        is_preprocessed: conf.data.settings.controlnet.is_preprocessed,
       },
       model: conf.data.settings.model?.name,
     }),

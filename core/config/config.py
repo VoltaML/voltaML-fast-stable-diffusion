@@ -26,6 +26,7 @@ class Txt2ImgConfig:
     steps: int = 25
     batch_count: int = 1
     batch_size: int = 1
+    self_attention_scale: float = 0.0
 
 
 @dataclass
@@ -44,6 +45,7 @@ class Img2ImgConfig:
     batch_size: int = 1
     resize_method: int = 0
     denoising_strength: float = 0.6
+    self_attention_scale: float = 0.0
 
 
 @dataclass
@@ -60,6 +62,7 @@ class InpaintingConfig:
     batch_count: int = 1
     batch_size: int = 1
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    self_attention_scale: float = 0.0
 
 
 @dataclass
@@ -79,6 +82,7 @@ class ControlNetConfig:
     controlnet: ControlNetMode = ControlNetMode.CANNY
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512
+    is_preprocessed: bool = False
 
 
 @dataclass
