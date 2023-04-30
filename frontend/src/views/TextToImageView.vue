@@ -185,7 +185,16 @@
 
             <!-- Self Attention Scale -->
             <div class="flex-container">
-              <p class="slider-label">Self Attention Scale</p>
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Self Attention Scale</p>
+                </template>
+                <b class="highlight">PyTorch ONLY.</b> If self attention is >0,
+                SAG will guide the model and improve the quality of the image at
+                the cost of speed. Higher values will follow the guidance more
+                closely, which can lead to better, more sharp and detailed
+                outputs.
+              </NTooltip>
 
               <NSlider
                 v-model:value="conf.data.settings.txt2img.self_attention_scale"

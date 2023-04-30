@@ -190,6 +190,36 @@
               />
             </div>
 
+            <!-- Self Attention Scale -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Self Attention Scale</p>
+                </template>
+                <b class="highlight">PyTorch ONLY.</b> If self attention is >0,
+                SAG will guide the model and improve the quality of the image at
+                the cost of speed. Higher values will follow the guidance more
+                closely, which can lead to better, more sharp and detailed
+                outputs.
+              </NTooltip>
+
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                :min="0"
+                :max="1"
+                :step="0.05"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="0"
+                :max="1"
+                :step="0.05"
+              />
+            </div>
+
             <!-- Number of images -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -378,6 +408,7 @@ const generate = () => {
         batch_count: conf.data.settings.img2img.batch_count,
         strength: conf.data.settings.img2img.denoising_strength,
         scheduler: conf.data.settings.img2img.sampler,
+        self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
       },
       model: conf.data.settings.model?.name,
     }),
