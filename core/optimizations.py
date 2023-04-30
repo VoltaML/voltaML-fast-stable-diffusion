@@ -219,6 +219,7 @@ def optimize_model(
 
     from core.inference.functions import is_ipex_available
 
+    ipexed = False
     if config.api.device_type == "cpu":
         n = (cpu["num_virtual_cores"] // 4) * 3
         torch.set_num_threads(n)
@@ -243,9 +244,10 @@ def optimize_model(
                 auto_kernel_selection=True,
                 sample_input=generate_inputs(dtype, device),
             )
+            ipexed = True
 
-    if config.api.trace_model and not is_ipex_available() and not is_for_aitemplate:
-        logger.info("Tracing model.")
+    if config.api.trace_model and not ipexed and not is_for_aitemplate:
+        logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
         if config.api.attention_processor == "xformers":
             logger.warning(
