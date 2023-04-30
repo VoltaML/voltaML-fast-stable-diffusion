@@ -183,6 +183,27 @@
               />
             </div>
 
+            <!-- Self Attention Scale -->
+            <div class="flex-container">
+              <p class="slider-label">Self Attention Scale</p>
+
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                :min="0"
+                :max="1"
+                :step="0.05"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="0"
+                :max="1"
+                :step="0.05"
+              />
+            </div>
+
             <!-- Number of images -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -479,6 +500,7 @@ const generate = () => {
           : conf.data.settings.txt2img.batch_size,
         batch_count: conf.data.settings.txt2img.batch_count,
         scheduler: conf.data.settings.txt2img.sampler,
+        self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
       },
       model: conf.data.settings.model?.name,
       backend: "PyTorch",
