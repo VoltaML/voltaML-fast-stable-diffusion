@@ -34795,7 +34795,8 @@ const defaultSettings = {
     steps: 25,
     batch_count: 1,
     batch_size: 1,
-    negative_prompt: ""
+    negative_prompt: "",
+    self_attention_scale: 0
   },
   img2img: {
     width: 512,
@@ -34809,7 +34810,8 @@ const defaultSettings = {
     batch_size: 1,
     negative_prompt: "",
     denoising_strength: 0.6,
-    image: ""
+    image: "",
+    self_attention_scale: 0
   },
   inpainting: {
     prompt: "",
@@ -34823,8 +34825,8 @@ const defaultSettings = {
     seed: -1,
     batch_count: 1,
     batch_size: 1,
-    sampler: 8
-    /* DPMSolverMultistep */
+    sampler: 8,
+    self_attention_scale: 0
   },
   controlnet: {
     prompt: "",
