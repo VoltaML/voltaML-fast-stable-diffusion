@@ -195,18 +195,16 @@ def install_pytorch(force_distribution: int = -1):
                     == 0
                 )
                 or c == f
-            ) and force_distribution != len(
-                check  # this is here because we need to be able to force cpu as well
-            ):
+            ) and (f is None and force_distribution == -1):
                 logger.info(c[1])
                 if not (
-                    is_installed("torch", "==2.0.0")
-                    or is_installed("torch", "==2.0.0+cu118")
-                    or is_installed("torch", "==1.13.1a0")
+                    is_installed("torch", "==2.0.0")  # cpu + amd
+                    or is_installed("torch", "==2.0.0+cu118")  # cuda
+                    or is_installed("torch", "==1.13.1a0")  # xpu
                 ) or not (
-                    is_installed("torchvision", "==0.15.1")
-                    or is_installed("torchvision", "==0.15.1+cu118")
-                    or is_installed("torchvision", "==0.14.1a0")
+                    is_installed("torchvision", "==0.15.1")  # cpu + amd
+                    or is_installed("torchvision", "==0.15.1+cu118")  # cuda
+                    or is_installed("torchvision", "==0.14.1a0")  # xpu
                 ):
                     logger.info("Installing Pytorch")
                     for cmd in c[2:]:
