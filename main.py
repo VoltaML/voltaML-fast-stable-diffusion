@@ -55,6 +55,10 @@ parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose th
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
 parser.add_argument(
+    "--pytorch-type",
+    help="Force voltaml to use a specific type of pytorch distribution.\nPossible values are:\n - 0: ROCm (AMD)\n - 1: CUDA\n - 2: Intel XPU (pytorch 1.13)\n - 3: CPU/DirectML",
+)
+parser.add_argument(
     "--bot", action="store_true", help="Run in tandem with the Discord bot"
 )
 parser.add_argument(
@@ -223,7 +227,7 @@ def checks():
     version_check(commit_hash())
 
     # Install pytorch and api requirements
-    install_pytorch()
+    install_pytorch(int(args.pytorch_type) if args.pytorch_type else -1)
 
     # Save the token to config
     from core import shared

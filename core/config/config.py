@@ -125,8 +125,13 @@ class APIConfig:
 
             if is_ipex_available():
                 # Requires xpu-master branch pytorch... gonna take a while...
-                # return "xpu"
-                pass
+                try:
+                    import torch
+
+                    torch.device("xpu")
+                    return "xpu"
+                except RuntimeError:
+                    pass
             return "cpu"
         if self.device_type == "directml":
             import torch_directml

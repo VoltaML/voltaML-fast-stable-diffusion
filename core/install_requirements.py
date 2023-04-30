@@ -105,7 +105,7 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                 sys.exit(1)
 
 
-def install_pytorch():
+def install_pytorch(force_distribution: int = -1):
     "Install necessary requirements for inference"
 
     # Install pytorch
@@ -135,55 +135,99 @@ def install_pytorch():
                 [sys.executable, "-m", "pip", "install", "torch==2.0.0", "torchvision"]
             )
     else:
-        if (
-            subprocess.run(  # pylint: disable=subprocess-run-check
+        check = [
+            [
                 "rocminfo",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                shell=True,
-            ).returncode
-            == 0
-        ):
-            logger.info("ROCmInfo success, assuming user has AMD GPU")
+                "ROCmInfo success, assuming user has AMD GPU",
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "torch==2.0.0",
+                    "torchvision",
+                    "--index-url",
+                    "https://download.pytorch.org/whl/rocm5.4.2",
+                ],
+            ],
+            [
+                "nvidia-smi",
+                "NVidia-SMI success, assuming user has NVIDIA GPU",
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "torch==2.0.0",
+                    "torchvision",
+                    "--index-url",
+                    "https://download.pytorch.org/whl/cu118",
+                ],
+            ],
+            [
+                ["test", "-f", '"/etc/OpenCL/vendors/intel.icd"'],
+                "Intel check success, assuming user has an Intel (i)GPU",
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "torch==1.13.1+xpu",
+                    "intel_extension_for_pytorch==1.13.120+xpu",
+                    "-f",
+                    "https://developer.intel.com/ipex-whl-stable-xpu",
+                ],
+            ],
+        ]
 
-            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
-                "torchvision", "==0.15.1+cu118"
-            ):
-                logger.info("Installing PyTorch")
-
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "torch==2.0.0",
-                        "torchvision",
-                        "--index-url",
-                        "https://download.pytorch.org/whl/rocm5.4.2",
-                    ]
+        d = False
+        f = check[force_distribution] if -1 < force_distribution < len(check) else None
+        for c in check:
+            if (
+                (
+                    subprocess.run(  # pylint: disable=subprocess-run-check
+                        c[0],
+                        stdout=subprocess.DEVNULL,
+                        stderr=subprocess.DEVNULL,
+                        shell=True,
+                    ).returncode
+                    == 0
                 )
-
-        else:
-            logger.info("ROCmInfo check failed, assuming user has NVIDIA GPU")
-
-            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
-                "torchvision", "==0.15.1+cu118"
+                or c == f
+            ) and force_distribution != len(
+                check  # this is here because we need to be able to force cpu as well
             ):
-                logger.info("Installing PyTorch")
-
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "torch==2.0.0",
-                        "torchvision",
-                        "--index-url",
-                        "https://download.pytorch.org/whl/cu118",
-                    ]
-                )
+                logger.info(c[1])
+                if not (
+                    is_installed("torch", "==2.0.0")
+                    or is_installed("torch", "==2.0.0+cu118")
+                    or is_installed("torch", "==1.13.1+xpu")
+                ) or not (
+                    is_installed("torchvision", "==0.15.1")
+                    or is_installed("torchvision", "==0.15.1+cu118")
+                ):
+                    logger.info("Installing Pytorch")
+                    for cmd in c[2:]:
+                        subprocess.check_call(cmd)
+                d = True
+                break
+        if not d:
+            logger.info(
+                "No GPU detected, assuming user doesn't have one/needs directml"
+            )
+            logger.info("Installing Pytorch")
+            subprocess.check_call(
+                [
+                    sys.executable,
+                    "-m",
+                    "pip",
+                    "install",
+                    "torch",
+                    "torchvision",
+                    "intel_extension_for_pytorch",
+                    "torch-directml",
+                ]
+            )
 
     # Install other requirements
     install_requirements("requirements/pytorch.txt")

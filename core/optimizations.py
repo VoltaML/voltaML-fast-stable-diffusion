@@ -228,27 +228,21 @@ def optimize_model(
             f"Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
         )
 
-    if (
-        is_ipex_available()
-        and config.api.device_type == "cpu"
-        and not is_for_aitemplate
-    ):
-        import intel_extension_for_pytorch as ipex  # pylint: disable=import-error
+        if is_ipex_available():
+            import intel_extension_for_pytorch as ipex  # pylint: disable=import-error
 
-        ipex.enable_auto_channels_last()
-        ipex.set_fp32_math_mode(
-            ipex.FP32MathMode.BF32
-            if "AMD" not in cpu["VendorId"]
-            else ipex.FP32MathMode.FP32
-        )
-        pipe.unet = ipex.optimize(
-            pipe.unet,  # type: ignore
-            dtype=dtype,
-            conv_bn_folding=True,
-            linear_bn_folding=True,
-            weights_prepack=True,
-            replace_dropout_with_identity=True,
-        )
+            ipex.enable_auto_channels_last()
+            ipex.set_fp32_math_mode(
+                ipex.FP32MathMode.BF32
+                if "AMD" not in cpu["VendorId"]
+                else ipex.FP32MathMode.FP32
+            )
+            pipe.unet = ipex.optimize(
+                pipe.unet,  # type: ignore
+                dtype=dtype,
+                auto_kernel_selection=True,
+                sample_input=generate_inputs(dtype, device),
+            )
 
     if config.api.trace_model and not is_ipex_available() and not is_for_aitemplate:
         logger.info("Tracing model.")
