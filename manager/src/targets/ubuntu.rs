@@ -117,7 +117,7 @@ pub fn install(wsl: bool, experimental: bool) {
     println!(
         "{} {}",
         style("[OK]").green(),
-        "Installation complete, please run 'bash start.sh' to start the application'"
+        "Installation complete, please select 'Start' to start the application'"
     );
 }
 

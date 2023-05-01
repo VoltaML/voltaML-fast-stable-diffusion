@@ -82,3 +82,13 @@ pub fn pip_install(package: &str) -> Result<(), Box<dyn Error>> {
     )?;
     Ok(())
 }
+
+pub fn is_package_installed(package: &str) -> Result<bool, Box<dyn Error>> {
+    let packages = installed_packages()?;
+    for p in packages {
+        if p.name == package {
+            return Ok(true);
+        }
+    }
+    Ok(false)
+}

@@ -7,7 +7,7 @@ mod targets;
 mod utils;
 
 use console::style;
-use dialoguer::{theme::ColorfulTheme, Select};
+use dialoguer::{theme::ColorfulTheme, Input, Select};
 use std::{env, error::Error};
 use utils::shell::spawn_command;
 
@@ -114,6 +114,9 @@ fn debug_menu() {
             "Show $PATH",
             "Check CUDA exports in .bashrc",
             "Insert CUDA exports to .bashrc",
+            "Check AITemplate folder",
+            "Is aitemplate python package installed",
+            "Checkout AITemplate commit",
         ];
         let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
@@ -290,6 +293,53 @@ fn debug_menu() {
                         style("[ERROR]").red(),
                         "CUDA exports failed to insert",
                         res.err().unwrap()
+                    );
+                }
+            }
+            "Check AITemplate folder" => {
+                if crate::utils::aitemplate::does_aitemplate_folder_exist() {
+                    println!("{} {}", style("[OK]").green(), "AITemplate folder exists");
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "AITemplate folder does not exist"
+                    );
+                }
+            }
+            "Is aitemplate python package installed" => {
+                if crate::utils::aitemplate::is_aitemplate_installed() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "AITemplate python package installed"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "AITemplate python package not installed"
+                    );
+                }
+            }
+            "Checkout AITemplate commit" => {
+                let commit_id: String = Input::with_theme(&ColorfulTheme::default())
+                    .with_prompt("Commit hash")
+                    .interact_text()
+                    .unwrap();
+
+                let res = crate::git::checkout::checkout_commit("AITemplate", &commit_id);
+                if res.is_ok() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "Checked out AITemplate commit"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to checkout AITemplate commit"
                     );
                 }
             }
