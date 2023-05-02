@@ -8,7 +8,7 @@ mod utils;
 
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
-use std::{env, error::Error};
+use std::{env, error::Error, process::Command};
 use utils::shell::spawn_command;
 
 fn main() {
@@ -97,6 +97,7 @@ fn debug_menu() {
     loop {
         let items = vec![
             "Back",
+            "Get current branch",
             "Check NVCC",
             "Check Python",
             "Detect OS",
@@ -128,6 +129,25 @@ fn debug_menu() {
 
         match response {
             "Back" => break,
+            "Get current branch" => {
+                let output = Command::new("git")
+                    .args(&["rev-parse", "--abbrev-ref", "HEAD"])
+                    .output();
+                if output.is_ok() {
+                    let current_branch = String::from_utf8(output.unwrap().stdout);
+                    println!(
+                        "{} Current branch: {}",
+                        style("[OK]").green(),
+                        current_branch.unwrap()
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Could not get current branch"
+                    );
+                }
+            }
             "Check NVCC" => {
                 if utils::nvidia::is_nvcc_installed() {
                     let version = utils::nvidia::nvcc_version();
@@ -343,7 +363,7 @@ fn debug_menu() {
                     );
                 }
             }
-            _ => println!("Error"),
+            _ => println!("Command not found in match statement"),
         }
     }
 }
