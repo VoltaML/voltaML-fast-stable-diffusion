@@ -34,6 +34,7 @@ from core.types import (
     ONNXBuildRequest,
     RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
+    TextualInversionLoadRequest,
     TRTBuildRequest,
     Txt2ImgQueueEntry,
 )
@@ -563,6 +564,35 @@ class GPU:
                         "success",
                         "Lora model loaded",
                         f"Lora model {req.lora} loaded",
+                    )
+                )
+
+        else:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not found",
+                    f"Model {req.model} not found",
+                )
+            )
+            logger.error(f"Model {req.model} not found")
+
+    async def load_textual_inversion(self, req: TextualInversionLoadRequest):
+        "Inject a textual inversion model into a model"
+
+        if req.model in self.loaded_models:
+            internal_model = self.loaded_models[req.model]
+
+            if isinstance(internal_model, PyTorchStableDiffusion):
+                logger.info(f"Loading textual inversion model: {req.textual_inversion}")
+
+                internal_model.load_textual_inversion(req.textual_inversion)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Textual inversion model loaded",
+                        f"Textual inversion model {req.textual_inversion} loaded",
                     )
                 )
 

@@ -77,6 +77,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.current_controlnet: ControlNetMode = ControlNetMode.NONE
 
         self.loras: List[str] = []
+        self.textual_inversions: List[str] = []
 
         if autoload:
             self.load()
@@ -567,3 +568,37 @@ class PyTorchStableDiffusion(InferenceModel):
             )
         self.loras.append(lora)
         logger.info(f"LoRA model {lora} loaded successfully")
+
+    def load_textual_inversion(self, textual_inversion: str):
+        "Inject a textual inversion model into the pipeline"
+
+        logger.info(
+            f"Loading textual inversion model {textual_inversion} onto {self.model_id}..."
+        )
+
+        if any(textual_inversion in l for l in self.textual_inversions):
+            logger.info(
+                f"Textual inversion model {textual_inversion} already loaded onto {self.model_id}"
+            )
+            return
+
+        pipe = StableDiffusionLongPromptWeightingPipeline(
+            vae=self.vae,
+            unet=self.unet,
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            feature_extractor=self.feature_extractor,
+            requires_safety_checker=self.requires_safety_checker,
+            safety_checker=self.safety_checker,
+        )
+
+        pipe.load_textual_inversion(textual_inversion)
+
+        self.textual_inversions.append(textual_inversion)
+        logger.info(f"Textual inversion model {textual_inversion} loaded successfully")
+
+    def tokenize(self, text: str):
+        "Return the vocabulary of the tokenizer"
+
+        return [i.replace("</w>", "") for i in self.tokenizer.tokenize(text=text)]

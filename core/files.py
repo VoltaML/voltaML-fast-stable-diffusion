@@ -20,6 +20,7 @@ class CachedModelList:
         self.tensorrt_engine_path = Path("data/tensorrt")
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
+        self.textual_inversion_path = Path("data/textual-inversion")
 
     def pytorch(self) -> List[ModelResponse]:
         "List of models downloaded for PyTorch"
@@ -164,10 +165,42 @@ class CachedModelList:
 
         return models
 
+    def textual_inversion(self):
+        "List of textual inversion models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.textual_inversion_path):
+            logger.debug(f"Found textual inversion model {model}")
+            model_name = (
+                model.replace(".safetensors", "")
+                .replace(".ckpt", "")
+                .replace(".pt", "")
+            )
+
+            models.append(
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.textual_inversion_path, model),
+                    backend="Textual Inversion",
+                    valid=True,
+                    loras=[],
+                    state="not loaded",
+                )
+            )
+
+        return models
+
     def all(self):
         "List PyTorch, TensorRT and AITemplate models"
 
-        return self.pytorch() + self.tensorrt() + self.aitemplate() + self.lora()
+        return (
+            self.pytorch()
+            + self.tensorrt()
+            + self.aitemplate()
+            + self.lora()
+            + self.textual_inversion()
+        )
 
 
 def is_valid_diffusers_model(model_path: Union[str, Path]):

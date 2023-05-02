@@ -16,7 +16,9 @@ from diffusers import (
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate", "ONNX"]
-Backend = Literal["PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA"]
+Backend = Literal[
+    "PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA", "Textual Inversion"
+]
 
 
 @dataclass
@@ -319,6 +321,7 @@ class ModelResponse:
     valid: bool
     state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
     loras: List[str] = field(default_factory=list)
+    textual_inversions: List[str] = field(default_factory=list)
 
 
 @dataclass
@@ -327,3 +330,9 @@ class LoraLoadRequest:
     lora: str
     unet_weight: float = 0.5
     text_encoder_weight: float = 0.5
+
+
+@dataclass
+class TextualInversionLoadRequest:
+    model: str
+    textual_inversion: str

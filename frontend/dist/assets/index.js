@@ -35761,7 +35761,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-5a31e52f"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-5ed795b5"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
 const _hoisted_3 = { style: { "display": "inline-flex" } };
@@ -35770,8 +35770,9 @@ const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBase
 const _hoisted_6 = { class: "flex-container" };
 const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1));
 const _hoisted_8 = { style: { "display": "inline-flex" } };
-const _hoisted_9 = { class: "progress-container" };
-const _hoisted_10 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
+const _hoisted_9 = { style: { "display": "inline-flex" } };
+const _hoisted_10 = { class: "progress-container" };
+const _hoisted_11 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -35804,6 +35805,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const loraModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "LoRA";
+      });
+    });
+    const textualInversionModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "Textual Inversion";
       });
     });
     function refreshModels() {
@@ -35920,6 +35926,27 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             })
           });
           selectedModel.value.loras.push(lora.path);
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        message.error("No model selected");
+      }
+    }
+    async function loadTextualInversion(textualInversion) {
+      if (selectedModel.value) {
+        try {
+          await fetch(`${serverUrl}/api/models/load-textual-inversion`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: selectedModel.value.name,
+              textual_inversion: textualInversion.path
+            })
+          });
+          selectedModel.value.loras.push(textualInversion.path);
         } catch (e) {
           console.error(e);
         }
@@ -36044,6 +36071,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const lora_title = computed(() => {
       return `LoRA (${selectedModel.value ? selectedModel.value.name : "No model selected"})`;
     });
+    const textual_inversions_title = computed(() => {
+      return `Textual Inversions (${selectedModel.value ? selectedModel.value.name : "No model selected"})`;
+    });
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
@@ -36109,7 +36139,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                     }, {
                       default: withCtx(() => [
                         createVNode(unref(NGrid), {
-                          cols: "1 900:2",
+                          cols: "1 900:3",
                           "x-gap": 8,
                           "y-gap": 8,
                           style: { "height": "100%" }
@@ -36174,38 +36204,35 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             }),
                             createVNode(unref(NGi), null, {
                               default: withCtx(() => [
-                                createVNode(unref(NCard), {
-                                  title: "Lora weights",
-                                  style: { "width": "100%", "margin-bottom": "8px" }
-                                }, {
-                                  default: withCtx(() => [
-                                    createBaseVNode("div", _hoisted_4, [
-                                      _hoisted_5,
-                                      createVNode(unref(NSlider), {
-                                        value: unref(conf).data.settings.api.lora_text_encoder_weight,
-                                        "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.api.lora_text_encoder_weight = $event),
-                                        min: 0.1,
-                                        max: 1,
-                                        step: 0.01,
-                                        style: { "margin-right": "12px" }
-                                      }, null, 8, ["value", "min", "step"])
-                                    ]),
-                                    createBaseVNode("div", _hoisted_6, [
-                                      _hoisted_7,
-                                      createVNode(unref(NSlider), {
-                                        value: unref(conf).data.settings.api.lora_unet_weight,
-                                        "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.api.lora_unet_weight = $event),
-                                        min: 0.1,
-                                        max: 1,
-                                        step: 0.01,
-                                        style: { "margin-right": "12px" }
-                                      }, null, 8, ["value", "min", "step"])
-                                    ])
-                                  ]),
-                                  _: 1
-                                }),
                                 createVNode(unref(NCard), { title: unref(lora_title) }, {
                                   default: withCtx(() => [
+                                    createVNode(unref(NCard), { style: { "width": "100%", "margin-bottom": "8px" } }, {
+                                      default: withCtx(() => [
+                                        createBaseVNode("div", _hoisted_4, [
+                                          _hoisted_5,
+                                          createVNode(unref(NSlider), {
+                                            value: unref(conf).data.settings.api.lora_text_encoder_weight,
+                                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.api.lora_text_encoder_weight = $event),
+                                            min: 0.1,
+                                            max: 1,
+                                            step: 0.01,
+                                            style: { "margin-right": "12px" }
+                                          }, null, 8, ["value", "min", "step"])
+                                        ]),
+                                        createBaseVNode("div", _hoisted_6, [
+                                          _hoisted_7,
+                                          createVNode(unref(NSlider), {
+                                            value: unref(conf).data.settings.api.lora_unet_weight,
+                                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.api.lora_unet_weight = $event),
+                                            min: 0.1,
+                                            max: 1,
+                                            step: 0.01,
+                                            style: { "margin-right": "12px" }
+                                          }, null, 8, ["value", "min", "step"])
+                                        ])
+                                      ]),
+                                      _: 1
+                                    }),
                                     (openBlock(true), createElementBlock(Fragment, null, renderList(unref(loraModels), (lora) => {
                                       var _a3;
                                       return openBlock(), createElementBlock("div", {
@@ -36231,6 +36258,50 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                             onClick: ($event) => loadLoRA(lora),
                                             disabled: selectedModel.value === void 0,
                                             loading: lora.state === "loading"
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Load")
+                                            ]),
+                                            _: 2
+                                          }, 1032, ["onClick", "disabled", "loading"]))
+                                        ])
+                                      ]);
+                                    }), 128))
+                                  ]),
+                                  _: 1
+                                }, 8, ["title"])
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(NGi), null, {
+                              default: withCtx(() => [
+                                createVNode(unref(NCard), { title: unref(textual_inversions_title) }, {
+                                  default: withCtx(() => [
+                                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(textualInversionModels), (textualInversion) => {
+                                      var _a3;
+                                      return openBlock(), createElementBlock("div", {
+                                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                        key: textualInversion.path
+                                      }, [
+                                        createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
+                                        createBaseVNode("div", _hoisted_9, [
+                                          ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(textualInversion.path)) ? (openBlock(), createBlock(unref(NButton), {
+                                            key: 0,
+                                            type: "error",
+                                            ghost: "",
+                                            disabled: ""
+                                          }, {
+                                            default: withCtx(() => [
+                                              createTextVNode("Loaded")
+                                            ]),
+                                            _: 1
+                                          })) : (openBlock(), createBlock(unref(NButton), {
+                                            key: 1,
+                                            type: "success",
+                                            ghost: "",
+                                            onClick: ($event) => loadTextualInversion(textualInversion),
+                                            disabled: selectedModel.value === void 0,
+                                            loading: textualInversion.state === "loading"
                                           }, {
                                             default: withCtx(() => [
                                               createTextVNode("Load")
@@ -36351,7 +36422,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_9, [
+        createBaseVNode("div", _hoisted_10, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -36366,7 +36437,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_10, [
+        createBaseVNode("div", _hoisted_11, [
           createVNode(unref(NButton), {
             type: unref(websocketState).color,
             quaternary: "",
@@ -36394,7 +36465,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_5a31e52f_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_5ed795b5_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -36402,7 +36473,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5a31e52f"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5ed795b5"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
