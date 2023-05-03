@@ -130,7 +130,8 @@ class APIConfig:
 
     # Device settings
     device_id: int = 0
-    device_type: Literal["cpu", "cuda", "mps", "directml"] = "cuda"
+    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan", "iree"] = "cuda"
+    iree_target: Literal["cuda", "vulkan", "llvm", "interpreted"] = "vulkan"
 
     # Lora
     lora_text_encoder_weight: float = 0.5
@@ -143,19 +144,17 @@ class APIConfig:
     def device(self):
         "Return the device string"
 
-        if self.device_type == "cpu":
+        if self.device_type == "intel":
             from core.inference.functions import is_ipex_available
 
             if is_ipex_available():
-                # Requires xpu-master branch pytorch... gonna take a while...
-                try:
-                    import torch
-
-                    torch.tensor(0).to(torch.device("xpu"))
-                    return "xpu"
-                except RuntimeError:
-                    pass
+                return "xpu"
             return "cpu"
+
+        if self.device_type == "cpu":
+            return "cpu"
+        if self.device_type == "vulkan":
+            return "vulkan"
         if self.device_type == "directml":
             import torch_directml
 

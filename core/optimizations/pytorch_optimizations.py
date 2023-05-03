@@ -16,6 +16,8 @@ from tqdm.auto import tqdm
 
 from core.config import config
 from core.files import get_full_model_path
+from .iree import convert_pipe_state_to_iree
+from .trace_utils import TracedUNet, generate_inputs
 
 logger = logging.getLogger(__name__)
 
@@ -251,6 +253,9 @@ def optimize_model(
             )
             ipexed = True
 
+    warmup(pipe.unet, 5, dtype=dtype, device=device)
+    convert_pipe_state_to_iree(pipe)  # type: ignore
+
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
@@ -260,7 +265,7 @@ def optimize_model(
             )
         else:
             pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
-    elif is_ipex_available() and not is_for_aitemplate:
+    elif is_ipex_available() and config.api.trace_model and not is_for_aitemplate:
         logger.warning(
             "Skipping tracing because IPEX optimizations have already been done"
         )
@@ -275,16 +280,6 @@ def supports_tf32(device: Optional[torch.device] = None) -> bool:
     "Checks if device is post-Ampere"
     major, _ = torch.cuda.get_device_capability(device)
     return major >= 8
-
-
-def generate_inputs(
-    dtype: torch.dtype, device: torch.device
-) -> Tuple[torch.Tensor, torch.Tensor, torch.Tensor]:
-    "Generate sample inputs for a conditional UNet2D"
-    sample = torch.randn(2, 4, 64, 64).to(device, dtype=dtype)
-    timestep = torch.rand(1).to(device, dtype=dtype) * 999
-    encoder_hidden_states = torch.randn(2, 77, 768).to(device, dtype=dtype)
-    return sample, timestep, encoder_hidden_states
 
 
 def send_everything_to_cpu() -> None:
@@ -346,25 +341,7 @@ def trace_model(
     logger.debug("Tracing done")
     warmup(model, iterations // 5, dtype, device)
 
-    class TracedUNet(torch.nn.Module):
-        "UNet that was JIT traced and should be faster than the original"
-
-        def __init__(self):
-            super().__init__()
-            self.in_channels = og.in_channels
-            self.device = og.device
-            self.dtype = og.dtype
-            self.config = og.config
-
-        def forward(
-            self, latent_model_input, t, encoder_hidden_states
-        ) -> UNet2DConditionOutput:
-            "Forward pass of the model"
-
-            sample = model(latent_model_input, t, encoder_hidden_states)[0]
-            return UNet2DConditionOutput(sample=sample)
-
-    rn = TracedUNet()
+    rn = TracedUNet(model)
     del og
     return rn
 
