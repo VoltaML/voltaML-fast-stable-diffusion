@@ -35074,6 +35074,7 @@ if (loc.protocol === "https:") {
 }
 const serverUrl = loc.protocol + "//" + loc.host;
 const webSocketUrl = new_uri + "//" + loc.host;
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface_models.json";
 function progressForward(progress, global2) {
   if (progress === 0) {
     return 0;
@@ -35642,7 +35643,7 @@ const router = createRouter({
     {
       path: "/download",
       name: "download",
-      component: () => __vitePreload(() => import("./DownloadView.js"), true ? ["assets/DownloadView.js","assets/DownloadView.css"] : void 0)
+      component: () => __vitePreload(() => import("./DownloadView.js"), true ? ["assets/DownloadView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/DownloadView.css"] : void 0)
     },
     {
       path: "/about",
@@ -36836,26 +36837,26 @@ export {
   NBaseLoading as aJ,
   ChevronRightIcon as aK,
   onUnmounted as aL,
-  VVirtualList as aM,
-  VResizeObserver as aN,
-  warn$2 as aO,
-  cssrAnchorMetaName as aP,
-  repeat as aQ,
-  NEmpty as aR,
+  VResizeObserver as aM,
+  warn$2 as aN,
+  VVirtualList as aO,
+  NEmpty as aP,
+  cssrAnchorMetaName as aQ,
+  repeat as aR,
   beforeNextFrameOnce as aS,
   fadeInScaleUpTransition as aT,
   Transition as aU,
   dataTableLight$1 as aV,
   reactive as aW,
-  NTag as aX,
+  huggingfaceModelsFile as aX,
   stepsLight$1 as aY,
   throwError as aZ,
   FinishedIcon as a_,
   NInternalSelectMenu as aa,
-  keysOf as ab,
-  createTreeMate as ac,
-  happensIn as ad,
-  nextTick as ae,
+  createTreeMate as ab,
+  happensIn as ac,
+  nextTick as ad,
+  keysOf as ae,
   createTmOptions as af,
   keep as ag,
   createRefSetter as ah,

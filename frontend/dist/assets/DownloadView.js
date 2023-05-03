@@ -1,4 +1,5 @@
-import { d as defineComponent, A as h, K as useConfig, L as useFormItem, B as ref, c as computed, M as useMergedState, O as provide, P as toRef, Q as createInjectionKey, R as call, S as c, T as cB, U as cE, V as cM, W as iconSwitchTransition, X as insideModal, Y as insidePopover, Z as inject, $ as useMemo, a0 as useTheme, a1 as checkboxLight, a2 as useRtl, a3 as createKey, a4 as useThemeClass, a5 as createId, a6 as NIconSwitchTransition, a7 as on, a8 as popselectLight, a9 as watch, aa as NInternalSelectMenu, ab as keysOf, ac as createTreeMate, ad as happensIn, ae as nextTick, af as createTmOptions, ag as keep, ah as createRefSetter, ai as mergeEventHandlers, aj as omit, ak as NPopover, al as popoverBaseProps, am as cNotM, an as useLocale, ao as watchEffect, ap as resolveSlot, j as NInput, n as NSelect, H as Fragment, aq as NBaseIcon, ar as useAdjustedTo, as as paginationLight, at as ellipsisLight, au as onDeactivated, m as NTooltip, av as mergeProps, aw as radioLight, ax as resolveWrappedSlot, ay as flatten$1, az as getSlot, aA as depx, aB as formatLength, C as NButton, aC as NScrollbar, aD as onBeforeUnmount, aE as off, aF as ChevronDownIcon, aG as NDropdown, aH as pxfy, aI as get, aJ as NBaseLoading, aK as ChevronRightIcon, aL as onUnmounted, aM as VVirtualList, aN as VResizeObserver, aO as warn, aP as cssrAnchorMetaName, aQ as repeat, aR as NEmpty, aS as beforeNextFrameOnce, aT as fadeInScaleUpTransition, aU as Transition, aV as dataTableLight, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, b as useMessage, aW as reactive, f as createVNode, w as withCtx, g as unref, x as serverUrl, aX as NTag, i as NSpace, k as createTextVNode, h as NCard, D as NIcon, y as pushScopeId, z as popScopeId, _ as _export_sfc } from "./index.js";
+import { _ as _sfc_main$3 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, A as h, K as useConfig, L as useFormItem, B as ref, c as computed, M as useMergedState, O as provide, P as toRef, Q as createInjectionKey, R as call, S as c, T as cB, U as cE, V as cM, W as iconSwitchTransition, X as insideModal, Y as insidePopover, Z as inject, $ as useMemo, a0 as useTheme, a1 as checkboxLight, a2 as useRtl, a3 as createKey, a4 as useThemeClass, a5 as createId, a6 as NIconSwitchTransition, a7 as on, a8 as popselectLight, a9 as watch, aa as NInternalSelectMenu, ab as createTreeMate, ac as happensIn, ad as nextTick, ae as keysOf, af as createTmOptions, ag as keep, ah as createRefSetter, ai as mergeEventHandlers, aj as omit, ak as NPopover, al as popoverBaseProps, am as cNotM, an as useLocale, ao as watchEffect, ap as resolveSlot, j as NInput, n as NSelect, H as Fragment, aq as NBaseIcon, ar as useAdjustedTo, as as paginationLight, at as ellipsisLight, au as onDeactivated, m as NTooltip, av as mergeProps, aw as radioLight, ax as resolveWrappedSlot, ay as flatten$1, az as getSlot, aA as depx, aB as formatLength, C as NButton, aC as NScrollbar, aD as onBeforeUnmount, aE as off, aF as ChevronDownIcon, aG as NDropdown, aH as pxfy, aI as get, aJ as NBaseLoading, aK as ChevronRightIcon, aL as onUnmounted, aM as VResizeObserver, aN as warn, aO as VVirtualList, aP as NEmpty, aQ as cssrAnchorMetaName, aR as repeat, aS as beforeNextFrameOnce, aT as fadeInScaleUpTransition, aU as Transition, aV as dataTableLight, o as openBlock, e as createElementBlock, l as createBaseVNode, q as createBlock, u as useState, b as useMessage, aW as reactive, aX as huggingfaceModelsFile, f as createVNode, w as withCtx, g as unref, k as createTextVNode, h as NCard, x as serverUrl, y as pushScopeId, z as popScopeId, D as NIcon, _ as _export_sfc, E as NTabPane, F as NTabs } from "./index.js";
 function smallerSize(size) {
   switch (size) {
     case "tiny":
@@ -5611,11 +5612,11 @@ const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$1 = [_hoisted_2$2, _hoisted_3$2];
+const _hoisted_4$2 = [_hoisted_2$2, _hoisted_3$2];
 const Home = defineComponent({
   name: "Home",
   render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_4$1);
+    return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_4$2);
   }
 });
 const _hoisted_1$1 = {
@@ -5651,7 +5652,7 @@ const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -5665,91 +5666,28 @@ const _hoisted_4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5 = [_hoisted_2$1, _hoisted_3$1, _hoisted_4];
+const _hoisted_5 = [_hoisted_2$1, _hoisted_3$1, _hoisted_4$1];
 const Menu = defineComponent({
   name: "Menu",
   render: function render2(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_5);
   }
 });
-const tagColor = {
-  anime: "warning",
-  stylized: "info",
-  original: "primary",
-  highQuality: "error",
-  dreambooth: "default"
-};
-const modelData = [
-  {
-    name: "Anything V3",
-    huggingface_id: "Linaqruf/anything-v3.0",
-    huggingface_url: "https://huggingface.co/Linaqruf/anything-v3.0",
-    tags: ["anime"],
-    example_image_url: "https://huggingface.co/Linaqruf/anything-v3.0/resolve/main/1girl.png"
-  },
-  {
-    name: "ACertainThing",
-    huggingface_id: "JosephusCheung/ACertainThing",
-    huggingface_url: "https://huggingface.co/JosephusCheung/ACertainThing",
-    tags: ["anime", "dreambooth"],
-    example_image_url: "https://huggingface.co/JosephusCheung/ACertainThing/resolve/main/samples/acth-sample-1girl.png"
-  },
-  {
-    name: "SD-Kurzgesagt",
-    huggingface_id: "questcoast/SD-Kurzgesagt-style-finetune",
-    huggingface_url: "https://huggingface.co/questcoast/SD-Kurzgesagt-style-finetune",
-    tags: ["stylized", "dreambooth"],
-    example_image_url: "https://huggingface.co/questcoast/SD-Kurzgesagt-style-finetune/resolve/main/samples-2.jpg"
-  },
-  {
-    name: "Stable Diffusion v1.5",
-    huggingface_id: "runwayml/stable-diffusion-v1-5",
-    huggingface_url: "https://huggingface.co/runwayml/stable-diffusion-v1-5",
-    tags: ["original"],
-    example_image_url: ""
-  },
-  {
-    name: "Vintedois Diffusion",
-    huggingface_id: "22h/vintedois-diffusion-v0-1",
-    huggingface_url: "https://huggingface.co/22h/vintedois-diffusion-v0-1",
-    tags: ["highQuality"],
-    example_image_url: "https://huggingface.co/22h/vintedois-diffusion-v0-1/resolve/main/44-euler-a-kneeling%20cat%20knight%2C%20portrait%2C%20finely%20detailed%20armor%2C%20intricate%20design%2C%20silver%2C%20silk%2C%20cinematic%20lighting%2C%204k.png"
-  },
-  {
-    name: "Dreamlike diffusion",
-    huggingface_id: "dreamlike-art/dreamlike-diffusion-1.0",
-    huggingface_url: "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0",
-    tags: ["highQuality"],
-    example_image_url: "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0/resolve/main/preview.jpg"
-  },
-  {
-    name: "Stable Diffusion v1.4",
-    huggingface_id: "CompVis/stable-diffusion-v1-4",
-    huggingface_url: "https://huggingface.co/CompVis/stable-diffusion-v1-4",
-    tags: ["original"],
-    example_image_url: ""
-  },
-  {
-    name: "OpenJourney",
-    huggingface_id: "prompthero/openjourney",
-    huggingface_url: "https://huggingface.co/prompthero/openjourney",
-    tags: ["highQuality"],
-    example_image_url: "https://s3.amazonaws.com/moonup/production/uploads/1667904587642-63265d019f9d19bfd4f45031.png"
-  },
-  {
-    name: "RedShift Diffusion",
-    huggingface_id: "nitrosocke/redshift-diffusion",
-    huggingface_url: "https://huggingface.co/nitrosocke/redshift-diffusion",
-    tags: ["highQuality"],
-    example_image_url: "https://huggingface.co/nitrosocke/redshift-diffusion/resolve/main/images/redshift-diffusion-samples-01s.jpg"
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+  __name: "CivitAIDownload",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(_sfc_main$3);
+    };
   }
-];
-const _withScopeId = (n) => (pushScopeId("data-v-48ef3a29"), n = n(), popScopeId(), n);
-const _hoisted_1 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
-const _hoisted_2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
-const _hoisted_3 = { style: { "display": "inline-flex", "align-items": "center" } };
-const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "DownloadView",
+});
+const _withScopeId = (n) => (pushScopeId("data-v-cd580c64"), n = n(), popScopeId(), n);
+const _hoisted_1 = { style: { "margin": "18px" } };
+const _hoisted_2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
+const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
+const _hoisted_4 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "HuggingfaceDownload",
   setup(__props) {
     const conf = useState();
     const message = useMessage();
@@ -5770,30 +5708,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         message.error(`Failed to download model: ${modelName}`);
       });
     }
-    const tagsFilterOptions = () => {
-      const tagsFilterOptions2 = [];
-      const tags = [];
-      modelData.forEach((model) => {
-        model.tags.forEach((tag) => {
-          if (!tags.includes(tag)) {
-            tags.push(tag);
-          }
-        });
-      });
-      tags.forEach((tag) => {
-        tagsFilterOptions2.push({
-          label: tag,
-          value: tag
-        });
-      });
-      return tagsFilterOptions2;
-    };
-    const tagsFilter = (value, row) => {
-      return row.tags.indexOf(value.toString()) ? false : true;
-    };
-    const getTagColor = (tag) => {
-      return tagColor[tag];
-    };
     const renderIcon = (icon, size = "medium") => {
       return () => {
         return h(
@@ -5830,30 +5744,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         title: "Repository",
         key: "huggingface_id",
         sorter: "default"
-      },
-      {
-        title: "Tags",
-        key: "tags",
-        filterOptions: tagsFilterOptions(),
-        filter: tagsFilter,
-        render(row) {
-          return h(
-            NSpace,
-            {},
-            {
-              default: () => row.tags.map((tag) => {
-                return h(
-                  NTag,
-                  {
-                    bordered: true,
-                    type: getTagColor(tag)
-                  },
-                  { default: () => tag }
-                );
-              })
-            }
-          );
-        }
       },
       {
         title: "Download",
@@ -5894,20 +5784,39 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         filter: "default"
       }
     ];
+    const modelData = reactive([]);
+    const modelFilter = ref("");
     const columnsRef = reactive(columns);
-    const dataRef = reactive(modelData);
+    const dataRef = computed(() => {
+      if (modelFilter.value !== "") {
+        return modelData.filter(
+          (model) => model.name.toLowerCase().includes(modelFilter.value.toLowerCase())
+        );
+      } else {
+        return modelData;
+      }
+    });
     const pagination = reactive({ pageSize: 10 });
+    fetch(huggingfaceModelsFile, {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json"
+      }
+    }).then((res) => {
+      res.json().then((data) => {
+        modelData.push(...data);
+      });
+    });
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock(Fragment, null, [
+      return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NCard), {
-          style: { "margin": "12px 12px" },
           title: "Custom model",
           segmented: ""
         }, {
           default: withCtx(() => [
-            createBaseVNode("div", _hoisted_1, [
-              _hoisted_2,
-              createBaseVNode("div", _hoisted_3, [
+            createBaseVNode("div", _hoisted_2, [
+              _hoisted_3,
+              createBaseVNode("div", _hoisted_4, [
                 createVNode(unref(NInput), {
                   value: customModel.value,
                   "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
@@ -5935,27 +5844,57 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }),
         createVNode(unref(NCard), {
           title: "Currated models",
-          style: { "margin": "12px" },
+          style: { "margin-top": "12px" },
           segmented: ""
         }, {
           default: withCtx(() => [
+            createVNode(unref(NInput), {
+              value: modelFilter.value,
+              "onUpdate:value": _cache[2] || (_cache[2] = ($event) => modelFilter.value = $event),
+              style: { "margin-bottom": "12px" },
+              placeholder: "Filter",
+              clearable: ""
+            }, null, 8, ["value"]),
             createVNode(unref(NDataTable), {
               columns: columnsRef,
-              data: dataRef,
+              data: unref(dataRef),
               pagination,
               bordered: true,
-              remote: true,
               style: { "padding-bottom": "24px" }
             }, null, 8, ["columns", "data", "pagination"])
           ]),
           _: 1
         })
-      ], 64);
+      ]);
     };
   }
 });
-const DownloadView_vue_vue_type_style_index_0_scoped_48ef3a29_lang = "";
-const DownloadView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-48ef3a29"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_cd580c64_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-cd580c64"]]);
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "DownloadView",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NTabs), { type: "segment" }, {
+        default: withCtx(() => [
+          createVNode(unref(NTabPane), { name: "Huggingface" }, {
+            default: withCtx(() => [
+              createVNode(HuggingfaceDownload)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "CivitAI" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$2)
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
 export {
-  DownloadView as default
+  _sfc_main as default
 };
