@@ -35074,7 +35074,7 @@ if (loc.protocol === "https:") {
 }
 const serverUrl = loc.protocol + "//" + loc.host;
 const webSocketUrl = new_uri + "//" + loc.host;
-const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface_models.json";
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
 function progressForward(progress, global2) {
   if (progress === 0) {
     return 0;
