@@ -268,15 +268,17 @@
       </NProgress>
     </div>
     <div style="display: inline-flex; justify-self: end; align-items: center">
-      <NButton
-        :type="websocketState.color"
-        quaternary
-        icon-placement="left"
-        :render-icon="syncIcon"
-        :loading="websocketState.loading"
-        @click="startWebsocket(message)"
-        >{{ websocketState.text }}</NButton
-      >
+      <NDropdown :options="dropdownOptions" @select="dropdownSelected">
+        <NButton
+          :type="websocketState.color"
+          quaternary
+          icon-placement="left"
+          :render-icon="renderIcon(WifiSharp)"
+          :loading="websocketState.loading"
+          @click="startWebsocket(message)"
+          >{{ websocketState.text }}</NButton
+        >
+      </NDropdown>
       <NButton
         type="success"
         quaternary
@@ -294,8 +296,10 @@
 import type { ModelEntry } from "@/core/interfaces";
 import {
   NCard,
+  NDropdown,
   NGi,
   NGrid,
+  NIcon,
   NInput,
   NModal,
   NScrollbar,
@@ -303,15 +307,23 @@ import {
   NSlider,
   NTabPane,
   NTabs,
+  type DropdownOption,
 } from "naive-ui";
 
 import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
-import { StatsChart, SyncSharp } from "@vicons/ionicons5";
+import {
+  PowerSharp,
+  SettingsSharp,
+  StatsChart,
+  SyncSharp,
+  WifiSharp,
+} from "@vicons/ionicons5";
 import { NButton, NProgress, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
-import { computed, h, ref, type ComputedRef } from "vue";
+import { computed, h, ref, type Component, type ComputedRef } from "vue";
+import router from "../router/index";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
@@ -567,10 +579,6 @@ function resetModels() {
   console.log("Reset models");
 }
 
-const syncIcon = () => {
-  return h(SyncSharp);
-};
-
 const perfIcon = () => {
   return h(StatsChart);
 };
@@ -665,6 +673,44 @@ const textual_inversions_title = computed(() => {
     selectedModel.value ? selectedModel.value.name : "No model selected"
   })`;
 });
+
+const renderIcon = (icon: Component) => {
+  return () => {
+    return h(NIcon, null, {
+      default: () => h(icon),
+    });
+  };
+};
+
+const dropdownOptions: DropdownOption[] = [
+  {
+    label: "Reconnect",
+    key: "reconnect",
+    icon: renderIcon(SyncSharp),
+  },
+  {
+    label: "Settings",
+    key: "settings",
+    icon: renderIcon(SettingsSharp),
+  },
+  {
+    label: "Shutdown",
+    key: "shutdown",
+    icon: renderIcon(PowerSharp),
+  },
+];
+
+async function dropdownSelected(key: string) {
+  if (key === "reconnect") {
+    await startWebsocket(message);
+  } else if (key === "settings") {
+    router.push("/settings");
+  } else if (key === "shutdown") {
+    await fetch(`${serverUrl}/api/general/shutdown`, {
+      method: "POST",
+    });
+  }
+}
 
 startWebsocket(message);
 </script>

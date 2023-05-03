@@ -22,7 +22,7 @@ class Txt2ImgConfig:
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
-    steps: int = 25
+    steps: int = 40
     batch_count: int = 1
     batch_size: int = 1
     self_attention_scale: float = 0.0
@@ -39,7 +39,7 @@ class Img2ImgConfig:
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
-    steps: int = 25
+    steps: int = 40
     batch_count: int = 1
     batch_size: int = 1
     resize_method: int = 0
@@ -55,7 +55,7 @@ class InpaintingConfig:
     negative_prompt: str = ""
     width: int = 512
     height: int = 512
-    steps: int = 25
+    steps: int = 40
     cfg_scale: int = 7
     seed: int = -1
     batch_count: int = 1
@@ -74,7 +74,7 @@ class ControlNetConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    steps: int = 25
+    steps: int = 40
     batch_count: int = 1
     batch_size: int = 1
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
@@ -96,23 +96,35 @@ class RealESRGANConfig:
 class APIConfig:
     "Configuration for the API"
 
+    # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    attention_processor: Literal["xformers", "spda"] = "xformers"
-    attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
+    image_preview_delay: float = 2.0
+
+    # ToMeSD
     use_tomesd: bool = False
     tomesd_ratio: float = 0.4
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
+
+    # Optimizations
+    attention_processor: Literal["xformers", "spda"] = "xformers"
+    attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
     vae_slicing: bool = True
     trace_model: bool = False
     offload: Literal["module", "model", "disabled"] = "disabled"
-    image_preview_delay: float = 2.0
+    use_fp32: bool = False
+
+    # Device settings
     device_id: int = 0
     device_type: Literal["cpu", "cuda", "mps", "directml"] = "cuda"
-    use_fp32: bool = False
+
+    # Lora
     lora_text_encoder_weight: float = 0.5
     lora_unet_weight: float = 0.5
+
+    # Critical
+    enable_shutdown: bool = True
 
     @property
     def device(self):

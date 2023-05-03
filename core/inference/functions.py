@@ -386,6 +386,8 @@ def load_pytorch_pipeline(
         f"Loaded {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"
     )
 
+    assert isinstance(pipe, StableDiffusionPipeline)
+
     if optimize:
         optimize_model(
             pipe=pipe,

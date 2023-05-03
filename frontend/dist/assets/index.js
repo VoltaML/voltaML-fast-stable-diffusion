@@ -1507,27 +1507,27 @@ function withCtx(fn, ctx2 = currentRenderingInstance, isNonScopedSlot) {
 function markAttrsAccessed() {
 }
 function renderComponentRoot(instance) {
-  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit: emit2, render: render13, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
+  const { type: Component, vnode, proxy, withProxy, props, propsOptions: [propsOptions], slots, attrs, emit: emit2, render: render15, renderCache, data, setupState, ctx: ctx2, inheritAttrs } = instance;
   let result;
   let fallthroughAttrs;
   const prev = setCurrentRenderingInstance(instance);
   try {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
-      result = normalizeVNode(render13.call(proxyToUse, proxyToUse, renderCache, props, setupState, data, ctx2));
+      result = normalizeVNode(render15.call(proxyToUse, proxyToUse, renderCache, props, setupState, data, ctx2));
       fallthroughAttrs = attrs;
     } else {
-      const render14 = Component;
+      const render16 = Component;
       if (false)
         ;
-      result = normalizeVNode(render14.length > 1 ? render14(props, false ? {
+      result = normalizeVNode(render16.length > 1 ? render16(props, false ? {
         get attrs() {
           markAttrsAccessed();
           return attrs;
         },
         slots,
         emit: emit2
-      } : { attrs, slots, emit: emit2 }) : render14(
+      } : { attrs, slots, emit: emit2 }) : render16(
         props,
         null
         /* we know it doesn't need it */
@@ -2598,7 +2598,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render13,
+    render: render15,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2702,8 +2702,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render13 && instance.render === NOOP) {
-    instance.render = render13;
+  if (render15 && instance.render === NOOP) {
+    instance.render = render15;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3262,7 +3262,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render13, hydrate) {
+function createAppAPI(render15, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = Object.assign({}, rootComponent);
@@ -3328,7 +3328,7 @@ function createAppAPI(render13, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render13(vnode, rootContainer, isSVG2);
+            render15(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3338,7 +3338,7 @@ function createAppAPI(render13, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render13(null, app2._container);
+          render15(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4224,7 +4224,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render13 = (vnode, container, isSVG2) => {
+  const render15 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4254,9 +4254,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     [hydrate, hydrateNode] = createHydrationFns(internals);
   }
   return {
-    render: render13,
+    render: render15,
     hydrate,
-    createApp: createAppAPI(render13, hydrate)
+    createApp: createAppAPI(render15, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -23554,8 +23554,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render13, props } } = this.tmNode;
-    return h("div", props, [render13 === null || render13 === void 0 ? void 0 : render13()]);
+    const { rawNode: { render: render15, props } } = this.tmNode;
+    return h("div", props, [render15 === null || render15 === void 0 ? void 0 : render15()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -32529,12 +32529,12 @@ const darkTheme = {
   Upload: uploadDark$1,
   Watermark: watermarkDark$1
 };
-const _hoisted_1$d = {
+const _hoisted_1$f = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -32544,7 +32544,7 @@ const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -32554,7 +32554,7 @@ const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -32564,11 +32564,85 @@ const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$5 = [_hoisted_2$c, _hoisted_3$c, _hoisted_4$9];
+const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$e, _hoisted_4$b];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_5$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$6);
+  }
+});
+const _hoisted_1$e = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$d, _hoisted_4$a];
+const Create = defineComponent({
+  name: "Create",
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_5$5);
+  }
+});
+const _hoisted_1$d = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M272 48a16 16 0 0 0-32 0v112h32z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$9 = [_hoisted_2$c, _hoisted_3$c];
+const Download = defineComponent({
+  name: "Download",
+  render: function render4(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$9);
   }
 });
 const _hoisted_1$c = {
@@ -32579,7 +32653,7 @@ const _hoisted_1$c = {
 const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
@@ -32589,28 +32663,18 @@ const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5$4 = [_hoisted_2$b, _hoisted_3$b, _hoisted_4$8];
-const Create = defineComponent({
-  name: "Create",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$4);
+const _hoisted_4$8 = [_hoisted_2$b, _hoisted_3$b];
+const Duplicate = defineComponent({
+  name: "Duplicate",
+  render: function render5(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$8);
   }
 });
 const _hoisted_1$b = {
@@ -32621,7 +32685,7 @@ const _hoisted_1$b = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
+    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
     fill: "currentColor"
   },
   null,
@@ -32631,7 +32695,7 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M272 48a16 16 0 0 0-32 0v112h32z",
+    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
     fill: "currentColor"
   },
   null,
@@ -32639,9 +32703,9 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$a];
-const Download = defineComponent({
-  name: "Download",
-  render: function render4(_ctx, _cache) {
+const GitCompare = defineComponent({
+  name: "GitCompare",
+  render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$7);
   }
 });
@@ -32653,28 +32717,18 @@ const _hoisted_1$a = {
 const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
+    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$9];
-const Duplicate = defineComponent({
-  name: "Duplicate",
-  render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$6);
+const _hoisted_3$9 = [_hoisted_2$9];
+const Image$1 = defineComponent({
+  name: "Image",
+  render: function render7(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$9);
   }
 });
 const _hoisted_1$9 = {
@@ -32685,7 +32739,7 @@ const _hoisted_1$9 = {
 const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
+    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
     fill: "currentColor"
   },
   null,
@@ -32695,18 +32749,18 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
+    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$8];
-const GitCompare = defineComponent({
-  name: "GitCompare",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
+const _hoisted_4$6 = [_hoisted_2$8, _hoisted_3$8];
+const Images = defineComponent({
+  name: "Images",
+  render: function render8(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$6);
   }
 });
 const _hoisted_1$8 = {
@@ -32717,18 +32771,28 @@ const _hoisted_1$8 = {
 const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
+    d: "M256 464c-114.69 0-208-93.23-208-207.82a207.44 207.44 0 0 1 74.76-160.13l16.9-14l28.17 33.72l-16.9 14A163.72 163.72 0 0 0 92 256.18c0 90.39 73.57 163.93 164 163.93s164-73.54 164-163.93a163.38 163.38 0 0 0-59.83-126.36l-17-14l28-33.82l17 14A207.13 207.13 0 0 1 464 256.18C464 370.77 370.69 464 256 464z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$7 = [_hoisted_2$7];
-const Image$1 = defineComponent({
-  name: "Image",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$7);
+const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M234 48h44v224h-44z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$5 = [_hoisted_2$7, _hoisted_3$7];
+const PowerSharp = defineComponent({
+  name: "PowerSharp",
+  render: function render9(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_4$5);
   }
 });
 const _hoisted_1$7 = {
@@ -32739,28 +32803,18 @@ const _hoisted_1$7 = {
 const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
+    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$4 = [_hoisted_2$6, _hoisted_3$6];
-const Images = defineComponent({
-  name: "Images",
-  render: function render8(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$4);
+const _hoisted_3$6 = [_hoisted_2$6];
+const SettingsSharp = defineComponent({
+  name: "SettingsSharp",
+  render: function render10(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$6);
   }
 });
 const _hoisted_1$6 = {
@@ -32771,7 +32825,7 @@ const _hoisted_1$6 = {
 const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
+    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
     fill: "currentColor"
   },
   null,
@@ -32779,9 +32833,9 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$5 = [_hoisted_2$5];
-const SettingsSharp = defineComponent({
-  name: "SettingsSharp",
-  render: function render9(_ctx, _cache) {
+const Speedometer = defineComponent({
+  name: "Speedometer",
+  render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_3$5);
   }
 });
@@ -32793,28 +32847,6 @@ const _hoisted_1$5 = {
 const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$4 = [_hoisted_2$4];
-const Speedometer = defineComponent({
-  name: "Speedometer",
-  render: function render10(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_3$4);
-  }
-});
-const _hoisted_1$4 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
     d: "M104 496H72a24 24 0 0 1-24-24V328a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v144a24 24 0 0 1-24 24z",
     fill: "currentColor"
   },
@@ -32822,7 +32854,7 @@ const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M328 496h-32a24 24 0 0 1-24-24V232a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v240a24 24 0 0 1-24 24z",
@@ -32832,7 +32864,7 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M440 496h-32a24 24 0 0 1-24-24V120a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v352a24 24 0 0 1-24 24z",
@@ -32842,7 +32874,7 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M216 496h-32a24 24 0 0 1-24-24V40a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v432a24 24 0 0 1-24 24z",
@@ -32852,19 +32884,19 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
+const _hoisted_6$2 = [_hoisted_2$4, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$1);
+  render: function render12(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$2);
   }
 });
-const _hoisted_1$3 = {
+const _hoisted_1$4 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M434.67 285.59v-29.8c0-98.73-80.24-178.79-179.2-178.79a179 179 0 0 0-140.14 67.36m-38.53 82v29.8C76.8 355 157 435 256 435a180.45 180.45 0 0 0 140-66.92",
@@ -32878,7 +32910,7 @@ const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -32892,7 +32924,7 @@ const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -32906,11 +32938,75 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$2 = [_hoisted_2$2, _hoisted_3$2, _hoisted_4$2];
+const _hoisted_5$3 = [_hoisted_2$3, _hoisted_3$3, _hoisted_4$3];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render12(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_5$2);
+  render: function render13(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_5$3);
+  }
+});
+const _hoisted_1$3 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M332.69 320a115 115 0 0 0-152.8 0",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "square",
+    "stroke-linejoin": "round",
+    "stroke-width": "42"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M393.74 259a201.26 201.26 0 0 0-274.92 0",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "square",
+    "stroke-linejoin": "round",
+    "stroke-width": "42"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M448 191.52a288 288 0 0 0-383.44 0",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "square",
+    "stroke-linejoin": "round",
+    "stroke-width": "42"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M300.67 384L256 433l-44.34-49a56.73 56.73 0 0 1 88.92 0z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_6$1 = [_hoisted_2$2, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
+const WifiSharp = defineComponent({
+  name: "WifiSharp",
+  render: function render14(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$1);
   }
 });
 /*!
@@ -35481,6 +35577,110 @@ async function startWebsocket(messageProvider) {
   console.log("Starting websocket");
   websocketState.ws_open();
 }
+const scriptRel = "modulepreload";
+const assetsURL = function(dep) {
+  return "/" + dep;
+};
+const seen = {};
+const __vitePreload = function preload(baseModule, deps, importerUrl) {
+  if (!deps || deps.length === 0) {
+    return baseModule();
+  }
+  const links = document.getElementsByTagName("link");
+  return Promise.all(deps.map((dep) => {
+    dep = assetsURL(dep);
+    if (dep in seen)
+      return;
+    seen[dep] = true;
+    const isCss = dep.endsWith(".css");
+    const cssSelector = isCss ? '[rel="stylesheet"]' : "";
+    const isBaseRelative = !!importerUrl;
+    if (isBaseRelative) {
+      for (let i = links.length - 1; i >= 0; i--) {
+        const link2 = links[i];
+        if (link2.href === dep && (!isCss || link2.rel === "stylesheet")) {
+          return;
+        }
+      }
+    } else if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
+      return;
+    }
+    const link = document.createElement("link");
+    link.rel = isCss ? "stylesheet" : scriptRel;
+    if (!isCss) {
+      link.as = "script";
+      link.crossOrigin = "";
+    }
+    link.href = dep;
+    document.head.appendChild(link);
+    if (isCss) {
+      return new Promise((res, rej) => {
+        link.addEventListener("load", res);
+        link.addEventListener("error", () => rej(new Error(`Unable to preload CSS for ${dep}`)));
+      });
+    }
+  })).then(() => baseModule());
+};
+const router = createRouter({
+  history: createWebHistory("/"),
+  routes: [
+    {
+      path: "/",
+      name: "text2image",
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
+    },
+    {
+      path: "/image2image",
+      name: "image2image",
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
+    },
+    {
+      path: "/extra",
+      name: "extra",
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+    },
+    {
+      path: "/download",
+      name: "download",
+      component: () => __vitePreload(() => import("./DownloadView.js"), true ? ["assets/DownloadView.js","assets/DownloadView.css"] : void 0)
+    },
+    {
+      path: "/about",
+      name: "about",
+      component: () => __vitePreload(() => import("./AboutView.js"), true ? [] : void 0)
+    },
+    {
+      path: "/accelerate",
+      name: "accelerate",
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/InputNumber.js"] : void 0)
+    },
+    {
+      path: "/test",
+      name: "test",
+      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
+    },
+    {
+      path: "/convert",
+      name: "convert",
+      component: () => __vitePreload(() => import("./ConvertView.js"), true ? ["assets/ConvertView.js","assets/Switch.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
+    },
+    {
+      path: "/settings",
+      name: "settings",
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
+    },
+    {
+      path: "/imageBrowser",
+      name: "imageBrowser",
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
+    },
+    {
+      path: "/tagger",
+      name: "tagger",
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
+    }
+  ]
+});
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
   ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
@@ -35761,7 +35961,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-5ed795b5"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-ec2fb234"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
 const _hoisted_3 = { style: { "display": "inline-flex" } };
@@ -35990,9 +36190,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       models.value.splice(0, models.value.length);
       console.log("Reset models");
     }
-    const syncIcon = () => {
-      return h(SyncSharp);
-    };
     const perfIcon = () => {
       return h(StatsChart);
     };
@@ -36074,6 +36271,41 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const textual_inversions_title = computed(() => {
       return `Textual Inversions (${selectedModel.value ? selectedModel.value.name : "No model selected"})`;
     });
+    const renderIcon = (icon) => {
+      return () => {
+        return h(NIcon, null, {
+          default: () => h(icon)
+        });
+      };
+    };
+    const dropdownOptions = [
+      {
+        label: "Reconnect",
+        key: "reconnect",
+        icon: renderIcon(SyncSharp)
+      },
+      {
+        label: "Settings",
+        key: "settings",
+        icon: renderIcon(SettingsSharp)
+      },
+      {
+        label: "Shutdown",
+        key: "shutdown",
+        icon: renderIcon(PowerSharp)
+      }
+    ];
+    async function dropdownSelected(key) {
+      if (key === "reconnect") {
+        await startWebsocket(message);
+      } else if (key === "settings") {
+        router.push("/settings");
+      } else if (key === "shutdown") {
+        await fetch(`${serverUrl}/api/general/shutdown`, {
+          method: "POST"
+        });
+      }
+    }
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
@@ -36438,19 +36670,27 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           }, 8, ["percentage", "processing"])
         ]),
         createBaseVNode("div", _hoisted_11, [
-          createVNode(unref(NButton), {
-            type: unref(websocketState).color,
-            quaternary: "",
-            "icon-placement": "left",
-            "render-icon": syncIcon,
-            loading: unref(websocketState).loading,
-            onClick: _cache[5] || (_cache[5] = ($event) => unref(startWebsocket)(unref(message)))
+          createVNode(unref(NDropdown), {
+            options: dropdownOptions,
+            onSelect: dropdownSelected
           }, {
             default: withCtx(() => [
-              createTextVNode(toDisplayString(unref(websocketState).text), 1)
+              createVNode(unref(NButton), {
+                type: unref(websocketState).color,
+                quaternary: "",
+                "icon-placement": "left",
+                "render-icon": renderIcon(unref(WifiSharp)),
+                loading: unref(websocketState).loading,
+                onClick: _cache[5] || (_cache[5] = ($event) => unref(startWebsocket)(unref(message)))
+              }, {
+                default: withCtx(() => [
+                  createTextVNode(toDisplayString(unref(websocketState).text), 1)
+                ]),
+                _: 1
+              }, 8, ["type", "render-icon", "loading"])
             ]),
             _: 1
-          }, 8, ["type", "loading"]),
+          }),
           createVNode(unref(NButton), {
             type: "success",
             quaternary: "",
@@ -36465,7 +36705,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_5ed795b5_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_ec2fb234_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -36473,7 +36713,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5ed795b5"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-ec2fb234"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -36514,110 +36754,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }, 8, ["theme"]);
     };
   }
-});
-const scriptRel = "modulepreload";
-const assetsURL = function(dep) {
-  return "/" + dep;
-};
-const seen = {};
-const __vitePreload = function preload(baseModule, deps, importerUrl) {
-  if (!deps || deps.length === 0) {
-    return baseModule();
-  }
-  const links = document.getElementsByTagName("link");
-  return Promise.all(deps.map((dep) => {
-    dep = assetsURL(dep);
-    if (dep in seen)
-      return;
-    seen[dep] = true;
-    const isCss = dep.endsWith(".css");
-    const cssSelector = isCss ? '[rel="stylesheet"]' : "";
-    const isBaseRelative = !!importerUrl;
-    if (isBaseRelative) {
-      for (let i = links.length - 1; i >= 0; i--) {
-        const link2 = links[i];
-        if (link2.href === dep && (!isCss || link2.rel === "stylesheet")) {
-          return;
-        }
-      }
-    } else if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
-      return;
-    }
-    const link = document.createElement("link");
-    link.rel = isCss ? "stylesheet" : scriptRel;
-    if (!isCss) {
-      link.as = "script";
-      link.crossOrigin = "";
-    }
-    link.href = dep;
-    document.head.appendChild(link);
-    if (isCss) {
-      return new Promise((res, rej) => {
-        link.addEventListener("load", res);
-        link.addEventListener("error", () => rej(new Error(`Unable to preload CSS for ${dep}`)));
-      });
-    }
-  })).then(() => baseModule());
-};
-const router = createRouter({
-  history: createWebHistory("/"),
-  routes: [
-    {
-      path: "/",
-      name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
-    },
-    {
-      path: "/image2image",
-      name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
-    },
-    {
-      path: "/extra",
-      name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
-    },
-    {
-      path: "/download",
-      name: "download",
-      component: () => __vitePreload(() => import("./DownloadView.js"), true ? ["assets/DownloadView.js","assets/DownloadView.css"] : void 0)
-    },
-    {
-      path: "/about",
-      name: "about",
-      component: () => __vitePreload(() => import("./AboutView.js"), true ? [] : void 0)
-    },
-    {
-      path: "/accelerate",
-      name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/InputNumber.js"] : void 0)
-    },
-    {
-      path: "/test",
-      name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
-    },
-    {
-      path: "/convert",
-      name: "convert",
-      component: () => __vitePreload(() => import("./ConvertView.js"), true ? ["assets/ConvertView.js","assets/Switch.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
-    },
-    {
-      path: "/settings",
-      name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
-    },
-    {
-      path: "/imageBrowser",
-      name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
-    },
-    {
-      path: "/tagger",
-      name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
-    }
-  ]
 });
 const main = "";
 const pinia = createPinia();
