@@ -120,7 +120,7 @@ class APIConfig:
 
     # CPU specific optimizations
     quantize_to_int8: bool = False  # preferably will also be able to port this over to gpu, but cpu only for now
-    
+
     # CUDA specific optimizations
     reduced_precision: bool = False
     cudnn_benchmark: bool = False
