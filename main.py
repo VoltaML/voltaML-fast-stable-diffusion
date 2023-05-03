@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import shlex
@@ -88,6 +89,7 @@ Path("data/onnx").mkdir(exist_ok=True)
 Path("data/models").mkdir(exist_ok=True)
 Path("data/outputs").mkdir(exist_ok=True)
 Path("data/lora").mkdir(exist_ok=True)
+Path("data/textual-inversion").mkdir(exist_ok=True)
 Path("data/tensorrt").mkdir(exist_ok=True)
 
 # Suppress some annoying warnings
@@ -133,14 +135,28 @@ def main(exit_after_init: bool = False):
         bot_thread.start()
 
     # Start the API
-    from uvicorn import run as uvicorn_run
+    from uvicorn import Config, Server
 
     from api.app import app as api_app
+    from core import shared
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
 
+    uvi_config = Config(app=api_app, host=host, port=5003)
+    uvi_server = Server(config=uvi_config)
+
+    uvi_config.setup_event_loop()
+    loop = asyncio.new_event_loop()
+
+    shared.uvicorn_loop = loop
+    shared.uvicorn_server = uvi_server
+
     if not exit_after_init:
-        uvicorn_run(api_app, host=host, port=5003)
+        try:
+            loop.run_until_complete(uvi_server.serve())
+        except RuntimeError:
+            logger.info("Server stopped")
+            sys.exit(0)
     else:
         logger.warning("Exit after initialization requested, exiting now")
 

@@ -23,7 +23,7 @@ class Txt2ImgConfig:
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
-    steps: int = 25
+    steps: int = 40
     batch_count: int = 1
     batch_size: int = 1
     self_attention_scale: float = 0.0
@@ -40,7 +40,7 @@ class Img2ImgConfig:
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
-    steps: int = 25
+    steps: int = 40
     batch_count: int = 1
     batch_size: int = 1
     resize_method: int = 0
@@ -56,7 +56,7 @@ class InpaintingConfig:
     negative_prompt: str = ""
     width: int = 512
     height: int = 512
-    steps: int = 25
+    steps: int = 40
     cfg_scale: int = 7
     seed: int = -1
     batch_count: int = 1
@@ -75,7 +75,7 @@ class ControlNetConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    steps: int = 25
+    steps: int = 40
     batch_count: int = 1
     batch_size: int = 1
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
@@ -97,28 +97,47 @@ class RealESRGANConfig:
 class APIConfig:
     "Configuration for the API"
 
+    # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    attention_processor: Literal["xformers", "spda", "cross_attention"] = "xformers"
-    attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
+
+    # TomeSD
     use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit
-    deterministic_generation: bool = (
-        True  # disabling increases performance on my 3080 by 0.25it/s with batch_size=3
-    )
-    quantize_to_int8: bool = False  # preferably will also be able to port this over to gpu, but cpu only for now
-    reduced_precision: bool = False
-    cudnn_benchmark: bool = False
     tomesd_ratio: float = 0.25  # had to tone this down, 0.4 is too big of a context loss even on short prompts
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
+
+    image_preview_delay: float = 2.0
+
+    # General optimizations
+    attention_processor: Literal["xformers", "spda", "cross_attention"] = "xformers"
+    attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
     vae_slicing: bool = True
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
-    image_preview_delay: float = 2.0
+    use_fp32: bool = False
+
+    # CPU specific optimizations
+    quantize_to_int8: bool = False  # preferably will also be able to port this over to gpu, but cpu only for now
+    
+    # CUDA specific optimizations
+    reduced_precision: bool = False
+    cudnn_benchmark: bool = False
+    deterministic_generation: bool = (
+        True  # disabling increases performance on my 3080 by 0.25it/s with batch_size=3
+    )
+
+    # Device settings
     device_id: int = 0
     device_type: Literal["cpu", "cuda", "mps", "directml"] = "cuda"
-    use_fp32: bool = False
+
+    # Lora
+    lora_text_encoder_weight: float = 0.5
+    lora_unet_weight: float = 0.5
+
+    # Critical
+    enable_shutdown: bool = True
 
     @property
     def device(self):

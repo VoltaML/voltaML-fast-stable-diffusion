@@ -30,9 +30,11 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
+    LoraLoadRequest,
     ONNXBuildRequest,
     RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
+    TextualInversionLoadRequest,
     TRTBuildRequest,
     Txt2ImgQueueEntry,
 )
@@ -539,22 +541,26 @@ class GPU:
 
         await run_in_thread_async(download_model, args=(model,))
 
-    async def load_lora(self, model: str, lora: str):
+    async def load_lora(self, req: LoraLoadRequest):
         "Inject a Lora model into a model"
 
-        if model in self.loaded_models:
-            internal_model = self.loaded_models[model]
+        if req.model in self.loaded_models:
+            internal_model = self.loaded_models[req.model]
 
             if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.debug(f"Loading Lora model: {lora}")
+                logger.info(
+                    f"Loading Lora model: {req.lora}, weights: ({req.unet_weight}, {req.text_encoder_weight})"
+                )
 
-                internal_model.load_lora(lora)
+                internal_model.load_lora(
+                    req.lora, req.unet_weight, req.text_encoder_weight
+                )
 
                 websocket_manager.broadcast_sync(
                     Notification(
                         "success",
                         "Lora model loaded",
-                        f"Lora model {lora} loaded",
+                        f"Lora model {req.lora} loaded",
                     )
                 )
 
@@ -563,10 +569,39 @@ class GPU:
                 Notification(
                     "error",
                     "Model not found",
-                    f"Model {model} not found",
+                    f"Model {req.model} not found",
                 )
             )
-            logger.error(f"Model {model} not found")
+            logger.error(f"Model {req.model} not found")
+
+    async def load_textual_inversion(self, req: TextualInversionLoadRequest):
+        "Inject a textual inversion model into a model"
+
+        if req.model in self.loaded_models:
+            internal_model = self.loaded_models[req.model]
+
+            if isinstance(internal_model, PyTorchStableDiffusion):
+                logger.info(f"Loading textual inversion model: {req.textual_inversion}")
+
+                internal_model.load_textual_inversion(req.textual_inversion)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Textual inversion model loaded",
+                        f"Textual inversion model {req.textual_inversion} loaded",
+                    )
+                )
+
+        else:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not found",
+                    f"Model {req.model} not found",
+                )
+            )
+            logger.error(f"Model {req.model} not found")
 
     async def interrogate(self, job: InterrogatorQueueEntry):
         "Generate captions for image"

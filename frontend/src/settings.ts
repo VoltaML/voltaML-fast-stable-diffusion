@@ -145,6 +145,8 @@ export interface SettingsInterface {
     reduced_precision: boolean;
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
+    lora_text_encoder_weight: number;
+    lora_unet_weight: number;
   };
   aitemplate: {
     num_threads: number;
@@ -279,6 +281,8 @@ export const defaultSettings: SettingsInterface = {
     reduced_precision: false,
     cudnn_benchmark: false,
     clear_memory_policy: "always",
+    lora_text_encoder_weight: 0.5,
+    lora_unet_weight: 0.5,
   },
   aitemplate: {
     num_threads: 8,

@@ -36,6 +36,13 @@ pub fn run_command(command: &str, command_name: &str) -> Result<String, Box<dyn 
 
 pub fn spawn_command(command: &str, command_name: &str) -> Result<String, Box<dyn Error>> {
     let command_args: Vec<String> = split(command).unwrap();
+
+    println!(
+        "{} Command args: {}",
+        style("[DEBUG]").yellow(),
+        format!("'{}'", command_args.join(","))
+    );
+
     let child = Command::new(&command_args[0])
         .args(&command_args[1..])
         .spawn()?;

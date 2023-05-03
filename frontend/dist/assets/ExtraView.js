@@ -1,8 +1,7 @@
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, B as NButton, k as createTextVNode, h as NCard, i as NSpace, l as createBaseVNode, m as NTooltip, r as NGrid, v as serverUrl, x as pushScopeId, y as popScopeId, _ as _export_sfc, p as createBlock, D as NTabPane, E as NTabs } from "./index.js";
-import { N as NSlider } from "./Slider.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, C as NButton, k as createTextVNode, h as NCard, i as NSpace, l as createBaseVNode, m as NTooltip, p as NSlider, s as NGrid, x as serverUrl, y as pushScopeId, z as popScopeId, _ as _export_sfc, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
 const _withScopeId = (n) => (pushScopeId("data-v-23eb17b1"), n = n(), popScopeId(), n);

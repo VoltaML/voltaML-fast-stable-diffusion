@@ -7,8 +7,8 @@ mod targets;
 mod utils;
 
 use console::style;
-use dialoguer::{theme::ColorfulTheme, Select};
-use std::{env, error::Error};
+use dialoguer::{theme::ColorfulTheme, Input, Select};
+use std::{env, error::Error, process::Command};
 use utils::shell::spawn_command;
 
 fn main() {
@@ -97,6 +97,7 @@ fn debug_menu() {
     loop {
         let items = vec![
             "Back",
+            "Get current branch",
             "Check NVCC",
             "Check Python",
             "Detect OS",
@@ -114,6 +115,9 @@ fn debug_menu() {
             "Show $PATH",
             "Check CUDA exports in .bashrc",
             "Insert CUDA exports to .bashrc",
+            "Check AITemplate folder",
+            "Is aitemplate python package installed",
+            "Checkout AITemplate commit",
         ];
         let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
@@ -125,6 +129,25 @@ fn debug_menu() {
 
         match response {
             "Back" => break,
+            "Get current branch" => {
+                let output = Command::new("git")
+                    .args(&["rev-parse", "--abbrev-ref", "HEAD"])
+                    .output();
+                if output.is_ok() {
+                    let current_branch = String::from_utf8(output.unwrap().stdout);
+                    println!(
+                        "{} Current branch: {}",
+                        style("[OK]").green(),
+                        current_branch.unwrap()
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Could not get current branch"
+                    );
+                }
+            }
             "Check NVCC" => {
                 if utils::nvidia::is_nvcc_installed() {
                     let version = utils::nvidia::nvcc_version();
@@ -293,7 +316,54 @@ fn debug_menu() {
                     );
                 }
             }
-            _ => println!("Error"),
+            "Check AITemplate folder" => {
+                if crate::utils::aitemplate::does_aitemplate_folder_exist() {
+                    println!("{} {}", style("[OK]").green(), "AITemplate folder exists");
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "AITemplate folder does not exist"
+                    );
+                }
+            }
+            "Is aitemplate python package installed" => {
+                if crate::utils::aitemplate::is_aitemplate_installed() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "AITemplate python package installed"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "AITemplate python package not installed"
+                    );
+                }
+            }
+            "Checkout AITemplate commit" => {
+                let commit_id: String = Input::with_theme(&ColorfulTheme::default())
+                    .with_prompt("Commit hash")
+                    .interact_text()
+                    .unwrap();
+
+                let res = crate::git::checkout::checkout_commit("AITemplate", &commit_id);
+                if res.is_ok() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "Checked out AITemplate commit"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to checkout AITemplate commit"
+                    );
+                }
+            }
+            _ => println!("Command not found in match statement"),
         }
     }
 }

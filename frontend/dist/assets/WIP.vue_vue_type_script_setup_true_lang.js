@@ -1,4 +1,4 @@
-import { z as h, R as cB, S as cE, d as defineComponent, I as useConfig, Z as useTheme, c as computed, a2 as useThemeClass, ao as NBaseIcon, a$ as InfoIcon, b0 as SuccessIcon, b1 as WarningIcon, b2 as ErrorIcon, b3 as resultLight, a1 as createKey, o as openBlock, e as createElementBlock, l as createBaseVNode, p as createBlock, w as withCtx, f as createVNode, g as unref, C as NIcon } from "./index.js";
+import { A as h, S as cB, T as cE, d as defineComponent, J as useConfig, $ as useTheme, c as computed, a3 as useThemeClass, ap as NBaseIcon, b0 as InfoIcon, b1 as SuccessIcon, b2 as WarningIcon, b3 as ErrorIcon, b4 as resultLight, a2 as createKey, o as openBlock, e as createElementBlock, l as createBaseVNode, q as createBlock, w as withCtx, f as createVNode, g as unref, D as NIcon } from "./index.js";
 const image404 = h(
   "svg",
   { xmlns: "http://www.w3.org/2000/svg", viewBox: "0 0 36 36" },

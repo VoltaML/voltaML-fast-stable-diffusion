@@ -1,8 +1,10 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, Union, List
+from typing import TYPE_CHECKING, Union, Optional, List
 
 if TYPE_CHECKING:
+    from uvicorn import Server
+
     from core.inference.pytorch import PyTorchStableDiffusion
     from core.tensorrt.volta_accelerate import TRTModel
 
@@ -15,3 +17,6 @@ asyncio_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 interrupt: bool = False
 hf_token = ""
 threadpool = ThreadPoolExecutor(max_workers=1)
+
+uvicorn_server: Optional["Server"] = None
+uvicorn_loop: Optional[asyncio.AbstractEventLoop] = None

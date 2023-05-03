@@ -35,7 +35,8 @@
       <NScrollbar>
         <NTabs type="segment" style="height: 70vh">
           <NTabPane name="PyTorch" style="height: 100%">
-            <NGrid cols="1 900:2" :x-gap="8" :y-gap="8" style="height: 100%">
+            <NGrid cols="1 900:3" :x-gap="8" :y-gap="8" style="height: 100%">
+              <!-- Models -->
               <NGi>
                 <NCard title="Models" style="height: 100%">
                   <div
@@ -78,8 +79,35 @@
                   </div>
                 </NCard>
               </NGi>
+
+              <!-- LoRA -->
               <NGi>
-                <NCard :title="lora_title" style="height: 100%">
+                <NCard :title="lora_title">
+                  <NCard style="width: 100%; margin-bottom: 8px">
+                    <div class="flex-container">
+                      <p class="slider-label">Text Encoder</p>
+                      <NSlider
+                        v-model:value="
+                          conf.data.settings.api.lora_text_encoder_weight
+                        "
+                        :min="0.1"
+                        :max="1"
+                        :step="0.01"
+                        style="margin-right: 12px"
+                      />
+                    </div>
+
+                    <div class="flex-container">
+                      <p class="slider-label">UNet</p>
+                      <NSlider
+                        v-model:value="conf.data.settings.api.lora_unet_weight"
+                        :min="0.1"
+                        :max="1"
+                        :step="0.01"
+                        style="margin-right: 12px"
+                      />
+                    </div>
+                  </NCard>
                   <div
                     style="
                       display: inline-flex;
@@ -106,6 +134,45 @@
                         @click="loadLoRA(lora)"
                         :disabled="selectedModel === undefined"
                         :loading="lora.state === 'loading'"
+                        v-else
+                        >Load</NButton
+                      >
+                    </div>
+                  </div>
+                </NCard>
+              </NGi>
+
+              <!-- Textual Inversions -->
+              <NGi>
+                <NCard :title="textual_inversions_title">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="textualInversion in textualInversionModels"
+                    v-bind:key="textualInversion.path"
+                  >
+                    <p>{{ textualInversion.name }}</p>
+                    <div style="display: inline-flex">
+                      <NButton
+                        type="error"
+                        ghost
+                        disabled
+                        v-if="
+                          selectedModel?.loras.includes(textualInversion.path)
+                        "
+                        >Loaded</NButton
+                      >
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadTextualInversion(textualInversion)"
+                        :disabled="selectedModel === undefined"
+                        :loading="textualInversion.state === 'loading'"
                         v-else
                         >Load</NButton
                       >
@@ -201,15 +268,17 @@
       </NProgress>
     </div>
     <div style="display: inline-flex; justify-self: end; align-items: center">
-      <NButton
-        :type="websocketState.color"
-        quaternary
-        icon-placement="left"
-        :render-icon="syncIcon"
-        :loading="websocketState.loading"
-        @click="startWebsocket(message)"
-        >{{ websocketState.text }}</NButton
-      >
+      <NDropdown :options="dropdownOptions" @select="dropdownSelected">
+        <NButton
+          :type="websocketState.color"
+          quaternary
+          icon-placement="left"
+          :render-icon="renderIcon(WifiSharp)"
+          :loading="websocketState.loading"
+          @click="startWebsocket(message)"
+          >{{ websocketState.text }}</NButton
+        >
+      </NDropdown>
       <NButton
         type="success"
         quaternary
@@ -227,23 +296,34 @@
 import type { ModelEntry } from "@/core/interfaces";
 import {
   NCard,
+  NDropdown,
   NGi,
   NGrid,
+  NIcon,
   NInput,
   NModal,
   NScrollbar,
   NSelect,
+  NSlider,
   NTabPane,
   NTabs,
+  type DropdownOption,
 } from "naive-ui";
 
 import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
-import { StatsChart, SyncSharp } from "@vicons/ionicons5";
+import {
+  PowerSharp,
+  SettingsSharp,
+  StatsChart,
+  SyncSharp,
+  WifiSharp,
+} from "@vicons/ionicons5";
 import { NButton, NProgress, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
-import { computed, h, ref, type ComputedRef } from "vue";
+import { computed, h, ref, type Component, type ComputedRef } from "vue";
+import router from "../router/index";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
@@ -286,6 +366,12 @@ const trtModels = computed(() => {
 const loraModels = computed(() => {
   return filteredModels.value.filter((model) => {
     return model.backend === "LoRA";
+  });
+});
+
+const textualInversionModels = computed(() => {
+  return filteredModels.value.filter((model) => {
+    return model.backend === "Textual Inversion";
   });
 });
 
@@ -406,17 +492,43 @@ async function unloadModel(model: ModelEntry) {
 }
 
 async function loadLoRA(lora: ModelEntry) {
-  const load_url = new URL(`${serverUrl}/api/models/load-lora`);
-
   if (selectedModel.value) {
-    const params = { model: selectedModel.value.name, lora: lora.path };
-    load_url.search = new URLSearchParams(params).toString();
-
     try {
-      await fetch(load_url, {
+      await fetch(`${serverUrl}/api/models/load-lora`, {
         method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: selectedModel.value.name,
+          lora: lora.path,
+          unet_weight: conf.data.settings.api.lora_unet_weight,
+          text_encoder_weight: conf.data.settings.api.lora_text_encoder_weight,
+        }),
       });
       selectedModel.value.loras.push(lora.path);
+    } catch (e) {
+      console.error(e);
+    }
+  } else {
+    message.error("No model selected");
+  }
+}
+
+async function loadTextualInversion(textualInversion: ModelEntry) {
+  if (selectedModel.value) {
+    try {
+      await fetch(`${serverUrl}/api/models/load-textual-inversion`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          model: selectedModel.value.name,
+          textual_inversion: textualInversion.path,
+        }),
+      });
+      selectedModel.value.loras.push(textualInversion.path);
     } catch (e) {
       console.error(e);
     }
@@ -466,10 +578,6 @@ function resetModels() {
   models.value.splice(0, models.value.length);
   console.log("Reset models");
 }
-
-const syncIcon = () => {
-  return h(SyncSharp);
-};
 
 const perfIcon = () => {
   return h(StatsChart);
@@ -559,6 +667,50 @@ const lora_title = computed(() => {
     selectedModel.value ? selectedModel.value.name : "No model selected"
   })`;
 });
+
+const textual_inversions_title = computed(() => {
+  return `Textual Inversions (${
+    selectedModel.value ? selectedModel.value.name : "No model selected"
+  })`;
+});
+
+const renderIcon = (icon: Component) => {
+  return () => {
+    return h(NIcon, null, {
+      default: () => h(icon),
+    });
+  };
+};
+
+const dropdownOptions: DropdownOption[] = [
+  {
+    label: "Reconnect",
+    key: "reconnect",
+    icon: renderIcon(SyncSharp),
+  },
+  {
+    label: "Settings",
+    key: "settings",
+    icon: renderIcon(SettingsSharp),
+  },
+  {
+    label: "Shutdown",
+    key: "shutdown",
+    icon: renderIcon(PowerSharp),
+  },
+];
+
+async function dropdownSelected(key: string) {
+  if (key === "reconnect") {
+    await startWebsocket(message);
+  } else if (key === "settings") {
+    router.push("/settings");
+  } else if (key === "shutdown") {
+    await fetch(`${serverUrl}/api/general/shutdown`, {
+      method: "POST",
+    });
+  }
+}
 
 startWebsocket(message);
 </script>

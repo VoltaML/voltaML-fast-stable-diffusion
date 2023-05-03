@@ -2,8 +2,7 @@ import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_tr
 import { _ as _sfc_main$2 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$4 } from "./OutputStats.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, k as createTextVNode, t as toDisplayString, l as createBaseVNode, m as NTooltip, n as NSelect, p as createBlock, q as createCommentVNode, r as NGrid, s as spaceRegex, v as serverUrl } from "./index.js";
-import { N as NSlider } from "./Slider.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, k as createTextVNode, t as toDisplayString, l as createBaseVNode, m as NTooltip, n as NSelect, p as NSlider, q as createBlock, r as createCommentVNode, s as NGrid, v as spaceRegex, x as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 import { v as v4 } from "./v4.js";

@@ -174,6 +174,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         """
         batch_size = len(prompt) if isinstance(prompt, list) else 1
 
+        prompt = self.maybe_convert_prompt(prompt, self.tokenizer)
+        logger.debug(f"Post textual prompt: {prompt}")
+
+        negative_prompt = self.maybe_convert_prompt(negative_prompt, self.tokenizer)
+        logger.debug(f"Post textual negative_prompt: {negative_prompt}")
+
         if negative_prompt is None:
             negative_prompt = [""] * batch_size
         elif isinstance(negative_prompt, str):
