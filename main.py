@@ -153,7 +153,7 @@ def main(exit_after_init: bool = False):
 
     if not exit_after_init:
         try:
-            loop.run_until_complete(uvi_server.serve())
+            asyncio.run(uvi_server.serve())
         except RuntimeError:
             logger.info("Server stopped")
             sys.exit(0)

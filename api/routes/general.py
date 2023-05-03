@@ -1,3 +1,6 @@
+import logging
+import sys
+
 from fastapi import APIRouter
 
 from api import websocket_manager
@@ -5,6 +8,7 @@ from api.websockets.notification import Notification
 from core import shared
 
 router = APIRouter(tags=["general"])
+logger = logging.getLogger(__name__)
 
 
 @router.post("/interrupt")
@@ -31,13 +35,20 @@ async def shutdown():
                     title="Shutdown",
                 )
             )
+            for task in shared.asyncio_tasks:
+                task.cancel()
             uvicorn_server.force_exit = True
+            logger.debug("Setting force_exit to True")
 
         assert uvicorn_server is not None
         await uvicorn_server.shutdown()
+        logger.debug("Unicorn server shutdown")
 
         assert uvicorn_loop is not None
         uvicorn_loop.stop()
+        logger.debug("Unicorn loop stopped")
+
+        sys.exit(0)
 
     else:
         await websocket_manager.broadcast(

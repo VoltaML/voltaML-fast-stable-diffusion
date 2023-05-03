@@ -160,7 +160,7 @@ class ControlNetData:
 
 
 @dataclass
-class RealESRGanData:
+class UpscaleData:
     "Dataclass for the data of a real esrgan request"
 
     image: Union[bytes, str]
@@ -224,10 +224,10 @@ class ControlNetQueueEntry(Job):
 
 
 @dataclass
-class RealESRGANQueueEntry(Job):
+class UpscaleQueueEntry(Job):
     "Dataclass for a real esrgan job"
 
-    data: RealESRGanData
+    data: UpscaleData
 
 
 @dataclass

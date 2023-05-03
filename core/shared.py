@@ -20,3 +20,4 @@ threadpool = ThreadPoolExecutor(max_workers=1)
 
 uvicorn_server: Optional["Server"] = None
 uvicorn_loop: Optional[asyncio.AbstractEventLoop] = None
+asyncio_tasks: list[asyncio.Task] = []

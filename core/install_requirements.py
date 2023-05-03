@@ -179,6 +179,7 @@ _pytorch_distributions = [
                 "USE_VULKAN=1",
                 "USE_VULKAN_SHADERC_RUNTIME=1",
                 "USE_VULKAN_WRAPPER=0",
+                "USE_CUDA=0",
                 sys.executable,
                 "pytorch/setup.py",
                 "install",

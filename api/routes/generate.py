@@ -14,10 +14,10 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     ONNXBuildRequest,
-    RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
     TRTBuildRequest,
     Txt2ImgQueueEntry,
+    UpscaleQueueEntry,
 )
 from core.utils import convert_bytes_to_image_stream, convert_image_to_base64
 
@@ -195,8 +195,8 @@ async def sd_upscale_job(job: SDUpscaleQueueEntry):
         }
 
 
-@router.post("/realesrgan-upscale")
-async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
+@router.post("/upscale")
+async def realesrgan_upscale_job(job: UpscaleQueueEntry):
     "Upscale image with RealESRGAN model"
 
     image_bytes = job.data.image
@@ -204,29 +204,18 @@ async def realesrgan_upscale_job(job: RealESRGANQueueEntry):
     job.data.image = convert_bytes_to_image_stream(image_bytes)
 
     try:
-        images: Union[List[Image.Image], List[str]]
+        image: Image.Image
         time: float
-        images, time = await gpu.generate(job)
+        image, time = await gpu.upscale(job)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return {
+        "time": time,
+        "images": convert_image_to_base64(image),  # type: ignore
+    }
 
 
 @router.post("/generate-engine")
