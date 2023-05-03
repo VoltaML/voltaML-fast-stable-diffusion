@@ -188,8 +188,8 @@ const dataRef = computed(() => {
 const pagination = reactive({ pageSize: 10 });
 
 fetch(huggingfaceModelsFile).then((res) => {
-  res.json().then((data: Model[]) => {
-    modelData.push(...data);
+  res.json().then((data: { models: Model[] }) => {
+    modelData.push(...data["models"]);
   });
 });
 </script>

@@ -5681,7 +5681,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-3a0cc29f"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-714839f5"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "18px" } };
 const _hoisted_2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
@@ -5799,7 +5799,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const pagination = reactive({ pageSize: 10 });
     fetch(huggingfaceModelsFile).then((res) => {
       res.json().then((data) => {
-        modelData.push(...data);
+        modelData.push(...data["models"]);
       });
     });
     return (_ctx, _cache) => {
@@ -5864,8 +5864,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_3a0cc29f_lang = "";
-const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-3a0cc29f"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_714839f5_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-714839f5"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "DownloadView",
   setup(__props) {
