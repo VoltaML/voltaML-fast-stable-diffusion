@@ -26,6 +26,10 @@
                     "example_image_url": {
                         "type": "string",
                         "description": "Not used currently"
+                    },
+                    "nsfw": {
+                        "type": "boolean",
+                        "description": "Whether the model is NSFW or not. UI will display a NSFW tag next to it"
                     }
                 },
                 "required": [
