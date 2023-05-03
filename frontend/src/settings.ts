@@ -115,10 +115,15 @@ export interface SettingsInterface {
     noise_level: number;
     image: string;
   };
-  realesrgan: {
+  upscale: {
     image: string;
     scale_factor: number;
-    model: string;
+    model:
+      | "RealESRGAN_x4plus"
+      | "RealESRNet_x4plus"
+      | "RealESRGAN_x4plus_anime_6B"
+      | "RealESRGAN_x2plus"
+      | "RealESR-general-x4v3";
   };
   tagger: {
     image: string;
@@ -247,7 +252,7 @@ export const defaultSettings: SettingsInterface = {
     noise_level: 40,
     image: "",
   },
-  realesrgan: {
+  upscale: {
     image: "",
     scale_factor: 4,
     model: "RealESRGAN_x4plus_anime_6B",

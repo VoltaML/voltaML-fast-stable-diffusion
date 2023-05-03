@@ -61,7 +61,7 @@ async function toInpainting() {
 }
 
 async function toUpscale() {
-  conf.data.settings.realesrgan.image = props.output;
+  conf.data.settings.upscale.image = props.output;
   state.state.extra.tab = "Upscale";
   await router.push("/extra");
 }

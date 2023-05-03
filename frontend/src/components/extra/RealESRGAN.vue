@@ -3,17 +3,25 @@
     <!-- Main -->
     <NGrid cols="1 m:2" x-gap="12" responsive="screen">
       <NGi>
-        <NButton @click="loadUpscaler"> Load Upscaler </NButton>
-
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="conf.data.settings.realesrgan.image"
+          :preview="conf.data.settings.upscale.image"
           style="margin-bottom: 12px"
-          @file-dropped="conf.data.settings.realesrgan.image = $event"
+          @file-dropped="conf.data.settings.upscale.image = $event"
         />
 
         <NCard title="Settings">
           <NSpace vertical class="left-container">
+            <!-- Upscaler model -->
+            <div class="flex-container">
+              <p class="slider-label">Model</p>
+              <NSelect
+                v-model:value="conf.data.settings.upscale.model"
+                style="margin-right: 12px"
+                :options="upscalerOptions"
+              />
+            </div>
+
             <!-- Scale factor -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -23,13 +31,13 @@
                 TODO
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.realesrgan.scale_factor"
+                v-model:value="conf.data.settings.upscale.scale_factor"
                 :min="2"
                 :max="4"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.realesrgan.scale_factor"
+                v-model:value="conf.data.settings.upscale.scale_factor"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="2"
@@ -63,17 +71,17 @@ import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import { serverUrl } from "@/env";
 import {
-  NButton,
   NCard,
   NGi,
   NGrid,
   NInputNumber,
+  NSelect,
   NSlider,
   NSpace,
   NTooltip,
   useMessage,
 } from "naive-ui";
-import { useSettings } from "../../store/settings";
+import { upscalerOptions, useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
@@ -81,56 +89,30 @@ const conf = useSettings();
 const messageHandler = useMessage();
 
 const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.realesrgan.image = base64Image;
-};
-
-const loadUpscaler = () => {
-  const url = new URL(`${serverUrl}/api/models/load`);
-  url.searchParams.append("model", conf.data.settings.realesrgan.model);
-  url.searchParams.append("backend", "PyTorch");
-
-  fetch(url, {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-  })
-    .then((res) => {
-      res.json().then((data) => {
-        if (data.error) {
-          messageHandler.error(data.error);
-        } else {
-          messageHandler.success("Upscaler loaded");
-        }
-      });
-    })
-    .catch((err) => {
-      messageHandler.error(err);
-      console.log(err);
-    });
+  conf.data.settings.upscale.image = base64Image;
 };
 
 const generate = () => {
   global.state.generating = true;
-  fetch(`${serverUrl}/api/generate/realesrgan-upscale`, {
+  fetch(`${serverUrl}/api/generate/upscale`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
-        image: conf.data.settings.realesrgan.image,
-        scale_factor: conf.data.settings.realesrgan.scale_factor,
-        model: conf.data.settings.realesrgan.model,
+        image: conf.data.settings.upscale.image,
+        scale_factor: conf.data.settings.upscale.scale_factor,
+        model: conf.data.settings.upscale.model,
       },
-      model: conf.data.settings.realesrgan.model,
+      model: conf.data.settings.upscale.model,
     }),
   })
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
         console.log(data);
-        global.state.extra.images = data.images;
+        global.state.extra.images = [data.images];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;

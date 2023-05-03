@@ -91,9 +91,13 @@ async def startup_event():
 
     shared.asyncio_loop = asyncio.get_event_loop()
 
-    asyncio.create_task(websocket_manager.sync_loop())
+    sync_task = asyncio.create_task(websocket_manager.sync_loop())
     logger.info("Started WebSocketManager sync loop")
-    asyncio.create_task(websocket_manager.perf_loop())
+    perf_task = asyncio.create_task(websocket_manager.perf_loop())
+
+    shared.asyncio_tasks.append(sync_task)
+    shared.asyncio_tasks.append(perf_task)
+
     logger.info("Started WebSocketManager performance monitoring loop")
     logger.info("UI Available at: http://localhost:5003/")
 
@@ -106,13 +110,10 @@ async def shutdown_event():
     await websocket_manager.close_all()
 
 
-# Origins that are allowed to access the API
-origins = ["*"]
-
 # Allow CORS for specified origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -149,7 +150,7 @@ app.mount("/data/outputs", StaticFiles(directory="data/outputs"), name="outputs"
 static_app = FastAPI()
 static_app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

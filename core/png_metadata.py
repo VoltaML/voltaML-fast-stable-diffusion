@@ -13,9 +13,9 @@ from core.types import (
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
-    RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
     Txt2ImgQueueEntry,
+    UpscaleQueueEntry,
 )
 
 logger = logging.getLogger(__name__)
@@ -27,8 +27,8 @@ def create_metadata(
         Img2ImgQueueEntry,
         InpaintQueueEntry,
         ControlNetQueueEntry,
-        RealESRGANQueueEntry,
         SDUpscaleQueueEntry,
+        UpscaleQueueEntry,
     ],
     index: int,
 ):
@@ -37,7 +37,7 @@ def create_metadata(
     data = copy.copy(job.data)
     metadata = PngInfo()
 
-    if not isinstance(job, RealESRGANQueueEntry):
+    if not isinstance(job, UpscaleQueueEntry):
         data.seed = str(job.data.seed) + (f"({index})" if index > 0 else "")  # type: ignore Overwrite for sequencialy generated images
 
     def write_metadata(key: str):
@@ -54,8 +54,8 @@ def create_metadata(
         procedure = "inpaint"
     elif isinstance(job, ControlNetQueueEntry):
         procedure = "control_net"
-    elif isinstance(job, RealESRGANQueueEntry):
-        procedure = "real_esrgan"
+    elif isinstance(job, UpscaleQueueEntry):
+        procedure = "upscale"
     else:
         procedure = "unknown"
 
@@ -72,7 +72,7 @@ def save_images(
         Img2ImgQueueEntry,
         InpaintQueueEntry,
         ControlNetQueueEntry,
-        RealESRGANQueueEntry,
+        UpscaleQueueEntry,
         SDUpscaleQueueEntry,
     ],
 ):
@@ -106,7 +106,7 @@ def save_images(
 
     urls: List[str] = []
     for i, image in enumerate(images):
-        if isinstance(job, (RealESRGANQueueEntry, SDUpscaleQueueEntry)):
+        if isinstance(job, (UpscaleQueueEntry, SDUpscaleQueueEntry)):
             folder = "extra"
         elif isinstance(job, Txt2ImgQueueEntry):
             folder = "txt2img"

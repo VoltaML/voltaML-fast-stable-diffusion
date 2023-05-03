@@ -85,7 +85,7 @@ class ControlNetConfig:
 
 
 @dataclass
-class RealESRGANConfig:
+class UpscaleConfig:
     "Configuration for the RealESRGAN upscaler"
 
     model: str = "RealESRGAN_x4plus_anime_6B"
@@ -186,6 +186,7 @@ class Configuration(DataClassJsonMixin):
     img2img: Img2ImgConfig = field(default=Img2ImgConfig())
     inpainting: InpaintingConfig = field(default=InpaintingConfig())
     controlnet: ControlNetConfig = field(default=ControlNetConfig())
+    upscale: UpscaleConfig = field(default=UpscaleConfig())
     api: APIConfig = field(default=APIConfig())
     interrogator: InterrogatorConfig = field(default=InterrogatorConfig())
     aitemplate: AITemplateConfig = field(default=AITemplateConfig())

@@ -32,11 +32,11 @@ from core.types import (
     Job,
     LoraLoadRequest,
     ONNXBuildRequest,
-    RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
     TextualInversionLoadRequest,
     TRTBuildRequest,
     Txt2ImgQueueEntry,
+    UpscaleQueueEntry,
 )
 from core.utils import image_grid, run_in_thread_async
 
@@ -59,7 +59,6 @@ class GPU:
                 "TensorRTModel",
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
-                "RealESRGAN",
                 PyTorchSDUpscaler,
                 "OnnxStableDiffusion",
             ],
@@ -83,7 +82,6 @@ class GPU:
             Img2ImgQueueEntry,
             InpaintQueueEntry,
             ControlNetQueueEntry,
-            RealESRGANQueueEntry,
             SDUpscaleQueueEntry,
         ],
     ):
@@ -94,7 +92,6 @@ class GPU:
                 "TensorRTModel",
                 PyTorchStableDiffusion,
                 AITemplateStableDiffusion,
-                RealESRGAN,
                 PyTorchSDUpscaler,
                 "OnnxStableDiffusion",
             ] = self.loaded_models[job.model]
@@ -102,19 +99,18 @@ class GPU:
             if job.flags:
                 logger.debug(f"Job flags: {job.flags}")
 
-            if not isinstance(job, RealESRGANQueueEntry):
-                steps = job.data.steps
+            steps = job.data.steps
 
-                strength: float = getattr(job.data, "strength", 1.0)
-                steps = math.floor(steps * strength)
+            strength: float = getattr(job.data, "strength", 1.0)
+            steps = math.floor(steps * strength)
 
-                extra_steps: int = 0
-                if "highres_fix" in job.flags:
-                    flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
-                    extra_steps = math.floor(flag.steps * flag.strength)
+            extra_steps: int = 0
+            if "highres_fix" in job.flags:
+                flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
+                extra_steps = math.floor(flag.steps * flag.strength)
 
-                shared.current_steps = steps * job.data.batch_count + extra_steps
-                shared.current_done_steps = 0
+            shared.current_steps = steps * job.data.batch_count + extra_steps
+            shared.current_done_steps = 0
 
             if not isinstance(job, ControlNetQueueEntry):
                 from core import shared_dependent
@@ -139,14 +135,7 @@ class GPU:
                 images: List[Image.Image] = model.generate(job)
                 self.memory_cleanup()
                 return images
-            elif isinstance(model, RealESRGAN):
-                logger.debug("Generating with RealESRGAN")
-                images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             else:
-                assert not isinstance(job, RealESRGANQueueEntry)
-
                 from core.inference.onnx_sd import OnnxStableDiffusion
 
                 if isinstance(model, OnnxStableDiffusion):
@@ -179,7 +168,7 @@ class GPU:
             # Check width and height passed by the user
             if not isinstance(
                 job,
-                (RealESRGANQueueEntry, SDUpscaleQueueEntry),
+                SDUpscaleQueueEntry,
             ):
                 if job.data.width % 8 != 0 or job.data.height % 8 != 0:
                     raise DimensionError("Width and height must be divisible by 8")
@@ -362,17 +351,7 @@ class GPU:
                     )
                 )
 
-                if model in [
-                    "RealESRGAN_x4plus",
-                    "RealESRNet_x4plus",
-                    "RealESRGAN_x4plus_anime_6B",
-                    "RealESRGAN_x2plus",
-                    "RealESR-general-x4v3",
-                ]:
-                    pt_model = RealESRGAN(
-                        model_name=model,
-                    )
-                elif model in ["stabilityai/stable-diffusion-x4-upscaler"]:
+                if model in ["stabilityai/stable-diffusion-x4-upscaler"]:
                     pt_model = PyTorchSDUpscaler()
 
                 else:
@@ -642,3 +621,31 @@ class GPU:
             generate_call, args=(job,)
         )
         return output
+
+    async def upscale(self, job: UpscaleQueueEntry):
+        "Upscale an image by a specified factor"
+
+        def generate_call(job: UpscaleQueueEntry):
+            if job.model in [
+                "RealESRGAN_x4plus",
+                "RealESRNet_x4plus",
+                "RealESRGAN_x4plus_anime_6B",
+                "RealESRGAN_x2plus",
+                "RealESR-general-x4v3",
+            ]:
+                t = time.time()
+                pipe = RealESRGAN(
+                    model_name=job.model,
+                )
+
+                image = pipe.generate(job)
+                pipe.unload()
+                deltatime = time.time() - t
+                return image, deltatime
+            else:
+                raise ValueError(f"Model {job.model} not implemented")
+
+        image: Image.Image
+        time_: float
+        image, time_ = await run_in_thread_async(generate_call, args=(job,))
+        return image, time_

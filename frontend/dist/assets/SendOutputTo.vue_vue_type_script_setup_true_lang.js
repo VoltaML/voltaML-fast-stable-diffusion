@@ -1,4 +1,4 @@
-import { R as c, S as cB, al as cNotM, U as cM, T as cE, W as insideModal, X as insidePopover, d as defineComponent, J as useConfig, $ as useTheme, c as computed, a3 as useThemeClass, bc as useCompitable, ax as flatten, A as h, ay as getSlot, bd as descriptionsLight, a2 as createKey, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, C as NButton, k as createTextVNode, s as NGrid, h as NCard, r as createCommentVNode, be as router } from "./index.js";
+import { S as c, T as cB, am as cNotM, V as cM, U as cE, X as insideModal, Y as insidePopover, d as defineComponent, K as useConfig, a0 as useTheme, c as computed, a4 as useThemeClass, bd as useCompitable, ay as flatten, A as h, az as getSlot, be as descriptionsLight, a3 as createKey, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, C as NButton, k as createTextVNode, s as NGrid, h as NCard, r as createCommentVNode, bf as router } from "./index.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
   if (children !== null && typeof children === "object" && !Array.isArray(children)) {
@@ -306,7 +306,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       await router.push("/image2image");
     }
     async function toUpscale() {
-      conf.data.settings.realesrgan.image = props.output;
+      conf.data.settings.upscale.image = props.output;
       state.state.extra.tab = "Upscale";
       await router.push("/extra");
     }
