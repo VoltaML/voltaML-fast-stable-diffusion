@@ -132,7 +132,7 @@ class APIConfig:
                 try:
                     import torch
 
-                    torch.device("xpu")
+                    torch.tensor(0).to(torch.device("xpu"))
                     return "xpu"
                 except RuntimeError:
                     pass

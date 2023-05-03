@@ -32,6 +32,8 @@ def optimize_model(
     is_for_aitemplate: bool = False,
 ) -> None:
     "Optimize the model for inference"
+    from core.inference.functions import is_ipex_available
+
     global _device  # pylint: disable=global-statement
 
     # Tuple[Supported, Enabled by default, Enabled]
@@ -109,6 +111,7 @@ def optimize_model(
     if (
         config.api.channels_last
         and config.api.device_type != "directml"
+        and not is_ipex_available()
         and not is_for_aitemplate
     ):
         pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
@@ -217,8 +220,6 @@ def optimize_model(
                 "Optimization: ToMeSD patch failed, despite having it enabled. Please check installation"
             )
 
-    from core.inference.functions import is_ipex_available
-
     ipexed = False
     if config.api.device_type == "cpu":
         n = (cpu["num_virtual_cores"] // 4) * 3
@@ -232,7 +233,11 @@ def optimize_model(
         if is_ipex_available():
             import intel_extension_for_pytorch as ipex  # pylint: disable=import-error
 
-            ipex.enable_auto_channels_last()
+            if config.api.channels_last:
+                ipex.enable_auto_channels_last()
+            else:
+                ipex.disable_auto_channels_last()
+            ipex.enable_onednn_fusion(True)
             ipex.set_fp32_math_mode(
                 ipex.FP32MathMode.BF32
                 if "AMD" not in cpu["VendorId"]
