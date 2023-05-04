@@ -17,7 +17,7 @@ from tqdm.auto import tqdm
 from core.config import config
 from core.files import get_full_model_path
 from .iree import convert_pipe_state_to_iree
-from .trace_utils import TracedUNet, generate_inputs
+from .trace_utils import generate_inputs, trace_model
 
 logger = logging.getLogger(__name__)
 
@@ -253,8 +253,7 @@ def optimize_model(
             )
             ipexed = True
 
-    warmup(pipe.unet, 5, dtype=dtype, device=device)
-    convert_pipe_state_to_iree(pipe)  # type: ignore
+    # convert_pipe_state_to_iree(pipe)  # type: ignore
 
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
@@ -302,48 +301,6 @@ def send_to_gpu(module, _) -> None:
         gpu_module.to("cpu")
     module.to(_device)
     gpu_module = module
-
-
-def warmup(
-    model: torch.nn.Module, amount: int, dtype: torch.dtype, device: torch.device
-) -> None:
-    "Warms up model with amount generated sample inputs."
-
-    model.eval()
-    with torch.inference_mode():
-        for _ in tqdm(range(amount), unit="it", desc="Warming up", unit_scale=False):
-            model(*generate_inputs(dtype, device))
-
-
-def trace_model(
-    model: torch.nn.Module,
-    dtype: torch.dtype,
-    device: torch.device,
-    iterations: int = 25,
-    ipex: bool = False,
-) -> torch.nn.Module:
-    "Traces the model for inference"
-
-    og = model
-    from functools import partial
-
-    model.forward = partial(model.forward, return_dict=False)
-    warmup(model, iterations, dtype, device)
-    if config.api.channels_last and not ipex:
-        model.to(memory_format=torch.channels_last)  # type: ignore
-    logger.debug("Starting trace")
-    with warnings.catch_warnings():
-        warnings.simplefilter("ignore")
-        if config.api.device_type == "cpu":
-            torch.jit.enable_onednn_fusion(True)
-        model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
-        model = torch.jit.freeze(model)  # type: ignore
-    logger.debug("Tracing done")
-    warmup(model, iterations // 5, dtype, device)
-
-    rn = TracedUNet(model)
-    del og
-    return rn
 
 
 def experimental_check_hardware_scheduling() -> Tuple[int, int, int]:

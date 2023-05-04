@@ -279,9 +279,8 @@ def install_pytorch(force_distribution: int = -1):
                             ).returncode
                             == 0
                         )
-                        or c == forced_distribution
                     )
-                    and (forced_distribution is None and force_distribution == -1)
+                    and (forced_distribution is not None or c == forced_distribution)
                 ):
                     logger.info(c.success_message)
                     if isinstance(c.install_command[0], list):

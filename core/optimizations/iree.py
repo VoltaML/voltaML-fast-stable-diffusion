@@ -1,6 +1,5 @@
 from typing import Literal, List
 import io
-import platform
 
 import torch
 import numpy as np
@@ -8,13 +7,6 @@ from torch.utils._pytree import tree_map
 
 from core.config import config
 from .trace_utils import TracedUNet, generate_inputs
-
-if platform.system() == "Windows":
-    import torch_mlir as mlir
-
-    import iree.runtime as irt
-    import iree.compiler as ic
-
 
 
 Backend = Literal["llvm-cpu", "vmvx", "cuda", "vulkan"]
@@ -28,6 +20,8 @@ class IREEInvoker:
         self.device = iree_module._context.config.device
 
     def __getattr__(self, function_name: str):
+        import iree.runtime as irt
+
         def invoke(*args):
             def wrap(x):
                 if isinstance(x, torch.Tensor):
@@ -52,6 +46,8 @@ def compile_to_vmfb(  # pylint: disable=dangerous-default-value
     target_backend: Backend = "llvm-cpu",
     extra_args: List[str] = [],
 ) -> bytes:
+    import iree.compiler as ic
+
     "torch-mlir -> flatbuffer"
     bytecode_stream = io.BytesIO()
     mlir_module.operation.write_bytecode(bytecode_stream)
@@ -66,6 +62,8 @@ def compile_to_vmfb(  # pylint: disable=dangerous-default-value
 
 def load_vmfb(flatbuffer, backend: Backend = "llvm-cpu") -> IREEInvoker:
     "Load an IREE flatbuffer"
+    import iree.runtime as irt
+
     conf = irt.Config(
         driver_name="local-sync" if backend in ("llvm-cpu", "vmvx") else backend
     )
@@ -77,8 +75,8 @@ def load_vmfb(flatbuffer, backend: Backend = "llvm-cpu") -> IREEInvoker:
 
 def convert_pipe_state_to_iree(pipe, ltc: bool = False):
     "Convert a pipeline to IREE backend. Will break all runtime things (LORAs and Textual Inversion)"
-    if platform.system() != "Windows":
-        return
+    import torch_mlir as mlir
+
     if ltc:
         raise NotImplementedError(
             "Lazy Tensor Core will be implemented at a later date."
