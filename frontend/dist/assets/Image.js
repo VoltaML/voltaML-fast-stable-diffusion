@@ -1,4 +1,4 @@
-import { bg as toString, bh as replaceable, A as h, d as defineComponent, bi as isBrowser, a0 as useTheme, Q as createInjectionKey, bj as createTheme, bk as commonLight, bl as tooltipLight, S as c, T as cB, bm as fadeInTransition, aT as fadeInScaleUpTransition, am as cNotM, P as toRef, B as ref, an as useLocale, a9 as watch, aD as onBeforeUnmount, aE as off, c as computed, K as useConfig, a4 as useThemeClass, bn as isMounted, bo as LazyTeleport, bp as withDirectives, bq as zindexable, aU as Transition, H as Fragment, aq as NBaseIcon, br as vShow, Z as inject, a7 as on, bs as normalizeStyle, m as NTooltip, aS as beforeNextFrameOnce, a5 as createId, O as provide, b6 as getCurrentInstance, ba as onMounted, ao as watchEffect } from "./index.js";
+import { bp as toString, K as replaceable, A as h, d as defineComponent, aY as isBrowser, a1 as useTheme, R as createInjectionKey, T as c, U as cB, bq as fadeInTransition, aU as fadeInScaleUpTransition, an as cNotM, Q as toRef, br as imageLight, B as ref, ao as useLocale, aa as watch, aE as onBeforeUnmount, aF as off, c as computed, L as useConfig, a5 as useThemeClass, bs as isMounted, bt as LazyTeleport, bu as withDirectives, bv as zindexable, aV as Transition, H as Fragment, ar as NBaseIcon, bw as vShow, $ as inject, a8 as on, bx as normalizeStyle, m as NTooltip, aT as beforeNextFrameOnce, a6 as createId, P as provide, bg as getCurrentInstance, bk as onMounted, ap as watchEffect } from "./index.js";
 function arrayReduce(array, iteratee, accumulator, initAccum) {
   var index = -1, length = array == null ? 0 : array.length;
   if (initAccum && length) {
@@ -377,22 +377,6 @@ const observeIntersection = (el, options, shouldStartLoadingRef) => {
 };
 const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), { showToolbar: { type: Boolean, default: true }, showToolbarTooltip: Boolean });
 const imageContextKey = createInjectionKey("n-image");
-function self() {
-  return {
-    toolbarIconColor: "rgba(255, 255, 255, .9)",
-    toolbarColor: "rgba(0, 0, 0, .35)",
-    toolbarBoxShadow: "none",
-    toolbarBorderRadius: "24px"
-  };
-}
-const imageLight = createTheme({
-  name: "Image",
-  common: commonLight,
-  peers: {
-    Tooltip: tooltipLight
-  },
-  self
-});
 const prevIcon = h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
@@ -887,7 +871,7 @@ const NImagePreview = defineComponent({
 });
 const imageGroupInjectionKey = createInjectionKey("n-image-group");
 const imageGroupProps = imagePreviewSharedProps;
-defineComponent({
+const NImageGroup = defineComponent({
   name: "ImageGroup",
   props: imageGroupProps,
   setup(props) {
@@ -1073,5 +1057,6 @@ const NImage = defineComponent({
   }
 });
 export {
-  NImage as N
+  NImage as N,
+  NImageGroup as a
 };

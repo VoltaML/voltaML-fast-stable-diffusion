@@ -4,6 +4,7 @@ import { I as ImageUpload } from "./ImageUpload.js";
 import { d as defineComponent, u as useState, a as useSettings, b as useMessage, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, l as createBaseVNode, n as NSelect, G as upscalerOptions, m as NTooltip, k as createTextVNode, p as NSlider, s as NGrid, x as serverUrl, y as pushScopeId, z as popScopeId, _ as _export_sfc, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
+import "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-8f8ae0fb"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };

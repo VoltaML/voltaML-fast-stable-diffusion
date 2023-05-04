@@ -326,6 +326,8 @@ class ModelResponse:
 
 @dataclass
 class LoraLoadRequest:
+    "Dataclass for loading a LoRA onto a model"
+
     model: str
     lora: str
     unet_weight: float = 0.5
@@ -334,5 +336,15 @@ class LoraLoadRequest:
 
 @dataclass
 class TextualInversionLoadRequest:
+    "Dataclass for loading a textual inversion onto a model"
+
     model: str
     textual_inversion: str
+
+
+@dataclass
+class DeleteModelRequest:
+    "Dataclass for requesting a deletion of a model"
+
+    model_path: str
+    model_type: Literal["pytorch", "lora", "textual-inversion", "aitemplate"]

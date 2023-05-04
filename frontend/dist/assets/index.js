@@ -1690,6 +1690,9 @@ function inject(key, defaultValue, treatDefaultAsFactory = false) {
 function watchEffect(effect, options) {
   return doWatch(effect, null, options);
 }
+function watchPostEffect(effect, options) {
+  return doWatch(effect, null, { flush: "post" });
+}
 const INITIAL_WATCHER_VALUE = {};
 function watch(source, cb, options) {
   return doWatch(source, cb, options);
@@ -5384,6 +5387,61 @@ function shouldSetAsProp(el, key, value, isSVG2) {
   }
   return key in el;
 }
+function useCssVars(getter) {
+  const instance = getCurrentInstance();
+  if (!instance) {
+    return;
+  }
+  const updateTeleports = instance.ut = (vars = getter(instance.proxy)) => {
+    Array.from(document.querySelectorAll(`[data-v-owner="${instance.uid}"]`)).forEach((node) => setVarsOnNode(node, vars));
+  };
+  const setVars = () => {
+    const vars = getter(instance.proxy);
+    setVarsOnVNode(instance.subTree, vars);
+    updateTeleports(vars);
+  };
+  watchPostEffect(setVars);
+  onMounted(() => {
+    const ob = new MutationObserver(setVars);
+    ob.observe(instance.subTree.el.parentNode, { childList: true });
+    onUnmounted(() => ob.disconnect());
+  });
+}
+function setVarsOnVNode(vnode, vars) {
+  if (vnode.shapeFlag & 128) {
+    const suspense = vnode.suspense;
+    vnode = suspense.activeBranch;
+    if (suspense.pendingBranch && !suspense.isHydrating) {
+      suspense.effects.push(() => {
+        setVarsOnVNode(suspense.activeBranch, vars);
+      });
+    }
+  }
+  while (vnode.component) {
+    vnode = vnode.component.subTree;
+  }
+  if (vnode.shapeFlag & 1 && vnode.el) {
+    setVarsOnNode(vnode.el, vars);
+  } else if (vnode.type === Fragment) {
+    vnode.children.forEach((c2) => setVarsOnVNode(c2, vars));
+  } else if (vnode.type === Static) {
+    let { el, anchor } = vnode;
+    while (el) {
+      setVarsOnNode(el, vars);
+      if (el === anchor)
+        break;
+      el = el.nextSibling;
+    }
+  }
+}
+function setVarsOnNode(el, vars) {
+  if (el.nodeType === 1) {
+    const style2 = el.style;
+    for (const key in vars) {
+      style2.setProperty(`--${key}`, vars[key]);
+    }
+  }
+}
 const TRANSITION = "transition";
 const ANIMATION = "animation";
 const Transition = (props, { slots }) => h(BaseTransition, resolveTransitionProps(props), slots);
@@ -8863,7 +8921,7 @@ function getOffset(placement, offsetRect, targetRect, offsetTopToStandardPlaceme
       };
   }
 }
-const style$t = c([
+const style$u = c([
   c(".v-binder-follower-container", {
     position: "absolute",
     left: "0",
@@ -8945,7 +9003,7 @@ const VFollower = defineComponent({
       }
     });
     const ssrAdapter2 = useSsrAdapter();
-    style$t.mount({
+    style$u.mount({
       id: "vueuc/binder",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -10140,7 +10198,7 @@ const VXScroll = defineComponent({
   }
 });
 const hiddenAttr = "v-hidden";
-const style$s = c("[v-hidden]", {
+const style$t = c("[v-hidden]", {
   display: "none!important"
 });
 const VOverflow = defineComponent({
@@ -10230,7 +10288,7 @@ const VOverflow = defineComponent({
       }
     }
     const ssrAdapter2 = useSsrAdapter();
-    style$s.mount({
+    style$t.mount({
       id: "vueuc/overflow",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -13337,7 +13395,7 @@ const NFadeInExpandTransition = defineComponent({
     };
   }
 });
-const style$r = cB("base-icon", `
+const style$s = cB("base-icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -13372,13 +13430,13 @@ const NBaseIcon = defineComponent({
     onMouseup: Function
   },
   setup(props) {
-    useStyle("-base-icon", style$r, toRef(props, "clsPrefix"));
+    useStyle("-base-icon", style$s, toRef(props, "clsPrefix"));
   },
   render() {
     return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
   }
 });
-const style$q = cB("base-close", `
+const style$r = cB("base-close", `
  display: flex;
  align-items: center;
  justify-content: center;
@@ -13447,7 +13505,7 @@ const NBaseClose = defineComponent({
     absolute: Boolean
   },
   setup(props) {
-    useStyle("-base-close", style$q, toRef(props, "clsPrefix"));
+    useStyle("-base-close", style$r, toRef(props, "clsPrefix"));
     return () => {
       const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
       const Tag = isButtonTag ? "button" : "div";
@@ -13506,7 +13564,7 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$p = c$1([c$1("@keyframes loading-container-rotate", `
+const style$q = c$1([c$1("@keyframes loading-container-rotate", `
  to {
  -webkit-transform: rotate(360deg);
  transform: rotate(360deg);
@@ -13669,7 +13727,7 @@ const NBaseLoading = defineComponent({
     default: 100
   } }, exposedLoadingProps),
   setup(props) {
-    useStyle("-base-loading", style$p, toRef(props, "clsPrefix"));
+    useStyle("-base-loading", style$q, toRef(props, "clsPrefix"));
   },
   render() {
     const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
@@ -14675,7 +14733,7 @@ const commonVars$c = {
   iconSizeLarge: "46px",
   iconSizeHuge: "52px"
 };
-const self$X = (vars) => {
+const self$1d = (vars) => {
   const { textColorDisabled, iconColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge } = vars;
   return Object.assign(Object.assign({}, commonVars$c), {
     fontSizeSmall,
@@ -14690,16 +14748,16 @@ const self$X = (vars) => {
 const emptyLight = {
   name: "Empty",
   common: commonLight,
-  self: self$X
+  self: self$1d
 };
 const emptyLight$1 = emptyLight;
 const emptyDark = {
   name: "Empty",
   common: commonDark,
-  self: self$X
+  self: self$1d
 };
 const emptyDark$1 = emptyDark;
-const style$o = cB("empty", `
+const style$p = cB("empty", `
  display: flex;
  flex-direction: column;
  align-items: center;
@@ -14738,7 +14796,7 @@ const NEmpty = defineComponent({
   props: emptyProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Empty", "-empty", style$o, emptyLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Empty", "-empty", style$p, emptyLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
@@ -14790,7 +14848,7 @@ const NEmpty = defineComponent({
     );
   }
 });
-const self$W = (vars) => {
+const self$1c = (vars) => {
   const { scrollbarColor, scrollbarColorHover } = vars;
   return {
     color: scrollbarColor,
@@ -14800,13 +14858,13 @@ const self$W = (vars) => {
 const scrollbarLight = {
   name: "Scrollbar",
   common: commonLight,
-  self: self$W
+  self: self$1c
 };
 const scrollbarLight$1 = scrollbarLight;
 const scrollbarDark = {
   name: "Scrollbar",
   common: commonDark,
-  self: self$W
+  self: self$1c
 };
 const scrollbarDark$1 = scrollbarDark;
 const {
@@ -14829,7 +14887,7 @@ function fadeInTransition({
     opacity: 1
   })];
 }
-const style$n = cB("scrollbar", `
+const style$o = cB("scrollbar", `
  overflow: hidden;
  position: relative;
  z-index: auto;
@@ -15352,7 +15410,7 @@ const Scrollbar$1 = defineComponent({
       off("mousemove", window, handleYScrollMouseMove, true);
       off("mouseup", window, handleYScrollMouseUp, true);
     });
-    const themeRef = useTheme("Scrollbar", "-scrollbar", style$n, scrollbarLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Scrollbar", "-scrollbar", style$o, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
       return {
@@ -15493,7 +15551,7 @@ const commonVariables$l = {
   optionPaddingHuge: "0 12px",
   loadingSize: "18px"
 };
-const self$V = (vars) => {
+const self$1b = (vars) => {
   const { borderRadius, popoverColor, textColor3, dividerColor, textColor2, primaryColorPressed, textColorDisabled, primaryColor, opacityDisabled, hoverColor, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge } = vars;
   return Object.assign(Object.assign({}, commonVariables$l), { optionFontSizeSmall: fontSizeSmall, optionFontSizeMedium: fontSizeMedium, optionFontSizeLarge: fontSizeLarge, optionFontSizeHuge: fontSizeHuge, optionHeightSmall: heightSmall, optionHeightMedium: heightMedium, optionHeightLarge: heightLarge, optionHeightHuge: heightHuge, borderRadius, color: popoverColor, groupHeaderTextColor: textColor3, actionDividerColor: dividerColor, optionTextColor: textColor2, optionTextColorPressed: primaryColorPressed, optionTextColorDisabled: textColorDisabled, optionTextColorActive: primaryColor, optionOpacityDisabled: opacityDisabled, optionCheckColor: primaryColor, optionColorPending: hoverColor, optionColorActive: "rgba(0, 0, 0, 0)", optionColorActivePending: hoverColor, actionTextColor: textColor2, loadingColor: primaryColor });
 };
@@ -15504,7 +15562,7 @@ const internalSelectMenuLight = createTheme({
     Scrollbar: scrollbarLight$1,
     Empty: emptyLight$1
   },
-  self: self$V
+  self: self$1b
 });
 const internalSelectMenuLight$1 = internalSelectMenuLight;
 const internalSelectMenuDark = {
@@ -15514,7 +15572,7 @@ const internalSelectMenuDark = {
     Scrollbar: scrollbarDark$1,
     Empty: emptyDark$1
   },
-  self: self$V
+  self: self$1b
 };
 const internalSelectMenuDark$1 = internalSelectMenuDark;
 function renderCheckMark(show, clsPrefix) {
@@ -15698,7 +15756,7 @@ function fadeInScaleUpTransition({
     transform: `${originalTransform} scale(1)`
   })];
 }
-const style$m = cB("base-select-menu", `
+const style$n = cB("base-select-menu", `
  line-height: 1.5;
  outline: none;
  z-index: 0;
@@ -15867,7 +15925,7 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
-    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$m, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$n, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
     const scrollbarRef = ref(null);
@@ -16166,7 +16224,7 @@ const NInternalSelectMenu = defineComponent({
     );
   }
 });
-const style$l = cB("base-wave", `
+const style$m = cB("base-wave", `
  position: absolute;
  left: 0;
  right: 0;
@@ -16183,7 +16241,7 @@ const NBaseWave = defineComponent({
     }
   },
   setup(props) {
-    useStyle("-base-wave", style$l, toRef(props, "clsPrefix"));
+    useStyle("-base-wave", style$m, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const activeRef = ref(false);
     let animationTimerId = null;
@@ -16229,7 +16287,7 @@ const commonVariables$k = {
   arrowHeight: "6px",
   padding: "8px 14px"
 };
-const self$U = (vars) => {
+const self$1a = (vars) => {
   const { boxShadow2, popoverColor, textColor2, borderRadius, fontSize: fontSize2, dividerColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$k), {
     fontSize: fontSize2,
@@ -16243,13 +16301,13 @@ const self$U = (vars) => {
 const popoverLight = {
   name: "Popover",
   common: commonLight,
-  self: self$U
+  self: self$1a
 };
 const popoverLight$1 = popoverLight;
 const popoverDark = {
   name: "Popover",
   common: commonDark,
-  self: self$U
+  self: self$1a
 };
 const popoverDark$1 = popoverDark;
 const oppositePlacement = {
@@ -16259,7 +16317,7 @@ const oppositePlacement = {
   right: "left"
 };
 const arrowSize = "var(--n-arrow-height) * 1.414";
-const style$k = c$1([cB("popover", `
+const style$l = c$1([cB("popover", `
  transition:
  box-shadow .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -16451,7 +16509,7 @@ const NPopoverBody = defineComponent({
   props: popoverBodyProps,
   setup(props, { slots, attrs }) {
     const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Popover", "-popover", style$k, popoverLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Popover", "-popover", style$l, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
     const bodyRef = ref(null);
@@ -17228,7 +17286,7 @@ const tagDark = {
   }
 };
 const tagDark$1 = tagDark;
-const self$T = (vars) => {
+const self$19 = (vars) => {
   const { textColor2, primaryColorHover, primaryColorPressed, primaryColor, infoColor, successColor, warningColor, errorColor, baseColor, borderColor, opacityDisabled, tagColor, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadiusSmall: borderRadius, fontSizeMini, fontSizeTiny, fontSizeSmall, fontSizeMedium, heightMini, heightTiny, heightSmall, heightMedium, closeColorHover, closeColorPressed, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$j), {
     closeBorderRadius: borderRadius,
@@ -17314,7 +17372,7 @@ const self$T = (vars) => {
 const tagLight = {
   name: "Tag",
   common: commonLight,
-  self: self$T
+  self: self$19
 };
 const tagLight$1 = tagLight;
 const commonProps = {
@@ -17334,7 +17392,7 @@ const commonProps = {
     default: void 0
   }
 };
-const style$j = cB("tag", `
+const style$k = cB("tag", `
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -17437,7 +17495,7 @@ const NTag = defineComponent({
   setup(props) {
     const contentRef = ref(null);
     const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Tag", "-tag", style$j, tagLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tag", "-tag", style$k, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
@@ -17568,7 +17626,7 @@ const NTag = defineComponent({
     );
   }
 });
-const style$i = cB("base-clear", `
+const style$j = cB("base-clear", `
  flex-shrink: 0;
  height: 1em;
  width: 1em;
@@ -17608,7 +17666,7 @@ const NBaseClear = defineComponent({
     onClear: Function
   },
   setup(props) {
-    useStyle("-base-clear", style$i, toRef(props, "clsPrefix"));
+    useStyle("-base-clear", style$j, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
         e.preventDefault();
@@ -17675,7 +17733,7 @@ const commonVars$b = {
   clearSize: "16px",
   arrowSize: "16px"
 };
-const self$S = (vars) => {
+const self$18 = (vars) => {
   const { borderRadius, textColor2, textColorDisabled, inputColor, inputColorDisabled, primaryColor, primaryColorHover, warningColor, warningColorHover, errorColor, errorColorHover, borderColor, iconColor, iconColorDisabled, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge } = vars;
   return Object.assign(Object.assign({}, commonVars$b), {
     fontSizeTiny,
@@ -17749,7 +17807,7 @@ const internalSelectionLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$S
+  self: self$18
 });
 const internalSelectionLight$1 = internalSelectionLight;
 const internalSelectionDark = {
@@ -17828,7 +17886,7 @@ const internalSelectionDark = {
   }
 };
 const internalSelectionDark$1 = internalSelectionDark;
-const style$h = c$1([cB("base-selection", `
+const style$i = c$1([cB("base-selection", `
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -18068,7 +18126,7 @@ const NInternalSelection = defineComponent({
     const showTagsPopoverRef = ref(false);
     const patternInputFocusedRef = ref(false);
     const hoverRef = ref(false);
-    const themeRef = useTheme("InternalSelection", "-internal-selection", style$h, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelection", "-internal-selection", style$i, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
     const mergedClearableRef = computed(() => {
       return props.clearable && !props.disabled && (hoverRef.value || props.active);
     });
@@ -18754,6 +18812,72 @@ const alertDark = {
   }
 };
 const alertDark$1 = alertDark;
+const self$17 = (vars) => {
+  const { lineHeight: lineHeight2, borderRadius, fontWeightStrong, baseColor, dividerColor, actionColor, textColor1, textColor2, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, warningColor, errorColor, fontSize: fontSize2 } = vars;
+  return Object.assign(Object.assign({}, commonVars$a), {
+    fontSize: fontSize2,
+    lineHeight: lineHeight2,
+    titleFontWeight: fontWeightStrong,
+    borderRadius,
+    border: `1px solid ${dividerColor}`,
+    color: actionColor,
+    titleTextColor: textColor1,
+    iconColor: textColor2,
+    contentTextColor: textColor2,
+    closeBorderRadius: borderRadius,
+    closeColorHover,
+    closeColorPressed,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed,
+    borderInfo: `1px solid ${composite(baseColor, changeColor(infoColor, { alpha: 0.25 }))}`,
+    colorInfo: composite(baseColor, changeColor(infoColor, { alpha: 0.08 })),
+    titleTextColorInfo: textColor1,
+    iconColorInfo: infoColor,
+    contentTextColorInfo: textColor2,
+    closeColorHoverInfo: closeColorHover,
+    closeColorPressedInfo: closeColorPressed,
+    closeIconColorInfo: closeIconColor,
+    closeIconColorHoverInfo: closeIconColorHover,
+    closeIconColorPressedInfo: closeIconColorPressed,
+    borderSuccess: `1px solid ${composite(baseColor, changeColor(successColor, { alpha: 0.25 }))}`,
+    colorSuccess: composite(baseColor, changeColor(successColor, { alpha: 0.08 })),
+    titleTextColorSuccess: textColor1,
+    iconColorSuccess: successColor,
+    contentTextColorSuccess: textColor2,
+    closeColorHoverSuccess: closeColorHover,
+    closeColorPressedSuccess: closeColorPressed,
+    closeIconColorSuccess: closeIconColor,
+    closeIconColorHoverSuccess: closeIconColorHover,
+    closeIconColorPressedSuccess: closeIconColorPressed,
+    borderWarning: `1px solid ${composite(baseColor, changeColor(warningColor, { alpha: 0.33 }))}`,
+    colorWarning: composite(baseColor, changeColor(warningColor, { alpha: 0.08 })),
+    titleTextColorWarning: textColor1,
+    iconColorWarning: warningColor,
+    contentTextColorWarning: textColor2,
+    closeColorHoverWarning: closeColorHover,
+    closeColorPressedWarning: closeColorPressed,
+    closeIconColorWarning: closeIconColor,
+    closeIconColorHoverWarning: closeIconColorHover,
+    closeIconColorPressedWarning: closeIconColorPressed,
+    borderError: `1px solid ${composite(baseColor, changeColor(errorColor, { alpha: 0.25 }))}`,
+    colorError: composite(baseColor, changeColor(errorColor, { alpha: 0.08 })),
+    titleTextColorError: textColor1,
+    iconColorError: errorColor,
+    contentTextColorError: textColor2,
+    closeColorHoverError: closeColorHover,
+    closeColorPressedError: closeColorPressed,
+    closeIconColorError: closeIconColor,
+    closeIconColorHoverError: closeIconColorHover,
+    closeIconColorPressedError: closeIconColorPressed
+  });
+};
+const alertLight = {
+  name: "Alert",
+  common: commonLight,
+  self: self$17
+};
+const alertLight$1 = alertLight;
 const {
   cubicBezierEaseInOut,
   cubicBezierEaseOut: cubicBezierEaseOut$4,
@@ -18808,7 +18932,7 @@ const commonVars$9 = {
   linkPadding: "0 0 0 16px",
   railWidth: "4px"
 };
-const self$R = (vars) => {
+const self$16 = (vars) => {
   const { borderRadius, railColor, primaryColor, primaryColorHover, primaryColorPressed, textColor2 } = vars;
   return Object.assign(Object.assign({}, commonVars$9), {
     borderRadius,
@@ -18821,10 +18945,16 @@ const self$R = (vars) => {
     linkTextColorActive: primaryColor
   });
 };
+const anchorLight = {
+  name: "Anchor",
+  common: commonLight,
+  self: self$16
+};
+const anchorLight$1 = anchorLight;
 const anchorDark = {
   name: "Anchor",
   common: commonDark,
-  self: self$R
+  self: self$16
 };
 const anchorDark$1 = anchorDark;
 function getIsGroup(option) {
@@ -18974,7 +19104,7 @@ const inputDark = {
   }
 };
 const inputDark$1 = inputDark;
-const self$Q = (vars) => {
+const self$15 = (vars) => {
   const { textColor2, textColor3, textColorDisabled, primaryColor, primaryColorHover, inputColor, inputColorDisabled, borderColor, warningColor, warningColorHover, errorColor, errorColorHover, borderRadius, lineHeight: lineHeight2, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightTiny, heightSmall, heightMedium, heightLarge, actionColor, clearColor, clearColorHover, clearColorPressed, placeholderColor, placeholderColorDisabled, iconColor, iconColorDisabled, iconColorHover, iconColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$i), {
     countTextColorDisabled: textColorDisabled,
@@ -19042,7 +19172,7 @@ const self$Q = (vars) => {
 const inputLight = {
   name: "Input",
   common: commonLight,
-  self: self$Q
+  self: self$15
 };
 const inputLight$1 = inputLight;
 const inputInjectionKey = createInjectionKey("n-input");
@@ -19132,7 +19262,7 @@ const WordCount = defineComponent({
     };
   }
 });
-const style$g = cB("input", `
+const style$h = cB("input", `
  max-width: 100%;
  cursor: text;
  line-height: 1.5;
@@ -19487,7 +19617,7 @@ const NInput = defineComponent({
   props: inputProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Input", "-input", style$g, inputLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Input", "-input", style$h, inputLight$1, props, mergedClsPrefixRef);
     if (isSafari) {
       useStyle("-input-safari", safariStyle, mergedClsPrefixRef);
     }
@@ -20318,12 +20448,22 @@ const NInput = defineComponent({
     );
   }
 });
-function self$P(vars) {
+function self$14(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
   };
 }
+const autoCompleteLight = createTheme({
+  name: "AutoComplete",
+  common: commonLight,
+  peers: {
+    InternalSelectMenu: internalSelectMenuLight$1,
+    Input: inputLight$1
+  },
+  self: self$14
+});
+const autoCompleteLight$1 = autoCompleteLight;
 const autoCompleteDark = {
   name: "AutoComplete",
   common: commonDark,
@@ -20331,10 +20471,10 @@ const autoCompleteDark = {
     InternalSelectMenu: internalSelectMenuDark$1,
     Input: inputDark$1
   },
-  self: self$P
+  self: self$14
 };
 const autoCompleteDark$1 = autoCompleteDark;
-const self$O = (vars) => {
+const self$13 = (vars) => {
   const { borderRadius, avatarColor, cardColor, fontSize: fontSize2, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, modalColor, popoverColor } = vars;
   return {
     borderRadius,
@@ -20350,24 +20490,39 @@ const self$O = (vars) => {
     colorPopover: composite(popoverColor, avatarColor)
   };
 };
+const avatarLight = {
+  name: "Avatar",
+  common: commonLight,
+  self: self$13
+};
+const avatarLight$1 = avatarLight;
 const avatarDark = {
   name: "Avatar",
   common: commonDark,
-  self: self$O
+  self: self$13
 };
 const avatarDark$1 = avatarDark;
-const self$N = () => {
+const self$12 = () => {
   return {
     gap: "-12px"
   };
 };
+const avatarGroupLight = createTheme({
+  name: "AvatarGroup",
+  common: commonLight,
+  peers: {
+    Avatar: avatarLight$1
+  },
+  self: self$12
+});
+const avatarGroupLight$1 = avatarGroupLight;
 const avatarGroupDark = {
   name: "AvatarGroup",
   common: commonDark,
   peers: {
     Avatar: avatarDark$1
   },
-  self: self$N
+  self: self$12
 };
 const avatarGroupDark$1 = avatarGroupDark;
 const commonVariables$h = {
@@ -20385,6 +20540,16 @@ const backTopDark = {
   }
 };
 const backTopDark$1 = backTopDark;
+const self$11 = (vars) => {
+  const { popoverColor, textColor2, primaryColorHover, primaryColorPressed } = vars;
+  return Object.assign(Object.assign({}, commonVariables$h), { color: popoverColor, textColor: textColor2, iconColor: textColor2, iconColorHover: primaryColorHover, iconColorPressed: primaryColorPressed, boxShadow: "0 2px 8px 0px rgba(0, 0, 0, .12)", boxShadowHover: "0 2px 12px 0px rgba(0, 0, 0, .18)", boxShadowPressed: "0 2px 12px 0px rgba(0, 0, 0, .18)" });
+};
+const backTopLight = {
+  name: "BackTop",
+  common: commonLight,
+  self: self$11
+};
+const backTopLight$1 = backTopLight;
 const badgeDark = {
   name: "Badge",
   common: commonDark,
@@ -20402,17 +20567,41 @@ const badgeDark = {
   }
 };
 const badgeDark$1 = badgeDark;
+const self$10 = (vars) => {
+  const { errorColor, infoColor, successColor, warningColor, fontFamily: fontFamily2 } = vars;
+  return {
+    color: errorColor,
+    colorInfo: infoColor,
+    colorSuccess: successColor,
+    colorError: errorColor,
+    colorWarning: warningColor,
+    fontSize: "12px",
+    fontFamily: fontFamily2
+  };
+};
+const badgeLight = {
+  name: "Badge",
+  common: commonLight,
+  self: self$10
+};
+const badgeLight$1 = badgeLight;
 const commonVariables$g = {
   fontWeightActive: "400"
 };
-const self$M = (vars) => {
+const self$$ = (vars) => {
   const { fontSize: fontSize2, textColor3, textColor2, borderRadius, buttonColor2Hover, buttonColor2Pressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$g), { fontSize: fontSize2, itemLineHeight: "1.25", itemTextColor: textColor3, itemTextColorHover: textColor2, itemTextColorPressed: textColor2, itemTextColorActive: textColor2, itemBorderRadius: borderRadius, itemColorHover: buttonColor2Hover, itemColorPressed: buttonColor2Pressed, separatorColor: textColor3 });
 };
+const breadcrumbLight = {
+  name: "Breadcrumb",
+  common: commonLight,
+  self: self$$
+};
+const breadcrumbLight$1 = breadcrumbLight;
 const breadcrumbDark = {
   name: "Breadcrumb",
   common: commonDark,
-  self: self$M
+  self: self$$
 };
 const breadcrumbDark$1 = breadcrumbDark;
 function createHoverColor(rgb) {
@@ -20441,7 +20630,7 @@ const commonVariables$f = {
   iconSizeLarge: "20px",
   rippleDuration: ".6s"
 };
-const self$L = (vars) => {
+const self$_ = (vars) => {
   const { heightTiny, heightSmall, heightMedium, heightLarge, borderRadius, fontSizeTiny, fontSizeSmall, fontSizeMedium, fontSizeLarge, opacityDisabled, textColor2, textColor3, primaryColorHover, primaryColorPressed, borderColor, primaryColor, baseColor, infoColor, infoColorHover, infoColorPressed, successColor, successColorHover, successColorPressed, warningColor, warningColorHover, warningColorPressed, errorColor, errorColorHover, errorColorPressed, fontWeight, buttonColor2, buttonColor2Hover, buttonColor2Pressed, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$f), {
     heightTiny,
@@ -20643,14 +20832,14 @@ const self$L = (vars) => {
 const buttonLight = {
   name: "Button",
   common: commonLight,
-  self: self$L
+  self: self$_
 };
 const buttonLight$1 = buttonLight;
 const buttonDark = {
   name: "Button",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$L(vars);
+    const commonSelf = self$_(vars);
     commonSelf.waveOpacity = "0.8";
     commonSelf.colorOpacitySecondary = "0.16";
     commonSelf.colorOpacitySecondaryHover = "0.2";
@@ -20659,7 +20848,7 @@ const buttonDark = {
   }
 };
 const buttonDark$1 = buttonDark;
-const style$f = c$1([cB("button", `
+const style$g = c$1([cB("button", `
  margin: 0;
  font-weight: var(--n-font-weight);
  line-height: 1;
@@ -20916,7 +21105,7 @@ const Button = defineComponent({
       enterPressedRef.value = false;
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Button", "-button", style$f, buttonLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Button", "-button", style$g, buttonLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Button", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const theme = themeRef.value;
@@ -21180,7 +21369,7 @@ const XButton = Button;
 const commonVariables$e = {
   titleFontSize: "22px"
 };
-const self$K = (vars) => {
+const self$Z = (vars) => {
   const { borderRadius, fontSize: fontSize2, lineHeight: lineHeight2, textColor2, textColor1, textColorDisabled, dividerColor, fontWeightStrong, primaryColor, baseColor, hoverColor, cardColor, modalColor, popoverColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$e), {
     borderRadius,
@@ -21204,16 +21393,25 @@ const self$K = (vars) => {
     barColor: primaryColor
   });
 };
+const calendarLight = createTheme({
+  name: "Calendar",
+  common: commonLight,
+  peers: {
+    Button: buttonLight$1
+  },
+  self: self$Z
+});
+const calendarLight$1 = calendarLight;
 const calendarDark = {
   name: "Calendar",
   common: commonDark,
   peers: {
     Button: buttonDark$1
   },
-  self: self$K
+  self: self$Z
 };
 const calendarDark$1 = calendarDark;
-const self$J = (vars) => {
+const self$Y = (vars) => {
   const { fontSize: fontSize2, boxShadow2, popoverColor, textColor2, borderRadius, borderColor, heightSmall, heightMedium, heightLarge, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor } = vars;
   return {
     panelFontSize: fontSize2,
@@ -21231,6 +21429,16 @@ const self$J = (vars) => {
     dividerColor
   };
 };
+const colorPickerLight = createTheme({
+  name: "ColorPicker",
+  common: commonLight,
+  peers: {
+    Input: inputLight$1,
+    Button: buttonLight$1
+  },
+  self: self$Y
+});
+const colorPickerLight$1 = colorPickerLight;
 const colorPickerDark = {
   name: "ColorPicker",
   common: commonDark,
@@ -21238,7 +21446,7 @@ const colorPickerDark = {
     Input: inputDark$1,
     Button: buttonDark$1
   },
-  self: self$J
+  self: self$Y
 };
 const colorPickerDark$1 = colorPickerDark;
 const commonVariables$d = {
@@ -21253,7 +21461,7 @@ const commonVariables$d = {
   closeIconSize: "18px",
   closeSize: "22px"
 };
-const self$I = (vars) => {
+const self$X = (vars) => {
   const { primaryColor, borderRadius, lineHeight: lineHeight2, fontSize: fontSize2, cardColor, textColor2, textColor1, dividerColor, fontWeightStrong, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, modalColor, boxShadow1, popoverColor, actionColor } = vars;
   return Object.assign(Object.assign({}, commonVariables$d), {
     lineHeight: lineHeight2,
@@ -21286,14 +21494,14 @@ const self$I = (vars) => {
 const cardLight = {
   name: "Card",
   common: commonLight,
-  self: self$I
+  self: self$X
 };
 const cardLight$1 = cardLight;
 const cardDark = {
   name: "Card",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$I(vars);
+    const commonSelf = self$X(vars);
     const { cardColor, modalColor, popoverColor } = vars;
     commonSelf.colorEmbedded = cardColor;
     commonSelf.colorEmbeddedModal = modalColor;
@@ -21302,7 +21510,7 @@ const cardDark = {
   }
 };
 const cardDark$1 = cardDark;
-const style$e = c$1([cB("card", `
+const style$f = c$1([cB("card", `
  font-size: var(--n-font-size);
  line-height: var(--n-line-height);
  display: flex;
@@ -21447,7 +21655,7 @@ const NCard = defineComponent({
         call(onClose);
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Card", "-card", style$e, cardLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Card", "-card", style$f, cardLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Card", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { size: size2 } = props;
@@ -21535,7 +21743,7 @@ const NCard = defineComponent({
     );
   }
 });
-const self$H = (vars) => {
+const self$W = (vars) => {
   return {
     dotSize: "8px",
     dotColor: "rgba(255, 255, 255, .3)",
@@ -21546,10 +21754,16 @@ const self$H = (vars) => {
     arrowColor: "#eee"
   };
 };
+const carouselLight = {
+  name: "Carousel",
+  common: commonLight,
+  self: self$W
+};
+const carouselLight$1 = carouselLight;
 const carouselDark = {
   name: "Carousel",
   common: commonDark,
-  self: self$H
+  self: self$W
 };
 const carouselDark$1 = carouselDark;
 const commonVariables$c = {
@@ -21559,7 +21773,7 @@ const commonVariables$c = {
   labelPadding: "0 8px",
   labelFontWeight: "400"
 };
-const self$G = (vars) => {
+const self$V = (vars) => {
   const { baseColor, inputColorDisabled, cardColor, modalColor, popoverColor, textColorDisabled, borderColor, primaryColor, textColor2, fontSizeSmall, fontSizeMedium, fontSizeLarge, borderRadiusSmall, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$c), {
     labelLineHeight: lineHeight2,
@@ -21590,7 +21804,7 @@ const self$G = (vars) => {
 const checkboxLight = {
   name: "Checkbox",
   common: commonLight,
-  self: self$G
+  self: self$V
 };
 const checkboxLight$1 = checkboxLight;
 const checkboxDark = {
@@ -21598,14 +21812,14 @@ const checkboxDark = {
   common: commonDark,
   self(vars) {
     const { cardColor } = vars;
-    const commonSelf = self$G(vars);
+    const commonSelf = self$V(vars);
     commonSelf.color = "#0000";
     commonSelf.checkMarkColor = cardColor;
     return commonSelf;
   }
 };
 const checkboxDark$1 = checkboxDark;
-const self$F = (vars) => {
+const self$U = (vars) => {
   const { borderRadius, boxShadow2, popoverColor, textColor2, textColor3, primaryColor, textColorDisabled, dividerColor, hoverColor, fontSizeMedium, heightMedium } = vars;
   return {
     menuBorderRadius: borderRadius,
@@ -21625,6 +21839,19 @@ const self$F = (vars) => {
     columnWidth: "180px"
   };
 };
+const cascaderLight = createTheme({
+  name: "Cascader",
+  common: commonLight,
+  peers: {
+    InternalSelectMenu: internalSelectMenuLight$1,
+    InternalSelection: internalSelectionLight$1,
+    Scrollbar: scrollbarLight$1,
+    Checkbox: checkboxLight$1,
+    Empty: emptyLight$1
+  },
+  self: self$U
+});
+const cascaderLight$1 = cascaderLight;
 const cascaderDark = {
   name: "Cascader",
   common: commonDark,
@@ -21635,7 +21862,7 @@ const cascaderDark = {
     Checkbox: checkboxDark$1,
     Empty: emptyLight$1
   },
-  self: self$F
+  self: self$U
 };
 const cascaderDark$1 = cascaderDark;
 const codeDark = {
@@ -21663,7 +21890,33 @@ const codeDark = {
   }
 };
 const codeDark$1 = codeDark;
-const self$E = (vars) => {
+const self$T = (vars) => {
+  const { textColor2, fontSize: fontSize2, fontWeightStrong, textColor3 } = vars;
+  return {
+    textColor: textColor2,
+    fontSize: fontSize2,
+    fontWeightStrong,
+    // extracted from hljs atom-one-light.scss
+    "mono-3": "#a0a1a7",
+    "hue-1": "#0184bb",
+    "hue-2": "#4078f2",
+    "hue-3": "#a626a4",
+    "hue-4": "#50a14f",
+    "hue-5": "#e45649",
+    "hue-5-2": "#c91243",
+    "hue-6": "#986801",
+    "hue-6-2": "#c18401",
+    // line-number styles
+    lineNumberTextColor: textColor3
+  };
+};
+const codeLight = {
+  name: "Code",
+  common: commonLight,
+  self: self$T
+};
+const codeLight$1 = codeLight;
+const self$S = (vars) => {
   const { fontWeight, textColor1, textColor2, textColorDisabled, dividerColor, fontSize: fontSize2 } = vars;
   return {
     titleFontSize: fontSize2,
@@ -21678,22 +21931,34 @@ const self$E = (vars) => {
     itemMargin: "16px 0 0 0"
   };
 };
+const collapseLight = {
+  name: "Collapse",
+  common: commonLight,
+  self: self$S
+};
+const collapseLight$1 = collapseLight;
 const collapseDark = {
   name: "Collapse",
   common: commonDark,
-  self: self$E
+  self: self$S
 };
 const collapseDark$1 = collapseDark;
-const self$D = (vars) => {
+const self$R = (vars) => {
   const { cubicBezierEaseInOut: cubicBezierEaseInOut2 } = vars;
   return {
     bezier: cubicBezierEaseInOut2
   };
 };
+const collapseTransitionLight = {
+  name: "CollapseTransition",
+  common: commonLight,
+  self: self$R
+};
+const collapseTransitionLight$1 = collapseTransitionLight;
 const collapseTransitionDark = {
   name: "CollapseTransition",
   common: commonDark,
-  self: self$D
+  self: self$R
 };
 const collapseTransitionDark$1 = collapseTransitionDark;
 const configProviderProps = {
@@ -21882,7 +22147,7 @@ const popselect = {
   }
 };
 const popselectDark = popselect;
-function self$C(vars) {
+function self$Q(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -21895,10 +22160,10 @@ const popselectLight = createTheme({
     Popover: popoverLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$C
+  self: self$Q
 });
 const popselectLight$1 = popselectLight;
-function self$B(vars) {
+function self$P(vars) {
   const { boxShadow2 } = vars;
   return {
     menuBoxShadow: boxShadow2
@@ -21911,7 +22176,7 @@ const selectLight = createTheme({
     InternalSelection: internalSelectionLight$1,
     InternalSelectMenu: internalSelectMenuLight$1
   },
-  self: self$B
+  self: self$P
 });
 const selectLight$1 = selectLight;
 const selectDark = {
@@ -21921,10 +22186,10 @@ const selectDark = {
     InternalSelection: internalSelectionDark$1,
     InternalSelectMenu: internalSelectMenuDark$1
   },
-  self: self$B
+  self: self$P
 };
 const selectDark$1 = selectDark;
-const style$d = c$1([cB("select", `
+const style$e = c$1([cB("select", `
  z-index: auto;
  outline: none;
  width: 100%;
@@ -22049,7 +22314,7 @@ const NSelect = defineComponent({
   props: selectProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Select", "-select", style$d, selectLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Select", "-select", style$e, selectLight$1, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -22688,7 +22953,7 @@ const commonVariables$b = {
   prefixMarginLarge: "0 8px 0 0",
   suffixMarginLarge: "0 0 0 8px"
 };
-const self$A = (vars) => {
+const self$O = (vars) => {
   const {
     textColor2,
     primaryColor,
@@ -22717,7 +22982,7 @@ const paginationLight = createTheme({
     Input: inputLight$1,
     Popselect: popselectLight$1
   },
-  self: self$A
+  self: self$O
 });
 const paginationLight$1 = paginationLight;
 const paginationDark = {
@@ -22733,7 +22998,7 @@ const paginationDark = {
     const borderColorActive = changeColor(primaryColor, {
       alpha: Number(opacity3)
     });
-    const commonSelf = self$A(vars);
+    const commonSelf = self$O(vars);
     commonSelf.itemBorderActive = `1px solid ${borderColorActive}`;
     commonSelf.itemBorderDisabled = "1px solid #0000";
     return commonSelf;
@@ -22755,7 +23020,7 @@ const tooltipDark = {
   }
 };
 const tooltipDark$1 = tooltipDark;
-const self$z = (vars) => {
+const self$N = (vars) => {
   const { borderRadius, boxShadow2, baseColor } = vars;
   return Object.assign(Object.assign({}, commonVars$8), { borderRadius, boxShadow: boxShadow2, color: composite(baseColor, "rgba(0, 0, 0, .85)"), textColor: baseColor });
 };
@@ -22765,7 +23030,7 @@ const tooltipLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$z
+  self: self$N
 });
 const tooltipLight$1 = tooltipLight;
 const ellipsisDark = {
@@ -22833,7 +23098,7 @@ const radioDark = {
   }
 };
 const radioDark$1 = radioDark;
-const self$y = (vars) => {
+const self$M = (vars) => {
   const { borderColor, primaryColor, baseColor, textColorDisabled, inputColorDisabled, textColor2, opacityDisabled, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, heightSmall, heightMedium, heightLarge, lineHeight: lineHeight2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$a), {
     labelLineHeight: lineHeight2,
@@ -22873,7 +23138,7 @@ const self$y = (vars) => {
 const radioLight = {
   name: "Radio",
   common: commonLight,
-  self: self$y
+  self: self$M
 };
 const radioLight$1 = radioLight;
 const commonVariables$9 = {
@@ -22899,7 +23164,7 @@ const commonVariables$9 = {
   optionIconPrefixWidthLarge: "40px",
   optionIconPrefixWidthHuge: "40px"
 };
-const self$x = (vars) => {
+const self$L = (vars) => {
   const { primaryColor, textColor2, dividerColor, hoverColor, popoverColor, invertedColor, borderRadius, fontSizeSmall, fontSizeMedium, fontSizeLarge, fontSizeHuge, heightSmall, heightMedium, heightLarge, heightHuge, textColor3, opacityDisabled } = vars;
   return Object.assign(Object.assign({}, commonVariables$9), {
     optionHeightSmall: heightSmall,
@@ -22944,7 +23209,7 @@ const dropdownLight = createTheme({
   peers: {
     Popover: popoverLight$1
   },
-  self: self$x
+  self: self$L
 });
 const dropdownLight$1 = dropdownLight;
 const dropdownDark = {
@@ -22955,7 +23220,7 @@ const dropdownDark = {
   },
   self(vars) {
     const { primaryColorSuppl, primaryColor, popoverColor } = vars;
-    const commonSelf = self$x(vars);
+    const commonSelf = self$L(vars);
     commonSelf.colorInverted = popoverColor;
     commonSelf.optionColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.optionColorActiveInverted = primaryColorSuppl;
@@ -22980,7 +23245,7 @@ const commonVariables$8 = {
   actionPadding: "8px 12px",
   actionButtonMargin: "0 8px 0 0"
 };
-const self$w = (vars) => {
+const self$K = (vars) => {
   const { cardColor, modalColor, popoverColor, textColor2, textColor1, tableHeaderColor, tableColorHover, iconColor, primaryColor, fontWeightStrong, borderRadius, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge, dividerColor, heightSmall, opacityDisabled, tableColorStriped } = vars;
   return Object.assign(Object.assign({}, commonVariables$8), {
     actionDividerColor: dividerColor,
@@ -23037,7 +23302,7 @@ const dataTableLight = createTheme({
     Ellipsis: ellipsisLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$w
+  self: self$K
 });
 const dataTableLight$1 = dataTableLight;
 const dataTableDark = {
@@ -23055,7 +23320,7 @@ const dataTableDark = {
     Dropdown: dropdownDark$1
   },
   self(vars) {
-    const commonSelf = self$w(vars);
+    const commonSelf = self$K(vars);
     commonSelf.boxShadowAfter = "inset 12px 0 8px -12px rgba(0, 0, 0, .36)";
     commonSelf.boxShadowBefore = "inset -12px 0 8px -12px rgba(0, 0, 0, .36)";
     return commonSelf;
@@ -23099,7 +23364,7 @@ const NDropdownDivider = defineComponent({
     return h("div", { class: `${this.clsPrefix}-dropdown-divider` });
   }
 });
-const self$v = (vars) => {
+const self$J = (vars) => {
   const { textColorBase, opacity1, opacity2, opacity3, opacity4, opacity5 } = vars;
   return {
     color: textColorBase,
@@ -23113,16 +23378,16 @@ const self$v = (vars) => {
 const iconLight = {
   name: "Icon",
   common: commonLight,
-  self: self$v
+  self: self$J
 };
 const iconLight$1 = iconLight;
 const iconDark$1 = {
   name: "Icon",
   common: commonDark,
-  self: self$v
+  self: self$J
 };
 const iconDark$2 = iconDark$1;
-const style$c = cB("icon", `
+const style$d = cB("icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -23150,7 +23415,7 @@ const NIcon = defineComponent({
   props: iconProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Icon", "-icon", style$c, iconLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Icon", "-icon", style$d, iconLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { depth } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -23644,7 +23909,7 @@ const NDropdownMenu = defineComponent({
     );
   }
 });
-const style$b = cB("dropdown-menu", `
+const style$c = cB("dropdown-menu", `
  transform-origin: var(--v-transform-origin);
  background-color: var(--n-color);
  border-radius: var(--n-border-radius);
@@ -23872,7 +24137,7 @@ const NDropdown = defineComponent({
       }
     }, keyboardEnabledRef);
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Dropdown", "-dropdown", style$b, dropdownLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dropdown", "-dropdown", style$c, dropdownLight$1, props, mergedClsPrefixRef);
     provide(dropdownInjectionKey, {
       labelFieldRef: toRef(props, "labelField"),
       childrenFieldRef: toRef(props, "childrenField"),
@@ -24087,7 +24352,7 @@ const commonVars$7 = {
   itemWidth: "52px",
   panelActionPadding: "8px 0"
 };
-const self$u = (vars) => {
+const self$I = (vars) => {
   const { popoverColor, textColor2, primaryColor, hoverColor, dividerColor, opacityDisabled, boxShadow2, borderRadius, iconColor, iconColorDisabled } = vars;
   return Object.assign(Object.assign({}, commonVars$7), {
     panelColor: popoverColor,
@@ -24103,6 +24368,17 @@ const self$u = (vars) => {
     iconColorDisabled
   });
 };
+const timePickerLight = createTheme({
+  name: "TimePicker",
+  common: commonLight,
+  peers: {
+    Scrollbar: scrollbarLight$1,
+    Button: buttonLight$1,
+    Input: inputLight$1
+  },
+  self: self$I
+});
+const timePickerLight$1 = timePickerLight;
 const timePickerDark = {
   name: "TimePicker",
   common: commonDark,
@@ -24111,7 +24387,7 @@ const timePickerDark = {
     Button: buttonDark$1,
     Input: inputDark$1
   },
-  self: self$u
+  self: self$I
 };
 const timePickerDark$1 = timePickerDark;
 const commonVars$6 = {
@@ -24150,7 +24426,7 @@ const commonVars$6 = {
   calendarRightPaddingQuarterrange: "0",
   calendarRightPaddingYearrange: "0"
 };
-const self$t = (vars) => {
+const self$H = (vars) => {
   const { hoverColor, fontSize: fontSize2, textColor2, textColorDisabled, popoverColor, primaryColor, borderRadiusSmall, iconColor, iconColorDisabled, textColor1, dividerColor, boxShadow2, borderRadius, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVars$6), {
     itemFontSize: fontSize2,
@@ -24183,6 +24459,18 @@ const self$t = (vars) => {
     iconColorDisabled
   });
 };
+const datePickerLight = createTheme({
+  name: "DatePicker",
+  common: commonLight,
+  peers: {
+    Input: inputLight$1,
+    Button: buttonLight$1,
+    TimePicker: timePickerLight$1,
+    Scrollbar: scrollbarLight$1
+  },
+  self: self$H
+});
+const datePickerLight$1 = datePickerLight;
 const datePickerDark = {
   name: "DatePicker",
   common: commonDark,
@@ -24194,7 +24482,7 @@ const datePickerDark = {
   },
   self(vars) {
     const { popoverColor, hoverColor, primaryColor } = vars;
-    const commonSelf = self$t(vars);
+    const commonSelf = self$H(vars);
     commonSelf.itemColorDisabled = composite(popoverColor, hoverColor);
     commonSelf.itemColorIncluded = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorHover = composite(popoverColor, hoverColor);
@@ -24216,7 +24504,7 @@ const commonVariables$7 = {
   tdPaddingMedium: "0 0 12px 0",
   tdPaddingLarge: "0 0 16px 0"
 };
-const self$s = (vars) => {
+const self$G = (vars) => {
   const { tableHeaderColor, textColor2, textColor1, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge } = vars;
   return Object.assign(Object.assign({}, commonVariables$7), {
     lineHeight: lineHeight2,
@@ -24242,13 +24530,13 @@ const self$s = (vars) => {
 const descriptionsLight = {
   name: "Descriptions",
   common: commonLight,
-  self: self$s
+  self: self$G
 };
 const descriptionsLight$1 = descriptionsLight;
 const descriptionsDark = {
   name: "Descriptions",
   common: commonDark,
-  self: self$s
+  self: self$G
 };
 const descriptionsDark$1 = descriptionsDark;
 const commonVars$5 = {
@@ -24264,7 +24552,7 @@ const commonVars$5 = {
   closeMargin: "20px 26px 0 0",
   closeMarginIconTop: "10px 16px 0 0"
 };
-const self$r = (vars) => {
+const self$F = (vars) => {
   const { textColor1, textColor2, modalColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, infoColor, successColor, warningColor, errorColor, primaryColor, dividerColor, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$5), {
     fontSize: fontSize2,
@@ -24294,7 +24582,7 @@ const dialogLight = createTheme({
   peers: {
     Button: buttonLight$1
   },
-  self: self$r
+  self: self$F
 });
 const dialogLight$1 = dialogLight;
 const dialogDark = {
@@ -24303,7 +24591,7 @@ const dialogDark = {
   peers: {
     Button: buttonDark$1
   },
-  self: self$r
+  self: self$F
 };
 const dialogDark$1 = dialogDark;
 const dialogProps = {
@@ -24335,7 +24623,7 @@ const dialogProps = {
   onClose: Function
 };
 const dialogPropKeys = keysOf(dialogProps);
-const style$a = c$1([cB("dialog", `
+const style$b = c$1([cB("dialog", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: relative;
@@ -24443,7 +24731,7 @@ const NDialog = defineComponent({
       if (onClose)
         onClose();
     }
-    const themeRef = useTheme("Dialog", "-dialog", style$a, dialogLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dialog", "-dialog", style$b, dialogLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const iconPlacement = mergedIconPlacementRef.value;
@@ -24530,7 +24818,7 @@ const NDialog = defineComponent({
   }
 });
 const dialogProviderInjectionKey = createInjectionKey("n-dialog-provider");
-const self$q = (vars) => {
+const self$E = (vars) => {
   const { modalColor, textColor2, boxShadow3 } = vars;
   return {
     color: modalColor,
@@ -24546,7 +24834,7 @@ const modalLight = createTheme({
     Dialog: dialogLight$1,
     Card: cardLight$1
   },
-  self: self$q
+  self: self$E
 });
 const modalLight$1 = modalLight;
 const modalDark = {
@@ -24557,7 +24845,7 @@ const modalDark = {
     Dialog: dialogDark$1,
     Card: cardDark$1
   },
-  self: self$q
+  self: self$E
 };
 const modalDark$1 = modalDark;
 const presetProps = Object.assign(Object.assign({}, cardBaseProps), dialogProps);
@@ -24769,7 +25057,7 @@ const NModalBodyWrapper = defineComponent({
     ]) : null;
   }
 });
-const style$9 = c$1([cB("modal-container", `
+const style$a = c$1([cB("modal-container", `
  position: fixed;
  left: 0;
  top: 0;
@@ -24861,7 +25149,7 @@ const NModal = defineComponent({
   setup(props) {
     const containerRef = ref(null);
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Modal", "-modal", style$9, modalLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Modal", "-modal", style$a, modalLight$1, props, mergedClsPrefixRef);
     const clickedRef = useClicked(64);
     const clickedPositionRef = useClickPosition();
     const isMountedRef = isMounted();
@@ -25031,7 +25319,7 @@ const NModal = defineComponent({
     });
   }
 });
-const self$p = (vars) => {
+const self$D = (vars) => {
   const { textColor1, dividerColor, fontWeightStrong } = vars;
   return {
     textColor: textColor1,
@@ -25039,13 +25327,19 @@ const self$p = (vars) => {
     fontWeight: fontWeightStrong
   };
 };
+const dividerLight = {
+  name: "Divider",
+  common: commonLight,
+  self: self$D
+};
+const dividerLight$1 = dividerLight;
 const dividerDark = {
   name: "Divider",
   common: commonDark,
-  self: self$p
+  self: self$D
 };
 const dividerDark$1 = dividerDark;
-const self$o = (vars) => {
+const self$C = (vars) => {
   const { modalColor, textColor1, textColor2, boxShadow3, lineHeight: lineHeight2, fontWeightStrong, dividerColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed, borderRadius, primaryColorHover } = vars;
   return {
     bodyPadding: "16px 24px",
@@ -25077,7 +25371,7 @@ const drawerLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$o
+  self: self$C
 });
 const drawerLight$1 = drawerLight;
 const drawerDark = {
@@ -25086,7 +25380,7 @@ const drawerDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$o
+  self: self$C
 };
 const drawerDark$1 = drawerDark;
 const NDrawerBodyWrapper = defineComponent({
@@ -25397,7 +25691,7 @@ function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s"
     })
   ];
 }
-const style$8 = c$1([cB("drawer", `
+const style$9 = c$1([cB("drawer", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: absolute;
@@ -25607,7 +25901,7 @@ const NDrawer = defineComponent({
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
     const isMountedRef = isMounted();
-    const themeRef = useTheme("Drawer", "-drawer", style$8, drawerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Drawer", "-drawer", style$9, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
     const uncontrolledHeightRef = ref(props.defaultHeight);
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
@@ -25819,6 +26113,19 @@ const dynamicInputDark = {
   }
 };
 const dynamicInputDark$1 = dynamicInputDark;
+const self$B = () => {
+  return commonVariables$6;
+};
+const dynamicInputLight = createTheme({
+  name: "DynamicInput",
+  common: commonLight,
+  peers: {
+    Input: inputLight$1,
+    Button: buttonLight$1
+  },
+  self: self$B
+});
+const dynamicInputLight$1 = dynamicInputLight;
 const commonVars$4 = {
   gapSmall: "4px 8px",
   gapMedium: "8px 12px",
@@ -25831,12 +26138,12 @@ const spaceDark = {
   }
 };
 const spaceDark$1 = spaceDark;
-const self$n = () => {
+const self$A = () => {
   return commonVars$4;
 };
 const spaceLight = {
   name: "Space",
-  self: self$n
+  self: self$A
 };
 const spaceLight$1 = spaceLight;
 let supportFlexGap;
@@ -25978,11 +26285,32 @@ const dynamicTagsDark = {
   }
 };
 const dynamicTagsDark$1 = dynamicTagsDark;
+const dynamicTagsLight = createTheme({
+  name: "DynamicTags",
+  common: commonLight,
+  peers: {
+    Input: inputLight$1,
+    Button: buttonLight$1,
+    Tag: tagLight$1,
+    Space: spaceLight$1
+  },
+  self() {
+    return {
+      inputWidth: "64px"
+    };
+  }
+});
+const dynamicTagsLight$1 = dynamicTagsLight;
 const elementDark = {
   name: "Element",
   common: commonDark
 };
 const elementDark$1 = elementDark;
+const elementLight = {
+  name: "Element",
+  common: commonLight
+};
+const elementLight$1 = elementLight;
 const commonVariables$5 = {
   feedbackPadding: "4px 0 0 2px",
   feedbackHeightSmall: "24px",
@@ -26006,20 +26334,20 @@ const commonVariables$5 = {
   labelTextAlignHorizontal: "right",
   labelFontWeight: "400"
 };
-const self$m = (vars) => {
+const self$z = (vars) => {
   const { heightSmall, heightMedium, heightLarge, textColor1, errorColor, warningColor, lineHeight: lineHeight2, textColor3 } = vars;
   return Object.assign(Object.assign({}, commonVariables$5), { blankHeightSmall: heightSmall, blankHeightMedium: heightMedium, blankHeightLarge: heightLarge, lineHeight: lineHeight2, labelTextColor: textColor1, asteriskColor: errorColor, feedbackTextColorError: errorColor, feedbackTextColorWarning: warningColor, feedbackTextColor: textColor3 });
 };
 const formLight = {
   name: "Form",
   common: commonLight,
-  self: self$m
+  self: self$z
 };
 const formLight$1 = formLight;
 const formItemDark = {
   name: "Form",
   common: commonDark,
-  self: self$m
+  self: self$z
 };
 const formDark = formItemDark;
 const defaultSpan$1 = 1;
@@ -26119,6 +26447,29 @@ const gradientTextDark = {
   }
 };
 const gradientTextDark$1 = gradientTextDark;
+const self$y = (vars) => {
+  const { primaryColor, successColor, warningColor, errorColor, infoColor, fontWeightStrong } = vars;
+  return {
+    fontWeight: fontWeightStrong,
+    rotate: "252deg",
+    colorStartPrimary: changeColor(primaryColor, { alpha: 0.6 }),
+    colorEndPrimary: primaryColor,
+    colorStartInfo: changeColor(infoColor, { alpha: 0.6 }),
+    colorEndInfo: infoColor,
+    colorStartWarning: changeColor(warningColor, { alpha: 0.6 }),
+    colorEndWarning: warningColor,
+    colorStartError: changeColor(errorColor, { alpha: 0.6 }),
+    colorEndError: errorColor,
+    colorStartSuccess: changeColor(successColor, { alpha: 0.6 }),
+    colorEndSuccess: successColor
+  };
+};
+const gradientTextLight = {
+  name: "GradientText",
+  common: commonLight,
+  self: self$y
+};
+const gradientTextLight$1 = gradientTextLight;
 const defaultBreakpoints = {
   xs: 0,
   s: 640,
@@ -26354,19 +26705,41 @@ const NGrid = defineComponent({
     }) : renderContent();
   }
 });
-const self$l = (vars) => {
+const self$x = (vars) => {
   const { primaryColor, baseColor } = vars;
   return {
     color: primaryColor,
     iconColor: baseColor
   };
 };
+const iconWrapperLight = {
+  name: "IconWrapper",
+  common: commonLight,
+  self: self$x
+};
+const iconWrapperLight$1 = iconWrapperLight;
 const iconDark = {
   name: "IconWrapper",
   common: commonDark,
-  self: self$l
+  self: self$x
 };
 const iconWrapperDark = iconDark;
+function self$w() {
+  return {
+    toolbarIconColor: "rgba(255, 255, 255, .9)",
+    toolbarColor: "rgba(0, 0, 0, .35)",
+    toolbarBoxShadow: "none",
+    toolbarBorderRadius: "24px"
+  };
+}
+const imageLight = createTheme({
+  name: "Image",
+  common: commonLight,
+  peers: {
+    Tooltip: tooltipLight$1
+  },
+  self: self$w
+});
 const commonVars$3 = {
   closeMargin: "16px 12px",
   closeSize: "20px",
@@ -26377,7 +26750,7 @@ const commonVars$3 = {
   metaFontSize: "12px",
   descriptionFontSize: "12px"
 };
-const self$k = (vars) => {
+const self$v = (vars) => {
   const { textColor2, successColor, infoColor, warningColor, errorColor, popoverColor, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, textColor1, textColor3, borderRadius, fontWeightStrong, boxShadow2, lineHeight: lineHeight2, fontSize: fontSize2 } = vars;
   return Object.assign(Object.assign({}, commonVars$3), {
     borderRadius,
@@ -26409,7 +26782,7 @@ const notificationLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$k
+  self: self$v
 });
 const notificationLight$1 = notificationLight;
 const notificationDark = {
@@ -26418,7 +26791,7 @@ const notificationDark = {
   peers: {
     Scrollbar: scrollbarDark$1
   },
-  self: self$k
+  self: self$v
 };
 const notificationDark$1 = notificationDark;
 const commonVariables$4 = {
@@ -26433,7 +26806,7 @@ const commonVariables$4 = {
   iconSize: "20px",
   fontSize: "14px"
 };
-const self$j = (vars) => {
+const self$u = (vars) => {
   const { textColor2, closeIconColor, closeIconColorHover, closeIconColorPressed, infoColor, successColor, errorColor, warningColor, popoverColor, boxShadow2, primaryColor, lineHeight: lineHeight2, borderRadius, closeColorHover, closeColorPressed } = vars;
   return Object.assign(Object.assign({}, commonVariables$4), {
     closeBorderRadius: borderRadius,
@@ -26499,13 +26872,13 @@ const self$j = (vars) => {
 const messageLight = {
   name: "Message",
   common: commonLight,
-  self: self$j
+  self: self$u
 };
 const messageLight$1 = messageLight;
 const messageDark = {
   name: "Message",
   common: commonDark,
-  self: self$j
+  self: self$u
 };
 const messageDark$1 = messageDark;
 const buttonGroupDark = {
@@ -26513,6 +26886,11 @@ const buttonGroupDark = {
   common: commonDark
 };
 const buttonGroupDark$1 = buttonGroupDark;
+const buttonGroupLight = {
+  name: "ButtonGroup",
+  common: commonLight
+};
+const buttonGroupLight$1 = buttonGroupLight;
 const inputNumberDark = {
   name: "InputNumber",
   common: commonDark,
@@ -26528,6 +26906,22 @@ const inputNumberDark = {
   }
 };
 const inputNumberDark$1 = inputNumberDark;
+const self$t = (vars) => {
+  const { textColorDisabled } = vars;
+  return {
+    iconColorDisabled: textColorDisabled
+  };
+};
+const inputNumberLight = createTheme({
+  name: "InputNumber",
+  common: commonLight,
+  peers: {
+    Button: buttonLight$1,
+    Input: inputLight$1
+  },
+  self: self$t
+});
+const inputNumberLight$1 = inputNumberLight;
 const layoutDark = {
   name: "Layout",
   common: commonDark,
@@ -26564,7 +26958,7 @@ const layoutDark = {
   }
 };
 const layoutDark$1 = layoutDark;
-const self$i = (vars) => {
+const self$s = (vars) => {
   const { baseColor, textColor2, bodyColor, cardColor, dividerColor, actionColor, scrollbarColor, scrollbarColorHover, invertedColor } = vars;
   return {
     textColor: textColor2,
@@ -26599,10 +26993,10 @@ const layoutLight = createTheme({
   peers: {
     Scrollbar: scrollbarLight$1
   },
-  self: self$i
+  self: self$s
 });
 const layoutLight$1 = layoutLight;
-const self$h = (vars) => {
+const self$r = (vars) => {
   const { textColor2, cardColor, modalColor, popoverColor, dividerColor, borderRadius, fontSize: fontSize2, hoverColor } = vars;
   return {
     textColor: textColor2,
@@ -26619,10 +27013,16 @@ const self$h = (vars) => {
     fontSize: fontSize2
   };
 };
+const listLight = {
+  name: "List",
+  common: commonLight,
+  self: self$r
+};
+const listLight$1 = listLight;
 const listDark$1 = {
   name: "List",
   common: commonDark,
-  self: self$h
+  self: self$r
 };
 const listDark$2 = listDark$1;
 const loadingBarDark = {
@@ -26638,6 +27038,20 @@ const loadingBarDark = {
   }
 };
 const loadingBarDark$1 = loadingBarDark;
+const self$q = (vars) => {
+  const { primaryColor, errorColor } = vars;
+  return {
+    colorError: errorColor,
+    colorLoading: primaryColor,
+    height: "2px"
+  };
+};
+const loadingBarLight = {
+  name: "LoadingBar",
+  common: commonLight,
+  self: self$q
+};
+const loadingBarLight$1 = loadingBarLight;
 const logDark = {
   name: "Log",
   common: commonDark,
@@ -26657,6 +27071,26 @@ const logDark = {
   }
 };
 const logDark$1 = logDark;
+const self$p = (vars) => {
+  const { textColor2, modalColor, borderColor, fontSize: fontSize2, primaryColor } = vars;
+  return {
+    loaderFontSize: fontSize2,
+    loaderTextColor: textColor2,
+    loaderColor: modalColor,
+    loaderBorder: `1px solid ${borderColor}`,
+    loadingColor: primaryColor
+  };
+};
+const logLight = createTheme({
+  name: "Log",
+  common: commonLight,
+  peers: {
+    Scrollbar: scrollbarLight$1,
+    Code: codeLight$1
+  },
+  self: self$p
+});
+const logLight$1 = logLight;
 const listDark = {
   name: "Mention",
   common: commonDark,
@@ -26672,6 +27106,22 @@ const listDark = {
   }
 };
 const mentionDark = listDark;
+const self$o = (vars) => {
+  const { boxShadow2 } = vars;
+  return {
+    menuBoxShadow: boxShadow2
+  };
+};
+const mentionLight = createTheme({
+  name: "Mention",
+  common: commonLight,
+  peers: {
+    InternalSelectMenu: internalSelectMenuLight$1,
+    Input: inputLight$1
+  },
+  self: self$o
+});
+const mentionLight$1 = mentionLight;
 function createPartialInvertedVars(color, activeItemColor, activeTextColor, groupTextColor) {
   return {
     itemColorHoverInverted: "#0000",
@@ -26712,7 +27162,7 @@ function createPartialInvertedVars(color, activeItemColor, activeTextColor, grou
     groupTextColorInverted: groupTextColor
   };
 }
-const self$g = (vars) => {
+const self$n = (vars) => {
   const { borderRadius, textColor3, primaryColor, textColor2, textColor1, fontSize: fontSize2, dividerColor, hoverColor, primaryColorHover } = vars;
   return Object.assign({
     borderRadius,
@@ -26767,7 +27217,7 @@ const menuLight = createTheme({
     Tooltip: tooltipLight$1,
     Dropdown: dropdownLight$1
   },
-  self: self$g
+  self: self$n
 });
 const menuLight$1 = menuLight;
 const menuDark = {
@@ -26779,7 +27229,7 @@ const menuDark = {
   },
   self(vars) {
     const { primaryColor, primaryColorSuppl } = vars;
-    const commonSelf = self$g(vars);
+    const commonSelf = self$n(vars);
     commonSelf.itemColorActive = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveHover = changeColor(primaryColor, { alpha: 0.15 });
     commonSelf.itemColorActiveCollapsed = changeColor(primaryColor, {
@@ -26796,22 +27246,37 @@ const common = {
   titleFontSize: "18px",
   backSize: "22px"
 };
-function self$f(vars) {
+function self$m(vars) {
   const { textColor1, textColor2, textColor3, fontSize: fontSize2, fontWeightStrong, primaryColorHover, primaryColorPressed } = vars;
   return Object.assign(Object.assign({}, common), { titleFontWeight: fontWeightStrong, fontSize: fontSize2, titleTextColor: textColor1, backColor: textColor2, backColorHover: primaryColorHover, backColorPressed: primaryColorPressed, subtitleTextColor: textColor3 });
 }
+const pageHeaderLight = createTheme({
+  name: "PageHeader",
+  common: commonLight,
+  self: self$m
+});
 const pageHeaderDark = {
   name: "PageHeader",
   common: commonDark,
-  self: self$f
+  self: self$m
 };
 const commonVars$2 = {
   iconSize: "22px"
 };
-const self$e = (vars) => {
+const self$l = (vars) => {
   const { fontSize: fontSize2, warningColor } = vars;
   return Object.assign(Object.assign({}, commonVars$2), { fontSize: fontSize2, iconColor: warningColor });
 };
+const popconfirmLight = createTheme({
+  name: "Popconfirm",
+  common: commonLight,
+  peers: {
+    Button: buttonLight$1,
+    Popover: popoverLight$1
+  },
+  self: self$l
+});
+const popconfirmLight$1 = popconfirmLight;
 const popconfirmDark = {
   name: "Popconfirm",
   common: commonDark,
@@ -26819,10 +27284,10 @@ const popconfirmDark = {
     Button: buttonDark$1,
     Popover: popoverDark$1
   },
-  self: self$e
+  self: self$l
 };
 const popconfirmDark$1 = popconfirmDark;
-const self$d = (vars) => {
+const self$k = (vars) => {
   const { infoColor, successColor, warningColor, errorColor, textColor2, progressRailColor, fontSize: fontSize2, fontWeight } = vars;
   return {
     fontSize: fontSize2,
@@ -26851,14 +27316,14 @@ const self$d = (vars) => {
 const progressLight = {
   name: "Progress",
   common: commonLight,
-  self: self$d
+  self: self$k
 };
 const progressLight$1 = progressLight;
 const progressDark = {
   name: "Progress",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$d(vars);
+    const commonSelf = self$k(vars);
     commonSelf.textColorLineInner = "rgb(0, 0, 0)";
     commonSelf.lineBgProcessing = "linear-gradient(90deg, rgba(255, 255, 255, .3) 0%, rgba(255, 255, 255, .5) 100%)";
     return commonSelf;
@@ -26881,6 +27346,22 @@ const rateDark = {
   }
 };
 const rateDark$1 = rateDark;
+const self$j = (vars) => {
+  const { railColor } = vars;
+  return {
+    itemColor: railColor,
+    itemColorActive: "#FFCC33",
+    sizeSmall: "16px",
+    sizeMedium: "20px",
+    sizeLarge: "24px"
+  };
+};
+const themeLight = {
+  name: "Rate",
+  common: commonLight,
+  self: self$j
+};
+const rateLight = themeLight;
 const commonVariables$3 = {
   titleFontSizeSmall: "26px",
   titleFontSizeMedium: "32px",
@@ -26899,20 +27380,20 @@ const commonVariables$3 = {
   iconColor403: void 0,
   iconColor500: void 0
 };
-const self$c = (vars) => {
+const self$i = (vars) => {
   const { textColor2, textColor1, errorColor, successColor, infoColor, warningColor, lineHeight: lineHeight2, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, commonVariables$3), { lineHeight: lineHeight2, titleFontWeight: fontWeightStrong, titleTextColor: textColor1, textColor: textColor2, iconColorError: errorColor, iconColorSuccess: successColor, iconColorInfo: infoColor, iconColorWarning: warningColor });
 };
 const resultLight = {
   name: "Result",
   common: commonLight,
-  self: self$c
+  self: self$i
 };
 const resultLight$1 = resultLight;
 const resultDark = {
   name: "Result",
   common: commonDark,
-  self: self$c
+  self: self$i
 };
 const resultDark$1 = resultDark;
 const sizeVariables$3 = {
@@ -26933,7 +27414,7 @@ const sliderDark = {
   }
 };
 const sliderDark$1 = sliderDark;
-const self$b = (vars) => {
+const self$h = (vars) => {
   const indicatorColor = "rgba(0, 0, 0, .85)";
   const boxShadow = "0 2px 8px 0 rgba(0, 0, 0, 0.12)";
   const { railColor, primaryColor, baseColor, cardColor, modalColor, popoverColor, borderRadius, fontSize: fontSize2, opacityDisabled } = vars;
@@ -26942,10 +27423,10 @@ const self$b = (vars) => {
 const sliderLight = {
   name: "Slider",
   common: commonLight,
-  self: self$b
+  self: self$h
 };
 const sliderLight$1 = sliderLight;
-const self$a = (vars) => {
+const self$g = (vars) => {
   const { opacityDisabled, heightTiny, heightSmall, heightMedium, heightLarge, heightHuge, primaryColor, fontSize: fontSize2 } = vars;
   return {
     fontSize: fontSize2,
@@ -26959,13 +27440,19 @@ const self$a = (vars) => {
     opacitySpinning: opacityDisabled
   };
 };
+const spinLight = {
+  name: "Spin",
+  common: commonLight,
+  self: self$g
+};
+const spinLight$1 = spinLight;
 const spinDark = {
   name: "Spin",
   common: commonDark,
-  self: self$a
+  self: self$g
 };
 const spinDark$1 = spinDark;
-const self$9 = (vars) => {
+const self$f = (vars) => {
   const { textColor2, textColor3, fontSize: fontSize2, fontWeight } = vars;
   return {
     labelFontSize: fontSize2,
@@ -26978,10 +27465,16 @@ const self$9 = (vars) => {
     valueTextColor: textColor2
   };
 };
+const statisticLight = {
+  name: "Statistic",
+  common: commonLight,
+  self: self$f
+};
+const statisticLight$1 = statisticLight;
 const statisticDark = {
   name: "Statistic",
   common: commonDark,
-  self: self$9
+  self: self$f
 };
 const statisticDark$1 = statisticDark;
 const commonVariables$2 = {
@@ -26994,20 +27487,20 @@ const commonVariables$2 = {
   indicatorIconSizeSmall: "14px",
   indicatorIconSizeMedium: "18px"
 };
-const self$8 = (vars) => {
+const self$e = (vars) => {
   const { fontWeightStrong, baseColor, textColorDisabled, primaryColor, errorColor, textColor1, textColor2 } = vars;
   return Object.assign(Object.assign({}, commonVariables$2), { stepHeaderFontWeight: fontWeightStrong, indicatorTextColorProcess: baseColor, indicatorTextColorWait: textColorDisabled, indicatorTextColorFinish: primaryColor, indicatorTextColorError: errorColor, indicatorBorderColorProcess: primaryColor, indicatorBorderColorWait: textColorDisabled, indicatorBorderColorFinish: primaryColor, indicatorBorderColorError: errorColor, indicatorColorProcess: primaryColor, indicatorColorWait: "#0000", indicatorColorFinish: "#0000", indicatorColorError: "#0000", splitorColorProcess: textColorDisabled, splitorColorWait: textColorDisabled, splitorColorFinish: primaryColor, splitorColorError: textColorDisabled, headerTextColorProcess: textColor1, headerTextColorWait: textColorDisabled, headerTextColorFinish: textColorDisabled, headerTextColorError: errorColor, descriptionTextColorProcess: textColor2, descriptionTextColorWait: textColorDisabled, descriptionTextColorFinish: textColorDisabled, descriptionTextColorError: errorColor });
 };
 const stepsLight = {
   name: "Steps",
   common: commonLight,
-  self: self$8
+  self: self$e
 };
 const stepsLight$1 = stepsLight;
 const stepsDark = {
   name: "Steps",
   common: commonDark,
-  self: self$8
+  self: self$e
 };
 const stepsDark$1 = stepsDark;
 const commonVars$1 = {
@@ -27037,6 +27530,17 @@ const switchDark = {
   }
 };
 const switchDark$1 = switchDark;
+const self$d = (vars) => {
+  const { primaryColor, opacityDisabled, borderRadius, textColor3 } = vars;
+  const railOverlayColor = "rgba(0, 0, 0, .14)";
+  return Object.assign(Object.assign({}, commonVars$1), { iconColor: textColor3, textColor: "white", loadingColor: primaryColor, opacityDisabled, railColor: railOverlayColor, railColorActive: primaryColor, buttonBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", buttonColor: "#FFF", railBorderRadiusSmall: borderRadius, railBorderRadiusMedium: borderRadius, railBorderRadiusLarge: borderRadius, buttonBorderRadiusSmall: borderRadius, buttonBorderRadiusMedium: borderRadius, buttonBorderRadiusLarge: borderRadius, boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, { alpha: 0.2 })}` });
+};
+const switchLight = {
+  name: "Switch",
+  common: commonLight,
+  self: self$d
+};
+const switchLight$1 = switchLight;
 const sizeVariables$2 = {
   thPaddingSmall: "6px",
   thPaddingMedium: "12px",
@@ -27045,7 +27549,7 @@ const sizeVariables$2 = {
   tdPaddingMedium: "12px",
   tdPaddingLarge: "12px"
 };
-const self$7 = (vars) => {
+const self$c = (vars) => {
   const { dividerColor, cardColor, modalColor, popoverColor, tableHeaderColor, tableColorStriped, textColor1, textColor2, borderRadius, fontWeightStrong, lineHeight: lineHeight2, fontSizeSmall, fontSizeMedium, fontSizeLarge } = vars;
   return Object.assign(Object.assign({}, sizeVariables$2), {
     fontSizeSmall,
@@ -27070,10 +27574,16 @@ const self$7 = (vars) => {
     thFontWeight: fontWeightStrong
   });
 };
+const tableLight = {
+  name: "Table",
+  common: commonLight,
+  self: self$c
+};
+const tableLight$1 = tableLight;
 const tableDark = {
   name: "Table",
   common: commonDark,
-  self: self$7
+  self: self$c
 };
 const tableDark$1 = tableDark;
 const sizeVariables$1 = {
@@ -27122,7 +27632,7 @@ const sizeVariables$1 = {
   closeSize: "18px",
   closeIconSize: "14px"
 };
-const self$6 = (vars) => {
+const self$b = (vars) => {
   const { textColor2, primaryColor, textColorDisabled, closeIconColor, closeIconColorHover, closeIconColorPressed, closeColorHover, closeColorPressed, tabColor, baseColor, dividerColor, fontWeight, textColor1, borderRadius, fontSize: fontSize2, fontWeightStrong } = vars;
   return Object.assign(Object.assign({}, sizeVariables$1), {
     colorSegment: tabColor,
@@ -27163,14 +27673,14 @@ const self$6 = (vars) => {
 const tabsLight = {
   name: "Tabs",
   common: commonLight,
-  self: self$6
+  self: self$b
 };
 const tabsLight$1 = tabsLight;
 const tabsDark = {
   name: "Tabs",
   common: commonDark,
   self(vars) {
-    const commonSelf = self$6(vars);
+    const commonSelf = self$b(vars);
     const { inputColor } = vars;
     commonSelf.colorSegment = inputColor;
     commonSelf.tabColorSegment = inputColor;
@@ -27178,7 +27688,7 @@ const tabsDark = {
   }
 };
 const tabsDark$1 = tabsDark;
-const self$5 = (vars) => {
+const self$a = (vars) => {
   const { textColor1, textColor2, fontWeightStrong, fontSize: fontSize2 } = vars;
   return {
     fontSize: fontSize2,
@@ -27187,10 +27697,16 @@ const self$5 = (vars) => {
     titleFontWeight: fontWeightStrong
   };
 };
+const thingLight = {
+  name: "Thing",
+  common: commonLight,
+  self: self$a
+};
+const thingLight$1 = thingLight;
 const thingDark = {
   name: "Thing",
   common: commonDark,
-  self: self$5
+  self: self$a
 };
 const thingDark$1 = thingDark;
 const sizeVariables = {
@@ -27210,6 +27726,16 @@ const timelineDark = {
   }
 };
 const timelineDark$1 = timelineDark;
+const self$9 = (vars) => {
+  const { textColor3, infoColor, errorColor, successColor, warningColor, textColor1, textColor2, railColor, fontWeightStrong, fontSize: fontSize2 } = vars;
+  return Object.assign(Object.assign({}, sizeVariables), { contentFontSize: fontSize2, titleFontWeight: fontWeightStrong, circleBorder: `2px solid ${textColor3}`, circleBorderInfo: `2px solid ${infoColor}`, circleBorderError: `2px solid ${errorColor}`, circleBorderSuccess: `2px solid ${successColor}`, circleBorderWarning: `2px solid ${warningColor}`, iconColor: textColor3, iconColorInfo: infoColor, iconColorError: errorColor, iconColorSuccess: successColor, iconColorWarning: warningColor, titleTextColor: textColor1, contentTextColor: textColor2, metaTextColor: textColor3, lineColor: railColor });
+};
+const timelineLight = {
+  name: "Timeline",
+  common: commonLight,
+  self: self$9
+};
+const timelineLight$1 = timelineLight;
 const commonVariables$1 = {
   extraFontSizeSmall: "12px",
   extraFontSizeMedium: "12px",
@@ -27264,7 +27790,49 @@ const transferDark$1 = {
   }
 };
 const transferDark$2 = transferDark$1;
-const self$4 = (vars) => {
+const self$8 = (vars) => {
+  const { fontWeight, fontSizeLarge, fontSizeMedium, fontSizeSmall, heightLarge, heightMedium, borderRadius, cardColor, tableHeaderColor, textColor1, textColorDisabled, textColor2, textColor3, borderColor, hoverColor, closeColorHover, closeColorPressed, closeIconColor, closeIconColorHover, closeIconColorPressed } = vars;
+  return Object.assign(Object.assign({}, commonVariables$1), {
+    itemHeightSmall: heightMedium,
+    itemHeightMedium: heightMedium,
+    itemHeightLarge: heightLarge,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    borderRadius,
+    dividerColor: borderColor,
+    borderColor,
+    listColor: cardColor,
+    headerColor: composite(cardColor, tableHeaderColor),
+    titleTextColor: textColor1,
+    titleTextColorDisabled: textColorDisabled,
+    extraTextColor: textColor3,
+    extraTextColorDisabled: textColorDisabled,
+    itemTextColor: textColor2,
+    itemTextColorDisabled: textColorDisabled,
+    itemColorPending: hoverColor,
+    titleFontWeight: fontWeight,
+    closeColorHover,
+    closeColorPressed,
+    closeIconColor,
+    closeIconColorHover,
+    closeIconColorPressed
+  });
+};
+const transferLight$1 = createTheme({
+  name: "Transfer",
+  common: commonLight,
+  peers: {
+    Checkbox: checkboxLight$1,
+    Scrollbar: scrollbarLight$1,
+    Input: inputLight$1,
+    Empty: emptyLight$1,
+    Button: buttonLight$1
+  },
+  self: self$8
+});
+const transferLight$2 = transferLight$1;
+const self$7 = (vars) => {
   const { borderRadiusSmall, hoverColor, pressedColor, primaryColor, textColor3, textColor2, textColorDisabled, fontSize: fontSize2 } = vars;
   return {
     fontSize: fontSize2,
@@ -27279,6 +27847,17 @@ const self$4 = (vars) => {
     dropMarkColor: primaryColor
   };
 };
+const treeLight = createTheme({
+  name: "Tree",
+  common: commonLight,
+  peers: {
+    Checkbox: checkboxLight$1,
+    Scrollbar: scrollbarLight$1,
+    Empty: emptyLight$1
+  },
+  self: self$7
+});
+const treeLight$1 = treeLight;
 const treeDark = {
   name: "Tree",
   common: commonDark,
@@ -27289,7 +27868,7 @@ const treeDark = {
   },
   self(vars) {
     const { primaryColor } = vars;
-    const commonSelf = self$4(vars);
+    const commonSelf = self$7(vars);
     commonSelf.nodeColorActive = changeColor(primaryColor, { alpha: 0.15 });
     return commonSelf;
   }
@@ -27305,6 +27884,30 @@ const treeSelectDark = {
   }
 };
 const treeSelectDark$1 = treeSelectDark;
+const self$6 = (vars) => {
+  const { popoverColor, boxShadow2, borderRadius, heightMedium, dividerColor, textColor2 } = vars;
+  return {
+    menuPadding: "4px",
+    menuColor: popoverColor,
+    menuBoxShadow: boxShadow2,
+    menuBorderRadius: borderRadius,
+    menuHeight: `calc(${heightMedium} * 7.6)`,
+    actionDividerColor: dividerColor,
+    actionTextColor: textColor2,
+    actionPadding: "8px 12px"
+  };
+};
+const treeSelectLight = createTheme({
+  name: "TreeSelect",
+  common: commonLight,
+  peers: {
+    Tree: treeLight$1,
+    Empty: emptyLight$1,
+    InternalSelection: internalSelectionLight$1
+  },
+  self: self$6
+});
+const treeSelectLight$1 = treeSelectLight;
 const commonVars = {
   headerFontSize1: "30px",
   headerFontSize2: "22px",
@@ -27335,17 +27938,23 @@ const commonVars = {
   olPadding: "0 0 0 2em",
   ulPadding: "0 0 0 2em"
 };
-const self$3 = (vars) => {
+const self$5 = (vars) => {
   const { primaryColor, textColor2, borderColor, lineHeight: lineHeight2, fontSize: fontSize2, borderRadiusSmall, dividerColor, fontWeightStrong, textColor1, textColor3, infoColor, warningColor, errorColor, successColor, codeColor } = vars;
   return Object.assign(Object.assign({}, commonVars), { aTextColor: primaryColor, blockquoteTextColor: textColor2, blockquotePrefixColor: borderColor, blockquoteLineHeight: lineHeight2, blockquoteFontSize: fontSize2, codeBorderRadius: borderRadiusSmall, liTextColor: textColor2, liLineHeight: lineHeight2, liFontSize: fontSize2, hrColor: dividerColor, headerFontWeight: fontWeightStrong, headerTextColor: textColor1, pTextColor: textColor2, pTextColor1Depth: textColor1, pTextColor2Depth: textColor2, pTextColor3Depth: textColor3, pLineHeight: lineHeight2, pFontSize: fontSize2, headerBarColor: primaryColor, headerBarColorPrimary: primaryColor, headerBarColorInfo: infoColor, headerBarColorError: errorColor, headerBarColorWarning: warningColor, headerBarColorSuccess: successColor, textColor: textColor2, textColor1Depth: textColor1, textColor2Depth: textColor2, textColor3Depth: textColor3, textColorPrimary: primaryColor, textColorInfo: infoColor, textColorSuccess: successColor, textColorWarning: warningColor, textColorError: errorColor, codeTextColor: textColor2, codeColor, codeBorder: "1px solid #0000" });
 };
+const typographyLight = {
+  name: "Typography",
+  common: commonLight,
+  self: self$5
+};
+const typographyLight$1 = typographyLight;
 const typographyDark = {
   name: "Typography",
   common: commonDark,
-  self: self$3
+  self: self$5
 };
 const typographyDark$1 = typographyDark;
-const self$2 = (vars) => {
+const self$4 = (vars) => {
   const { iconColor, primaryColor, errorColor, textColor2, successColor, opacityDisabled, actionColor, borderColor, hoverColor, lineHeight: lineHeight2, borderRadius, fontSize: fontSize2 } = vars;
   return {
     fontSize: fontSize2,
@@ -27367,6 +27976,16 @@ const self$2 = (vars) => {
     itemBorderImageCard: `1px solid ${borderColor}`
   };
 };
+const uploadLight = createTheme({
+  name: "Upload",
+  common: commonLight,
+  peers: {
+    Button: buttonLight$1,
+    Progress: progressLight$1
+  },
+  self: self$4
+});
+const uploadLight$1 = uploadLight;
 const uploadDark = {
   name: "Upload",
   common: commonDark,
@@ -27376,7 +27995,7 @@ const uploadDark = {
   },
   self(vars) {
     const { errorColor } = vars;
-    const commonSelf = self$2(vars);
+    const commonSelf = self$4(vars);
     commonSelf.itemColorHoverError = changeColor(errorColor, {
       alpha: 0.09
     });
@@ -27395,6 +28014,22 @@ const watermarkDark = {
   }
 };
 const watermarkDark$1 = watermarkDark;
+const watermarkLight = createTheme({
+  name: "Watermark",
+  common: commonLight,
+  self(vars) {
+    const { fontFamily: fontFamily2 } = vars;
+    return {
+      fontFamily: fontFamily2
+    };
+  }
+});
+const watermarkLight$1 = watermarkLight;
+const rowLight = {
+  name: "Row",
+  common: commonLight
+};
+const rowLight$1 = rowLight;
 const rowDark = {
   name: "Row",
   common: commonDark
@@ -27421,7 +28056,7 @@ const positionProp = {
   type: String,
   default: "static"
 };
-const style$7 = cB("layout", `
+const style$8 = cB("layout", `
  color: var(--n-text-color);
  background-color: var(--n-color);
  box-sizing: border-box;
@@ -27472,7 +28107,7 @@ function createLayoutComponent(isContent) {
       const scrollableElRef = ref(null);
       const scrollbarInstRef = ref(null);
       const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-      const themeRef = useTheme("Layout", "-layout", style$7, layoutLight$1, props, mergedClsPrefixRef);
+      const themeRef = useTheme("Layout", "-layout", style$8, layoutLight$1, props, mergedClsPrefixRef);
       function scrollTo(options, y) {
         if (props.nativeScrollbar) {
           const { value: scrollableEl } = scrollableElRef;
@@ -27557,7 +28192,7 @@ function createLayoutComponent(isContent) {
   });
 }
 const NLayout = createLayoutComponent(false);
-const style$6 = cB("layout-sider", `
+const style$7 = cB("layout-sider", `
  flex-shrink: 0;
  box-sizing: border-box;
  position: relative;
@@ -27861,7 +28496,7 @@ const NLayoutSider = defineComponent({
       collapseModeRef: toRef(props, "collapseMode")
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Layout", "-layout-sider", style$6, layoutLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Layout", "-layout-sider", style$7, layoutLight$1, props, mergedClsPrefixRef);
     function handleTransitionend(e) {
       var _a2, _b;
       if (e.propertyName === "max-width") {
@@ -28005,6 +28640,44 @@ const transferDark = {
   }
 };
 const legacyTransferDark = transferDark;
+const self$3 = (vars) => {
+  const { fontWeight, iconColorDisabled, iconColor, fontSizeLarge, fontSizeMedium, fontSizeSmall, heightLarge, heightMedium, heightSmall, borderRadius, cardColor, tableHeaderColor, textColor1, textColorDisabled, textColor2, borderColor, hoverColor } = vars;
+  return Object.assign(Object.assign({}, commonVariables), {
+    itemHeightSmall: heightSmall,
+    itemHeightMedium: heightMedium,
+    itemHeightLarge: heightLarge,
+    fontSizeSmall,
+    fontSizeMedium,
+    fontSizeLarge,
+    borderRadius,
+    borderColor,
+    listColor: cardColor,
+    headerColor: composite(cardColor, tableHeaderColor),
+    titleTextColor: textColor1,
+    titleTextColorDisabled: textColorDisabled,
+    extraTextColor: textColor2,
+    filterDividerColor: borderColor,
+    itemTextColor: textColor2,
+    itemTextColorDisabled: textColorDisabled,
+    itemColorPending: hoverColor,
+    titleFontWeight: fontWeight,
+    iconColor,
+    iconColorDisabled
+  });
+};
+const transferLight = createTheme({
+  name: "Transfer",
+  common: commonLight,
+  peers: {
+    Checkbox: checkboxLight$1,
+    Scrollbar: scrollbarLight$1,
+    Input: inputLight$1,
+    Empty: emptyLight$1,
+    Button: buttonLight$1
+  },
+  self: self$3
+});
+const legacyTransferLight = transferLight;
 const menuInjectionKey = createInjectionKey("n-menu");
 const submenuInjectionKey = createInjectionKey("n-submenu");
 const menuItemGroupInjectionKey = createInjectionKey("n-menu-item-group");
@@ -28487,7 +29160,7 @@ const horizontalHoverStyleChildren = [cE("icon", `
  `), cE("extra", `
  color: var(--n-item-text-color-hover-horizontal);
  `)])];
-const style$5 = c$1([cB("menu", `
+const style$6 = c$1([cB("menu", `
  background-color: var(--n-color);
  color: var(--n-item-text-color);
  overflow: hidden;
@@ -28742,7 +29415,7 @@ const NMenu = defineComponent({
   props: menuProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Menu", "-menu", style$5, menuLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Menu", "-menu", style$6, menuLight$1, props, mergedClsPrefixRef);
     const layoutSider = inject(layoutSiderInjectionKey, null);
     const mergedCollapsedRef = computed(() => {
       var _a2;
@@ -29026,7 +29699,7 @@ const messageProps = {
 };
 const messageApiInjectionKey = createInjectionKey("n-message-api");
 const messageProviderInjectionKey = createInjectionKey("n-message-provider");
-const style$4 = c$1([cB("message-wrapper", `
+const style$5 = c$1([cB("message-wrapper", `
  margin: var(--n-margin);
  z-index: 0;
  transform-origin: top center;
@@ -29147,7 +29820,7 @@ const NMessage = defineComponent({
       // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     } = inject(messageProviderInjectionKey);
     const rtlEnabledRef = useRtl("Message", mergedRtlRef, mergedClsPrefixRef);
-    const themeRef = useTheme("Message", "-message", style$4, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
+    const themeRef = useTheme("Message", "-message", style$5, messageLight$1, messageProviderProps2, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { padding, margin, maxWidth, iconMargin, closeMargin, closeSize, iconSize, fontSize: fontSize2, lineHeight: lineHeight2, borderRadius, iconColorInfo, iconColorSuccess, iconColorWarning, iconColorError, iconColorLoading, closeIconSize, closeBorderRadius, [createKey("textColor", type)]: textColor, [createKey("boxShadow", type)]: boxShadow, [createKey("color", type)]: color, [createKey("closeColorHover", type)]: closeColorHover, [createKey("closeColorPressed", type)]: closeColorPressed, [createKey("closeIconColor", type)]: closeIconColor, [createKey("closeIconColorPressed", type)]: closeIconColorPressed, [createKey("closeIconColorHover", type)]: closeIconColorHover } } = themeRef.value;
@@ -29748,7 +30421,7 @@ const NotificationEnvironment = defineComponent({
     });
   }
 });
-const style$3 = c$1([cB("notification-container", `
+const style$4 = c$1([cB("notification-container", `
  z-index: 4000;
  position: fixed;
  overflow: visible;
@@ -30001,7 +30674,7 @@ const NNotificationProvider = defineComponent({
       leavingKeySet.delete(key);
       notificationListRef.value.splice(notificationListRef.value.findIndex((notification) => notification.key === key), 1);
     }
-    const themeRef = useTheme("Notification", "-notification", style$3, notificationLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Notification", "-notification", style$4, notificationLight$1, props, mergedClsPrefixRef);
     const api = {
       create,
       info: apis[0],
@@ -30072,7 +30745,7 @@ function useNotification() {
   }
   return api;
 }
-const style$2 = c$1([cB("progress", {
+const style$3 = c$1([cB("progress", {
   display: "inline-block"
 }, [cB("progress-icon", `
  color: var(--n-icon-color);
@@ -30651,7 +31324,7 @@ const NProgress = defineComponent({
       return void 0;
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Progress", "-progress", style$2, progressLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Progress", "-progress", style$3, progressLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { status } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { fontSize: fontSize2, fontSizeCircle, railColor, railHeight, iconSizeCircle, iconSizeLine, textColorCircle, textColorLineInner, textColorLineOuter, lineBgProcessing, fontWeightCircle, [createKey("iconColor", status)]: iconColor, [createKey("fillColor", status)]: fillColor } } = themeRef.value;
@@ -30731,6 +31404,22 @@ const skeletonDark = {
     };
   }
 };
+const self$2 = (vars) => {
+  const { heightSmall, heightMedium, heightLarge, borderRadius } = vars;
+  return {
+    color: "#eee",
+    colorEnd: "#ddd",
+    borderRadius,
+    heightSmall,
+    heightMedium,
+    heightLarge
+  };
+};
+const skeletonLight = {
+  name: "Skeleton",
+  common: commonLight,
+  self: self$2
+};
 function isTouchEvent(e) {
   return window.TouchEvent && e instanceof window.TouchEvent;
 }
@@ -30742,7 +31431,7 @@ function useRefs() {
   onBeforeUpdate(() => refs.value.clear());
   return [refs, setRefs];
 }
-const style$1 = c$1([cB("slider", `
+const style$2 = c$1([cB("slider", `
  display: block;
  padding: calc((var(--n-handle-size) - var(--n-rail-height)) / 2) 0;
  position: relative;
@@ -30943,7 +31632,7 @@ const NSlider = defineComponent({
   props: sliderProps,
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Slider", "-slider", style$1, sliderLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Slider", "-slider", style$2, sliderLight$1, props, mergedClsPrefixRef);
     const handleRailRef = ref(null);
     const [handleRefs, setHandleRefs] = useRefs();
     const [followerRefs, setFollowerRefs] = useRefs();
@@ -31583,7 +32272,7 @@ const Tab = defineComponent({
     );
   }
 });
-const style = cB("tabs", `
+const style$1 = cB("tabs", `
  box-sizing: border-box;
  width: 100%;
  display: flex;
@@ -31895,7 +32584,7 @@ const NTabs = defineComponent({
   setup(props, { slots }) {
     var _a2, _b, _c, _d;
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Tabs", "-tabs", style, tabsLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tabs", "-tabs", style$1, tabsLight$1, props, mergedClsPrefixRef);
     const tabsElRef = ref(null);
     const barElRef = ref(null);
     const scrollWrapperElRef = ref(null);
@@ -32437,7 +33126,108 @@ function justifyTabDynamicProps(tabVNode) {
   }
   return tabVNode;
 }
+const style = cB("text", `
+ transition: color .3s var(--n-bezier);
+ color: var(--n-text-color);
+`, [cM("strong", `
+ font-weight: var(--n-font-weight-strong);
+ `), cM("italic", {
+  fontStyle: "italic"
+}), cM("underline", {
+  textDecoration: "underline"
+}), cM("code", `
+ line-height: 1.4;
+ display: inline-block;
+ font-family: var(--n-font-famliy-mono);
+ transition: 
+ color .3s var(--n-bezier),
+ border-color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ box-sizing: border-box;
+ padding: .05em .35em 0 .35em;
+ border-radius: var(--n-code-border-radius);
+ font-size: .9em;
+ color: var(--n-code-text-color);
+ background-color: var(--n-code-color);
+ border: var(--n-code-border);
+ `)]);
+const textProps = Object.assign(Object.assign({}, useTheme.props), {
+  code: Boolean,
+  type: {
+    type: String,
+    default: "default"
+  },
+  delete: Boolean,
+  strong: Boolean,
+  italic: Boolean,
+  underline: Boolean,
+  depth: [String, Number],
+  tag: String,
+  // deprecated
+  as: {
+    type: String,
+    validator: () => {
+      return true;
+    },
+    default: void 0
+  }
+});
+const NText = defineComponent({
+  name: "Text",
+  props: textProps,
+  setup(props) {
+    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const themeRef = useTheme("Typography", "-text", style, typographyLight$1, props, mergedClsPrefixRef);
+    const cssVarsRef = computed(() => {
+      const { depth, type } = props;
+      const textColorKey = type === "default" ? depth === void 0 ? "textColor" : `textColor${depth}Depth` : createKey("textColor", type);
+      const { common: { fontWeightStrong, fontFamilyMono, cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { codeTextColor, codeBorderRadius, codeColor, codeBorder, [textColorKey]: textColor } } = themeRef.value;
+      return {
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-text-color": textColor,
+        "--n-font-weight-strong": fontWeightStrong,
+        "--n-font-famliy-mono": fontFamilyMono,
+        "--n-code-border-radius": codeBorderRadius,
+        "--n-code-text-color": codeTextColor,
+        "--n-code-color": codeColor,
+        "--n-code-border": codeBorder
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("text", computed(() => `${props.type[0]}${props.depth || ""}`), cssVarsRef, props) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      compitableTag: useCompitable(props, ["as", "tag"]),
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    var _a2, _b, _c;
+    const { mergedClsPrefix } = this;
+    (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+    const textClass = [
+      `${mergedClsPrefix}-text`,
+      this.themeClass,
+      {
+        [`${mergedClsPrefix}-text--code`]: this.code,
+        [`${mergedClsPrefix}-text--delete`]: this.delete,
+        [`${mergedClsPrefix}-text--strong`]: this.strong,
+        [`${mergedClsPrefix}-text--italic`]: this.italic,
+        [`${mergedClsPrefix}-text--underline`]: this.underline
+      }
+    ];
+    const children = (_c = (_b = this.$slots).default) === null || _c === void 0 ? void 0 : _c.call(_b);
+    return this.code ? h("code", { class: textClass, style: this.cssVars }, this.delete ? h("del", null, children) : children) : this.delete ? h("del", { class: textClass, style: this.cssVars }, children) : h(this.compitableTag || "span", { class: textClass, style: this.cssVars }, children);
+  }
+});
 const self$1 = () => ({});
+const equationLight = {
+  name: "Equation",
+  common: commonLight,
+  self: self$1
+};
+const equationLight$1 = equationLight;
 const equationDark = {
   name: "Equation",
   common: commonDark,
@@ -32529,6 +33319,91 @@ const darkTheme = {
   Upload: uploadDark$1,
   Watermark: watermarkDark$1
 };
+const lightTheme = {
+  name: "light",
+  common: commonLight,
+  Alert: alertLight$1,
+  Anchor: anchorLight$1,
+  AutoComplete: autoCompleteLight$1,
+  Avatar: avatarLight$1,
+  AvatarGroup: avatarGroupLight$1,
+  BackTop: backTopLight$1,
+  Badge: badgeLight$1,
+  Breadcrumb: breadcrumbLight$1,
+  Button: buttonLight$1,
+  ButtonGroup: buttonGroupLight$1,
+  Calendar: calendarLight$1,
+  Card: cardLight$1,
+  Carousel: carouselLight$1,
+  Cascader: cascaderLight$1,
+  Checkbox: checkboxLight$1,
+  Code: codeLight$1,
+  Collapse: collapseLight$1,
+  CollapseTransition: collapseTransitionLight$1,
+  ColorPicker: colorPickerLight$1,
+  DataTable: dataTableLight$1,
+  DatePicker: datePickerLight$1,
+  Descriptions: descriptionsLight$1,
+  Dialog: dialogLight$1,
+  Divider: dividerLight$1,
+  Drawer: drawerLight$1,
+  Dropdown: dropdownLight$1,
+  DynamicInput: dynamicInputLight$1,
+  DynamicTags: dynamicTagsLight$1,
+  Element: elementLight$1,
+  Empty: emptyLight$1,
+  Equation: equationLight$1,
+  Ellipsis: ellipsisLight$1,
+  Form: formLight$1,
+  GradientText: gradientTextLight$1,
+  Icon: iconLight$1,
+  IconWrapper: iconWrapperLight$1,
+  Image: imageLight,
+  Input: inputLight$1,
+  InputNumber: inputNumberLight$1,
+  Layout: layoutLight$1,
+  LegacyTransfer: legacyTransferLight,
+  List: listLight$1,
+  LoadingBar: loadingBarLight$1,
+  Log: logLight$1,
+  Menu: menuLight$1,
+  Mention: mentionLight$1,
+  Message: messageLight$1,
+  Modal: modalLight$1,
+  Notification: notificationLight$1,
+  PageHeader: pageHeaderLight,
+  Pagination: paginationLight$1,
+  Popconfirm: popconfirmLight$1,
+  Popover: popoverLight$1,
+  Popselect: popselectLight$1,
+  Progress: progressLight$1,
+  Radio: radioLight$1,
+  Rate: rateLight,
+  Row: rowLight$1,
+  Result: resultLight$1,
+  Scrollbar: scrollbarLight$1,
+  Skeleton: skeletonLight,
+  Select: selectLight$1,
+  Slider: sliderLight$1,
+  Space: spaceLight$1,
+  Spin: spinLight$1,
+  Statistic: statisticLight$1,
+  Steps: stepsLight$1,
+  Switch: switchLight$1,
+  Table: tableLight$1,
+  Tabs: tabsLight$1,
+  Tag: tagLight$1,
+  Thing: thingLight$1,
+  TimePicker: timePickerLight$1,
+  Timeline: timelineLight$1,
+  Tooltip: tooltipLight$1,
+  Transfer: transferLight$2,
+  Tree: treeLight$1,
+  TreeSelect: treeSelectLight$1,
+  Typography: typographyLight$1,
+  Upload: uploadLight$1,
+  Watermark: watermarkLight$1
+};
 const _hoisted_1$f = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -32554,7 +33429,7 @@ const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -32564,11 +33439,11 @@ const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$e, _hoisted_4$b];
+const _hoisted_5$7 = [_hoisted_2$e, _hoisted_3$e, _hoisted_4$a];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$6);
+    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$7);
   }
 });
 const _hoisted_1$e = {
@@ -32579,38 +33454,18 @@ const _hoisted_1$e = {
 const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    d: "M256 32C132.29 32 32 132.29 32 256s100.29 224 224 224s224-100.29 224-224S379.71 32 256 32zM128.72 383.28A180 180 0 0 1 256 76v360a178.82 178.82 0 0 1-127.28-52.72z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$d, _hoisted_4$a];
-const Create = defineComponent({
-  name: "Create",
+const _hoisted_3$d = [_hoisted_2$d];
+const ContrastSharp = defineComponent({
+  name: "ContrastSharp",
   render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_5$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_3$d);
   }
 });
 const _hoisted_1$d = {
@@ -32621,7 +33476,7 @@ const _hoisted_1$d = {
 const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
+    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
     fill: "currentColor"
   },
   null,
@@ -32631,18 +33486,28 @@ const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M272 48a16 16 0 0 0-32 0v112h32z",
+    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$9 = [_hoisted_2$c, _hoisted_3$c];
-const Download = defineComponent({
-  name: "Download",
+const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$6 = [_hoisted_2$c, _hoisted_3$c, _hoisted_4$9];
+const Create = defineComponent({
+  name: "Create",
   render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$9);
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_5$6);
   }
 });
 const _hoisted_1$c = {
@@ -32653,7 +33518,7 @@ const _hoisted_1$c = {
 const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
+    d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
     fill: "currentColor"
   },
   null,
@@ -32663,18 +33528,28 @@ const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
+    d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$8 = [_hoisted_2$b, _hoisted_3$b];
-const Duplicate = defineComponent({
-  name: "Duplicate",
+const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$5 = [_hoisted_2$b, _hoisted_3$b, _hoisted_4$8];
+const Cube = defineComponent({
+  name: "Cube",
   render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$8);
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_5$5);
   }
 });
 const _hoisted_1$b = {
@@ -32685,7 +33560,7 @@ const _hoisted_1$b = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
@@ -32695,7 +33570,7 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
     fill: "currentColor"
   },
   null,
@@ -32703,8 +33578,8 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$a];
-const GitCompare = defineComponent({
-  name: "GitCompare",
+const Duplicate = defineComponent({
+  name: "Duplicate",
   render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$7);
   }
@@ -34792,6 +35667,9 @@ function extractChangingRecords(to, from) {
   }
   return [leavingRecords, updatingRecords, enteringRecords];
 }
+function useRouter() {
+  return inject(routerKey);
+}
 const _hoisted_1$2 = { class: "navbar" };
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
@@ -34820,14 +35698,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Duplicate)
       },
       {
-        label: () => h(RouterLink, { to: "/download" }, { default: () => "Download" }),
-        key: "download",
-        icon: renderIcon(Download)
-      },
-      {
-        label: () => h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
-        key: "plugins",
-        icon: renderIcon(Speedometer)
+        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
+        key: "tagger",
+        icon: renderIcon(Create)
       },
       {
         label: () => h(
@@ -34839,14 +35712,14 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Albums)
       },
       {
-        label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
-        key: "tagger",
-        icon: renderIcon(Create)
+        label: () => h(RouterLink, { to: "/models" }, { default: () => "Models" }),
+        key: "models",
+        icon: renderIcon(Cube)
       },
       {
-        label: () => h(RouterLink, { to: "/convert" }, { default: () => "Convert" }),
-        key: "convert",
-        icon: renderIcon(GitCompare)
+        label: () => h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
+        key: "plugins",
+        icon: renderIcon(Speedometer)
       },
       {
         label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
@@ -34878,14 +35751,16 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NSpace), {
                   vertical: "",
                   justify: "space-between",
-                  style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" }
+                  style: { "height": "100%", "overflow": "visible", "overflow-x": "visible" },
+                  "item-style": "height: 100%"
                 }, {
                   default: withCtx(() => [
                     createVNode(unref(NMenu), {
                       collapsed: unref(collapsed),
                       "collapsed-width": 64,
                       "collapsed-icon-size": 22,
-                      options: menuOptionsMain
+                      options: menuOptionsMain,
+                      style: { "height": "100%", "display": "flex", "flex-direction": "column" }
                     }, null, 8, ["collapsed"])
                   ]),
                   _: 1
@@ -34986,7 +35861,8 @@ const useState = defineStore("state", () => {
     perf_drawer: {
       enabled: false,
       gpus: []
-    }
+    },
+    models: []
   });
   return { state };
 });
@@ -35578,110 +36454,6 @@ async function startWebsocket(messageProvider) {
   console.log("Starting websocket");
   websocketState.ws_open();
 }
-const scriptRel = "modulepreload";
-const assetsURL = function(dep) {
-  return "/" + dep;
-};
-const seen = {};
-const __vitePreload = function preload(baseModule, deps, importerUrl) {
-  if (!deps || deps.length === 0) {
-    return baseModule();
-  }
-  const links = document.getElementsByTagName("link");
-  return Promise.all(deps.map((dep) => {
-    dep = assetsURL(dep);
-    if (dep in seen)
-      return;
-    seen[dep] = true;
-    const isCss = dep.endsWith(".css");
-    const cssSelector = isCss ? '[rel="stylesheet"]' : "";
-    const isBaseRelative = !!importerUrl;
-    if (isBaseRelative) {
-      for (let i = links.length - 1; i >= 0; i--) {
-        const link2 = links[i];
-        if (link2.href === dep && (!isCss || link2.rel === "stylesheet")) {
-          return;
-        }
-      }
-    } else if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
-      return;
-    }
-    const link = document.createElement("link");
-    link.rel = isCss ? "stylesheet" : scriptRel;
-    if (!isCss) {
-      link.as = "script";
-      link.crossOrigin = "";
-    }
-    link.href = dep;
-    document.head.appendChild(link);
-    if (isCss) {
-      return new Promise((res, rej) => {
-        link.addEventListener("load", res);
-        link.addEventListener("error", () => rej(new Error(`Unable to preload CSS for ${dep}`)));
-      });
-    }
-  })).then(() => baseModule());
-};
-const router = createRouter({
-  history: createWebHistory("/"),
-  routes: [
-    {
-      path: "/",
-      name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
-    },
-    {
-      path: "/image2image",
-      name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
-    },
-    {
-      path: "/extra",
-      name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
-    },
-    {
-      path: "/download",
-      name: "download",
-      component: () => __vitePreload(() => import("./DownloadView.js"), true ? ["assets/DownloadView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/DownloadView.css"] : void 0)
-    },
-    {
-      path: "/about",
-      name: "about",
-      component: () => __vitePreload(() => import("./AboutView.js"), true ? [] : void 0)
-    },
-    {
-      path: "/accelerate",
-      name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/InputNumber.js"] : void 0)
-    },
-    {
-      path: "/test",
-      name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
-    },
-    {
-      path: "/convert",
-      name: "convert",
-      component: () => __vitePreload(() => import("./ConvertView.js"), true ? ["assets/ConvertView.js","assets/Switch.js","assets/WIP.vue_vue_type_script_setup_true_lang.js"] : void 0)
-    },
-    {
-      path: "/settings",
-      name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
-    },
-    {
-      path: "/imageBrowser",
-      name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
-    },
-    {
-      path: "/tagger",
-      name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/ImageUpload.css","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
-    }
-  ]
-});
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
   ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
@@ -35822,6 +36594,9 @@ const defaultSettings = {
     default_scheduler: 8,
     verbose: false,
     use_default_negative_prompt: true
+  },
+  frontend: {
+    theme: "dark"
   }
 };
 let rSettings = JSON.parse(JSON.stringify(defaultSettings));
@@ -35984,7 +36759,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-ec2fb234"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-6ecc4196"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
 const _hoisted_3 = { style: { "display": "inline-flex" } };
@@ -35995,18 +36770,18 @@ const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBase
 const _hoisted_8 = { style: { "display": "inline-flex" } };
 const _hoisted_9 = { style: { "display": "inline-flex" } };
 const _hoisted_10 = { class: "progress-container" };
-const _hoisted_11 = { style: { "display": "inline-flex", "justify-self": "end", "align-items": "center" } };
+const _hoisted_11 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
+    const router2 = useRouter();
     const websocketState = useWebsocket();
     const global2 = useState();
     const conf = useSettings();
     const modelsLoading = ref(false);
     const filter = ref("");
-    const models = ref([]);
     const filteredModels = computed(() => {
-      return models.value.filter((model) => {
+      return global2.state.models.filter((model) => {
         return model.path.toLowerCase().includes(filter.value.toLowerCase()) || filter.value === "";
       });
     });
@@ -36040,9 +36815,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       modelsLoading.value = true;
       fetch(`${serverUrl}/api/models/available`).then((res) => {
         res.json().then((data) => {
-          models.value.splice(0, models.value.length);
+          global2.state.models.splice(0, global2.state.models.length);
           data.forEach((model) => {
-            models.value.push(model);
+            global2.state.models.push(model);
           });
           modelsLoading.value = false;
         });
@@ -36059,7 +36834,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }
             }
             data.forEach((loadedModel) => {
-              const model = models.value.find((model2) => {
+              const model = global2.state.models.find((model2) => {
                 return model2.path === loadedModel.path;
               });
               if (model) {
@@ -36180,7 +36955,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     async function onModelChange(modelStr) {
       const modelName = modelStr.split(":")[0];
       const modelBackend = modelStr.split(":")[1];
-      const model = models.value.find((model2) => {
+      const model = global2.state.models.find((model2) => {
         return model2.path === modelName && model2.backend === modelBackend;
       });
       if (model) {
@@ -36210,11 +36985,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     }
     function resetModels() {
-      models.value.splice(0, models.value.length);
+      global2.state.models.splice(0, global2.state.models.length);
       console.log("Reset models");
     }
     const perfIcon = () => {
       return h(StatsChart);
+    };
+    const themeIcon = () => {
+      return h(ContrastSharp);
     };
     websocketState.onConnectedCallbacks.push(() => {
       refreshModels();
@@ -36229,17 +37007,17 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       refreshModels();
     }
     const loadedPyTorchModels = computed(() => {
-      return models.value.filter((model) => {
+      return global2.state.models.filter((model) => {
         return model.backend === "PyTorch" && model.state === "loaded";
       });
     });
     const loadedAitModels = computed(() => {
-      return models.value.filter((model) => {
+      return global2.state.models.filter((model) => {
         return model.backend === "AITemplate" && model.state === "loaded";
       });
     });
     const loadedExtraModels = computed(() => {
-      return models.value.filter((model) => {
+      return global2.state.models.filter((model) => {
         return model.backend === "unknown" && model.state === "loaded";
       });
     });
@@ -36322,7 +37100,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       if (key === "reconnect") {
         await startWebsocket(message);
       } else if (key === "settings") {
-        router.push("/settings");
+        router2.push("/settings");
       } else if (key === "shutdown") {
         await fetch(`${serverUrl}/api/general/shutdown`, {
           method: "POST"
@@ -36687,7 +37465,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "show-indicator": true
           }, {
             default: withCtx(() => [
-              createTextVNode(toDisplayString(unref(global2).state.current_step) + " / " + toDisplayString(unref(global2).state.total_steps), 1)
+              createVNode(unref(NText), null, {
+                default: withCtx(() => [
+                  createTextVNode(toDisplayString(unref(global2).state.current_step) + " / " + toDisplayString(unref(global2).state.total_steps), 1)
+                ]),
+                _: 1
+              })
             ]),
             _: 1
           }, 8, ["percentage", "processing"])
@@ -36719,16 +37502,22 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             quaternary: "",
             "icon-placement": "left",
             "render-icon": perfIcon,
-            style: { "margin-right": "8px" },
             onClick: _cache[6] || (_cache[6] = ($event) => unref(global2).state.perf_drawer.enabled = true),
             disabled: unref(global2).state.perf_drawer.enabled
-          }, null, 8, ["disabled"])
+          }, null, 8, ["disabled"]),
+          createVNode(unref(NButton), {
+            quaternary: "",
+            "icon-placement": "left",
+            "render-icon": themeIcon,
+            style: { "margin-right": "8px" },
+            onClick: _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.frontend.theme = unref(conf).data.settings.frontend.theme === "dark" ? "light" : "dark")
+          })
         ])
       ]);
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_ec2fb234_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_6ecc4196_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -36736,7 +37525,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-ec2fb234"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-6ecc4196"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -36746,6 +37535,24 @@ const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", 
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
+    useCssVars((_ctx) => ({
+      "eb878800": unref(backgroundColor)
+    }));
+    const settings = useSettings();
+    const theme = computed(() => {
+      if (settings.data.settings.frontend.theme === "dark") {
+        return darkTheme;
+      } else {
+        return lightTheme;
+      }
+    });
+    const backgroundColor = computed(() => {
+      if (settings.data.settings.frontend.theme === "dark") {
+        return "#121215";
+      } else {
+        return "#fff";
+      }
+    });
     const overrides = {
       common: {
         fontSize: "15px",
@@ -36754,8 +37561,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NConfigProvider), {
-        theme: unref(darkTheme),
-        "theme-overrides": overrides
+        theme: unref(theme),
+        "theme-overrides": overrides,
+        class: "main"
       }, {
         default: withCtx(() => [
           createVNode(unref(NNotificationProvider), { placement: "bottom-right" }, {
@@ -36778,14 +37586,115 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
+const App_vue_vue_type_style_index_0_scoped_5d72065d_lang = "";
+const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5d72065d"]]);
+const scriptRel = "modulepreload";
+const assetsURL = function(dep) {
+  return "/" + dep;
+};
+const seen = {};
+const __vitePreload = function preload(baseModule, deps, importerUrl) {
+  if (!deps || deps.length === 0) {
+    return baseModule();
+  }
+  const links = document.getElementsByTagName("link");
+  return Promise.all(deps.map((dep) => {
+    dep = assetsURL(dep);
+    if (dep in seen)
+      return;
+    seen[dep] = true;
+    const isCss = dep.endsWith(".css");
+    const cssSelector = isCss ? '[rel="stylesheet"]' : "";
+    const isBaseRelative = !!importerUrl;
+    if (isBaseRelative) {
+      for (let i = links.length - 1; i >= 0; i--) {
+        const link2 = links[i];
+        if (link2.href === dep && (!isCss || link2.rel === "stylesheet")) {
+          return;
+        }
+      }
+    } else if (document.querySelector(`link[href="${dep}"]${cssSelector}`)) {
+      return;
+    }
+    const link = document.createElement("link");
+    link.rel = isCss ? "stylesheet" : scriptRel;
+    if (!isCss) {
+      link.as = "script";
+      link.crossOrigin = "";
+    }
+    link.href = dep;
+    document.head.appendChild(link);
+    if (isCss) {
+      return new Promise((res, rej) => {
+        link.addEventListener("load", res);
+        link.addEventListener("error", () => rej(new Error(`Unable to preload CSS for ${dep}`)));
+      });
+    }
+  })).then(() => baseModule());
+};
+const router = createRouter({
+  history: createWebHistory("/"),
+  routes: [
+    {
+      path: "/",
+      name: "text2image",
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/InputNumber.js","assets/Switch.js","assets/v4.js"] : void 0)
+    },
+    {
+      path: "/image2image",
+      name: "image2image",
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
+    },
+    {
+      path: "/extra",
+      name: "extra",
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+    },
+    {
+      path: "/models",
+      name: "models",
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/WIP.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Image.js","assets/CloudUpload.js","assets/TrashBin.js","assets/ModelsView.css"] : void 0)
+    },
+    {
+      path: "/about",
+      name: "about",
+      component: () => __vitePreload(() => import("./AboutView.js"), true ? [] : void 0)
+    },
+    {
+      path: "/accelerate",
+      name: "accelerate",
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/InputNumber.js"] : void 0)
+    },
+    {
+      path: "/test",
+      name: "test",
+      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
+    },
+    {
+      path: "/settings",
+      name: "settings",
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
+    },
+    {
+      path: "/imageBrowser",
+      name: "imageBrowser",
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
+    },
+    {
+      path: "/tagger",
+      name: "tagger",
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
+    }
+  ]
+});
 const main = "";
 const pinia = createPinia();
-const app = createApp(_sfc_main);
+const app = createApp(App);
 app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  useMemo as $,
+  inject as $,
   h as A,
   ref as B,
   NButton as C,
@@ -36796,128 +37705,130 @@ export {
   Fragment as H,
   renderList as I,
   NScrollbar as J,
-  useConfig as K,
-  useFormItem as L,
-  useMergedState as M,
+  replaceable as K,
+  useConfig as L,
+  useFormItem as M,
   NGi as N,
-  provide as O,
-  toRef as P,
-  createInjectionKey as Q,
-  call as R,
-  c$1 as S,
-  cB as T,
-  cE as U,
-  cM as V,
-  iconSwitchTransition as W,
-  insideModal as X,
-  insidePopover as Y,
-  inject as Z,
+  useMergedState as O,
+  provide as P,
+  toRef as Q,
+  createInjectionKey as R,
+  call as S,
+  c$1 as T,
+  cB as U,
+  cE as V,
+  cM as W,
+  iconSwitchTransition as X,
+  insideModal as Y,
+  insidePopover as Z,
   _export_sfc as _,
   useSettings as a,
-  ErrorIcon$1 as a$,
-  useTheme as a0,
-  checkboxLight$1 as a1,
-  useRtl as a2,
-  createKey as a3,
-  useThemeClass as a4,
-  createId as a5,
-  NIconSwitchTransition as a6,
-  on as a7,
-  popselectLight$1 as a8,
-  watch as a9,
-  depx as aA,
-  formatLength as aB,
-  NScrollbar$1 as aC,
-  onBeforeUnmount as aD,
-  off as aE,
-  ChevronDownIcon as aF,
-  NDropdown as aG,
-  pxfy as aH,
-  get as aI,
-  NBaseLoading as aJ,
-  ChevronRightIcon as aK,
-  onUnmounted as aL,
-  VResizeObserver as aM,
-  warn$2 as aN,
-  VVirtualList as aO,
-  NEmpty as aP,
-  cssrAnchorMetaName as aQ,
-  repeat as aR,
-  beforeNextFrameOnce as aS,
-  fadeInScaleUpTransition as aT,
-  Transition as aU,
-  dataTableLight$1 as aV,
-  reactive as aW,
-  huggingfaceModelsFile as aX,
-  stepsLight$1 as aY,
-  throwError as aZ,
-  FinishedIcon as a_,
-  NInternalSelectMenu as aa,
-  createTreeMate as ab,
-  happensIn as ac,
-  nextTick as ad,
-  keysOf as ae,
-  createTmOptions as af,
-  keep as ag,
-  createRefSetter as ah,
-  mergeEventHandlers as ai,
-  omit as aj,
-  NPopover as ak,
-  popoverBaseProps as al,
-  cNotM as am,
-  useLocale as an,
-  watchEffect as ao,
-  resolveSlot as ap,
-  NBaseIcon as aq,
-  useAdjustedTo as ar,
-  paginationLight$1 as as,
-  ellipsisLight$1 as at,
-  onDeactivated as au,
-  mergeProps as av,
-  radioLight$1 as aw,
-  resolveWrappedSlot as ax,
-  flatten$2 as ay,
-  getSlot$1 as az,
+  NFadeInExpandTransition as a$,
+  useMemo as a0,
+  useTheme as a1,
+  checkboxLight$1 as a2,
+  useRtl as a3,
+  createKey as a4,
+  useThemeClass as a5,
+  createId as a6,
+  NIconSwitchTransition as a7,
+  on as a8,
+  popselectLight$1 as a9,
+  getSlot$1 as aA,
+  depx as aB,
+  formatLength as aC,
+  NScrollbar$1 as aD,
+  onBeforeUnmount as aE,
+  off as aF,
+  ChevronDownIcon as aG,
+  NDropdown as aH,
+  pxfy as aI,
+  get as aJ,
+  NBaseLoading as aK,
+  ChevronRightIcon as aL,
+  onUnmounted as aM,
+  VResizeObserver as aN,
+  warn$2 as aO,
+  VVirtualList as aP,
+  NEmpty as aQ,
+  cssrAnchorMetaName as aR,
+  repeat as aS,
+  beforeNextFrameOnce as aT,
+  fadeInScaleUpTransition as aU,
+  Transition as aV,
+  dataTableLight$1 as aW,
+  throwError as aX,
+  isBrowser$3 as aY,
+  AddIcon as aZ,
+  NProgress as a_,
+  watch as aa,
+  NInternalSelectMenu as ab,
+  createTreeMate as ac,
+  happensIn as ad,
+  nextTick as ae,
+  keysOf as af,
+  createTmOptions as ag,
+  keep as ah,
+  createRefSetter as ai,
+  mergeEventHandlers as aj,
+  omit as ak,
+  NPopover as al,
+  popoverBaseProps as am,
+  cNotM as an,
+  useLocale as ao,
+  watchEffect as ap,
+  resolveSlot as aq,
+  NBaseIcon as ar,
+  useAdjustedTo as as,
+  paginationLight$1 as at,
+  ellipsisLight$1 as au,
+  onDeactivated as av,
+  mergeProps as aw,
+  radioLight$1 as ax,
+  resolveWrappedSlot as ay,
+  flatten$2 as az,
   useMessage as b,
-  NModal as b0,
-  InfoIcon as b1,
-  SuccessIcon as b2,
-  WarningIcon as b3,
-  ErrorIcon as b4,
-  resultLight$1 as b5,
-  getCurrentInstance as b6,
-  formLight$1 as b7,
-  commonVariables$m as b8,
-  formItemInjectionKey as b9,
-  commonVars$1 as bA,
-  changeColor as bB,
-  isSlotEmpty as bC,
-  onMounted as ba,
-  defaultSettings as bb,
-  Download as bc,
-  useCompitable as bd,
-  descriptionsLight$1 as be,
-  router as bf,
-  toString as bg,
-  replaceable as bh,
-  isBrowser$3 as bi,
-  createTheme as bj,
-  commonLight as bk,
-  tooltipLight$1 as bl,
-  fadeInTransition as bm,
-  isMounted as bn,
-  LazyTeleport as bo,
-  withDirectives as bp,
-  zindexable$1 as bq,
-  vShow as br,
-  normalizeStyle as bs,
-  isRef as bt,
-  withModifiers as bu,
-  buttonLight$1 as bv,
-  inputLight$1 as bw,
-  rgba as bx,
-  XButton as by,
-  AddIcon as bz,
+  EyeIcon as b0,
+  fadeInHeightExpandTransition as b1,
+  Teleport as b2,
+  uploadLight$1 as b3,
+  reactive as b4,
+  huggingfaceModelsFile as b5,
+  NModal as b6,
+  NText as b7,
+  InfoIcon as b8,
+  SuccessIcon as b9,
+  isSlotEmpty as bA,
+  switchLight$1 as bB,
+  inputNumberLight$1 as bC,
+  rgba as bD,
+  XButton as bE,
+  WarningIcon as ba,
+  ErrorIcon as bb,
+  resultLight$1 as bc,
+  stepsLight$1 as bd,
+  FinishedIcon as be,
+  ErrorIcon$1 as bf,
+  getCurrentInstance as bg,
+  formLight$1 as bh,
+  commonVariables$m as bi,
+  formItemInjectionKey as bj,
+  onMounted as bk,
+  defaultSettings as bl,
+  useCompitable as bm,
+  descriptionsLight$1 as bn,
+  useRouter as bo,
+  toString as bp,
+  fadeInTransition as bq,
+  imageLight as br,
+  isMounted as bs,
+  LazyTeleport as bt,
+  withDirectives as bu,
+  zindexable$1 as bv,
+  vShow as bw,
+  normalizeStyle as bx,
+  isRef as by,
+  withModifiers as bz,
   computed as c,
   defineComponent as d,
   createElementBlock as e,

@@ -7,24 +7,27 @@
   z-index: 1;
 }
 
-.progress-container[data-v-ec2fb234] {
+.progress-container[data-v-6ecc4196] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-ec2fb234] {
+.top-bar[data-v-6ecc4196] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
   padding-top: 10px;
   padding-bottom: 10px;
   width: 100%;
-  background-color: rgb(24, 24, 28, 0.6);
   height: 32px;
 }
-.logo[data-v-ec2fb234] {
+.logo[data-v-6ecc4196] {
   margin-right: 16px;
   margin-left: 16px;
+}
+
+.main[data-v-5d72065d] {
+  background-color: var(--eb878800);
 }
 body {
   min-height: 100vh;
@@ -70,4 +73,8 @@ a,
   text-decoration: none;
   color: hsla(160, 100%, 37%, 1);
   transition: 0.4s;
+}
+
+.n-menu-item:last-child {
+  margin-top: auto;
 }

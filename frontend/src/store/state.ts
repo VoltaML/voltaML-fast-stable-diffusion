@@ -1,6 +1,6 @@
 import { defineStore } from "pinia";
 import { reactive } from "vue";
-import type { imgData } from "../core/interfaces";
+import type { ModelEntry, imgData } from "../core/interfaces";
 type StepProgress = "error" | "process" | "wait" | "finish";
 
 export interface GPU {
@@ -85,6 +85,7 @@ export interface StateInterface {
     enabled: boolean;
     gpus: GPU[];
   };
+  models: Array<ModelEntry>;
 }
 
 export const useState = defineStore("state", () => {
@@ -173,6 +174,7 @@ export const useState = defineStore("state", () => {
       enabled: false,
       gpus: [],
     },
+    models: [],
   });
   return { state };
 });

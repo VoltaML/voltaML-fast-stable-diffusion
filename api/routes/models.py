@@ -15,6 +15,7 @@ from api import websocket_manager
 from api.websockets.data import Data
 from core.shared_dependent import cached_model_list, gpu
 from core.types import (
+    DeleteModelRequest,
     InferenceBackend,
     LoraLoadRequest,
     ModelResponse,
@@ -25,8 +26,8 @@ router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
 
 model_upload_dir = Path("data/models")
-lora_upload_dir = Path("data/models")
-textual_inversions_UploadDir = Path("data/models")
+lora_upload_dir = Path("data/lora")
+textual_inversions_UploadDir = Path("data/textual-inversion")
 
 
 class UploadFileTarget(FileTarget):
@@ -178,11 +179,16 @@ async def upload_model(request: Request):
 
         if target.filename:
             if upload_type == "lora":
+                logger.info("Moving file to lora upload dir")
                 folder = lora_upload_dir
-            elif upload_type == "textual_inversion":
+            elif upload_type == "textual-inversion":
+                logger.info("Moving file to textual inversion upload dir")
                 folder = textual_inversions_UploadDir
-            else:
+            elif upload_type == "model":
+                logger.info("Moving file to model upload dir")
                 folder = model_upload_dir
+            else:
+                raise HTTPException(422, "Invalid upload type")
 
             shutil.move(target.file.file.name, folder.joinpath(target.filename))
         else:
@@ -191,4 +197,35 @@ async def upload_model(request: Request):
         await target.file.close()
         if os.path.exists(target.file.file.name):
             os.unlink(target.file.file.name)
+
+        await websocket_manager.broadcast(
+            data=Data(data_type="refresh_models", data={})
+        )
     return {"message": "Model uploaded"}
+
+
+@router.delete("/delete-model")
+async def delete_model(req: DeleteModelRequest):
+    "Delete a model from the server"
+
+    if req.model_type == "pytorch":
+        directory = model_upload_dir
+    elif req.model_type == "lora":
+        directory = lora_upload_dir
+    elif req.model_type == "textual-inversion":
+        directory = textual_inversions_UploadDir
+    else:
+        raise HTTPException(422, "Invalid model type")
+
+    model_path = directory.joinpath(req.model_path)
+
+    if not model_path.exists():
+        raise HTTPException(404, "Model not found")
+
+    if model_path.is_dir():
+        shutil.rmtree(model_path)
+    else:
+        os.unlink(model_path)
+
+    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
+    return {"message": "Model deleted"}

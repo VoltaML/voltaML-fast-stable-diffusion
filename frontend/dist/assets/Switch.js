@@ -1,15 +1,4 @@
-import { bk as commonLight, bA as commonVars, bB as changeColor, T as cB, U as cE, W as iconSwitchTransition, S as c, V as cM, am as cNotM, d as defineComponent, K as useConfig, a0 as useTheme, L as useFormItem, B as ref, P as toRef, M as useMergedState, c as computed, a4 as useThemeClass, bC as isSlotEmpty, A as h, ax as resolveWrappedSlot, a3 as createKey, aH as pxfy, aA as depx, a6 as NIconSwitchTransition, aJ as NBaseLoading, R as call } from "./index.js";
-const self = (vars) => {
-  const { primaryColor, opacityDisabled, borderRadius, textColor3 } = vars;
-  const railOverlayColor = "rgba(0, 0, 0, .14)";
-  return Object.assign(Object.assign({}, commonVars), { iconColor: textColor3, textColor: "white", loadingColor: primaryColor, opacityDisabled, railColor: railOverlayColor, railColorActive: primaryColor, buttonBoxShadow: "0 1px 4px 0 rgba(0, 0, 0, 0.3), inset 0 0 1px 0 rgba(0, 0, 0, 0.05)", buttonColor: "#FFF", railBorderRadiusSmall: borderRadius, railBorderRadiusMedium: borderRadius, railBorderRadiusLarge: borderRadius, buttonBorderRadiusSmall: borderRadius, buttonBorderRadiusMedium: borderRadius, buttonBorderRadiusLarge: borderRadius, boxShadowFocus: `0 0 0 2px ${changeColor(primaryColor, { alpha: 0.2 })}` });
-};
-const switchLight = {
-  name: "Switch",
-  common: commonLight,
-  self
-};
-const switchLight$1 = switchLight;
+import { U as cB, V as cE, X as iconSwitchTransition, T as c, W as cM, an as cNotM, d as defineComponent, L as useConfig, a1 as useTheme, M as useFormItem, B as ref, Q as toRef, O as useMergedState, c as computed, a5 as useThemeClass, bA as isSlotEmpty, A as h, ay as resolveWrappedSlot, bB as switchLight, a4 as createKey, aI as pxfy, aB as depx, a7 as NIconSwitchTransition, aK as NBaseLoading, S as call } from "./index.js";
 const style = cB("switch", `
  height: var(--n-height);
  min-width: var(--n-width);
@@ -173,7 +162,7 @@ const NSwitch = defineComponent({
       }
     }
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Switch", "-switch", style, switchLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Switch", "-switch", style, switchLight, props, mergedClsPrefixRef);
     const formItem = useFormItem(props);
     const { mergedSizeRef, mergedDisabledRef } = formItem;
     const uncontrolledValueRef = ref(props.defaultValue);

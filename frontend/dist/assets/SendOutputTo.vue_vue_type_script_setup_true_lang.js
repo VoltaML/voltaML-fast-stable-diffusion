@@ -1,4 +1,4 @@
-import { S as c, T as cB, am as cNotM, V as cM, U as cE, X as insideModal, Y as insidePopover, d as defineComponent, K as useConfig, a0 as useTheme, c as computed, a4 as useThemeClass, bd as useCompitable, ay as flatten, A as h, az as getSlot, be as descriptionsLight, a3 as createKey, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, C as NButton, k as createTextVNode, s as NGrid, h as NCard, r as createCommentVNode, bf as router } from "./index.js";
+import { T as c, U as cB, an as cNotM, W as cM, V as cE, Y as insideModal, Z as insidePopover, d as defineComponent, L as useConfig, a1 as useTheme, c as computed, a5 as useThemeClass, bm as useCompitable, az as flatten, A as h, aA as getSlot, bn as descriptionsLight, a4 as createKey, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, C as NButton, k as createTextVNode, s as NGrid, h as NCard, r as createCommentVNode, bo as useRouter } from "./index.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
   if (children !== null && typeof children === "object" && !Array.isArray(children)) {
@@ -288,6 +288,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
+    const router = useRouter();
     const conf = useSettings();
     const state = useState();
     async function toImg2Img() {

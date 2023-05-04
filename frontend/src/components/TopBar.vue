@@ -348,10 +348,8 @@ const conf = useSettings();
 const modelsLoading = ref(false);
 const filter = ref("");
 
-const models = ref<Array<ModelEntry>>([]);
-
 const filteredModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return (
       model.path.toLowerCase().includes(filter.value.toLowerCase()) ||
       filter.value === ""
@@ -396,9 +394,9 @@ function refreshModels() {
     .then((res) => {
       res.json().then((data: Array<ModelEntry>) => {
         // TODO: Lora loaded state isnt updated
-        models.value.splice(0, models.value.length);
+        global.state.models.splice(0, global.state.models.length);
         data.forEach((model) => {
-          models.value.push(model);
+          global.state.models.push(model);
         });
         modelsLoading.value = false;
       });
@@ -420,7 +418,7 @@ function refreshModels() {
 
           // Update the state of the models
           data.forEach((loadedModel) => {
-            const model = models.value.find((model) => {
+            const model = global.state.models.find((model) => {
               return model.path === loadedModel.path;
             });
             if (model) {
@@ -555,7 +553,7 @@ async function onModelChange(modelStr: string) {
   const modelName = modelStr.split(":")[0];
   const modelBackend = modelStr.split(":")[1];
 
-  const model = models.value.find((model) => {
+  const model = global.state.models.find((model) => {
     return model.path === modelName && model.backend === modelBackend;
   });
 
@@ -589,7 +587,7 @@ async function onModelChange(modelStr: string) {
 }
 
 function resetModels() {
-  models.value.splice(0, models.value.length);
+  global.state.models.splice(0, global.state.models.length);
   console.log("Reset models");
 }
 
@@ -615,17 +613,17 @@ if (websocketState.readyState === "OPEN") {
 }
 
 const loadedPyTorchModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return model.backend === "PyTorch" && model.state === "loaded";
   });
 });
 const loadedAitModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return model.backend === "AITemplate" && model.state === "loaded";
   });
 });
 const loadedExtraModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return model.backend === "unknown" && model.state === "loaded";
   });
 });
