@@ -264,10 +264,12 @@
         color="#63e2b7"
         :show-indicator="true"
       >
-        {{ global.state.current_step }} / {{ global.state.total_steps }}
+        <NText>
+          {{ global.state.current_step }} / {{ global.state.total_steps }}
+        </NText>
       </NProgress>
     </div>
-    <div style="display: inline-flex; justify-self: end; align-items: center">
+    <div style="display: inline-flex; align-items: center">
       <NDropdown :options="dropdownOptions" @select="dropdownSelected">
         <NButton
           :type="websocketState.color"
@@ -284,10 +286,19 @@
         quaternary
         icon-placement="left"
         :render-icon="perfIcon"
-        style="margin-right: 8px"
         @click="global.state.perf_drawer.enabled = true"
         :disabled="global.state.perf_drawer.enabled"
-      ></NButton>
+      />
+      <NButton
+        quaternary
+        icon-placement="left"
+        :render-icon="themeIcon"
+        style="margin-right: 8px"
+        @click="
+          conf.data.settings.frontend.theme =
+            conf.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
+        "
+      />
     </div>
   </div>
 </template>
@@ -307,6 +318,7 @@ import {
   NSlider,
   NTabPane,
   NTabs,
+  NText,
   type DropdownOption,
 } from "naive-ui";
 
@@ -314,6 +326,7 @@ import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
+  ContrastSharp,
   PowerSharp,
   SettingsSharp,
   StatsChart,
@@ -323,9 +336,10 @@ import {
 import { NButton, NProgress, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
-import router from "../router/index";
+import { useRouter } from "vue-router";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
+const router = useRouter();
 
 const websocketState = useWebsocket();
 const global = useState();
@@ -583,6 +597,10 @@ const perfIcon = () => {
   return h(StatsChart);
 };
 
+const themeIcon = () => {
+  return h(ContrastSharp);
+};
+
 websocketState.onConnectedCallbacks.push(() => {
   refreshModels();
 });
@@ -728,7 +746,6 @@ startWebsocket(message);
   padding-top: 10px;
   padding-bottom: 10px;
   width: 100%;
-  background-color: rgb(24, 24, 28, 0.6);
   height: 32px;
 }
 

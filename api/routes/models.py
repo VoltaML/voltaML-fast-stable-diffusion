@@ -1,9 +1,15 @@
 import logging
+import os
+import shutil
 import traceback
+from pathlib import Path
+from tempfile import NamedTemporaryFile
 from typing import List
 
 import torch
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request, UploadFile
+from streaming_form_data import StreamingFormDataParser
+from streaming_form_data.targets import FileTarget
 
 from api import websocket_manager
 from api.websockets.data import Data
@@ -17,6 +23,26 @@ from core.types import (
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
+
+model_upload_dir = Path("data/models")
+lora_upload_dir = Path("data/models")
+textual_inversions_UploadDir = Path("data/models")
+
+
+class UploadFileTarget(FileTarget):
+    "A target that writes to a temporary file and then moves it to the target dir"
+
+    def __init__(self, dir_: Path, *args, **kwargs):
+        super().__init__(None, *args, **kwargs)  # type: ignore
+        self.file = UploadFile(
+            filename=None, file=NamedTemporaryFile(delete=False, dir=dir_)  # type: ignore
+        )
+        self._fd = self.file.file
+
+    def on_start(self):
+        self.file.filename = self.filename = self.multipart_filename
+        if model_upload_dir.joinpath(self.filename).exists():  # type: ignore
+            raise HTTPException(409, "File already exists")
 
 
 @router.get("/loaded")
@@ -133,3 +159,36 @@ async def get_current_cached_preprocessor():
     return {
         "preprocessor": shared_dependent.cached_controlnet_preprocessor.__class__.__name__
     }
+
+
+@router.post("/upload-model")
+async def upload_model(request: Request):
+    "Upload a model file to the server"
+
+    upload_type = request.query_params.get("type", "model")
+    logger.info(f"Recieving model of type {upload_type}")
+
+    parser = StreamingFormDataParser(request.headers)
+    target = UploadFileTarget(model_upload_dir)
+    try:
+        parser.register("file", target)
+
+        async for chunk in request.stream():
+            parser.data_received(chunk)
+
+        if target.filename:
+            if upload_type == "lora":
+                folder = lora_upload_dir
+            elif upload_type == "textual_inversion":
+                folder = textual_inversions_UploadDir
+            else:
+                folder = model_upload_dir
+
+            shutil.move(target.file.file.name, folder.joinpath(target.filename))
+        else:
+            raise HTTPException(422, "Could not find file in body")
+    finally:
+        await target.file.close()
+        if os.path.exists(target.file.file.name):
+            os.unlink(target.file.file.name)
+    return {"message": "Model uploaded"}

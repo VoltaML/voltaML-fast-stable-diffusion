@@ -7,3 +7,5 @@ pyngrok
 nest_asyncio
 fastapi-analytics
 fastapi-simple-cachecontrol
+python-multipart
+streaming_form_data

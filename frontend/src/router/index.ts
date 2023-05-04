@@ -19,9 +19,9 @@ const router = createRouter({
       component: () => import("../views/ExtraView.vue"),
     },
     {
-      path: "/download",
-      name: "download",
-      component: () => import("../views/DownloadView.vue"),
+      path: "/models",
+      name: "models",
+      component: () => import("../views/ModelsView.vue"),
     },
     {
       path: "/about",
@@ -37,11 +37,6 @@ const router = createRouter({
       path: "/test",
       name: "test",
       component: () => import("../views/TestView.vue"),
-    },
-    {
-      path: "/convert",
-      name: "convert",
-      component: () => import("../views/ConvertView.vue"),
     },
     {
       path: "/settings",
