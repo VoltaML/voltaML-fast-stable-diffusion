@@ -157,9 +157,12 @@ async def get_current_cached_preprocessor():
 
     from core import shared_dependent
 
-    return {
-        "preprocessor": shared_dependent.cached_controlnet_preprocessor.__class__.__name__
-    }
+    if not shared_dependent.cached_controlnet_preprocessor:
+        return {
+            "preprocessor": shared_dependent.cached_controlnet_preprocessor.__class__.__name__
+        }
+    else:
+        return {"preprocessor": None}
 
 
 @router.post("/upload-model")

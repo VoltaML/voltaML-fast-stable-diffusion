@@ -400,12 +400,14 @@ class AITemplateStableDiffusion(InferenceModel):
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
+        from core.controlnet_preprocessing import image_to_controlnet_input
+
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
 
-        from core.controlnet_preprocessing import image_to_controlnet_input
-
-        input_image = image_to_controlnet_input(input_image, job.data)
+        # Preprocess the image if needed
+        if not job.data.is_preprocessed:
+            input_image = image_to_controlnet_input(input_image, job.data)
 
         total_images: List[Image.Image] = [input_image]
 
