@@ -264,10 +264,12 @@
         color="#63e2b7"
         :show-indicator="true"
       >
-        {{ global.state.current_step }} / {{ global.state.total_steps }}
+        <NText>
+          {{ global.state.current_step }} / {{ global.state.total_steps }}
+        </NText>
       </NProgress>
     </div>
-    <div style="display: inline-flex; justify-self: end; align-items: center">
+    <div style="display: inline-flex; align-items: center">
       <NDropdown :options="dropdownOptions" @select="dropdownSelected">
         <NButton
           :type="websocketState.color"
@@ -284,10 +286,19 @@
         quaternary
         icon-placement="left"
         :render-icon="perfIcon"
-        style="margin-right: 8px"
         @click="global.state.perf_drawer.enabled = true"
         :disabled="global.state.perf_drawer.enabled"
-      ></NButton>
+      />
+      <NButton
+        quaternary
+        icon-placement="left"
+        :render-icon="themeIcon"
+        style="margin-right: 8px"
+        @click="
+          conf.data.settings.frontend.theme =
+            conf.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
+        "
+      />
     </div>
   </div>
 </template>
@@ -307,6 +318,7 @@ import {
   NSlider,
   NTabPane,
   NTabs,
+  NText,
   type DropdownOption,
 } from "naive-ui";
 
@@ -314,6 +326,7 @@ import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
+  ContrastSharp,
   PowerSharp,
   SettingsSharp,
   StatsChart,
@@ -323,9 +336,10 @@ import {
 import { NButton, NProgress, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
-import router from "../router/index";
+import { useRouter } from "vue-router";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
+const router = useRouter();
 
 const websocketState = useWebsocket();
 const global = useState();
@@ -334,10 +348,8 @@ const conf = useSettings();
 const modelsLoading = ref(false);
 const filter = ref("");
 
-const models = ref<Array<ModelEntry>>([]);
-
 const filteredModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return (
       model.path.toLowerCase().includes(filter.value.toLowerCase()) ||
       filter.value === ""
@@ -382,9 +394,9 @@ function refreshModels() {
     .then((res) => {
       res.json().then((data: Array<ModelEntry>) => {
         // TODO: Lora loaded state isnt updated
-        models.value.splice(0, models.value.length);
+        global.state.models.splice(0, global.state.models.length);
         data.forEach((model) => {
-          models.value.push(model);
+          global.state.models.push(model);
         });
         modelsLoading.value = false;
       });
@@ -406,7 +418,7 @@ function refreshModels() {
 
           // Update the state of the models
           data.forEach((loadedModel) => {
-            const model = models.value.find((model) => {
+            const model = global.state.models.find((model) => {
               return model.path === loadedModel.path;
             });
             if (model) {
@@ -541,7 +553,7 @@ async function onModelChange(modelStr: string) {
   const modelName = modelStr.split(":")[0];
   const modelBackend = modelStr.split(":")[1];
 
-  const model = models.value.find((model) => {
+  const model = global.state.models.find((model) => {
     return model.path === modelName && model.backend === modelBackend;
   });
 
@@ -575,12 +587,16 @@ async function onModelChange(modelStr: string) {
 }
 
 function resetModels() {
-  models.value.splice(0, models.value.length);
+  global.state.models.splice(0, global.state.models.length);
   console.log("Reset models");
 }
 
 const perfIcon = () => {
   return h(StatsChart);
+};
+
+const themeIcon = () => {
+  return h(ContrastSharp);
 };
 
 websocketState.onConnectedCallbacks.push(() => {
@@ -597,17 +613,17 @@ if (websocketState.readyState === "OPEN") {
 }
 
 const loadedPyTorchModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return model.backend === "PyTorch" && model.state === "loaded";
   });
 });
 const loadedAitModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return model.backend === "AITemplate" && model.state === "loaded";
   });
 });
 const loadedExtraModels = computed(() => {
-  return models.value.filter((model) => {
+  return global.state.models.filter((model) => {
     return model.backend === "unknown" && model.state === "loaded";
   });
 });
@@ -728,7 +744,6 @@ startWebsocket(message);
   padding-top: 10px;
   padding-bottom: 10px;
   width: 100%;
-  background-color: rgb(24, 24, 28, 0.6);
   height: 32px;
 }
 

@@ -1,48 +1,55 @@
 <template>
-  <NCard style="margin: 12px 12px" title="Custom model" segmented>
-    <div
-      style="
-        width: 100%;
-        display: inline-flex;
-        justify-content: space-between;
-        align-items: center;
-      "
-    >
-      <div>Install custom models from Hugging Face</div>
-      <div style="display: inline-flex; align-items: center">
-        <NInput
-          v-model:value="customModel"
-          placeholder="andite/anything-v4.0"
-          style="width: 350px"
-        />
-        <NButton
-          type="primary"
-          bordered
-          @click="downloadModel(customModel)"
-          :loading="conf.state.downloading"
-          :disabled="conf.state.downloading || customModel === ''"
-          secondary
-          style="margin-right: 16px; margin-left: 4px"
-          >Install</NButton
-        >
+  <div style="margin: 18px">
+    <NCard title="Custom model" segmented>
+      <div
+        style="
+          width: 100%;
+          display: inline-flex;
+          justify-content: space-between;
+          align-items: center;
+        "
+      >
+        <div>Install custom models from Hugging Face</div>
+        <div style="display: inline-flex; align-items: center">
+          <NInput
+            v-model:value="customModel"
+            placeholder="andite/anything-v4.0"
+            style="width: 350px"
+          />
+          <NButton
+            type="primary"
+            bordered
+            @click="downloadModel(customModel)"
+            :loading="conf.state.downloading"
+            :disabled="conf.state.downloading || customModel === ''"
+            secondary
+            style="margin-right: 16px; margin-left: 4px"
+            >Install</NButton
+          >
+        </div>
       </div>
-    </div>
-  </NCard>
+    </NCard>
 
-  <NCard title="Currated models" style="margin: 12px" segmented>
-    <NDataTable
-      :columns="columnsRef"
-      :data="dataRef"
-      :pagination="pagination"
-      :bordered="true"
-      :remote="true"
-      style="padding-bottom: 24px"
-    />
-  </NCard>
+    <NCard title="Currated models" style="margin-top: 12px" segmented>
+      <NInput
+        v-model:value="modelFilter"
+        style="margin-bottom: 12px"
+        placeholder="Filter"
+        clearable
+      />
+      <NDataTable
+        :columns="columns"
+        :data="dataRef"
+        :pagination="pagination"
+        :bordered="true"
+        style="padding-bottom: 24px"
+      />
+    </NCard>
+  </div>
 </template>
 
 <script lang="ts" setup>
-import { modelData, tagColor, type Model } from "@/core/models";
+import type { Model } from "@/core/models";
 import { serverUrl } from "@/env";
 import { Home, Menu } from "@vicons/ionicons5";
 import {
@@ -52,19 +59,13 @@ import {
   NDropdown,
   NIcon,
   NInput,
-  NSpace,
-  NTag,
   useMessage,
   type DataTableColumns,
 } from "naive-ui";
-import type {
-  Filter,
-  FilterOption,
-  FilterOptionValue,
-} from "naive-ui/es/data-table/src/interface";
 import type { DropdownMixedOption } from "naive-ui/es/dropdown/src/interface";
-import { h, reactive, ref, type Component, type Ref } from "vue";
-import { useState } from "../store/state";
+import { computed, h, reactive, ref, type Component, type Ref } from "vue";
+import { huggingfaceModelsFile } from "../../env";
+import { useState } from "../../store/state";
 const conf = useState();
 const message = useMessage();
 
@@ -88,36 +89,6 @@ function downloadModel(model: Ref<string> | string) {
       message.error(`Failed to download model: ${modelName}`);
     });
 }
-
-const tagsFilterOptions = () => {
-  // Return all the tags from the models
-  const tagsFilterOptions: FilterOption[] = [];
-  const tags: string[] = [];
-  modelData.forEach((model) => {
-    model.tags.forEach((tag) => {
-      if (!tags.includes(tag)) {
-        tags.push(tag);
-      }
-    });
-  });
-
-  tags.forEach((tag) => {
-    tagsFilterOptions.push({
-      label: tag,
-      value: tag,
-    });
-  });
-
-  return tagsFilterOptions;
-};
-
-const tagsFilter: Filter<Model> = (value: FilterOptionValue, row: Model) => {
-  return row.tags.indexOf(value.toString()) ? false : true;
-};
-
-const getTagColor = (tag: string) => {
-  return tagColor[tag];
-};
 
 const renderIcon = (
   icon: Component,
@@ -162,31 +133,6 @@ const columns: DataTableColumns<Model> = [
     sorter: "default",
   },
   {
-    title: "Tags",
-    key: "tags",
-    filterOptions: tagsFilterOptions(),
-    filter: tagsFilter,
-    render(row) {
-      return h(
-        NSpace,
-        {},
-        {
-          default: () =>
-            row.tags.map((tag) => {
-              return h(
-                NTag,
-                {
-                  bordered: true,
-                  type: getTagColor(tag),
-                },
-                { default: () => tag }
-              );
-            }),
-        }
-      );
-    },
-  },
-  {
     title: "Download",
     key: "download",
     render(row) {
@@ -226,9 +172,25 @@ const columns: DataTableColumns<Model> = [
   },
 ];
 
-const columnsRef = reactive(columns);
-const dataRef = reactive(modelData);
+const modelData = reactive<Model[]>([]);
+const modelFilter = ref("");
+
+const dataRef = computed(() => {
+  if (modelFilter.value !== "") {
+    return modelData.filter((model) =>
+      model.name.toLowerCase().includes(modelFilter.value.toLowerCase())
+    );
+  } else {
+    return modelData;
+  }
+});
 const pagination = reactive({ pageSize: 10 });
+
+fetch(huggingfaceModelsFile).then((res) => {
+  res.json().then((data: { models: Model[] }) => {
+    modelData.push(...data["models"]);
+  });
+});
 </script>
 
 <style scoped>

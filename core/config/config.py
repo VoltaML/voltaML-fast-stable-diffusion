@@ -202,6 +202,13 @@ class InterrogatorConfig:
     caption_max_length: int = 32
 
 
+@dataclass
+class FrontendConfig:
+    "Configuration for the frontend"
+
+    theme: Literal["dark", "light"] = "dark"
+
+
 @dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
 class Configuration(DataClassJsonMixin):
@@ -216,6 +223,7 @@ class Configuration(DataClassJsonMixin):
     interrogator: InterrogatorConfig = field(default=InterrogatorConfig())
     aitemplate: AITemplateConfig = field(default=AITemplateConfig())
     bot: BotConfig = field(default=BotConfig())
+    frontend: FrontendConfig = field(default=FrontendConfig())
     extra: CatchAll = field(default_factory=dict)
 
 

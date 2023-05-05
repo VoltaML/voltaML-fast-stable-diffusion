@@ -161,6 +161,9 @@ export interface SettingsInterface {
     verbose: boolean;
     use_default_negative_prompt: boolean;
   };
+  frontend: {
+    theme: "dark" | "light";
+  };
 }
 
 export const defaultSettings: SettingsInterface = {
@@ -296,6 +299,9 @@ export const defaultSettings: SettingsInterface = {
     default_scheduler: Sampler.DPMSolverMultistep,
     verbose: false,
     use_default_negative_prompt: true,
+  },
+  frontend: {
+    theme: "dark",
   },
 };
 

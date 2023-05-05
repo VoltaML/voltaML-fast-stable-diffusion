@@ -1,5 +1,6 @@
 import { _ as _sfc_main$1, a as NDescriptions, N as NDescriptionsItem } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, B as ref, c as computed, aW as reactive, f as createVNode, g as unref, w as withCtx, x as serverUrl, b0 as NModal, N as NGi, q as createBlock, r as createCommentVNode, h as NCard, F as NTabs, E as NTabPane, J as NScrollbar, H as Fragment, I as renderList, s as NGrid, C as NButton, D as NIcon, bc as Download, k as createTextVNode, t as toDisplayString, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, B as ref, c as computed, b4 as reactive, f as createVNode, g as unref, w as withCtx, x as serverUrl, b6 as NModal, N as NGi, q as createBlock, r as createCommentVNode, h as NCard, F as NTabs, E as NTabPane, J as NScrollbar, H as Fragment, I as renderList, s as NGrid, C as NButton, D as NIcon, k as createTextVNode, t as toDisplayString, _ as _export_sfc } from "./index.js";
+import { T as TrashBin } from "./TrashBin.js";
 import { N as NImage } from "./Image.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
@@ -7,14 +8,9 @@ const _hoisted_1$1 = {
   viewBox: "0 0 512 512"
 };
 const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
-  "rect",
+  "path",
   {
-    x: "32",
-    y: "48",
-    width: "448",
-    height: "80",
-    rx: "32",
-    ry: "32",
+    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
     fill: "currentColor"
   },
   null,
@@ -24,7 +20,7 @@ const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M74.45 160a8 8 0 0 0-8 8.83l26.31 252.56a1.5 1.5 0 0 0 0 .22A48 48 0 0 0 140.45 464h231.09a48 48 0 0 0 47.67-42.39v-.21l26.27-252.57a8 8 0 0 0-8-8.83zm248.86 180.69a16 16 0 1 1-22.63 22.62L256 318.63l-44.69 44.68a16 16 0 0 1-22.63-22.62L233.37 296l-44.69-44.69a16 16 0 0 1 22.63-22.62L256 273.37l44.68-44.68a16 16 0 0 1 22.63 22.62L278.62 296z",
+    d: "M272 48a16 16 0 0 0-32 0v112h32z",
     fill: "currentColor"
   },
   null,
@@ -32,8 +28,8 @@ const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$1 = [_hoisted_2$1, _hoisted_3$1];
-const TrashBin = defineComponent({
-  name: "TrashBin",
+const Download = defineComponent({
+  name: "Download",
   render: function render(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4$1);
   }

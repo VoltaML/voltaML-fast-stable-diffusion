@@ -1,0 +1,120 @@
+{
+    "$schema": "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/schema.json",
+    "models": [
+        {
+            "name": "Anything V3",
+            "huggingface_id": "Linaqruf/anything-v3.0",
+            "huggingface_url": "https://huggingface.co/Linaqruf/anything-v3.0",
+            "example_image_url": "https://huggingface.co/Linaqruf/anything-v3.0/resolve/main/1girl.png"
+        },
+        {
+            "name": "Anything V4.5 + VAE",
+            "huggingface_id": "Azher/Anything-v4.5-vae-fp16-diffuser",
+            "huggingface_url": "https://huggingface.co/Azher/Anything-v4.5-vae-fp16-diffuser",
+            "example_image_url": "https://huggingface.co/Azher/Anything-v4.5-vae-fp16-diffuser/resolve/main/Image%201.png"
+        },
+        {
+            "name": "Experience v8",
+            "huggingface_id": "n0madic/experience-v8",
+            "huggingface_url": "https://huggingface.co/n0madic/experience-v8",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/7f1a2f25-f3f9-4969-ae0a-f8ac3488fa00/width=512,optimized=true/372778.jpeg",
+            "nsfw": true
+        },
+        {
+            "name": "Realistic Vision v2.0",
+            "huggingface_id": "SG161222/Realistic_Vision_V2.0",
+            "huggingface_url": "https://huggingface.co/SG161222/Realistic_Vision_V2.0",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/cf4b9664-975a-4f56-8fba-afe4b5827a00/width=576,optimized=true/334107.jpeg"
+        },
+        {
+            "name": "Deliberate",
+            "huggingface_id": "XpucT/Deliberate",
+            "huggingface_url": "https://huggingface.co/XpucT/Deliberate",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/40943b9c-ede2-48c0-77d7-b48fee661d00/width=768,optimized=true/150224.jpeg"
+        },
+        {
+            "name": "DreamShaper",
+            "huggingface_id": "Lykon/DreamShaper",
+            "huggingface_url": "https://huggingface.co/Lykon/DreamShaper",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/83729236-9d3e-46ca-da52-4a16e6fd8800/width=920,optimized=true/ed.jpeg"
+        },
+        {
+            "name": "AbyssOrangeMix v3",
+            "huggingface_id": "sakistriker/AbyssOrangeMix3",
+            "huggingface_url": "https://huggingface.co/sakistriker/AbyssOrangeMix3/tree/main",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/8e43c79f-1a34-46a5-0708-c031a8ede200/width=1024,optimized=true/175095.jpeg"
+        },
+        {
+            "name": "Counterfeit v3.0",
+            "huggingface_id": "stablediffusionapi/counterfeit-v30",
+            "huggingface_url": "https://huggingface.co/stablediffusionapi/counterfeit-v30/tree/main",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/dd9914c5-f37a-4cc0-1f26-80b2dcd23d00/width=1024,optimized=true/000.jpeg"
+        },
+        {
+            "name": "ReV Animated",
+            "huggingface_id": "philz1337/revanimated",
+            "huggingface_url": "https://huggingface.co/philz1337/revanimated",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/13303d08-1b18-4b89-728f-82aa3b4aaa00/width=1024,optimized=true/00009-735323561.jpeg"
+        },
+        {
+            "name": "Meina Mix v8",
+            "huggingface_id": "sakistriker/MeinaMix_V8",
+            "huggingface_url": "https://huggingface.co/sakistriker/MeinaMix_V8",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/69b1092e-d3b1-4843-8980-2798253ab000/width=2048,optimized=true/00000.jpeg"
+        },
+        {
+            "name": "Protogen x5.8 (Scifi-Anime)",
+            "huggingface_id": "darkstorm2150/Protogen_x5.8_Official_Release",
+            "huggingface_url": "https://huggingface.co/darkstorm2150/Protogen_x5.8_Official_Release",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/7c033bf8-0327-4e01-db78-ed2e6a9a3800/width=2968,optimized=true/00032.jpeg"
+        },
+        {
+            "name": "Protogen x5.3 (Photorealism)",
+            "huggingface_id": "darkstorm2150/Protogen_x5.3_Official_Release",
+            "huggingface_url": "https://huggingface.co/darkstorm2150/Protogen_x5.3_Official_Release",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/6614bd63-e522-4826-27c5-5e93d335c000/width=3000,optimized=true/00028.jpeg"
+        },
+        {
+            "name": "RPG v4",
+            "huggingface_id": "zhg/rpg_v4",
+            "huggingface_url": "https://huggingface.co/zhg/rpg_v4",
+            "example_image_url": "https://image.civitai.com/xG1nkqKTMzGDvpLrqFT7WA/e0b0da8b-b31c-4be0-fa5a-8409caa2d800/width=2048,optimized=true/234899.jpeg"
+        },
+        {
+            "name": "Stable Diffusion 2.1",
+            "huggingface_id": "stabilityai/stable-diffusion-2-1",
+            "huggingface_url": "https://huggingface.co/stabilityai/stable-diffusion-2-1",
+            "example_image_url": ""
+        },
+        {
+            "name": "ACertainThing",
+            "huggingface_id": "JosephusCheung/ACertainThing",
+            "huggingface_url": "https://huggingface.co/JosephusCheung/ACertainThing",
+            "example_image_url": "https://huggingface.co/JosephusCheung/ACertainThing/resolve/main/samples/acth-sample-1girl.png"
+        },
+        {
+            "name": "Stable Diffusion v1.5",
+            "huggingface_id": "runwayml/stable-diffusion-v1-5",
+            "huggingface_url": "https://huggingface.co/runwayml/stable-diffusion-v1-5",
+            "example_image_url": ""
+        },
+        {
+            "name": "Dreamlike diffusion",
+            "huggingface_id": "dreamlike-art/dreamlike-diffusion-1.0",
+            "huggingface_url": "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0",
+            "example_image_url": "https://huggingface.co/dreamlike-art/dreamlike-diffusion-1.0/resolve/main/preview.jpg"
+        },
+        {
+            "name": "Stable Diffusion v1.4",
+            "huggingface_id": "CompVis/stable-diffusion-v1-4",
+            "huggingface_url": "https://huggingface.co/CompVis/stable-diffusion-v1-4",
+            "example_image_url": ""
+        },
+        {
+            "name": "RedShift Diffusion",
+            "huggingface_id": "nitrosocke/redshift-diffusion",
+            "huggingface_url": "https://huggingface.co/nitrosocke/redshift-diffusion",
+            "example_image_url": "https://huggingface.co/nitrosocke/redshift-diffusion/resolve/main/images/redshift-diffusion-samples-01s.jpg"
+        }
+    ]
+}

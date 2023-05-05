@@ -29,8 +29,9 @@
 <script lang="ts" setup>
 import { useState } from "@/store/state";
 import { NButton, NCard, NGi, NGrid } from "naive-ui";
-import router from "../router/index";
+import { useRouter } from "vue-router";
 import { useSettings } from "../store/settings";
+const router = useRouter();
 
 const conf = useSettings();
 const state = useState();
