@@ -4,6 +4,7 @@
       v-model:value="filter"
       style="width: 100%; margin-bottom: 12px"
       placeholder="Filter"
+      clearable
     />
     <NGrid cols="3" x-gap="12">
       <NGi>
@@ -126,7 +127,7 @@
             directory-dnd
             :action="`${serverUrl}/api/models/upload-model?type=textual-inversion`"
             :max="5"
-            accept=".pt"
+            accept=".pt,.safetensors"
             style="
               border-bottom: 1px solid rgb(66, 66, 71);
               padding-bottom: 12px;

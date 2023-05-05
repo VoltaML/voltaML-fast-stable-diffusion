@@ -5,10 +5,10 @@ import math
 import re
 from io import BytesIO
 from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
-import requests
-from tqdm import tqdm
 
+import requests
 from PIL import Image
+from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
 

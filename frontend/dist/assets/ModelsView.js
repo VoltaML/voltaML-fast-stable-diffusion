@@ -7645,7 +7645,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           value: filter.value,
           "onUpdate:value": _cache[0] || (_cache[0] = ($event) => filter.value = $event),
           style: { "width": "100%", "margin-bottom": "12px" },
-          placeholder: "Filter"
+          placeholder: "Filter",
+          clearable: ""
         }, null, 8, ["value"]),
         createVNode(unref(NGrid), {
           cols: "3",
@@ -7805,7 +7806,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       "directory-dnd": "",
                       action: `${unref(serverUrl)}/api/models/upload-model?type=textual-inversion`,
                       max: 5,
-                      accept: ".pt",
+                      accept: ".pt,.safetensors",
                       style: { "border-bottom": "1px solid rgb(66, 66, 71)", "padding-bottom": "12px" }
                     }, {
                       default: withCtx(() => [

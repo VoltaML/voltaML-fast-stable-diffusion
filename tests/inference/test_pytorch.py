@@ -16,7 +16,7 @@ from core.types import (
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_image_to_base64
-from tests.functions import generate_random_image
+from tests.functions import generate_random_image, generate_random_image_base64
 
 
 @pytest.fixture(name="pipe")
@@ -70,7 +70,7 @@ def test_img2img(pipe: PyTorchStableDiffusion):
 
     job = Img2ImgQueueEntry(
         data=Img2imgData(
-            image=generate_random_image(),
+            image=generate_random_image_base64(),
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
@@ -90,7 +90,7 @@ def test_inpaint(pipe: PyTorchStableDiffusion):
 
     job = InpaintQueueEntry(
         data=InpaintData(
-            image=generate_random_image(),
+            image=generate_random_image_base64(),
             prompt="This is a test",
             mask_image=encoded_mask,
             id="test",
@@ -102,12 +102,12 @@ def test_inpaint(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-def test_control_net(pipe: PyTorchStableDiffusion):
+def test_controlnet(pipe: PyTorchStableDiffusion):
     "Generate an image with ControlNet Image to Image"
 
     job = ControlNetQueueEntry(
         data=ControlNetData(
-            image=generate_random_image(),
+            image=generate_random_image_base64(),
             prompt="This is a test",
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
@@ -119,9 +119,45 @@ def test_control_net(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
+def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
+    "Generate an image with ControlNet Image to Image while having the image preprocessed"
+
+    from core.controlnet_preprocessing import image_to_controlnet_input
+
+    preprocessed_image = generate_random_image()
+    preprocessed_image = image_to_controlnet_input(
+        preprocessed_image,
+        data=ControlNetData(
+            prompt="This is a test",
+            id="test",
+            image="",
+            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            controlnet=ControlNetMode.CANNY,
+        ),
+    )
+    preprocessed_image_str = convert_image_to_base64(
+        preprocessed_image, prefix_js=False
+    )
+
+    job = ControlNetQueueEntry(
+        data=ControlNetData(
+            image=preprocessed_image_str,
+            prompt="This is a test",
+            id="test",
+            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            controlnet=ControlNetMode.CANNY,
+            is_preprocessed=True,
+        ),
+        model="andite/anything-v4.0",
+    )
+
+    pipe.generate(job)
+
+
 def test_lora(pipe: PyTorchStableDiffusion):
     "Load LoRA model and inject it into the pipe"
 
+    # Dowload: https://civitai.com/models/4830/shenhe-lora-collection-of-trauters
     pipe.load_lora("data/lora/shenheLoraCollection_shenheHard.safetensors")
 
 
