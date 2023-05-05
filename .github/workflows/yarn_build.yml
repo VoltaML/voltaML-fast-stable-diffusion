@@ -24,10 +24,10 @@ jobs:
       - name: Run install
         uses: borales/actions-yarn@v4
         with:
-          cmd: install # will run `yarn install` command
-          dir: "frontend" # will run `yarn install` in `frontend` sub folder
+          cmd: install
+          dir: "frontend"
       - name: Build production bundle
         uses: borales/actions-yarn@v4
         with:
-          cmd: build # will run `yarn build:prod` command
-          dir: "frontend" # will run `yarn build` in `frontend` sub folder
+          cmd: build
+          dir: "frontend"
