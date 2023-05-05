@@ -3,7 +3,6 @@ from .pytorch_optimizations import (
     send_everything_to_cpu,
     send_to_gpu,
     generate_inputs,
-    TracedUNet,
 )
 
 __all__ = [
@@ -11,5 +10,4 @@ __all__ = [
     "send_everything_to_cpu",
     "send_to_gpu",
     "generate_inputs",
-    "TracedUNet",
 ]

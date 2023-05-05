@@ -235,6 +235,8 @@ def optimize_model(
         if is_ipex_available():
             import intel_extension_for_pytorch as ipex  # pylint: disable=import-error
 
+            logger.info("Optimization: Running IPEX optimizations")
+
             if config.api.channels_last:
                 ipex.enable_auto_channels_last()
             else:
@@ -253,7 +255,7 @@ def optimize_model(
             )
             ipexed = True
 
-    # convert_pipe_state_to_iree(pipe)  # type: ignore
+    # pipe.unet = convert_pipe_state_to_iree(pipe)  # type: ignore
 
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")

@@ -1,15 +1,32 @@
 from typing import Literal, List
 import io
+import logging
+import warnings
 
 import torch
 import numpy as np
 from torch.utils._pytree import tree_map
 
 from core.config import config
-from .trace_utils import TracedUNet, generate_inputs
+from .trace_utils import generate_inputs
 
 
 Backend = Literal["llvm-cpu", "vmvx", "cuda", "vulkan"]
+
+logger = logging.getLogger(__name__)
+
+
+def is_iree_available():
+    "Checks if IREE is available"
+    try:
+        import iree.compiler  # pylint: disable=unused-import
+        import iree.runtime
+
+        import torch_mlir  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
 
 
 class IREEInvoker:
@@ -25,7 +42,7 @@ class IREEInvoker:
         def invoke(*args):
             def wrap(x):
                 if isinstance(x, torch.Tensor):
-                    return irt.asdevicearray(self.device, x)
+                    return irt.asdevicearray(self.device, x.detach().numpy().copy(order="C"))
                 return x
 
             def unwrap(x):
@@ -46,9 +63,9 @@ def compile_to_vmfb(  # pylint: disable=dangerous-default-value
     target_backend: Backend = "llvm-cpu",
     extra_args: List[str] = [],
 ) -> bytes:
+    "torch-mlir -> flatbuffer"
     import iree.compiler as ic
 
-    "torch-mlir -> flatbuffer"
     bytecode_stream = io.BytesIO()
     mlir_module.operation.write_bytecode(bytecode_stream)
     bytecode = bytecode_stream.getvalue()
@@ -64,59 +81,90 @@ def load_vmfb(flatbuffer, backend: Backend = "llvm-cpu") -> IREEInvoker:
     "Load an IREE flatbuffer"
     import iree.runtime as irt
 
-    conf = irt.Config(
-        driver_name="local-sync" if backend in ("llvm-cpu", "vmvx") else backend
-    )
+    if backend == "cuda" or backend == "vulkan":
+        conf = irt.Config(
+            device=backend
+        )
+    else:
+        conf = irt.Config(
+            driver_name="local-sync" if backend in ("llvm-cpu", "vmvx") else backend,
+        )
     ctx = irt.SystemContext(config=conf)
     vm_module = irt.VmModule.from_flatbuffer(ctx.instance, flatbuffer)
     ctx.add_vm_module(vm_module)
     return IREEInvoker(ctx.modules.module)
 
 
-def convert_pipe_state_to_iree(pipe, ltc: bool = False):
+def convert_pipe_state_to_iree(pipe, low_memory_mode: bool = False, ltc: bool = False):
     "Convert a pipeline to IREE backend. Will break all runtime things (LORAs and Textual Inversion)"
+    if not is_iree_available():
+        logger.warning("IREE is not available. Please install it by launching main.py with the args \"--install-mlir\"")
+        return
+
     import torch_mlir as mlir
+    from torch_mlir.dynamo import make_simple_dynamo_backend
 
     if ltc:
         raise NotImplementedError(
             "Lazy Tensor Core will be implemented at a later date."
         )
-
-    def _nf(latent_model_input, t, encoder_hidden_states):
-        return pipe.unet.og_f(
-            latent_model_input, t, encoder_hidden_states, return_dict=False
-        )[0]
-
-    pipe.unet.og_f = pipe.unet.forward  # pylint: disable=attribute-defined-outside-init
-    pipe.unet.forward = _nf
-    compiled_model = mlir.compile(
-        pipe.unet,
-        generate_inputs(dtype=pipe.unet.dtype, device=pipe.unet.device),
-        output_type=mlir.OutputType.LINALG_ON_TENSORS,
-    )
-    backend = {"llvm": "llvm-cpu", "interpreted": "vmvx"}.get(
-        config.api.iree_target, config.api.iree_target
-    )
-    vmfb = compile_to_vmfb(
-        compiled_model,
-        backend,  # type: ignore
+    else:
+        backend = "llvm-cpu"
+        #backend = {"llvm": "llvm-cpu", "interpreted": "vmvx"}.get(
+        #    config.api.iree_target, config.api.iree_target
+        #)
         extra_args=[
+            f"--cost-kind={'code-size' if low_memory_mode else 'throughput'}",
             "--iree-opt-const-eval",
             "--iree-opt-const-expr-hoisting",
             "--iree-opt-numeric-precision-reduction",
-            "--iree-opt-numeric-precision-reduction",
-        ],
-    )
-    vmfb = load_vmfb(compiled_model, backend)  # type: ignore
-    vmfb.in_channels = pipe.unet.in_channels  # type: ignore pylint: disable=attribute-defined-outside-init
-    vmfb.dev = pipe.unet.device  # type: ignore pylint: disable=attribute-defined-outside-init
-    vmfb.dtype = pipe.unet.dtype  # type: ignore pylint: disable=attribute-defined-outside-init
-    vmfb.config = pipe.unet.config  # type: ignore pylint: disable=attribute-defined-outside-init
+            "--iree-opt-strip-assertions",
+            "--tail-predication=enabled",
+            "--sve-tail-folding=recurrences",
+            "--instcombine-code-sinking",
+            f"--iree-stream-partitioning-favor={'min-peak-memory' if low_memory_mode else 'max-concurrency'}"
+        ]
+        if backend == "vmvx":
+            extra_args += "--iree-vmvx-enable-microkernels"
+            extra_args += "--iree-vmvx-enable-microkernels-decompose-linalg-generic"
+        elif backend == "llvm-cpu":
+            for arg in [
+                "--iree-llvmcpu-reassociate-fp-reductions",
+                "--iree-llvmcpu-enable-pad-consumer-fusion",
+                "--iree-llvmcpu-loop-vectorization",
+                "--iree-llvmcpu-loop-unrolling",
+                "--iree-llvmcpu-loop-interleaving",
+                "--iree-llvmcpu-slp-vectorization",
+                "--iree-llvmcpu-target-cpu=host",
+                "--iree-llvmcpu-target-cpu-features=host",
+                "--iree-llvmcpu-target-float-abi=soft",
+                "--iree-codegen-llvmcpu-enable-transform-dialect-jit"
+            ]:
+                extra_args.append(arg)
+        else:
+            for arg in [
+                "--iree-codegen-llvmgpu-enable-transform-dialect-jit",
+                "--iree-codegen-llvmgpu-use-mma-sync",
+                "--iree-codegen-gpu-native-math-precision",
+                "--iree-codegen-enable-vector-peeling",
+                "--iree-codegen-enable-vector-padding"
+            ]:
+                extra_args.append(arg)
 
-    def _nv(latent_model_input, t, encoder_hidden_states):
-        return [vmfb.og_f(latent_model_input, t, encoder_hidden_states)]
+        @make_simple_dynamo_backend
+        def iree_backend(fx_graph: torch.fx.GraphModule, example_inputs: List[torch.Tensor]):  # type: ignore
+            mlir_module = mlir.compile(
+                fx_graph,  # type: ignore
+                example_inputs,
+                output_type=mlir.OutputType.LINALG_ON_TENSORS
+            )
+            mlir_module = compile_to_vmfb(mlir_module, target_backend=backend, extra_args=extra_args)  # type: ignore
+            mlir_module = load_vmfb(mlir_module, backend=backend)  # type: ignore
 
-    vmfb.og_f = vmfb.forward  # type: ignore pylint: disable=attribute-defined-outside-init
-    vmfb.forward = _nv  # type: ignore pylint: disable=attribute-defined-outside-init
-
-    pipe.unet = TracedUNet(vmfb)  # type: ignore
+            def compiled_callable(*inputs):
+                return mlir_module.forward(*inputs)
+            return compiled_callable
+        compiled_model = torch.compile(pipe.unet, backend=iree_backend)
+        compiled_model(*generate_inputs(pipe.unet.dtype, pipe.unet.device))
+        pipe.unet = compiled_model #TracedUNet(vmfb)  # type: ignore
+        return compiled_model

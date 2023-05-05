@@ -28,10 +28,10 @@ class TracedUNet(torch.nn.Module):
     def __init__(self, og):
         super().__init__()
         self.og = og
-        self.in_channels = og.in_channels
+        self.in_channels = og.in_channels if og.in_channels else 4
         self.device = og.device if og.device else og.dev
-        self.dtype = og.dtype
-        self.config = og.config
+        self.dtype = og.dtype if og.dtype else torch.float32
+        self.config = og.config if og.config else {}
 
     def forward(
         self, latent_model_input, t, encoder_hidden_states
@@ -65,7 +65,8 @@ def trace_model(
     og = model
     from functools import partial
 
-    model.forward = partial(model.forward, return_dict=False)
+    if model.forward.__code__.co_argcount > 3:
+        model.forward = partial(model.forward, return_dict=False)
     warmup(model, iterations, dtype, device)
     if config.api.channels_last and not ipex:
         model.to(memory_format=torch.channels_last)  # type: ignore
@@ -78,6 +79,11 @@ def trace_model(
         model = torch.jit.freeze(model)  # type: ignore
     logger.debug("Tracing done")
     warmup(model, iterations // 5, dtype, device)
+
+    model.in_channels = og.in_channels
+    model.dtype = og.dtype
+    model.device = og.device
+    model.config = og.config
 
     rn = TracedUNet(model)
     del og

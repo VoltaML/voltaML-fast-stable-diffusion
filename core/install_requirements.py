@@ -122,9 +122,9 @@ def install_iree():
                 "install",
                 "iree-compiler",
                 "iree-runtime",
-                "torch-mlir",
+                "git+https://github.com/llvm/torch-mlir.git",
                 "-f",
-                "https://llvm.github.io/torch-mlir/package-index/",
+                "https://nod-ai.github.io/SHARK-Runtime/pip-release-links.html",
             ]
         )
 
