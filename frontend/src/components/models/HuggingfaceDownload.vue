@@ -38,7 +38,7 @@
         clearable
       />
       <NDataTable
-        :columns="columnsRef"
+        :columns="columns"
         :data="dataRef"
         :pagination="pagination"
         :bordered="true"
@@ -175,7 +175,6 @@ const columns: DataTableColumns<Model> = [
 const modelData = reactive<Model[]>([]);
 const modelFilter = ref("");
 
-const columnsRef = reactive(columns);
 const dataRef = computed(() => {
   if (modelFilter.value !== "") {
     return modelData.filter((model) =>

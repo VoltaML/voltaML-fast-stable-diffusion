@@ -7205,7 +7205,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-4c14fa5f"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-6a6fb4b4"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
@@ -7310,7 +7310,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     ];
     const modelData = reactive([]);
     const modelFilter = ref("");
-    const columnsRef = reactive(columns);
     const dataRef = computed(() => {
       if (modelFilter.value !== "") {
         return modelData.filter(
@@ -7375,12 +7374,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               clearable: ""
             }, null, 8, ["value"]),
             createVNode(unref(NDataTable), {
-              columns: columnsRef,
+              columns,
               data: unref(dataRef),
               pagination,
               bordered: true,
               style: { "padding-bottom": "24px" }
-            }, null, 8, ["columns", "data", "pagination"])
+            }, null, 8, ["data", "pagination"])
           ]),
           _: 1
         })
@@ -7388,8 +7387,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_4c14fa5f_lang = "";
-const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-4c14fa5f"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_6a6fb4b4_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-6a6fb4b4"]]);
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "FP32", -1);
