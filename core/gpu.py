@@ -129,8 +129,6 @@ class GPU:
             elif isinstance(model, PyTorchSDUpscaler):
                 logger.debug("Generating with PyTorchSDUpscaler")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             else:
                 from core.inference.onnx_sd import OnnxStableDiffusion
 
@@ -159,8 +157,7 @@ class GPU:
                 #     self.memory_cleanup()
                 # return images
 
-            if config.api.clear_memory_policy == "always":
-                self.memory_cleanup()
+            self.memory_cleanup()
             return images
 
         try:
@@ -200,16 +197,14 @@ class GPU:
                         images = out
 
             except Exception as err:  # pylint: disable=broad-except
-                if config.api.clear_memory_policy == "always":
-                    self.memory_cleanup()
+                self.memory_cleanup()
                 self.queue.mark_finished()
                 raise err
 
             deltatime = time.time() - start_time
 
             # Mark job as finished, so the next job can start
-            if config.api.clear_memory_policy == "always":
-                self.memory_cleanup()
+            self.memory_cleanup()
             self.queue.mark_finished()
 
             # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
@@ -380,13 +375,13 @@ class GPU:
 
     def memory_cleanup(self):
         "Release all unused memory"
+        if config.api.clear_memory_policy == "always":
+            if torch.cuda.is_available():
+                logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
 
-        if torch.cuda.is_available():
-            logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
-
-            with torch.cuda.device(self.gpu_id):
-                torch.cuda.empty_cache()
-                torch.cuda.ipc_collect()
+                with torch.cuda.device(self.gpu_id):
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
 
     async def unload(self, model_type: str):
         "Unload a model from memory and free up GPU memory"

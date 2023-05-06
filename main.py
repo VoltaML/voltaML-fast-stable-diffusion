@@ -52,9 +52,6 @@ parser.add_argument(
     help="Log level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
 )
-parser.add_argument(
-    "--profiler", action="store_true", help="Enable the included profiler"
-)
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
@@ -144,10 +141,6 @@ def main(exit_after_init: bool = False):
     from core import shared
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
-
-    from fastapi_utils.timing import add_timing_middleware
-
-    add_timing_middleware(api_app, record=logger.info if args.profiler else lambda x: x)  # type: ignore
 
     uvi_config = Config(app=api_app, host=host, port=5003)
     uvi_server = Server(config=uvi_config)

@@ -12,7 +12,7 @@ if TYPE_CHECKING:
         MLSDdetector,
         OpenposeDetector,
     )
-    from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
+    from transformers import UperNetForSemanticSegmentation
 
     from core.extra.cloudflare_r2 import R2Bucket
 

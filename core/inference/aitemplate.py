@@ -157,8 +157,7 @@ class AITemplateStableDiffusion(InferenceModel):
         if self.current_controlnet != target_controlnet:
             # Cleanup old controlnet
             self.controlnet = None
-            if config.api.clear_memory_policy == "always":
-                self.memory_cleanup()
+            self.memory_cleanup()
 
             if target_controlnet == ControlNetMode.NONE:
                 # Load basic unet if requested
@@ -168,8 +167,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
                     del self.unet_ait_exe
 
-                    if config.api.clear_memory_policy == "always":
-                        self.memory_cleanup()
+                    self.memory_cleanup()
 
                     self.unet_ait_exe = init_ait_module(
                         model_name="UNet2DConditionModel", workdir=self.directory
@@ -190,8 +188,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
                     del self.unet_ait_exe
 
-                    if config.api.clear_memory_policy == "always":
-                        self.memory_cleanup()
+                    self.memory_cleanup()
 
                     self.unet_ait_exe = init_ait_module(
                         model_name="ControlNetUNet2DConditionModel",
@@ -225,8 +222,7 @@ class AITemplateStableDiffusion(InferenceModel):
             self.current_controlnet = target_controlnet
 
         # Clean memory
-        if config.api.clear_memory_policy == "always":
-            self.memory_cleanup()
+        self.memory_cleanup()
 
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
@@ -240,8 +236,7 @@ class AITemplateStableDiffusion(InferenceModel):
         else:
             raise ValueError("Invalid job type for this model")
 
-        if config.api.clear_memory_policy == "always":
-            self.memory_cleanup()
+        self.memory_cleanup()
 
         return images
 

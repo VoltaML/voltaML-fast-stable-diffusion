@@ -103,6 +103,5 @@ class PyTorchSDUpscaler(InferenceModel):
 
         images = self.upscale(job)
 
-        if config.api.clear_memory_policy == "always":
-            self.memory_cleanup()
+        self.memory_cleanup()
         return images

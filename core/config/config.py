@@ -8,7 +8,6 @@ from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import ControlNetMode
 
-
 logger = logging.getLogger(__name__)
 
 
@@ -124,9 +123,7 @@ class APIConfig:
     # CUDA specific optimizations
     reduced_precision: bool = False
     cudnn_benchmark: bool = False
-    deterministic_generation: bool = (
-        True  # disabling increases performance on my 3080 by 0.25it/s with batch_size=3
-    )
+    deterministic_generation: bool = False
 
     # Device settings
     device_id: int = 0
