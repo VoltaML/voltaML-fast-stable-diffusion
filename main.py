@@ -146,17 +146,9 @@ def main(exit_after_init: bool = False):
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
 
-    if args.profiler:
-        from fastapi_profiler import PyInstrumentProfilerMiddleware
+    from fastapi_utils.timing import add_timing_middleware
 
-        api_app.add_middleware(
-            PyInstrumentProfilerMiddleware,
-            server_app=api_app,
-            profiler_output_type="html",
-            is_print_each_request=False,
-            open_in_browser=False,
-            html_file_name="profile.html",
-        )
+    add_timing_middleware(api_app, record=logger.info if args.profiler else lambda x: x)  # type: ignore
 
     uvi_config = Config(app=api_app, host=host, port=5003)
     uvi_server = Server(config=uvi_config)

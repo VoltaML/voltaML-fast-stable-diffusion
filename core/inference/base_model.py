@@ -1,9 +1,11 @@
 import gc
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Optional
 
 import torch
 from PIL import Image
+from fastapi import Request
+from fastapi_utils.timing import record_timing
 
 from core.config import config
 from core.types import Backend, Job
@@ -26,10 +28,10 @@ class InferenceModel(ABC):
         "Unloads the model from the memory"
 
     @abstractmethod
-    def generate(self, job: Job) -> List[Image.Image]:
+    def generate(self, job: Job, request: Request) -> List[Image.Image]:
         "Generates the output of the model"
 
-    def memory_cleanup(self) -> None:
+    def memory_cleanup(self, request: Optional[Request]) -> None:
         "Cleanup the GPU memory"
 
         if config.api.device_type == "cpu" or config.api.device_type == "directml":
@@ -38,3 +40,5 @@ class InferenceModel(ABC):
             torch.cuda.empty_cache()
             torch.cuda.ipc_collect()
             gc.collect()
+        if request is not None:
+            record_timing(request, "memory clear")

@@ -3,6 +3,8 @@ from typing import List, Optional
 
 import torch
 from PIL import Image
+from fastapi_utils.timing import record_timing
+from fastapi import Request
 
 from api import websocket_manager
 from api.websockets import Data
@@ -43,9 +45,9 @@ class PyTorchSDUpscaler(InferenceModel):
 
     def unload(self):
         self.pipe = None
-        self.memory_cleanup()
+        self.memory_cleanup(None)
 
-    def upscale(self, job: SDUpscaleQueueEntry) -> List[Image.Image]:
+    def upscale(self, job: SDUpscaleQueueEntry, request: Request) -> List[Image.Image]:
         "Upscales an image using the model."
 
         generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
@@ -60,7 +62,10 @@ class PyTorchSDUpscaler(InferenceModel):
 
         assert self.pipe is not None
 
+        record_timing(request, "setup")
+
         input_image = convert_to_image(job.data.image)
+        record_timing(request, "image preprocess")
 
         for _ in range(job.data.batch_count):
             data = self.pipe(
@@ -77,9 +82,11 @@ class PyTorchSDUpscaler(InferenceModel):
                 noise_level=job.data.noise_level,
                 # callback=sd_upscale_callback,
             )
+            record_timing(request, "generation")
 
             images: List[Image.Image] = [data]
             total_images.extend(images)
+            record_timing(request, "list extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -97,12 +104,12 @@ class PyTorchSDUpscaler(InferenceModel):
 
         return total_images
 
-    def generate(self, job: Job) -> List[Image.Image]:
+    def generate(self, job: Job, request: Request) -> List[Image.Image]:
         if not isinstance(job, SDUpscaleQueueEntry):
             raise TypeError("Expected SDUpscaleQueueEntry")
 
-        images = self.upscale(job)
+        images = self.upscale(job, request)
 
         if config.api.clear_memory_policy == "always":
-            self.memory_cleanup()
+            self.memory_cleanup(request)
         return images

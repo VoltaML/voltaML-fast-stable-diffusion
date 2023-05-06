@@ -7,6 +7,8 @@ from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import torch
 from PIL import Image
+from fastapi import Request
+from fastapi_utils.timing import record_timing
 
 from api import websocket_manager
 from api.websockets.notification import Notification
@@ -84,6 +86,7 @@ class GPU:
             ControlNetQueueEntry,
             SDUpscaleQueueEntry,
         ],
+        request: Request,
     ):
         "Generate images from the queue"
 
@@ -112,6 +115,7 @@ class GPU:
             shared.current_steps = steps * job.data.batch_count + extra_steps
             shared.current_done_steps = 0
 
+            record_timing(request, "setup")
             if not isinstance(job, ControlNetQueueEntry):
                 from core import shared_dependent
 
@@ -119,16 +123,19 @@ class GPU:
                     # Wipe cached controlnet preprocessor
                     shared_dependent.cached_controlnet_preprocessor = None
                     self.memory_cleanup()
+                    record_timing(request, "memory clear")
 
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
-                images: List[Image.Image] = model.generate(job)
+                images: List[Image.Image] = model.generate(job, request)
+                record_timing(request, "generation done")
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
-                images: List[Image.Image] = model.generate(job)
+                images: List[Image.Image] = model.generate(job, request)
+                record_timing(request, "generation done")
             elif isinstance(model, PyTorchSDUpscaler):
                 logger.debug("Generating with PyTorchSDUpscaler")
-                images: List[Image.Image] = model.generate(job)
+                images: List[Image.Image] = model.generate(job, request)
                 self.memory_cleanup()
                 return images
             else:
@@ -136,7 +143,8 @@ class GPU:
 
                 if isinstance(model, OnnxStableDiffusion):
                     logger.debug("Generating with ONNX")
-                    images: List[Image.Image] = model.generate(job)
+                    images: List[Image.Image] = model.generate(job, request)
+                    record_timing(request, "generation done")
                 else:
                     raise NotImplementedError("TensorRT is not supported at the moment")
 
@@ -161,6 +169,7 @@ class GPU:
 
             if config.api.clear_memory_policy == "always":
                 self.memory_cleanup()
+                record_timing(request, "memory clear")
             return images
 
         try:
@@ -193,15 +202,19 @@ class GPU:
                 if job.save_grid and len(images) > 1:
                     images = [grid, *images]
 
+                record_timing(request, "image grid")
+
                 # Save Images
                 if job.save_image:
                     out = save_images(generated_images, job)
                     if out:
                         images = out
 
+                record_timing(request, "image save")
             except Exception as err:  # pylint: disable=broad-except
                 if config.api.clear_memory_policy == "always":
                     self.memory_cleanup()
+                    record_timing(request, "memory clear")
                 self.queue.mark_finished()
                 raise err
 
@@ -210,6 +223,7 @@ class GPU:
             # Mark job as finished, so the next job can start
             if config.api.clear_memory_policy == "always":
                 self.memory_cleanup()
+                record_timing(request, "memory clear")
             self.queue.mark_finished()
 
             # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
@@ -623,7 +637,7 @@ class GPU:
         )
         return output
 
-    async def upscale(self, job: UpscaleQueueEntry):
+    async def upscale(self, job: UpscaleQueueEntry, request: Request):
         "Upscale an image by a specified factor"
 
         def generate_call(job: UpscaleQueueEntry):
@@ -639,7 +653,7 @@ class GPU:
                     model_name=job.model,
                 )
 
-                image = pipe.generate(job)
+                image = pipe.generate(job, request)
                 pipe.unload()
                 deltatime = time.time() - t
                 return image, deltatime

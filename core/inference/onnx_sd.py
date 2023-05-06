@@ -260,7 +260,7 @@ class OnnxStableDiffusion(InferenceModel):
                 setattr(self, module, _load(folder / module))
                 logger.info(f"Loaded {module} in {(time() - s):.2f}s.")
 
-            self.memory_cleanup()
+            self.memory_cleanup(None)
 
     def _setup(self, opset_version: int = 17):
         if is_onnxscript_available():
@@ -445,12 +445,12 @@ class OnnxStableDiffusion(InferenceModel):
                         ((old_size / new_size) - 1) * 100,
                     )
 
-                    self.memory_cleanup()
+                    self.memory_cleanup(None)
             except ValueError:
                 output_path = in_path  # type: ignore
                 logger.warning("Could not quantize model, skipping.")
 
-            self.memory_cleanup()
+            self.memory_cleanup(None)
 
             if is_onnxconverter_available():
                 if not quantize_success and not signed and not self.use_fp32:
@@ -472,7 +472,7 @@ class OnnxStableDiffusion(InferenceModel):
                     "Onnxconverter-common is not available, skipping float16 conversion process. Model will run in FP32."
                 )
 
-            self.memory_cleanup()
+            self.memory_cleanup(None)
 
             if simplify:
                 if is_onnxsim_available():
@@ -507,7 +507,7 @@ class OnnxStableDiffusion(InferenceModel):
                             new_size / (1024**3),
                             ((old_size / new_size) - 1) * 100,
                         )
-                        self.memory_cleanup()
+                        self.memory_cleanup(None)
                     except ValueError:
                         logger.warning("Could not simplify model, skipping.")
                 else:
@@ -518,7 +518,7 @@ class OnnxStableDiffusion(InferenceModel):
             logger.info(
                 "Finished exporting %s. Total time: %.2fs", output_path, time() - rt
             )
-            self.memory_cleanup()
+            self.memory_cleanup(None)
 
         T = TypeVar("T")
 
@@ -591,7 +591,7 @@ class OnnxStableDiffusion(InferenceModel):
             )
 
             del text_encoder
-            self.memory_cleanup()
+            self.memory_cleanup(None)
             return num_tokens, text_hidden_size
 
         def convert_unet(
@@ -662,7 +662,7 @@ class OnnxStableDiffusion(InferenceModel):
                 signed=target.unet,  # type: ignore
             )
             del unet
-            self.memory_cleanup()
+            self.memory_cleanup(None)
             if needs_collate:
                 unet = onnx.load(  # type: ignore pylint: disable=undefined-variable
                     str((unet_out_path / "unet.onnx").absolute().as_posix())
@@ -677,7 +677,7 @@ class OnnxStableDiffusion(InferenceModel):
                 )
 
                 del unet
-                self.memory_cleanup()
+                self.memory_cleanup(None)
                 shutil.rmtree(unet_out_path)
                 unet_out_path = output_folder
             return sample_size
@@ -731,7 +731,7 @@ class OnnxStableDiffusion(InferenceModel):
                 signed=target.vae_decoder,  # type: ignore
             )
             del vae
-            self.memory_cleanup()
+            self.memory_cleanup(None)
 
         opset = 17
         main_folder = get_full_model_path(model_id)
@@ -1173,9 +1173,9 @@ class OnnxStableDiffusion(InferenceModel):
             self.tokenizer,
             self.scheduler,
         )
-        self.memory_cleanup()
+        self.memory_cleanup(None)
 
-    def generate(self, job: Job) -> List[Image.Image]:
+    def generate(self, job: Job, request) -> List[Image.Image]:
         total_images = []
         if isinstance(job, Txt2ImgQueueEntry):
             for _ in range(job.data.batch_count):

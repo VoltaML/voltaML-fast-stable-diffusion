@@ -7,6 +7,8 @@ from basicsr.utils.download_util import load_file_from_url
 from PIL import Image
 from realesrgan import RealESRGANer
 from realesrgan.archs.srvgg_arch import SRVGGNetCompact
+from fastapi import Request
+from fastapi_utils.timing import record_timing
 
 from core.config import config
 from core.inference.base_model import InferenceModel
@@ -150,17 +152,19 @@ class RealESRGAN(InferenceModel):
     def unload(self):
         del self.upsampler
         self.upsampler = None
-        self.memory_cleanup()
+        self.memory_cleanup(None)
 
-    def generate(self, job: Job) -> Image.Image:
+    def generate(self, job: Job, request: Request) -> Image.Image:
         assert isinstance(job, UpscaleQueueEntry), "Wrong job type"
         input_image = convert_to_image(job.data.image)
         img = np.array(input_image)
+        record_timing(request, "preprocess")
 
         assert self.upsampler is not None, "Upsampler not loaded"
         output, _ = self.upsampler.enhance(img, outscale=job.data.upscale_factor)
+        record_timing(request, "generation")
 
         if config.api.clear_memory_policy == "always":
-            self.memory_cleanup()
+            self.memory_cleanup(request)
 
         return Image.fromarray(output)

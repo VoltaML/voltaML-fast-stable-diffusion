@@ -1,7 +1,7 @@
 import logging
 from typing import List, Union
 
-from fastapi import APIRouter, HTTPException
+from fastapi import APIRouter, HTTPException, Request
 from PIL import Image
 
 from core.errors import ModelNotLoadedError
@@ -26,13 +26,13 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/txt2img")
-async def txt2img_job(job: Txt2ImgQueueEntry):
+async def txt2img_job(request: Request, job: Txt2ImgQueueEntry):
     "Generate images from text"
 
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = await gpu.generate(job, request)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -56,7 +56,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
 
 
 @router.post("/img2img")
-async def img2img_job(job: Img2ImgQueueEntry):
+async def img2img_job(request: Request, job: Img2ImgQueueEntry):
     "Modify image with prompt"
 
     data = job.data.image
@@ -66,7 +66,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = await gpu.generate(job, request)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -90,7 +90,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
 
 
 @router.post("/inpainting")
-async def inpaint_job(job: InpaintQueueEntry):
+async def inpaint_job(request: Request, job: InpaintQueueEntry):
     "Inpaint image with prompt"
 
     image_bytes = job.data.image
@@ -104,7 +104,7 @@ async def inpaint_job(job: InpaintQueueEntry):
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = await gpu.generate(job, request)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -128,7 +128,7 @@ async def inpaint_job(job: InpaintQueueEntry):
 
 
 @router.post("/controlnet")
-async def controlnet_job(job: ControlNetQueueEntry):
+async def controlnet_job(request: Request, job: ControlNetQueueEntry):
     "Generate variations of the image"
 
     image_bytes = job.data.image
@@ -138,7 +138,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = await gpu.generate(job, request)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -162,7 +162,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
 
 
 @router.post("/sd-upscale")
-async def sd_upscale_job(job: SDUpscaleQueueEntry):
+async def sd_upscale_job(request: Request, job: SDUpscaleQueueEntry):
     "Upscale image with SD Upscaling model"
 
     image_bytes = job.data.image
@@ -172,7 +172,7 @@ async def sd_upscale_job(job: SDUpscaleQueueEntry):
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = await gpu.generate(job, request)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"
@@ -196,7 +196,7 @@ async def sd_upscale_job(job: SDUpscaleQueueEntry):
 
 
 @router.post("/upscale")
-async def realesrgan_upscale_job(job: UpscaleQueueEntry):
+async def realesrgan_upscale_job(request: Request, job: UpscaleQueueEntry):
     "Upscale image with RealESRGAN model"
 
     image_bytes = job.data.image
@@ -206,7 +206,7 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
     try:
         image: Image.Image
         time: float
-        image, time = await gpu.upscale(job)
+        image, time = await gpu.upscale(job, request)
     except ModelNotLoadedError:
         raise HTTPException(  # pylint: disable=raise-missing-from
             status_code=400, detail="Model is not loaded"

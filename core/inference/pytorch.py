@@ -13,6 +13,8 @@ from diffusers import (
 from PIL import Image, ImageOps
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
+from fastapi_utils.timing import record_timing
+from fastapi import Request
 
 from api import websocket_manager
 from api.websockets import Data
@@ -106,7 +108,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         del pipe
 
-        self.memory_cleanup()
+        self.memory_cleanup(None)
 
     def unload(self) -> None:
         "Unload the model from memory"
@@ -130,13 +132,14 @@ class PyTorchStableDiffusion(InferenceModel):
             if self.controlnet is not None:
                 del self.controlnet
 
-        self.memory_cleanup()
+        self.memory_cleanup(None)
 
     def manage_optional_components(
         self,
         *,
         variations: bool = False,
         target_controlnet: ControlNetMode = ControlNetMode.NONE,
+        request: Optional[Request] = None,
     ) -> None:
         "Cleanup old components"
 
@@ -145,11 +148,12 @@ class PyTorchStableDiffusion(InferenceModel):
 
         if self.current_controlnet != target_controlnet:
             logging.debug(f"Old: {self.current_controlnet}, New: {target_controlnet}")
-            logging.debug("Cached controlnet not fould, loading new one")
+            logging.debug("Cached controlnet not found, loading new one")
 
             # Cleanup old controlnet
             self.controlnet = None
-            self.memory_cleanup()
+            if config.api.clear_memory_policy == "always":
+                self.memory_cleanup(request)
 
             if target_controlnet == ControlNetMode.NONE:
                 self.current_controlnet = target_controlnet
@@ -179,15 +183,13 @@ class PyTorchStableDiffusion(InferenceModel):
             logger.debug("No change in controlnet mode")
 
         # Clean memory
-        self.memory_cleanup()
+        if config.api.clear_memory_policy == "always":
+            self.memory_cleanup(request)
 
-    def txt2img(
-        self,
-        job: Txt2ImgQueueEntry,
-    ) -> List[Image.Image]:
+    def txt2img(self, job: Txt2ImgQueueEntry, request: Request) -> List[Image.Image]:
         "Generate an image from a prompt"
 
-        self.manage_optional_components()
+        self.manage_optional_components(request=request)
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
             vae=self.vae,
@@ -218,6 +220,7 @@ class PyTorchStableDiffusion(InferenceModel):
             if "highres_fix" in job.flags:
                 output_type = "latent"
 
+            record_timing(request, "setup")
             data = pipe.text2img(
                 prompt=job.data.prompt,
                 height=job.data.height,
@@ -231,6 +234,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
             )
+            record_timing(request, "generation")
 
             if output_type == "latent":
                 latents = data[0]  # type: ignore
@@ -239,14 +243,16 @@ class PyTorchStableDiffusion(InferenceModel):
                 flag = job.flags["highres_fix"]
                 flag = HighResFixFlag.from_dict(flag)
 
+                record_timing(request, "highres start")
                 latents = scale_latents(
                     latents=latents,
                     scale=flag.scale,
                     latent_scale_mode=flag.latent_scale_mode,
                 )
+                record_timing(request, "highres scale")
 
                 if config.api.clear_memory_policy == "always":
-                    self.memory_cleanup()
+                    self.memory_cleanup(request)
 
                 data = pipe.img2img(
                     prompt=job.data.prompt,
@@ -262,10 +268,12 @@ class PyTorchStableDiffusion(InferenceModel):
                     return_dict=False,
                     num_images_per_prompt=job.data.batch_size,
                 )
+                record_timing(request, "highres done")
 
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
+            record_timing(request, "image extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -283,10 +291,10 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
+    def img2img(self, job: Img2ImgQueueEntry, request: Request) -> List[Image.Image]:
         "Generate an image from an image"
 
-        self.manage_optional_components()
+        self.manage_optional_components(request=request)
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
             vae=self.vae,
@@ -306,8 +314,10 @@ class PyTorchStableDiffusion(InferenceModel):
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
         # Preprocess the image
+        record_timing(request, "setup")
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
+        record_timing(request, "image preprocess")
 
         total_images: List[Image.Image] = []
 
@@ -326,6 +336,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
             )
+            record_timing(request, "done")
 
             if not data:
                 raise ValueError("No data returned from pipeline")
@@ -334,6 +345,7 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)
+            record_timing(request, "list extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -351,10 +363,10 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
+    def inpaint(self, job: InpaintQueueEntry, request: Request) -> List[Image.Image]:
         "Generate an image from an image"
 
-        self.manage_optional_components()
+        self.manage_optional_components(request=request)
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
             vae=self.vae,
@@ -374,12 +386,15 @@ class PyTorchStableDiffusion(InferenceModel):
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
         # Preprocess images
+        record_timing(request, "setup")
         input_image = convert_to_image(job.data.image).convert("RGB")
         input_image = resize(input_image, job.data.width, job.data.height)
+        record_timing(request, "image preprocess")
 
         input_mask_image = convert_to_image(job.data.mask_image).convert("RGB")
         input_mask_image = ImageOps.invert(input_mask_image)
         input_mask_image = resize(input_mask_image, job.data.width, job.data.height)
+        record_timing(request, "mask preprocess")
 
         total_images: List[Image.Image] = []
 
@@ -400,6 +415,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 width=job.data.width,
                 height=job.data.height,
             )
+            record_timing(request, "generation")
 
             if not data:
                 raise ValueError("No data returned from pipeline")
@@ -408,6 +424,7 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)
+            record_timing(request, "list extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -425,7 +442,9 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
+    def controlnet2img(
+        self, job: ControlNetQueueEntry, request: Request
+    ) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
         if config.api.trace_model is True:
@@ -434,7 +453,9 @@ class PyTorchStableDiffusion(InferenceModel):
             )
 
         logger.debug(f"Requested ControlNet: {job.data.controlnet}")
-        self.manage_optional_components(target_controlnet=job.data.controlnet)
+        self.manage_optional_components(
+            target_controlnet=job.data.controlnet, request=request
+        )
 
         assert self.controlnet is not None
 
@@ -460,12 +481,15 @@ class PyTorchStableDiffusion(InferenceModel):
         # Preprocess the image
         from core.controlnet_preprocessing import image_to_controlnet_input
 
+        record_timing(request, "setup")
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
+        record_timing(request, "image preprocess")
 
         # Preprocess the image if needed
         if not job.data.is_preprocessed:
             input_image = image_to_controlnet_input(input_image, job.data)
+        record_timing(request, "controlnet")
 
         # Preprocess the prompt
         prompt_embeds, negative_embeds = get_weighted_text_embeddings(
@@ -473,6 +497,7 @@ class PyTorchStableDiffusion(InferenceModel):
             prompt=job.data.prompt,
             uncond_prompt=job.data.negative_prompt,
         )
+        record_timing(request, "prompt")
 
         total_images: List[Image.Image] = [input_image]
 
@@ -492,11 +517,13 @@ class PyTorchStableDiffusion(InferenceModel):
                 height=job.data.height,
                 width=job.data.width,
             )
+            record_timing(request, "generation")
 
             images = data[0]
             assert isinstance(images, List)
 
             total_images.extend(images)  # type: ignore
+            record_timing(request, "list extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -514,35 +541,32 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def generate(
-        self,
-        job: Job,
-    ):
+    def generate(self, job: Job, request: Request):
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")
         if config.api.clear_memory_policy == "always":
-            self.memory_cleanup()
+            self.memory_cleanup(request)
 
         try:
             if isinstance(job, Txt2ImgQueueEntry):
-                images = self.txt2img(job)
+                images = self.txt2img(job, request)
             elif isinstance(job, Img2ImgQueueEntry):
-                images = self.img2img(job)
+                images = self.img2img(job, request)
             elif isinstance(job, InpaintQueueEntry):
-                images = self.inpaint(job)
+                images = self.inpaint(job, request)
             elif isinstance(job, ControlNetQueueEntry):
-                images = self.controlnet2img(job)
+                images = self.controlnet2img(job, request)
             else:
                 raise ValueError("Invalid job type for this pipeline")
         except Exception as e:
             if config.api.clear_memory_policy == "always":
-                self.memory_cleanup()
+                self.memory_cleanup(request)
             raise e
 
         # Clean memory and return images
         if config.api.clear_memory_policy == "always":
-            self.memory_cleanup()
+            self.memory_cleanup(request)
         return images
 
     def save(self, path: str = "converted", safetensors: bool = False):
