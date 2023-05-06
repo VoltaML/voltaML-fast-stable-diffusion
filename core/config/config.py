@@ -130,7 +130,9 @@ class APIConfig:
 
     # Device settings
     device_id: int = 0
-    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan", "iree"] = "cuda"
+    device_type: Literal[
+        "cpu", "cuda", "mps", "directml", "intel", "vulkan", "iree"
+    ] = "cuda"
     iree_target: Literal["cuda", "vulkan", "llvm", "interpreted"] = "vulkan"
 
     # Lora
@@ -156,7 +158,7 @@ class APIConfig:
         if self.device_type == "vulkan":
             return "vulkan"
         if self.device_type == "directml":
-            import torch_directml
+            import torch_directml  # pylint: disable=import-error
 
             return torch_directml.device()
 
@@ -214,16 +216,18 @@ class FrontendConfig:
 class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"
 
-    txt2img: Txt2ImgConfig = field(default=Txt2ImgConfig())
-    img2img: Img2ImgConfig = field(default=Img2ImgConfig())
-    inpainting: InpaintingConfig = field(default=InpaintingConfig())
-    controlnet: ControlNetConfig = field(default=ControlNetConfig())
-    upscale: UpscaleConfig = field(default=UpscaleConfig())
-    api: APIConfig = field(default=APIConfig())
-    interrogator: InterrogatorConfig = field(default=InterrogatorConfig())
-    aitemplate: AITemplateConfig = field(default=AITemplateConfig())
-    bot: BotConfig = field(default=BotConfig())
-    frontend: FrontendConfig = field(default=FrontendConfig())
+    # default_factory= instead of default= so we're python3.11 compatible
+
+    txt2img: Txt2ImgConfig = field(default_factory=Txt2ImgConfig)
+    img2img: Img2ImgConfig = field(default_factory=Img2ImgConfig)
+    inpainting: InpaintingConfig = field(default_factory=InpaintingConfig)
+    controlnet: ControlNetConfig = field(default_factory=ControlNetConfig)
+    upscale: UpscaleConfig = field(default_factory=UpscaleConfig)
+    api: APIConfig = field(default_factory=APIConfig)
+    interrogator: InterrogatorConfig = field(default_factory=InterrogatorConfig)
+    aitemplate: AITemplateConfig = field(default_factory=AITemplateConfig)
+    bot: BotConfig = field(default_factory=BotConfig)
+    frontend: FrontendConfig = field(default_factory=FrontendConfig)
     extra: CatchAll = field(default_factory=dict)
 
 

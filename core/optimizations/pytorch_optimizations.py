@@ -1,5 +1,4 @@
 import logging
-import warnings
 from typing import Tuple, Union, Optional
 
 from cpufeature import CPUFeature as cpu
@@ -9,22 +8,18 @@ from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 )
-from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from diffusers.utils import is_accelerate_available, is_xformers_available
 from packaging import version
-from tqdm.auto import tqdm
 
 from core.config import config
 from core.files import get_full_model_path
 from .iree import convert_pipe_state_to_iree
 from .trace_utils import generate_inputs, trace_model
+from .offload import send_to_gpu, _device  # pylint: disable=unused-import
 
 logger = logging.getLogger(__name__)
 
 USE_DISK_OFFLOAD = False
-
-gpu_module = None
-_device = None
 
 
 def optimize_model(
@@ -110,10 +105,11 @@ def optimize_model(
 
     # Change the order of the channels to be more efficient for the GPU
     # DirectML only supports contiguous memory format
+    # Disable for IPEX as well, they don't like torch's way of setting memory format
     if (
         config.api.channels_last
         and config.api.device_type != "directml"
-        and not is_ipex_available()
+        and (not is_ipex_available() and config.api.device_type != "cpu")
         and not is_for_aitemplate
     ):
         pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
@@ -255,7 +251,8 @@ def optimize_model(
             )
             ipexed = True
 
-    # pipe.unet = convert_pipe_state_to_iree(pipe)  # type: ignore
+    if config.api.device_type == "iree":
+        convert_pipe_state_to_iree(pipe)  # type: ignore
 
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
@@ -281,28 +278,6 @@ def supports_tf32(device: Optional[torch.device] = None) -> bool:
     "Checks if device is post-Ampere"
     major, _ = torch.cuda.get_device_capability(device)
     return major >= 8
-
-
-def send_everything_to_cpu() -> None:
-    "Offload module to CPU to save VRAM"
-
-    global gpu_module  # pylint: disable=global-statement
-
-    if gpu_module is not None:
-        gpu_module.to("cpu")
-    gpu_module = None
-
-
-def send_to_gpu(module, _) -> None:
-    "Load module back to GPU"
-
-    global gpu_module  # pylint: disable=global-statement
-    if gpu_module == module:
-        return
-    if gpu_module is not None:
-        gpu_module.to("cpu")
-    module.to(_device)
-    gpu_module = module
 
 
 def experimental_check_hardware_scheduling() -> Tuple[int, int, int]:

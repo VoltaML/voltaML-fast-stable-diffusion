@@ -52,6 +52,9 @@ parser.add_argument(
     help="Log level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
 )
+parser.add_argument(
+    "--profiler", action="store_true", help="Enable the included profiler"
+)
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
@@ -142,6 +145,18 @@ def main(exit_after_init: bool = False):
     from core import shared
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
+
+    if args.profiler:
+        from fastapi_profiler import PyInstrumentProfilerMiddleware
+
+        api_app.add_middleware(
+            PyInstrumentProfilerMiddleware,
+            server_app=api_app,
+            profiler_output_type="html",
+            is_print_each_request=False,
+            open_in_browser=False,
+            html_file_name="profile.html",
+        )
 
     uvi_config = Config(app=api_app, host=host, port=5003)
     uvi_server = Server(config=uvi_config)

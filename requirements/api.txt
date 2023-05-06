@@ -6,6 +6,7 @@ coloredlogs
 pyngrok
 nest_asyncio
 fastapi-analytics
+fastapi_profiler
 fastapi-simple-cachecontrol
 python-multipart
 streaming_form_data

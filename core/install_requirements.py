@@ -140,8 +140,7 @@ class PytorchDistribution:
     install_command: Union[str, List[str], List[List[str]]]
 
 
-# Make sure DirectML goes last and CPU before that to have a default
-# Order DOES matter!
+# Order MATTERS!
 _pytorch_distributions = [
     PytorchDistribution(
         windows_supported=False,
@@ -193,25 +192,6 @@ _pytorch_distributions = [
         ],
     ),
     PytorchDistribution(
-        windows_supported=True,
-        name="vulkan",
-        check_command="vulkaninfo",
-        success_message="Vulkan check success, assuming user has a Vulkan capable GPU",
-        install_command=[
-            ["git", "clone", "https://github.com/pytorch/pytorch.git"],
-            [
-                "USE_VULKAN=1",
-                "USE_VULKAN_SHADERC_RUNTIME=1",
-                "USE_VULKAN_WRAPPER=0",
-                "USE_CUDA=0",
-                sys.executable,
-                "pytorch/setup.py",
-                "install",
-            ],
-            [sys.executable, "-m", "pip", "install", "torchvision"],
-        ],
-    ),
-    PytorchDistribution(
         windows_supported=False,
         name="cpu",
         check_command="echo a",
@@ -239,6 +219,25 @@ _pytorch_distributions = [
             "torch",
             "torchvision",
             "torch-directml",
+        ],
+    ),
+    PytorchDistribution(
+        windows_supported=True,
+        name="vulkan",
+        check_command="vulkaninfo",
+        success_message="Vulkan check success, assuming user has a Vulkan capable GPU",
+        install_command=[
+            ["git", "clone", "https://github.com/pytorch/pytorch.git"],
+            [
+                "USE_VULKAN=1",
+                "USE_VULKAN_SHADERC_RUNTIME=1",
+                "USE_VULKAN_WRAPPER=0",
+                "USE_CUDA=0",
+                sys.executable,
+                "pytorch/setup.py",
+                "install",
+            ],
+            [sys.executable, "-m", "pip", "install", "torchvision"],
         ],
     ),
 ]
@@ -281,8 +280,7 @@ def install_pytorch(force_distribution: int = -1):
                             == 0
                         )
                     )
-                    and (forced_distribution is not None or c == forced_distribution)
-                ):
+                ) or c == forced_distribution:
                     logger.info(c.success_message)
                     if isinstance(c.install_command[0], list):
                         for cmd in c.install_command:
