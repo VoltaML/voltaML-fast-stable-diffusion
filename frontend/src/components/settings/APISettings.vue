@@ -146,7 +146,19 @@
           },
           {
             value: 'directml',
-            label: 'DirectML (NOT IMPLEMENTED)',
+            label: 'DirectML',
+          },
+          {
+            value: 'intel',
+            label: 'Intel',
+          },
+          {
+            value: 'vulkan',
+            label: 'Vulkan (Not Implemented)',
+          },
+          {
+            value: 'iree',
+            label: 'IREE (Not Implemented)',
           },
         ]"
         v-model:value="settings.defaultSettings.api.device_type"

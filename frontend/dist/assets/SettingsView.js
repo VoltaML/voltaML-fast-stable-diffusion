@@ -2036,7 +2036,19 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                   },
                   {
                     value: "directml",
-                    label: "DirectML (NOT IMPLEMENTED)"
+                    label: "DirectML"
+                  },
+                  {
+                    value: "intel",
+                    label: "Intel"
+                  },
+                  {
+                    value: "vulkan",
+                    label: "Vulkan (Not Implemented)"
+                  },
+                  {
+                    value: "iree",
+                    label: "IREE (Not Implemented)"
                   }
                 ],
                 value: unref(settings).defaultSettings.api.device_type,
