@@ -5,12 +5,7 @@
 	"python.testing.unittestEnabled": false,
 	"python.testing.pytestEnabled": true,
 	"python.analysis.typeCheckingMode": "basic",
-	"python.formatting.provider": "none",
+	"python.formatting.provider": "black",
 	"python.languageServer": "Pylance",
-	"rust-analyzer.linkedProjects": [
-		"./manager/Cargo.toml"
-	],
-	"[python]": {
-		"editor.defaultFormatter": "ms-python.black-formatter"
-	}
+	"rust-analyzer.linkedProjects": ["./manager/Cargo.toml"]
 }
