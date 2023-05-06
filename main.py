@@ -179,14 +179,14 @@ def checks():
             sys.exit(1)
 
     # Install more user friendly logging
-    if not is_installed("coloredlogs"):
+    if not is_installed("rich"):
         subprocess.check_call(
             [
                 sys.executable,
                 "-m",
                 "pip",
                 "install",
-                "coloredlogs",
+                "rich",
             ]
         )
 
