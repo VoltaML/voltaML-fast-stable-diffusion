@@ -10,11 +10,13 @@ from diffusers import (
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from diffusers.utils import is_accelerate_available, is_xformers_available
 from packaging import version
+from rich.console import Console
 
 from core.config import config
 from core.files import get_full_model_path
 
 logger = logging.getLogger(__name__)
+console = Console()
 
 USE_DISK_OFFLOAD = False
 
@@ -31,6 +33,7 @@ def optimize_model(
     "Optimize the model for inference"
     global _device  # pylint: disable=global-statement
 
+    # with console.status("[bold green]Optimizing model..."):
     pipe.to(device, torch_dtype=torch.float16 if not use_fp32 else torch.float32)
     _device = device
 

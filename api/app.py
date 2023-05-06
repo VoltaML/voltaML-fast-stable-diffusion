@@ -89,6 +89,19 @@ async def custom_http_exception_handler(_request, _exc):
 async def startup_event():
     "Prepare the event loop for other asynchronous tasks"
 
+    # Inject the logger
+    from rich.logging import RichHandler
+
+    for logger_ in ("uvicorn", "uvicorn.access", "uvicorn.error", "fastapi"):
+        l = logging.getLogger(logger_)
+        handler = RichHandler(rich_tracebacks=True, show_time=False)
+        handler.setFormatter(
+            logging.Formatter(
+                fmt="%(asctime)s | %(name)s » %(message)s", datefmt="%H:%M:%S"
+            )
+        )
+        l.handlers = [handler]
+
     shared.asyncio_loop = asyncio.get_event_loop()
 
     sync_task = asyncio.create_task(websocket_manager.sync_loop())
