@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Any, List, Optional
 
 import torch
@@ -639,7 +640,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        token = textual_inversion.split("/")[-1].split(".")[0]
+        token = Path(textual_inversion).stem
         logger.info(f"Loading token {token} for textual inversion model")
 
         pipe.load_textual_inversion(textual_inversion, token=token)
