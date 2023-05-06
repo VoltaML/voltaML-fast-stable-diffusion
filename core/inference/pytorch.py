@@ -3,10 +3,14 @@ import os
 from typing import Any, List, Optional
 
 import torch
-from diffusers import (AutoencoderKL, ControlNetModel,
-                       StableDiffusionControlNetPipeline,
-                       StableDiffusionInpaintPipeline, StableDiffusionPipeline,
-                       UNet2DConditionModel)
+from diffusers import (
+    AutoencoderKL,
+    ControlNetModel,
+    StableDiffusionControlNetPipeline,
+    StableDiffusionInpaintPipeline,
+    StableDiffusionPipeline,
+    UNet2DConditionModel,
+)
 from fastapi import Request
 from fastapi_utils.timing import record_timing
 from PIL import Image, ImageOps
@@ -22,13 +26,23 @@ from core.inference.functions import load_pytorch_pipeline
 from core.inference.latents import scale_latents
 from core.inference.lwp import get_weighted_text_embeddings
 from core.inference.lwp_sd import StableDiffusionLongPromptWeightingPipeline
-from core.inference_callbacks import (controlnet_callback, img2img_callback,
-                                      inpaint_callback, txt2img_callback)
+from core.inference_callbacks import (
+    controlnet_callback,
+    img2img_callback,
+    inpaint_callback,
+    txt2img_callback,
+)
 from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
-from core.types import (Backend, ControlNetMode, ControlNetQueueEntry,
-                        Img2ImgQueueEntry, InpaintQueueEntry, Job,
-                        Txt2ImgQueueEntry)
+from core.types import (
+    Backend,
+    ControlNetMode,
+    ControlNetQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Job,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)

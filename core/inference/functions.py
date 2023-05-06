@@ -97,16 +97,6 @@ def is_bitsandbytes_available():
         return False
 
 
-def is_bitsandbytes_available():
-    "Checks whether bitsandbytes is available."
-    try:
-        import bitsandbytes  # pylint: disable=import-error,unused-import
-
-        return True
-    except ImportError:
-        return False
-
-
 def load_config(
     pretrained_model_name_or_path: Union[str, os.PathLike],
     return_unused_kwargs=False,
