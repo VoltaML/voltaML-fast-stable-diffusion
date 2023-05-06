@@ -20,8 +20,9 @@ from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.models.vae import DecoderOutput
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import \
-    StableDiffusionPipelineOutput
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipelineOutput,
+)
 from diffusers.utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
 from packaging import version
@@ -36,14 +37,24 @@ from api import websocket_manager
 from api.websockets import Data
 from core.files import get_full_model_path
 from core.inference.base_model import InferenceModel
-from core.inference.functions import (is_onnx_available,
-                                      is_onnxconverter_available,
-                                      is_onnxscript_available,
-                                      is_onnxsim_available)
-from core.inference_callbacks import (img2img_callback, inpaint_callback,
-                                      txt2img_callback)
-from core.types import (Img2ImgQueueEntry, InpaintQueueEntry, Job,
-                        QuantizationDict, Txt2ImgQueueEntry)
+from core.inference.functions import (
+    is_onnx_available,
+    is_onnxconverter_available,
+    is_onnxscript_available,
+    is_onnxsim_available,
+)
+from core.inference_callbacks import (
+    img2img_callback,
+    inpaint_callback,
+    txt2img_callback,
+)
+from core.types import (
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Job,
+    QuantizationDict,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image
 
 logger = logging.getLogger(__name__)
@@ -258,9 +269,9 @@ class OnnxStableDiffusion(InferenceModel):
             # thank you @justinchuby
 
             import onnxscript  # pylint: disable=import-error,unreachable
+
             # make dynamic?
-            from onnxscript.onnx_opset import \
-                opset17 as op  # pylint: disable=E0401
+            from onnxscript.onnx_opset import opset17 as op  # pylint: disable=E0401
 
             custom_opset = onnxscript.values.Opset(
                 domain="torch.onnx", version=opset_version
@@ -403,8 +414,7 @@ class OnnxStableDiffusion(InferenceModel):
             quantize_success = False if signed is not None else True
             try:
                 if signed is not None:
-                    from onnxruntime.quantization import (QuantType,
-                                                          quantize_dynamic)
+                    from onnxruntime.quantization import QuantType, quantize_dynamic
 
                     t = time()
                     logger.info(
@@ -448,8 +458,7 @@ class OnnxStableDiffusion(InferenceModel):
                     t = time()
                     import onnx
                     import onnxruntime as ort  # pylint: disable=import-error
-                    from onnxconverter_common import \
-                        float16  # pylint: disable=E0401
+                    from onnxconverter_common import float16  # pylint: disable=E0401
 
                     model = onnx.load(str(output_path))  # pylint: disable=no-member
                     model = float16.convert_float_to_float16(model, keep_io_types=True)
@@ -595,8 +604,7 @@ class OnnxStableDiffusion(InferenceModel):
             unet = load(UNet2DConditionWrapper, main_folder / "unet", dtype=torch.float16)  # type: ignore
 
             if version.parse(torch.__version__) > version.parse("2.0.0"):
-                from diffusers.models.attention_processor import \
-                    AttnProcessor2_0
+                from diffusers.models.attention_processor import AttnProcessor2_0
 
                 logger.info("Compiling SDPA into model")
                 unet.set_attn_processor(AttnProcessor2_0())  # type: ignore

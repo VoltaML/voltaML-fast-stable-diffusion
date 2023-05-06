@@ -12,8 +12,7 @@ from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.errors import (DimensionError, InferenceInterruptedError,
-                         ModelNotLoadedError)
+from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.functions import download_model
@@ -23,12 +22,22 @@ from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue
-from core.types import (AITemplateBuildRequest, ControlNetQueueEntry,
-                        Img2ImgQueueEntry, InferenceBackend, InpaintQueueEntry,
-                        InterrogatorQueueEntry, Job, LoraLoadRequest,
-                        ONNXBuildRequest, SDUpscaleQueueEntry,
-                        TextualInversionLoadRequest, TRTBuildRequest,
-                        Txt2ImgQueueEntry, UpscaleQueueEntry)
+from core.types import (
+    AITemplateBuildRequest,
+    ControlNetQueueEntry,
+    Img2ImgQueueEntry,
+    InferenceBackend,
+    InpaintQueueEntry,
+    InterrogatorQueueEntry,
+    Job,
+    LoraLoadRequest,
+    ONNXBuildRequest,
+    SDUpscaleQueueEntry,
+    TextualInversionLoadRequest,
+    TRTBuildRequest,
+    Txt2ImgQueueEntry,
+    UpscaleQueueEntry,
+)
 from core.utils import image_grid, run_in_thread_async
 
 if TYPE_CHECKING:
@@ -582,8 +591,7 @@ class GPU:
 
         def generate_call(job: InterrogatorQueueEntry):
             if job.model == "deepdanbooru":
-                from core.interrogation.deepdanbooru import \
-                    DeepdanbooruInterrogator
+                from core.interrogation.deepdanbooru import DeepdanbooruInterrogator
 
                 model = DeepdanbooruInterrogator(
                     device=config.api.device, autoload=True

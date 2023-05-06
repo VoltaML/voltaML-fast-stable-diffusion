@@ -7,21 +7,28 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
-from diffusers.pipelines.stable_diffusion.convert_from_ckpt import \
-    download_from_original_stable_diffusion_ckpt
+from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
+    download_from_original_stable_diffusion_ckpt,
+)
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
-from diffusers.utils.constants import (CONFIG_NAME, DIFFUSERS_CACHE,
-                                       HUGGINGFACE_CO_RESOLVE_ENDPOINT,
-                                       ONNX_WEIGHTS_NAME, WEIGHTS_NAME)
+from diffusers.utils.constants import (
+    CONFIG_NAME,
+    DIFFUSERS_CACHE,
+    HUGGINGFACE_CO_RESOLVE_ENDPOINT,
+    ONNX_WEIGHTS_NAME,
+    WEIGHTS_NAME,
+)
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
 from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download
 from huggingface_hub.hf_api import ModelInfo
-from huggingface_hub.utils._errors import (EntryNotFoundError,
-                                           RepositoryNotFoundError,
-                                           RevisionNotFoundError)
+from huggingface_hub.utils._errors import (
+    EntryNotFoundError,
+    RepositoryNotFoundError,
+    RevisionNotFoundError,
+)
 from requests import HTTPError
 from rich.console import Console
 
@@ -59,7 +66,9 @@ def is_onnx_available():
     try:
         import onnx  # pylint: disable=unused-import
         from onnxruntime.quantization import (  # pylint: disable=unused-import
-            QuantType, quantize_dynamic)
+            QuantType,
+            quantize_dynamic,
+        )
 
         return True
     except ImportError:
@@ -79,8 +88,7 @@ def is_onnxscript_available():
 def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
-        from onnxsim import \
-            simplify  # pylint: disable=import-error,unused-import
+        from onnxsim import simplify  # pylint: disable=import-error,unused-import
 
         return True
     except ImportError:

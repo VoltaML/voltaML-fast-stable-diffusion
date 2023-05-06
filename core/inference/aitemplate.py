@@ -17,12 +17,21 @@ from core.config import config
 from core.functions import init_ait_module
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
-from core.inference_callbacks import (controlnet_callback, img2img_callback,
-                                      txt2img_callback)
+from core.inference_callbacks import (
+    controlnet_callback,
+    img2img_callback,
+    txt2img_callback,
+)
 from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
-from core.types import (Backend, ControlNetMode, ControlNetQueueEntry,
-                        Img2ImgQueueEntry, Job, Txt2ImgQueueEntry)
+from core.types import (
+    Backend,
+    ControlNetMode,
+    ControlNetQueueEntry,
+    Img2ImgQueueEntry,
+    Job,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -236,7 +245,10 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return images
 
-    def txt2img(self, job: Txt2ImgQueueEntry, ) -> List[Image.Image]:
+    def txt2img(
+        self,
+        job: Txt2ImgQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from text"
 
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
@@ -300,11 +312,13 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return total_images
 
-    def img2img(self, job: Img2ImgQueueEntry, ) -> List[Image.Image]:
+    def img2img(
+        self,
+        job: Img2ImgQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from images"
 
-        from core.aitemplate.src.ait_img2img import \
-            StableDiffusionImg2ImgAITPipeline
+        from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
 
         self.manage_optional_components()
 
@@ -368,18 +382,18 @@ class AITemplateStableDiffusion(InferenceModel):
         return total_images
 
     def controlnet2img(
-        self, job: ControlNetQueueEntry, 
+        self,
+        job: ControlNetQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from images"
 
-        self.manage_optional_components(
-            target_controlnet=job.data.controlnet
-        )
+        self.manage_optional_components(target_controlnet=job.data.controlnet)
 
         assert self.controlnet is not None
 
-        from core.aitemplate.src.ait_controlnet import \
-            StableDiffusionControlNetAITPipeline
+        from core.aitemplate.src.ait_controlnet import (
+            StableDiffusionControlNetAITPipeline,
+        )
 
         pipe = StableDiffusionControlNetAITPipeline(
             vae=self.vae,

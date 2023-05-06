@@ -3,10 +3,14 @@ import os
 from typing import Any, List, Optional
 
 import torch
-from diffusers import (AutoencoderKL, ControlNetModel,
-                       StableDiffusionControlNetPipeline,
-                       StableDiffusionInpaintPipeline, StableDiffusionPipeline,
-                       UNet2DConditionModel)
+from diffusers import (
+    AutoencoderKL,
+    ControlNetModel,
+    StableDiffusionControlNetPipeline,
+    StableDiffusionInpaintPipeline,
+    StableDiffusionPipeline,
+    UNet2DConditionModel,
+)
 from PIL import Image, ImageOps
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -20,13 +24,23 @@ from core.inference.functions import load_pytorch_pipeline
 from core.inference.latents import scale_latents
 from core.inference.lwp import get_weighted_text_embeddings
 from core.inference.lwp_sd import StableDiffusionLongPromptWeightingPipeline
-from core.inference_callbacks import (controlnet_callback, img2img_callback,
-                                      inpaint_callback, txt2img_callback)
+from core.inference_callbacks import (
+    controlnet_callback,
+    img2img_callback,
+    inpaint_callback,
+    txt2img_callback,
+)
 from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
-from core.types import (Backend, ControlNetMode, ControlNetQueueEntry,
-                        Img2ImgQueueEntry, InpaintQueueEntry, Job,
-                        Txt2ImgQueueEntry)
+from core.types import (
+    Backend,
+    ControlNetMode,
+    ControlNetQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Job,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -450,9 +464,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def controlnet2img(
-        self, job: ControlNetQueueEntry
-    ) -> List[Image.Image]:
+    def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
         if config.api.trace_model is True:
@@ -461,9 +473,7 @@ class PyTorchStableDiffusion(InferenceModel):
             )
 
         logger.debug(f"Requested ControlNet: {job.data.controlnet}")
-        self.manage_optional_components(
-            target_controlnet=job.data.controlnet
-        )
+        self.manage_optional_components(target_controlnet=job.data.controlnet)
 
         assert self.controlnet is not None
 
