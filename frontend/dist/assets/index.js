@@ -36820,6 +36820,10 @@ const defaultSettings = {
     use_tomesd: true,
     tomesd_ratio: 0.4,
     tomesd_downsample_layers: 1,
+    deterministic_generation: false,
+    reduced_precision: false,
+    cudnn_benchmark: false,
+    clear_memory_policy: "always",
     lora_text_encoder_weight: 0.5,
     lora_unet_weight: 0.5
   },

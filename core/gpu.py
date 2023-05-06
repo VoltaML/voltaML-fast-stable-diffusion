@@ -123,28 +123,20 @@ class GPU:
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             elif isinstance(model, PyTorchSDUpscaler):
                 logger.debug("Generating with PyTorchSDUpscaler")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             else:
                 from core.inference.onnx_sd import OnnxStableDiffusion
 
                 if isinstance(model, OnnxStableDiffusion):
                     logger.debug("Generating with ONNX")
                     images: List[Image.Image] = model.generate(job)
-                    self.memory_cleanup()
-                    return images
-
-                raise NotImplementedError("TensorRT is not supported at the moment")
+                else:
+                    raise NotImplementedError("TensorRT is not supported at the moment")
 
                 # logger.debug("Generating with TensorRT")
                 # images: List[Image.Image]
@@ -161,8 +153,12 @@ class GPU:
                 #     num_of_infer_steps=job.data.steps,
                 #     scheduler=job.data.scheduler,
                 # )
-                # self.memory_cleanup()
+                # if config.api.clear_memory_policy == "always":
+                #     self.memory_cleanup()
                 # return images
+
+            self.memory_cleanup()
+            return images
 
         try:
             # Check width and height passed by the user
@@ -379,13 +375,13 @@ class GPU:
 
     def memory_cleanup(self):
         "Release all unused memory"
+        if config.api.clear_memory_policy == "always":
+            if torch.cuda.is_available():
+                logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
 
-        if torch.cuda.is_available():
-            logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
-
-            with torch.cuda.device(self.gpu_id):
-                torch.cuda.empty_cache()
-                torch.cuda.ipc_collect()
+                with torch.cuda.device(self.gpu_id):
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
 
     async def unload(self, model_type: str):
         "Unload a model from memory and free up GPU memory"

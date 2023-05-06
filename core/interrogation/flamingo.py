@@ -4,6 +4,7 @@ import torch
 from flamingo_mini import FlamingoModel, FlamingoProcessor
 from PIL import Image
 
+from core.config import config
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.interrogation.clip import is_cpu
 from core.types import InterrogatorQueueEntry, Job
@@ -26,7 +27,7 @@ class FlamingoInterrogator(InterrogationModel):
         self.processor: FlamingoProcessor
 
     def load(self):
-        model = FlamingoModel.from_pretrained("")
+        model = FlamingoModel.from_pretrained(config.interrogator.flamingo_model)
         assert isinstance(model, FlamingoModel)
         self.model = model
         self.model.to(self.device, dtype=self.dtype)

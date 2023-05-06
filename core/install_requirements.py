@@ -4,8 +4,9 @@ import logging
 import platform
 import subprocess
 import sys
+from dataclasses import dataclass
 from pathlib import Path
-from typing import Optional
+from typing import Optional, List, Union
 
 renamed_requirements = {
     "opencv-contrib-python-headless": "cv2",
@@ -44,6 +45,19 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
         requirements = {}
         for i in [r.strip() for r in f.read().splitlines()]:
+            split = i.split(";")
+            i = split[0].strip()
+
+            if len(split) > 1:
+                check = split[1].strip()
+            else:
+                check = ""
+
+            if check == 'platform_system == "Linux"':
+                logger.debug("Install check for Linux only")
+                if platform.system() != "Linux":
+                    continue
+
             if "git+http" in i:
                 logger.debug(f"Skipping git requirement (cannot check version): {i}")
                 continue
@@ -93,85 +107,187 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                 sys.exit(1)
 
 
-def install_pytorch():
+def install_iree():
+    "Install components necessary for IREE compilation and inference"
+
+    if (
+        not is_installed("iree-compiler")
+        or not is_installed("iree-runtime")
+        or not is_installed("torch-mlir")
+    ):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "iree-compiler",
+                "iree-runtime",
+                "git+https://github.com/llvm/torch-mlir.git",
+                "-f",
+                "https://nod-ai.github.io/SHARK-Runtime/pip-release-links.html",
+            ]
+        )
+
+
+@dataclass
+class PytorchDistribution:
+    "Dataclass that holds information about a pytorch distribution"
+    windows_supported: bool
+    name: str
+    check_command: Union[str, List[str]]
+    success_message: str
+    install_command: Union[str, List[str], List[List[str]]]
+
+
+# Order MATTERS!
+_pytorch_distributions = [
+    PytorchDistribution(
+        windows_supported=False,
+        name="rocm",
+        check_command="rocminfo",
+        success_message="ROCmInfo success, assuming user has AMD GPU",
+        install_command=[
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "torch==2.0.0",
+            "torchvision",
+            "--index-url",
+            "https://download.pytorch.org/whl/rocm5.4.2",
+        ],
+    ),
+    PytorchDistribution(
+        windows_supported=True,
+        name="cuda",
+        check_command="nvidia-smi",
+        success_message="NVidia-SMI success, assuming user has an NVIDIA GPU",
+        install_command=[
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "torch==2.0.0",
+            "torchvision",
+            "--index-url",
+            "https://download.pytorch.org/whl/cu118",
+        ],
+    ),
+    PytorchDistribution(
+        windows_supported=False,
+        name="intel",
+        check_command=["test", "-f", '"/etc/OpenCL/vendors/intel.icd"'],
+        success_message="Intel check success, assuming user has an Intel (i)GPU",
+        install_command=[
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "torch==1.13.0a0",
+            "torchvision==0.14.1a0",
+            "intel_extension_for_pytorch==1.13.120+xpu",
+            "-f",
+            "https://developer.intel.com/ipex-whl-stable-xpu",
+        ],
+    ),
+    PytorchDistribution(
+        windows_supported=False,
+        name="cpu",
+        check_command="echo a",
+        success_message="No GPU detected, assuming user doesn't have one",
+        install_command=[
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "torch",
+            "torchvision",
+            "intel_extension_for_pytorch",
+        ],
+    ),
+    PytorchDistribution(
+        windows_supported=True,
+        name="directml",
+        check_command="echo a",
+        success_message="No GPU detected, assuming user needs DirectML",
+        install_command=[
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "torch",
+            "torchvision",
+            "torch-directml",
+        ],
+    ),
+    PytorchDistribution(
+        windows_supported=True,
+        name="vulkan",
+        check_command="vulkaninfo",
+        success_message="Vulkan check success, assuming user has a Vulkan capable GPU",
+        install_command=[
+            ["git", "clone", "https://github.com/pytorch/pytorch.git"],
+            [
+                "USE_VULKAN=1",
+                "USE_VULKAN_SHADERC_RUNTIME=1",
+                "USE_VULKAN_WRAPPER=0",
+                "USE_CUDA=0",
+                sys.executable,
+                "pytorch/setup.py",
+                "install",
+            ],
+            [sys.executable, "-m", "pip", "install", "torchvision"],
+        ],
+    ),
+]
+
+
+def install_pytorch(force_distribution: int = -1):
     "Install necessary requirements for inference"
 
     # Install pytorch
-    if platform.system() == "Windows":
-        if not is_installed("torch", version="==2.0.0+cu118") or not is_installed(
-            "torchvision"
-        ):
-            logger.info("Installing PyTorch")
-            subprocess.check_call(
-                [
-                    sys.executable,
-                    "-m",
-                    "pip",
-                    "install",
-                    "torch==2.0.0+cu118",
-                    "torchvision",
-                    "--extra-index-url",
-                    "https://download.pytorch.org/whl/cu118",
-                ]
+    if not is_installed("torch") or not is_installed("torchvision"):
+        if isinstance(force_distribution, int):
+            forced_distribution = (
+                _pytorch_distributions[force_distribution]
+                if -1 < force_distribution < len(_pytorch_distributions)
+                else None
             )
-    elif platform.system() == "Darwin":
-        if not is_installed("torch", version="==2.0.0") or not is_installed(
-            "torchvision"
-        ):
-            logger.info("Installing PyTorch")
+        else:
+            forced_distribution = [
+                x
+                for x in _pytorch_distributions
+                if x.name == force_distribution.lower()
+            ][0]
+        logger.info("Installing PyTorch")
+        if platform.system() == "Darwin":
             subprocess.check_call(
                 [sys.executable, "-m", "pip", "install", "torch==2.0.0", "torchvision"]
             )
-    else:
-        if (
-            subprocess.run(  # pylint: disable=subprocess-run-check
-                "rocminfo",
-                stdout=subprocess.DEVNULL,
-                stderr=subprocess.DEVNULL,
-                shell=True,
-            ).returncode
-            == 0
-        ):
-            logger.info("ROCmInfo success, assuming user has AMD GPU")
-
-            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
-                "torchvision", "==0.15.1+cu118"
-            ):
-                logger.info("Installing PyTorch")
-
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "torch==2.0.0",
-                        "torchvision",
-                        "--index-url",
-                        "https://download.pytorch.org/whl/rocm5.4.2",
-                    ]
-                )
-
         else:
-            logger.info("ROCmInfo check failed, assuming user has NVIDIA GPU")
-
-            if not is_installed("torch", "==2.0.0+cu118") or not is_installed(
-                "torchvision", "==0.15.1+cu118"
-            ):
-                logger.info("Installing PyTorch")
-
-                subprocess.check_call(
-                    [
-                        sys.executable,
-                        "-m",
-                        "pip",
-                        "install",
-                        "torch==2.0.0",
-                        "torchvision",
-                        "--index-url",
-                        "https://download.pytorch.org/whl/cu118",
-                    ]
-                )
+            for c in _pytorch_distributions:
+                if (
+                    (c.windows_supported if platform.system() == "Windows" else True)
+                    and (
+                        (
+                            subprocess.run(  # pylint: disable=subprocess-run-check
+                                c.check_command,
+                                stdout=subprocess.DEVNULL,
+                                stderr=subprocess.DEVNULL,
+                                shell=True,
+                            ).returncode
+                            == 0
+                        )
+                    )
+                ) or c == forced_distribution:
+                    logger.info(c.success_message)
+                    if isinstance(c.install_command[0], list):
+                        for cmd in c.install_command:
+                            subprocess.check_call(cmd)
+                    else:
+                        subprocess.check_call(c.install_command)  # type: ignore
+                    break
 
     # Install other requirements
     install_requirements("requirements/pytorch.txt")

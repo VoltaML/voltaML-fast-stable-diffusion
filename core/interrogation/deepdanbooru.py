@@ -4,7 +4,7 @@ from typing import List, Tuple
 import numpy as np
 import torch
 from PIL import Image
-from torch.ao.quantization import default_qconfig, get_default_qconfig_mapping
+from torch.ao.quantization import get_default_qconfig_mapping
 from torch.ao.quantization.backend_config.tensorrt import (
     get_tensorrt_backend_config_dict,
 )
@@ -15,7 +15,6 @@ from torch.ao.quantization.quantize_fx import (
 )
 from tqdm import tqdm
 
-from core.config import config
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.interrogation.clip import is_cpu
 from core.interrogation.models.deepdanbooru_model import DeepDanbooruModel
@@ -69,27 +68,30 @@ class DeepdanbooruInterrogator(InterrogationModel):
 
         # Quantize if needed (should support TRT too)
         if self.quantized:
-            if is_cpu(self.device):
-                qconfig_dict = {"": default_qconfig}
-            else:
-                qconfig_dict = get_default_qconfig_mapping()
+            qconfig_dict = get_default_qconfig_mapping()
 
             # Images will be ( forcefully :) ) resized to 512x512 with only 3 channels, so [1, 512, 512, 3]'s the shape
             prepared = prepare_fx(
-                self.model, qconfig_dict, (torch.randn(1, 512, 512, 3),)
+                self.model,
+                qconfig_dict,
+                (torch.randn(1, 512, 512, 3),),  # great syntax pytorch :)
             )
-            for _ in tqdm(range(25), unit="it", unit_scale=False):
+            for _ in tqdm(range(25), unit="it", unit_scale=False, desc="Warming up"):
                 prepared(torch.randn(1, 512, 512, 3))
 
             if is_cpu(self.device):
                 self.model = convert_fx(prepared)  # type: ignore
             else:
-                self.model = convert_to_reference_fx(prepared, backend_config=get_tensorrt_backend_config_dict())  # type: ignore
+                try:
+                    self.model = convert_to_reference_fx(prepared, backend_config=get_tensorrt_backend_config_dict())  # type: ignore
+                except Exception:  # pylint: disable=broad-except
+                    pass
+            del prepared
         else:
             self.model.to(self.device, dtype=self.dtype)  # type: ignore
 
     def _infer(
-        self, image: Image.Image, sort: bool = False, treshold: float = 0.5
+        self, image: Image.Image, sort: bool = False, threshold: float = 0.5
     ) -> List[Tuple[str, float]]:
         pic = image.convert("RGB").resize((512, 512))
         a = np.expand_dims(np.array(pic, dtype=np.float32), 0) / 255
@@ -97,13 +99,13 @@ class DeepdanbooruInterrogator(InterrogationModel):
         with torch.no_grad():
             x = torch.from_numpy(a).to(
                 device=self.device,
-                dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+                dtype=self.dtype,
             )
             y = self.model(x)[0].detach().cpu().numpy()
 
         probability_dict = {}
         for tag, probability in zip(self.tags, y):
-            if probability < treshold:
+            if probability < threshold:
                 continue
             if tag.startswith("rating:"):
                 continue

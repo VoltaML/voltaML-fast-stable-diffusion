@@ -1,5 +1,6 @@
 import logging
 import os
+from pathlib import Path
 from typing import Any, List, Optional
 
 import torch
@@ -146,7 +147,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         if self.current_controlnet != target_controlnet:
             logging.debug(f"Old: {self.current_controlnet}, New: {target_controlnet}")
-            logging.debug("Cached controlnet not fould, loading new one")
+            logging.debug("Cached controlnet not found, loading new one")
 
             # Cleanup old controlnet
             self.controlnet = None
@@ -182,10 +183,7 @@ class PyTorchStableDiffusion(InferenceModel):
         # Clean memory
         self.memory_cleanup()
 
-    def txt2img(
-        self,
-        job: Txt2ImgQueueEntry,
-    ) -> List[Image.Image]:
+    def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from a prompt"
 
         self.manage_optional_components()
@@ -200,7 +198,10 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         if job.data.scheduler:
             change_scheduler(
@@ -295,7 +296,10 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -376,7 +380,10 @@ class PyTorchStableDiffusion(InferenceModel):
                 f"Invalid in_channels: {self.unet.in_channels}, expected 4 or 9"
             )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -480,7 +487,10 @@ class PyTorchStableDiffusion(InferenceModel):
             vae=self.vae,
         )
 
-        generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(job.data.seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
@@ -541,10 +551,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         return total_images
 
-    def generate(
-        self,
-        job: Job,
-    ):
+    def generate(self, job: Job):
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")
@@ -633,7 +640,7 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        token = textual_inversion.split("/")[-1].split(".")[0]
+        token = Path(textual_inversion).stem
         logger.info(f"Loading token {token} for textual inversion model")
 
         pipe.load_textual_inversion(textual_inversion, token=token)

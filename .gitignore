@@ -88,3 +88,6 @@ core/submodules
 
 # Manager
 manager/target
+
+# Profiler stuff
+profile.html

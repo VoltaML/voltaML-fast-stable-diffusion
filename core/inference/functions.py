@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
 
@@ -38,6 +39,16 @@ from core.optimizations import optimize_model
 console = Console()
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
+
+
+def is_ipex_available():
+    "Checks whether Intel Pytorch EXtensions are available/installed."
+    try:
+        import intel_extension_for_pytorch  # pylint: disable=unused-import
+
+        return True
+    except ImportError:
+        return False
 
 
 def is_onnxconverter_available():
@@ -78,6 +89,16 @@ def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
         from onnxsim import simplify  # pylint: disable=import-error,unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_bitsandbytes_available():
+    "Checks whether bitsandbytes is available."
+    try:
+        import bitsandbytes  # pylint: disable=import-error,unused-import
 
         return True
     except ImportError:
@@ -335,6 +356,20 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
     with open(json_file, "r", encoding="utf-8") as reader:
         text = reader.read()
     return json.loads(text)
+
+
+class HiddenPrints:
+    "Taken from https://stackoverflow.com/a/45669280. Thank you @alexander-c"
+
+    def __enter__(self):
+        self._original_stdout = (  # pylint: disable=attribute-defined-outside-init
+            sys.stdout
+        )
+        sys.stdout = open(os.devnull, "w", encoding="utf-8")
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        sys.stdout.close()
+        sys.stdout = self._original_stdout
 
 
 def load_pytorch_pipeline(

@@ -194,29 +194,28 @@ class OnnxStableDiffusion(InferenceModel):
                         return r
                 else:
                     if file.is_dir():
-                        match file.stem:
-                            case "tokenizer":
-                                return CLIPTokenizerFast.from_pretrained(file)
-                            case "scheduler":
-                                # TODO: during conversion save which scheduler was used.
-                                scheduler_reg = r"_class_name\": \"(.*)\","
-                                with open(
-                                    file / "scheduler_config.json",
-                                    "r",
-                                    encoding="utf-8",
-                                ) as f:
-                                    matches = re.search(
-                                        scheduler_reg, "\n".join(f.readlines())
-                                    )
-                                    module = importlib.import_module("diffusers")
-                                    assert (
-                                        matches is not None
-                                    ), "Scheduler not found in the scheduler_config.json"
-                                    scheduler = getattr(module, matches.group(1))
-                                    f = getattr(scheduler, "from_pretrained")
-                                    return f(pretrained_model_name_or_path=str(file))
-                            case _:
-                                raise ValueError("Bad argument 'file' provided.")
+                        if file.stem == "tokenizer":
+                            return CLIPTokenizerFast.from_pretrained(file)
+                        elif file.stem == "scheduler":
+                            # TODO: during conversion save which scheduler was used.
+                            scheduler_reg = r"_class_name\": \"(.*)\","
+                            with open(
+                                file / "scheduler_config.json",
+                                "r",
+                                encoding="utf-8",
+                            ) as f:
+                                matches = re.search(
+                                    scheduler_reg, "\n".join(f.readlines())
+                                )
+                                module = importlib.import_module("diffusers")
+                                assert (
+                                    matches is not None
+                                ), "Scheduler not found in the scheduler_config.json"
+                                scheduler = getattr(module, matches.group(1))
+                                f = getattr(scheduler, "from_pretrained")
+                                return f(pretrained_model_name_or_path=str(file))
+                        else:
+                            raise ValueError("Bad argument 'file' provided.")
                     else:
                         sess_options = ort.SessionOptions()
 

@@ -240,7 +240,10 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return images
 
-    def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
+    def txt2img(
+        self,
+        job: Txt2ImgQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from text"
 
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
@@ -304,7 +307,10 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return total_images
 
-    def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
+    def img2img(
+        self,
+        job: Img2ImgQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from images"
 
         from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
@@ -370,7 +376,10 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return total_images
 
-    def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
+    def controlnet2img(
+        self,
+        job: ControlNetQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from images"
 
         self.manage_optional_components(target_controlnet=job.data.controlnet)

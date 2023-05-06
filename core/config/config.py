@@ -99,25 +99,38 @@ class APIConfig:
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    image_preview_delay: float = 2.0
 
-    # ToMeSD
-    use_tomesd: bool = False
-    tomesd_ratio: float = 0.4
+    # TomeSD
+    use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit
+    tomesd_ratio: float = 0.25  # had to tone this down, 0.4 is too big of a context loss even on short prompts
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
 
-    # Optimizations
-    attention_processor: Literal["xformers", "spda"] = "xformers"
+    image_preview_delay: float = 2.0
+
+    # General optimizations
+    attention_processor: Literal["xformers", "spda", "cross_attention"] = "xformers"
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
     vae_slicing: bool = True
     trace_model: bool = False
+    clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
     use_fp32: bool = False
 
+    # CPU specific optimizations
+    quantize_to_int8: bool = False  # preferably will also be able to port this over to gpu, but cpu only for now
+
+    # CUDA specific optimizations
+    reduced_precision: bool = False
+    cudnn_benchmark: bool = False
+    deterministic_generation: bool = False
+
     # Device settings
     device_id: int = 0
-    device_type: Literal["cpu", "cuda", "mps", "directml"] = "cuda"
+    device_type: Literal[
+        "cpu", "cuda", "mps", "directml", "intel", "vulkan", "iree"
+    ] = "cuda"
+    iree_target: Literal["cuda", "vulkan", "llvm", "interpreted"] = "vulkan"
 
     # Lora
     lora_text_encoder_weight: float = 0.5
@@ -130,10 +143,21 @@ class APIConfig:
     def device(self):
         "Return the device string"
 
+        if self.device_type == "intel":
+            from core.inference.functions import is_ipex_available
+
+            if is_ipex_available():
+                return "xpu"
+            return "cpu"
+
         if self.device_type == "cpu":
             return "cpu"
+        if self.device_type == "vulkan":
+            return "vulkan"
         if self.device_type == "directml":
-            raise NotImplementedError("DirectML is not supported yet")
+            import torch_directml  # pylint: disable=import-error
+
+            return torch_directml.device()
 
         return f"{self.device_type}:{self.device_id}"
 
@@ -189,16 +213,18 @@ class FrontendConfig:
 class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"
 
-    txt2img: Txt2ImgConfig = field(default=Txt2ImgConfig())
-    img2img: Img2ImgConfig = field(default=Img2ImgConfig())
-    inpainting: InpaintingConfig = field(default=InpaintingConfig())
-    controlnet: ControlNetConfig = field(default=ControlNetConfig())
-    upscale: UpscaleConfig = field(default=UpscaleConfig())
-    api: APIConfig = field(default=APIConfig())
-    interrogator: InterrogatorConfig = field(default=InterrogatorConfig())
-    aitemplate: AITemplateConfig = field(default=AITemplateConfig())
-    bot: BotConfig = field(default=BotConfig())
-    frontend: FrontendConfig = field(default=FrontendConfig())
+    # default_factory= instead of default= so we're python3.11 compatible
+
+    txt2img: Txt2ImgConfig = field(default_factory=Txt2ImgConfig)
+    img2img: Img2ImgConfig = field(default_factory=Img2ImgConfig)
+    inpainting: InpaintingConfig = field(default_factory=InpaintingConfig)
+    controlnet: ControlNetConfig = field(default_factory=ControlNetConfig)
+    upscale: UpscaleConfig = field(default_factory=UpscaleConfig)
+    api: APIConfig = field(default_factory=APIConfig)
+    interrogator: InterrogatorConfig = field(default_factory=InterrogatorConfig)
+    aitemplate: AITemplateConfig = field(default_factory=AITemplateConfig)
+    bot: BotConfig = field(default_factory=BotConfig)
+    frontend: FrontendConfig = field(default_factory=FrontendConfig)
     extra: CatchAll = field(default_factory=dict)
 
 

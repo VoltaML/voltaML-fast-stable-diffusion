@@ -21,6 +21,7 @@ from transformers import (
 
 from core.config import config
 from core.files import get_full_model_path
+from core.inference.functions import is_bitsandbytes_available
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.types import InterrogatorQueueEntry, Job
 from core.utils import convert_to_image, download_file
@@ -187,17 +188,20 @@ class CLIPInterrogator(InterrogationModel):
         # load captioner model (BLIP)
         import open_clip
 
-        match config.interrogator.caption_model.split("/")[1].split("-")[0].lower():
-            case "git":
-                # Not sure this supports fp16... only time will tell :)
-                self.caption_model = AutoModelForCausalLM.from_pretrained(
-                    config.interrogator.caption_model, torch_dtype=self.dtype
-                )
-            case "blip2":
-                self.caption_model = Blip2ForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype)  # type: ignore
-            case _:
-                self.caption_model = BlipForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype)  # type: ignore
-        self.caption_processor = AutoProcessor.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype)  # type: ignore
+        t = config.interrogator.caption_model.split("/")[1].split("-")[0].lower()
+
+        if t == "git":
+            # Not sure this supports fp16... only time will tell :)
+            self.caption_model = AutoModelForCausalLM.from_pretrained(
+                config.interrogator.caption_model,
+                torch_dtype=self.dtype,
+                load_in_8bit=is_bitsandbytes_available(),
+            )
+        elif t == "blip2":
+            self.caption_model = Blip2ForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
+        else:
+            self.caption_model = BlipForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
+        self.caption_processor = AutoProcessor.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
 
         if config.interrogator.offload_captioner:
             if is_accelerate_available() and self.device != "cpu":
@@ -221,7 +225,7 @@ class CLIPInterrogator(InterrogationModel):
             self.caption_processor.to(self.device, dtype=self.dtype)  # type: ignore
 
         # load visualizer (CLIP)
-
+        # tf is this, black???
         (
             self.clip_model,
             _,
@@ -261,7 +265,7 @@ class LabelTable:
     "internal"
 
     def __init__(self, labels: List[str], descriptor: str, interrogator):
-        self.ignore_on_merge = descriptor.startswith("ingore-")
+        self.ignore_on_merge = descriptor.startswith("ignore-")
         if self.ignore_on_merge:
             descriptor = descriptor.removeprefix("ignore-")
 
