@@ -10,8 +10,6 @@ from PIL import Image
 from transformers import CLIPFeatureExtractor
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
-from fastapi_utils.timing import record_timing
-from fastapi import Request
 
 from api import websocket_manager
 from api.websockets.data import Data
@@ -19,21 +17,12 @@ from core.config import config
 from core.functions import init_ait_module
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
-from core.inference_callbacks import (
-    controlnet_callback,
-    img2img_callback,
-    txt2img_callback,
-)
+from core.inference_callbacks import (controlnet_callback, img2img_callback,
+                                      txt2img_callback)
 from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
-from core.types import (
-    Backend,
-    ControlNetMode,
-    ControlNetQueueEntry,
-    Img2ImgQueueEntry,
-    Job,
-    Txt2ImgQueueEntry,
-)
+from core.types import (Backend, ControlNetMode, ControlNetQueueEntry,
+                        Img2ImgQueueEntry, Job, Txt2ImgQueueEntry)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -91,7 +80,7 @@ class AITemplateStableDiffusion(InferenceModel):
         )
 
         pipe.unet = None  # type: ignore
-        self.memory_cleanup(None)
+        self.memory_cleanup()
 
         pipe = StableDiffusionAITPipeline(
             vae=pipe.vae,  # type: ignore
@@ -143,13 +132,12 @@ class AITemplateStableDiffusion(InferenceModel):
             self.vae_ait_exe,
         )
 
-        self.memory_cleanup(None)
+        self.memory_cleanup()
 
     def manage_optional_components(
         self,
         *,
         target_controlnet: ControlNetMode = ControlNetMode.NONE,
-        request: Optional[Request] = None,
     ) -> None:
         "Cleanup old components"
 
@@ -161,7 +149,7 @@ class AITemplateStableDiffusion(InferenceModel):
             # Cleanup old controlnet
             self.controlnet = None
             if config.api.clear_memory_policy == "always":
-                self.memory_cleanup(request)
+                self.memory_cleanup()
 
             if target_controlnet == ControlNetMode.NONE:
                 # Load basic unet if requested
@@ -172,7 +160,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     del self.unet_ait_exe
 
                     if config.api.clear_memory_policy == "always":
-                        self.memory_cleanup(request)
+                        self.memory_cleanup()
 
                     self.unet_ait_exe = init_ait_module(
                         model_name="UNet2DConditionModel", workdir=self.directory
@@ -194,7 +182,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     del self.unet_ait_exe
 
                     if config.api.clear_memory_policy == "always":
-                        self.memory_cleanup(request)
+                        self.memory_cleanup()
 
                     self.unet_ait_exe = init_ait_module(
                         model_name="ControlNetUNet2DConditionModel",
@@ -229,31 +217,31 @@ class AITemplateStableDiffusion(InferenceModel):
 
         # Clean memory
         if config.api.clear_memory_policy == "always":
-            self.memory_cleanup(request)
+            self.memory_cleanup()
 
-    def generate(self, job: Job, request: Request) -> List[Image.Image]:
+    def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
 
         if isinstance(job, Txt2ImgQueueEntry):
-            images = self.txt2img(job, request)
+            images = self.txt2img(job)
         elif isinstance(job, Img2ImgQueueEntry):
-            images = self.img2img(job, request)
+            images = self.img2img(job)
         elif isinstance(job, ControlNetQueueEntry):
-            images = self.controlnet2img(job, request)
+            images = self.controlnet2img(job)
         else:
             raise ValueError("Invalid job type for this model")
 
         if config.api.clear_memory_policy == "always":
-            self.memory_cleanup(request)
+            self.memory_cleanup()
 
         return images
 
-    def txt2img(self, job: Txt2ImgQueueEntry, request: Request) -> List[Image.Image]:
+    def txt2img(self, job: Txt2ImgQueueEntry, ) -> List[Image.Image]:
         "Generates images from text"
 
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
-        self.manage_optional_components(request=request)
+        self.manage_optional_components()
 
         pipe = StableDiffusionAITPipeline(
             vae=self.vae,
@@ -279,8 +267,6 @@ class AITemplateStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        record_timing(request, "setup")
-
         for _ in range(job.data.batch_count):
             data = pipe(
                 prompt=job.data.prompt,
@@ -294,11 +280,9 @@ class AITemplateStableDiffusion(InferenceModel):
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
             )
-            record_timing(request, "generation")
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
-            record_timing(request, "list extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -316,12 +300,13 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return total_images
 
-    def img2img(self, job: Img2ImgQueueEntry, request: Request) -> List[Image.Image]:
+    def img2img(self, job: Img2ImgQueueEntry, ) -> List[Image.Image]:
         "Generates images from images"
 
-        from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
+        from core.aitemplate.src.ait_img2img import \
+            StableDiffusionImg2ImgAITPipeline
 
-        self.manage_optional_components(request=request)
+        self.manage_optional_components()
 
         pipe = StableDiffusionImg2ImgAITPipeline(
             vae=self.vae,
@@ -341,11 +326,8 @@ class AITemplateStableDiffusion(InferenceModel):
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
-        record_timing(request, "setup")
-
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
-        record_timing(request, "preprocess")
 
         total_images: List[Image.Image] = []
 
@@ -363,13 +345,11 @@ class AITemplateStableDiffusion(InferenceModel):
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
             )
-            record_timing(request, "generation")
 
             images = data[0]
             assert isinstance(images, List)
 
             total_images.extend(images)
-            record_timing(request, "list extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -388,19 +368,18 @@ class AITemplateStableDiffusion(InferenceModel):
         return total_images
 
     def controlnet2img(
-        self, job: ControlNetQueueEntry, request: Request
+        self, job: ControlNetQueueEntry, 
     ) -> List[Image.Image]:
         "Generates images from images"
 
         self.manage_optional_components(
-            target_controlnet=job.data.controlnet, request=request
+            target_controlnet=job.data.controlnet
         )
 
         assert self.controlnet is not None
 
-        from core.aitemplate.src.ait_controlnet import (
-            StableDiffusionControlNetAITPipeline,
-        )
+        from core.aitemplate.src.ait_controlnet import \
+            StableDiffusionControlNetAITPipeline
 
         pipe = StableDiffusionControlNetAITPipeline(
             vae=self.vae,
@@ -423,16 +402,12 @@ class AITemplateStableDiffusion(InferenceModel):
 
         from core.controlnet_preprocessing import image_to_controlnet_input
 
-        record_timing(request, "setup")
-
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
-        record_timing(request, "image preprocess")
 
         # Preprocess the image if needed
         if not job.data.is_preprocessed:
             input_image = image_to_controlnet_input(input_image, job.data)
-        record_timing(request, "controlnet")
 
         total_images: List[Image.Image] = [input_image]
 
@@ -452,13 +427,11 @@ class AITemplateStableDiffusion(InferenceModel):
                 height=job.data.height,
                 width=job.data.width,
             )
-            record_timing(request, "generation")
 
             images = data[0]
             assert isinstance(images, List)
 
             total_images.extend(images)
-            record_timing(request, "list extend")
 
         websocket_manager.broadcast_sync(
             data=Data(
