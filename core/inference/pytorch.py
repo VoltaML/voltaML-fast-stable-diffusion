@@ -3,18 +3,15 @@ import os
 from typing import Any, List, Optional
 
 import torch
-from diffusers import (
-    AutoencoderKL,
-    ControlNetModel,
-    StableDiffusionControlNetPipeline,
-    StableDiffusionPipeline,
-    UNet2DConditionModel,
-)
+from diffusers import (AutoencoderKL, ControlNetModel,
+                       StableDiffusionControlNetPipeline,
+                       StableDiffusionInpaintPipeline, StableDiffusionPipeline,
+                       UNet2DConditionModel)
+from fastapi import Request
+from fastapi_utils.timing import record_timing
 from PIL import Image, ImageOps
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
-from fastapi_utils.timing import record_timing
-from fastapi import Request
 
 from api import websocket_manager
 from api.websockets import Data
@@ -25,23 +22,13 @@ from core.inference.functions import load_pytorch_pipeline
 from core.inference.latents import scale_latents
 from core.inference.lwp import get_weighted_text_embeddings
 from core.inference.lwp_sd import StableDiffusionLongPromptWeightingPipeline
-from core.inference_callbacks import (
-    controlnet_callback,
-    img2img_callback,
-    inpaint_callback,
-    txt2img_callback,
-)
+from core.inference_callbacks import (controlnet_callback, img2img_callback,
+                                      inpaint_callback, txt2img_callback)
 from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
-from core.types import (
-    Backend,
-    ControlNetMode,
-    ControlNetQueueEntry,
-    Img2ImgQueueEntry,
-    InpaintQueueEntry,
-    Job,
-    Txt2ImgQueueEntry,
-)
+from core.types import (Backend, ControlNetMode, ControlNetQueueEntry,
+                        Img2ImgQueueEntry, InpaintQueueEntry, Job,
+                        Txt2ImgQueueEntry)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -368,15 +355,31 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.manage_optional_components(request=request)
 
-        pipe = StableDiffusionLongPromptWeightingPipeline(
-            vae=self.vae,
-            unet=self.unet,  # type: ignore
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            safety_checker=self.safety_checker,
-        )
+        if self.unet.config["in_channels"] == 9:
+            pipe = StableDiffusionInpaintPipeline(
+                vae=self.vae,
+                unet=self.unet,  # type: ignore
+                text_encoder=self.text_encoder,
+                tokenizer=self.tokenizer,
+                scheduler=self.scheduler,
+                feature_extractor=self.feature_extractor,
+                safety_checker=self.safety_checker,
+                requires_safety_checker=False,
+            )
+        elif self.unet.config["in_channels"] == 4:
+            pipe = StableDiffusionLongPromptWeightingPipeline(
+                vae=self.vae,
+                unet=self.unet,  # type: ignore
+                text_encoder=self.text_encoder,
+                tokenizer=self.tokenizer,
+                scheduler=self.scheduler,
+                feature_extractor=self.feature_extractor,
+                safety_checker=self.safety_checker,
+            )
+        else:
+            raise ValueError(
+                f"Invalid in_channels: {self.unet.in_channels}, expected 4 or 9"
+            )
 
         if config.api.device_type == "directml":
             generator = torch.Generator().manual_seed(job.data.seed)
@@ -399,22 +402,45 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            data = pipe.inpaint(
-                prompt=job.data.prompt,
-                image=input_image,
-                mask_image=input_mask_image,
-                num_inference_steps=job.data.steps,
-                guidance_scale=job.data.guidance_scale,
-                self_attention_scale=job.data.self_attention_scale,
-                negative_prompt=job.data.negative_prompt,
-                output_type="pil",
-                generator=generator,
-                callback=inpaint_callback,
-                return_dict=False,
-                num_images_per_prompt=job.data.batch_size,
-                width=job.data.width,
-                height=job.data.height,
-            )
+            if isinstance(pipe, StableDiffusionInpaintPipeline):
+                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                    pipe=pipe,  # type: ignore
+                    prompt=job.data.prompt,
+                    uncond_prompt=job.data.negative_prompt,
+                )
+
+                data = pipe(
+                    prompt_embeds=prompt_embeds,
+                    image=input_image,
+                    mask_image=input_mask_image,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    negative_prompt_embeds=negative_prompt_embeds,
+                    output_type="pil",
+                    generator=generator,
+                    callback=inpaint_callback,
+                    return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
+                    width=job.data.width,
+                    height=job.data.height,
+                )
+            else:
+                data = pipe.inpaint(
+                    prompt=job.data.prompt,
+                    image=input_image,
+                    mask_image=input_mask_image,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    generator=generator,
+                    callback=inpaint_callback,
+                    return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
+                    width=job.data.width,
+                    height=job.data.height,
+                )
             record_timing(request, "generation")
 
             if not data:
@@ -633,10 +659,14 @@ class PyTorchStableDiffusion(InferenceModel):
             safety_checker=self.safety_checker,
         )
 
-        pipe.load_textual_inversion(textual_inversion)
+        token = textual_inversion.split("/")[-1].split(".")[0]
+        logger.info(f"Loading token {token} for textual inversion model")
+
+        pipe.load_textual_inversion(textual_inversion, token=token)
 
         self.textual_inversions.append(textual_inversion)
         logger.info(f"Textual inversion model {textual_inversion} loaded successfully")
+        logger.debug(f"All added tokens: {self.tokenizer.added_tokens_encoder}")
 
     def tokenize(self, text: str):
         "Return the vocabulary of the tokenizer"

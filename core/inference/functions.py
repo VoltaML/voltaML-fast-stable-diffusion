@@ -7,34 +7,29 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
-from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
-    download_from_original_stable_diffusion_ckpt,
-)
+from diffusers.pipelines.stable_diffusion.convert_from_ckpt import \
+    download_from_original_stable_diffusion_ckpt
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
-from diffusers.utils.constants import (
-    CONFIG_NAME,
-    DIFFUSERS_CACHE,
-    HUGGINGFACE_CO_RESOLVE_ENDPOINT,
-    ONNX_WEIGHTS_NAME,
-    WEIGHTS_NAME,
-)
+from diffusers.utils.constants import (CONFIG_NAME, DIFFUSERS_CACHE,
+                                       HUGGINGFACE_CO_RESOLVE_ENDPOINT,
+                                       ONNX_WEIGHTS_NAME, WEIGHTS_NAME)
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
 from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download
 from huggingface_hub.hf_api import ModelInfo
-from huggingface_hub.utils._errors import (
-    EntryNotFoundError,
-    RepositoryNotFoundError,
-    RevisionNotFoundError,
-)
+from huggingface_hub.utils._errors import (EntryNotFoundError,
+                                           RepositoryNotFoundError,
+                                           RevisionNotFoundError)
 from requests import HTTPError
+from rich.console import Console
 
 from core.config import config
 from core.files import get_full_model_path
 from core.optimizations import optimize_model
 
+console = Console()
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
@@ -64,9 +59,7 @@ def is_onnx_available():
     try:
         import onnx  # pylint: disable=unused-import
         from onnxruntime.quantization import (  # pylint: disable=unused-import
-            QuantType,
-            quantize_dynamic,
-        )
+            QuantType, quantize_dynamic)
 
         return True
     except ImportError:
@@ -86,7 +79,18 @@ def is_onnxscript_available():
 def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
-        from onnxsim import simplify  # pylint: disable=import-error,unused-import
+        from onnxsim import \
+            simplify  # pylint: disable=import-error,unused-import
+
+        return True
+    except ImportError:
+        return False
+
+
+def is_bitsandbytes_available():
+    "Checks whether bitsandbytes is available."
+    try:
+        import bitsandbytes  # pylint: disable=import-error,unused-import
 
         return True
     except ImportError:
@@ -384,42 +388,35 @@ def load_pytorch_pipeline(
     )
 
     if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
-        use_safetensors = ".safetensors" in model_id_or_path
-        if use_safetensors:
-            logger.info("Loading model as safetensors")
-        else:
-            logger.info("Loading model as checkpoint")
+        with console.status("[bold green]Loading model from checkpoint..."):
+            use_safetensors = ".safetensors" in model_id_or_path
+            if use_safetensors:
+                logger.info("Loading model as safetensors")
+            else:
+                logger.info("Loading model as checkpoint")
 
-        try:
+            # This function does not inherit the channels so we need to hack it like this
+            in_channels = 9 if "inpaint" in model_id_or_path else 4
+
             with HiddenPrints():
                 pipe = download_from_original_stable_diffusion_ckpt(
                     checkpoint_path=str(get_full_model_path(model_id_or_path)),
                     from_safetensors=use_safetensors,
-                    extract_ema=True,
                     load_safety_checker=False,
+                    num_in_channels=in_channels,
                 )
-        except Exception as e:  # pylint: disable=broad-except
-            logger.debug(f"Error: {e}")
-            with HiddenPrints():
-                pipe = download_from_original_stable_diffusion_ckpt(
-                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                    extract_ema=True,
-                    from_safetensors=use_safetensors,
-                )
-            pipe.requires_safety_checker = False  # type: ignore
-            pipe.safety_checker = None  # type: ignore
-            pipe.feature_extractor = None  # type: ignore
     else:
-        pipe = StableDiffusionPipeline.from_pretrained(
-            pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-            torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
-            use_auth_token=auth,
-            safety_checker=None,
-            requires_safety_checker=False,
-            feature_extractor=None,
-            low_cpu_mem_usage=True,
-        )
-        assert isinstance(pipe, StableDiffusionPipeline)
+        with console.status("[bold green]Loading model from HuggingFace Hub..."):
+            pipe = StableDiffusionPipeline.from_pretrained(
+                pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
+                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+                use_auth_token=auth,
+                safety_checker=None,
+                requires_safety_checker=False,
+                feature_extractor=None,
+                low_cpu_mem_usage=True,
+            )
+            assert isinstance(pipe, StableDiffusionPipeline)
 
     logger.debug(
         f"Loaded {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"

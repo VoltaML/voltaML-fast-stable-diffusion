@@ -145,6 +145,11 @@
               <!-- Textual Inversions -->
               <NGi>
                 <NCard :title="textual_inversions_title">
+                  <NAlert type="warning" show-icon title="Tokens">
+                    The name of the inversion will be
+                    <b>THE ACTUAL TOKEN</b>. For example:
+                    <b class="highlight">badhandv4.safetensors -> badhandv4</b>
+                  </NAlert>
                   <div
                     style="
                       display: inline-flex;
@@ -333,7 +338,7 @@ import {
   SyncSharp,
   WifiSharp,
 } from "@vicons/ionicons5";
-import { NButton, NProgress, useMessage } from "naive-ui";
+import { NAlert, NButton, NProgress, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
 import { useRouter } from "vue-router";

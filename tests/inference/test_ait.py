@@ -10,7 +10,7 @@ from core.types import (
     Txt2imgData,
     Txt2ImgQueueEntry,
 )
-from tests.functions import generate_random_image
+from tests.functions import generate_random_image_base64
 
 try:
     from core.aitemplate.compile import compile_diffusers
@@ -48,7 +48,7 @@ def test_aitemplate_img2img(pipe: AITemplateStableDiffusion):
     job = Img2ImgQueueEntry(
         data=Img2imgData(
             prompt="test",
-            image=generate_random_image(),
+            image=generate_random_image_base64(),
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),
@@ -62,7 +62,7 @@ def test_aitemplate_controlnet(pipe: AITemplateStableDiffusion):
     job = ControlNetQueueEntry(
         data=ControlNetData(
             prompt="test",
-            image=generate_random_image(),
+            image=generate_random_image_base64(),
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             controlnet=ControlNetMode.CANNY,
             id="test",

@@ -8925,7 +8925,7 @@ function getOffset(placement, offsetRect, targetRect, offsetTopToStandardPlaceme
       };
   }
 }
-const style$u = c([
+const style$v = c([
   c(".v-binder-follower-container", {
     position: "absolute",
     left: "0",
@@ -9007,7 +9007,7 @@ const VFollower = defineComponent({
       }
     });
     const ssrAdapter2 = useSsrAdapter();
-    style$u.mount({
+    style$v.mount({
       id: "vueuc/binder",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -10202,7 +10202,7 @@ const VXScroll = defineComponent({
   }
 });
 const hiddenAttr = "v-hidden";
-const style$t = c("[v-hidden]", {
+const style$u = c("[v-hidden]", {
   display: "none!important"
 });
 const VOverflow = defineComponent({
@@ -10292,7 +10292,7 @@ const VOverflow = defineComponent({
       }
     }
     const ssrAdapter2 = useSsrAdapter();
-    style$t.mount({
+    style$u.mount({
       id: "vueuc/overflow",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -13399,7 +13399,7 @@ const NFadeInExpandTransition = defineComponent({
     };
   }
 });
-const style$s = cB("base-icon", `
+const style$t = cB("base-icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -13434,13 +13434,13 @@ const NBaseIcon = defineComponent({
     onMouseup: Function
   },
   setup(props) {
-    useStyle("-base-icon", style$s, toRef(props, "clsPrefix"));
+    useStyle("-base-icon", style$t, toRef(props, "clsPrefix"));
   },
   render() {
     return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
   }
 });
-const style$r = cB("base-close", `
+const style$s = cB("base-close", `
  display: flex;
  align-items: center;
  justify-content: center;
@@ -13509,7 +13509,7 @@ const NBaseClose = defineComponent({
     absolute: Boolean
   },
   setup(props) {
-    useStyle("-base-close", style$r, toRef(props, "clsPrefix"));
+    useStyle("-base-close", style$s, toRef(props, "clsPrefix"));
     return () => {
       const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
       const Tag = isButtonTag ? "button" : "div";
@@ -13568,7 +13568,7 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$q = c$1([c$1("@keyframes loading-container-rotate", `
+const style$r = c$1([c$1("@keyframes loading-container-rotate", `
  to {
  -webkit-transform: rotate(360deg);
  transform: rotate(360deg);
@@ -13731,7 +13731,7 @@ const NBaseLoading = defineComponent({
     default: 100
   } }, exposedLoadingProps),
   setup(props) {
-    useStyle("-base-loading", style$q, toRef(props, "clsPrefix"));
+    useStyle("-base-loading", style$r, toRef(props, "clsPrefix"));
   },
   render() {
     const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
@@ -14761,7 +14761,7 @@ const emptyDark = {
   self: self$1d
 };
 const emptyDark$1 = emptyDark;
-const style$p = cB("empty", `
+const style$q = cB("empty", `
  display: flex;
  flex-direction: column;
  align-items: center;
@@ -14800,7 +14800,7 @@ const NEmpty = defineComponent({
   props: emptyProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Empty", "-empty", style$p, emptyLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Empty", "-empty", style$q, emptyLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
@@ -14891,7 +14891,7 @@ function fadeInTransition({
     opacity: 1
   })];
 }
-const style$o = cB("scrollbar", `
+const style$p = cB("scrollbar", `
  overflow: hidden;
  position: relative;
  z-index: auto;
@@ -15414,7 +15414,7 @@ const Scrollbar$1 = defineComponent({
       off("mousemove", window, handleYScrollMouseMove, true);
       off("mouseup", window, handleYScrollMouseUp, true);
     });
-    const themeRef = useTheme("Scrollbar", "-scrollbar", style$o, scrollbarLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Scrollbar", "-scrollbar", style$p, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
       return {
@@ -15760,7 +15760,7 @@ function fadeInScaleUpTransition({
     transform: `${originalTransform} scale(1)`
   })];
 }
-const style$n = cB("base-select-menu", `
+const style$o = cB("base-select-menu", `
  line-height: 1.5;
  outline: none;
  z-index: 0;
@@ -15929,7 +15929,7 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
-    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$n, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$o, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
     const scrollbarRef = ref(null);
@@ -16228,7 +16228,7 @@ const NInternalSelectMenu = defineComponent({
     );
   }
 });
-const style$m = cB("base-wave", `
+const style$n = cB("base-wave", `
  position: absolute;
  left: 0;
  right: 0;
@@ -16245,7 +16245,7 @@ const NBaseWave = defineComponent({
     }
   },
   setup(props) {
-    useStyle("-base-wave", style$m, toRef(props, "clsPrefix"));
+    useStyle("-base-wave", style$n, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const activeRef = ref(false);
     let animationTimerId = null;
@@ -16321,7 +16321,7 @@ const oppositePlacement = {
   right: "left"
 };
 const arrowSize = "var(--n-arrow-height) * 1.414";
-const style$l = c$1([cB("popover", `
+const style$m = c$1([cB("popover", `
  transition:
  box-shadow .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -16513,7 +16513,7 @@ const NPopoverBody = defineComponent({
   props: popoverBodyProps,
   setup(props, { slots, attrs }) {
     const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Popover", "-popover", style$l, popoverLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Popover", "-popover", style$m, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
     const bodyRef = ref(null);
@@ -17396,7 +17396,7 @@ const commonProps = {
     default: void 0
   }
 };
-const style$k = cB("tag", `
+const style$l = cB("tag", `
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -17499,7 +17499,7 @@ const NTag = defineComponent({
   setup(props) {
     const contentRef = ref(null);
     const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Tag", "-tag", style$k, tagLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tag", "-tag", style$l, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
@@ -17630,7 +17630,7 @@ const NTag = defineComponent({
     );
   }
 });
-const style$j = cB("base-clear", `
+const style$k = cB("base-clear", `
  flex-shrink: 0;
  height: 1em;
  width: 1em;
@@ -17670,7 +17670,7 @@ const NBaseClear = defineComponent({
     onClear: Function
   },
   setup(props) {
-    useStyle("-base-clear", style$j, toRef(props, "clsPrefix"));
+    useStyle("-base-clear", style$k, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
         e.preventDefault();
@@ -17890,7 +17890,7 @@ const internalSelectionDark = {
   }
 };
 const internalSelectionDark$1 = internalSelectionDark;
-const style$i = c$1([cB("base-selection", `
+const style$j = c$1([cB("base-selection", `
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -18130,7 +18130,7 @@ const NInternalSelection = defineComponent({
     const showTagsPopoverRef = ref(false);
     const patternInputFocusedRef = ref(false);
     const hoverRef = ref(false);
-    const themeRef = useTheme("InternalSelection", "-internal-selection", style$i, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelection", "-internal-selection", style$j, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
     const mergedClearableRef = computed(() => {
       return props.clearable && !props.disabled && (hoverRef.value || props.active);
     });
@@ -18931,6 +18931,237 @@ function fadeInHeightExpandTransition({
  ${originalTransition ? "," + originalTransition : ""}
  `)];
 }
+const style$i = cB("alert", `
+ line-height: var(--n-line-height);
+ border-radius: var(--n-border-radius);
+ position: relative;
+ transition: background-color .3s var(--n-bezier);
+ background-color: var(--n-color);
+ text-align: start;
+ word-break: break-word;
+`, [cE("border", `
+ border-radius: inherit;
+ position: absolute;
+ left: 0;
+ right: 0;
+ top: 0;
+ bottom: 0;
+ transition: border-color .3s var(--n-bezier);
+ border: var(--n-border);
+ pointer-events: none;
+ `), cM("closable", [cB("alert-body", [cE("title", `
+ padding-right: 24px;
+ `)])]), cE("icon", {
+  color: "var(--n-icon-color)"
+}), cB("alert-body", {
+  padding: "var(--n-padding)"
+}, [cE("title", {
+  color: "var(--n-title-text-color)"
+}), cE("content", {
+  color: "var(--n-content-text-color)"
+})]), fadeInHeightExpandTransition({
+  originalTransition: "transform .3s var(--n-bezier)",
+  enterToProps: {
+    transform: "scale(1)"
+  },
+  leaveToProps: {
+    transform: "scale(0.9)"
+  }
+}), cE("icon", `
+ position: absolute;
+ left: 0;
+ top: 0;
+ align-items: center;
+ justify-content: center;
+ display: flex;
+ width: var(--n-icon-size);
+ height: var(--n-icon-size);
+ font-size: var(--n-icon-size);
+ margin: var(--n-icon-margin);
+ `), cE("close", `
+ transition:
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ position: absolute;
+ right: 0;
+ top: 0;
+ margin: var(--n-close-margin);
+ `), cM("show-icon", [cB("alert-body", {
+  paddingLeft: "calc(var(--n-icon-margin-left) + var(--n-icon-size) + var(--n-icon-margin-right))"
+})]), cB("alert-body", `
+ border-radius: var(--n-border-radius);
+ transition: border-color .3s var(--n-bezier);
+ `, [cE("title", `
+ transition: color .3s var(--n-bezier);
+ font-size: 16px;
+ line-height: 19px;
+ font-weight: var(--n-title-font-weight);
+ `, [c$1("& +", [cE("content", {
+  marginTop: "9px"
+})])]), cE("content", {
+  transition: "color .3s var(--n-bezier)",
+  fontSize: "var(--n-font-size)"
+})]), cE("icon", {
+  transition: "color .3s var(--n-bezier)"
+})]);
+const alertProps = Object.assign(Object.assign({}, useTheme.props), {
+  title: String,
+  showIcon: {
+    type: Boolean,
+    default: true
+  },
+  type: {
+    type: String,
+    default: "default"
+  },
+  bordered: {
+    type: Boolean,
+    default: true
+  },
+  closable: Boolean,
+  onClose: Function,
+  onAfterLeave: Function,
+  /** @deprecated */
+  onAfterHide: Function
+});
+const NAlert = defineComponent({
+  name: "Alert",
+  inheritAttrs: false,
+  props: alertProps,
+  setup(props) {
+    const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
+    const themeRef = useTheme("Alert", "-alert", style$i, alertLight$1, props, mergedClsPrefixRef);
+    const rtlEnabledRef = useRtl("Alert", mergedRtlRef, mergedClsPrefixRef);
+    const cssVarsRef = computed(() => {
+      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
+      const { fontSize: fontSize2, borderRadius, titleFontWeight, lineHeight: lineHeight2, iconSize, iconMargin, iconMarginRtl, closeIconSize, closeBorderRadius, closeSize, closeMargin, closeMarginRtl, padding } = self2;
+      const { type } = props;
+      const { left, right } = getMargin(iconMargin);
+      return {
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-color": self2[createKey("color", type)],
+        "--n-close-icon-size": closeIconSize,
+        "--n-close-border-radius": closeBorderRadius,
+        "--n-close-color-hover": self2[createKey("closeColorHover", type)],
+        "--n-close-color-pressed": self2[createKey("closeColorPressed", type)],
+        "--n-close-icon-color": self2[createKey("closeIconColor", type)],
+        "--n-close-icon-color-hover": self2[createKey("closeIconColorHover", type)],
+        "--n-close-icon-color-pressed": self2[createKey("closeIconColorPressed", type)],
+        "--n-icon-color": self2[createKey("iconColor", type)],
+        "--n-border": self2[createKey("border", type)],
+        "--n-title-text-color": self2[createKey("titleTextColor", type)],
+        "--n-content-text-color": self2[createKey("contentTextColor", type)],
+        "--n-line-height": lineHeight2,
+        "--n-border-radius": borderRadius,
+        "--n-font-size": fontSize2,
+        "--n-title-font-weight": titleFontWeight,
+        "--n-icon-size": iconSize,
+        "--n-icon-margin": iconMargin,
+        "--n-icon-margin-rtl": iconMarginRtl,
+        "--n-close-size": closeSize,
+        "--n-close-margin": closeMargin,
+        "--n-close-margin-rtl": closeMarginRtl,
+        "--n-padding": padding,
+        "--n-icon-margin-left": left,
+        "--n-icon-margin-right": right
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("alert", computed(() => {
+      return props.type[0];
+    }), cssVarsRef, props) : void 0;
+    const visibleRef = ref(true);
+    const doAfterLeave = () => {
+      const {
+        onAfterLeave,
+        onAfterHide
+        // deprecated
+      } = props;
+      if (onAfterLeave)
+        onAfterLeave();
+      if (onAfterHide)
+        onAfterHide();
+    };
+    const handleCloseClick = () => {
+      var _a2;
+      void Promise.resolve((_a2 = props.onClose) === null || _a2 === void 0 ? void 0 : _a2.call(props)).then((result) => {
+        if (result === false)
+          return;
+        visibleRef.value = false;
+      });
+    };
+    const handleAfterLeave = () => {
+      doAfterLeave();
+    };
+    return {
+      rtlEnabled: rtlEnabledRef,
+      mergedClsPrefix: mergedClsPrefixRef,
+      mergedBordered: mergedBorderedRef,
+      visible: visibleRef,
+      handleCloseClick,
+      handleAfterLeave,
+      mergedTheme: themeRef,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    var _a2;
+    (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+    return h(NFadeInExpandTransition, { onAfterLeave: this.handleAfterLeave }, {
+      default: () => {
+        const { mergedClsPrefix, $slots } = this;
+        const attrs = {
+          class: [
+            `${mergedClsPrefix}-alert`,
+            this.themeClass,
+            this.closable && `${mergedClsPrefix}-alert--closable`,
+            this.showIcon && `${mergedClsPrefix}-alert--show-icon`,
+            this.rtlEnabled && `${mergedClsPrefix}-alert--rtl`
+          ],
+          style: this.cssVars,
+          role: "alert"
+        };
+        return this.visible ? h(
+          "div",
+          Object.assign({}, mergeProps(this.$attrs, attrs)),
+          this.closable && h(NBaseClose, { clsPrefix: mergedClsPrefix, class: `${mergedClsPrefix}-alert__close`, onClick: this.handleCloseClick }),
+          this.bordered && h("div", { class: `${mergedClsPrefix}-alert__border` }),
+          this.showIcon && h("div", { class: `${mergedClsPrefix}-alert__icon`, "aria-hidden": "true" }, resolveSlot($slots.icon, () => [
+            h(NBaseIcon, { clsPrefix: mergedClsPrefix }, {
+              default: () => {
+                switch (this.type) {
+                  case "success":
+                    return h(SuccessIcon, null);
+                  case "info":
+                    return h(InfoIcon, null);
+                  case "warning":
+                    return h(WarningIcon, null);
+                  case "error":
+                    return h(ErrorIcon, null);
+                  default:
+                    return null;
+                }
+              }
+            })
+          ])),
+          h(
+            "div",
+            { class: [
+              `${mergedClsPrefix}-alert-body`,
+              this.mergedBordered && `${mergedClsPrefix}-alert-body--bordered`
+            ] },
+            resolveWrappedSlot($slots.header, (children) => {
+              const mergedChildren = children || this.title;
+              return mergedChildren ? h("div", { class: `${mergedClsPrefix}-alert-body__title` }, mergedChildren) : null;
+            }),
+            $slots.default && h("div", { class: `${mergedClsPrefix}-alert-body__content` }, $slots)
+          )
+        ) : null;
+      }
+    });
+  }
+});
 const commonVars$9 = {
   linkFontSize: "13px",
   linkPadding: "0 0 0 16px",
@@ -36768,7 +36999,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-6ecc4196"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-79a78f10"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
 const _hoisted_3 = { style: { "display": "inline-flex" } };
@@ -36777,9 +37008,11 @@ const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBase
 const _hoisted_6 = { class: "flex-container" };
 const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1));
 const _hoisted_8 = { style: { "display": "inline-flex" } };
-const _hoisted_9 = { style: { "display": "inline-flex" } };
-const _hoisted_10 = { class: "progress-container" };
-const _hoisted_11 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "THE ACTUAL TOKEN", -1));
+const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "badhandv4.safetensors -> badhandv4", -1));
+const _hoisted_11 = { style: { "display": "inline-flex" } };
+const _hoisted_12 = { class: "progress-container" };
+const _hoisted_13 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -37319,6 +37552,19 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               default: withCtx(() => [
                                 createVNode(unref(NCard), { title: unref(textual_inversions_title) }, {
                                   default: withCtx(() => [
+                                    createVNode(unref(NAlert), {
+                                      type: "warning",
+                                      "show-icon": "",
+                                      title: "Tokens"
+                                    }, {
+                                      default: withCtx(() => [
+                                        createTextVNode(" The name of the inversion will be "),
+                                        _hoisted_9,
+                                        createTextVNode(". For example: "),
+                                        _hoisted_10
+                                      ]),
+                                      _: 1
+                                    }),
                                     (openBlock(true), createElementBlock(Fragment, null, renderList(unref(textualInversionModels), (textualInversion) => {
                                       var _a3;
                                       return openBlock(), createElementBlock("div", {
@@ -37326,7 +37572,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         key: textualInversion.path
                                       }, [
                                         createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                        createBaseVNode("div", _hoisted_9, [
+                                        createBaseVNode("div", _hoisted_11, [
                                           ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(textualInversion.path)) ? (openBlock(), createBlock(unref(NButton), {
                                             key: 0,
                                             type: "error",
@@ -37464,7 +37710,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_10, [
+        createBaseVNode("div", _hoisted_12, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -37484,7 +37730,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_11, [
+        createBaseVNode("div", _hoisted_13, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -37526,7 +37772,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_6ecc4196_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_79a78f10_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -37534,7 +37780,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-6ecc4196"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-79a78f10"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

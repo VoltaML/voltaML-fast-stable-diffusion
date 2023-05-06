@@ -79,8 +79,7 @@ parser.add_argument(
 )
 args = parser.parse_args(args=app_args)
 
-logging.basicConfig(level=args.log_level)
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger()
 
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
@@ -176,7 +175,7 @@ def checks():
         if not in_virtualenv():
             create_environment()
 
-            logger.error("Please run the script from a virtual environment")
+            print("Please run the script from a virtual environment")
             sys.exit(1)
 
     # Install more user friendly logging
@@ -213,9 +212,21 @@ def checks():
             ]
         )
 
+    # Handle dotenv file
     import dotenv
 
     dotenv.load_dotenv()
+
+    # Inject better logger
+    from rich.logging import RichHandler
+
+    logging.basicConfig(
+        level=args.log_level,
+        format="%(asctime)s | %(name)s » %(message)s",
+        datefmt="%H:%M:%S",
+        handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
+    )
+    logger = logging.getLogger()  # pylint: disable=redefined-outer-name
 
     # Check tokens
     if not os.getenv("HUGGINGFACE_TOKEN") and not args.install_only:
@@ -230,22 +241,6 @@ def checks():
                 "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
             )
             sys.exit(1)
-
-    # Inject coloredlogs
-    import coloredlogs
-
-    coloredlogs.DEFAULT_LEVEL_STYLES = {
-        **coloredlogs.DEFAULT_LEVEL_STYLES,
-        "info": {"color": "magenta", "bright": True},
-        "error": {"color": "red", "bright": True, "bold": True},
-        "warning": {"color": "yellow", "bright": True, "bold": True},
-    }
-
-    coloredlogs.install(
-        level=args.log_level,
-        fmt="%(asctime)s | %(name)s | %(levelname)s » %(message)s",
-        datefmt="%H:%M:%S",
-    )
 
     # Check if we are up to date with the latest release
     version_check(commit_hash())
