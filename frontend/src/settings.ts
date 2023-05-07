@@ -17,6 +17,11 @@ export enum Sampler {
   UniPCMultistep = 13,
 }
 
+export interface AutoloadedLora {
+  text_encoder: number;
+  unet: number;
+}
+
 export interface SettingsInterface {
   $schema: string;
   backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
@@ -126,6 +131,8 @@ export interface SettingsInterface {
       | "RealESRGAN_x4plus_anime_6B"
       | "RealESRGAN_x2plus"
       | "RealESR-general-x4v3";
+    tile_size: number;
+    tile_padding: number;
   };
   tagger: {
     image: string;
@@ -135,6 +142,11 @@ export interface SettingsInterface {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
+
+    use_tomesd: boolean;
+    tomesd_ratio: number;
+    tomesd_downsample_layers: 1 | 2 | 4 | 8;
+
     attention_processor: "xformers" | "spda";
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
@@ -145,15 +157,16 @@ export interface SettingsInterface {
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
     use_fp32: boolean;
-    use_tomesd: boolean;
-    tomesd_ratio: number;
-    tomesd_downsample_layers: 1 | 2 | 4 | 8;
     deterministic_generation: boolean;
     reduced_precision: boolean;
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
+
     lora_text_encoder_weight: number;
     lora_unet_weight: number;
+
+    autoloaded_loras: Map<string, AutoloadedLora>;
+    autoloaded_textual_inversions: string[];
   };
   aitemplate: {
     num_threads: number;
@@ -267,6 +280,8 @@ export const defaultSettings: SettingsInterface = {
     image: "",
     scale_factor: 4,
     model: "RealESRGAN_x4plus_anime_6B",
+    tile_size: 128,
+    tile_padding: 10,
   },
   tagger: {
     image: "",
@@ -295,6 +310,8 @@ export const defaultSettings: SettingsInterface = {
     clear_memory_policy: "always",
     lora_text_encoder_weight: 0.5,
     lora_unet_weight: 0.5,
+    autoloaded_loras: new Map(),
+    autoloaded_textual_inversions: [],
   },
   aitemplate: {
     num_threads: 8,

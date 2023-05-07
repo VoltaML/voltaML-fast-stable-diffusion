@@ -18,6 +18,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets import Data
+from api.websockets.notification import Notification
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
@@ -106,8 +107,44 @@ class PyTorchStableDiffusion(InferenceModel):
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
 
-        del pipe
+        # Autoload LoRAs
+        for lora_name in config.api.autoloaded_loras:
+            lora = config.api.autoloaded_loras[lora_name]
 
+            try:
+                self.load_lora(
+                    lora_name,
+                    alpha_text_encoder=lora["text_encoder"],
+                    alpha_unet=lora["unet"],
+                )
+            except Exception as e:  # pylint: disable=broad-except
+                logger.warning(f"Failed to load LoRA {lora}: {e}")
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        severity="error",
+                        message=f"Failed to load LoRA: {lora}",
+                        title="Autoload Error",
+                    )
+                )
+
+        # Autoload textual inversions
+        for textural_inversion in config.api.autoloaded_textual_inversions:
+            try:
+                self.load_textual_inversion(textural_inversion)
+            except Exception as e:  # pylint: disable=broad-except
+                logger.warning(
+                    f"Failed to load textual inversion {textural_inversion}: {e}"
+                )
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        severity="error",
+                        message=f"Failed to load textual inversion: {textural_inversion}",
+                        title="Autoload Error",
+                    )
+                )
+
+        # Free up memory
+        del pipe
         self.memory_cleanup()
 
     def unload(self) -> None:

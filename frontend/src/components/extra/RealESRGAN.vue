@@ -44,6 +44,50 @@
                 :max="4"
               />
             </div>
+
+            <!-- Tile Size -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Tile Size</p>
+                </template>
+                How large each tile should be. Larger tiles will use more
+                memory. 0 will disable tiling.
+              </NTooltip>
+              <NSlider
+                v-model:value="conf.data.settings.upscale.tile_size"
+                :min="32"
+                :max="2048"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.upscale.tile_size"
+                size="small"
+                :min="32"
+                :max="2048"
+                style="min-width: 96px; width: 96px"
+              />
+            </div>
+
+            <!-- Tile Padding -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Tile Padding</p>
+                </template>
+                How much should tiles overlap. Larger padding will use more
+                memory, but image should not have visible seams.
+              </NTooltip>
+              <NSlider
+                v-model:value="conf.data.settings.upscale.tile_padding"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.upscale.tile_padding"
+                size="small"
+                style="min-width: 96px; width: 96px"
+              />
+            </div>
           </NSpace>
         </NCard>
       </NGi>
@@ -104,6 +148,8 @@ const generate = () => {
         image: conf.data.settings.upscale.image,
         scale_factor: conf.data.settings.upscale.scale_factor,
         model: conf.data.settings.upscale.model,
+        tile_size: conf.data.settings.upscale.tile_size,
+        tile_padding: conf.data.settings.upscale.tile_padding,
       },
       model: conf.data.settings.upscale.model,
     }),

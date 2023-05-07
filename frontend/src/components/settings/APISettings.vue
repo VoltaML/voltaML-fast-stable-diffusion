@@ -1,5 +1,22 @@
 <template>
   <NForm>
+    <h2>Autoload</h2>
+    <NFormItem label="Textual Inversions">
+      <NSelect
+        multiple
+        :options="textualInversionOptions"
+        v-model:value="
+          settings.defaultSettings.api.autoloaded_textual_inversions
+        "
+      >
+      </NSelect>
+    </NFormItem>
+
+    <NFormItem label="LoRAs (not functional yet)">
+      <NSelect multiple :options="loraOptions"> </NSelect>
+    </NFormItem>
+
+    <h2>Timings</h2>
     <NFormItem label="WebSocket Performance Monitor Interval">
       <NInputNumber
         v-model:value="settings.defaultSettings.api.websocket_perf_interval"
@@ -214,7 +231,40 @@
 
 <script lang="ts" setup>
 import { NForm, NFormItem, NInputNumber, NSelect, NSwitch } from "naive-ui";
+import { computed } from "vue";
 import { useSettings } from "../../store/settings";
+import { useState } from "../../store/state";
 
 const settings = useSettings();
+const global = useState();
+
+const textualInversions = computed(() => {
+  return global.state.models.filter((model) => {
+    return model.backend === "Textual Inversion";
+  });
+});
+
+const textualInversionOptions = computed(() => {
+  return textualInversions.value.map((model) => {
+    return {
+      value: model.path,
+      label: model.name,
+    };
+  });
+});
+
+const loras = computed(() => {
+  return global.state.models.filter((model) => {
+    return model.backend === "LoRA";
+  });
+});
+
+const loraOptions = computed(() => {
+  return loras.value.map((model) => {
+    return {
+      value: model.path,
+      label: model.name,
+    };
+  });
+});
 </script>

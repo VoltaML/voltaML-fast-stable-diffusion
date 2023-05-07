@@ -1,7 +1,7 @@
 import logging
 import multiprocessing
 from dataclasses import Field, dataclass, field, fields
-from typing import Literal, Union
+from typing import Dict, List, Literal, Union
 
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
@@ -92,6 +92,8 @@ class UpscaleConfig:
 
     model: str = "RealESRGAN_x4plus_anime_6B"
     scale_factor: int = 4
+    tile_size: int = field(default=128)
+    tile_padding: int = field(default=10)
 
 
 @dataclass
@@ -140,6 +142,10 @@ class APIConfig:
 
     # Critical
     enable_shutdown: bool = True
+
+    # Autoload
+    autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
+    autoloaded_textual_inversions: List[str] = field(default_factory=list)
 
     @property
     def device(self):

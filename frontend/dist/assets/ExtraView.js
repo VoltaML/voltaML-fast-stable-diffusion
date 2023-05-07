@@ -5,12 +5,16 @@ import { d as defineComponent, u as useState, a as useSettings, b as useMessage,
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-8f8ae0fb"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-a68974cd"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
 const _hoisted_4 = { class: "flex-container" };
 const _hoisted_5 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale Factor", -1));
+const _hoisted_6 = { class: "flex-container" };
+const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Tile Size", -1));
+const _hoisted_8 = { class: "flex-container" };
+const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Tile Padding", -1));
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "RealESRGAN",
   setup(__props) {
@@ -31,7 +35,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           data: {
             image: conf.data.settings.upscale.image,
             scale_factor: conf.data.settings.upscale.scale_factor,
-            model: conf.data.settings.upscale.model
+            model: conf.data.settings.upscale.model,
+            tile_size: conf.data.settings.upscale.tile_size,
+            tile_padding: conf.data.settings.upscale.tile_padding
           },
           model: conf.data.settings.upscale.model
         })
@@ -107,6 +113,54 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             min: 2,
                             max: 4
                           }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_6, [
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                            trigger: withCtx(() => [
+                              _hoisted_7
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" How large each tile should be. Larger tiles will use more memory. 0 will disable tiling. ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.upscale.tile_size,
+                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.upscale.tile_size = $event),
+                            min: 32,
+                            max: 2048,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.upscale.tile_size,
+                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.upscale.tile_size = $event),
+                            size: "small",
+                            min: 32,
+                            max: 2048,
+                            style: { "min-width": "96px", "width": "96px" }
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_8, [
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                            trigger: withCtx(() => [
+                              _hoisted_9
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" How much should tiles overlap. Larger padding will use more memory, but image should not have visible seams. ")
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(conf).data.settings.upscale.tile_padding,
+                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.upscale.tile_padding = $event),
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(conf).data.settings.upscale.tile_padding,
+                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.upscale.tile_padding = $event),
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" }
+                          }, null, 8, ["value"])
                         ])
                       ]),
                       _: 1
@@ -123,7 +177,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 createVNode(_sfc_main$3, {
                   "current-image": unref(global).state.extra.currentImage,
                   images: unref(global).state.extra.images,
-                  onImageClicked: _cache[4] || (_cache[4] = ($event) => unref(global).state.extra.currentImage = $event)
+                  onImageClicked: _cache[8] || (_cache[8] = ($event) => unref(global).state.extra.currentImage = $event)
                 }, null, 8, ["current-image", "images"])
               ]),
               _: 1
@@ -135,8 +189,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_8f8ae0fb_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-8f8ae0fb"]]);
+const RealESRGAN_vue_vue_type_style_index_0_scoped_a68974cd_lang = "";
+const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-a68974cd"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {

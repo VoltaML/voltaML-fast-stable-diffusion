@@ -649,6 +649,8 @@ class GPU:
                 t = time.time()
                 pipe = RealESRGAN(
                     model_name=job.model,
+                    tile=job.data.tile_size,
+                    tile_pad=job.data.tile_padding,
                 )
 
                 image = pipe.generate(job)

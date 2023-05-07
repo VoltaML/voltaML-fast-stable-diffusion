@@ -36799,7 +36799,9 @@ const defaultSettings = {
   upscale: {
     image: "",
     scale_factor: 4,
-    model: "RealESRGAN_x4plus_anime_6B"
+    model: "RealESRGAN_x4plus_anime_6B",
+    tile_size: 128,
+    tile_padding: 10
   },
   tagger: {
     image: "",
@@ -36827,7 +36829,9 @@ const defaultSettings = {
     cudnn_benchmark: false,
     clear_memory_policy: "always",
     lora_text_encoder_weight: 0.5,
-    lora_unet_weight: 0.5
+    lora_unet_weight: 0.5,
+    autoloaded_loras: /* @__PURE__ */ new Map(),
+    autoloaded_textual_inversions: []
   },
   aitemplate: {
     num_threads: 8

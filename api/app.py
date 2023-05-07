@@ -92,7 +92,10 @@ async def startup_event():
     # Inject the logger
     from rich.logging import RichHandler
 
-    for logger_ in ("uvicorn", "uvicorn.access", "uvicorn.error", "fastapi"):
+    # Disable duplicate logger
+    logging.getLogger("uvicorn").handlers = []
+
+    for logger_ in ("uvicorn.access", "uvicorn.error", "fastapi"):
         l = logging.getLogger(logger_)
         handler = RichHandler(rich_tracebacks=True, show_time=False)
         handler.setFormatter(
