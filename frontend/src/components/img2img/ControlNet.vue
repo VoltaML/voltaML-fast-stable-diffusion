@@ -337,6 +337,24 @@
                 v-model:value="conf.data.settings.controlnet.is_preprocessed"
               />
             </div>
+
+            <!-- Save preprocessed -->
+            <div class="flex-container">
+              <p class="slider-label">Save Preprocessed</p>
+              <NSwitch
+                v-model:value="conf.data.settings.controlnet.save_preprocessed"
+              />
+            </div>
+
+            <!-- Return preprocessed -->
+            <div class="flex-container">
+              <p class="slider-label">Return Preprocessed</p>
+              <NSwitch
+                v-model:value="
+                  conf.data.settings.controlnet.return_preprocessed
+                "
+              />
+            </div>
           </NSpace>
         </NCard>
       </NGi>
@@ -439,10 +457,10 @@ const generate = () => {
         negative_prompt: conf.data.settings.controlnet.negative_prompt,
         width: conf.data.settings.aitDim.width
           ? conf.data.settings.aitDim.width
-          : conf.data.settings.img2img.width,
+          : conf.data.settings.controlnet.width,
         height: conf.data.settings.aitDim.height
           ? conf.data.settings.aitDim.height
-          : conf.data.settings.img2img.height,
+          : conf.data.settings.controlnet.height,
         steps: conf.data.settings.controlnet.steps,
         guidance_scale: conf.data.settings.controlnet.cfg_scale,
         seed: seed,
@@ -459,6 +477,8 @@ const generate = () => {
         mlsd_thr_v: 0.1,
         mlsd_thr_d: 0.1,
         is_preprocessed: conf.data.settings.controlnet.is_preprocessed,
+        save_preprocessed: conf.data.settings.controlnet.save_preprocessed,
+        return_preprocessed: conf.data.settings.controlnet.return_preprocessed,
       },
       model: conf.data.settings.model?.name,
     }),

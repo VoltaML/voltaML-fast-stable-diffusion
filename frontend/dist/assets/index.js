@@ -36777,7 +36777,9 @@ const defaultSettings = {
     batch_count: 1,
     controlnet_conditioning_scale: 1,
     detection_resolution: 512,
-    is_preprocessed: false
+    is_preprocessed: false,
+    save_preprocessed: false,
+    return_preprocessed: true
   },
   sd_upscale: {
     prompt: "",

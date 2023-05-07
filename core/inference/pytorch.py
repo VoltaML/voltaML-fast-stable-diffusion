@@ -497,12 +497,17 @@ class PyTorchStableDiffusion(InferenceModel):
         # Preprocess the image
         from core.controlnet_preprocessing import image_to_controlnet_input
 
+        logger.debug(f"Requested dim: W{job.data.width}xH{job.data.height}")
+
         input_image = convert_to_image(job.data.image)
+        logger.debug(f"Input image size: {input_image.size}")
         input_image = resize(input_image, job.data.width, job.data.height)
+        logger.debug(f"Resized image size: {input_image.size}")
 
         # Preprocess the image if needed
         if not job.data.is_preprocessed:
             input_image = image_to_controlnet_input(input_image, job.data)
+            logger.debug(f"Preprocessed image size: {input_image.size}")
 
         # Preprocess the prompt
         prompt_embeds, negative_embeds = get_weighted_text_embeddings(
@@ -543,7 +548,11 @@ class PyTorchStableDiffusion(InferenceModel):
                     "current_step": 0,
                     "total_steps": 0,
                     "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
+                        total_images
+                        if job.data.return_preprocessed
+                        else total_images[1:],
+                        quality=90,
+                        image_format="webp",
                     ),
                 },
             )

@@ -29,7 +29,6 @@ class Job:
     model: str
     websocket_id: Union[str, None] = field(default=None)
     save_image: Literal[True, False, "r2"] = True
-    save_grid: bool = False
     flags: Dict[str, Dict] = field(default_factory=dict)
 
 
@@ -157,6 +156,8 @@ class ControlNetData:
     mlsd_thr_d: float = field(default=0.1)
 
     is_preprocessed: bool = field(default=False)
+    save_preprocessed: bool = field(default=False)
+    return_preprocessed: bool = field(default=True)
 
 
 @dataclass

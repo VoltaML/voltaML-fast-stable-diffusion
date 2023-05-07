@@ -183,17 +183,28 @@ class GPU:
 
                 assert generated_images is not None
 
+                # [pre, out...]
                 images = generated_images
-
-                # Save Grid
                 grid = image_grid(images)
-                if job.save_grid and len(images) > 1:
-                    images = [grid, *images]
 
-                # Save Images
+                # Save only if needed
                 if job.save_image:
-                    out = save_images(generated_images, job)
+                    if isinstance(job, ControlNetQueueEntry):
+                        if not job.data.save_preprocessed:  # type: ignore
+                            # Save only the output
+                            preprocessed = images[0]
+                            images = images[1:]
+
+                            out = save_images(images, job)
+                            images = [preprocessed, *images]
+                        else:
+                            out = save_images(images, job)
+                    else:
+                        out = save_images(images, job)
+
+                    # URL Strings returned from R2 bucket if saved there
                     if out:
+                        logger.debug(f"Strings returned from R2: {len(out)}")
                         images = out
 
             except Exception as err:  # pylint: disable=broad-except
@@ -207,7 +218,13 @@ class GPU:
             self.memory_cleanup()
             self.queue.mark_finished()
 
-            # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
+            # Check if user wants the preprocessed image back (ControlNet only)
+            if isinstance(job, ControlNetQueueEntry):
+                if not job.data.return_preprocessed:  # type: ignore
+                    # Remove the preprocessed image
+                    images = images[1:]
+
+            # Append grid to the list of images if needed
             if isinstance(images[0], Image.Image) and len(images) > 1:
                 images = [grid, *images]
 

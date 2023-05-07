@@ -44,7 +44,8 @@ def create_metadata(
         metadata.add_text(key, str(data.__dict__.get(key, "")))
 
     for key in fields(data):
-        write_metadata(key.name)
+        if key.name not in ("image", "mask_image"):
+            write_metadata(key.name)
 
     if isinstance(job, Txt2ImgQueueEntry):
         procedure = "txt2img"
@@ -137,9 +138,8 @@ def save_images(
             path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
             makedirs(path.parent, exist_ok=True)
 
-            logger.debug(f"Saving image to {path.as_posix()}")
-
             with path.open("wb") as f:
+                logger.debug(f"Saving image to {path.as_posix()}")
                 image.save(f, pnginfo=metadata)
 
     return urls

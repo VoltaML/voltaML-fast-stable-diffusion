@@ -82,6 +82,8 @@ class ControlNetConfig:
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512
     is_preprocessed: bool = False
+    save_preprocessed: bool = False
+    return_preprocessed: bool = True
 
 
 @dataclass
