@@ -678,7 +678,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
 });
 const ControlNet_vue_vue_type_style_index_0_scoped_069040c9_lang = "";
 const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-069040c9"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-8157f964"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-2c82f17f"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -765,8 +765,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             image: conf.data.settings.img2img.image,
             id: v4(),
             negative_prompt: conf.data.settings.img2img.negative_prompt,
-            width: conf.data.settings.aitDim.width ? conf.data.settings.aitDim.width : conf.data.settings.controlnet.width,
-            height: conf.data.settings.aitDim.height ? conf.data.settings.aitDim.height : conf.data.settings.controlnet.height,
+            width: conf.data.settings.aitDim.width ? conf.data.settings.aitDim.width : conf.data.settings.img2img.width,
+            height: conf.data.settings.aitDim.height ? conf.data.settings.aitDim.height : conf.data.settings.img2img.height,
             steps: conf.data.settings.img2img.steps,
             guidance_scale: conf.data.settings.img2img.cfg_scale,
             seed,
@@ -1158,8 +1158,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_8157f964_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-8157f964"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_2c82f17f_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2c82f17f"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {

@@ -46,14 +46,14 @@
                 tokens will be given to you.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.tagger.treshold"
+                v-model:value="conf.data.settings.tagger.threshold"
                 :min="0.1"
                 :max="1"
                 style="margin-right: 12px"
                 :step="0.025"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.tagger.treshold"
+                v-model:value="conf.data.settings.tagger.threshold"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
@@ -142,7 +142,7 @@ const generate = () => {
       data: {
         image: conf.data.settings.tagger.image,
         id: uuidv4(),
-        strength: conf.data.settings.tagger.treshold,
+        threshold: conf.data.settings.tagger.threshold,
       },
       model: conf.data.settings.tagger.model,
     }),

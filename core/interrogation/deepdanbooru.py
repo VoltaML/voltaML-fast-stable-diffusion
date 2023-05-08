@@ -132,7 +132,10 @@ class DeepdanbooruInterrogator(InterrogationModel):
             raise ValueError(
                 "DeepdanbooruInterrogator only supports InterrogatorQueueEntry"
             )
-        return InterrogationResult(self._infer(convert_to_image(job.data.image)), [])
+        return InterrogationResult(
+            self._infer(convert_to_image(job.data.image), threshold=job.data.threshold),
+            [],
+        )
 
     def unload(self):
         del self.model

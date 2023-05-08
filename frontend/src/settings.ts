@@ -137,7 +137,7 @@ export interface SettingsInterface {
   tagger: {
     image: string;
     model: string;
-    treshold: number;
+    threshold: number;
   };
   api: {
     websocket_sync_interval: number;
@@ -286,7 +286,7 @@ export const defaultSettings: SettingsInterface = {
   tagger: {
     image: "",
     model: "deepdanbooru",
-    treshold: 0.5,
+    threshold: 0.5,
   },
   api: {
     websocket_sync_interval: 0.02,

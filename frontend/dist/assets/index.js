@@ -1376,8 +1376,6 @@ function flushJobs(seen2) {
     }
   }
 }
-/* @__PURE__ */ new Set();
-/* @__PURE__ */ new Map();
 function emit(instance, event, ...rawArgs) {
   if (instance.isUnmounted)
     return;
@@ -5883,7 +5881,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.35
+  * pinia v2.0.34
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -6571,7 +6569,6 @@ const render$1 = (r, ...args) => {
     return null;
   }
 };
-/* @__PURE__ */ new Set();
 function warn$2(location2, message) {
   console.error(`[naive/${location2}]: ${message}`);
 }
@@ -8351,7 +8348,6 @@ const clickoutside = {
   }
 };
 const clickoutside$1 = clickoutside;
-/* @__PURE__ */ new Set();
 function warn$1(location2, message) {
   console.error(`[vdirs/${location2}]: ${message}`);
 }
@@ -36405,7 +36401,6 @@ function useEventListener(...args) {
 const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 const globalKey = "__vueuse_ssr_handlers__";
 _global[globalKey] = _global[globalKey] || {};
-/* @__PURE__ */ new Map();
 var SwipeDirection;
 (function(SwipeDirection2) {
   SwipeDirection2["UP"] = "UP";
@@ -36806,7 +36801,7 @@ const defaultSettings = {
   tagger: {
     image: "",
     model: "deepdanbooru",
-    treshold: 0.5
+    threshold: 0.5
   },
   api: {
     websocket_sync_interval: 0.02,

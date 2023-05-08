@@ -5,7 +5,7 @@ import { v as v4 } from "./v4.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-eb4929f6"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-8bc86c89"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -33,7 +33,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           data: {
             image: conf.data.settings.tagger.image,
             id: v4(),
-            strength: conf.data.settings.tagger.treshold
+            threshold: conf.data.settings.tagger.threshold
           },
           model: conf.data.settings.tagger.model
         })
@@ -150,16 +150,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.tagger.treshold,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.tagger.treshold = $event),
+                            value: unref(conf).data.settings.tagger.threshold,
+                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.tagger.threshold = $event),
                             min: 0.1,
                             max: 1,
                             style: { "margin-right": "12px" },
                             step: 0.025
                           }, null, 8, ["value", "min", "step"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.tagger.treshold,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.tagger.treshold = $event),
+                            value: unref(conf).data.settings.tagger.threshold,
+                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.tagger.threshold = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 0.1,
@@ -225,8 +225,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_eb4929f6_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-eb4929f6"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_8bc86c89_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-8bc86c89"]]);
 export {
   TaggerView as default
 };
