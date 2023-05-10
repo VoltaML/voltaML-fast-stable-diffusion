@@ -15,7 +15,7 @@ safetensors
 pytorch-lightning
 gpustat==1.0.0
 opencv-contrib-python-headless
-controlnet-aux>=0.0.2
+controlnet-aux==0.0.3
 realesrgan
 timm
 boto3

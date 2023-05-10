@@ -128,17 +128,19 @@ class AITemplateStableDiffusion(InferenceModel):
         self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
 
     def unload(self):
-        del (
-            self.vae,
-            self.text_encoder,
-            self.tokenizer,
-            self.scheduler,
-            self.requires_safety_checker,
-            self.safety_checker,
-            self.clip_ait_exe,
-            self.unet_ait_exe,
-            self.vae_ait_exe,
-        )
+        for property_ in (
+            "vae",
+            "text_encoder",
+            "tokenizer",
+            "scheduler",
+            "safety_checker",
+            "clip_ait_exe",
+            "unet_ait_exe",
+            "vae_ait_exe",
+            "controlnet",
+        ):
+            if hasattr(self, property_):
+                del self.__dict__[property_]
 
         self.memory_cleanup()
 

@@ -190,7 +190,10 @@ def normal(input_image: Image.Image) -> Image.Image:
 
     image = midas_detector(input_image, depth_and_normal=True)  # type: ignore
 
-    return image[1]
+    if isinstance(image, tuple):
+        return image[1]
+    else:
+        raise ValueError("MidasDetector did not return a tuple")
 
 
 def openpose(input_image: Image.Image) -> Image.Image:
