@@ -36,7 +36,6 @@ from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
 from core.types import (
     Backend,
-    ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
@@ -77,7 +76,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.image_encoder: Any
         self.controlnet: Optional[ControlNetModel]
 
-        self.current_controlnet: ControlNetMode = ControlNetMode.NONE
+        self.current_controlnet: str = ""
 
         self.loras: List[str] = []
         self.textual_inversions: List[str] = []
@@ -175,7 +174,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self,
         *,
         variations: bool = False,
-        target_controlnet: ControlNetMode = ControlNetMode.NONE,
+        target_controlnet: str = "",
     ) -> None:
         "Cleanup old components"
 
@@ -190,13 +189,13 @@ class PyTorchStableDiffusion(InferenceModel):
             self.controlnet = None
             self.memory_cleanup()
 
-            if target_controlnet == ControlNetMode.NONE:
+            if not target_controlnet:
                 self.current_controlnet = target_controlnet
                 return
 
             # Load new controlnet if needed
             cn = ControlNetModel.from_pretrained(
-                target_controlnet.value,
+                target_controlnet,
                 resume_download=True,
                 torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
                 use_auth_token=self.auth,

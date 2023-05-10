@@ -6,7 +6,6 @@ from PIL import Image
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.types import (
     ControlNetData,
-    ControlNetMode,
     ControlNetQueueEntry,
     Img2imgData,
     Img2ImgQueueEntry,
@@ -111,7 +110,7 @@ def test_controlnet(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet=ControlNetMode.CANNY,
+            controlnet="lllyasviel/sd-controlnet-canny",
         ),
         model="andite/anything-v4.0",
     )
@@ -132,7 +131,7 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             id="test",
             image="",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet=ControlNetMode.CANNY,
+            controlnet="lllyasviel/sd-controlnet-canny",
         ),
     )
     preprocessed_image_str = convert_image_to_base64(
@@ -145,7 +144,7 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet=ControlNetMode.CANNY,
+            controlnet="lllyasviel/sd-controlnet-canny",
             is_preprocessed=True,
         ),
         model="andite/anything-v4.0",

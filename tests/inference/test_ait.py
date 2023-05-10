@@ -3,7 +3,6 @@ from diffusers.schedulers import KarrasDiffusionSchedulers
 
 from core.types import (
     ControlNetData,
-    ControlNetMode,
     ControlNetQueueEntry,
     Img2imgData,
     Img2ImgQueueEntry,
@@ -64,7 +63,7 @@ def test_aitemplate_controlnet(pipe: AITemplateStableDiffusion):
             prompt="test",
             image=generate_random_image_base64(),
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet=ControlNetMode.CANNY,
+            controlnet="lllyasviel/sd-controlnet-canny",
             id="test",
         ),
         model="andite/anything-v4.0",

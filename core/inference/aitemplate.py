@@ -26,7 +26,6 @@ from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import (
     Backend,
-    ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     Job,
@@ -69,7 +68,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self.vae_ait_exe: Model
 
         self.controlnet: Optional[ControlNetModel] = None
-        self.current_controlnet: ControlNetMode = ControlNetMode.NONE
+        self.current_controlnet: str = ""
 
         self.load()
 
@@ -146,7 +145,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def manage_optional_components(
         self,
         *,
-        target_controlnet: ControlNetMode = ControlNetMode.NONE,
+        target_controlnet: str = "",
     ) -> None:
         "Cleanup old components"
 
@@ -159,7 +158,7 @@ class AITemplateStableDiffusion(InferenceModel):
             self.controlnet = None
             self.memory_cleanup()
 
-            if target_controlnet == ControlNetMode.NONE:
+            if not target_controlnet:
                 # Load basic unet if requested
 
                 if self.current_unet == "controlnet_unet":
@@ -202,7 +201,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
             # Load new controlnet if needed
             cn = ControlNetModel.from_pretrained(
-                target_controlnet.value,
+                target_controlnet,
                 resume_download=True,
                 torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
                 use_auth_token=self.auth,

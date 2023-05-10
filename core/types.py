@@ -47,20 +47,6 @@ class SupportedModel(Enum):
     AnythingV4 = "andite/anything-v4.0"
 
 
-class ControlNetMode(Enum):
-    "Enum of modes for the ControlNet"
-
-    CANNY = "lllyasviel/sd-controlnet-canny"
-    DEPTH = "lllyasviel/sd-controlnet-depth"
-    HED = "lllyasviel/sd-controlnet-hed"
-    MLSD = "lllyasviel/sd-controlnet-mlsd"
-    NORMAL = "lllyasviel/sd-controlnet-normal"
-    OPENPOSE = "lllyasviel/sd-controlnet-openpose"
-    SCRIBBLE = "lllyasviel/sd-controlnet-scribble"
-    SEGMENTATION = "lllyasviel/sd-controlnet-seg"
-    NONE = "none"
-
-
 @dataclass
 class InterrogationData:
     "Dataclass for the data of an interrogation request"
@@ -136,7 +122,7 @@ class ControlNetData:
     prompt: str
     image: Union[bytes, str]
     scheduler: KarrasDiffusionSchedulers
-    controlnet: ControlNetMode
+    controlnet: str
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)

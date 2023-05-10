@@ -155,7 +155,6 @@ async def controlnet_job(job: ControlNetQueueEntry):
             "images": images,
         }
     else:
-        images[0].save("test.png", "PNG")
         return {
             "time": time,
             "images": [convert_image_to_base64(i) for i in images],  # type: ignore

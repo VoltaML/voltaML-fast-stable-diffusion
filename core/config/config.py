@@ -6,8 +6,6 @@ from typing import Dict, List, Literal, Union
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-from core.types import ControlNetMode
-
 logger = logging.getLogger(__name__)
 
 
@@ -78,7 +76,7 @@ class ControlNetConfig:
     batch_count: int = 1
     batch_size: int = 1
     sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    controlnet: ControlNetMode = ControlNetMode.CANNY
+    controlnet: str = "lllyasviel/sd-controlnet-canny"
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512
     is_preprocessed: bool = False
