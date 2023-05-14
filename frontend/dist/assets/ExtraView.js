@@ -5,7 +5,7 @@ import { d as defineComponent, u as useState, a as useSettings, b as useMessage,
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-a68974cd"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-adbec126"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
@@ -101,18 +101,20 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.upscale.scale_factor,
                             "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.upscale.scale_factor = $event),
-                            min: 2,
+                            min: 1,
                             max: 4,
+                            step: 0.1,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.upscale.scale_factor,
                             "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.upscale.scale_factor = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            min: 2,
-                            max: 4
-                          }, null, 8, ["value"])
+                            min: 1,
+                            max: 4,
+                            step: 0.1
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_6, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -189,8 +191,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_a68974cd_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-a68974cd"]]);
+const RealESRGAN_vue_vue_type_style_index_0_scoped_adbec126_lang = "";
+const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-adbec126"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {

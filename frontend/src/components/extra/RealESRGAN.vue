@@ -32,16 +32,18 @@
               </NTooltip>
               <NSlider
                 v-model:value="conf.data.settings.upscale.scale_factor"
-                :min="2"
+                :min="1"
                 :max="4"
+                :step="0.1"
                 style="margin-right: 12px"
               />
               <NInputNumber
                 v-model:value="conf.data.settings.upscale.scale_factor"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="2"
+                :min="1"
                 :max="4"
+                :step="0.1"
               />
             </div>
 

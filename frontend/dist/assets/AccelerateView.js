@@ -1,4 +1,4 @@
-import { U as cB, W as cM, T as c, V as cE, X as iconSwitchTransition, an as cNotM, d as defineComponent, L as useConfig, a3 as useRtl, a1 as useTheme, P as provide, A as h, az as flatten, aA as getSlot, R as createInjectionKey, bd as stepsLight, aX as throwError, c as computed, a5 as useThemeClass, ay as resolveWrappedSlot, aq as resolveSlot, a7 as NIconSwitchTransition, $ as inject, a4 as createKey, S as call, ar as NBaseIcon, be as FinishedIcon, bf as ErrorIcon, b as useMessage, u as useState, B as ref, b4 as reactive, x as serverUrl, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, l as createBaseVNode, p as NSlider, n as NSelect, C as NButton, k as createTextVNode, b6 as NModal, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
+import { U as cB, W as cM, T as c, V as cE, X as iconSwitchTransition, an as cNotM, d as defineComponent, L as useConfig, a3 as useRtl, a1 as useTheme, P as provide, A as h, az as flatten, aA as getSlot, R as createInjectionKey, b9 as stepsLight, aX as throwError, c as computed, a5 as useThemeClass, ay as resolveWrappedSlot, aq as resolveSlot, a7 as NIconSwitchTransition, $ as inject, a4 as createKey, S as call, ar as NBaseIcon, ba as FinishedIcon, bb as ErrorIcon, b as useMessage, u as useState, B as ref, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, l as createBaseVNode, p as NSlider, n as NSelect, C as NButton, k as createTextVNode, b7 as NModal, x as serverUrl, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 const style = cB("steps", `
  width: 100%;
@@ -296,34 +296,29 @@ const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label"
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "AITemplateAccelerate",
   setup(__props) {
+    var _a, _b;
     const message = useMessage();
-    const state = useState();
+    const global = useState();
     const width = ref(512);
     const height = ref(512);
     const batchSize = ref(1);
     const model = ref("");
     const threads = ref(8);
-    const modelOptions = reactive([]);
     const building = ref(false);
     const showUnloadModal = ref(false);
-    fetch(`${serverUrl}/api/models/available`).then((res) => {
-      res.json().then((data) => {
-        modelOptions.splice(0, modelOptions.length);
-        const pyTorch = data.filter((x) => x.backend === "PyTorch");
-        if (pyTorch) {
-          for (const model2 of pyTorch) {
-            modelOptions.push({
-              label: model2.name,
-              value: model2.name,
-              disabled: !model2.valid
-            });
-          }
-          if (pyTorch.length > 0) {
-            model.value = pyTorch[0].name;
-          }
+    const modelOptions = computed(() => {
+      const options = [];
+      for (const model2 of global.state.models) {
+        if (model2.backend === "PyTorch" && model2.valid) {
+          options.push({
+            label: model2.name,
+            value: model2.path
+          });
         }
-      });
+      }
+      return options;
     });
+    model.value = ((_b = (_a = modelOptions.value[0]) == null ? void 0 : _a.value) == null ? void 0 : _b.toString()) ?? "";
     const accelerateUnload = async () => {
       try {
         await fetch(`${serverUrl}/api/models/unload-all`, {
@@ -371,23 +366,23 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => [
                     createVNode(unref(NStep), {
                       title: "UNet",
-                      status: unref(state).state.aitBuildStep.unet
+                      status: unref(global).state.aitBuildStep.unet
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "ControlNet UNet",
-                      status: unref(state).state.aitBuildStep.controlnet_unet
+                      status: unref(global).state.aitBuildStep.controlnet_unet
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "CLIP",
-                      status: unref(state).state.aitBuildStep.clip
+                      status: unref(global).state.aitBuildStep.clip
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "VAE",
-                      status: unref(state).state.aitBuildStep.vae
+                      status: unref(global).state.aitBuildStep.vae
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "Cleanup",
-                      status: unref(state).state.aitBuildStep.cleanup
+                      status: unref(global).state.aitBuildStep.cleanup
                     }, null, 8, ["status"])
                   ]),
                   _: 1
@@ -485,7 +480,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[8] || (_cache[8] = ($event) => model.value = $event),
-                options: modelOptions,
+                options: unref(modelOptions),
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
             ])
@@ -504,7 +499,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               type: "success",
               ghost: "",
               loading: building.value,
-              disabled: building.value || modelOptions.length === 0,
+              disabled: building.value || unref(modelOptions).length === 0,
               onClick: _cache[9] || (_cache[9] = ($event) => showUnloadModal.value = true)
             }, {
               default: withCtx(() => [

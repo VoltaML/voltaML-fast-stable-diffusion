@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, q as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, C as NButton, D as NIcon, k as createTextVNode, s as NGrid, h as NCard, x as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, a as useSettings, q as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, C as NButton, D as NIcon, k as createTextVNode, s as NGrid, bw as NAlert, r as createCommentVNode, h as NCard, x as serverUrl } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -55,6 +55,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const props = __props;
     const global = useState();
+    const conf = useSettings();
     function interrupt() {
       fetch(`${serverUrl}/api/general/interrupt`, {
         method: "POST"
@@ -66,67 +67,80 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NCard), { style: { "margin-bottom": "12px" } }, {
-        default: withCtx(() => [
-          createVNode(unref(NGrid), {
-            cols: "2",
-            "x-gap": "24"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: props.generate,
-                    disabled: unref(global).state.generating,
-                    loading: unref(global).state.generating,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    icon: withCtx(() => [
-                      createVNode(unref(NIcon), null, {
+        default: withCtx(() => {
+          var _a, _b;
+          return [
+            createVNode(unref(NGrid), {
+              cols: "2",
+              "x-gap": "24"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NGi), null, {
+                  default: withCtx(() => {
+                    var _a2, _b2;
+                    return [
+                      createVNode(unref(NButton), {
+                        type: "success",
+                        onClick: props.generate,
+                        disabled: unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0,
+                        loading: unref(global).state.generating,
+                        style: { "width": "100%" },
+                        ghost: ""
+                      }, {
+                        icon: withCtx(() => [
+                          createVNode(unref(NIcon), null, {
+                            default: withCtx(() => [
+                              createVNode(unref(Play))
+                            ]),
+                            _: 1
+                          })
+                        ]),
                         default: withCtx(() => [
-                          createVNode(unref(Play))
+                          createTextVNode("Generate ")
                         ]),
                         _: 1
-                      })
-                    ]),
-                    default: withCtx(() => [
-                      createTextVNode("Generate ")
-                    ]),
-                    _: 1
-                  }, 8, ["onClick", "disabled", "loading"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "error",
-                    onClick: interrupt,
-                    style: { "width": "100%" },
-                    ghost: "",
-                    disabled: !unref(global).state.generating
-                  }, {
-                    icon: withCtx(() => [
-                      createVNode(unref(NIcon), null, {
-                        default: withCtx(() => [
-                          createVNode(unref(Skull))
-                        ]),
-                        _: 1
-                      })
-                    ]),
-                    default: withCtx(() => [
-                      createTextVNode("Interrupt ")
-                    ]),
-                    _: 1
-                  }, 8, ["disabled"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
+                      }, 8, ["onClick", "disabled", "loading"])
+                    ];
+                  }),
+                  _: 1
+                }),
+                createVNode(unref(NGi), null, {
+                  default: withCtx(() => [
+                    createVNode(unref(NButton), {
+                      type: "error",
+                      onClick: interrupt,
+                      style: { "width": "100%" },
+                      ghost: "",
+                      disabled: !unref(global).state.generating
+                    }, {
+                      icon: withCtx(() => [
+                        createVNode(unref(NIcon), null, {
+                          default: withCtx(() => [
+                            createVNode(unref(Skull))
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      default: withCtx(() => [
+                        createTextVNode("Interrupt ")
+                      ]),
+                      _: 1
+                    }, 8, ["disabled"])
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }),
+            ((_a = unref(conf).data.settings.model) == null ? void 0 : _a.name) === "" || ((_b = unref(conf).data.settings.model) == null ? void 0 : _b.name) === void 0 ? (openBlock(), createBlock(unref(NAlert), {
+              key: 0,
+              style: { "margin-top": "12px" },
+              type: "warning",
+              title: "No model loaded",
+              bordered: false
+            })) : createCommentVNode("", true)
+          ];
+        }),
         _: 1
       });
     };

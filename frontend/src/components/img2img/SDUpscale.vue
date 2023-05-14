@@ -379,6 +379,7 @@ const generate = () => {
       global.state.generating = false;
       res.json().then((data) => {
         global.state.sd_upscale.images = data.images;
+        global.state.sd_upscale.currentImage = data.images[0];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;

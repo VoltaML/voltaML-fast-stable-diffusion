@@ -4,7 +4,7 @@
       <NMessageProvider>
         <CollapsileNavbarVue />
         <TopBarVue />
-        <routerContainerVue />
+        <routerContainerVue style="margin-top: 52px" />
         <PerformanceDrawer />
       </NMessageProvider>
     </NNotificationProvider>
@@ -31,8 +31,10 @@ const settings = useSettings();
 
 const theme = computed(() => {
   if (settings.data.settings.frontend.theme === "dark") {
+    document.body.style.backgroundColor = "black";
     return darkTheme;
   } else {
+    document.body.style.backgroundColor = "white";
     return lightTheme;
   }
 });

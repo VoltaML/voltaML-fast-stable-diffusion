@@ -12,7 +12,12 @@
       :consistent-menu-width="false"
       filterable
     />
-    <NButton @click="showModal = true">Load Model</NButton>
+    <NButton
+      @click="showModal = true"
+      :loading="modelsLoading"
+      :type="conf.data.settings.model ? 'default' : 'success'"
+      >Load Model</NButton
+    >
     <NModal
       v-model:show="showModal"
       closable
@@ -22,241 +27,291 @@
       title="Models"
       :auto-focus="false"
     >
-      <div style="display: inline-flex; width: 100%; margin-bottom: 12px">
-        <NInput v-model:value="filter" clearable placeholder="Filter Models" />
-        <NButton
-          ghost
-          type="success"
-          style="margin-left: 4px"
-          @click="refreshModels"
-          >Refresh</NButton
+      <div v-if="websocketState.readyState === 'CLOSED'">
+        <NResult
+          title="You are not connected to the server"
+          description="Click the button below to reconnect"
+          style="
+            height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+          "
+          status="500"
         >
+          <template #footer>
+            <NButton type="success" @click="startWebsocket(message)"
+              >Reconnect</NButton
+            >
+          </template>
+        </NResult>
       </div>
-      <NScrollbar>
-        <NTabs type="segment" style="height: 70vh">
-          <NTabPane name="PyTorch" style="height: 100%">
-            <NGrid cols="1 900:3" :x-gap="8" :y-gap="8" style="height: 100%">
-              <!-- Models -->
-              <NGi>
-                <NCard title="Models" style="height: 100%">
-                  <div
-                    style="
-                      display: inline-flex;
-                      width: 100%;
-                      align-items: center;
-                      justify-content: space-between;
-                      border-bottom: 1px solid rgb(66, 66, 71);
-                    "
-                    v-for="model in pyTorchModels"
-                    v-bind:key="model.path"
-                  >
-                    <p>{{ model.name }}</p>
-                    <div style="display: inline-flex">
-                      <NButton
-                        type="error"
-                        ghost
-                        @click="unloadModel(model)"
-                        v-if="model.state === 'loaded'"
-                        >Unload</NButton
-                      >
-                      <NButton
-                        type="success"
-                        ghost
-                        @click="loadModel(model)"
-                        :loading="model.state === 'loading'"
-                        v-else
-                        >Load</NButton
-                      >
-                      <NButton
-                        type="info"
-                        style="margin-left: 4px"
-                        ghost
-                        @click="selectedModel = model"
-                        :disabled="model.state !== 'loaded'"
-                        >Select</NButton
-                      >
-                    </div>
-                  </div>
-                </NCard>
-              </NGi>
-
-              <!-- LoRA -->
-              <NGi>
-                <NCard :title="lora_title">
-                  <NCard style="width: 100%; margin-bottom: 8px">
-                    <div class="flex-container">
-                      <p class="slider-label">Text Encoder</p>
-                      <NSlider
-                        v-model:value="
-                          conf.data.settings.api.lora_text_encoder_weight
-                        "
-                        :min="0.1"
-                        :max="1"
-                        :step="0.01"
-                        style="margin-right: 12px"
-                      />
-                    </div>
-
-                    <div class="flex-container">
-                      <p class="slider-label">UNet</p>
-                      <NSlider
-                        v-model:value="conf.data.settings.api.lora_unet_weight"
-                        :min="0.1"
-                        :max="1"
-                        :step="0.01"
-                        style="margin-right: 12px"
-                      />
+      <div v-else-if="global.state.models.length === 0">
+        <NResult
+          title="No models found"
+          description="Click on this icon in the LEFT MENU to access the model download page"
+          style="
+            height: 70vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+          "
+        >
+          <template #icon>
+            <NIcon size="64">
+              <CubeSharp />
+            </NIcon>
+          </template>
+        </NResult>
+      </div>
+      <div v-else>
+        <div style="display: inline-flex; width: 100%; margin-bottom: 12px">
+          <NInput
+            v-model:value="filter"
+            clearable
+            placeholder="Filter Models"
+          />
+          <NButton
+            ghost
+            type="success"
+            style="margin-left: 4px"
+            @click="refreshModels"
+            >Refresh</NButton
+          >
+        </div>
+        <NScrollbar>
+          <NTabs type="segment" style="height: 70vh">
+            <NTabPane name="PyTorch" style="height: 100%">
+              <NGrid cols="1 900:3" :x-gap="8" :y-gap="8" style="height: 100%">
+                <!-- Models -->
+                <NGi>
+                  <NCard title="Models" style="height: 100%">
+                    <div
+                      style="
+                        display: inline-flex;
+                        width: 100%;
+                        align-items: center;
+                        justify-content: space-between;
+                        border-bottom: 1px solid rgb(66, 66, 71);
+                      "
+                      v-for="model in pyTorchModels"
+                      v-bind:key="model.path"
+                    >
+                      <p>{{ model.name }}</p>
+                      <div style="display: inline-flex">
+                        <NButton
+                          type="error"
+                          ghost
+                          @click="unloadModel(model)"
+                          v-if="model.state === 'loaded'"
+                          >Unload</NButton
+                        >
+                        <NButton
+                          type="success"
+                          ghost
+                          @click="loadModel(model)"
+                          :loading="model.state === 'loading'"
+                          v-else
+                          >Load</NButton
+                        >
+                        <NButton
+                          type="info"
+                          style="margin-left: 4px"
+                          ghost
+                          @click="selectedModel = model"
+                          :disabled="model.state !== 'loaded'"
+                          >Select</NButton
+                        >
+                      </div>
                     </div>
                   </NCard>
-                  <div
-                    style="
-                      display: inline-flex;
-                      width: 100%;
-                      align-items: center;
-                      justify-content: space-between;
-                      border-bottom: 1px solid rgb(66, 66, 71);
-                    "
-                    v-for="lora in loraModels"
-                    v-bind:key="lora.path"
-                  >
-                    <p>{{ lora.name }}</p>
-                    <div style="display: inline-flex">
-                      <NButton
-                        type="error"
-                        ghost
-                        disabled
-                        v-if="selectedModel?.loras.includes(lora.path)"
-                        >Loaded</NButton
-                      >
-                      <NButton
-                        type="success"
-                        ghost
-                        @click="loadLoRA(lora)"
-                        :disabled="selectedModel === undefined"
-                        :loading="lora.state === 'loading'"
-                        v-else
-                        >Load</NButton
-                      >
-                    </div>
-                  </div>
-                </NCard>
-              </NGi>
+                </NGi>
 
-              <!-- Textual Inversions -->
-              <NGi>
-                <NCard :title="textual_inversions_title">
-                  <NAlert type="warning" show-icon title="Tokens">
-                    The name of the inversion will be
-                    <b>THE ACTUAL TOKEN</b>. For example:
-                    <b class="highlight">badhandv4.safetensors -> badhandv4</b>
-                  </NAlert>
-                  <div
-                    style="
-                      display: inline-flex;
-                      width: 100%;
-                      align-items: center;
-                      justify-content: space-between;
-                      border-bottom: 1px solid rgb(66, 66, 71);
-                    "
-                    v-for="textualInversion in textualInversionModels"
-                    v-bind:key="textualInversion.path"
-                  >
-                    <p>{{ textualInversion.name }}</p>
-                    <div style="display: inline-flex">
-                      <NButton
-                        type="error"
-                        ghost
-                        disabled
-                        v-if="
-                          selectedModel?.loras.includes(textualInversion.path)
-                        "
-                        >Loaded</NButton
-                      >
-                      <NButton
-                        type="success"
-                        ghost
-                        @click="loadTextualInversion(textualInversion)"
-                        :disabled="selectedModel === undefined"
-                        :loading="textualInversion.state === 'loading'"
-                        v-else
-                        >Load</NButton
-                      >
+                <!-- LoRA -->
+                <NGi>
+                  <NCard :title="lora_title">
+                    <NCard style="width: 100%; margin-bottom: 8px">
+                      <div class="flex-container">
+                        <p class="slider-label">Text Encoder</p>
+                        <NSlider
+                          v-model:value="
+                            conf.data.settings.api.lora_text_encoder_weight
+                          "
+                          :min="0.1"
+                          :max="1"
+                          :step="0.01"
+                          style="margin-right: 12px"
+                        />
+                      </div>
+
+                      <div class="flex-container">
+                        <p class="slider-label">UNet</p>
+                        <NSlider
+                          v-model:value="
+                            conf.data.settings.api.lora_unet_weight
+                          "
+                          :min="0.1"
+                          :max="1"
+                          :step="0.01"
+                          style="margin-right: 12px"
+                        />
+                      </div>
+                    </NCard>
+                    <div
+                      style="
+                        display: inline-flex;
+                        width: 100%;
+                        align-items: center;
+                        justify-content: space-between;
+                        border-bottom: 1px solid rgb(66, 66, 71);
+                      "
+                      v-for="lora in loraModels"
+                      v-bind:key="lora.path"
+                    >
+                      <p>{{ lora.name }}</p>
+                      <div style="display: inline-flex">
+                        <NButton
+                          type="error"
+                          ghost
+                          disabled
+                          v-if="selectedModel?.loras.includes(lora.path)"
+                          >Loaded</NButton
+                        >
+                        <NButton
+                          type="success"
+                          ghost
+                          @click="loadLoRA(lora)"
+                          :disabled="selectedModel === undefined"
+                          :loading="lora.state === 'loading'"
+                          v-else
+                          >Load</NButton
+                        >
+                      </div>
                     </div>
+                  </NCard>
+                </NGi>
+
+                <!-- Textual Inversions -->
+                <NGi>
+                  <NCard :title="textual_inversions_title">
+                    <NAlert
+                      type="warning"
+                      show-icon
+                      title="Usage of textual inversion"
+                    >
+                      <b>Ignore the tokens on CivitAI</b>. The name of the
+                      inversion that is displayed here will be the actual token
+                    </NAlert>
+                    <div
+                      style="
+                        display: inline-flex;
+                        width: 100%;
+                        align-items: center;
+                        justify-content: space-between;
+                        border-bottom: 1px solid rgb(66, 66, 71);
+                      "
+                      v-for="textualInversion in textualInversionModels"
+                      v-bind:key="textualInversion.path"
+                    >
+                      <p>{{ textualInversion.name }}</p>
+                      <div style="display: inline-flex">
+                        <NButton
+                          type="error"
+                          ghost
+                          disabled
+                          v-if="
+                            selectedModel?.loras.includes(textualInversion.path)
+                          "
+                          >Loaded</NButton
+                        >
+                        <NButton
+                          type="success"
+                          ghost
+                          @click="loadTextualInversion(textualInversion)"
+                          :disabled="selectedModel === undefined"
+                          :loading="textualInversion.state === 'loading'"
+                          v-else
+                          >Load</NButton
+                        >
+                      </div>
+                    </div>
+                  </NCard>
+                </NGi>
+              </NGrid>
+            </NTabPane>
+            <NTabPane name="AITemplate">
+              <NCard title="Models" style="height: 100%">
+                <div
+                  style="
+                    display: inline-flex;
+                    width: 100%;
+                    align-items: center;
+                    justify-content: space-between;
+                    border-bottom: 1px solid rgb(66, 66, 71);
+                  "
+                  v-for="model in aitModels"
+                  v-bind:key="model.path"
+                >
+                  <p>{{ model.name }}</p>
+                  <div>
+                    <NButton
+                      type="error"
+                      ghost
+                      @click="unloadModel(model)"
+                      v-if="model.state === 'loaded'"
+                      >Unload</NButton
+                    >
+                    <NButton
+                      type="success"
+                      ghost
+                      @click="loadModel(model)"
+                      :loading="model.state === 'loading'"
+                      v-else
+                      >Load</NButton
+                    >
                   </div>
-                </NCard>
-              </NGi>
-            </NGrid>
-          </NTabPane>
-          <NTabPane name="AITemplate">
-            <NCard title="Models" style="height: 100%">
-              <div
-                style="
-                  display: inline-flex;
-                  width: 100%;
-                  align-items: center;
-                  justify-content: space-between;
-                  border-bottom: 1px solid rgb(66, 66, 71);
-                "
-                v-for="model in aitModels"
-                v-bind:key="model.path"
-              >
-                <p>{{ model.name }}</p>
-                <div>
-                  <NButton
-                    type="error"
-                    ghost
-                    @click="unloadModel(model)"
-                    v-if="model.state === 'loaded'"
-                    >Unload</NButton
-                  >
-                  <NButton
-                    type="success"
-                    ghost
-                    @click="loadModel(model)"
-                    :loading="model.state === 'loading'"
-                    v-else
-                    >Load</NButton
-                  >
                 </div>
-              </div>
-            </NCard>
-          </NTabPane>
-          <NTabPane name="Extra">
-            <NCard title="Models" style="height: 100%">
-              <div
-                style="
-                  display: inline-flex;
-                  width: 100%;
-                  align-items: center;
-                  justify-content: space-between;
-                  border-bottom: 1px solid rgb(66, 66, 71);
-                "
-                v-for="model in trtModels"
-                v-bind:key="model.path"
-              >
-                <p>{{ model.name }}</p>
-                <div>
-                  <NButton
-                    type="error"
-                    ghost
-                    @click="unloadModel(model)"
-                    v-if="model.state === 'loaded'"
-                    >Unload</NButton
-                  >
-                  <NButton
-                    type="success"
-                    ghost
-                    @click="loadModel(model)"
-                    :loading="model.state === 'loading'"
-                    v-else
-                    >Load</NButton
-                  >
+              </NCard>
+            </NTabPane>
+            <NTabPane name="Extra">
+              <NCard title="Models" style="height: 100%">
+                <div
+                  style="
+                    display: inline-flex;
+                    width: 100%;
+                    align-items: center;
+                    justify-content: space-between;
+                    border-bottom: 1px solid rgb(66, 66, 71);
+                  "
+                  v-for="model in trtModels"
+                  v-bind:key="model.path"
+                >
+                  <p>{{ model.name }}</p>
+                  <div>
+                    <NButton
+                      type="error"
+                      ghost
+                      @click="unloadModel(model)"
+                      v-if="model.state === 'loaded'"
+                      >Unload</NButton
+                    >
+                    <NButton
+                      type="success"
+                      ghost
+                      @click="loadModel(model)"
+                      :loading="model.state === 'loading'"
+                      v-else
+                      >Load</NButton
+                    >
+                  </div>
                 </div>
-              </div>
-            </NCard>
-          </NTabPane>
-        </NTabs>
-      </NScrollbar>
+              </NCard>
+            </NTabPane>
+          </NTabs>
+        </NScrollbar>
+      </div>
     </NModal>
 
     <!-- Progress bar -->
@@ -332,13 +387,14 @@ import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
   ContrastSharp,
+  CubeSharp,
   PowerSharp,
   SettingsSharp,
   StatsChart,
   SyncSharp,
   WifiSharp,
 } from "@vicons/ionicons5";
-import { NAlert, NButton, NProgress, useMessage } from "naive-ui";
+import { NAlert, NButton, NProgress, NResult, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
 import { useRouter } from "vue-router";
@@ -481,6 +537,7 @@ function refreshModels() {
 
 async function loadModel(model: ModelEntry) {
   model.state = "loading";
+  modelsLoading.value = true;
   const load_url = new URL(`${serverUrl}/api/models/load`);
   const params = { model: model.path, backend: model.backend };
   load_url.search = new URLSearchParams(params).toString();
@@ -491,6 +548,8 @@ async function loadModel(model: ModelEntry) {
     });
   } catch (e) {
     console.error(e);
+  } finally {
+    modelsLoading.value = false;
   }
 }
 
@@ -734,6 +793,14 @@ async function dropdownSelected(key: string) {
 }
 
 startWebsocket(message);
+
+const backgroundColor = computed(() => {
+  if (conf.data.settings.frontend.theme === "dark") {
+    return "#121215";
+  } else {
+    return "#fff";
+  }
+});
 </script>
 
 <style scoped>
@@ -748,8 +815,12 @@ startWebsocket(message);
   border-bottom: #505050 1px solid;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: 100%;
+  width: calc(100% - 64px);
   height: 32px;
+  position: fixed;
+  top: 0;
+  z-index: 1;
+  background-color: v-bind(backgroundColor);
 }
 
 .logo {

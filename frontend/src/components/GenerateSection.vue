@@ -6,7 +6,11 @@
         <NButton
           type="success"
           @click="props.generate"
-          :disabled="global.state.generating"
+          :disabled="
+            global.state.generating ||
+            conf.data.settings.model?.name === '' ||
+            conf.data.settings.model?.name === undefined
+          "
           :loading="global.state.generating"
           style="width: 100%"
           ghost
@@ -34,18 +38,31 @@
         </NButton>
       </NGi>
     </NGrid>
+    <NAlert
+      style="margin-top: 12px"
+      v-if="
+        conf.data.settings.model?.name === '' ||
+        conf.data.settings.model?.name === undefined
+      "
+      type="warning"
+      title="No model loaded"
+      :bordered="false"
+    >
+    </NAlert>
   </NCard>
 </template>
 
 <script lang="ts" setup>
 import { serverUrl } from "@/env";
+import { useSettings } from "@/store/settings";
 import { useState } from "@/store/state";
 import { Play, Skull } from "@vicons/ionicons5";
-import { NButton, NCard, NGi, NGrid, NIcon } from "naive-ui";
+import { NAlert, NButton, NCard, NGi, NGrid, NIcon } from "naive-ui";
 import type { MaybeArray } from "naive-ui/es/_utils";
 import { defineProps, type PropType } from "vue";
 
 const global = useState();
+const conf = useSettings();
 
 function interrupt() {
   fetch(`${serverUrl}/api/general/interrupt`, {

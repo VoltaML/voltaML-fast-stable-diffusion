@@ -140,6 +140,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         global.state.generating = false;
         res.json().then((data) => {
           global.state.txt2img.images = data.images;
+          global.state.txt2img.currentImage = data.images[0];
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;

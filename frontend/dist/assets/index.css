@@ -7,27 +7,31 @@
   z-index: 1;
 }
 
-.progress-container[data-v-79a78f10] {
+.progress-container[data-v-64ec7da2] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-79a78f10] {
+.top-bar[data-v-64ec7da2] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
   padding-top: 10px;
   padding-bottom: 10px;
-  width: 100%;
+  width: calc(100% - 64px);
   height: 32px;
+  position: fixed;
+  top: 0;
+  z-index: 1;
+  background-color: var(--1535c576);
 }
-.logo[data-v-79a78f10] {
+.logo[data-v-64ec7da2] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
-.main[data-v-5d72065d] {
-  background-color: var(--eb878800);
+.main[data-v-fedbc04b] {
+  background-color: var(--33343887);
 }
 body {
   min-height: 100vh;

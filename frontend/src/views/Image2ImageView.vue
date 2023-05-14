@@ -15,19 +15,10 @@
     <NTabPane name="SD Upscale">
       <SDUpscale />
     </NTabPane>
-
-    <NTabPane name="Depth to Image">
-      <WIP />
-    </NTabPane>
-
-    <NTabPane name="Pix to Pix">
-      <WIP />
-    </NTabPane>
   </NTabs>
 </template>
 
 <script lang="ts" setup>
-import WIP from "@/components/WIP.vue";
 import ControlNet from "@/components/img2img/ControlNet.vue";
 import Img2Img from "@/components/img2img/Img2Img.vue";
 import Inpainting from "@/components/img2img/Inpainting.vue";

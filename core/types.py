@@ -152,7 +152,7 @@ class UpscaleData:
 
     image: Union[bytes, str]
     id: str = field(default_factory=lambda: uuid4().hex)
-    upscale_factor: int = field(default=4)
+    upscale_factor: float = field(default=4)
     tile_size: int = field(default=128)
     tile_padding: int = field(default=10)
 
