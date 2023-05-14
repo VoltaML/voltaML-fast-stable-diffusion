@@ -59,7 +59,7 @@ import { useState } from "@/store/state";
 import { Play, Skull } from "@vicons/ionicons5";
 import { NAlert, NButton, NCard, NGi, NGrid, NIcon } from "naive-ui";
 import type { MaybeArray } from "naive-ui/es/_utils";
-import { defineProps, type PropType } from "vue";
+import type { PropType } from "vue";
 
 const global = useState();
 const conf = useSettings();
