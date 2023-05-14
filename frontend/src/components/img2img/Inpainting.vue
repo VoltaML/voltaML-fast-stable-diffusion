@@ -95,7 +95,7 @@
           />
         </NCard>
 
-        <NCard title="Settings" style="margin-top: 12px">
+        <NCard title="Settings" style="margin-top: 12px; margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput

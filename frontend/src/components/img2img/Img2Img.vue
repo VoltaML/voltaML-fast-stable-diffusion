@@ -10,7 +10,7 @@
           @file-dropped="conf.data.settings.img2img.image = $event"
         />
 
-        <NCard title="Settings">
+        <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput

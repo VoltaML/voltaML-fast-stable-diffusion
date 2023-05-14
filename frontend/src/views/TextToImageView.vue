@@ -303,7 +303,10 @@
           </NSpace>
         </NCard>
 
-        <NCard title="Highres fix" style="margin-top: 12px">
+        <NCard
+          title="Highres fix"
+          style="margin-top: 12px; margin-bottom: 12px"
+        >
           <div class="flex-container">
             <div class="slider-label">
               <p>Enabled</p>

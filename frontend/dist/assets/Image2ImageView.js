@@ -142,7 +142,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-ff8ebbf0"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-00b57bb7"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -296,7 +296,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.controlnet.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -676,9 +679,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_ff8ebbf0_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-ff8ebbf0"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-ce8274b8"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_00b57bb7_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-00b57bb7"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-a0cf6b8e"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -816,7 +819,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.img2img.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -1159,8 +1165,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_ce8274b8_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-ce8274b8"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_a0cf6b8e_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-a0cf6b8e"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1736,7 +1742,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-af98b0f5"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-70e07d04"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2062,7 +2068,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NCard), {
                   title: "Settings",
-                  style: { "margin-top": "12px" }
+                  style: { "margin-top": "12px", "margin-bottom": "12px" }
                 }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
@@ -2344,9 +2350,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_af98b0f5_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-af98b0f5"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-c6fa05d5"), n = n(), popScopeId(), n);
+const Inpainting_vue_vue_type_style_index_0_scoped_70e07d04_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-70e07d04"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-dfbee01e"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -2465,7 +2471,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.sd_upscale.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -2752,8 +2761,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const SDUpscale_vue_vue_type_style_index_0_scoped_c6fa05d5_lang = "";
-const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-c6fa05d5"]]);
+const SDUpscale_vue_vue_type_style_index_0_scoped_dfbee01e_lang = "";
+const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-dfbee01e"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

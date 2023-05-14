@@ -5,7 +5,7 @@ import { v as v4 } from "./v4.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-8bc86c89"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-57b0ec9b"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -110,7 +110,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.tagger.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -225,8 +228,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_8bc86c89_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-8bc86c89"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_57b0ec9b_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-57b0ec9b"]]);
 export {
   TaggerView as default
 };

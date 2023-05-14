@@ -5,7 +5,7 @@ import { d as defineComponent, u as useState, a as useSettings, b as useMessage,
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-adbec126"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-334de134"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
@@ -72,7 +72,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.upscale.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -191,8 +194,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_adbec126_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-adbec126"]]);
+const RealESRGAN_vue_vue_type_style_index_0_scoped_334de134_lang = "";
+const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-334de134"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {

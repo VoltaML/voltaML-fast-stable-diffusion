@@ -477,7 +477,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NCard), {
                   title: "Highres fix",
-                  style: { "margin-top": "12px" }
+                  style: { "margin-top": "12px", "margin-bottom": "12px" }
                 }, {
                   default: withCtx(() => [
                     createBaseVNode("div", _hoisted_32, [
