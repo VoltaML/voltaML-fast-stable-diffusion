@@ -311,13 +311,16 @@
             <div class="slider-label">
               <p>Enabled</p>
             </div>
-            <NSwitch v-model:value="global.state.txt2img.highres" />
+            <NSwitch
+              v-model:value="global.state.txt2img.highres"
+              :disabled="!isSelectedModelPyTorch"
+            />
           </div>
 
           <NSpace
             vertical
             class="left-container"
-            v-if="global.state.txt2img.highres"
+            v-if="global.state.txt2img.highres && isSelectedModelPyTorch"
           >
             <!-- Steps -->
             <div class="flex-container">
@@ -563,4 +566,8 @@ const generate = () => {
       console.log(err);
     });
 };
+
+const isSelectedModelPyTorch = computed(() => {
+  return conf.data.settings.model?.backend === "PyTorch";
+});
 </script>
