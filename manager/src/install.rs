@@ -17,7 +17,7 @@ pub fn install() {
         .unwrap();
 
     match response {
-        0 => targets::windows::install(),
+        0 => targets::windows::install(branch == 1),
         1 => targets::ubuntu::install(true, branch == 1),
         2 => targets::ubuntu::install(false, branch == 1),
         _ => println!("Error"),

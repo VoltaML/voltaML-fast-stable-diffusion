@@ -12,6 +12,22 @@ pub fn python_executable() -> String {
     }
 }
 
+pub fn get_venv_pip() -> String {
+    if detect_target() == Target::Windows {
+        "venv/Scripts/pip".to_string()
+    } else {
+        "venv/bin/pip".to_string()
+    }
+}
+
+pub fn get_venv_python() -> String {
+    if detect_target() == Target::Windows {
+        "venv/Scripts/python".to_string()
+    } else {
+        "venv/bin/python".to_string()
+    }
+}
+
 pub fn is_python_installed() -> bool {
     let executable = python_executable();
     run_command(&format!("{} --version", executable), "Is Python available").is_ok()
@@ -48,7 +64,7 @@ pub struct PythonPackage {
 }
 
 pub fn installed_packages() -> Result<Vec<PythonPackage>, Box<dyn Error>> {
-    let output = run_command("venv/bin/pip list", "Installed packages")?;
+    let output = run_command(&format!("{} list", get_venv_pip()), "Installed packages")?;
     let mut packages = Vec::new();
     for line in output.lines().skip(2) {
         let package = line.split_whitespace().collect::<Vec<&str>>();
@@ -77,7 +93,7 @@ pub fn install_virtualenv() -> Result<(), Box<dyn Error>> {
 
 pub fn pip_install(package: &str) -> Result<(), Box<dyn Error>> {
     spawn_command(
-        &format!("venv/bin/pip install {}", package),
+        &format!("{} install {}", get_venv_pip(), package),
         &format!("Install package {}", package),
     )?;
     Ok(())
