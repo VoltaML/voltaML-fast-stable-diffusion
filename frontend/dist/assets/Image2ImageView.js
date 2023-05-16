@@ -1,4 +1,3 @@
-import { _ as _sfc_main$9 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$5 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$6 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
@@ -143,7 +142,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-069040c9"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-00b57bb7"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -266,6 +265,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         console.log(res);
         res.json().then((data) => {
           global.state.controlnet.images = data.images;
+          global.state.controlnet.currentImage = data.images[0];
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;
@@ -296,7 +296,10 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.controlnet.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -676,9 +679,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_069040c9_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-069040c9"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-2c82f17f"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_00b57bb7_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-00b57bb7"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-a0cf6b8e"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -785,6 +788,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         global.state.generating = false;
         res.json().then((data) => {
           global.state.img2img.images = data.images;
+          global.state.img2img.currentImage = data.images[0];
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;
@@ -815,7 +819,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.img2img.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -1158,8 +1165,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_2c82f17f_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2c82f17f"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_a0cf6b8e_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-a0cf6b8e"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1735,7 +1742,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-87369a12"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-70e07d04"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1836,6 +1843,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         global.state.generating = false;
         res.json().then((data) => {
           global.state.inpainting.images = data.images;
+          global.state.inpainting.currentImage = data.images[0];
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;
@@ -2058,7 +2066,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                   ]),
                   _: 1
                 }),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-top": "12px", "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -2339,9 +2350,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_87369a12_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-87369a12"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-79ae31d4"), n = n(), popScopeId(), n);
+const Inpainting_vue_vue_type_style_index_0_scoped_70e07d04_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-70e07d04"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-dfbee01e"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -2429,6 +2440,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         global.state.generating = false;
         res.json().then((data) => {
           global.state.sd_upscale.images = data.images;
+          global.state.sd_upscale.currentImage = data.images[0];
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;
@@ -2459,7 +2471,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   style: { "margin-bottom": "12px" },
                   onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.sd_upscale.image = $event)
                 }, null, 8, ["preview"]),
-                createVNode(unref(NCard), { title: "Settings" }, {
+                createVNode(unref(NCard), {
+                  title: "Settings",
+                  style: { "margin-bottom": "12px" }
+                }, {
                   default: withCtx(() => [
                     createVNode(unref(NSpace), {
                       vertical: "",
@@ -2746,8 +2761,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const SDUpscale_vue_vue_type_style_index_0_scoped_79ae31d4_lang = "";
-const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-79ae31d4"]]);
+const SDUpscale_vue_vue_type_style_index_0_scoped_dfbee01e_lang = "";
+const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-dfbee01e"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {
@@ -2780,18 +2795,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           createVNode(unref(NTabPane), { name: "SD Upscale" }, {
             default: withCtx(() => [
               createVNode(SDUpscale)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Depth to Image" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$9)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Pix to Pix" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$9)
             ]),
             _: 1
           })

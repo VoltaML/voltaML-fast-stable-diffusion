@@ -36,7 +36,7 @@
 
 <script lang="ts" setup>
 import { NCard, NImage, NScrollbar } from "naive-ui";
-import { computed, defineProps } from "vue";
+import { computed } from "vue";
 
 const props = defineProps({
   currentImage: {

@@ -10,7 +10,7 @@
           @file-dropped="conf.data.settings.controlnet.image = $event"
         />
 
-        <NCard title="Settings">
+        <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
@@ -491,6 +491,7 @@ const generate = () => {
       console.log(res);
       res.json().then((data) => {
         global.state.controlnet.images = data.images;
+        global.state.controlnet.currentImage = data.images[0];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;

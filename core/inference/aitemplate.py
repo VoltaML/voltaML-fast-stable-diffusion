@@ -7,6 +7,7 @@ from diffusers import ControlNetModel
 from diffusers.models.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from PIL import Image
+from rich.console import Console
 from transformers import CLIPFeatureExtractor
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -34,6 +35,7 @@ from core.types import (
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
+console = Console()
 
 
 class AITemplateStableDiffusion(InferenceModel):
@@ -90,19 +92,20 @@ class AITemplateStableDiffusion(InferenceModel):
         pipe.unet = None  # type: ignore
         self.memory_cleanup()
 
-        pipe = StableDiffusionAITPipeline(
-            vae=pipe.vae,  # type: ignore
-            text_encoder=pipe.text_encoder,  # type: ignore
-            tokenizer=pipe.tokenizer,  # type: ignore
-            scheduler=pipe.scheduler,  # type: ignore
-            directory=self.directory,
-            clip_ait_exe=None,
-            unet_ait_exe=None,
-            vae_ait_exe=None,
-            requires_safety_checker=False,
-            safety_checker=None,  # type: ignore
-            feature_extractor=None,  # type: ignore
-        )
+        with console.status("[bold green]Loading AITemplate model..."):
+            pipe = StableDiffusionAITPipeline(
+                vae=pipe.vae,  # type: ignore
+                text_encoder=pipe.text_encoder,  # type: ignore
+                tokenizer=pipe.tokenizer,  # type: ignore
+                scheduler=pipe.scheduler,  # type: ignore
+                directory=self.directory,
+                clip_ait_exe=None,
+                unet_ait_exe=None,
+                vae_ait_exe=None,
+                requires_safety_checker=False,
+                safety_checker=None,  # type: ignore
+                feature_extractor=None,  # type: ignore
+            )
         assert isinstance(pipe, StableDiffusionAITPipeline)
 
         # Disable optLevel for AITemplate models and optimize the model

@@ -10,7 +10,7 @@
           @file-dropped="conf.data.settings.sd_upscale.image = $event"
         />
 
-        <NCard title="Settings">
+        <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
@@ -379,6 +379,7 @@ const generate = () => {
       global.state.generating = false;
       res.json().then((data) => {
         global.state.sd_upscale.images = data.images;
+        global.state.sd_upscale.currentImage = data.images[0];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;

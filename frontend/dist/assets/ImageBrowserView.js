@@ -1,5 +1,5 @@
 import { _ as _sfc_main$1, a as NDescriptions, N as NDescriptionsItem } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, B as ref, c as computed, b4 as reactive, f as createVNode, g as unref, w as withCtx, x as serverUrl, b6 as NModal, N as NGi, q as createBlock, r as createCommentVNode, h as NCard, F as NTabs, E as NTabPane, J as NScrollbar, H as Fragment, I as renderList, s as NGrid, C as NButton, D as NIcon, k as createTextVNode, t as toDisplayString, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, B as ref, c as computed, b5 as reactive, f as createVNode, g as unref, w as withCtx, x as serverUrl, b7 as NModal, N as NGi, q as createBlock, r as createCommentVNode, h as NCard, F as NTabs, E as NTabPane, J as NScrollbar, H as Fragment, I as renderList, s as NGrid, C as NButton, D as NIcon, k as createTextVNode, t as toDisplayString, _ as _export_sfc } from "./index.js";
 import { T as TrashBin } from "./TrashBin.js";
 import { N as NImage } from "./Image.js";
 const _hoisted_1$1 = {
@@ -34,7 +34,7 @@ const Download = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_4$1);
   }
 });
-const _hoisted_1 = { style: { "margin": "18px" } };
+const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { style: { "height": "100%", "width": "100%" } };
 const _hoisted_3 = ["onClick"];
 const _hoisted_4 = ["onClick"];
@@ -416,7 +416,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     (openBlock(true), createElementBlock(Fragment, null, renderList(unref(global).state.imageBrowser.currentImageMetadata, (item, key) => {
                       return openBlock(), createBlock(unref(NDescriptionsItem), {
                         label: key.toString(),
-                        "content-style": "max-width: 100px",
+                        "content-style": "max-width: 100px; word-wrap: break-word;",
                         key: item.toString()
                       }, {
                         default: withCtx(() => [
@@ -438,8 +438,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_a83deb7b_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-a83deb7b"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_83798405_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-83798405"]]);
 export {
   ImageBrowserView as default
 };

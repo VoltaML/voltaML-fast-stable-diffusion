@@ -46,7 +46,7 @@ fn main() {
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(items.len() - 1);
         let response = items[response_id];
 
         match response {
@@ -82,7 +82,7 @@ fn configure() {
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(0);
 
         match response {
             0 => break,
@@ -123,7 +123,7 @@ fn debug_menu() {
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(0);
 
         let response = items[response_id];
 

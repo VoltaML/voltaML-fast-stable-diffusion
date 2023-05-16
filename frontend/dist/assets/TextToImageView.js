@@ -140,6 +140,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         global.state.generating = false;
         res.json().then((data) => {
           global.state.txt2img.images = data.images;
+          global.state.txt2img.currentImage = data.images[0];
           global.state.progress = 0;
           global.state.total_steps = 0;
           global.state.current_step = 0;
@@ -154,6 +155,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         console.log(err);
       });
     };
+    const isSelectedModelPyTorch = computed(() => {
+      var _a;
+      return ((_a = conf.data.settings.model) == null ? void 0 : _a.backend) === "PyTorch";
+    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NGrid), {
@@ -476,17 +481,18 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NCard), {
                   title: "Highres fix",
-                  style: { "margin-top": "12px" }
+                  style: { "margin-top": "12px", "margin-bottom": "12px" }
                 }, {
                   default: withCtx(() => [
                     createBaseVNode("div", _hoisted_32, [
                       _hoisted_33,
                       createVNode(unref(NSwitch), {
                         value: unref(global).state.txt2img.highres,
-                        "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(global).state.txt2img.highres = $event)
-                      }, null, 8, ["value"])
+                        "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(global).state.txt2img.highres = $event),
+                        disabled: !unref(isSelectedModelPyTorch)
+                      }, null, 8, ["value", "disabled"])
                     ]),
-                    unref(global).state.txt2img.highres ? (openBlock(), createBlock(unref(NSpace), {
+                    unref(global).state.txt2img.highres && unref(isSelectedModelPyTorch) ? (openBlock(), createBlock(unref(NSpace), {
                       key: 0,
                       vertical: "",
                       class: "left-container"

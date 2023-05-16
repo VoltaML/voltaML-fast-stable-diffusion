@@ -1,5 +1,5 @@
 <template>
-  <div style="margin: 18px">
+  <div class="main-container">
     <NModal
       v-model:show="showDeleteModal"
       :mask-closable="false"
@@ -168,7 +168,7 @@
         >
           <NDescriptionsItem
             :label="key.toString()"
-            content-style="max-width: 100px"
+            content-style="max-width: 100px; word-wrap: break-word;"
             v-for="(item, key) of global.state.imageBrowser
               .currentImageMetadata"
             v-bind:key="item.toString()"

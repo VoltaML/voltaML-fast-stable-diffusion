@@ -21,6 +21,7 @@ class RealESRGAN(InferenceModel):
         self,
         model_name: str,
         device: str = "cuda",
+        scale: int = 4,
         denoise_strength: float = 1.0,
         tile: int = 0,
         tile_pad: int = 10,
@@ -32,6 +33,8 @@ class RealESRGAN(InferenceModel):
         self.tile = tile
         self.tile_pad = tile_pad
         self.pre_pad = pre_pad
+        self.scale = scale
+
         self.upsampler: Optional[RealESRGANer] = None
 
         self.load()

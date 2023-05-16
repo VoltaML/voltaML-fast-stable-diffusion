@@ -1,5 +1,4 @@
-import { _ as _sfc_main$5 } from "./WIP.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, A as h, K as replaceable, L as useConfig, M as useFormItem, B as ref, c as computed, O as useMergedState, P as provide, Q as toRef, R as createInjectionKey, S as call, T as c, U as cB, V as cE, W as cM, X as iconSwitchTransition, Y as insideModal, Z as insidePopover, $ as inject, a0 as useMemo, a1 as useTheme, a2 as checkboxLight, a3 as useRtl, a4 as createKey, a5 as useThemeClass, a6 as createId, a7 as NIconSwitchTransition, a8 as on, a9 as popselectLight, aa as watch, ab as NInternalSelectMenu, ac as createTreeMate, ad as happensIn, ae as nextTick, af as keysOf, ag as createTmOptions, ah as keep, ai as createRefSetter, aj as mergeEventHandlers, ak as omit, al as NPopover, am as popoverBaseProps, an as cNotM, ao as useLocale, ap as watchEffect, aq as resolveSlot, j as NInput, n as NSelect, H as Fragment, ar as NBaseIcon, as as useAdjustedTo, at as paginationLight, au as ellipsisLight, av as onDeactivated, m as NTooltip, aw as mergeProps, ax as radioLight, ay as resolveWrappedSlot, az as flatten$1, aA as getSlot, aB as depx, aC as formatLength, C as NButton, aD as NScrollbar, aE as onBeforeUnmount, aF as off, aG as ChevronDownIcon, aH as NDropdown, aI as pxfy, aJ as get, aK as NBaseLoading, aL as ChevronRightIcon, aM as onUnmounted, aN as VResizeObserver, aO as warn, aP as VVirtualList, aQ as NEmpty, aR as cssrAnchorMetaName, aS as repeat, aT as beforeNextFrameOnce, aU as fadeInScaleUpTransition, aV as Transition, aW as dataTableLight, aX as throwError, aY as isBrowser, aZ as AddIcon, a_ as NProgress, a$ as NFadeInExpandTransition, b0 as EyeIcon, b1 as fadeInHeightExpandTransition, b2 as Teleport, b3 as uploadLight, o as openBlock, e as createElementBlock, l as createBaseVNode, q as createBlock, u as useState, b as useMessage, b4 as reactive, b5 as huggingfaceModelsFile, f as createVNode, w as withCtx, g as unref, k as createTextVNode, h as NCard, x as serverUrl, y as pushScopeId, z as popScopeId, D as NIcon, _ as _export_sfc, i as NSpace, b6 as NModal, N as NGi, b7 as NText, I as renderList, s as NGrid, t as toDisplayString, E as NTabPane, F as NTabs } from "./index.js";
+import { d as defineComponent, A as h, K as replaceable, L as useConfig, M as useFormItem, B as ref, c as computed, O as useMergedState, P as provide, Q as toRef, R as createInjectionKey, S as call, T as c, U as cB, V as cE, W as cM, X as iconSwitchTransition, Y as insideModal, Z as insidePopover, $ as inject, a0 as useMemo, a1 as useTheme, a2 as checkboxLight, a3 as useRtl, a4 as createKey, a5 as useThemeClass, a6 as createId, a7 as NIconSwitchTransition, a8 as on, a9 as popselectLight, aa as watch, ab as NInternalSelectMenu, ac as createTreeMate, ad as happensIn, ae as nextTick, af as keysOf, ag as createTmOptions, ah as keep, ai as createRefSetter, aj as mergeEventHandlers, ak as omit, al as NPopover, am as popoverBaseProps, an as cNotM, ao as useLocale, ap as watchEffect, aq as resolveSlot, j as NInput, n as NSelect, H as Fragment, ar as NBaseIcon, as as useAdjustedTo, at as paginationLight, au as ellipsisLight, av as onDeactivated, m as NTooltip, aw as mergeProps, ax as radioLight, ay as resolveWrappedSlot, az as flatten$1, aA as getSlot, aB as depx, aC as formatLength, C as NButton, aD as NScrollbar, aE as onBeforeUnmount, aF as off, aG as ChevronDownIcon, aH as NDropdown, aI as pxfy, aJ as get, aK as NBaseLoading, aL as ChevronRightIcon, aM as onUnmounted, aN as VResizeObserver, aO as warn, aP as VVirtualList, aQ as NEmpty, aR as cssrAnchorMetaName, aS as repeat, aT as beforeNextFrameOnce, aU as fadeInScaleUpTransition, aV as Transition, aW as dataTableLight, aX as throwError, aY as isBrowser, aZ as AddIcon, a_ as NProgress, a$ as NFadeInExpandTransition, b0 as EyeIcon, b1 as fadeInHeightExpandTransition, b2 as Teleport, b3 as uploadLight, o as openBlock, e as createElementBlock, l as createBaseVNode, q as createBlock, w as withCtx, f as createVNode, g as unref, D as NIcon, b4 as NResult, u as useState, b as useMessage, b5 as reactive, b6 as huggingfaceModelsFile, k as createTextVNode, h as NCard, x as serverUrl, y as pushScopeId, z as popScopeId, _ as _export_sfc, i as NSpace, b7 as NModal, N as NGi, b8 as NText, I as renderList, s as NGrid, t as toDisplayString, E as NTabPane, F as NTabs } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NImage, a as NImageGroup } from "./Image.js";
 import { C as CloudUpload } from "./CloudUpload.js";
@@ -1874,8 +1873,8 @@ const RenderSorter = defineComponent({
     }
   },
   render() {
-    const { render: render6, order } = this;
-    return render6({
+    const { render: render7, order } = this;
+    return render7({
       order
     });
   }
@@ -2051,8 +2050,8 @@ const RenderFilter = defineComponent({
     }
   },
   render() {
-    const { render: render6, active, show } = this;
-    return render6({
+    const { render: render7, active, show } = this;
+    return render7({
       active,
       show
     });
@@ -3265,9 +3264,9 @@ const Cell = defineComponent({
   render() {
     const { isSummary, column, row, renderCell } = this;
     let cell;
-    const { render: render6, key, ellipsis } = column;
-    if (render6 && !isSummary) {
-      cell = render6(row, this.index);
+    const { render: render7, key, ellipsis } = column;
+    if (render7 && !isSummary) {
+      cell = render7(row, this.index);
     } else {
       if (isSummary) {
         cell = row[key].value;
@@ -7023,6 +7022,44 @@ const NUpload = defineComponent({
     );
   }
 });
+const _hoisted_1$8 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M393.87 190a32.1 32.1 0 0 1-45.25 0l-26.57-26.57a32.09 32.09 0 0 1 0-45.26L382.19 58a1 1 0 0 0-.3-1.64c-38.82-16.64-89.15-8.16-121.11 23.57c-30.58 30.35-32.32 76-21.12 115.84a31.93 31.93 0 0 1-9.06 32.08L64 380a48.17 48.17 0 1 0 68 68l153.86-167a31.93 31.93 0 0 1 31.6-9.13c39.54 10.59 84.54 8.6 114.72-21.19c32.49-32 39.5-88.56 23.75-120.93a1 1 0 0 0-1.6-.26z",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-miterlimit": "10",
+    "stroke-width": "32"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
+  "circle",
+  {
+    cx: "96",
+    cy: "416",
+    r: "16",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$7 = [_hoisted_2$8, _hoisted_3$8];
+const BuildOutline = defineComponent({
+  name: "BuildOutline",
+  render: function render(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_4$7);
+  }
+});
 const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -7051,7 +7088,7 @@ const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$6 = [_hoisted_2$7, _hoisted_3$7];
 const GitCompare = defineComponent({
   name: "GitCompare",
-  render: function render(_ctx, _cache) {
+  render: function render2(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$6);
   }
 });
@@ -7083,7 +7120,7 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$5 = [_hoisted_2$6, _hoisted_3$6];
 const Home = defineComponent({
   name: "Home",
-  render: function render2(_ctx, _cache) {
+  render: function render3(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_4$5);
   }
 });
@@ -7137,7 +7174,7 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$2 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$4];
 const Menu = defineComponent({
   name: "Menu",
-  render: function render3(_ctx, _cache) {
+  render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$2);
   }
 });
@@ -7159,7 +7196,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$4 = [_hoisted_2$4];
 const PlayForward = defineComponent({
   name: "PlayForward",
-  render: function render4(_ctx, _cache) {
+  render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_3$4);
   }
 });
@@ -7193,8 +7230,30 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$3 = [_hoisted_2$3, _hoisted_3$3];
 const Settings = defineComponent({
   name: "Settings",
-  render: function render5(_ctx, _cache) {
+  render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_4$3);
+  }
+});
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+  __name: "WIP",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NResult), {
+        title: "Work in progress",
+        description: "This page is still under development.",
+        style: { "height": "70vh", "display": "flex", "align-items": "center", "justify-content": "center" }
+      }, {
+        icon: withCtx(() => [
+          createVNode(unref(NIcon), { size: "250" }, {
+            default: withCtx(() => [
+              createVNode(unref(BuildOutline))
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
   }
 });
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({

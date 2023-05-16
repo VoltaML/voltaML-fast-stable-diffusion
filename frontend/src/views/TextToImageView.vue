@@ -303,18 +303,24 @@
           </NSpace>
         </NCard>
 
-        <NCard title="Highres fix" style="margin-top: 12px">
+        <NCard
+          title="Highres fix"
+          style="margin-top: 12px; margin-bottom: 12px"
+        >
           <div class="flex-container">
             <div class="slider-label">
               <p>Enabled</p>
             </div>
-            <NSwitch v-model:value="global.state.txt2img.highres" />
+            <NSwitch
+              v-model:value="global.state.txt2img.highres"
+              :disabled="!isSelectedModelPyTorch"
+            />
           </div>
 
           <NSpace
             vertical
             class="left-container"
-            v-if="global.state.txt2img.highres"
+            v-if="global.state.txt2img.highres && isSelectedModelPyTorch"
           >
             <!-- Steps -->
             <div class="flex-container">
@@ -543,6 +549,7 @@ const generate = () => {
       global.state.generating = false;
       res.json().then((data) => {
         global.state.txt2img.images = data.images;
+        global.state.txt2img.currentImage = data.images[0];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
@@ -559,4 +566,8 @@ const generate = () => {
       console.log(err);
     });
 };
+
+const isSelectedModelPyTorch = computed(() => {
+  return conf.data.settings.model?.backend === "PyTorch";
+});
 </script>

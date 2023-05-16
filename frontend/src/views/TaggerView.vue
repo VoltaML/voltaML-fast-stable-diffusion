@@ -10,7 +10,7 @@
           @file-dropped="conf.data.settings.tagger.image = $event"
         />
 
-        <NCard title="Settings">
+        <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Sampler -->
             <div class="flex-container">
