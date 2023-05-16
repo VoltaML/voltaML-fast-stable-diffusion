@@ -1,4 +1,4 @@
-from typing import Union, Optional, Any
+from typing import Optional, Any
 import importlib
 import contextlib
 
@@ -104,6 +104,7 @@ class dml:
             dtype: Optional[torch.device] = None,
             disable: bool = False,
         ):
+            self.prev = self.prev_d = None
             self.dtype = dtype or torch.dml.get_autocast_dtype()  # type: ignore
             self.disable = disable
 

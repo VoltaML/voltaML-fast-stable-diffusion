@@ -176,53 +176,52 @@ def optimize_model(
             else None
         )
         # Tested with torch-directml 0.2.0, does not work, so this stays...
-        if config.api.device_type != "directml":
-            if offload == "model":
-                # Offload to CPU
+        if offload == "model":
+            # Offload to CPU
 
-                pipe.vae.to("cpu")  # type: ignore
-                pipe.unet.to("cpu")  # type: ignore
-                pipe.unet.register_forward_pre_hook(send_to_gpu)  # type: ignore
-                pipe.vae.register_forward_pre_hook(send_to_gpu)  # type: ignore
-                setattr(pipe.vae, "main_device", True)  # type: ignore
-                setattr(pipe.unet, "main_device", True)  # type: ignore
-                logger.info("Optimization: Offloaded VAE & UNet to CPU.")
+            pipe.vae.to("cpu")  # type: ignore
+            pipe.unet.to("cpu")  # type: ignore
+            pipe.unet.register_forward_pre_hook(send_to_gpu)  # type: ignore
+            pipe.vae.register_forward_pre_hook(send_to_gpu)  # type: ignore
+            setattr(pipe.vae, "main_device", True)  # type: ignore
+            setattr(pipe.unet, "main_device", True)  # type: ignore
+            logger.info("Optimization: Offloaded VAE & UNet to CPU.")
 
-            elif offload == "module":
-                # Enable sequential offload
+        elif offload == "module":
+            # Enable sequential offload
 
-                if is_accelerate_available():
-                    from accelerate import cpu_offload, disk_offload
+            if is_accelerate_available():
+                from accelerate import cpu_offload, disk_offload
 
-                    for m in [
-                        pipe.vae,  # type: ignore
-                        pipe.safety_checker,  # type: ignore
-                        pipe.unet,  # type: ignore
-                    ]:
-                        if m is not None:
-                            if USE_DISK_OFFLOAD:
-                                # If LOW_RAM toggle set (idk why anyone would do this, but it's nice to support stuff
-                                # like this in case anyone wants to try running this on fuck knows what)
-                                # then offload to disk.
-                                disk_offload(
-                                    m,
-                                    str(
-                                        get_full_model_path(
-                                            "offload-dir", model_folder="temp"
-                                        )
-                                        / m.__name__
-                                    ),
-                                    device,
-                                    offload_buffers=True,
-                                )
-                            else:
-                                cpu_offload(m, device, offload_buffers=True)
+                for m in [
+                    pipe.vae,  # type: ignore
+                    pipe.safety_checker,  # type: ignore
+                    pipe.unet,  # type: ignore
+                ]:
+                    if m is not None:
+                        if USE_DISK_OFFLOAD:
+                            # If LOW_RAM toggle set (idk why anyone would do this, but it's nice to support stuff
+                            # like this in case anyone wants to try running this on fuck knows what)
+                            # then offload to disk.
+                            disk_offload(
+                                m,
+                                str(
+                                    get_full_model_path(
+                                        "offload-dir", model_folder="temp"
+                                    )
+                                    / m.__name__
+                                ),
+                                device,
+                                offload_buffers=True,
+                            )
+                        else:
+                            cpu_offload(m, device, offload_buffers=True)
 
-                    logger.info("Optimization: Enabled sequential offload")
-                else:
-                    logger.warning(
-                        "Optimization: Sequential offload is not available, because accelerate is not installed"
-                    )
+                logger.info("Optimization: Enabled sequential offload")
+            else:
+                logger.warning(
+                    "Optimization: Sequential offload is not available, because accelerate is not installed"
+                )
 
         if config.api.vae_slicing:
             if not (
