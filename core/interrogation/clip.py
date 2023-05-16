@@ -21,6 +21,7 @@ from transformers import (
 
 from core.config import config
 from core.files import get_full_model_path
+from core.optimizations import autocast
 from core.inference.functions import is_bitsandbytes_available
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.types import InterrogatorQueueEntry, Job
@@ -79,7 +80,7 @@ class CLIPInterrogator(InterrogationModel):
 
     def _image_to_features(self, image: Image.Image) -> torch.Tensor:
         images = self.clip_preprocess(image).unsqueeze(0).to(self.device, dtype=self.dtype)  # type: ignore
-        with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+        with torch.no_grad(), autocast(dtype=self.dtype, device=self.device):  # type: ignore
             image_features = self.clip_model.encode_image(images)  # type: ignore
             image_features /= image_features.norm(dim=-1, keepdim=True)
         return image_features
@@ -111,7 +112,7 @@ class CLIPInterrogator(InterrogationModel):
         ) -> str:
             def _similarity(image_features: torch.Tensor, text: str) -> float:
                 text_tokens = self.tokenize([text]).to(self.device, dtype=self.dtype)
-                with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+                with torch.no_grad(), autocast(dtype=self.dtype, device=self.device):  # type: ignore
                     text_features = self.clip_model.encode_text(text_tokens)  # type: ignore
                     text_features /= text_features.norm(dim=-1, keepdim=True)
                     similarity = text_features @ image_features.T
@@ -176,7 +177,7 @@ class CLIPInterrogator(InterrogationModel):
         text_tokens = self.tokenize([text for text in text_array]).to(
             self.device, dtype=self.dtype
         )
-        with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+        with torch.no_grad(), autocast(dtype=self.dtype, device=self.device):  # type: ignore
             text_features = self.clip_model.encode_text(text_tokens)  # type: ignore
             text_features /= text_features.norm(dim=-1, keepdim=True)
             similarity = text_features @ image_features.T
@@ -294,7 +295,7 @@ class LabelTable:
                 chunks, desc=f"Preprocessing {descriptor}" if descriptor else None
             ):
                 text_tokens = self.tokenize(chunk).to(self.device)
-                with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+                with torch.no_grad(), autocast(dtype=self.dtype, device=self.device):  # type: ignore
                     text_features = interrogator.clip_model.encode_text(text_tokens)
                     text_features /= text_features.norm(dim=-1, keepdim=True)
                     # if no workie, put a half() before the cpu()
@@ -347,7 +348,7 @@ class LabelTable:
         text_embeds = torch.stack([torch.from_numpy(t) for t in text_embeds]).to(
             self.device, dtype=self.dtype
         )
-        with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+        with torch.no_grad(), autocast(dtype=self.dtype, device=self.device):  # type: ignore
             similarity = image_features @ text_embeds.T
             if reverse:
                 similarity = -similarity
