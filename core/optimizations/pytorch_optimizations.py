@@ -170,6 +170,9 @@ def optimize_model(
                 pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
                 logger.info("Optimization: Enabled Cross-Attention processor")
 
+        if config.api.autocast:
+            logger.info("Optimization: Enabled autocast")
+
         offload = (
             config.api.offload
             if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
