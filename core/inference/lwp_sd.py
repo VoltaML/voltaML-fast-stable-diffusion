@@ -20,7 +20,8 @@ from core.inference.latents import prepare_latents
 from core.inference.lwp import get_weighted_text_embeddings
 from core.inference.sag.cross_attn import CrossAttnStoreProcessor
 from core.inference.sag.sag_utils import pred_epsilon, pred_x0, sag_masking
-from core.optimizations import send_everything_to_cpu, send_to_gpu
+from core.optimizations import send_everything_to_cpu, send_to_gpu, autocast
+from core.config import config
 
 # ------------------------------------------------------------------------------
 
@@ -470,116 +471,119 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             map_size = output.sample.shape[-2:]
 
         # 8. Denoising loop
-        with ExitStack() as gs:
-            if do_self_attention_guidance:
-                gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
-
-            for i, t in enumerate(self.progress_bar(timesteps)):
-                # expand the latents if we are doing classifier free guidance
-                latent_model_input = (
-                    torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
-                )
-                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
-
-                # predict the noise residual
-                if hasattr(self.unet, "main_device"):
-                    send_to_gpu(self.unet, None)
-                    noise_pred = self.unet(  # type: ignore
-                        latent_model_input.to(self.unet.device, dtype=self.unet.dtype),
-                        t.to(self.unet.device, dtype=self.unet.dtype),
-                        encoder_hidden_states=text_embeddings.to(
-                            self.unet.device, dtype=self.unet.dtype
-                        ),
-                    ).sample
-                else:
-                    # this probably could have been done better but honestly fuck this
-                    noise_pred = self.unet(  # type: ignore
-                        latent_model_input, t, encoder_hidden_states=text_embeddings
-                    ).sample
-
-                # perform guidance
-                if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (
-                        noise_pred_text - noise_pred_uncond
-                    )
-
+        with autocast(
+            dtype=self.unet.dtype,
+            disable=not config.api.autocast,
+        ):
+            with ExitStack() as gs:
                 if do_self_attention_guidance:
-                    if do_classifier_free_guidance:
-                        pred = pred_x0(self, latents, noise_pred_uncond, t)  # type: ignore
-                        uncond_attn, cond_attn = store_processor.attention_probs.chunk(2)  # type: ignore
-                        degraded_latents = sag_masking(
-                            self, pred, uncond_attn, map_size, t, pred_epsilon(self, latents, noise_pred_uncond, t)  # type: ignore
-                        )
-                        uncond_emb, _ = text_embeddings.chunk(2)
-                        # predict the noise residual
-                        if hasattr(self.unet, "main_device"):
-                            send_to_gpu(self.unet, None)
-                            degraded_prep = self.unet(  # type: ignore
-                                degraded_latents.to(
-                                    self.unet.device, dtype=self.unet.dtype
-                                ),
-                                t.to(self.unet.device, dtype=self.unet.dtype),
-                                encoder_hidden_states=uncond_emb.to(
-                                    self.unet.device, dtype=self.unet.dtype
-                                ),
-                            ).sample
-                        else:
-                            # this probably could have been done better but honestly fuck this
-                            degraded_prep = self.unet(  # type: ignore
-                                degraded_latents, t, encoder_hidden_states=uncond_emb
-                            ).sample
-                        noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
-                    else:
-                        pred = pred_x0(self, latents, noise_pred, t)
-                        cond_attn = store_processor.attention_probs  # type: ignore
-                        degraded_latents = sag_masking(
-                            self,
-                            pred,
-                            cond_attn,
-                            map_size,
-                            t,
-                            pred_epsilon(self, latents, noise_pred, t),
-                        )
-                        # predict the noise residual
-                        if hasattr(self.unet, "main_device"):
-                            send_to_gpu(self.unet, None)
-                            degraded_prep = self.unet(  # type: ignore
-                                degraded_latents.to(
-                                    self.unet.device, dtype=self.unet.dtype
-                                ),
-                                t.to(self.unet.device, dtype=self.unet.dtype),
-                                encoder_hidden_states=text_embeddings.to(
-                                    self.unet.device, dtype=self.unet.dtype
-                                ),
-                            ).sample
-                        else:
-                            # this probably could have been done better but honestly fuck this
-                            degraded_prep = self.unet(  # type: ignore
-                                degraded_latents,
-                                t,
-                                encoder_hidden_states=text_embeddings,
-                            ).sample
-                        noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
+                    gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                # compute the previous noisy sample x_t -> x_t-1
-                latents = self.scheduler.step(  # type: ignore
-                    noise_pred, t, latents, **extra_step_kwargs  # type: ignore
-                ).prev_sample  # type: ignore
-
-                if mask is not None:
-                    # masking
-                    init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                        init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                for i, t in enumerate(self.progress_bar(timesteps)):
+                    # expand the latents if we are doing classifier free guidance
+                    latent_model_input = (
+                        torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
                     )
-                    latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
+                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
-                # call the callback, if provided
-                if i % callback_steps == 0:
-                    if callback is not None:
-                        callback(i, t, latents)  # type: ignore
-                    if is_cancelled_callback is not None and is_cancelled_callback():
-                        return None
+                    # predict the noise residual
+                    if hasattr(self.unet, "main_device"):
+                        send_to_gpu(self.unet, None)
+                        noise_pred = self.unet(  # type: ignore
+                            latent_model_input.to(self.unet.device),
+                            t.to(self.unet.device),
+                            encoder_hidden_states=text_embeddings.to(self.unet.device),
+                        ).sample
+                    else:
+                        # this probably could have been done better but honestly fuck this
+                        noise_pred = self.unet(  # type: ignore
+                            latent_model_input, t, encoder_hidden_states=text_embeddings
+                        ).sample
+
+                    # perform guidance
+                    if do_classifier_free_guidance:
+                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                        noise_pred = noise_pred_uncond + guidance_scale * (
+                            noise_pred_text - noise_pred_uncond
+                        )
+
+                    if do_self_attention_guidance:
+                        if do_classifier_free_guidance:
+                            pred = pred_x0(self, latents, noise_pred_uncond, t)  # type: ignore
+                            uncond_attn, cond_attn = store_processor.attention_probs.chunk(2)  # type: ignore
+                            degraded_latents = sag_masking(
+                                self, pred, uncond_attn, map_size, t, pred_epsilon(self, latents, noise_pred_uncond, t)  # type: ignore
+                            )
+                            uncond_emb, _ = text_embeddings.chunk(2)
+                            # predict the noise residual
+                            if hasattr(self.unet, "main_device"):
+                                send_to_gpu(self.unet, None)
+                                degraded_prep = self.unet(  # type: ignore
+                                    degraded_latents.to(self.unet.device),
+                                    t.to(self.unet.device),
+                                    encoder_hidden_states=uncond_emb.to(
+                                        self.unet.device
+                                    ),
+                                ).sample
+                            else:
+                                # this probably could have been done better but honestly fuck this
+                                degraded_prep = self.unet(  # type: ignore
+                                    degraded_latents,
+                                    t,
+                                    encoder_hidden_states=uncond_emb,
+                                ).sample
+                            noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
+                        else:
+                            pred = pred_x0(self, latents, noise_pred, t)
+                            cond_attn = store_processor.attention_probs  # type: ignore
+                            degraded_latents = sag_masking(
+                                self,
+                                pred,
+                                cond_attn,
+                                map_size,
+                                t,
+                                pred_epsilon(self, latents, noise_pred, t),
+                            )
+                            # predict the noise residual
+                            if hasattr(self.unet, "main_device"):
+                                send_to_gpu(self.unet, None)
+                                degraded_prep = self.unet(  # type: ignore
+                                    degraded_latents.to(self.unet.device),
+                                    t.to(self.unet.device),
+                                    encoder_hidden_states=text_embeddings.to(
+                                        self.unet.device
+                                    ),
+                                ).sample
+                            else:
+                                # this probably could have been done better but honestly fuck this
+                                degraded_prep = self.unet(  # type: ignore
+                                    degraded_latents,
+                                    t,
+                                    encoder_hidden_states=text_embeddings,
+                                ).sample
+                            noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
+
+                    # compute the previous noisy sample x_t -> x_t-1
+                    latents = self.scheduler.step(  # type: ignore
+                        noise_pred, t, latents, **extra_step_kwargs  # type: ignore
+                    ).prev_sample  # type: ignore
+
+                    if mask is not None:
+                        # masking
+                        init_latents_proper = self.scheduler.add_noise(  # type: ignore
+                            init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                        )
+                        latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
+
+                    # call the callback, if provided
+                    if i % callback_steps == 0:
+                        if callback is not None:
+                            callback(i, t, latents)  # type: ignore
+                        if (
+                            is_cancelled_callback is not None
+                            and is_cancelled_callback()
+                        ):
+                            return None
 
         # 9. Post-processing
         if output_type == "latent":

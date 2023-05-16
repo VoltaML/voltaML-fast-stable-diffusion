@@ -16,7 +16,6 @@ from core.config import config
 from core.files import get_full_model_path
 
 from .iree import convert_pipe_state_to_iree
-from .offload import _device, send_to_gpu  # pylint: disable=unused-import
 from .trace_utils import generate_inputs, trace_model
 
 logger = logging.getLogger(__name__)
@@ -24,6 +23,30 @@ console = Console()
 
 
 USE_DISK_OFFLOAD = False
+gpu_module = None
+_device = None
+
+
+def send_everything_to_cpu() -> None:
+    "Offload module to CPU to save VRAM"
+
+    global gpu_module  # pylint: disable=global-statement
+
+    if gpu_module is not None:
+        gpu_module.to("cpu")
+    gpu_module = None
+
+
+def send_to_gpu(module, _) -> None:
+    "Load module back to GPU"
+
+    global gpu_module  # pylint: disable=global-statement
+    if gpu_module == module:
+        return
+    if gpu_module is not None:
+        gpu_module.to("cpu")
+    module.to(_device)
+    gpu_module = module
 
 
 def optimize_model(
@@ -42,18 +65,18 @@ def optimize_model(
         hardware_scheduling = experimental_check_hardware_scheduling()
 
         if hardware_scheduling[2] == 1 and not is_for_aitemplate:
-            console.print(
-                "[yellow]Hardware accelerated scheduling is turned on! This will have a HUGE negative impact on performance"
+            logger.warning(
+                "Hardware accelerated scheduling is turned on! This will have a HUGE negative impact on performance"
             )
             if hardware_scheduling[1] == 1:
-                console.print(
-                    "[yellow]You most likely didn't even know this was turned on. Windows 11 enables it by default on NVIDIA devices"
+                logger.warning(
+                    "You most likely didn't even know this was turned on. Windows 11 enables it by default on NVIDIA devices"
                 )
-            console.print(
-                "[yellow]You can read about this issue on https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/3889"
+            logger.warning(
+                "You can read about this issue on https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/3889"
             )
-            console.print(
-                '[yellow]You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
+            logger.warning(
+                'You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
             )
 
         # Took me an hour to understand why CPU stopped working...
@@ -73,33 +96,30 @@ def optimize_model(
 
         if config.api.device_type == "cuda" and not is_for_aitemplate:
             supports_tf = supports_tf32(device)
-            if supports_tf:
-                console.print("[green]User has at least Compute Capability 8.0")
             if config.api.reduced_precision:
                 if supports_tf:
-                    console.print(
-                        "[green]Enabled all reduced precision operations"
+                    logger.info(
+                        "Optimization: Enabled all reduced precision operations"
                     )
                 else:
-                    console.print(
-                        "[yellow]Device capability is not higher than 8.0, skipping most of reduction"
+                    logger.warning(
+                        "Optimization: Device capability is not higher than 8.0, skipping most of reduction"
                     )
-                    console.print(
-                        "[green]Reduced precision operations enabled (fp16 only)"
+                    logger.info(
+                        "Optimization: Reduced precision operations enabled (fp16 only)"
                     )
             torch.backends.cuda.matmul.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
             torch.backends.cudnn.allow_tf32 = config.api.reduced_precision and supports_tf  # type: ignore
             torch.backends.cuda.matmul.allow_fp16_reduced_precision_reduction = config.api.reduced_precision  # type: ignore
             torch.backends.cuda.matmul.allow_bf16_reduced_precision_reduction = config.api.reduced_precision and supports_tf  # type: ignore
 
-            console.print(
-                f"[green]CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
+            logger.info(
+                f"Optimization: CUDNN {'' if config.api.deterministic_generation else 'not '}using deterministic functions"
             )
             torch.backends.cudnn.deterministic = config.api.deterministic_generation  # type: ignore
 
             if config.api.cudnn_benchmark:
-                console.print("[green]CUDNN benchmark enabled")
-                torch.backends.cudnn.benchmark_limit = 0
+                logger.info("Optimization: CUDNN benchmark enabled")
             torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
         # Attention slicing that should save VRAM (but is slower)
@@ -107,10 +127,10 @@ def optimize_model(
         if slicing != "disabled" and is_pytorch_pipe(pipe) and not is_for_aitemplate:
             if slicing == "auto":
                 pipe.enable_attention_slicing()
-                console.print("[green]Enabled attention slicing")
+                logger.info("Optimization: Enabled attention slicing")
             else:
                 pipe.enable_attention_slicing(slicing)
-                console.print(f"[green]Enabled attention slicing({slicing})")
+                logger.info(f"Optimization: Enabled attention slicing ({slicing})")
 
         # Change the order of the channels to be more efficient for the GPU
         # DirectML only supports contiguous memory format
@@ -123,7 +143,7 @@ def optimize_model(
         ):
             pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
             pipe.vae.to(memory_format=torch.channels_last)  # type: ignore
-            console.print("[green]Enabled channels_last memory format")
+            logger.info("Optimization: Enabled channels_last memory format")
 
         # xFormers and SPDA
         if not is_for_aitemplate:
@@ -133,7 +153,7 @@ def optimize_model(
                 and config.api.device_type != "directml"
             ):
                 pipe.enable_xformers_memory_efficient_attention()
-                console.print("[green]Enabled xFormers memory efficient attention")
+                logger.info("Optimization: Enabled xFormers memory efficient attention")
             elif (
                 version.parse(torch.__version__) >= version.parse("2.0.0")
                 and config.api.attention_processor == "spda"
@@ -141,14 +161,14 @@ def optimize_model(
                 from diffusers.models.attention_processor import AttnProcessor2_0
 
                 pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
-                console.print("[green]Enabled SDPA")
+                logger.info("Optimization: Enabled SDPA")
             else:
                 # This should only be the case if an old version of torch_directml is used
                 # This isn't a hot-spot either, so it's fine (imo) to put in safety nets.
                 from diffusers.models.attention_processor import AttnProcessor
 
                 pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
-                console.print("[green]Enabled Cross-Attention processor")
+                logger.info("Optimization: Enabled Cross-Attention processor")
 
         offload = (
             config.api.offload
@@ -166,7 +186,7 @@ def optimize_model(
                 pipe.vae.register_forward_pre_hook(send_to_gpu)  # type: ignore
                 setattr(pipe.vae, "main_device", True)  # type: ignore
                 setattr(pipe.unet, "main_device", True)  # type: ignore
-                console.print("[green]Offloaded VAE & UNet to CPU.")
+                logger.info("Optimization: Offloaded VAE & UNet to CPU.")
 
             elif offload == "module":
                 # Enable sequential offload
@@ -198,9 +218,11 @@ def optimize_model(
                             else:
                                 cpu_offload(m, device, offload_buffers=True)
 
-                    console.print("[green]Enabled sequential offload")
+                    logger.info("Optimization: Enabled sequential offload")
                 else:
-                    console.print("[yellow]Sequential offload is not available, because accelerate is not installed")
+                    logger.warning(
+                        "Optimization: Sequential offload is not available, because accelerate is not installed"
+                    )
 
         if config.api.vae_slicing:
             if not (
@@ -208,17 +230,21 @@ def optimize_model(
                 or isinstance(pipe, StableDiffusionUpscalePipeline)
             ):
                 pipe.enable_vae_slicing()
-                console.print("[green]Enabled VAE slicing")
+                logger.info("Optimization: Enabled VAE slicing")
+            else:
+                logger.debug(
+                    "Optimization: VAE slicing is not available for upscale models"
+                )
 
         if config.api.use_tomesd and not is_for_aitemplate:
             try:
                 import tomesd
 
                 tomesd.apply_patch(pipe.unet, ratio=config.api.tomesd_ratio, max_downsample=config.api.tomesd_downsample_layers)  # type: ignore
-                console.print("[green]Patched UNet for ToMeSD")
+                logger.info("Optimization: Patched UNet for ToMeSD")
             except ImportError:
-                console.print(
-                    "[yellow]ToMeSD patch failed, despite having it enabled. Please check installation"
+                logger.info(
+                    "Optimization: ToMeSD patch failed, despite having it enabled. Please check installation"
                 )
 
         ipexed = False
@@ -227,14 +253,14 @@ def optimize_model(
             torch.set_num_threads(n)
             torch.set_num_interop_threads(n)
 
-            console.print(
-                f"[green]Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
+            logger.info(
+                f"Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
             )
 
             if is_ipex_available():
                 import intel_extension_for_pytorch as ipex  # pylint: disable=import-error
 
-                console.print("[green]Running IPEX optimizations")
+                logger.info("Optimization: Running IPEX optimizations")
 
                 if config.api.channels_last:
                     ipex.enable_auto_channels_last()
@@ -258,15 +284,20 @@ def optimize_model(
             convert_pipe_state_to_iree(pipe)  # type: ignore
 
         if config.api.trace_model and not ipexed and not is_for_aitemplate:
-            console.print("[green]Tracing model.")
-            console.print("[yellow]This will break controlnet and loras!")
-            pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
+            logger.info("Optimization: Tracing model.")
+            logger.warning("This will break controlnet and loras!")
+            if config.api.attention_processor == "xformers":
+                logger.warning(
+                    "Skipping tracing because xformers used for attention processor. Please change to SDPA to enable tracing."
+                )
+            else:
+                pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
         elif is_ipex_available() and config.api.trace_model and not is_for_aitemplate:
-            console.print(
-                "[yellow]Skipping tracing because IPEX optimizations have already been done"
+            logger.warning(
+                "Skipping tracing because IPEX optimizations have already been done"
             )
-            console.print(
-                "[yellow]This is a temporary measure, tracing will work with IPEX-enabled devices later on"
+            logger.warning(
+                "This is a temporary measure, tracing will work with IPEX-enabled devices later on"
             )
 
 

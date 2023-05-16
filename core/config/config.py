@@ -110,6 +110,7 @@ class APIConfig:
     image_preview_delay: float = 2.0
 
     # General optimizations
+    autocast: bool = True
     attention_processor: Literal["xformers", "spda", "cross_attention"] = "xformers"
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
