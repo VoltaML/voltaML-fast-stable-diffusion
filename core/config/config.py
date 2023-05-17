@@ -111,17 +111,15 @@ class APIConfig:
 
     # General optimizations
     autocast: bool = True
-    attention_processor: Literal["xformers", "spda", "cross_attention"] = "xformers"
+    attention_processor: Literal["xformers", "sdpa", "cross_attention"] = "xformers"
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
     vae_slicing: bool = True
+    vae_tiling: bool = False
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
     use_fp32: bool = False
-
-    # CPU specific optimizations
-    quantize_to_int8: bool = False  # preferably will also be able to port this over to gpu, but cpu only for now
 
     # CUDA specific optimizations
     reduced_precision: bool = False
@@ -153,10 +151,7 @@ class APIConfig:
         if self.device_type == "intel":
             from core.inference.functions import is_ipex_available
 
-            if is_ipex_available():
-                return "xpu"
-            return "cpu"
-
+            return "xpu" if is_ipex_available() else "cpu"
         if self.device_type == "cpu":
             return "cpu"
         if self.device_type == "vulkan":
@@ -191,14 +186,12 @@ class BotConfig:
 class InterrogatorConfig:
     "Configuration for interrogation models"
 
-    # set to "Salesforce/blip-image-captioning-base" for an extra vram
+    # set to "Salesforce/blip-image-captioning-base" for an extra gig of vram
     caption_model: str = "Salesforce/blip-image-captioning-large"
     visualizer_model: str = "ViT-L-14/openai"
 
-    offload_captioner: bool = (
-        False  # should net a very big vram save for minimal performance cost
-    )
-    offload_visualizer: bool = False  # should net a somewhat big vram save for a bigger performance cost compared to captioner
+    offload_captioner: bool = False
+    offload_visualizer: bool = False
 
     chunk_size: int = 2048  # set to 1024 for lower vram usage
     flavor_intermediate_count: int = 2048  # set to 1024 for lower vram usage

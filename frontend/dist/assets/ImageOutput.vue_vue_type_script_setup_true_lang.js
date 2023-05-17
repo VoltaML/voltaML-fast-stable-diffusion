@@ -39,9 +39,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }, {
         default: withCtx(() => [
           createBaseVNode("div", _hoisted_1, [
-            unref(displayedImage) ? (openBlock(), createBlock(unref(NImage), {
+            displayedImage.value ? (openBlock(), createBlock(unref(NImage), {
               key: 0,
-              src: unref(displayedImage).toString(),
+              src: displayedImage.value.toString(),
               "img-props": {
                 style: "max-width: 100%; max-height: 70vh; width: 100%"
               },

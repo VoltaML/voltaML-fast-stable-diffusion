@@ -154,10 +154,11 @@ def optimize_model(
             ):
                 pipe.enable_xformers_memory_efficient_attention()
                 logger.info("Optimization: Enabled xFormers memory efficient attention")
-            elif (
-                version.parse(torch.__version__) >= version.parse("2.0.0")
-                and config.api.attention_processor == "spda"
+            elif version.parse(torch.__version__) >= version.parse("2.0.0") and (
+                config.api.attention_processor == "spda"
+                or config.api.attention_processor == "sdpa"
             ):
+                # Here for legacy reasons
                 from diffusers.models.attention_processor import AttnProcessor2_0
 
                 pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
@@ -178,7 +179,6 @@ def optimize_model(
             if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
             else None
         )
-        # Tested with torch-directml 0.2.0, does not work, so this stays...
         if offload == "model":
             # Offload to CPU
 
@@ -236,6 +236,17 @@ def optimize_model(
             else:
                 logger.debug(
                     "Optimization: VAE slicing is not available for upscale models"
+                )
+        if config.api.vae_tiling:
+            if not (
+                issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
+                or isinstance(pipe, StableDiffusionUpscalePipeline)
+            ):
+                pipe.enable_vae_tiling()
+                logger.info("Optimization: Enabled VAE tiling")
+            else:
+                logger.debug(
+                    "Optimization: VAE tiling is not available for upscale models"
                 )
 
         if config.api.use_tomesd and not is_for_aitemplate:

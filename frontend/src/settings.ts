@@ -147,10 +147,12 @@ export interface SettingsInterface {
     tomesd_ratio: number;
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
 
-    attention_processor: "xformers" | "spda";
+    autocast: boolean;
+    attention_processor: "xformers" | "sdpa" | "cross-attention";
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
     vae_slicing: boolean;
+    vae_tiling: boolean;
     trace_model: boolean;
     offload: "module" | "model" | "disabled";
     image_preview_delay: number;
@@ -291,10 +293,12 @@ export const defaultSettings: SettingsInterface = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    autocast: true,
     attention_processor: "xformers",
     attention_slicing: "disabled",
     channels_last: true,
     vae_slicing: false,
+    vae_tiling: false,
     trace_model: false,
     offload: "disabled",
     image_preview_delay: 2.0,

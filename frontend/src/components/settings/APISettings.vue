@@ -40,6 +40,10 @@
 
     <h2>Optimizations</h2>
 
+    <NFormItem label="Autocast">
+      <NSwitch v-model:value="settings.defaultSettings.api.autocast" />
+    </NFormItem>
+
     <NFormItem label="Attention Processor">
       <NSelect
         :options="[
@@ -48,8 +52,12 @@
             label: 'xFormers (less memory hungry)',
           },
           {
-            value: 'spda',
-            label: 'SPD Attention',
+            value: 'sdpa',
+            label: 'SDP Attention',
+          },
+          {
+            value: 'cross-attention',
+            label: 'Cross-Attention',
           },
         ]"
         v-model:value="settings.defaultSettings.api.attention_processor"
@@ -117,6 +125,10 @@
 
     <NFormItem label="VAE Slicing">
       <NSwitch v-model:value="settings.defaultSettings.api.vae_slicing" />
+    </NFormItem>
+
+    <NFormItem label="VAE Tiling">
+      <NSwitch v-model:value="settings.defaultSettings.api.vae_tiling" />
     </NFormItem>
 
     <NFormItem label="Trace UNet">

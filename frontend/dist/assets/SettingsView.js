@@ -1,4 +1,4 @@
-import { $ as inject, bc as getCurrentInstance, aa as watch, aE as onBeforeUnmount, U as cB, W as cM, T as c, R as createInjectionKey, d as defineComponent, L as useConfig, a1 as useTheme, B as ref, A as h, bd as formLight, P as provide, af as keysOf, c as computed, aC as formatLength, aJ as get, be as commonVariables, V as cE, Q as toRef, a6 as createId, bf as formItemInjectionKey, bg as onMounted, a5 as useThemeClass, aV as Transition, ay as resolveWrappedSlot, a4 as createKey, aO as warn, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, n as NSelect, l as createBaseVNode, h as NCard, E as NTabPane, F as NTabs, j as NInput, _ as _export_sfc, b as useMessage, e as createElementBlock, C as NButton, k as createTextVNode, bh as defaultSettings, x as serverUrl } from "./index.js";
+import { $ as inject, bc as getCurrentInstance, aa as watch, aE as onBeforeUnmount, U as cB, W as cM, T as c, R as createInjectionKey, d as defineComponent, L as useConfig, a1 as useTheme, B as ref, P as provide, A as h, bd as formLight, af as keysOf, c as computed, aC as formatLength, aJ as get, be as commonVariables, V as cE, Q as toRef, a6 as createId, bf as formItemInjectionKey, bg as onMounted, a5 as useThemeClass, aV as Transition, ay as resolveWrappedSlot, a4 as createKey, aO as warn, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, n as NSelect, l as createBaseVNode, h as NCard, E as NTabPane, F as NTabs, j as NInput, _ as _export_sfc, b as useMessage, e as createElementBlock, C as NButton, k as createTextVNode, bh as defaultSettings, x as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1880,7 +1880,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSelect), {
                 multiple: "",
-                options: unref(textualInversionOptions),
+                options: textualInversionOptions.value,
                 value: unref(settings).defaultSettings.api.autoloaded_textual_inversions,
                 "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.autoloaded_textual_inversions = $event)
               }, null, 8, ["options", "value"])
@@ -1891,7 +1891,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSelect), {
                 multiple: "",
-                options: unref(loraOptions)
+                options: loraOptions.value
               }, null, 8, ["options"])
             ]),
             _: 1
@@ -1904,7 +1904,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.websocket_perf_interval = $event),
                 min: 0.1,
                 step: 0.1
-              }, null, 8, ["value", "min", "step"])
+              }, null, 8, ["value"])
             ]),
             _: 1
           }),
@@ -1915,7 +1915,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.websocket_sync_interval = $event),
                 min: 1e-3,
                 step: 0.01
-              }, null, 8, ["value", "min", "step"])
+              }, null, 8, ["value"])
             ]),
             _: 1
           }),
@@ -1925,11 +1925,20 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 value: unref(settings).defaultSettings.api.image_preview_delay,
                 "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.image_preview_delay = $event),
                 step: 0.1
-              }, null, 8, ["value", "step"])
+              }, null, 8, ["value"])
             ]),
             _: 1
           }),
           _hoisted_3,
+          createVNode(unref(NFormItem), { label: "Autocast" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.autocast,
+                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.autocast = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
           createVNode(unref(NFormItem), { label: "Attention Processor" }, {
             default: withCtx(() => [
               createVNode(unref(NSelect), {
@@ -1939,12 +1948,16 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                     label: "xFormers (less memory hungry)"
                   },
                   {
-                    value: "spda",
-                    label: "SPD Attention"
+                    value: "sdpa",
+                    label: "SDP Attention"
+                  },
+                  {
+                    value: "cross-attention",
+                    label: "Cross-Attention"
                   }
                 ],
                 value: unref(settings).defaultSettings.api.attention_processor,
-                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.attention_processor = $event)
+                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.attention_processor = $event)
               }, null, 8, ["options", "value"])
             ]),
             _: 1
@@ -1963,7 +1976,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                   }
                 ],
                 value: unref(settings).defaultSettings.api.attention_slicing,
-                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.attention_slicing = $event)
+                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).defaultSettings.api.attention_slicing = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -1972,7 +1985,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.channels_last,
-                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).defaultSettings.api.channels_last = $event)
+                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.api.channels_last = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -1981,7 +1994,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.deterministic_generation,
-                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.api.deterministic_generation = $event)
+                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.deterministic_generation = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -1990,7 +2003,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.reduced_precision,
-                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.reduced_precision = $event)
+                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.reduced_precision = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -1999,7 +2012,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.cudnn_benchmark,
-                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.cudnn_benchmark = $event)
+                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.cudnn_benchmark = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2022,7 +2035,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                   }
                 ],
                 value: unref(settings).defaultSettings.api.clear_memory_policy,
-                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.clear_memory_policy = $event)
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.clear_memory_policy = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2031,7 +2044,16 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.vae_slicing,
-                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.vae_slicing = $event)
+                "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.api.vae_slicing = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), { label: "VAE Tiling" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.vae_tiling,
+                "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.api.vae_tiling = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2040,7 +2062,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.trace_model,
-                "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.api.trace_model = $event)
+                "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.api.trace_model = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2063,7 +2085,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                   }
                 ],
                 value: unref(settings).defaultSettings.api.offload,
-                "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.api.offload = $event)
+                "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).defaultSettings.api.offload = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2103,7 +2125,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                   }
                 ],
                 value: unref(settings).defaultSettings.api.device_type,
-                "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.api.device_type = $event)
+                "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.api.device_type = $event)
               }, null, 8, ["options", "value"])
             ]),
             _: 1
@@ -2112,7 +2134,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NInputNumber), {
                 value: unref(settings).defaultSettings.api.device_id,
-                "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
+                "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2121,7 +2143,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.use_fp32,
-                "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.api.use_fp32 = $event)
+                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.api.use_fp32 = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2131,7 +2153,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.use_tomesd,
-                "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
+                "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2140,10 +2162,10 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NInputNumber), {
                 value: unref(settings).defaultSettings.api.tomesd_ratio,
-                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
+                "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
                 min: 0.1,
                 max: 1
-              }, null, 8, ["value", "min", "max"])
+              }, null, 8, ["value"])
             ]),
             _: 1
           }),
@@ -2169,7 +2191,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                   }
                 ],
                 value: unref(settings).defaultSettings.api.tomesd_downsample_layers,
-                "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event)
+                "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
@@ -2380,7 +2402,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.controlnet.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.controlnet.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value", "step"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
@@ -2458,7 +2480,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale,
                     "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value", "step"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
@@ -2532,7 +2554,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.img2img.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.img2img.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value", "step"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
@@ -2591,7 +2613,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.img2img.denoising_strength,
                     "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.img2img.denoising_strength = $event),
                     step: 0.1
-                  }, null, 8, ["value", "step"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               })
@@ -2655,7 +2677,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.inpainting.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.inpainting.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value", "step"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
@@ -2768,7 +2790,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.txt2img.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.txt2img.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value", "step"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
