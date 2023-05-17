@@ -9,7 +9,7 @@ mod utils;
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use std::{env, error::Error, process::Command};
-use utils::shell::spawn_command;
+use utils::{python::get_venv_python, shell::spawn_command};
 
 fn main() {
     // Check the Git repo update status
@@ -369,6 +369,6 @@ fn debug_menu() {
 }
 
 fn start_api() -> Result<(), Box<dyn Error>> {
-    spawn_command("venv/bin/python main.py", "Run the API")?;
+    spawn_command(&format!("{} main.py", get_venv_python()), "Run the API")?;
     Ok(())
 }

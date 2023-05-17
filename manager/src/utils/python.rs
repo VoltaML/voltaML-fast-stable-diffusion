@@ -76,7 +76,10 @@ pub fn installed_packages() -> Result<Vec<PythonPackage>, Box<dyn Error>> {
 }
 
 pub fn create_venv() -> Result<(), Box<dyn Error>> {
-    run_command("virtualenv venv", "Create virtualenv")?;
+    run_command(
+        &format!("{} -m virtualenv venv", python_executable()),
+        "Create virtualenv",
+    )?;
     Ok(())
 }
 

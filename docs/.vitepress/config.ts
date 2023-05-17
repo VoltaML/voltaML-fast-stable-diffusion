@@ -27,7 +27,7 @@ export default defineConfig({
 	themeConfig: {
 		nav: [
 			{ text: "Home", link: "/" },
-			{ text: "Docs", link: "/introduction" },
+			{ text: "Docs", link: "/getting-started/introduction" },
 		],
 		editLink: {
 			pattern:
