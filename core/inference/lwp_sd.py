@@ -565,7 +565,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                     # compute the previous noisy sample x_t -> x_t-1
                     latents = self.scheduler.step(  # type: ignore
-                        noise_pred, t, latents, **extra_step_kwargs  # type: ignore
+                        noise_pred, t.to(noise_pred.device), latents.to(noise_pred.device), **extra_step_kwargs  # type: ignore
                     ).prev_sample  # type: ignore
 
                     if mask is not None:
