@@ -6,7 +6,7 @@ pub fn does_aitemplate_folder_exist() -> bool {
 }
 
 pub fn is_aitemplate_installed() -> bool {
-    let res = crate::utils::python::is_package_installed("aitemplate");
+    let res = crate::utils::python::is_package_installed_venv("aitemplate");
     if res.is_ok() {
         return res.unwrap();
     } else {

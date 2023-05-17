@@ -271,7 +271,7 @@ fn debug_menu() {
                 }
             }
             "Install virtualenv" => {
-                let res = utils::python::install_virtualenv();
+                let res = utils::python::pip_install("virtualenv");
                 if res.is_ok() {
                     println!("{} {}", style("[OK]").green(), "virtualenv installed");
                 } else {
