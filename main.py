@@ -255,7 +255,7 @@ def checks():
     from core.config import config
 
     logger.info(f"Device: {config.api.device}")
-    logger.info(f"Precision: {'FP32' if config.api.use_fp32 else 'FP16'}")
+    logger.info(f"Precision: {config.api.data_type}")
 
     # Initialize R2 bucket if needed
     if args.enable_r2:

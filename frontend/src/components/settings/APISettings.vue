@@ -40,6 +40,10 @@
 
     <h2>Optimizations</h2>
 
+    <NFormItem label="Autocast">
+      <NSwitch v-model:value="settings.defaultSettings.api.autocast" />
+    </NFormItem>
+
     <NFormItem label="Attention Processor">
       <NSelect
         :options="[
@@ -48,8 +52,12 @@
             label: 'xFormers (less memory hungry)',
           },
           {
-            value: 'spda',
-            label: 'SPD Attention',
+            value: 'sdpa',
+            label: 'SDP Attention',
+          },
+          {
+            value: 'cross-attention',
+            label: 'Cross-Attention',
           },
         ]"
         v-model:value="settings.defaultSettings.api.attention_processor"
@@ -119,6 +127,10 @@
       <NSwitch v-model:value="settings.defaultSettings.api.vae_slicing" />
     </NFormItem>
 
+    <NFormItem label="VAE Tiling">
+      <NSwitch v-model:value="settings.defaultSettings.api.vae_tiling" />
+    </NFormItem>
+
     <NFormItem label="Trace UNet">
       <NSwitch v-model:value="settings.defaultSettings.api.trace_model" />
     </NFormItem>
@@ -186,8 +198,24 @@
       <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
     </NFormItem>
 
-    <NFormItem label="Use FP32 precision">
-      <NSwitch v-model:value="settings.defaultSettings.api.use_fp32" />
+    <NFormItem label="Precision">
+      <NSelect
+        :options="[
+          {
+            value: 'float16',
+            label: '16-bit float',
+          },
+          {
+            value: 'float32',
+            label: '32-bit float',
+          },
+          {
+            value: 'bfloat16',
+            label: '16-bit bfloat (CPU and Ampere+)',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.data_type"
+      />
     </NFormItem>
 
     <h2>TomeSD</h2>

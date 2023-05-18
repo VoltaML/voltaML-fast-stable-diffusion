@@ -273,7 +273,6 @@ class ConvertModelRequest:
     "Dataclass for requesting a conversion of a model"
 
     model: str
-    use_fp32: bool = False
     safetensors: bool = False
 
 

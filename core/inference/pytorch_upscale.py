@@ -34,11 +34,11 @@ class PyTorchSDUpscaler(InferenceModel):
     def load(self):
         pipe = StableDiffusionTiledUpscalePipeline.from_pretrained(
             self.model_id,
-            torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+            torch_dtype=config.api.dtype,
         )
 
         assert isinstance(pipe, StableDiffusionTiledUpscalePipeline)
-        optimize_model(pipe, self.device, config.api.use_fp32)
+        optimize_model(pipe, self.device)
         self.pipe = pipe
 
     def unload(self):

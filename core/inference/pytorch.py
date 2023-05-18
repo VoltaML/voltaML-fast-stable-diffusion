@@ -87,9 +87,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def load(self):
         "Load the model from HuggingFace"
 
-        logger.info(
-            f"Loading {self.model_id} with {'f32' if config.api.use_fp32 else 'f16'}"
-        )
+        logger.info(f"Loading {self.model_id} with {config.api.data_type}")
 
         pipe = load_pytorch_pipeline(
             self.model_id,
@@ -197,7 +195,7 @@ class PyTorchStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet,
                 resume_download=True,
-                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+                torch_dtype=config.api.dtype,
                 use_auth_token=self.auth,
             )
 

@@ -147,16 +147,18 @@ export interface SettingsInterface {
     tomesd_ratio: number;
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
 
-    attention_processor: "xformers" | "spda";
+    autocast: boolean;
+    attention_processor: "xformers" | "sdpa" | "cross-attention";
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
     vae_slicing: boolean;
+    vae_tiling: boolean;
     trace_model: boolean;
     offload: "module" | "model" | "disabled";
     image_preview_delay: number;
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
-    use_fp32: boolean;
+    data_type: "float16" | "float32" | "bfloat16";
     deterministic_generation: boolean;
     reduced_precision: boolean;
     cudnn_benchmark: boolean;
@@ -291,16 +293,18 @@ export const defaultSettings: SettingsInterface = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    autocast: true,
     attention_processor: "xformers",
     attention_slicing: "disabled",
     channels_last: true,
     vae_slicing: false,
+    vae_tiling: false,
     trace_model: false,
     offload: "disabled",
     image_preview_delay: 2.0,
     device_id: 0,
     device_type: "cuda",
-    use_fp32: false,
+    data_type: "float16",
     use_tomesd: true,
     tomesd_ratio: 0.4,
     tomesd_downsample_layers: 1,

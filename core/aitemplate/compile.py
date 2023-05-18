@@ -49,7 +49,7 @@ def compile_diffusers(
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
 
-    use_fp16_acc = not config.api.use_fp32
+    use_fp16_acc = config.api.data_type != "float32"
     start_time = time.time()
 
     torch.manual_seed(4896)

@@ -348,10 +348,7 @@ class GPU:
 
                 from core.inference.onnx_sd import OnnxStableDiffusion
 
-                pt_model = OnnxStableDiffusion(
-                    model_id=model,
-                    use_fp32=config.api.use_fp32,
-                )
+                pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
             else:
                 logger.debug("Selecting PyTorch")
@@ -489,7 +486,6 @@ class GPU:
         def onnx_build_thread_call():
             pipe = OnnxStableDiffusion(
                 model_id=request.model_id,
-                use_fp32=config.api.use_fp32,
                 autoload=False,
             )
 

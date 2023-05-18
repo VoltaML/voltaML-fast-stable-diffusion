@@ -1,8 +1,8 @@
 from .pytorch_optimizations import optimize_model
-from .offload import send_everything_to_cpu, send_to_gpu
+from .autocast_utils import autocast, without_autocast
 
 __all__ = [
     "optimize_model",
-    "send_everything_to_cpu",
-    "send_to_gpu",
+    "without_autocast",
+    "autocast",
 ]

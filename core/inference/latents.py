@@ -7,7 +7,6 @@ from diffusers import StableDiffusionPipeline
 
 from core.config import config
 from core.flags import LatentScaleModel
-from core.optimizations import send_to_gpu
 
 logger = logging.getLogger(__name__)
 
@@ -53,11 +52,8 @@ def prepare_latents(
         latents = latents * pipe.scheduler.init_noise_sigma  # type: ignore
         return latents, None, None
     else:
-        if hasattr(pipe.vae, "main_device"):  # type: ignore
-            send_to_gpu(pipe.vae, None)  # type: ignore
-
         if image.shape[1] != 4:
-            init_latent_dist = pipe.vae.encode(image).latent_dist  # type: ignore
+            init_latent_dist = pipe.vae.encode(image.to(config.api.device)).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)
@@ -74,8 +70,21 @@ def prepare_latents(
                 shape, generator=generator, device="cpu", dtype=dtype
             ).to(device)
         else:
-            noise = torch.randn(shape, generator=generator, device=device, dtype=dtype)
-        latents = pipe.scheduler.add_noise(init_latents, noise, timestep)  # type: ignore
+            # Retarded fix, but hey, if it works, it works
+            if hasattr(pipe.vae, "main_device"):
+                noise = torch.randn(
+                    shape,
+                    generator=torch.Generator("cpu").manual_seed(1),
+                    device="cpu",
+                    dtype=dtype,
+                ).to(device)
+            else:
+                noise = torch.randn(
+                    shape, generator=generator, device=device, dtype=dtype
+                )
+        # Now this... I may have called the previous "hack" retarded, but this...
+        # This just takes it to a whole new level
+        latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 
 

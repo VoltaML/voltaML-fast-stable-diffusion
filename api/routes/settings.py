@@ -21,10 +21,8 @@ async def save_configuration(settings: config.Configuration):
     if config.config.api.device_type != settings.api.device_type:
         logger.info(f"Device type was changed to {settings.api.device_type}")
         reload_required = True
-    if config.config.api.use_fp32 != settings.api.use_fp32:
-        logger.info(
-            f"Precision changed to {'FP32' if settings.api.use_fp32 else 'FP32'}"
-        )
+    if config.config.api.data_type != settings.api.data_type:
+        logger.info(f"Precision changed to {settings.api.data_type}")
         reload_required = True
     if config.config.api != settings.api:
         reload_required = True
