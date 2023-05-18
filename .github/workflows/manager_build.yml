@@ -5,10 +5,12 @@ on:
     branches: ["main", "experimental"]
     paths:
       - "**.rs"
+      - ".github/workflows/**"
   pull_request:
     branches: ["main", "experimental"]
     paths:
       - "**.rs"
+      - ".github/workflows/**"
   workflow_dispatch:
     inputs:
       branch:
@@ -35,5 +37,5 @@ jobs:
         uses: actions/upload-artifact@v3
         with:
           name: volta-manager
-          path: manager/target/release/voltaml-manager
+          path: manager/target/release/voltaml-manager*
           retention-days: 3
