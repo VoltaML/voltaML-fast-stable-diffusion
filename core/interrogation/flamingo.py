@@ -14,15 +14,11 @@ from core.utils import convert_to_image
 class FlamingoInterrogator(InterrogationModel):
     "Model that uses Flamingo Mini to generate image captions."
 
-    def __init__(self, device: str = "cuda", use_fp32: bool = False):
+    def __init__(self, device: str = "cuda"):
         super().__init__(device)
 
         self.device = device
-        self.dtype = (
-            torch.float32
-            if use_fp32
-            else (torch.bfloat16 if is_cpu(device) else torch.float16)
-        )
+        self.dtype = config.api.dtype
         self.model: FlamingoModel
         self.processor: FlamingoProcessor
 

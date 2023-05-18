@@ -158,7 +158,7 @@ export interface SettingsInterface {
     image_preview_delay: number;
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
-    use_fp32: boolean;
+    data_type: "float16" | "float32" | "bfloat16";
     deterministic_generation: boolean;
     reduced_precision: boolean;
     cudnn_benchmark: boolean;
@@ -304,7 +304,7 @@ export const defaultSettings: SettingsInterface = {
     image_preview_delay: 2.0,
     device_id: 0,
     device_type: "cuda",
-    use_fp32: false,
+    data_type: "float16",
     use_tomesd: true,
     tomesd_ratio: 0.4,
     tomesd_downsample_layers: 1,

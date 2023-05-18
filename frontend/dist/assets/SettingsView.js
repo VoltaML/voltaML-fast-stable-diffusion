@@ -2139,12 +2139,26 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          createVNode(unref(NFormItem), { label: "Use FP32 precision" }, {
+          createVNode(unref(NFormItem), { label: "Precision" }, {
             default: withCtx(() => [
-              createVNode(unref(NSwitch), {
-                value: unref(settings).defaultSettings.api.use_fp32,
-                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.api.use_fp32 = $event)
-              }, null, 8, ["value"])
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "float16",
+                    label: "16-bit float"
+                  },
+                  {
+                    value: "float32",
+                    label: "32-bit float"
+                  },
+                  {
+                    value: "bfloat16",
+                    label: "16-bit bfloat (CPU and Ampere+)"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.data_type,
+                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.api.data_type = $event)
+              }, null, 8, ["options", "value"])
             ]),
             _: 1
           }),

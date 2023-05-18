@@ -146,7 +146,7 @@ class RealESRGAN(InferenceModel):
             tile=self.tile,
             tile_pad=self.tile_pad,
             pre_pad=self.pre_pad,
-            half=not config.api.use_fp32,
+            half=config.api.data_type != "float32",
             gpu_id=self.gpu_id,
         )
 

@@ -7,7 +7,6 @@ from diffusers import StableDiffusionPipeline
 
 from core.config import config
 from core.flags import LatentScaleModel
-from core.optimizations import send_to_gpu
 
 logger = logging.getLogger(__name__)
 
@@ -53,9 +52,6 @@ def prepare_latents(
         latents = latents * pipe.scheduler.init_noise_sigma  # type: ignore
         return latents, None, None
     else:
-        if hasattr(pipe.vae, "main_device"):  # type: ignore
-            send_to_gpu(pipe.vae, None)  # type: ignore
-
         if image.shape[1] != 4:
             init_latent_dist = pipe.vae.encode(image).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)

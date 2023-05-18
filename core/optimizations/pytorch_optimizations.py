@@ -23,36 +23,11 @@ console = Console()
 
 
 USE_DISK_OFFLOAD = False
-gpu_module = None
-_device = None
-
-
-def send_everything_to_cpu() -> None:
-    "Offload module to CPU to save VRAM"
-
-    global gpu_module  # pylint: disable=global-statement
-
-    if gpu_module is not None:
-        gpu_module.to("cpu")
-    gpu_module = None
-
-
-def send_to_gpu(module, _) -> None:
-    "Load module back to GPU"
-
-    global gpu_module  # pylint: disable=global-statement
-    if gpu_module == module:
-        return
-    if gpu_module is not None:
-        gpu_module.to("cpu")
-    module.to(_device)
-    gpu_module = module
 
 
 def optimize_model(
     pipe: Union[StableDiffusionPipeline, StableDiffusionUpscalePipeline],
     device,
-    use_fp32: bool,
     is_for_aitemplate: bool = False,
 ) -> None:
     "Optimize the model for inference"
@@ -79,20 +54,21 @@ def optimize_model(
                 'You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
             )
 
+        offload = (
+            config.api.offload
+            if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
+            else None
+        )
+        can_offload = (
+            config.api.device_type not in ["cpu", "iree", "vulkan", "mps"]
+            and offload is not None
+        )
+
         # Took me an hour to understand why CPU stopped working...
         # Turns out AMD just lacks support for BF16...
         # Not mad, not mad at all... to be fair, I'm just disappointed
-        dtype = (
-            torch.float32
-            if use_fp32
-            else (
-                (torch.bfloat16 if "AMD" not in cpu["VendorId"] else torch.float32)
-                if config.api.device_type == "cpu"
-                else torch.float16
-            )
-        )
-        pipe.to(device, torch_dtype=dtype)
-        _device = device
+        if not can_offload:
+            pipe.to(device, torch_dtype=config.api.dtype)
 
         if config.api.device_type == "cuda" and not is_for_aitemplate:
             supports_tf = supports_tf32(device)
@@ -157,6 +133,10 @@ def optimize_model(
             elif version.parse(torch.__version__) >= version.parse("2.0.0") and (
                 config.api.attention_processor == "spda"
                 or config.api.attention_processor == "sdpa"
+                or (
+                    config.api.attention_processor == "xformers"
+                    and config.api.device_type == "directml"
+                )
             ):
                 # Here for legacy reasons
                 from diffusers.models.attention_processor import AttnProcessor2_0
@@ -174,36 +154,44 @@ def optimize_model(
         if config.api.autocast:
             logger.info("Optimization: Enabled autocast")
 
-        offload = (
-            config.api.offload
-            if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
-            else None
-        )
-        if offload == "model":
-            # Offload to CPU
+        if can_offload:
+            if not is_accelerate_available():
+                logger.warning(
+                    "Optimization: Offload is not available, because accelerate is not installed"
+                )
+            else:
+                if offload == "model":
+                    # Offload to CPU
+                    from accelerate import cpu_offload_with_hook
 
-            pipe.vae.to("cpu")  # type: ignore
-            pipe.unet.to("cpu")  # type: ignore
-            pipe.unet.register_forward_pre_hook(send_to_gpu)  # type: ignore
-            pipe.vae.register_forward_pre_hook(send_to_gpu)  # type: ignore
-            setattr(pipe.vae, "main_device", True)  # type: ignore
-            setattr(pipe.unet, "main_device", True)  # type: ignore
-            logger.info("Optimization: Offloaded VAE & UNet to CPU.")
+                    if config.api.device_type == "cuda":
+                        torch.cuda.empty_cache()  # otherwise we don't see the memory savings (but they probably exist)
 
-        elif offload == "module":
-            # Enable sequential offload
+                    hook = None
 
-            if is_accelerate_available():
-                from accelerate import cpu_offload, disk_offload
+                    for cpu_offloaded_model in [
+                        pipe.text_encoder,
+                        pipe.unet,
+                        pipe.vae,
+                    ]:
+                        _, hook = cpu_offload_with_hook(
+                            cpu_offloaded_model, device, prev_module_hook=hook
+                        )
+                    pipe.final_offload_hook = hook
+                    setattr(pipe.vae, "main_device", True)
+                    setattr(pipe.unet, "main_device", True)
+                    logger.info("Optimization: Offloaded model parts to CPU.")
 
-                for m in [
-                    pipe.vae,  # type: ignore
-                    pipe.safety_checker,  # type: ignore
-                    pipe.unet,  # type: ignore
-                ]:
-                    if m is not None:
+                elif offload == "module":
+                    # Enable sequential offload
+                    from accelerate import cpu_offload, disk_offload
+
+                    for m in [
+                        pipe.vae,
+                        pipe.unet,
+                    ]:
                         if USE_DISK_OFFLOAD:
-                            # If LOW_RAM toggle set (idk why anyone would do this, but it's nice to support stuff
+                            # If USE_DISK_OFFLOAD toggle set (idk why anyone would do this, but it's nice to support stuff
                             # like this in case anyone wants to try running this on fuck knows what)
                             # then offload to disk.
                             disk_offload(
@@ -220,11 +208,7 @@ def optimize_model(
                         else:
                             cpu_offload(m, device, offload_buffers=True)
 
-                logger.info("Optimization: Enabled sequential offload")
-            else:
-                logger.warning(
-                    "Optimization: Sequential offload is not available, because accelerate is not installed"
-                )
+                    logger.info("Optimization: Enabled sequential offload")
 
         if config.api.vae_slicing:
             if not (
@@ -287,9 +271,9 @@ def optimize_model(
                 )
                 pipe.unet = ipex.optimize(
                     pipe.unet,  # type: ignore
-                    dtype=dtype,
+                    dtype=config.api.dtype,
                     auto_kernel_selection=True,
-                    sample_input=generate_inputs(dtype, device),
+                    sample_input=generate_inputs(config.api.dtype, device),
                 )
                 ipexed = True
 
@@ -304,7 +288,7 @@ def optimize_model(
                     "Skipping tracing because xformers used for attention processor. Please change to SDPA to enable tracing."
                 )
             else:
-                pipe.unet = trace_model(pipe.unet, dtype, device)  # type: ignore
+                pipe.unet = trace_model(pipe.unet, config.api.dtype, device)  # type: ignore
         elif is_ipex_available() and config.api.trace_model and not is_for_aitemplate:
             logger.warning(
                 "Skipping tracing because IPEX optimizations have already been done"

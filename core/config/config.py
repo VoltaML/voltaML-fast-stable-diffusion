@@ -3,6 +3,7 @@ import multiprocessing
 from dataclasses import Field, dataclass, field, fields
 from typing import Dict, List, Literal, Union
 
+import torch
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
@@ -119,7 +120,7 @@ class APIConfig:
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
-    use_fp32: bool = False
+    data_type: Literal["float32", "float16", "bfloat16"] = "float16"
 
     # CUDA specific optimizations
     reduced_precision: bool = False
@@ -143,6 +144,15 @@ class APIConfig:
     # Autoload
     autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
+
+    @property
+    def dtype(self):
+        "Return selected data type"
+        if self.data_type == "bfloat16":
+            return torch.bfloat16
+        if self.data_type == "float16":
+            return torch.float16
+        return torch.float32
 
     @property
     def device(self):

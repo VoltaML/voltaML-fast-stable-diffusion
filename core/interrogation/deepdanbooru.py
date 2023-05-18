@@ -15,6 +15,7 @@ from torch.ao.quantization.quantize_fx import (
 )
 from tqdm import tqdm
 
+from core.config import config
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.interrogation.clip import is_cpu
 from core.interrogation.models.deepdanbooru_model import DeepDanbooruModel
@@ -30,7 +31,6 @@ class DeepdanbooruInterrogator(InterrogationModel):
     def __init__(
         self,
         device: str = "cuda",
-        use_fp32: bool = False,
         quantized: bool = False,
         autoload: bool = False,
     ):
@@ -39,15 +39,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
         self.tags = []
         self.model: DeepDanbooruModel
         self.model_location = Path("data") / "models" / "deepdanbooru.pt"
-        self.dtype = (
-            torch.float32
-            if use_fp32
-            else (
-                torch.quint8
-                if quantized
-                else (torch.bfloat16 if is_cpu(device) else torch.float16)
-            )
-        )
+        self.dtype = torch.quint8 if quantized else config.api.dtype
         self.device: torch.device
         if isinstance(self.device, str):
             self.device = torch.device(device)

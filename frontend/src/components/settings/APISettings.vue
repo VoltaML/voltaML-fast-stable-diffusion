@@ -198,8 +198,24 @@
       <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
     </NFormItem>
 
-    <NFormItem label="Use FP32 precision">
-      <NSwitch v-model:value="settings.defaultSettings.api.use_fp32" />
+    <NFormItem label="Precision">
+      <NSelect
+        :options="[
+          {
+            value: 'float16',
+            label: '16-bit float',
+          },
+          {
+            value: 'float32',
+            label: '32-bit float',
+          },
+          {
+            value: 'bfloat16',
+            label: '16-bit bfloat (CPU and Ampere+)',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.data_type"
+      />
     </NFormItem>
 
     <h2>TomeSD</h2>

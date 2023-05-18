@@ -112,7 +112,6 @@ class AITemplateStableDiffusion(InferenceModel):
         optimize_model(
             pipe=pipe,
             device=self.device,
-            use_fp32=config.api.use_fp32,
             is_for_aitemplate=True,
         )
 
@@ -208,7 +207,7 @@ class AITemplateStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet,
                 resume_download=True,
-                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+                torch_dtype=config.api.dtype,
                 use_auth_token=self.auth,
             )
 

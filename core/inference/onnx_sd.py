@@ -122,14 +122,12 @@ class OnnxStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        use_fp32: bool = False,
         autoload: bool = True,
     ) -> None:
         if is_onnx_available():
             import onnxruntime as ort
 
             super().__init__(model_id)
-            self.use_fp32 = use_fp32
             self.vae_encoder: ort.InferenceSession
             self.vae_decoder: ort.InferenceSession
             self.unet: ort.InferenceSession
@@ -453,7 +451,11 @@ class OnnxStableDiffusion(InferenceModel):
             self.memory_cleanup()
 
             if is_onnxconverter_available():
-                if not quantize_success and not signed and not self.use_fp32:
+                if (
+                    not quantize_success
+                    and not signed
+                    and config.api.data_type != "float32"
+                ):
                     logger.info(f"Starting FP16 conversion on {str(output_path)}")
                     t = time()
                     import onnx
@@ -467,7 +469,7 @@ class OnnxStableDiffusion(InferenceModel):
                     logger.info(
                         f"Conversion successful on model {str(output_path)} in {(time() - t):.2f}s."
                     )
-            elif not self.use_fp32 and not quantize_success:
+            elif config.api.data_type != "float32" and not quantize_success:
                 logger.warning(
                     "Onnxconverter-common is not available, skipping float16 conversion process. Model will run in FP32."
                 )

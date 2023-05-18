@@ -381,9 +381,7 @@ def load_pytorch_pipeline(
 ) -> StableDiffusionPipeline:
     "Load the model from HuggingFace"
 
-    logger.info(
-        f"Loading {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"
-    )
+    logger.info(f"Loading {model_id_or_path} with {config.api.data_type}")
 
     if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
         with console.status("[bold green]Loading model from checkpoint..."):
@@ -396,17 +394,31 @@ def load_pytorch_pipeline(
             # This function does not inherit the channels so we need to hack it like this
             in_channels = 9 if "inpaint" in model_id_or_path else 4
 
-            pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                from_safetensors=use_safetensors,
-                load_safety_checker=False,
-                num_in_channels=in_channels,
-            )
+            # TODO: investigate this - extract_ema is better for inference, but errors out if not present
+            # Maybe open a pr in diffusers?
+            try:
+                pipe = download_from_original_stable_diffusion_ckpt(
+                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                    from_safetensors=use_safetensors,
+                    extract_ema=True,
+                    load_safety_checker=False,
+                    num_in_channels=in_channels,
+                )
+            except KeyError:
+                pipe = download_from_original_stable_diffusion_ckpt(
+                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                    from_safetensors=use_safetensors,
+                    extract_ema=False,
+                    load_safety_checker=False,
+                    num_in_channels=in_channels,
+                )
     else:
-        with console.status("[bold green]Loading model from HuggingFace Hub..."):
+        with console.status(
+            f"[bold green]Loading model from {'HuggingFace Hub' if '/' in model_id_or_path else 'HuggingFace model'}..."
+        ):
             pipe = StableDiffusionPipeline.from_pretrained(
                 pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+                torch_dtype=config.api.dtype,
                 use_auth_token=auth,
                 safety_checker=None,
                 requires_safety_checker=False,
@@ -415,9 +427,7 @@ def load_pytorch_pipeline(
             )
             assert isinstance(pipe, StableDiffusionPipeline)
 
-    logger.debug(
-        f"Loaded {model_id_or_path} with {'f32' if config.api.use_fp32 else 'f16'}"
-    )
+    logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
     assert isinstance(pipe, StableDiffusionPipeline)
 
@@ -425,7 +435,6 @@ def load_pytorch_pipeline(
         optimize_model(
             pipe=pipe,
             device=device,
-            use_fp32=config.api.use_fp32,
             is_for_aitemplate=is_for_aitemplate,
         )
     else:

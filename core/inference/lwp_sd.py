@@ -20,7 +20,7 @@ from core.inference.latents import prepare_latents
 from core.inference.lwp import get_weighted_text_embeddings
 from core.inference.sag.cross_attn import CrossAttnStoreProcessor
 from core.inference.sag.sag_utils import pred_epsilon, pred_x0, sag_masking
-from core.optimizations import send_everything_to_cpu, send_to_gpu, autocast
+from core.optimizations import autocast
 from core.config import config
 
 # ------------------------------------------------------------------------------
@@ -266,11 +266,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
     def decode_latents(self, latents):
         latents = 1 / 0.18215 * latents
-        if hasattr(self.vae, "main_device"):
-            send_to_gpu(self.vae, None)
-            image = self.vae.decode(latents.to(self.vae.device, dtype=self.vae.dtype)).sample  # type: ignore
-        else:
-            image = self.vae.decode(latents).sample  # type: ignore
+        image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
@@ -396,85 +392,85 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             (nsfw) content, according to the `safety_checker`.
         """
         # 0. Default height and width to unet
-        height = height or self.unet.config.sample_size * self.vae_scale_factor  # type: ignore
-        width = width or self.unet.config.sample_size * self.vae_scale_factor  # type: ignore
-
-        # 1. Check inputs. Raise error if not correct
-        self.check_inputs(prompt, height, width, strength, callback_steps)
-
-        # 2. Define call parameters
-        batch_size = 1 if isinstance(prompt, str) else len(prompt)
-        device = self._execution_device
-        # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
-        # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
-        # corresponds to doing no classifier free guidance.
-        do_classifier_free_guidance = guidance_scale > 1.0
-
-        do_self_attention_guidance = self_attention_scale > 0.0
-
-        # 3. Encode input prompt
-        text_embeddings = self._encode_prompt(
-            prompt,
-            device,
-            num_images_per_prompt,
-            do_classifier_free_guidance,
-            negative_prompt,
-            max_embeddings_multiples,
-        ).to(device)
-        dtype = text_embeddings.dtype
-
-        # 4. Preprocess image and mask
-        if isinstance(image, PIL.Image.Image):  # type: ignore
-            image = preprocess_image(image)
-        if image is not None:
-            image = image.to(device=self.device, dtype=dtype)
-        if isinstance(mask_image, PIL.Image.Image):  # type: ignore
-            mask_image = preprocess_mask(mask_image, self.vae_scale_factor)
-        if mask_image is not None:
-            mask = mask_image.to(device=self.device, dtype=dtype)
-            mask = torch.cat([mask] * batch_size * num_images_per_prompt)  # type: ignore
-        else:
-            mask = None
-
-        # 5. set timesteps
-        self.scheduler.set_timesteps(num_inference_steps, device=device)  # type: ignore
-        timesteps, num_inference_steps = self.get_timesteps(
-            num_inference_steps, strength, device, image is None
-        )
-        latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)  # type: ignore
-
-        # 6. Prepare latent variables
-        latents, init_latents_orig, noise = prepare_latents(
-            self,
-            image,
-            latent_timestep,
-            batch_size * num_images_per_prompt,  # type: ignore
-            height,
-            width,
-            dtype,
-            device,
-            generator,
-            latents,
-        )
-
-        # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
-        extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
-
-        if do_self_attention_guidance:
-            store_processor = CrossAttnStoreProcessor()
-            self.unet.mid_block.attentions[0].transformer_blocks[0].attn1.processor = store_processor  # type: ignore
-
-        map_size = None
-
-        def get_map_size(_, __, output):
-            nonlocal map_size
-            map_size = output.sample.shape[-2:]
-
-        # 8. Denoising loop
         with autocast(
             dtype=self.unet.dtype,
             disable=not config.api.autocast,
         ):
+            height = height or self.unet.config.sample_size * self.vae_scale_factor  # type: ignore
+            width = width or self.unet.config.sample_size * self.vae_scale_factor  # type: ignore
+
+            # 1. Check inputs. Raise error if not correct
+            self.check_inputs(prompt, height, width, strength, callback_steps)
+
+            # 2. Define call parameters
+            batch_size = 1 if isinstance(prompt, str) else len(prompt)
+            device = self._execution_device
+            # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
+            # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
+            # corresponds to doing no classifier free guidance.
+            do_classifier_free_guidance = guidance_scale > 1.0
+
+            do_self_attention_guidance = self_attention_scale > 0.0
+
+            # 3. Encode input prompt
+            text_embeddings = self._encode_prompt(
+                prompt,
+                device,
+                num_images_per_prompt,
+                do_classifier_free_guidance,
+                negative_prompt,
+                max_embeddings_multiples,
+            ).to(device)
+            dtype = text_embeddings.dtype
+
+            # 4. Preprocess image and mask
+            if isinstance(image, PIL.Image.Image):  # type: ignore
+                image = preprocess_image(image)
+            if image is not None:
+                image = image.to(device=self.device, dtype=dtype)
+            if isinstance(mask_image, PIL.Image.Image):  # type: ignore
+                mask_image = preprocess_mask(mask_image, self.vae_scale_factor)
+            if mask_image is not None:
+                mask = mask_image.to(device=self.device, dtype=dtype)
+                mask = torch.cat([mask] * batch_size * num_images_per_prompt)  # type: ignore
+            else:
+                mask = None
+
+            # 5. set timesteps
+            self.scheduler.set_timesteps(num_inference_steps, device=device)  # type: ignore
+            timesteps, num_inference_steps = self.get_timesteps(
+                num_inference_steps, strength, device, image is None
+            )
+            latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)  # type: ignore
+
+            # 6. Prepare latent variables
+            latents, init_latents_orig, noise = prepare_latents(
+                self,
+                image,
+                latent_timestep,
+                batch_size * num_images_per_prompt,  # type: ignore
+                height,
+                width,
+                dtype,
+                device,
+                generator,
+                latents,
+            )
+
+            # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
+            extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
+
+            if do_self_attention_guidance:
+                store_processor = CrossAttnStoreProcessor()
+                self.unet.mid_block.attentions[0].transformer_blocks[0].attn1.processor = store_processor  # type: ignore
+
+            map_size = None
+
+            def get_map_size(_, __, output):
+                nonlocal map_size
+                map_size = output.sample.shape[-2:]
+
+            # 8. Denoising loop
             with ExitStack() as gs:
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
@@ -487,18 +483,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
                     # predict the noise residual
-                    if hasattr(self.unet, "main_device"):
-                        send_to_gpu(self.unet, None)
-                        noise_pred = self.unet(  # type: ignore
-                            latent_model_input.to(self.unet.device),
-                            t.to(self.unet.device),
-                            encoder_hidden_states=text_embeddings.to(self.unet.device),
-                        ).sample
-                    else:
-                        # this probably could have been done better but honestly fuck this
-                        noise_pred = self.unet(  # type: ignore
-                            latent_model_input, t, encoder_hidden_states=text_embeddings
-                        ).sample
+                    noise_pred = self.unet(  # type: ignore
+                        latent_model_input, t, encoder_hidden_states=text_embeddings
+                    ).sample
 
                     # perform guidance
                     if do_classifier_free_guidance:
@@ -516,22 +503,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             )
                             uncond_emb, _ = text_embeddings.chunk(2)
                             # predict the noise residual
-                            if hasattr(self.unet, "main_device"):
-                                send_to_gpu(self.unet, None)
-                                degraded_prep = self.unet(  # type: ignore
-                                    degraded_latents.to(self.unet.device),
-                                    t.to(self.unet.device),
-                                    encoder_hidden_states=uncond_emb.to(
-                                        self.unet.device
-                                    ),
-                                ).sample
-                            else:
-                                # this probably could have been done better but honestly fuck this
-                                degraded_prep = self.unet(  # type: ignore
-                                    degraded_latents,
-                                    t,
-                                    encoder_hidden_states=uncond_emb,
-                                ).sample
+                            # this probably could have been done better but honestly fuck this
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents,
+                                t,
+                                encoder_hidden_states=uncond_emb,
+                            ).sample
                             noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
                         else:
                             pred = pred_x0(self, latents, noise_pred, t)
@@ -545,22 +522,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 pred_epsilon(self, latents, noise_pred, t),
                             )
                             # predict the noise residual
-                            if hasattr(self.unet, "main_device"):
-                                send_to_gpu(self.unet, None)
-                                degraded_prep = self.unet(  # type: ignore
-                                    degraded_latents.to(self.unet.device),
-                                    t.to(self.unet.device),
-                                    encoder_hidden_states=text_embeddings.to(
-                                        self.unet.device
-                                    ),
-                                ).sample
-                            else:
-                                # this probably could have been done better but honestly fuck this
-                                degraded_prep = self.unet(  # type: ignore
-                                    degraded_latents,
-                                    t,
-                                    encoder_hidden_states=text_embeddings,
-                                ).sample
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents,
+                                t,
+                                encoder_hidden_states=text_embeddings,
+                            ).sample
                             noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
 
                     # compute the previous noisy sample x_t -> x_t-1
@@ -585,29 +551,30 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         ):
                             return None
 
-        # 9. Post-processing
-        if output_type == "latent":
-            return latents, False
+            # 9. Post-processing
+            if output_type == "latent":
+                return latents, False
 
-        image = self.decode_latents(latents)
+            image = self.decode_latents(latents)
 
-        # 10. Run safety checker
-        image, has_nsfw_concept = self.run_safety_checker(
-            image, device, text_embeddings.dtype
-        )
+            # 10. Run safety checker
+            image, has_nsfw_concept = self.run_safety_checker(
+                image, device, text_embeddings.dtype
+            )
 
-        # 11. Convert to PIL
-        if output_type == "pil":
-            image = self.numpy_to_pil(image)
+            # 11. Convert to PIL
+            if output_type == "pil":
+                image = self.numpy_to_pil(image)
 
-        send_everything_to_cpu()
+            if hasattr(self, "final_offload_hook"):
+                self.final_offload_hook.offload()  # type: ignore
 
-        if not return_dict:
-            return image, has_nsfw_concept
+            if not return_dict:
+                return image, has_nsfw_concept
 
-        return StableDiffusionPipelineOutput(
-            images=image, nsfw_content_detected=has_nsfw_concept  # type: ignore
-        )
+            return StableDiffusionPipelineOutput(
+                images=image, nsfw_content_detected=has_nsfw_concept  # type: ignore
+            )
 
     def text2img(
         self,
