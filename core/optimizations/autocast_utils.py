@@ -6,38 +6,7 @@ import torch
 
 from core.config import config
 
-
-def autocast(
-    dtype: torch.dtype,
-    disable: bool = False,
-):
-    "Context manager to autocast tensors to desired dtype for all supported backends"
-
-    if dtype == torch.float32 or disable:
-        return contextlib.nullcontext()
-    if config.api.device_type == "directml":
-        return torch.dml.autocast(dtype=dtype, disable=False)  # type: ignore
-    if config.api.device_type == "intel":
-        return torch.xpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
-    if config.api.device_type == "cpu":
-        return torch.cpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
-    return torch.cuda.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
-
-
-def without_autocast(disable: bool = False):
-    "Context manager to disable autocast"
-
-    if disable:
-        return contextlib.nullcontext()
-    if config.api.device_type == "directml":
-        return torch.dml.autocast(disable=True)  # type: ignore
-    if config.api.device_type == "intel":
-        return torch.xpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
-    if config.api.device_type == "cpu":
-        return torch.cpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
-    return torch.cuda.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
-
-
+_initialized_directml = False
 _patch_list = [
     "torch.Tensor.__matmul__",
     "torch.addbmm",
@@ -63,6 +32,43 @@ _patch_list = [
     "torch.prelu",
     "torch.nn.RNNCell",
 ]
+
+
+def autocast(
+    dtype: torch.dtype,
+    disable: bool = False,
+):
+    "Context manager to autocast tensors to desired dtype for all supported backends"
+
+    global _initialized_directml  # pylint: disable=global-statement
+
+    if dtype == torch.float32 or disable:
+        return contextlib.nullcontext()
+    if config.api.device_type == "directml":
+        if not _initialized_directml:
+            for p in _patch_list:
+                _patch(p)
+            _initialized_directml = True
+        return torch.dml.autocast(dtype=dtype, disable=False)  # type: ignore
+    if config.api.device_type == "intel":
+        return torch.xpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
+    if config.api.device_type == "cpu":
+        return torch.cpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
+    return torch.cuda.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
+
+
+def without_autocast(disable: bool = False):
+    "Context manager to disable autocast"
+
+    if disable:
+        return contextlib.nullcontext()
+    if config.api.device_type == "directml":
+        return torch.dml.autocast(disable=True)  # type: ignore
+    if config.api.device_type == "intel":
+        return torch.xpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
+    if config.api.device_type == "cpu":
+        return torch.cpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
+    return torch.cuda.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
 
 
 def _new_forward(forward, args, kwargs):
@@ -92,10 +98,6 @@ def _patch(imp: str):
         rs = getattr(rs, attr)  # type: ignore
     op = getattr(rs, f[-1])  # type: ignore
     setattr(rs, f[-1], lambda *args, **kwargs: _new_forward(op, args, kwargs))  # type: ignore
-
-
-for p in _patch_list:
-    _patch(p)
 
 
 class dml:
