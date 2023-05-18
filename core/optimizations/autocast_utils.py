@@ -11,6 +11,8 @@ def autocast(
     dtype: torch.dtype,
     disable: bool = False,
 ):
+    "Context manager to autocast tensors to desired dtype for all supported backends"
+
     if dtype == torch.float32 or disable:
         return contextlib.nullcontext()
     if config.api.device_type == "directml":
@@ -20,6 +22,20 @@ def autocast(
     if config.api.device_type == "cpu":
         return torch.cpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
     return torch.cuda.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
+
+
+def without_autocast(disable: bool = False):
+    "Context manager to disable autocast"
+
+    if disable:
+        return contextlib.nullcontext()
+    if config.api.device_type == "directml":
+        return torch.dml.autocast(disable=True)  # type: ignore
+    if config.api.device_type == "intel":
+        return torch.xpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
+    if config.api.device_type == "cpu":
+        return torch.cpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
+    return torch.cuda.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
 
 
 _patch_list = [

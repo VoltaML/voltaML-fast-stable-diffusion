@@ -33,8 +33,6 @@ def optimize_model(
     "Optimize the model for inference"
     from core.inference.functions import is_ipex_available
 
-    global _device  # pylint: disable=global-statement
-
     with console.status("[bold green]Optimizing model..."):
         # Tuple[Supported, Enabled by default, Enabled]
         hardware_scheduling = experimental_check_hardware_scheduling()
