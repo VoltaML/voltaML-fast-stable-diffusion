@@ -59,7 +59,7 @@ def optimize_model(
         )
         can_offload = (
             config.api.device_type not in ["cpu", "iree", "vulkan", "mps"]
-            and offload is not None
+            and offload != "disabled"
         )
 
         # Took me an hour to understand why CPU stopped working...
