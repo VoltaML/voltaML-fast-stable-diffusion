@@ -134,9 +134,8 @@ class dml:
                 torch.dml.set_autocast_dtype(self.dtype)  # type: ignore
 
         def __exit__(self, exc_type: Any, exc_val: Any, exc_tb: Any):
-            if not self.disable or self.prev_d is not None:
-                torch.dml.set_autocast_enabled(self.prev)  # type: ignore
-                torch.dml.set_autocast_dtype(self.prev_d)  # type: ignore
+            torch.dml.set_autocast_enabled(self.prev or False)  # type: ignore
+            torch.dml.set_autocast_dtype(self.prev_d or torch.dml.get_autocast_dtype())  # type: ignore
 
 
 torch.dml = dml  # type: ignore
