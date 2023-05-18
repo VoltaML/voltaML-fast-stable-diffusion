@@ -184,7 +184,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           "show-count": ""
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(promptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value"]),
@@ -196,7 +196,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           "show-count": ""
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value"]),
@@ -338,7 +338,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.cfg_scale,
                             "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
@@ -347,7 +347,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_20, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -367,7 +367,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             max: 1,
                             step: 0.05,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.self_attention_scale,
                             "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
@@ -376,7 +376,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             min: 0,
                             max: 1,
                             step: 0.05
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_23, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -489,10 +489,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       createVNode(unref(NSwitch), {
                         value: unref(global).state.txt2img.highres,
                         "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(global).state.txt2img.highres = $event),
-                        disabled: !isSelectedModelPyTorch.value
+                        disabled: !unref(isSelectedModelPyTorch)
                       }, null, 8, ["value", "disabled"])
                     ]),
-                    unref(global).state.txt2img.highres && isSelectedModelPyTorch.value ? (openBlock(), createBlock(unref(NSpace), {
+                    unref(global).state.txt2img.highres && unref(isSelectedModelPyTorch) ? (openBlock(), createBlock(unref(NSpace), {
                       key: 0,
                       vertical: "",
                       class: "left-container"
@@ -554,7 +554,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             max: 0.9,
                             step: 0.05,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "min", "max", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.extra.highres.strength,
                             "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(conf).data.settings.extra.highres.strength = $event),
@@ -563,7 +563,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             min: 0.1,
                             max: 0.9,
                             step: 0.05
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "min", "max", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_41, [
                           _hoisted_42,

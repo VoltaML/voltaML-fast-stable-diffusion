@@ -1,4 +1,4 @@
-import { $ as inject, bc as getCurrentInstance, aa as watch, aE as onBeforeUnmount, U as cB, W as cM, T as c, R as createInjectionKey, d as defineComponent, L as useConfig, a1 as useTheme, B as ref, P as provide, A as h, bd as formLight, af as keysOf, c as computed, aC as formatLength, aJ as get, be as commonVariables, V as cE, Q as toRef, a6 as createId, bf as formItemInjectionKey, bg as onMounted, a5 as useThemeClass, aV as Transition, ay as resolveWrappedSlot, a4 as createKey, aO as warn, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, n as NSelect, l as createBaseVNode, h as NCard, E as NTabPane, F as NTabs, j as NInput, _ as _export_sfc, b as useMessage, e as createElementBlock, C as NButton, k as createTextVNode, bh as defaultSettings, x as serverUrl } from "./index.js";
+import { $ as inject, bc as getCurrentInstance, aa as watch, aE as onBeforeUnmount, U as cB, W as cM, T as c, R as createInjectionKey, d as defineComponent, L as useConfig, a1 as useTheme, B as ref, A as h, bd as formLight, P as provide, af as keysOf, c as computed, aC as formatLength, aJ as get, be as commonVariables, V as cE, Q as toRef, a6 as createId, bf as formItemInjectionKey, bg as onMounted, a5 as useThemeClass, aV as Transition, ay as resolveWrappedSlot, a4 as createKey, aO as warn, a as useSettings, u as useState, o as openBlock, q as createBlock, w as withCtx, f as createVNode, g as unref, n as NSelect, l as createBaseVNode, h as NCard, E as NTabPane, F as NTabs, j as NInput, _ as _export_sfc, b as useMessage, e as createElementBlock, C as NButton, k as createTextVNode, bh as defaultSettings, x as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1880,7 +1880,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSelect), {
                 multiple: "",
-                options: textualInversionOptions.value,
+                options: unref(textualInversionOptions),
                 value: unref(settings).defaultSettings.api.autoloaded_textual_inversions,
                 "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.autoloaded_textual_inversions = $event)
               }, null, 8, ["options", "value"])
@@ -1891,7 +1891,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSelect), {
                 multiple: "",
-                options: loraOptions.value
+                options: unref(loraOptions)
               }, null, 8, ["options"])
             ]),
             _: 1
@@ -1904,7 +1904,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.websocket_perf_interval = $event),
                 min: 0.1,
                 step: 0.1
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "min", "step"])
             ]),
             _: 1
           }),
@@ -1915,7 +1915,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.websocket_sync_interval = $event),
                 min: 1e-3,
                 step: 0.01
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "min", "step"])
             ]),
             _: 1
           }),
@@ -1925,7 +1925,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 value: unref(settings).defaultSettings.api.image_preview_delay,
                 "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.image_preview_delay = $event),
                 step: 0.1
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "step"])
             ]),
             _: 1
           }),
@@ -2179,7 +2179,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
                 min: 0.1,
                 max: 1
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "min", "max"])
             ]),
             _: 1
           }),
@@ -2416,7 +2416,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.controlnet.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.controlnet.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value"])
+                  }, null, 8, ["value", "step"])
                 ]),
                 _: 1
               }),
@@ -2494,7 +2494,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale,
                     "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value"])
+                  }, null, 8, ["value", "step"])
                 ]),
                 _: 1
               }),
@@ -2568,7 +2568,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.img2img.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.img2img.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value"])
+                  }, null, 8, ["value", "step"])
                 ]),
                 _: 1
               }),
@@ -2627,7 +2627,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.img2img.denoising_strength,
                     "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.img2img.denoising_strength = $event),
                     step: 0.1
-                  }, null, 8, ["value"])
+                  }, null, 8, ["value", "step"])
                 ]),
                 _: 1
               })
@@ -2691,7 +2691,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.inpainting.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.inpainting.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value"])
+                  }, null, 8, ["value", "step"])
                 ]),
                 _: 1
               }),
@@ -2804,7 +2804,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     value: unref(settings).defaultSettings.txt2img.cfg_scale,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.txt2img.cfg_scale = $event),
                     step: 0.1
-                  }, null, 8, ["value"])
+                  }, null, 8, ["value", "step"])
                 ]),
                 _: 1
               }),

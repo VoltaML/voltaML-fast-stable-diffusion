@@ -1,4 +1,4 @@
-import { U as cB, W as cM, T as c, V as cE, X as iconSwitchTransition, an as cNotM, d as defineComponent, L as useConfig, a3 as useRtl, a1 as useTheme, P as provide, A as h, az as flatten, aA as getSlot, R as createInjectionKey, b9 as stepsLight, $ as inject, aX as throwError, c as computed, a5 as useThemeClass, ay as resolveWrappedSlot, aq as resolveSlot, a7 as NIconSwitchTransition, a4 as createKey, S as call, ar as NBaseIcon, ba as FinishedIcon, bb as ErrorIcon, b as useMessage, u as useState, B as ref, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, l as createBaseVNode, p as NSlider, n as NSelect, C as NButton, k as createTextVNode, b7 as NModal, x as serverUrl, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
+import { U as cB, W as cM, T as c, V as cE, X as iconSwitchTransition, an as cNotM, d as defineComponent, L as useConfig, a3 as useRtl, a1 as useTheme, P as provide, A as h, az as flatten, aA as getSlot, R as createInjectionKey, b9 as stepsLight, aX as throwError, c as computed, a5 as useThemeClass, ay as resolveWrappedSlot, aq as resolveSlot, a7 as NIconSwitchTransition, $ as inject, a4 as createKey, S as call, ar as NBaseIcon, ba as FinishedIcon, bb as ErrorIcon, b as useMessage, u as useState, B as ref, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, l as createBaseVNode, p as NSlider, n as NSelect, C as NButton, k as createTextVNode, b7 as NModal, x as serverUrl, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 const style = cB("steps", `
  width: 100%;
@@ -480,7 +480,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[8] || (_cache[8] = ($event) => model.value = $event),
-                options: modelOptions.value,
+                options: unref(modelOptions),
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
             ])
@@ -499,7 +499,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               type: "success",
               ghost: "",
               loading: building.value,
-              disabled: building.value || modelOptions.value.length === 0,
+              disabled: building.value || unref(modelOptions).length === 0,
               onClick: _cache[9] || (_cache[9] = ($event) => showUnloadModal.value = true)
             }, {
               default: withCtx(() => [

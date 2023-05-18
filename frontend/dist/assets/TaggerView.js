@@ -1,6 +1,6 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, B as ref, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, l as createBaseVNode, n as NSelect, m as NTooltip, k as createTextVNode, p as NSlider, j as NInput, t as toDisplayString, s as NGrid, x as serverUrl, v as spaceRegex, y as pushScopeId, z as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, B as ref, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, l as createBaseVNode, n as NSelect, m as NTooltip, k as createTextVNode, p as NSlider, j as NInput, bu as isRef, t as toDisplayString, s as NGrid, x as serverUrl, v as spaceRegex, y as pushScopeId, z as popScopeId, _ as _export_sfc } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
@@ -159,7 +159,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             max: 1,
                             style: { "margin-right": "12px" },
                             step: 0.025
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "min", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.tagger.threshold,
                             "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.tagger.threshold = $event),
@@ -168,7 +168,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             min: 0.1,
                             max: 1,
                             step: 0.025
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "min", "step"])
                         ])
                       ]),
                       _: 1
@@ -192,26 +192,26 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }, null, 8, ["value"])
                     ]),
                     createVNode(unref(NInput), {
-                      value: computedPrompt.value,
-                      "onUpdate:value": _cache[5] || (_cache[5] = ($event) => computedPrompt.value = $event),
+                      value: unref(computedPrompt),
+                      "onUpdate:value": _cache[5] || (_cache[5] = ($event) => isRef(computedPrompt) ? computedPrompt.value = $event : null),
                       type: "textarea",
                       placeholder: "Prompt",
                       "show-count": ""
                     }, {
                       count: withCtx(() => [
-                        createTextVNode(toDisplayString(promptCount.value), 1)
+                        createTextVNode(toDisplayString(unref(promptCount)), 1)
                       ]),
                       _: 1
                     }, 8, ["value"]),
                     createVNode(unref(NInput), {
-                      value: computedNegativePrompt.value,
-                      "onUpdate:value": _cache[6] || (_cache[6] = ($event) => computedNegativePrompt.value = $event),
+                      value: unref(computedNegativePrompt),
+                      "onUpdate:value": _cache[6] || (_cache[6] = ($event) => isRef(computedNegativePrompt) ? computedNegativePrompt.value = $event : null),
                       type: "textarea",
                       placeholder: "Negative prompt",
                       "show-count": ""
                     }, {
                       count: withCtx(() => [
-                        createTextVNode(toDisplayString(negativePromptCount.value), 1)
+                        createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                       ]),
                       _: 1
                     }, 8, ["value"])

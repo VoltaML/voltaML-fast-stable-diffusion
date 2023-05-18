@@ -1,4 +1,4 @@
-import { d as defineComponent, B as ref, c as computed, bg as onMounted, o as openBlock, q as createBlock, w as withCtx, l as createBaseVNode, bu as withModifiers, e as createElementBlock, f as createVNode, g as unref, D as NIcon, t as toDisplayString, h as NCard, y as pushScopeId, z as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, B as ref, c as computed, bg as onMounted, o as openBlock, q as createBlock, w as withCtx, l as createBaseVNode, bv as withModifiers, e as createElementBlock, f as createVNode, g as unref, D as NIcon, t as toDisplayString, h as NCard, y as pushScopeId, z as popScopeId, _ as _export_sfc } from "./index.js";
 import { C as CloudUpload } from "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-4f5be896"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "image-container" };
@@ -119,7 +119,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ])
           ]),
           createBaseVNode("div", _hoisted_7, [
-            createBaseVNode("p", null, toDisplayString(width.value) + "x" + toDisplayString(height.value), 1)
+            createBaseVNode("p", null, toDisplayString(unref(width)) + "x" + toDisplayString(unref(height)), 1)
           ]),
           createBaseVNode("input", {
             type: "file",
