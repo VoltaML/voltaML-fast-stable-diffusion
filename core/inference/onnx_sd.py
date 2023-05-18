@@ -35,6 +35,7 @@ from transformers.utils import is_safetensors_available
 
 from api import websocket_manager
 from api.websockets import Data
+from core.config import config
 from core.files import get_full_model_path
 from core.inference.base_model import InferenceModel
 from core.inference.functions import (

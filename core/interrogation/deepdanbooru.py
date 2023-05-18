@@ -96,7 +96,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
             y = self.model(x)[0].detach().cpu().numpy()
 
         probability_dict = {}
-        for tag, probability in zip(self.tags, y):
+        for tag, probability in zip(self.tags, y):  # type: ignore
             if probability < threshold:
                 continue
             if tag.startswith("rating:"):
