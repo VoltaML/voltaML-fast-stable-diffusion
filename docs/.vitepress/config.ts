@@ -43,6 +43,14 @@ export default defineConfig({
 				icon: "discord",
 				link: "https://discord.gg/pY5SVyHmWm",
 			},
+			{
+				icon: "linkedin",
+				link: "https://www.linkedin.com/in/tom%C3%A1%C5%A1-nov%C3%A1k-5a163321b/",
+			},
+			{
+				icon: "linkedin",
+				link: "https://www.linkedin.com/in/márton-kissik/",
+			},
 		],
 		sidebar: [
 			{
