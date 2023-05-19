@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, a as useSettings, q as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, C as NButton, D as NIcon, k as createTextVNode, s as NGrid, bw as NAlert, r as createCommentVNode, h as NCard, x as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, e as createElementBlock, m as createBaseVNode, u as useState, a as useSettings, D as ref, bi as onMounted, aO as onUnmounted, z as serverUrl, s as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, E as NButton, F as NIcon, l as createTextVNode, x as NGrid, by as NAlert, v as createCommentVNode, h as NCard } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -56,6 +56,27 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const props = __props;
     const global = useState();
     const conf = useSettings();
+    const generateButton = ref(null);
+    onMounted(() => {
+      window.addEventListener("keydown", handleKeyDown);
+    });
+    onUnmounted(() => {
+      window.removeEventListener("keydown", handleKeyDown);
+    });
+    function handleKeyDown(e) {
+      if (e.key === "Enter" && e.ctrlKey) {
+        e.preventDefault();
+        if (global.state.generating) {
+          return;
+        }
+        const fn = props.generate;
+        fn(e);
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        interrupt();
+      }
+    }
     function interrupt() {
       fetch(`${serverUrl}/api/general/interrupt`, {
         method: "POST"
@@ -81,6 +102,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     return [
                       createVNode(unref(NButton), {
                         type: "success",
+                        ref_key: "generateButton",
+                        ref: generateButton,
                         onClick: props.generate,
                         disabled: unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0,
                         loading: unref(global).state.generating,

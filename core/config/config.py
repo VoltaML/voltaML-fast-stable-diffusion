@@ -1,13 +1,21 @@
 import logging
 import multiprocessing
 from dataclasses import Field, dataclass, field, fields
-from typing import Dict, List, Literal, Union
+from typing import Dict, List, Literal, Optional, Union
 
 import torch
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class QuantDict:
+    vae_decoder: Optional[bool] = None
+    vae_encoder: Optional[bool] = None
+    unet: Optional[bool] = None
+    text_encoder: Optional[bool] = None
 
 
 @dataclass
@@ -182,6 +190,13 @@ class AITemplateConfig:
 
 
 @dataclass
+class ONNXConfig:
+    "Configuration for ONNX acceleration"
+
+    quant_dict: QuantDict = field(default_factory=QuantDict)
+
+
+@dataclass
 class BotConfig:
     "Configuration for the bot"
 
@@ -233,6 +248,7 @@ class Configuration(DataClassJsonMixin):
     api: APIConfig = field(default_factory=APIConfig)
     interrogator: InterrogatorConfig = field(default_factory=InterrogatorConfig)
     aitemplate: AITemplateConfig = field(default_factory=AITemplateConfig)
+    onnx: ONNXConfig = field(default_factory=ONNXConfig)
     bot: BotConfig = field(default_factory=BotConfig)
     frontend: FrontendConfig = field(default_factory=FrontendConfig)
     extra: CatchAll = field(default_factory=dict)

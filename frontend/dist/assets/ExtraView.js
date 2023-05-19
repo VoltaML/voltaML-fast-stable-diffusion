@@ -1,7 +1,7 @@
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, l as createBaseVNode, n as NSelect, G as upscalerOptions, m as NTooltip, k as createTextVNode, p as NSlider, s as NGrid, x as serverUrl, y as pushScopeId, z as popScopeId, _ as _export_sfc, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, m as createBaseVNode, q as NSelect, I as upscalerOptions, n as NTooltip, l as createTextVNode, r as NSlider, x as NGrid, z as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, s as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
 import "./CloudUpload.js";

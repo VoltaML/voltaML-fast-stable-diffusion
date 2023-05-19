@@ -3,7 +3,7 @@ import { _ as _sfc_main$6 } from "./ImageOutput.vue_vue_type_script_setup_true_l
 import { I as ImageUpload } from "./ImageUpload.js";
 import { _ as _sfc_main$8 } from "./OutputStats.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$7 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, a as useSettings, b as useMessage, c as computed, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, k as createTextVNode, t as toDisplayString, m as NTooltip, n as NSelect, p as NSlider, s as NGrid, v as spaceRegex, x as serverUrl, y as pushScopeId, z as popScopeId, _ as _export_sfc, A as h, B as ref, C as NButton, D as NIcon, q as createBlock, E as NTabPane, F as NTabs } from "./index.js";
+import { d as defineComponent, o as openBlock, e as createElementBlock, m as createBaseVNode, u as useState, a as useSettings, b as useMessage, c as computed, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, p as promptHandleKeyUp, k as promptHandleKeyDown, l as createTextVNode, t as toDisplayString, n as NTooltip, q as NSelect, r as NSlider, x as NGrid, y as spaceRegex, z as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, C as h, D as ref, E as NButton, F as NIcon, s as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
@@ -142,7 +142,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-00b57bb7"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-60d25d91"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -311,25 +311,29 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.controlnet.prompt = $event),
                           type: "textarea",
                           placeholder: "Prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createVNode(unref(NInput), {
                           value: unref(conf).data.settings.controlnet.negative_prompt,
                           "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.controlnet.negative_prompt = $event),
                           type: "textarea",
                           placeholder: "Negative prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createBaseVNode("div", _hoisted_2$3, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -679,9 +683,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_00b57bb7_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-00b57bb7"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-a0cf6b8e"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_60d25d91_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-60d25d91"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-c35cb41b"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -834,25 +838,29 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.img2img.prompt = $event),
                           type: "textarea",
                           placeholder: "Prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createVNode(unref(NInput), {
                           value: unref(conf).data.settings.img2img.negative_prompt,
                           "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.img2img.negative_prompt = $event),
                           type: "textarea",
                           placeholder: "Negative prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createBaseVNode("div", _hoisted_2$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -1165,8 +1173,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_a0cf6b8e_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-a0cf6b8e"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_c35cb41b_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-c35cb41b"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1742,7 +1750,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-70e07d04"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-019cbc5d"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2081,25 +2089,29 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.inpainting.prompt = $event),
                           type: "textarea",
                           placeholder: "Prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createVNode(unref(NInput), {
                           value: unref(conf).data.settings.inpainting.negative_prompt,
                           "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.inpainting.negative_prompt = $event),
                           type: "textarea",
                           placeholder: "Negative prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createBaseVNode("div", _hoisted_5$1, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -2350,9 +2362,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_70e07d04_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-70e07d04"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-dfbee01e"), n = n(), popScopeId(), n);
+const Inpainting_vue_vue_type_style_index_0_scoped_019cbc5d_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-019cbc5d"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-e7e3c87a"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -2486,25 +2498,29 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.sd_upscale.prompt = $event),
                           type: "textarea",
                           placeholder: "Prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createVNode(unref(NInput), {
                           value: unref(conf).data.settings.sd_upscale.negative_prompt,
                           "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.sd_upscale.negative_prompt = $event),
                           type: "textarea",
                           placeholder: "Negative prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createBaseVNode("div", _hoisted_2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -2761,8 +2777,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const SDUpscale_vue_vue_type_style_index_0_scoped_dfbee01e_lang = "";
-const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-dfbee01e"]]);
+const SDUpscale_vue_vue_type_style_index_0_scoped_e7e3c87a_lang = "";
+const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-e7e3c87a"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

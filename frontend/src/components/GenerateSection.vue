@@ -5,6 +5,7 @@
       <NGi>
         <NButton
           type="success"
+          ref="generateButton"
           @click="props.generate"
           :disabled="
             global.state.generating ||
@@ -59,10 +60,37 @@ import { useState } from "@/store/state";
 import { Play, Skull } from "@vicons/ionicons5";
 import { NAlert, NButton, NCard, NGi, NGrid, NIcon } from "naive-ui";
 import type { MaybeArray } from "naive-ui/es/_utils";
-import type { PropType } from "vue";
+import { onMounted, onUnmounted, ref, type PropType } from "vue";
 
 const global = useState();
 const conf = useSettings();
+
+const generateButton = ref<HTMLElement | null>(null);
+
+onMounted(() => {
+  window.addEventListener("keydown", handleKeyDown);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("keydown", handleKeyDown);
+});
+
+function handleKeyDown(e: KeyboardEvent) {
+  // Press the generate button if ctrl+enter is pressed
+  if (e.key === "Enter" && e.ctrlKey) {
+    e.preventDefault();
+    if (global.state.generating) {
+      return;
+    }
+    const fn = props.generate as Function;
+    fn(e as unknown as MouseEvent);
+  }
+
+  if (e.key === "Escape") {
+    e.preventDefault();
+    interrupt();
+  }
+}
 
 function interrupt() {
   fetch(`${serverUrl}/api/general/interrupt`, {

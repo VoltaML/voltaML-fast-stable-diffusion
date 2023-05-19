@@ -17,12 +17,19 @@ export enum Sampler {
   UniPCMultistep = 13,
 }
 
-export interface AutoloadedLora {
+export interface IAutoloadedLora {
   text_encoder: number;
   unet: number;
 }
 
-export interface SettingsInterface {
+export interface IQuantDict {
+  vae_decoder: boolean | null;
+  vae_encoder: boolean | null;
+  unet: boolean | null;
+  text_encoder: boolean | null;
+}
+
+export interface ISettings {
   $schema: string;
   backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
   model: ModelEntry | null;
@@ -167,11 +174,15 @@ export interface SettingsInterface {
     lora_text_encoder_weight: number;
     lora_unet_weight: number;
 
-    autoloaded_loras: Map<string, AutoloadedLora>;
+    autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
   };
   aitemplate: {
     num_threads: number;
+  };
+  onnx: {
+    quant_dict: IQuantDict;
+    simplify_unet: boolean;
   };
   bot: {
     default_scheduler: Sampler;
@@ -183,7 +194,7 @@ export interface SettingsInterface {
   };
 }
 
-export const defaultSettings: SettingsInterface = {
+export const defaultSettings: ISettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: null,
@@ -320,6 +331,15 @@ export const defaultSettings: SettingsInterface = {
   aitemplate: {
     num_threads: 8,
   },
+  onnx: {
+    quant_dict: {
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null,
+    },
+    simplify_unet: false,
+  },
   bot: {
     default_scheduler: Sampler.DPMSolverMultistep,
     verbose: false,
@@ -330,7 +350,7 @@ export const defaultSettings: SettingsInterface = {
   },
 };
 
-let rSettings: SettingsInterface = JSON.parse(JSON.stringify(defaultSettings));
+let rSettings: ISettings = JSON.parse(JSON.stringify(defaultSettings));
 
 try {
   const req = new XMLHttpRequest();
@@ -351,9 +371,9 @@ console.log("Settings:", rSettings);
 export const recievedSettings = rSettings;
 
 export class Settings {
-  public settings: SettingsInterface;
+  public settings: ISettings;
 
-  constructor(settings_override: Partial<SettingsInterface>) {
+  constructor(settings_override: Partial<ISettings>) {
     this.settings = { ...defaultSettings, ...settings_override };
   }
 

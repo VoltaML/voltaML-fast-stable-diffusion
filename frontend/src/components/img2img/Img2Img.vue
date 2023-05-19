@@ -18,6 +18,8 @@
               type="textarea"
               placeholder="Prompt"
               show-count
+              @keyup="promptHandleKeyUp"
+              @keydown="promptHandleKeyDown"
             >
               <template #count>{{ promptCount }}</template>
             </NInput>
@@ -26,6 +28,8 @@
               type="textarea"
               placeholder="Negative prompt"
               show-count
+              @keyup="promptHandleKeyUp"
+              @keydown="promptHandleKeyDown"
             >
               <template #count>{{ negativePromptCount }}</template>
             </NInput>
@@ -344,7 +348,11 @@ import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
-import { spaceRegex } from "@/functions";
+import {
+  promptHandleKeyDown,
+  promptHandleKeyUp,
+  spaceRegex,
+} from "@/functions";
 import {
   NCard,
   NGi,

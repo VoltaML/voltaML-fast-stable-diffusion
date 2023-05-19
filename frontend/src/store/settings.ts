@@ -6,7 +6,7 @@ import {
   Settings,
   defaultSettings as defaultSettingsTemplate,
   recievedSettings,
-  type SettingsInterface,
+  type ISettings,
 } from "../settings";
 
 export const upscalerOptions: SelectMixedOption[] = [
@@ -147,7 +147,7 @@ export const useSettings = defineStore("settings", () => {
   }
 
   // Deep copy default settings
-  const defaultSettings: SettingsInterface = reactive(deepcopiedSettings);
+  const defaultSettings: ISettings = reactive(deepcopiedSettings);
 
   return {
     data,
