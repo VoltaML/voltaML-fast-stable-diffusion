@@ -16,7 +16,7 @@
       <NSelect multiple :options="loraOptions"> </NSelect>
     </NFormItem>
 
-    <h2>Timings</h2>
+    <h2>Timings and Queue</h2>
     <NFormItem label="WebSocket Performance Monitor Interval">
       <NInputNumber
         v-model:value="settings.defaultSettings.api.websocket_perf_interval"
@@ -35,6 +35,13 @@
       <NInputNumber
         v-model:value="settings.defaultSettings.api.image_preview_delay"
         :step="0.1"
+      />
+    </NFormItem>
+
+    <NFormItem label="Concurrent jobs">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.concurrent_jobs"
+        :step="1"
       />
     </NFormItem>
 

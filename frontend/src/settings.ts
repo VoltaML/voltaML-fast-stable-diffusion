@@ -149,6 +149,7 @@ export interface ISettings {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
+    concurrent_jobs: number;
 
     use_tomesd: boolean;
     tomesd_ratio: number;
@@ -304,6 +305,7 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    concurrent_jobs: 1,
     autocast: true,
     attention_processor: "xformers",
     attention_slicing: "disabled",

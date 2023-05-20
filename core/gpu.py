@@ -209,14 +209,14 @@ class GPU:
 
             except Exception as err:  # pylint: disable=broad-except
                 self.memory_cleanup()
-                self.queue.mark_finished()
+                await self.queue.mark_finished(job.data.id)
                 raise err
 
             deltatime = time.time() - start_time
 
             # Mark job as finished, so the next job can start
             self.memory_cleanup()
-            self.queue.mark_finished()
+            await self.queue.mark_finished(job.data.id)
 
             # Check if user wants the preprocessed image back (ControlNet only)
             if isinstance(job, ControlNetQueueEntry):
