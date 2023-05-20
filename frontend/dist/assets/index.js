@@ -1376,8 +1376,6 @@ function flushJobs(seen2) {
     }
   }
 }
-/* @__PURE__ */ new Set();
-/* @__PURE__ */ new Map();
 function emit(instance, event, ...rawArgs) {
   if (instance.isUnmounted)
     return;
@@ -5883,7 +5881,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.35
+  * pinia v2.0.34
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -6571,7 +6569,6 @@ const render$1 = (r, ...args) => {
     return null;
   }
 };
-/* @__PURE__ */ new Set();
 function warn$2(location2, message) {
   console.error(`[naive/${location2}]: ${message}`);
 }
@@ -8351,7 +8348,6 @@ const clickoutside = {
   }
 };
 const clickoutside$1 = clickoutside;
-/* @__PURE__ */ new Set();
 function warn$1(location2, message) {
   console.error(`[vdirs/${location2}]: ${message}`);
 }
@@ -36589,7 +36585,6 @@ function useEventListener(...args) {
 const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 const globalKey = "__vueuse_ssr_handlers__";
 _global[globalKey] = _global[globalKey] || {};
-/* @__PURE__ */ new Map();
 var SwipeDirection;
 (function(SwipeDirection2) {
   SwipeDirection2["UP"] = "UP";
@@ -36853,6 +36848,7 @@ const useWebsocket = defineStore("websocket", () => {
   };
 });
 const spaceRegex = new RegExp("[\\s,]+");
+const arrowKeys = [38, 40];
 async function startWebsocket(messageProvider) {
   const websocketState = useWebsocket();
   const timeout = 1e3;
@@ -36873,6 +36869,101 @@ async function startWebsocket(messageProvider) {
   }
   console.log("Starting websocket");
   websocketState.ws_open();
+}
+function getTextBoundaries(elem) {
+  if (elem === null) {
+    console.log("Element is null");
+    return [0, 0];
+  }
+  if (elem.tagName === "INPUT" && elem.type === "text" || elem.tagName === "TEXTAREA") {
+    return [
+      elem.selectionStart === null ? 0 : elem.selectionStart,
+      elem.selectionEnd === null ? 0 : elem.selectionEnd
+    ];
+  }
+  console.log("Element is not input");
+  return [0, 0];
+}
+function promptHandleKeyUp(e) {
+  if (e.key === "ArrowUp") {
+    const values = getTextBoundaries(
+      document.activeElement
+    );
+    const boundaryIndexStart = values[0];
+    const boundaryIndexEnd = values[1];
+    e.preventDefault();
+    const elem = document.activeElement;
+    const current_selection = elem.value.substring(
+      boundaryIndexStart,
+      boundaryIndexEnd
+    );
+    const regex = /\(([^:]+([:]?[\s]?)([\d.\d]+))\)/;
+    const matches = regex.exec(current_selection);
+    if (matches) {
+      if (matches) {
+        const value = parseFloat(matches[3]);
+        const new_value = (value + 0.1).toFixed(1);
+        const beforeString = elem.value.substring(0, boundaryIndexStart);
+        const afterString = elem.value.substring(boundaryIndexEnd);
+        const newString = `${beforeString}${current_selection.replace(
+          matches[3],
+          new_value
+        )}${afterString}`;
+        elem.value = newString;
+        elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
+      }
+    } else if (boundaryIndexStart !== boundaryIndexEnd) {
+      const new_inner_string = `(${current_selection}:1.1)`;
+      const beforeString = elem.value.substring(0, boundaryIndexStart);
+      const afterString = elem.value.substring(boundaryIndexEnd);
+      elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
+    } else {
+      console.log("No selection, cannot parse for weighting");
+    }
+  }
+  if (e.key === "ArrowDown") {
+    const values = getTextBoundaries(
+      document.activeElement
+    );
+    const boundaryIndexStart = values[0];
+    const boundaryIndexEnd = values[1];
+    e.preventDefault();
+    const elem = document.activeElement;
+    const current_selection = elem.value.substring(
+      boundaryIndexStart,
+      boundaryIndexEnd
+    );
+    const regex = /\(([^:]+([:]?[\s]?)([\d.\d]+))\)/;
+    const matches = regex.exec(current_selection);
+    if (matches) {
+      if (matches) {
+        const value = parseFloat(matches[3]);
+        const new_value = Math.max(value - 0.1, 0).toFixed(1);
+        const beforeString = elem.value.substring(0, boundaryIndexStart);
+        const afterString = elem.value.substring(boundaryIndexEnd);
+        const newString = `${beforeString}${current_selection.replace(
+          matches[3],
+          new_value
+        )}${afterString}`;
+        elem.value = newString;
+        elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
+      }
+    } else if (boundaryIndexStart !== boundaryIndexEnd) {
+      const new_inner_string = `(${current_selection}:0.9)`;
+      const beforeString = elem.value.substring(0, boundaryIndexStart);
+      const afterString = elem.value.substring(boundaryIndexEnd);
+      elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
+    } else {
+      console.log("No selection, cannot parse for weighting");
+    }
+  }
+}
+function promptHandleKeyDown(e) {
+  if (arrowKeys.includes(e.keyCode)) {
+    e.preventDefault();
+  }
 }
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
@@ -36995,6 +37086,7 @@ const defaultSettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    concurrent_jobs: 1,
     autocast: true,
     attention_processor: "xformers",
     attention_slicing: "disabled",
@@ -37021,6 +37113,15 @@ const defaultSettings = {
   },
   aitemplate: {
     num_threads: 8
+  },
+  onnx: {
+    quant_dict: {
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null
+    },
+    simplify_unet: false
   },
   bot: {
     default_scheduler: 8,
@@ -38165,7 +38266,7 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/test",
@@ -38196,137 +38297,139 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  inject as $,
-  h as A,
-  ref as B,
-  NButton as C,
-  NIcon as D,
-  NTabPane as E,
-  NTabs as F,
-  upscalerOptions as G,
-  Fragment as H,
-  renderList as I,
-  NScrollbar as J,
-  replaceable as K,
-  useConfig as L,
-  useFormItem as M,
+  insideModal as $,
+  pushScopeId as A,
+  popScopeId as B,
+  h as C,
+  ref as D,
+  NButton as E,
+  NIcon as F,
+  NTabPane as G,
+  NTabs as H,
+  upscalerOptions as I,
+  Fragment as J,
+  renderList as K,
+  NScrollbar as L,
+  replaceable as M,
   NGi as N,
-  useMergedState as O,
-  provide as P,
-  toRef as Q,
-  createInjectionKey as R,
-  call as S,
-  c$1 as T,
-  cB as U,
-  cE as V,
-  cM as W,
-  iconSwitchTransition as X,
-  insideModal as Y,
-  insidePopover as Z,
+  useConfig as O,
+  useFormItem as P,
+  useMergedState as Q,
+  provide as R,
+  toRef as S,
+  createInjectionKey as T,
+  call as U,
+  c$1 as V,
+  cB as W,
+  cE as X,
+  cM as Y,
+  iconSwitchTransition as Z,
   _export_sfc as _,
   useSettings as a,
-  NFadeInExpandTransition as a$,
-  useMemo as a0,
-  useTheme as a1,
-  checkboxLight$1 as a2,
-  useRtl as a3,
-  createKey as a4,
-  useThemeClass as a5,
-  createId as a6,
-  NIconSwitchTransition as a7,
-  on as a8,
-  popselectLight$1 as a9,
-  getSlot$1 as aA,
-  depx as aB,
-  formatLength as aC,
-  NScrollbar$1 as aD,
-  onBeforeUnmount as aE,
-  off as aF,
-  ChevronDownIcon as aG,
-  NDropdown as aH,
-  pxfy as aI,
-  get as aJ,
-  NBaseLoading as aK,
-  ChevronRightIcon as aL,
-  onUnmounted as aM,
-  VResizeObserver as aN,
-  warn$2 as aO,
-  VVirtualList as aP,
-  NEmpty as aQ,
-  cssrAnchorMetaName as aR,
-  repeat as aS,
-  beforeNextFrameOnce as aT,
-  fadeInScaleUpTransition as aU,
-  Transition as aV,
-  dataTableLight$1 as aW,
-  throwError as aX,
-  isBrowser$3 as aY,
-  AddIcon as aZ,
-  NProgress as a_,
-  watch as aa,
-  NInternalSelectMenu as ab,
-  createTreeMate as ac,
-  happensIn as ad,
-  nextTick as ae,
-  keysOf as af,
-  createTmOptions as ag,
-  keep as ah,
-  createRefSetter as ai,
-  mergeEventHandlers as aj,
-  omit as ak,
-  NPopover as al,
-  popoverBaseProps as am,
-  cNotM as an,
-  useLocale as ao,
-  watchEffect as ap,
-  resolveSlot as aq,
-  NBaseIcon as ar,
-  useAdjustedTo as as,
-  paginationLight$1 as at,
-  ellipsisLight$1 as au,
-  onDeactivated as av,
-  mergeProps as aw,
-  radioLight$1 as ax,
-  resolveWrappedSlot as ay,
-  flatten$2 as az,
+  AddIcon as a$,
+  insidePopover as a0,
+  inject as a1,
+  useMemo as a2,
+  useTheme as a3,
+  checkboxLight$1 as a4,
+  useRtl as a5,
+  createKey as a6,
+  useThemeClass as a7,
+  createId as a8,
+  NIconSwitchTransition as a9,
+  resolveWrappedSlot as aA,
+  flatten$2 as aB,
+  getSlot$1 as aC,
+  depx as aD,
+  formatLength as aE,
+  NScrollbar$1 as aF,
+  onBeforeUnmount as aG,
+  off as aH,
+  ChevronDownIcon as aI,
+  NDropdown as aJ,
+  pxfy as aK,
+  get as aL,
+  NBaseLoading as aM,
+  ChevronRightIcon as aN,
+  onUnmounted as aO,
+  VResizeObserver as aP,
+  warn$2 as aQ,
+  VVirtualList as aR,
+  NEmpty as aS,
+  cssrAnchorMetaName as aT,
+  repeat as aU,
+  beforeNextFrameOnce as aV,
+  fadeInScaleUpTransition as aW,
+  Transition as aX,
+  dataTableLight$1 as aY,
+  throwError as aZ,
+  isBrowser$3 as a_,
+  on as aa,
+  popselectLight$1 as ab,
+  watch as ac,
+  NInternalSelectMenu as ad,
+  createTreeMate as ae,
+  happensIn as af,
+  nextTick as ag,
+  keysOf as ah,
+  createTmOptions as ai,
+  keep as aj,
+  createRefSetter as ak,
+  mergeEventHandlers as al,
+  omit as am,
+  NPopover as an,
+  popoverBaseProps as ao,
+  cNotM as ap,
+  useLocale as aq,
+  watchEffect as ar,
+  resolveSlot as as,
+  NBaseIcon as at,
+  useAdjustedTo as au,
+  paginationLight$1 as av,
+  ellipsisLight$1 as aw,
+  onDeactivated as ax,
+  mergeProps as ay,
+  radioLight$1 as az,
   useMessage as b,
-  EyeIcon as b0,
-  fadeInHeightExpandTransition as b1,
-  Teleport as b2,
-  uploadLight$1 as b3,
-  NResult as b4,
-  reactive as b5,
-  huggingfaceModelsFile as b6,
-  NModal as b7,
-  NText as b8,
-  stepsLight$1 as b9,
+  NProgress as b0,
+  NFadeInExpandTransition as b1,
+  EyeIcon as b2,
+  fadeInHeightExpandTransition as b3,
+  Teleport as b4,
+  uploadLight$1 as b5,
+  NResult as b6,
+  reactive as b7,
+  huggingfaceModelsFile as b8,
+  NModal as b9,
   rgba as bA,
   XButton as bB,
-  FinishedIcon as ba,
-  ErrorIcon$1 as bb,
-  getCurrentInstance as bc,
-  formLight$1 as bd,
-  commonVariables$m as be,
-  formItemInjectionKey as bf,
-  onMounted as bg,
-  defaultSettings as bh,
-  useCompitable as bi,
-  descriptionsLight$1 as bj,
-  useRouter as bk,
-  toString as bl,
-  fadeInTransition as bm,
-  imageLight as bn,
-  isMounted as bo,
-  LazyTeleport as bp,
-  withDirectives as bq,
-  zindexable$1 as br,
-  vShow as bs,
-  normalizeStyle as bt,
-  isRef as bu,
-  withModifiers as bv,
-  NAlert as bw,
-  isSlotEmpty as bx,
-  switchLight$1 as by,
+  isSlotEmpty as bC,
+  switchLight$1 as bD,
+  NText as ba,
+  stepsLight$1 as bb,
+  FinishedIcon as bc,
+  ErrorIcon$1 as bd,
+  getCurrentInstance as be,
+  formLight$1 as bf,
+  commonVariables$m as bg,
+  formItemInjectionKey as bh,
+  onMounted as bi,
+  defaultSettings as bj,
+  useCompitable as bk,
+  descriptionsLight$1 as bl,
+  useRouter as bm,
+  toString as bn,
+  fadeInTransition as bo,
+  imageLight as bp,
+  isMounted as bq,
+  LazyTeleport as br,
+  withDirectives as bs,
+  zindexable$1 as bt,
+  vShow as bu,
+  normalizeStyle as bv,
+  isRef as bw,
+  withModifiers as bx,
+  NAlert as by,
   inputNumberLight$1 as bz,
   computed as c,
   defineComponent as d,
@@ -38336,20 +38439,20 @@ export {
   NCard as h,
   NSpace as i,
   NInput as j,
-  createTextVNode as k,
-  createBaseVNode as l,
-  NTooltip as m,
-  NSelect as n,
+  promptHandleKeyDown as k,
+  createTextVNode as l,
+  createBaseVNode as m,
+  NTooltip as n,
   openBlock as o,
-  NSlider as p,
-  createBlock as q,
-  createCommentVNode as r,
-  NGrid as s,
+  promptHandleKeyUp as p,
+  NSelect as q,
+  NSlider as r,
+  createBlock as s,
   toDisplayString as t,
   useState as u,
-  spaceRegex as v,
+  createCommentVNode as v,
   withCtx as w,
-  serverUrl as x,
-  pushScopeId as y,
-  popScopeId as z
+  NGrid as x,
+  spaceRegex as y,
+  serverUrl as z
 };

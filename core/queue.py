@@ -1,6 +1,8 @@
 import asyncio
 import logging
-from typing import List, Optional
+from typing import List
+
+from core.config import config
 
 logger = logging.getLogger(__name__)
 
@@ -10,26 +12,25 @@ class Queue:
 
     def __init__(self) -> None:
         self.jobs: List[str] = []
-        self.current_job: Optional[str] = None
+        self.lock = asyncio.Lock()
+        self.condition = asyncio.Condition(self.lock)
+        self.concurrent_jobs = config.api.concurrent_jobs
 
-    def mark_finished(self):
+    async def mark_finished(self, job_id: str):
         "Mark the current job as finished"
 
-        self.jobs.pop(0)
+        async with self.lock:
+            self.jobs.remove(job_id)
+            self.condition.notify_all()
 
-        if self.jobs:
-            self.current_job = self.jobs[0]
-        else:
-            self.current_job = None
-
-    async def wait_for_turn(self, job_id):
+    async def wait_for_turn(self, job_id: str):
         "Wait until the job can be processed"
 
-        self.jobs.append(job_id)
-        if not self.current_job:
-            self.current_job = job_id
+        async with self.lock:
+            self.jobs.append(job_id)
 
-        while self.current_job != job_id:
-            await asyncio.sleep(0.1)
+            while job_id not in self.jobs[: self.concurrent_jobs]:
+                await self.condition.wait()
 
-        return
+            logger.warning(f"Job {job_id} is now being processed")
+            return

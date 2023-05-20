@@ -2,7 +2,7 @@ import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_tr
 import { _ as _sfc_main$2 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$4 } from "./OutputStats.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, k as createTextVNode, t as toDisplayString, l as createBaseVNode, m as NTooltip, n as NSelect, p as NSlider, q as createBlock, r as createCommentVNode, s as NGrid, v as spaceRegex, x as serverUrl } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, p as promptHandleKeyUp, k as promptHandleKeyDown, l as createTextVNode, t as toDisplayString, m as createBaseVNode, n as NTooltip, q as NSelect, r as NSlider, s as createBlock, v as createCommentVNode, x as NGrid, y as spaceRegex, z as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 import { v as v4 } from "./v4.js";
@@ -181,25 +181,29 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.txt2img.prompt = $event),
                           type: "textarea",
                           placeholder: "Prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createVNode(unref(NInput), {
                           value: unref(conf).data.settings.txt2img.negative_prompt,
                           "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.txt2img.negative_prompt = $event),
                           type: "textarea",
                           placeholder: "Negative prompt",
-                          "show-count": ""
+                          "show-count": "",
+                          onKeyup: unref(promptHandleKeyUp),
+                          onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
-                        }, 8, ["value"]),
+                        }, 8, ["value", "onKeyup", "onKeydown"]),
                         createBaseVNode("div", _hoisted_2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
