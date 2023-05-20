@@ -490,7 +490,7 @@ class OnnxStableDiffusion(InferenceModel):
                 if is_onnxsim_available():
                     logger.info("Starting simplification process on %s", output_path)
                     try:
-                        import onnx  # pylint: disable=import-self
+                        import onnx
                         import onnxsim as onx  # pylint: disable=import-error
 
                         t = time()
