@@ -32,5 +32,5 @@ class Queue:
             while job_id not in self.jobs[: self.concurrent_jobs]:
                 await self.condition.wait()
 
-            logger.warning(f"Job {job_id} is now being processed")
+            logger.info(f"Job {job_id} is now being processed")
             return
