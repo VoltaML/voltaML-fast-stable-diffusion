@@ -9,7 +9,7 @@ mod utils;
 use console::style;
 use dialoguer::{theme::ColorfulTheme, Input, Select};
 use std::{env, error::Error, process::Command};
-use utils::shell::spawn_command;
+use utils::{python::get_venv_python, shell::spawn_command};
 
 fn main() {
     // Check the Git repo update status
@@ -46,7 +46,7 @@ fn main() {
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(items.len() - 1);
         let response = items[response_id];
 
         match response {
@@ -82,7 +82,7 @@ fn configure() {
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(0);
 
         match response {
             0 => break,
@@ -123,7 +123,7 @@ fn debug_menu() {
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(0);
 
         let response = items[response_id];
 
@@ -271,7 +271,7 @@ fn debug_menu() {
                 }
             }
             "Install virtualenv" => {
-                let res = utils::python::install_virtualenv();
+                let res = utils::python::pip_install("virtualenv");
                 if res.is_ok() {
                     println!("{} {}", style("[OK]").green(), "virtualenv installed");
                 } else {
@@ -369,6 +369,6 @@ fn debug_menu() {
 }
 
 fn start_api() -> Result<(), Box<dyn Error>> {
-    spawn_command("venv/bin/python main.py", "Run the API")?;
+    spawn_command(&format!("{} main.py", get_venv_python()), "Run the API")?;
     Ok(())
 }

@@ -4,6 +4,7 @@ import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
+from packaging import version
 
 import torch
 from diffusers import StableDiffusionPipeline
@@ -39,6 +40,10 @@ from core.optimizations import optimize_model
 console = Console()
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
+
+
+torch_older_than_200 = version.parse(torch.__version__) < version.parse("2.0.0")
+torch_newer_or_same_as_210 = version.parse(torch.__version__) >= version.parse("2.1.0")
 
 
 def is_ipex_available():

@@ -43,6 +43,8 @@ from core.inference.functions import (
     is_onnxconverter_available,
     is_onnxscript_available,
     is_onnxsim_available,
+    torch_older_than_200,
+    torch_newer_or_same_as_210,
 )
 from core.inference_callbacks import (
     img2img_callback,
@@ -246,7 +248,7 @@ class OnnxStableDiffusion(InferenceModel):
                 providers = {
                     "vae_encoder": ["CPUExecutionProvider"],
                     "vae_decoder": ["CPUExecutionProvider"],
-                    "unet": ["CUDAExecutionProvider"],
+                    "unet": ["DmlExecutionProvider"],
                     "text_encoder": ["CPUExecutionProvider"],
                 }
 
@@ -260,8 +262,12 @@ class OnnxStableDiffusion(InferenceModel):
                 logger.info(f"Loaded {module} in {(time() - s):.2f}s.")
 
             self.memory_cleanup()
+        else:
+            logger.error(
+                "ONNX is not available. Please install ONNX by running 'pip install onnx onnxruntime-gpu'"
+            )
 
-    def _setup(self, opset_version: int = 17):
+    def _setup(self, opset_version: int = 17) -> bool:
         if is_onnxscript_available():
             # Until implemented in pytorch
             # https://github.com/pytorch/pytorch/issues/97262#issuecomment-1487141914
@@ -269,8 +275,10 @@ class OnnxStableDiffusion(InferenceModel):
 
             import onnxscript  # pylint: disable=import-error,unreachable
 
-            # make dynamic?
-            from onnxscript.onnx_opset import opset17 as op  # pylint: disable=E0401
+            op = getattr(
+                importlib.import_module("onnxscript").onnx_opset,
+                f"opset{opset_version}",
+            )
 
             custom_opset = onnxscript.values.Opset(
                 domain="torch.onnx", version=opset_version
@@ -331,6 +339,12 @@ class OnnxStableDiffusion(InferenceModel):
                 symbolic_fn=custom_scaled_dot_product_attention,
                 opset_version=opset_version,
             )
+            return True
+        else:
+            logger.warn(
+                "Could not setup SDPA for your opset_version. Cross-Attention forced."
+            )
+            return False
 
     def _run_model(self, model, **kwargs):
         inputs = {k: np.array(v) for k, v in kwargs.items()}
@@ -366,7 +380,7 @@ class OnnxStableDiffusion(InferenceModel):
 
         model  -- a repository, or a huggingface model name inside data/models/
 
-        target -- default: {"vae_decoder": None, "vae_encoder": None, "unet": None, "text_encoder": None}. If any of them set to true, they will be quantized using uint8 instead of int8, and will be ran on cpu during inference. If set to false, quantization will be disabled.
+        target -- default: nothing quantized. If any of them set to true, they will be quantized using uint8 and will be ran on cpu during inference. If set to false, they will be quantized using int8 and ran on gpu during inference. If set to None, quantization is skipped.
 
         device -- default: "cuda." The device on which torch will run. If you have a gpu, you should use "cuda" or "cuda:0" or "cuda:1" etc. If you have a cpu, you should use "cpu". If on windows, and on amd, use torch_directml.device()
 
@@ -452,15 +466,10 @@ class OnnxStableDiffusion(InferenceModel):
             self.memory_cleanup()
 
             if is_onnxconverter_available():
-                if (
-                    not quantize_success
-                    and not signed
-                    and config.api.data_type != "float32"
-                ):
+                if not quantize_success and not signed:
                     logger.info(f"Starting FP16 conversion on {str(output_path)}")
                     t = time()
                     import onnx
-                    import onnxruntime as ort  # pylint: disable=import-error
                     from onnxconverter_common import float16  # pylint: disable=E0401
 
                     model = onnx.load(str(output_path))  # pylint: disable=no-member
@@ -600,13 +609,14 @@ class OnnxStableDiffusion(InferenceModel):
         def convert_unet(
             main_folder: Path,
             output_folder: Path,
+            sdpa_success: bool,
             num_tokens: int,
             text_hidden_size: int,
             opset: int,
         ) -> int:
             unet = load(UNet2DConditionWrapper, main_folder / "unet", dtype=torch.float16)  # type: ignore
 
-            if version.parse(torch.__version__) > version.parse("2.0.0"):
+            if torch_newer_or_same_as_210 or sdpa_success:
                 from diffusers.models.attention_processor import AttnProcessor2_0
 
                 logger.info("Compiling SDPA into model")
@@ -686,12 +696,43 @@ class OnnxStableDiffusion(InferenceModel):
             return sample_size
 
         def convert_vae(
-            main_folder: Path, output_folder: Path, unet_sample_size: int, opset: int
+            main_folder: Path,
+            output_folder: Path,
+            sdpa_success: bool,
+            unet_sample_size: int,
+            opset: int,
         ):
             vae = load(AutoencoderKLWrapper, main_folder / "vae", dtype=torch.float16)  # type: ignore
             vae_in_channels = vae.config["in_channels"]
             vae_sample_size = vae.config["sample_size"]
             vae_latent_channels = vae.config["latent_channels"]
+
+            def set_attn_processor(proc, processor):
+                def fn_recursive_attn_processor(
+                    name: str, module: torch.nn.Module, processor
+                ):
+                    if hasattr(module, "set_processor"):
+                        if not isinstance(processor, dict):
+                            module.set_processor(processor)  # type: ignore
+                        else:
+                            module.set_processor(processor.pop(f"{name}.processor"))  # type: ignore
+
+                    for sub_name, child in module.named_children():
+                        fn_recursive_attn_processor(
+                            f"{name}.{sub_name}", child, processor
+                        )
+
+                for name, module in proc.named_children():
+                    fn_recursive_attn_processor(name, module, processor)
+
+            if torch_newer_or_same_as_210 or sdpa_success:
+                from diffusers.models.attention_processor import AttnProcessor2_0
+
+                logger.info("Compiling SDPA into model")
+                set_attn_processor(vae, AttnProcessor2_0())  # type: ignore
+            else:
+                logger.info("Compiling cross-attention into model")
+                set_attn_processor(vae, AttnProcessor())
 
             vae.forward = lambda sample: vae.encode(sample)[0]  # type: ignore
             onnx_export(
@@ -736,39 +777,43 @@ class OnnxStableDiffusion(InferenceModel):
             del vae
             self.memory_cleanup()
 
-        opset = 17
+        opset = 14 if torch_newer_or_same_as_210 else 17
         main_folder = get_full_model_path(model_id)
         model_id_fixed = model_id.replace("/", "--")
         output_folder = Path(f"data/onnx/{model_id_fixed}")
 
-        if is_onnx_available():
-            # register aten::scaled_dot_product_attention
-            self._setup(opset)
+        # register aten::scaled_dot_product_attention
+        sdpa_success = self._setup(opset)
 
-            tokenizer = CLIPTokenizerFast.from_pretrained(main_folder / "tokenizer")
+        tokenizer = CLIPTokenizerFast.from_pretrained(main_folder / "tokenizer")
 
-            num_tokens, text_hidden_size = convert_text_encoder(
-                main_folder, output_folder, tokenizer, opset
-            )
-            unet_sample_size = convert_unet(
-                main_folder, output_folder, num_tokens, text_hidden_size, opset
-            )
-            convert_vae(main_folder, output_folder, unet_sample_size, opset)
-            shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
-            shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
+        num_tokens, text_hidden_size = convert_text_encoder(
+            main_folder, output_folder, tokenizer, opset
+        )
+        unet_sample_size = convert_unet(
+            main_folder,
+            output_folder,
+            sdpa_success,
+            num_tokens,
+            text_hidden_size,
+            opset,
+        )
+        convert_vae(main_folder, output_folder, sdpa_success, unet_sample_size, opset)
+        shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
+        shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
 
-            with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
-                for field in fields(target):
-                    fn, prov = field.name, getattr(target, field.name)
-                    if fn == "unet":
-                        t = (
-                            "CPUExecutionProvider"
-                            if prov
-                            else "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
-                        )
-                    else:
-                        t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
-                    f.write(f"{fn}: {t} \n")
+        with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
+            for field in fields(target):
+                fn, prov = field.name, getattr(target, field.name)
+                if fn == "unet":
+                    t = (
+                        "CPUExecutionProvider"
+                        if prov
+                        else "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
+                    )
+                else:
+                    t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
+                f.write(f"{fn}: {t} \n")
 
     def _encode_prompt(
         self,
@@ -928,8 +973,7 @@ class OnnxStableDiffusion(InferenceModel):
         return image
 
     @torch.no_grad()
-    # broken
-    # TODO: fix later
+    # not broken, only works with 9-channel inpaint models
     def _inpaint(
         self,
         prompt: str,
