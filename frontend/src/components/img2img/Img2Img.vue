@@ -342,6 +342,7 @@
 
 <script setup lang="ts">
 import "@/assets/2img.css";
+import { BurnerClock } from "@/clock";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
@@ -366,7 +367,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed } from "vue";
+import { computed, onUnmounted } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
@@ -458,6 +459,12 @@ const generate = () => {
       console.log(err);
     });
 };
+
+// Burner clock
+const burner = new BurnerClock(conf.data.settings.img2img, conf, generate);
+onUnmounted(() => {
+  burner.cleanup();
+});
 </script>
 <style scoped>
 .image-container img {

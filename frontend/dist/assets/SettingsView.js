@@ -1,4 +1,4 @@
-import { a1 as inject, be as getCurrentInstance, ac as watch, aG as onBeforeUnmount, W as cB, Y as cM, V as c, T as createInjectionKey, d as defineComponent, O as useConfig, a3 as useTheme, D as ref, C as h, bf as formLight, R as provide, ah as keysOf, c as computed, aE as formatLength, aL as get, bg as commonVariables, X as cE, S as toRef, a8 as createId, bh as formItemInjectionKey, bi as onMounted, a7 as useThemeClass, aX as Transition, aA as resolveWrappedSlot, a6 as createKey, aQ as warn, a as useSettings, u as useState, o as openBlock, s as createBlock, w as withCtx, f as createVNode, g as unref, q as NSelect, m as createBaseVNode, h as NCard, G as NTabPane, H as NTabs, j as NInput, _ as _export_sfc, b as useMessage, e as createElementBlock, E as NButton, l as createTextVNode, bj as defaultSettings, z as serverUrl } from "./index.js";
+import { a3 as inject, be as getCurrentInstance, J as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, D as h, bf as formLight, T as provide, ai as keysOf, c as computed, aF as formatLength, aM as get, bg as commonVariables, Z as cE, U as toRef, aa as createId, bh as formItemInjectionKey, bi as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, r as NSelect, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, k as NInput, b as useMessage, f as createElementBlock, F as NButton, m as createTextVNode, bj as defaultSettings, s as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1836,7 +1836,7 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("h2", null, "Autoload", -1);
+const _hoisted_1$2 = /* @__PURE__ */ createBaseVNode("h2", null, "Autoload", -1);
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("h2", null, "Timings and Queue", -1);
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
 const _hoisted_4 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
@@ -1875,7 +1875,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NForm), null, {
         default: withCtx(() => [
-          _hoisted_1$1,
+          _hoisted_1$2,
           createVNode(unref(NFormItem), { label: "Textual Inversions" }, {
             default: withCtx(() => [
               createVNode(unref(NSelect), {
@@ -2912,12 +2912,33 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$1 = {};
-function _sfc_render(_ctx, _cache) {
-  return "General Settings";
-}
-const GeneralSettings = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
-const _hoisted_1 = { style: { "margin": "18px" } };
+const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("h2", null, "Timers", -1);
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "GeneralSettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NForm), null, {
+        default: withCtx(() => [
+          _hoisted_1$1,
+          createVNode(unref(NFormItem), { label: "Continuous generation timeout (0 for disabled)" }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.frontend.on_change_timer,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
+                min: 100,
+                step: 50
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _hoisted_1 = { class: "main-container" };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "SettingsView",
   setup(__props) {
@@ -2992,7 +3013,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "General" }, {
                   default: withCtx(() => [
-                    createVNode(GeneralSettings)
+                    createVNode(_sfc_main$1)
                   ]),
                   _: 1
                 }),

@@ -96,6 +96,8 @@ class GPU:
                 "OnnxStableDiffusion",
             ] = self.loaded_models[job.model]
 
+            shared.interrupt = False
+
             if job.flags:
                 logger.debug(f"Job flags: {job.flags}")
 

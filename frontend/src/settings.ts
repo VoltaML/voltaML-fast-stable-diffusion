@@ -192,6 +192,7 @@ export interface ISettings {
   };
   frontend: {
     theme: "dark" | "light";
+    on_change_timer: number;
   };
 }
 
@@ -349,6 +350,7 @@ export const defaultSettings: ISettings = {
   },
   frontend: {
     theme: "dark",
+    on_change_timer: 2000,
   },
 };
 

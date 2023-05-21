@@ -232,6 +232,7 @@ class FrontendConfig:
     "Configuration for the frontend"
 
     theme: Literal["dark", "light"] = "dark"
+    on_change_timer: int = 0
 
 
 @dataclass_json(undefined=Undefined.INCLUDE)

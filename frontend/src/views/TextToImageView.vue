@@ -472,7 +472,8 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed } from "vue";
+import { computed, onUnmounted } from "vue";
+import { BurnerClock } from "../clock";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
@@ -577,5 +578,11 @@ const generate = () => {
 
 const isSelectedModelPyTorch = computed(() => {
   return conf.data.settings.model?.backend === "PyTorch";
+});
+
+// Burner clock
+const burner = new BurnerClock(conf.data.settings.txt2img, conf, generate);
+onUnmounted(() => {
+  burner.cleanup();
 });
 </script>

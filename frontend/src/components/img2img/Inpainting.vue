@@ -365,6 +365,7 @@
 
 <script setup lang="ts">
 import "@/assets/2img.css";
+import { BurnerClock } from "@/clock";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
@@ -396,7 +397,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import VueDrawingCanvas from "vue-drawing-canvas";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
@@ -570,6 +571,12 @@ function generateMask() {
     maskCanvas.value.redraw(true);
   }
 }
+
+// Burner clock
+const burner = new BurnerClock(conf.data.settings.inpainting, conf, generate);
+onUnmounted(() => {
+  burner.cleanup();
+});
 </script>
 <style scoped>
 .hidden-input {

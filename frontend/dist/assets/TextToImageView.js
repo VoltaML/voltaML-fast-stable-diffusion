@@ -1,11 +1,11 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$2 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$4 } from "./OutputStats.vue_vue_type_script_setup_true_lang.js";
+import { B as BurnerClock, _ as _sfc_main$4 } from "./clock.js";
 import { _ as _sfc_main$3 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as NInput, p as promptHandleKeyUp, k as promptHandleKeyDown, l as createTextVNode, t as toDisplayString, m as createBaseVNode, n as NTooltip, q as NSelect, r as NSlider, s as createBlock, v as createCommentVNode, x as NGrid, y as spaceRegex, z as serverUrl } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as NSlider, x as createBlock, y as createCommentVNode, z as NGrid, A as spaceRegex } from "./index.js";
+import { v as v4 } from "./v4.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
-import { v as v4 } from "./v4.js";
 import "./Image.js";
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
@@ -158,6 +158,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const isSelectedModelPyTorch = computed(() => {
       var _a;
       return ((_a = conf.data.settings.model) == null ? void 0 : _a.backend) === "PyTorch";
+    });
+    const burner = new BurnerClock(conf.data.settings.txt2img, conf, generate);
+    onUnmounted(() => {
+      burner.cleanup();
     });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
