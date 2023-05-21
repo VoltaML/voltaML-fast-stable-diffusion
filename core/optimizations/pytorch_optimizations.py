@@ -13,6 +13,7 @@ from packaging import version
 from rich.console import Console
 
 from core.config import config
+from core.inference.functions import torch_older_than_200
 from core.files import get_full_model_path
 
 from .iree import convert_pipe_state_to_iree
@@ -130,7 +131,7 @@ def optimize_model(
             ):
                 pipe.enable_xformers_memory_efficient_attention()
                 logger.info("Optimization: Enabled xFormers memory efficient attention")
-            elif version.parse(torch.__version__) >= version.parse("2.0.0") and (
+            elif not torch_older_than_200 and (
                 config.api.attention_processor == "spda"
                 or config.api.attention_processor == "sdpa"
                 or (
