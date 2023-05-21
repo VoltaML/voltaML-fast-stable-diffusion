@@ -20,7 +20,13 @@ class Queue:
         "Mark the current job as finished"
 
         async with self.lock:
-            self.jobs.remove(job_id)
+            try:
+                self.jobs.remove(job_id)
+            except ValueError:
+                logger.warning(
+                    f"Job {job_id} was not in the queue, assuming queue was cleared manually by 3rd party"
+                )
+
             self.condition.notify_all()
             logger.info(f"Job {job_id} has been processed")
 
@@ -35,3 +41,16 @@ class Queue:
 
             logger.info(f"Job {job_id} is now being processed")
             return
+
+    def clear(self):
+        "Clear the queue"
+
+        self.jobs = []
+        logger.info("Queue has been cleared")
+
+    async def trigger_condition(self):
+        "Trigger the condition manually, this will cause all jobs to check if they can be processed"
+
+        async with self.lock:
+            self.condition.notify_all()
+            logger.info("Queue Condition has been triggered manually")

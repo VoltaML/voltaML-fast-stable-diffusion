@@ -72,3 +72,16 @@ async def queue_status():
         "concurrent_jobs": queue.concurrent_jobs,
         "locked": queue.lock.locked(),
     }
+
+
+@router.post("/queue-clear")
+async def queue_clear():
+    "Clear the queue"
+
+    from core.shared_dependent import gpu
+
+    queue = gpu.queue
+
+    queue.clear()
+
+    return {"message": "Queue cleared"}
