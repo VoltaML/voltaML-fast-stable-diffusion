@@ -16,10 +16,14 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.utils import PIL_INTERPOLATION, logging
 from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
-from core.inference.latents import prepare_latents
-from core.inference.lwp import get_weighted_text_embeddings
-from core.inference.sag.cross_attn import CrossAttnStoreProcessor
-from core.inference.sag.sag_utils import pred_epsilon, pred_x0, sag_masking
+from core.inference.pytorch.latents import prepare_latents
+from core.inference.pytorch.lwp import get_weighted_text_embeddings
+from core.inference.pytorch.sag import (
+    CrossAttnStoreProcessor,
+    pred_epsilon,
+    pred_x0,
+    sag_masking,
+)
 from core.optimizations import autocast
 from core.config import config
 

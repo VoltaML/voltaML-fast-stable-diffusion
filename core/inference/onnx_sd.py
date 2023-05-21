@@ -25,7 +25,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 )
 from diffusers.utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
-from packaging import version
 from PIL import Image
 from torch.onnx import export
 from tqdm.auto import tqdm
@@ -43,7 +42,6 @@ from core.inference.functions import (
     is_onnxconverter_available,
     is_onnxscript_available,
     is_onnxsim_available,
-    torch_older_than_200,
     torch_newer_or_same_as_210,
 )
 from core.inference_callbacks import (
@@ -584,6 +582,9 @@ class OnnxStableDiffusion(InferenceModel):
             text_hidden_size = text_encoder.config.hidden_size
             max_length = tokenizer.model_max_length
 
+            if (output_folder / "text_encoder.onnx").exists():
+                return num_tokens, text_hidden_size
+
             text_input = tokenizer(
                 "You miss 100% of the shots you don't take, but you also don't shoot them all, even when you do.",
                 padding="max_length",
@@ -646,6 +647,8 @@ class OnnxStableDiffusion(InferenceModel):
             if needs_collate:
                 unet_out_path = output_folder / "unet_data"
                 unet_out_path.mkdir(parents=True, exist_ok=True)
+            if unet_out_path.exists():
+                return sample_size
             onnx_export(
                 unet,
                 model_args=(
@@ -707,15 +710,15 @@ class OnnxStableDiffusion(InferenceModel):
             vae_sample_size = vae.config["sample_size"]
             vae_latent_channels = vae.config["latent_channels"]
 
+            if (output_folder / "vae_encoder.onnx").exists():
+                return
+
             def set_attn_processor(proc, processor):
                 def fn_recursive_attn_processor(
                     name: str, module: torch.nn.Module, processor
                 ):
                     if hasattr(module, "set_processor"):
-                        if not isinstance(processor, dict):
-                            module.set_processor(processor)  # type: ignore
-                        else:
-                            module.set_processor(processor.pop(f"{name}.processor"))  # type: ignore
+                        module.set_processor(processor)  # type: ignore
 
                     for sub_name, child in module.named_children():
                         fn_recursive_attn_processor(
@@ -725,14 +728,9 @@ class OnnxStableDiffusion(InferenceModel):
                 for name, module in proc.named_children():
                     fn_recursive_attn_processor(name, module, processor)
 
-            if torch_newer_or_same_as_210 or sdpa_success:
-                from diffusers.models.attention_processor import AttnProcessor2_0
-
-                logger.info("Compiling SDPA into model")
-                set_attn_processor(vae, AttnProcessor2_0())  # type: ignore
-            else:
-                logger.info("Compiling cross-attention into model")
-                set_attn_processor(vae, AttnProcessor())
+            # SDPA is forced here... and it doesn't work..??????
+            logger.info("Compiling cross-attention into model")
+            set_attn_processor(vae, AttnProcessor())
 
             vae.forward = lambda sample: vae.encode(sample)[0]  # type: ignore
             onnx_export(
@@ -783,7 +781,7 @@ class OnnxStableDiffusion(InferenceModel):
         output_folder = Path(f"data/onnx/{model_id_fixed}")
 
         # register aten::scaled_dot_product_attention
-        sdpa_success = self._setup(opset)
+        sdpa_success = True if torch_newer_or_same_as_210 else self._setup(opset)
 
         tokenizer = CLIPTokenizerFast.from_pretrained(main_folder / "tokenizer")
 

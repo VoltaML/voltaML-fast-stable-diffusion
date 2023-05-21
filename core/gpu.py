@@ -16,8 +16,7 @@ from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoade
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.functions import download_model
-from core.inference.pytorch import PyTorchStableDiffusion
-from core.inference.pytorch_upscale import PyTorchSDUpscaler
+from core.inference.pytorch import PyTorchStableDiffusion, PyTorchSDUpscaler
 from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images

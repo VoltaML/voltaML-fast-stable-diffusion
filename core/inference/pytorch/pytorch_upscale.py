@@ -8,7 +8,7 @@ from api import websocket_manager
 from api.websockets import Data
 from core.config import config
 from core.inference.base_model import InferenceModel
-from core.inference.tiled_upscale import StableDiffusionTiledUpscalePipeline
+from core.inference.pytorch.tiled_upscale import StableDiffusionTiledUpscalePipeline
 from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import Job, SDUpscaleQueueEntry
