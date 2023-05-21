@@ -22,6 +22,7 @@ class Queue:
         async with self.lock:
             self.jobs.remove(job_id)
             self.condition.notify_all()
+            logger.info(f"Job {job_id} has been processed")
 
     async def wait_for_turn(self, job_id: str):
         "Wait until the job can be processed"

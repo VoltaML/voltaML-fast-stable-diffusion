@@ -57,3 +57,18 @@ async def shutdown():
             )
         )
         return {"message": "Shutdown is disabled"}
+
+
+@router.get("/queue-status")
+async def queue_status():
+    "Get the status of the queue"
+
+    from core.shared_dependent import gpu
+
+    queue = gpu.queue
+
+    return {
+        "jobs": queue.jobs,
+        "concurrent_jobs": queue.concurrent_jobs,
+        "locked": queue.lock.locked(),
+    }

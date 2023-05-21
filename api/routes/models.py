@@ -41,7 +41,7 @@ class UploadFileTarget(FileTarget):
         self._fd = self.file.file
 
     def on_start(self):
-        self.file.filename = self.filename = self.multipart_filename
+        self.file.filename = self.filename = self.multipart_filename  # type: ignore
         if model_upload_dir.joinpath(self.filename).exists():  # type: ignore
             raise HTTPException(409, "File already exists")
 
