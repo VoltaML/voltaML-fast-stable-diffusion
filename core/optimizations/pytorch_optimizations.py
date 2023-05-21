@@ -9,7 +9,6 @@ from diffusers import (
     StableDiffusionUpscalePipeline,
 )
 from diffusers.utils import is_accelerate_available, is_xformers_available
-from packaging import version
 from rich.console import Console
 
 from core.config import config
