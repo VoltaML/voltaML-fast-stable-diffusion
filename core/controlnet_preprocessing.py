@@ -215,7 +215,7 @@ def openpose(input_image: Image.Image) -> Image.Image:
 def scribble(input_image: Image.Image) -> Image.Image:
     "Applies scribble to an image"
 
-    raise NotImplementedError
+    return input_image
 
 
 def segmentation(input_image: Image.Image) -> Image.Image:
