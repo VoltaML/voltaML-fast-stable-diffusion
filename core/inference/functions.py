@@ -35,7 +35,6 @@ from rich.console import Console
 
 from core.config import config
 from core.files import get_full_model_path
-from core.optimizations import optimize_model
 
 console = Console()
 logger = logging.getLogger(__name__)
@@ -437,6 +436,8 @@ def load_pytorch_pipeline(
     assert isinstance(pipe, StableDiffusionPipeline)
 
     if optimize:
+        from core.optimizations import optimize_model
+
         optimize_model(
             pipe=pipe,
             device=device,
