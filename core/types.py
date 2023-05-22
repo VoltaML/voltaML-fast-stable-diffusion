@@ -253,10 +253,10 @@ class TRTBuildRequest:
 class QuantizationDict:
     "Dataclass for quantization parameters"
 
-    vae_encoder: Literal[True, False, None] = None
-    vae_decoder: Literal[True, False, None] = None
-    unet: Literal[True, False, None] = None
-    text_encoder: Literal[True, False, None] = None
+    vae_encoder: Literal["no-quant", "uint8", "int8"] = "no-quant"
+    vae_decoder: Literal["no-quant", "uint8", "int8"] = "no-quant"
+    unet: Literal["no-quant", "uint8", "int8"] = "no-quant"
+    text_encoder: Literal["no-quant", "uint8", "int8"] = "no-quant"
 
 
 @dataclass
@@ -265,6 +265,7 @@ class ONNXBuildRequest:
 
     model_id: str
     simplify_unet: bool = False
+    convert_to_fp16: bool = False
     quant_dict: QuantizationDict = field(default_factory=QuantizationDict)
 
 

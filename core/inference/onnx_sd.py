@@ -227,7 +227,7 @@ class OnnxStableDiffusion(InferenceModel):
                         else:
                             provname = providers[0]
                         if provname == "DmlExecutionProvider":
-                            sess_options.enable_mem_pattern = False
+                            sess_options.enable_mem_pattern = True
                             sess_options.execution_mode = (
                                 ort.ExecutionMode.ORT_SEQUENTIAL
                             )
@@ -349,10 +349,7 @@ class OnnxStableDiffusion(InferenceModel):
 
         # This was originally any(map(lambda x: x == "CUDAExecutionProvider", model.get_providers()))
         # I think I classify as a retard
-        if (
-            "CPUExecutionProvider" not in model.get_providers()
-            and len(model.get_providers()) != 1
-        ):
+        if len(model.get_providers()) != 1:
             iob = model.io_binding()
             for k, v in inputs.items():
                 iob.bind_cpu_input(k, v)
@@ -370,6 +367,7 @@ class OnnxStableDiffusion(InferenceModel):
         target: Optional[QuantizationDict] = None,
         device: Union[torch.device, str] = "cuda",
         simplify_unet: bool = False,
+        convert_to_fp16: bool = False,
     ):
         """
         Converts a pytorch model into an onnx model and tries to quantize it. Depending on model size, can take up to 6gigabytes of vram
@@ -386,9 +384,7 @@ class OnnxStableDiffusion(InferenceModel):
         """
 
         if target is None:
-            target = QuantizationDict(
-                vae_encoder=None, vae_decoder=None, unet=None, text_encoder=None
-            )
+            target = QuantizationDict(*["no-quant"] * 4)  # type: ignore
 
         def onnx_export(
             model,
@@ -647,7 +643,7 @@ class OnnxStableDiffusion(InferenceModel):
             if needs_collate:
                 unet_out_path = output_folder / "unet_data"
                 unet_out_path.mkdir(parents=True, exist_ok=True)
-            if unet_out_path.exists():
+            if (unet_out_path / "unet.onnx").exists():
                 return sample_size
             onnx_export(
                 unet,
@@ -797,21 +793,24 @@ class OnnxStableDiffusion(InferenceModel):
             opset,
         )
         convert_vae(main_folder, output_folder, sdpa_success, unet_sample_size, opset)
-        shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
-        shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
+        if not (output_folder / "tokenizer").exists():
+            shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
+        if not (output_folder / "scheduler").exists():
+            shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
 
-        with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
-            for field in fields(target):
-                fn, prov = field.name, getattr(target, field.name)
-                if fn == "unet":
-                    t = (
-                        "CPUExecutionProvider"
-                        if prov
-                        else "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
-                    )
-                else:
-                    t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
-                f.write(f"{fn}: {t} \n")
+        if not (output_folder / "providers.txt").exists():
+            with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
+                for field in fields(target):
+                    fn, prov = field.name, getattr(target, field.name)
+                    if fn == "unet":
+                        t = (
+                            "CPUExecutionProvider"
+                            if prov
+                            else "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
+                        )
+                    else:
+                        t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
+                    f.write(f"{fn}: {t} \n")
 
     def _encode_prompt(
         self,
