@@ -232,13 +232,14 @@ class GPU:
 
             return (images, deltatime)
         except InferenceInterruptedError:
-            await websocket_manager.broadcast(
-                Notification(
-                    "warning",
-                    "Inference interrupted",
-                    "The inference was forcefully interrupted",
+            if config.frontend.on_change_timer == 0:
+                await websocket_manager.broadcast(
+                    Notification(
+                        "warning",
+                        "Inference interrupted",
+                        "The inference was forcefully interrupted",
+                    )
                 )
-            )
             return ([], 0.0)
 
         except ValueError as err:

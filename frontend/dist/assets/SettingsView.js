@@ -2917,16 +2917,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "GeneralSettings",
   setup(__props) {
     const settings = useSettings();
+    watch(settings.defaultSettings.frontend, () => {
+      settings.data.settings.frontend.on_change_timer = settings.defaultSettings.frontend.on_change_timer;
+    });
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NForm), null, {
         default: withCtx(() => [
           _hoisted_1$1,
-          createVNode(unref(NFormItem), { label: "Continuous generation timeout (0 for disabled)" }, {
+          createVNode(unref(NFormItem), { label: "Continuous generation timeout (0 for disabled) [ms]" }, {
             default: withCtx(() => [
               createVNode(unref(NInputNumber), {
                 value: unref(settings).defaultSettings.frontend.on_change_timer,
                 "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
-                min: 100,
+                min: 0,
                 step: 50
               }, null, 8, ["value"])
             ]),

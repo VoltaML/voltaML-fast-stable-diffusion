@@ -1376,6 +1376,8 @@ function flushJobs(seen2) {
     }
   }
 }
+/* @__PURE__ */ new Set();
+/* @__PURE__ */ new Map();
 function emit(instance, event, ...rawArgs) {
   if (instance.isUnmounted)
     return;
@@ -5881,7 +5883,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.0.34
+  * pinia v2.0.35
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -6569,6 +6571,7 @@ const render$1 = (r, ...args) => {
     return null;
   }
 };
+/* @__PURE__ */ new Set();
 function warn$2(location2, message) {
   console.error(`[naive/${location2}]: ${message}`);
 }
@@ -8348,6 +8351,7 @@ const clickoutside = {
   }
 };
 const clickoutside$1 = clickoutside;
+/* @__PURE__ */ new Set();
 function warn$1(location2, message) {
   console.error(`[vdirs/${location2}]: ${message}`);
 }
@@ -36585,6 +36589,7 @@ function useEventListener(...args) {
 const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 const globalKey = "__vueuse_ssr_handlers__";
 _global[globalKey] = _global[globalKey] || {};
+/* @__PURE__ */ new Map();
 var SwipeDirection;
 (function(SwipeDirection2) {
   SwipeDirection2["UP"] = "UP";
@@ -38138,12 +38143,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "33343887": unref(backgroundColor)
+      "37d47be4": unref(backgroundColor)
     }));
     const settings = useSettings();
     const theme = computed(() => {
       if (settings.data.settings.frontend.theme === "dark") {
-        document.body.style.backgroundColor = "black";
+        document.body.style.backgroundColor = "#121215";
         return darkTheme;
       } else {
         document.body.style.backgroundColor = "white";
@@ -38190,8 +38195,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const App_vue_vue_type_style_index_0_scoped_fedbc04b_lang = "";
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-fedbc04b"]]);
+const App_vue_vue_type_style_index_0_scoped_9bd83b27_lang = "";
+const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-9bd83b27"]]);
 const scriptRel = "modulepreload";
 const assetsURL = function(dep) {
   return "/" + dep;

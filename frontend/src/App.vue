@@ -31,7 +31,7 @@ const settings = useSettings();
 
 const theme = computed(() => {
   if (settings.data.settings.frontend.theme === "dark") {
-    document.body.style.backgroundColor = "black";
+    document.body.style.backgroundColor = "#121215";
     return darkTheme;
   } else {
     document.body.style.backgroundColor = "white";
