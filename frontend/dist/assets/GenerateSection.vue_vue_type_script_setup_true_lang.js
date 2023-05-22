@@ -50,6 +50,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     generate: {
       type: Function,
       required: true
+    },
+    doNotDisableGenerate: {
+      type: Boolean,
+      default: false
     }
   },
   setup(__props) {
@@ -105,7 +109,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ref_key: "generateButton",
                         ref: generateButton,
                         onClick: props.generate,
-                        disabled: unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0,
+                        disabled: !props.doNotDisableGenerate && (unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0),
                         loading: unref(global).state.generating,
                         style: { "width": "100%" },
                         ghost: ""

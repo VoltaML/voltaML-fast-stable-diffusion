@@ -8,9 +8,10 @@
           ref="generateButton"
           @click="props.generate"
           :disabled="
-            global.state.generating ||
-            conf.data.settings.model?.name === '' ||
-            conf.data.settings.model?.name === undefined
+            !props.doNotDisableGenerate &&
+            (global.state.generating ||
+              conf.data.settings.model?.name === '' ||
+              conf.data.settings.model?.name === undefined)
           "
           :loading="global.state.generating"
           style="width: 100%"
@@ -106,6 +107,10 @@ const props = defineProps({
   generate: {
     type: Function as unknown as PropType<MaybeArray<(e: MouseEvent) => void>>,
     required: true,
+  },
+  doNotDisableGenerate: {
+    type: Boolean,
+    default: false,
   },
 });
 </script>

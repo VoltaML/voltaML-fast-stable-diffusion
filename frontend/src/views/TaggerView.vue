@@ -69,7 +69,7 @@
 
       <!-- Images -->
       <NGi>
-        <GenerateSection :generate="generate" />
+        <GenerateSection :generate="generate" do-not-disable-generate />
 
         <NCard>
           <div class="flex-container">

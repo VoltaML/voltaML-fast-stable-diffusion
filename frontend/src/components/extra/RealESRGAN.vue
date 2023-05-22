@@ -98,7 +98,7 @@
 
       <!-- Images -->
       <NGi>
-        <GenerateSection :generate="generate" />
+        <GenerateSection :generate="generate" do-not-disable-generate />
 
         <ImageOutput
           :current-image="global.state.extra.currentImage"
