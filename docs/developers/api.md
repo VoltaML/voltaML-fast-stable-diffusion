@@ -1,6 +1,6 @@
-# PyTorch
+# API
 
-This is a guide to running this project with PyTorch only configuration.
+This is a guide to running this project with PyTorch only configuration for API development.
 
 ## Requirements
 

@@ -65,7 +65,9 @@ export default defineConfig({
 			{
 				text: "Installation",
 				items: [
-					{ text: "Local", link: "/installation/local" },
+					{ text: "Windows", link: "/installation/windows" },
+					{ text: "Linux", link: "/installation/linux" },
+					{ text: "WSL", link: "/installation/wsl" },
 					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Old", link: "/installation/old" },
 				],
@@ -117,7 +119,7 @@ export default defineConfig({
 			{
 				text: "Developers",
 				items: [
-					{ text: "PyTorch", link: "/developers/pytorch" },
+					{ text: "API", link: "/developers/api" },
 					{
 						text: "Frontend",
 						link: "/developers/frontend",
