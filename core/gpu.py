@@ -489,6 +489,9 @@ class GPU:
             )
 
             pipe.convert_pytorch_to_onnx(
+                device=torch.device(config.api.device)
+                if isinstance(config.api.device, str)
+                else config.api.device,
                 model_id=request.model_id,
                 simplify_unet=request.simplify_unet,
                 convert_to_fp16=request.convert_to_fp16,

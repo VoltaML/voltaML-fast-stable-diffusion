@@ -1,4 +1,4 @@
-import { W as cB, Y as cM, V as c, X as cE, Z as iconSwitchTransition, ap as cNotM, d as defineComponent, O as useConfig, a5 as useRtl, a3 as useTheme, R as provide, C as h, aB as flatten, aC as getSlot, T as createInjectionKey, bb as stepsLight, aZ as throwError, c as computed, a7 as useThemeClass, aA as resolveWrappedSlot, as as resolveSlot, a9 as NIconSwitchTransition, a1 as inject, a6 as createKey, U as call, at as NBaseIcon, bc as FinishedIcon, bd as ErrorIcon, b as useMessage, u as useState, D as ref, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, m as createBaseVNode, r as NSlider, q as NSelect, E as NButton, l as createTextVNode, b9 as NModal, z as serverUrl, a as useSettings, b7 as reactive, ac as watch, s as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { W as cB, Y as cM, V as c, X as cE, Z as iconSwitchTransition, ap as cNotM, d as defineComponent, O as useConfig, a5 as useRtl, a3 as useTheme, R as provide, C as h, aB as flatten, aC as getSlot, T as createInjectionKey, bb as stepsLight, a1 as inject, aZ as throwError, c as computed, a7 as useThemeClass, aA as resolveWrappedSlot, as as resolveSlot, a9 as NIconSwitchTransition, a6 as createKey, U as call, at as NBaseIcon, bc as FinishedIcon, bd as ErrorIcon, b as useMessage, u as useState, D as ref, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, m as createBaseVNode, r as NSlider, q as NSelect, E as NButton, l as createTextVNode, b9 as NModal, z as serverUrl, a as useSettings, s as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 const style = cB("steps", `
@@ -481,7 +481,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[8] || (_cache[8] = ($event) => model.value = $event),
-                options: unref(modelOptions),
+                options: modelOptions.value,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
             ])
@@ -500,7 +500,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               type: "success",
               ghost: "",
               loading: building.value,
-              disabled: building.value || unref(modelOptions).length === 0,
+              disabled: building.value || modelOptions.value.length === 0,
               onClick: _cache[9] || (_cache[9] = ($event) => showUnloadModal.value = true)
             }, {
               default: withCtx(() => [
@@ -534,15 +534,17 @@ const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
 const _hoisted_4 = { class: "flex-container" };
 const _hoisted_5 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Simplify UNet", -1);
-const _hoisted_6 = /* @__PURE__ */ createBaseVNode("h3", null, "Quantization", -1);
-const _hoisted_7 = { class: "flex-container" };
-const _hoisted_8 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Text Encoder", -1);
+const _hoisted_6 = { class: "flex-container" };
+const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Downcast to FP16", -1);
+const _hoisted_8 = /* @__PURE__ */ createBaseVNode("h3", null, "Quantization", -1);
 const _hoisted_9 = { class: "flex-container" };
-const _hoisted_10 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1);
+const _hoisted_10 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Text Encoder", -1);
 const _hoisted_11 = { class: "flex-container" };
-const _hoisted_12 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Encoder", -1);
+const _hoisted_12 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1);
 const _hoisted_13 = { class: "flex-container" };
-const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Decoder", -1);
+const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Encoder", -1);
+const _hoisted_15 = { class: "flex-container" };
+const _hoisted_16 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Decoder", -1);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ONNXAccelerate",
   setup(__props) {
@@ -553,31 +555,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const model = ref("");
     const building = ref(false);
     const showUnloadModal = ref(false);
-    const proxyQuantDict = reactive({
-      text_encoder: "null",
-      vae_encoder: "null",
-      vae_decoder: "null",
-      unet: "null"
-    });
-    function quantDictStrToValue(value) {
-      if (value === "null") {
-        return null;
-      } else if (value === "true") {
-        return true;
-      } else if (value === "false") {
-        return false;
-      }
-      return null;
-    }
-    watch(proxyQuantDict, () => {
-      console.log("Change detected in proxyQuantDict");
-      conf.data.settings.onnx.quant_dict = {
-        text_encoder: quantDictStrToValue(proxyQuantDict.text_encoder),
-        vae_encoder: quantDictStrToValue(proxyQuantDict.vae_encoder),
-        vae_decoder: quantDictStrToValue(proxyQuantDict.vae_decoder),
-        unet: quantDictStrToValue(proxyQuantDict.unet)
-      };
-    });
     const modelOptions = computed(() => {
       const options = [];
       for (const model2 of global.state.models) {
@@ -625,7 +602,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
-        createVNode(unref(NCard), { title: "Acceleration progress (around 20 minutes)" }, {
+        createVNode(unref(NCard), { title: "Acceleration progress (around 5 minutes)" }, {
           default: withCtx(() => [
             createVNode(unref(NSpace), {
               vertical: "",
@@ -635,24 +612,20 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NSteps), null, {
                   default: withCtx(() => [
                     createVNode(unref(NStep), {
-                      title: "UNet",
-                      status: unref(global).state.aitBuildStep.unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
-                      title: "ControlNet UNet",
-                      status: unref(global).state.aitBuildStep.controlnet_unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
                       title: "CLIP",
-                      status: unref(global).state.aitBuildStep.clip
+                      status: unref(global).state.onnxBuildStep.clip
+                    }, null, 8, ["status"]),
+                    createVNode(unref(NStep), {
+                      title: "UNet",
+                      status: unref(global).state.onnxBuildStep.unet
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "VAE",
-                      status: unref(global).state.aitBuildStep.vae
+                      status: unref(global).state.onnxBuildStep.vae
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "Cleanup",
-                      status: unref(global).state.aitBuildStep.cleanup
+                      status: unref(global).state.onnxBuildStep.cleanup
                     }, null, 8, ["status"])
                   ]),
                   _: 1
@@ -670,7 +643,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[0] || (_cache[0] = ($event) => model.value = $event),
-                options: unref(modelOptions),
+                options: modelOptions.value,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
             ]),
@@ -681,58 +654,65 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.onnx.simplify_unet = $event)
               }, null, 8, ["value"])
             ]),
-            _hoisted_6,
-            createBaseVNode("div", _hoisted_7, [
-              _hoisted_8,
-              createVNode(unref(NSelect), {
-                value: proxyQuantDict.text_encoder,
-                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => proxyQuantDict.text_encoder = $event),
-                options: [
-                  { label: "None", value: "null" },
-                  { label: "True", value: "true" },
-                  { label: "False", value: "false" }
-                ],
-                style: { "margin-right": "12px" }
+            createBaseVNode("div", _hoisted_6, [
+              _hoisted_7,
+              createVNode(unref(NSwitch), {
+                value: unref(conf).data.settings.onnx.convert_to_fp16,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.onnx.convert_to_fp16 = $event)
               }, null, 8, ["value"])
             ]),
+            _hoisted_8,
             createBaseVNode("div", _hoisted_9, [
               _hoisted_10,
               createVNode(unref(NSelect), {
-                value: proxyQuantDict.unet,
-                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => proxyQuantDict.unet = $event),
+                value: unref(conf).data.settings.onnx.quant_dict.text_encoder,
+                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.onnx.quant_dict.text_encoder = $event),
                 options: [
-                  { label: "None", value: "null" },
-                  { label: "True", value: "true" },
-                  { label: "False", value: "false" }
+                  { label: "No quantization", value: "no-quant" },
+                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
+                  { label: "Signed int8", value: "int8" }
                 ],
                 style: { "margin-right": "12px" }
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "options"])
             ]),
             createBaseVNode("div", _hoisted_11, [
               _hoisted_12,
               createVNode(unref(NSelect), {
-                value: proxyQuantDict.vae_encoder,
-                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => proxyQuantDict.vae_encoder = $event),
+                value: unref(conf).data.settings.onnx.quant_dict.unet,
+                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.onnx.quant_dict.unet = $event),
                 options: [
-                  { label: "None", value: "null" },
-                  { label: "True", value: "true" },
-                  { label: "False", value: "false" }
+                  { label: "No quantization", value: "no-quant" },
+                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
+                  { label: "Signed int8", value: "int8" }
                 ],
                 style: { "margin-right": "12px" }
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "options"])
             ]),
             createBaseVNode("div", _hoisted_13, [
               _hoisted_14,
               createVNode(unref(NSelect), {
-                value: proxyQuantDict.vae_decoder,
-                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => proxyQuantDict.vae_decoder = $event),
+                value: unref(conf).data.settings.onnx.quant_dict.vae_encoder,
+                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.onnx.quant_dict.vae_encoder = $event),
                 options: [
-                  { label: "None", value: "null" },
-                  { label: "True", value: "true" },
-                  { label: "False", value: "false" }
+                  { label: "No quantization", value: "no-quant" },
+                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
+                  { label: "Signed int8", value: "int8" }
                 ],
                 style: { "margin-right": "12px" }
-              }, null, 8, ["value"])
+              }, null, 8, ["value", "options"])
+            ]),
+            createBaseVNode("div", _hoisted_15, [
+              _hoisted_16,
+              createVNode(unref(NSelect), {
+                value: unref(conf).data.settings.onnx.quant_dict.vae_decoder,
+                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.onnx.quant_dict.vae_decoder = $event),
+                options: [
+                  { label: "No quantization", value: "no-quant" },
+                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
+                  { label: "Signed int8", value: "int8" }
+                ],
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value", "options"])
             ])
           ]),
           _: 1
@@ -749,8 +729,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               type: "success",
               ghost: "",
               loading: building.value,
-              disabled: building.value || unref(modelOptions).length === 0,
-              onClick: _cache[6] || (_cache[6] = ($event) => showUnloadModal.value = true)
+              disabled: building.value || modelOptions.value.length === 0,
+              onClick: _cache[7] || (_cache[7] = ($event) => showUnloadModal.value = true)
             }, {
               default: withCtx(() => [
                 createTextVNode("Accelerate")
@@ -762,7 +742,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         }),
         createVNode(unref(NModal), {
           show: showUnloadModal.value,
-          "onUpdate:show": _cache[7] || (_cache[7] = ($event) => showUnloadModal.value = $event),
+          "onUpdate:show": _cache[8] || (_cache[8] = ($event) => showUnloadModal.value = $event),
           preset: "dialog",
           title: "Unload other models",
           width: "400px",

@@ -190,6 +190,13 @@ export function processWebSocket(
       };
       break;
     }
+    case "onnx_compile": {
+      global.state.onnxBuildStep = {
+        ...global.state.onnxBuildStep,
+        ...message.data,
+      };
+      break;
+    }
     case "cluster_stats": {
       global.state.perf_drawer.gpus = message.data;
       break;
