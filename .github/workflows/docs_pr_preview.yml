@@ -7,9 +7,6 @@ on:
       - reopened
       - synchronize
       - closed
-    paths:
-      - "**.md"
-      - "docs/.vitepress/*"
 
 concurrency: preview-${{ github.ref }}
 
