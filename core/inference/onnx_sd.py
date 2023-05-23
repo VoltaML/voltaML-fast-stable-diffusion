@@ -78,14 +78,14 @@ class UNet2DConditionWrapper(UNet2DConditionModel):
         ______=None,
         _______: bool = True,
     ) -> Tuple:
-        sample = sample.to(dtype=torch.float16)
+        sample = sample.to(dtype=torch.float32)
         timestep = timestep.to(dtype=torch.long)  # type: ignore
-        encoder_hidden_states = encoder_hidden_states.to(dtype=torch.float16)
+        encoder_hidden_states = encoder_hidden_states.to(dtype=torch.float32)
 
         sample = UNet2DConditionModel.forward(
             self, sample, timestep, encoder_hidden_states, return_dict=True
         ).sample  # type: ignore
-        return (sample.to(dtype=torch.float16),)
+        return (sample.to(dtype=torch.float32),)
 
 
 class CLIPTextModelWrapper(CLIPTextModel):
@@ -105,12 +105,12 @@ class AutoencoderKLWrapper(AutoencoderKL):
     "Internal class"
 
     def encode(self, x) -> Tuple:  # pylint: disable=arguments-differ
-        x = x.to(dtype=torch.float16)
+        x = x.to(dtype=torch.float32)
         outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)
         return (outputs.latent_dist.sample().to(dtype=torch.float32),)
 
     def decode(self, z) -> Tuple:  # pylint: disable=arguments-differ
-        z = z.to(dtype=torch.float16)
+        z = z.to(dtype=torch.float32)
         outputs: DecoderOutput = AutoencoderKL.decode(self, z, True)  # type: ignore
         return (outputs.sample.to(dtype=torch.float32),)
 
@@ -365,7 +365,6 @@ class OnnxStableDiffusion(InferenceModel):
         self,
         model_id: str,
         target: Optional[QuantizationDict] = None,
-        device: Union[torch.device, str] = "cuda",
         simplify_unet: bool = False,
         convert_to_fp16: bool = False,
     ):
@@ -418,9 +417,9 @@ class OnnxStableDiffusion(InferenceModel):
                     time() - rt,
                 )
             # quantize
-            quantize_success = False if signed is not None else True
+            quantize_success = False if signed != "no-quant" else True
             try:
-                if signed is not None:
+                if not quantize_success:
                     from onnxruntime.quantization import QuantType, quantize_dynamic
 
                     t = time()
@@ -433,7 +432,9 @@ class OnnxStableDiffusion(InferenceModel):
                     quantize_dynamic(
                         in_path,
                         output_path,
-                        weight_type=QuantType.QUInt8 if signed else QuantType.QInt8,
+                        weight_type=QuantType.QUInt8
+                        if signed == "uint8"
+                        else QuantType.QInt8,
                         per_channel=True,
                         reduce_range=True,
                     )
@@ -459,24 +460,29 @@ class OnnxStableDiffusion(InferenceModel):
 
             self.memory_cleanup()
 
-            if is_onnxconverter_available():
-                if not quantize_success and not signed:
-                    logger.info(f"Starting FP16 conversion on {str(output_path)}")
-                    t = time()
-                    import onnx
-                    from onnxconverter_common import float16  # pylint: disable=E0401
+            if convert_to_fp16:
+                if is_onnxconverter_available():
+                    if not quantize_success and not signed:
+                        logger.info(f"Starting FP16 conversion on {str(output_path)}")
+                        t = time()
+                        import onnx
+                        from onnxconverter_common import (
+                            float16,
+                        )  # pylint: disable=E0401
 
-                    model = onnx.load(str(output_path))  # pylint: disable=no-member
-                    model = float16.convert_float_to_float16(model, keep_io_types=True)
-                    onnx.save(model, str(output_path))  # pylint: disable=no-member
-                    del model
-                    logger.info(
-                        f"Conversion successful on model {str(output_path)} in {(time() - t):.2f}s."
+                        model = onnx.load(str(output_path))  # pylint: disable=no-member
+                        model = float16.convert_float_to_float16(
+                            model, keep_io_types=True
+                        )
+                        onnx.save(model, str(output_path))  # pylint: disable=no-member
+                        del model
+                        logger.info(
+                            f"Conversion successful on model {str(output_path)} in {(time() - t):.2f}s."
+                        )
+                elif config.api.data_type != "float32" and not quantize_success:
+                    logger.warning(
+                        "Onnxconverter-common is not available, skipping float16 conversion process. Model will run in FP32."
                     )
-            elif config.api.data_type != "float32" and not quantize_success:
-                logger.warning(
-                    "Onnxconverter-common is not available, skipping float16 conversion process. Model will run in FP32."
-                )
 
             self.memory_cleanup()
 
@@ -548,7 +554,7 @@ class OnnxStableDiffusion(InferenceModel):
                     )
                     for name, param in state_dict.items():
                         set_module_tensor_to_device(
-                            model, name, device, value=param, dtype=dtype
+                            model, name, torch.device("cpu"), value=param, dtype=dtype
                         )
                 else:
                     logger.error("Cannot load safetensors without safetensors package.")
@@ -556,7 +562,7 @@ class OnnxStableDiffusion(InferenceModel):
                 load_checkpoint_and_dispatch(
                     model, str(root / checkpoint_name), device_map="auto"
                 )
-                model = model.to(dtype=dtype, device=device)
+                model = model.to(dtype=dtype, device=torch.device("cpu"))
 
                 model.eval()
             return model
@@ -571,7 +577,7 @@ class OnnxStableDiffusion(InferenceModel):
                 main_folder / "text_encoder"
             )
             assert isinstance(text_encoder, CLIPTextModelWrapper)
-            text_encoder.to(dtype=torch.float16, device=device)
+            text_encoder.to(dtype=torch.float32, device=torch.device("cpu"))
             text_encoder.eval()
 
             num_tokens = text_encoder.config.max_position_embeddings
@@ -587,7 +593,7 @@ class OnnxStableDiffusion(InferenceModel):
                 max_length=max_length,
                 truncation=True,
                 return_tensors="pt",
-            ).input_ids.to(device=device, dtype=torch.int32)
+            ).input_ids.to(device=torch.device("cpu"), dtype=torch.int32)
             onnx_export(
                 text_encoder,
                 model_args=(text_input,),
@@ -611,7 +617,7 @@ class OnnxStableDiffusion(InferenceModel):
             text_hidden_size: int,
             opset: int,
         ) -> int:
-            unet = load(UNet2DConditionWrapper, main_folder / "unet", dtype=torch.float16)  # type: ignore
+            unet = load(UNet2DConditionWrapper, main_folder / "unet", dtype=torch.float32)  # type: ignore
 
             if torch_newer_or_same_as_210 or sdpa_success:
                 from diffusers.models.attention_processor import AttnProcessor2_0
@@ -649,11 +655,11 @@ class OnnxStableDiffusion(InferenceModel):
                 unet,
                 model_args=(
                     torch.randn(2, in_channels, sample_size, sample_size + 1).to(
-                        device=device, dtype=torch.float32
+                        device=torch.device("cpu"), dtype=torch.float32
                     ),
-                    torch.randn(2).to(device=device, dtype=torch.float32),
+                    torch.randn(2).to(device=torch.device("cpu"), dtype=torch.float32),
                     torch.randn(2, (num_tokens * 3) - 2, text_hidden_size).to(
-                        device=device, dtype=torch.float32
+                        device=torch.device("cpu"), dtype=torch.float32
                     ),
                 ),
                 output_path=unet_out_path / "unet.onnx",
@@ -701,7 +707,7 @@ class OnnxStableDiffusion(InferenceModel):
             unet_sample_size: int,
             opset: int,
         ):
-            vae = load(AutoencoderKLWrapper, main_folder / "vae", dtype=torch.float16)  # type: ignore
+            vae = load(AutoencoderKLWrapper, main_folder / "vae", dtype=torch.float32)  # type: ignore
             vae_in_channels = vae.config["in_channels"]
             vae_sample_size = vae.config["sample_size"]
             vae_latent_channels = vae.config["latent_channels"]
@@ -734,7 +740,7 @@ class OnnxStableDiffusion(InferenceModel):
                 model_args=(
                     torch.randn(
                         1, vae_in_channels, vae_sample_size, vae_sample_size
-                    ).to(device=device, dtype=torch.float32),
+                    ).to(device=torch.device("cpu"), dtype=torch.float32),
                 ),
                 output_path=output_folder / "vae_encoder.onnx",
                 ordered_input_names=["sample"],
@@ -752,7 +758,7 @@ class OnnxStableDiffusion(InferenceModel):
                 model_args=(
                     torch.randn(
                         1, vae_latent_channels, unet_sample_size, unet_sample_size
-                    ).to(device=device, dtype=torch.float32),
+                    ).to(device=torch.device("cpu"), dtype=torch.float32),
                 ),
                 output_path=output_folder / "vae_decoder.onnx",
                 ordered_input_names=["latent_sample"],
