@@ -17,6 +17,7 @@ class CachedModelList:
     def __init__(self):
         self.pytorch_path = Path(DIFFUSERS_CACHE)
         self.checkpoint_converted_path = Path("data/models")
+        self.onnx_path = Path("data/onnx")
         self.tensorrt_engine_path = Path("data/tensorrt")
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
@@ -142,6 +143,26 @@ class CachedModelList:
             )
 
         return models
+    
+    def onnx(self):
+        "List of ONNX models"
+
+        models: List[ModelResponse] = []
+        
+        for model in os.listdir(self.onnx_path):
+            logger.debug(f"Found ONNX {model}")
+
+            models.append(
+                ModelResponse(
+                    name=model,
+                    path=os.path.join(self.onnx_path, model),
+                    backend="ONNX",
+                    valid=True,
+                    loras=[],
+                    state="not loaded",
+                )
+            )
+        return models
 
     def lora(self):
         "List of LoRA models"
@@ -192,12 +213,13 @@ class CachedModelList:
         return models
 
     def all(self):
-        "List PyTorch, TensorRT and AITemplate models"
+        "List all models"
 
         return (
             self.pytorch()
             + self.tensorrt()
             + self.aitemplate()
+            + self.onnx()
             + self.lora()
             + self.textual_inversion()
         )

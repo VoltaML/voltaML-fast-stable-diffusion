@@ -142,7 +142,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$4);
   }
 });
-const _withScopeId$3 = (n) => (pushScopeId("data-v-60d25d91"), n = n(), popScopeId(), n);
+const _withScopeId$3 = (n) => (pushScopeId("data-v-49e9e6cb"), n = n(), popScopeId(), n);
 const _hoisted_1$3 = { style: { "margin": "0 12px" } };
 const _hoisted_2$3 = { class: "flex-container" };
 const _hoisted_3$3 = /* @__PURE__ */ _withScopeId$3(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -316,7 +316,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(promptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -330,7 +330,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -489,7 +489,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.controlnet.cfg_scale,
                             "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.controlnet.cfg_scale = $event),
@@ -498,7 +498,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_22$3, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -569,7 +569,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             max: 2,
                             style: { "margin-right": "12px" },
                             step: 0.025
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "min", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.controlnet.controlnet_conditioning_scale,
                             "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(conf).data.settings.controlnet.controlnet_conditioning_scale = $event),
@@ -578,7 +578,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             min: 0.1,
                             max: 2,
                             step: 0.025
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "min", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_28$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -683,9 +683,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_60d25d91_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-60d25d91"]]);
-const _withScopeId$2 = (n) => (pushScopeId("data-v-c35cb41b"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_49e9e6cb_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-49e9e6cb"]]);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-a14fa83c"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -843,7 +843,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(promptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -857,7 +857,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -999,7 +999,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.img2img.cfg_scale,
                             "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.img2img.cfg_scale = $event),
@@ -1008,7 +1008,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_20$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -1028,7 +1028,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             step: 0.05,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.self_attention_scale,
                             "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
@@ -1037,7 +1037,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             min: 0,
                             max: 1,
                             step: 0.05
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_23$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -1108,7 +1108,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             style: { "margin-right": "12px" },
                             step: 0.025
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "min", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.img2img.denoising_strength,
                             "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.img2img.denoising_strength = $event),
@@ -1117,7 +1117,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             min: 0.1,
                             max: 1,
                             step: 0.025
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "min", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_29, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -1173,8 +1173,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_c35cb41b_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-c35cb41b"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_a14fa83c_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-a14fa83c"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1750,7 +1750,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId$1 = (n) => (pushScopeId("data-v-019cbc5d"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-035e5714"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2094,7 +2094,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(promptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2108,7 +2108,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2216,7 +2216,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.inpainting.cfg_scale,
                             "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.inpainting.cfg_scale = $event),
@@ -2225,7 +2225,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_19$1, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -2245,7 +2245,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             step: 0.05,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.self_attention_scale,
                             "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
@@ -2254,7 +2254,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             min: 0,
                             max: 1,
                             step: 0.05
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_22$1, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -2362,9 +2362,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_019cbc5d_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-019cbc5d"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-e7e3c87a"), n = n(), popScopeId(), n);
+const Inpainting_vue_vue_type_style_index_0_scoped_035e5714_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-035e5714"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-1265a281"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -2503,7 +2503,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(promptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(promptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2517,7 +2517,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
+                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2585,7 +2585,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value"]),
+                          }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.sd_upscale.cfg_scale,
                             "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.sd_upscale.cfg_scale = $event),
@@ -2594,7 +2594,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "step"])
                         ]),
                         createBaseVNode("div", _hoisted_12, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -2777,8 +2777,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const SDUpscale_vue_vue_type_style_index_0_scoped_e7e3c87a_lang = "";
-const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-e7e3c87a"]]);
+const SDUpscale_vue_vue_type_style_index_0_scoped_1265a281_lang = "";
+const SDUpscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-1265a281"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

@@ -31,7 +31,7 @@ export interface IQuantDict {
 
 export interface ISettings {
   $schema: string;
-  backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
+  backend: "PyTorch" | "TensorRT" | "AITemplate" | "ONNX" | "unknown";
   model: ModelEntry | null;
   extra: {
     highres: {
