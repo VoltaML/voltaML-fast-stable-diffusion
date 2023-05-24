@@ -558,7 +558,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const modelOptions = computed(() => {
       const options = [];
       for (const model2 of global.state.models) {
-        if (model2.backend === "PyTorch" && model2.valid) {
+        if (model2.backend === "PyTorch" && model2.valid && !model2.name.endsWith(".safetensors") && !model2.name.endsWith(".ckpt")) {
           options.push({
             label: model2.name,
             value: model2.path
@@ -591,7 +591,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         body: JSON.stringify({
           model_id: model.value,
           quant_dict: conf.data.settings.onnx.quant_dict,
-          simplify_unet: conf.data.settings.onnx.simplify_unet
+          simplify_unet: conf.data.settings.onnx.simplify_unet,
+          convert_to_fp16: conf.data.settings.onnx.convert_to_fp16
         })
       }).then(() => {
         building.value = false;

@@ -145,7 +145,12 @@ const showUnloadModal = ref(false);
 const modelOptions = computed(() => {
   const options: SelectOption[] = [];
   for (const model of global.state.models) {
-    if (model.backend === "PyTorch" && model.valid) {
+    if (
+      model.backend === "PyTorch" &&
+      model.valid &&
+      !model.name.endsWith(".safetensors") &&
+      !model.name.endsWith(".ckpt")
+    ) {
       options.push({
         label: model.name,
         value: model.path,
@@ -183,6 +188,7 @@ const accelerate = async () => {
       model_id: model.value,
       quant_dict: conf.data.settings.onnx.quant_dict,
       simplify_unet: conf.data.settings.onnx.simplify_unet,
+      convert_to_fp16: conf.data.settings.onnx.convert_to_fp16,
     }),
   })
     .then(() => {

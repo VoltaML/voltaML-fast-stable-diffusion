@@ -78,14 +78,14 @@ class UNet2DConditionWrapper(UNet2DConditionModel):
         ______=None,
         _______: bool = True,
     ) -> Tuple:
-        sample = sample.to(dtype=self.dtype)
-        timestep = timestep.to(dtype=torch.long)  # type: ignore
-        encoder_hidden_states = encoder_hidden_states.to(dtype=self.dtype)
+        sample = sample.to(self.device, dtype=self.dtype)
+        timestep = timestep.to(self.device, dtype=torch.long)  # type: ignore
+        encoder_hidden_states = encoder_hidden_states.to(self.device, dtype=self.dtype)
 
         sample = UNet2DConditionModel.forward(
             self, sample, timestep, encoder_hidden_states, return_dict=True
         ).sample  # type: ignore
-        return (sample.to(dtype=self.dtype),)
+        return (sample.to(self.device, dtype=self.dtype),)
 
 
 class CLIPTextModelWrapper(CLIPTextModel):
@@ -96,8 +96,8 @@ class CLIPTextModelWrapper(CLIPTextModel):
             self, input_ids=input_ids, return_dict=True
         )  # type: ignore
         return (
-            outputs.last_hidden_state.to(dtype=self.dtype),
-            outputs.pooler_output.to(dtype=self.dtype),
+            outputs.last_hidden_state.to(self.device, dtype=self.dtype),
+            outputs.pooler_output.to(self.device, dtype=self.dtype),
         )
 
 
@@ -105,14 +105,14 @@ class AutoencoderKLWrapper(AutoencoderKL):
     "Internal class"
 
     def encode(self, x) -> Tuple:  # pylint: disable=arguments-differ
-        x = x.to(dtype=self.dtype)
+        x = x.to(self.device, dtype=self.dtype)
         outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)
-        return (outputs.latent_dist.sample().to(dtype=self.dtype),)
+        return (outputs.latent_dist.sample().to(self.device, dtype=self.dtype),)
 
     def decode(self, z) -> Tuple:  # pylint: disable=arguments-differ
-        z = z.to(dtype=self.dtype)
+        z = z.to(self.device, dtype=self.dtype)
         outputs: DecoderOutput = AutoencoderKL.decode(self, z, True)  # type: ignore
-        return (outputs.sample.to(dtype=self.dtype),)
+        return (outputs.sample.to(self.device, dtype=self.dtype),)
 
 
 class OnnxStableDiffusion(InferenceModel):
@@ -374,17 +374,26 @@ class OnnxStableDiffusion(InferenceModel):
 
         model  -- a repository, or a huggingface model name inside data/models/
 
-        target -- default: nothing quantized. If any of them set to true, they will be quantized using uint8 and will be ran on cpu during inference. If set to false, they will be quantized using int8 and ran on gpu during inference. If set to None, quantization is skipped.
+        target -- default: nothing quantized.
 
         device -- default: "cuda." The device on which torch will run. If you have a gpu, you should use "cuda" or "cuda:0" or "cuda:1" etc. If you have a cpu, you should use "cpu". If on windows, and on amd, use torch_directml.device()
 
         simplify_unet -- default: False. Whether the UNet should be simplified (this uses upwards of 20gb of RAM)
         """
-        can_fp16 = device.type == "cuda" and convert_to_fp16
+        can_fp16 = (
+            "cuda" in (device.type if isinstance(device, torch.device) else device)
+            and convert_to_fp16
+        )
         dtype = torch.float16 if can_fp16 else torch.float32
 
-        if not can_fp16:
+        if (
+            "cuda" not in (device.type if isinstance(device, torch.device) else device)
+            and convert_to_fp16
+        ):
             device = torch.device("cpu")
+
+        if not isinstance(device, torch.device):
+            device = torch.device(device)
 
         websocket_manager.broadcast_sync(
             Notification(
@@ -630,6 +639,7 @@ class OnnxStableDiffusion(InferenceModel):
             opset: int,
         ) -> int:
             unet = load(UNet2DConditionWrapper, main_folder / "unet", dtype=dtype)  # type: ignore
+            unet.to(device)
 
             if torch_newer_than_201 or sdpa_success:
                 from diffusers.models.attention_processor import AttnProcessor2_0
