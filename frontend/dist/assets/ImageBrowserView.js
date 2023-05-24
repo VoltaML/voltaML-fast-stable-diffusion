@@ -193,7 +193,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 unref(global).state.imageBrowser.currentImage.path !== "" ? (openBlock(), createBlock(unref(NImage), {
                   key: 0,
-                  src: imageSrc.value,
+                  src: unref(imageSrc),
                   "object-fit": "contain",
                   style: { "width": "100%", "height": "100%", "justify-content": "center", "margin": "8px" },
                   "img-props": { style: { maxWidth: "95%", maxHeight: "95%" } }
@@ -438,8 +438,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_83798405_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-83798405"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_4cac7383_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-4cac7383"]]);
 export {
   ImageBrowserView as default
 };
