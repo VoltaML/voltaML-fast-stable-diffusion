@@ -227,7 +227,7 @@ class OnnxStableDiffusion(InferenceModel):
                         else:
                             provname = providers[0]
                         if provname == "DmlExecutionProvider":
-                            sess_options.enable_mem_pattern = True
+                            sess_options.enable_mem_pattern = False
                             sess_options.execution_mode = (
                                 ort.ExecutionMode.ORT_SEQUENTIAL
                             )
@@ -235,10 +235,12 @@ class OnnxStableDiffusion(InferenceModel):
                             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
                         return ort.InferenceSession(
-                            str(file), providers=providers, sess_options=sess_options
+                            str(file.as_posix()),
+                            providers=providers,
+                            sess_options=sess_options,
                         )
 
-            folder = Path("data/onnx").joinpath(self.model_id)
+            folder = Path(self.model_id)
 
             if (folder / "providers.txt").exists():
                 providers = _load(folder / "providers.txt")

@@ -1,11 +1,11 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, D as ref, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, m as createBaseVNode, q as NSelect, n as NTooltip, l as createTextVNode, r as NSlider, j as NInput, bw as isRef, t as toDisplayString, x as NGrid, z as serverUrl, y as spaceRegex, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, D as ref, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, m as createBaseVNode, q as NSelect, n as NTooltip, l as createTextVNode, r as NSlider, j as NInput, t as toDisplayString, x as NGrid, z as serverUrl, y as spaceRegex, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-1ffeb420"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-57b0ec9b"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -159,7 +159,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             max: 1,
                             style: { "margin-right": "12px" },
                             step: 0.025
-                          }, null, 8, ["value", "min", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.tagger.threshold,
                             "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.tagger.threshold = $event),
@@ -168,7 +168,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             min: 0.1,
                             max: 1,
                             step: 0.025
-                          }, null, 8, ["value", "min", "step"])
+                          }, null, 8, ["value"])
                         ])
                       ]),
                       _: 1
@@ -192,26 +192,26 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       }, null, 8, ["value"])
                     ]),
                     createVNode(unref(NInput), {
-                      value: unref(computedPrompt),
-                      "onUpdate:value": _cache[5] || (_cache[5] = ($event) => isRef(computedPrompt) ? computedPrompt.value = $event : null),
+                      value: computedPrompt.value,
+                      "onUpdate:value": _cache[5] || (_cache[5] = ($event) => computedPrompt.value = $event),
                       type: "textarea",
                       placeholder: "Prompt",
                       "show-count": ""
                     }, {
                       count: withCtx(() => [
-                        createTextVNode(toDisplayString(unref(promptCount)), 1)
+                        createTextVNode(toDisplayString(promptCount.value), 1)
                       ]),
                       _: 1
                     }, 8, ["value"]),
                     createVNode(unref(NInput), {
-                      value: unref(computedNegativePrompt),
-                      "onUpdate:value": _cache[6] || (_cache[6] = ($event) => isRef(computedNegativePrompt) ? computedNegativePrompt.value = $event : null),
+                      value: computedNegativePrompt.value,
+                      "onUpdate:value": _cache[6] || (_cache[6] = ($event) => computedNegativePrompt.value = $event),
                       type: "textarea",
                       placeholder: "Negative prompt",
                       "show-count": ""
                     }, {
                       count: withCtx(() => [
-                        createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
+                        createTextVNode(toDisplayString(negativePromptCount.value), 1)
                       ]),
                       _: 1
                     }, 8, ["value"])
@@ -228,8 +228,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_1ffeb420_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-1ffeb420"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_57b0ec9b_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-57b0ec9b"]]);
 export {
   TaggerView as default
 };
