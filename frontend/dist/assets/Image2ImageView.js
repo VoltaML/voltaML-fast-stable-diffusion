@@ -316,7 +316,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(promptCount)), 1)
+                            createTextVNode(toDisplayString(promptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -330,7 +330,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
+                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -489,7 +489,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.controlnet.cfg_scale,
                             "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.controlnet.cfg_scale = $event),
@@ -498,7 +498,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_22$3, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -569,7 +569,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             max: 2,
                             style: { "margin-right": "12px" },
                             step: 0.025
-                          }, null, 8, ["value", "min", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.controlnet.controlnet_conditioning_scale,
                             "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(conf).data.settings.controlnet.controlnet_conditioning_scale = $event),
@@ -578,7 +578,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                             min: 0.1,
                             max: 2,
                             step: 0.025
-                          }, null, 8, ["value", "min", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_28$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -843,7 +843,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(promptCount)), 1)
+                            createTextVNode(toDisplayString(promptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -857,7 +857,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
+                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -999,7 +999,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.img2img.cfg_scale,
                             "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.img2img.cfg_scale = $event),
@@ -1008,7 +1008,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_20$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -1028,7 +1028,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             step: 0.05,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.self_attention_scale,
                             "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
@@ -1037,7 +1037,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             min: 0,
                             max: 1,
                             step: 0.05
-                          }, null, 8, ["value", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_23$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -1108,7 +1108,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             style: { "margin-right": "12px" },
                             step: 0.025
-                          }, null, 8, ["value", "min", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.img2img.denoising_strength,
                             "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.img2img.denoising_strength = $event),
@@ -1117,7 +1117,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             min: 0.1,
                             max: 1,
                             step: 0.025
-                          }, null, 8, ["value", "min", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_29, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -2094,7 +2094,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(promptCount)), 1)
+                            createTextVNode(toDisplayString(promptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2108,7 +2108,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
+                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2216,7 +2216,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.inpainting.cfg_scale,
                             "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.inpainting.cfg_scale = $event),
@@ -2225,7 +2225,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_19$1, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -2245,7 +2245,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             step: 0.05,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.self_attention_scale,
                             "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
@@ -2254,7 +2254,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             min: 0,
                             max: 1,
                             step: 0.05
-                          }, null, 8, ["value", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_22$1, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -2503,7 +2503,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(promptCount)), 1)
+                            createTextVNode(toDisplayString(promptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2517,7 +2517,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
-                            createTextVNode(toDisplayString(unref(negativePromptCount)), 1)
+                            createTextVNode(toDisplayString(negativePromptCount.value), 1)
                           ]),
                           _: 1
                         }, 8, ["value", "onKeyup", "onKeydown"]),
@@ -2585,7 +2585,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.sd_upscale.cfg_scale,
                             "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.sd_upscale.cfg_scale = $event),
@@ -2594,7 +2594,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 30,
                             step: 0.5
-                          }, null, 8, ["value", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_12, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {

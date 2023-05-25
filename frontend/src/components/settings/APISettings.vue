@@ -66,6 +66,14 @@
             value: 'cross-attention',
             label: 'Cross-Attention',
           },
+          {
+            value: 'subquadratic',
+            label: 'Sub-quadratic Attention',
+          },
+          {
+            value: 'multihead',
+            label: 'Multihead attention',
+          },
         ]"
         v-model:value="settings.defaultSettings.api.attention_processor"
       >
