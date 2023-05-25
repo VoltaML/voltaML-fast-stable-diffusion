@@ -9,10 +9,19 @@ from .sub_quadratic import apply_subquadratic_attention
 from .multihead_attention import apply_multihead_attention
 
 
+def _xf(p):
+    try:
+        if is_xformers_available() and config.api.device_type != "directml":
+            return False
+        p.enable_xformers_memory_efficient_attention()
+        return True
+    except Exception:  # pylint: disable=broad-exception-caught
+        pass
+    return False
+
+
 ATTENTION_PROCESSORS = {
-    "xformers": lambda p: p.enable_xformers_memory_efficient_attention() is None
-    if (is_xformers_available() and config.api.device_type != "directml")
-    else False,
+    "xformers": _xf,
     # ---
     "sdpa": lambda p: p.unet.set_attn_processor(AttnProcessor2_0()) is None
     if (version.parse(torch.__version__) >= version.parse("2.0.0"))
