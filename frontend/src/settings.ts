@@ -157,6 +157,7 @@ export interface ISettings {
 
     autocast: boolean;
     attention_processor: "xformers" | "sdpa" | "cross-attention" | "subquadratic" | "multihead";
+    subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
     vae_slicing: boolean;
@@ -308,6 +309,7 @@ export const defaultSettings: ISettings = {
     concurrent_jobs: 1,
     autocast: true,
     attention_processor: "xformers",
+    subquadratic_size: 512,
     attention_slicing: "disabled",
     channels_last: true,
     vae_slicing: false,

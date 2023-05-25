@@ -37831,6 +37831,7 @@ const defaultSettings = {
     concurrent_jobs: 1,
     autocast: true,
     attention_processor: "xformers",
+    subquadratic_size: 512,
     attention_slicing: "disabled",
     channels_last: true,
     vae_slicing: false,

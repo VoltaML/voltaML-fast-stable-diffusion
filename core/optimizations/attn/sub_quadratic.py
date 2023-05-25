@@ -215,7 +215,6 @@ def _query_chunk_attention(
     return all_values / all_weights
 
 
-# TODO: refactor CrossAttention#get_attention_scores to share code with this
 def _get_attention_scores_no_kv_chunking(
     query: torch.Tensor,
     key_t: torch.Tensor,
@@ -233,11 +232,6 @@ def _get_attention_scores_no_kv_chunking(
     del attn_scores
     hidden_states_slice = torch.bmm(attn_probs, value)
     return hidden_states_slice
-
-
-class ScannedChunk(NamedTuple):
-    chunk_idx: int
-    attn_chunk: AttnChunk
 
 
 def efficient_dot_product_attention(

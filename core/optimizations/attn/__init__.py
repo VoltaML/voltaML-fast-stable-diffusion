@@ -20,7 +20,10 @@ ATTENTION_PROCESSORS = {
     # ---
     "cross-attention": lambda p: p.unet.set_attn_processor(AttnProcessor()) is None,
     # ---
-    "subquadratic": lambda p: apply_subquadratic_attention(p.unet) is None,
+    "subquadratic": lambda p: apply_subquadratic_attention(
+        p.unet, config.api.subquadratic_size
+    )
+    is None,
     # ---
     "multihead": lambda p: apply_multihead_attention(p.unet) is None,
 }
