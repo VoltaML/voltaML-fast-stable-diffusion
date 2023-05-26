@@ -131,7 +131,7 @@ export interface ISettings {
   };
   upscale: {
     image: string;
-    scale_factor: number;
+    upscale_factor: number;
     model:
       | "RealESRGAN_x4plus"
       | "RealESRNet_x4plus"
@@ -293,7 +293,7 @@ export const defaultSettings: ISettings = {
   },
   upscale: {
     image: "",
-    scale_factor: 4,
+    upscale_factor: 4,
     model: "RealESRGAN_x4plus_anime_6B",
     tile_size: 128,
     tile_padding: 10,

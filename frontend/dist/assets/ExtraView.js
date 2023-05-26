@@ -5,7 +5,7 @@ import { d as defineComponent, u as useState, a as useSettings, b as useMessage,
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Image.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-276f76a3"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-630bfcb5"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
@@ -34,7 +34,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         body: JSON.stringify({
           data: {
             image: conf.data.settings.upscale.image,
-            scale_factor: conf.data.settings.upscale.scale_factor,
+            upscale_factor: conf.data.settings.upscale.upscale_factor,
             model: conf.data.settings.upscale.model,
             tile_size: conf.data.settings.upscale.tile_size,
             tile_padding: conf.data.settings.upscale.tile_padding
@@ -102,16 +102,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.upscale.scale_factor,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.upscale.scale_factor = $event),
+                            value: unref(conf).data.settings.upscale.upscale_factor,
+                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.upscale.upscale_factor = $event),
                             min: 1,
                             max: 4,
                             step: 0.1,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value", "step"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.upscale.scale_factor,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.upscale.scale_factor = $event),
+                            value: unref(conf).data.settings.upscale.upscale_factor,
+                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.upscale.upscale_factor = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -197,8 +197,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_276f76a3_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-276f76a3"]]);
+const RealESRGAN_vue_vue_type_style_index_0_scoped_630bfcb5_lang = "";
+const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-630bfcb5"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {

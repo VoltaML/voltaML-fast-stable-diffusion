@@ -37078,7 +37078,7 @@ const defaultSettings = {
   },
   upscale: {
     image: "",
-    scale_factor: 4,
+    upscale_factor: 4,
     model: "RealESRGAN_x4plus_anime_6B",
     tile_size: 128,
     tile_padding: 10

@@ -98,7 +98,7 @@ class UpscaleConfig:
     "Configuration for the RealESRGAN upscaler"
 
     model: str = "RealESRGAN_x4plus_anime_6B"
-    scale_factor: int = 4
+    upscale_factor: int = 4
     tile_size: int = field(default=128)
     tile_padding: int = field(default=10)
 

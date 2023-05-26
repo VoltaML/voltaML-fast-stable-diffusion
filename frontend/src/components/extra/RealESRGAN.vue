@@ -31,14 +31,14 @@
                 TODO
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.upscale.scale_factor"
+                v-model:value="conf.data.settings.upscale.upscale_factor"
                 :min="1"
                 :max="4"
                 :step="0.1"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.upscale.scale_factor"
+                v-model:value="conf.data.settings.upscale.upscale_factor"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -148,7 +148,7 @@ const generate = () => {
     body: JSON.stringify({
       data: {
         image: conf.data.settings.upscale.image,
-        scale_factor: conf.data.settings.upscale.scale_factor,
+        upscale_factor: conf.data.settings.upscale.upscale_factor,
         model: conf.data.settings.upscale.model,
         tile_size: conf.data.settings.upscale.tile_size,
         tile_padding: conf.data.settings.upscale.tile_padding,
