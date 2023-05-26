@@ -416,6 +416,14 @@
                   { label: 'Linear', value: 'linear' },
                   { label: 'Bilinear', value: 'bilinear' },
                   { label: 'Bicubic', value: 'bicubic' },
+                  {
+                    label: 'Bislerp (Original, slow)',
+                    value: 'bislerp-original',
+                  },
+                  {
+                    label: 'Bislerp (Tortured, fast)',
+                    value: 'bislerp-tortured',
+                  },
                 ]"
               />
             </div>

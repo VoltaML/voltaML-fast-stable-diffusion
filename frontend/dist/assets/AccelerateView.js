@@ -1,4 +1,4 @@
-import { W as cB, Y as cM, V as c, X as cE, Z as iconSwitchTransition, ap as cNotM, d as defineComponent, O as useConfig, a5 as useRtl, a3 as useTheme, R as provide, C as h, aB as flatten, aC as getSlot, T as createInjectionKey, bb as stepsLight, aZ as throwError, c as computed, a7 as useThemeClass, aA as resolveWrappedSlot, as as resolveSlot, a9 as NIconSwitchTransition, a1 as inject, a6 as createKey, U as call, at as NBaseIcon, bc as FinishedIcon, bd as ErrorIcon, b as useMessage, u as useState, D as ref, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, m as createBaseVNode, r as NSlider, q as NSelect, E as NButton, l as createTextVNode, b9 as NModal, z as serverUrl, a as useSettings, b7 as reactive, ac as watch, s as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { W as cB, Y as cM, V as c, X as cE, Z as iconSwitchTransition, ap as cNotM, d as defineComponent, O as useConfig, a5 as useRtl, a3 as useTheme, R as provide, C as h, aB as flatten, aC as getSlot, T as createInjectionKey, bb as stepsLight, a1 as inject, aZ as throwError, c as computed, a7 as useThemeClass, aA as resolveWrappedSlot, as as resolveSlot, a9 as NIconSwitchTransition, a6 as createKey, U as call, at as NBaseIcon, bc as FinishedIcon, bd as ErrorIcon, b as useMessage, u as useState, D as ref, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, i as NSpace, h as NCard, m as createBaseVNode, r as NSlider, q as NSelect, E as NButton, l as createTextVNode, b9 as NModal, z as serverUrl, a as useSettings, b7 as reactive, ac as watch, s as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 const style = cB("steps", `
@@ -481,7 +481,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[8] || (_cache[8] = ($event) => model.value = $event),
-                options: unref(modelOptions),
+                options: modelOptions.value,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
             ])
@@ -500,7 +500,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               type: "success",
               ghost: "",
               loading: building.value,
-              disabled: building.value || unref(modelOptions).length === 0,
+              disabled: building.value || modelOptions.value.length === 0,
               onClick: _cache[9] || (_cache[9] = ($event) => showUnloadModal.value = true)
             }, {
               default: withCtx(() => [
@@ -670,7 +670,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[0] || (_cache[0] = ($event) => model.value = $event),
-                options: unref(modelOptions),
+                options: modelOptions.value,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
             ]),
@@ -749,7 +749,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               type: "success",
               ghost: "",
               loading: building.value,
-              disabled: building.value || unref(modelOptions).length === 0,
+              disabled: building.value || modelOptions.value.length === 0,
               onClick: _cache[6] || (_cache[6] = ($event) => showUnloadModal.value = true)
             }, {
               default: withCtx(() => [

@@ -108,7 +108,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             max: 4,
                             step: 0.1,
                             style: { "margin-right": "12px" }
-                          }, null, 8, ["value", "step"]),
+                          }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.upscale.scale_factor,
                             "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.upscale.scale_factor = $event),
@@ -117,7 +117,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             min: 1,
                             max: 4,
                             step: 0.1
-                          }, null, 8, ["value", "step"])
+                          }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_6, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {

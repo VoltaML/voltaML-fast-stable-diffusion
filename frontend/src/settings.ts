@@ -38,8 +38,9 @@ export interface ISettings {
       scale: number;
       latent_scale_mode:
         | "nearest"
-        | "linear"
         | "bilinear"
+        | "bislerp-original"
+        | "bislerp-tortured"
         | "bicubic"
         | "nearest-exact";
       strength: number;

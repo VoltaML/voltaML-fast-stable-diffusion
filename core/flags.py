@@ -5,7 +5,8 @@ from dataclasses_json.api import DataClassJsonMixin
 
 LatentScaleModel = Literal[
     "nearest",
-    "linear",
+    "bislerp-original",
+    "bislerp-tortured",
     "bilinear",
     "bicubic",
     "nearest-exact",
