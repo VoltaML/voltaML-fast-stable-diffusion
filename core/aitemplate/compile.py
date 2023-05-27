@@ -211,6 +211,10 @@ def compile_diffusers(
                     act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
                     dump_dir=dump_dir,
                 )
+
+                websocket_manager.broadcast_sync(
+                    Data(data_type="aitemplate_compile", data={"clip": "finish"})
+                )
             else:
                 logger.info("CLIP already compiled. Skipping...")
 

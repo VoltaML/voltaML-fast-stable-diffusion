@@ -19,7 +19,12 @@ from typing import Callable, List, Optional, Union
 
 import torch
 from aitemplate.compiler import Model
-from diffusers import AutoencoderKL, LMSDiscreteScheduler, StableDiffusionPipeline
+from diffusers import (
+    AutoencoderKL,
+    LMSDiscreteScheduler,
+    StableDiffusionPipeline,
+    UNet2DConditionModel,
+)
 from diffusers.configuration_utils import FrozenDict
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
@@ -71,6 +76,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         scheduler: KarrasDiffusionSchedulers,
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
+        unet: Optional[UNet2DConditionModel],  # type: ignore # pylint: disable=unused-argument
         directory: str = "",
         clip_ait_exe: Optional[Model] = None,
         unet_ait_exe: Optional[Model] = None,
@@ -135,6 +141,8 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
+
+        self.unet = unet
 
         self.safety_checker: StableDiffusionSafetyChecker
         self.requires_safety_checker: bool

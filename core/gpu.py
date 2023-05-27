@@ -24,6 +24,7 @@ from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
+    AITemplateDynamicBuildRequest,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
@@ -88,13 +89,25 @@ class GPU:
         "Generate images from the queue"
 
         def generate_thread_call(job: Job) -> Union[List[Image.Image], List[str]]:
-            model: Union[
-                "TensorRTModel",
-                PyTorchStableDiffusion,
-                AITemplateStableDiffusion,
-                PyTorchSDUpscaler,
-                "OnnxStableDiffusion",
-            ] = self.loaded_models[job.model]
+            try:
+                model: Union[
+                    "TensorRTModel",
+                    PyTorchStableDiffusion,
+                    AITemplateStableDiffusion,
+                    PyTorchSDUpscaler,
+                    "OnnxStableDiffusion",
+                ] = self.loaded_models[job.model]
+            except KeyError as err:
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "error",
+                        "Model not loaded",
+                        f"Model {job.model} is not loaded, please load it first",
+                    )
+                )
+
+                logger.debug("Model not loaded on any GPU. Raising error")
+                raise ModelNotLoadedError(f"Model {job.model} is not loaded") from err
 
             shared.interrupt = False
 
@@ -242,27 +255,15 @@ class GPU:
                 )
             return ([], 0.0)
 
-        except ValueError as err:
-            websocket_manager.broadcast_sync(
-                Notification(
-                    "error",
-                    "Model not loaded",
-                    "The model you are trying to use is not loaded, please load it first",
-                )
-            )
-
-            logger.debug("Model not loaded on any GPU. Raising error")
-            logger.debug(err)
-            raise ModelNotLoadedError("Model not loaded on any GPU") from err
-
         except Exception as e:  # pylint: disable=broad-except
-            await websocket_manager.broadcast(
-                Notification(
-                    "error",
-                    "Inference error",
-                    f"An error occurred: {type(e).__name__} - {e}",
+            if not isinstance(e, ModelNotLoadedError):
+                await websocket_manager.broadcast(
+                    Notification(
+                        "error",
+                        "Inference error",
+                        f"An error occurred: {type(e).__name__} - {e}",
+                    )
                 )
-            )
 
             raise e
 
@@ -469,6 +470,41 @@ class GPU:
                 local_dir_or_id=request.model_id,
                 height=request.height,
                 width=request.width,
+            )
+
+            self.memory_cleanup()
+
+        await run_in_thread_async(func=ait_build_thread_call)
+
+        logger.debug(f"AI Template built for {request.model_id}.")
+
+        logger.info("AITemplate engine successfully built")
+
+    async def build_dynamic_aitemplate_engine(
+        self, request: AITemplateDynamicBuildRequest
+    ):
+        "Convert a model to a AITemplate engine"
+
+        logger.debug(f"Building AI Template for {request.model_id}...")
+
+        # Set the number of threads to use and keep them within boundaries of the system
+        if request.threads:
+            if request.threads < 1:
+                request.threads = 1
+            elif request.threads > multiprocessing.cpu_count():
+                request.threads = multiprocessing.cpu_count()
+            else:
+                config.aitemplate.num_threads = request.threads
+
+        def ait_build_thread_call():
+            from core.aitemplate.dynamic_compile import compile_diffusers
+
+            compile_diffusers(
+                batch_size=request.batch_size,
+                local_dir_or_id=request.model_id,
+                height=request.height,
+                width=request.width,
+                clip_chunks=request.clip_chunks,
             )
 
             self.memory_cleanup()

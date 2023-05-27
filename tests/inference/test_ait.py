@@ -21,13 +21,15 @@ except ModuleNotFoundError:
 @pytest.mark.slow
 def test_compile_aitemplate_models():
     compile_diffusers(
-        local_dir_or_id="andite/anything-v4.0",
+        local_dir_or_id="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
     )
 
 
 @pytest.fixture(name="pipe")
 def pipe_fixture():
-    return AITemplateStableDiffusion("andite--anything-v4.0__512x512x1")
+    return AITemplateStableDiffusion(
+        "Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1"
+    )
 
 
 def test_aitemplate_txt2img(pipe: AITemplateStableDiffusion):
@@ -37,7 +39,7 @@ def test_aitemplate_txt2img(pipe: AITemplateStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),
-        model="andite/anything-v4.0",
+        model="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
     )
 
     pipe.generate(job)
@@ -51,7 +53,7 @@ def test_aitemplate_img2img(pipe: AITemplateStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),
-        model="andite/anything-v4.0",
+        model="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
     )
 
     pipe.generate(job)
@@ -66,7 +68,7 @@ def test_aitemplate_controlnet(pipe: AITemplateStableDiffusion):
             controlnet="lllyasviel/sd-controlnet-canny",
             id="test",
         ),
-        model="andite/anything-v4.0",
+        model="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
     )
 
     pipe.generate(job)

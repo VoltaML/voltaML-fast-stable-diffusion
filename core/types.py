@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 from uuid import uuid4
 
 from diffusers import (
@@ -296,6 +296,18 @@ class AITemplateBuildRequest:
     width: int = field(default=512)
     height: int = field(default=512)
     batch_size: int = field(default=1)
+    threads: Optional[int] = field(default=None)
+
+
+@dataclass
+class AITemplateDynamicBuildRequest:
+    "Dataclass for requesting a build of an engine"
+
+    model_id: str
+    width: Tuple[int, int] = field(default=(64, 2048))
+    height: Tuple[int, int] = field(default=(64, 2048))
+    batch_size: Tuple[int, int] = field(default=(1, 4))
+    clip_chunks: int = field(default=6)
     threads: Optional[int] = field(default=None)
 
 

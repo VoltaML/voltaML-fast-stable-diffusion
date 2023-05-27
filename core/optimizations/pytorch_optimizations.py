@@ -67,7 +67,7 @@ def optimize_model(
         # Took me an hour to understand why CPU stopped working...
         # Turns out AMD just lacks support for BF16...
         # Not mad, not mad at all... to be fair, I'm just disappointed
-        if not can_offload:
+        if not can_offload and not is_for_aitemplate:
             pipe.to(device, torch_dtype=config.api.dtype)
 
         if config.api.device_type == "cuda" and not is_for_aitemplate:

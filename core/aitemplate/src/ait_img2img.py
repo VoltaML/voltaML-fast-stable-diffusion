@@ -28,6 +28,7 @@ from diffusers import (
     AutoencoderKL,
     LMSDiscreteScheduler,
     StableDiffusionImg2ImgPipeline,
+    UNet2DConditionModel,
 )
 from diffusers.configuration_utils import FrozenDict
 from diffusers.pipelines.stable_diffusion import (
@@ -85,6 +86,7 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
         scheduler: KarrasDiffusionSchedulers,
+        unet: Optional[UNet2DConditionModel],  # type: ignore # pylint: disable=unused-argument
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
         directory: str = "",
@@ -151,6 +153,8 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
+
+        self.unet = unet
 
         self.safety_checker: StableDiffusionSafetyChecker
         self.requires_safety_checker: bool

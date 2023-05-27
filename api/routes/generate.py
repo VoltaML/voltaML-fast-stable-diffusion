@@ -8,6 +8,7 @@ from core.errors import ModelNotLoadedError
 from core.shared_dependent import gpu
 from core.types import (
     AITemplateBuildRequest,
+    AITemplateDynamicBuildRequest,
     ControlNetQueueEntry,
     ConvertModelRequest,
     Img2ImgQueueEntry,
@@ -232,6 +233,15 @@ async def generate_aitemplate(request: AITemplateBuildRequest):
     "Generate a TensorRT engine from a local model"
 
     await gpu.build_aitemplate_engine(request)
+
+    return {"message": "Success"}
+
+
+@router.post("/generate-dynamic-aitemplate")
+async def generate_dynamic_aitemplate(request: AITemplateDynamicBuildRequest):
+    "Generate a TensorRT engine from a local model"
+
+    await gpu.build_dynamic_aitemplate_engine(request)
 
     return {"message": "Success"}
 

@@ -7,7 +7,12 @@ from typing import Callable, List, Optional, Union
 import numpy as np
 import torch
 from aitemplate.compiler import Model
-from diffusers import AutoencoderKL, ControlNetModel, LMSDiscreteScheduler
+from diffusers import (
+    AutoencoderKL,
+    ControlNetModel,
+    LMSDiscreteScheduler,
+    UNet2DConditionModel,
+)
 from diffusers.configuration_utils import FrozenDict
 from diffusers.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion import (
@@ -57,6 +62,7 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
     def __init__(  # pylint: disable=super-init-not-called
         self,
         vae: AutoencoderKL,
+        unet: Optional[UNet2DConditionModel],  # type: ignore # pylint: disable=unused-argument
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
         scheduler: KarrasDiffusionSchedulers,
@@ -128,6 +134,8 @@ class StableDiffusionControlNetAITPipeline(DiffusionPipeline):
             safety_checker=safety_checker,
             feature_extractor=feature_extractor,
         )
+
+        self.unet = unet
 
         self.safety_checker: StableDiffusionSafetyChecker
         self.requires_safety_checker: bool

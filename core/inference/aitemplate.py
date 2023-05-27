@@ -23,7 +23,6 @@ from core.inference_callbacks import (
     img2img_callback,
     txt2img_callback,
 )
-from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import (
     Backend,
@@ -72,7 +71,10 @@ class AITemplateStableDiffusion(InferenceModel):
         self.controlnet: Optional[ControlNetModel] = None
         self.current_controlnet: str = ""
 
-        self.load()
+        if "__dynamic" in self.model_id:
+            self.load_dynamic()
+        else:
+            self.load()
 
     @property
     def directory(self) -> str:
@@ -89,11 +91,14 @@ class AITemplateStableDiffusion(InferenceModel):
             is_for_aitemplate=True,
         )
 
+        pipe.to(self.device)
+
         pipe.unet = None  # type: ignore
         self.memory_cleanup()
 
         with console.status("[bold green]Loading AITemplate model..."):
             pipe = StableDiffusionAITPipeline(
+                unet=pipe.unet,  # type: ignore
                 vae=pipe.vae,  # type: ignore
                 text_encoder=pipe.text_encoder,  # type: ignore
                 tokenizer=pipe.tokenizer,  # type: ignore
@@ -108,13 +113,7 @@ class AITemplateStableDiffusion(InferenceModel):
             )
         assert isinstance(pipe, StableDiffusionAITPipeline)
 
-        # Disable optLevel for AITemplate models and optimize the model
-        optimize_model(
-            pipe=pipe,
-            device=self.device,
-            is_for_aitemplate=True,
-        )
-
+        self.unet = pipe.unet  # type: ignore
         self.vae = pipe.vae
         self.text_encoder = pipe.text_encoder
         self.tokenizer = pipe.tokenizer
@@ -128,11 +127,61 @@ class AITemplateStableDiffusion(InferenceModel):
         self.vae_ait_exe = pipe.vae_ait_exe
 
         self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
+        self.type: Literal["static", "dynamic"] = "static"
+
+    def load_dynamic(self):
+        from core.aitemplate.src.dynamic_ait_txt2img import (
+            StableDiffusionDynamicAITPipeline,
+        )
+
+        pipe = load_pytorch_pipeline(
+            self.model_id,
+            device=self.device,
+            is_for_aitemplate=True,
+        )
+
+        pipe.to(self.device)
+
+        self.memory_cleanup()
+
+        with console.status("[bold green]Loading AITemplate model..."):
+            pipe = StableDiffusionDynamicAITPipeline(
+                vae=pipe.vae,  # type: ignore
+                text_encoder=pipe.text_encoder,  # type: ignore
+                tokenizer=pipe.tokenizer,  # type: ignore
+                scheduler=pipe.scheduler,  # type: ignore
+                unet=pipe.unet,  # type: ignore
+                directory=self.directory,
+                clip_ait_exe=None,
+                unet_ait_exe=None,
+                vae_ait_exe=None,
+                requires_safety_checker=False,
+                safety_checker=None,  # type: ignore
+                feature_extractor=None,  # type: ignore
+            )
+        assert isinstance(pipe, StableDiffusionDynamicAITPipeline)
+
+        self.vae = pipe.vae  # type: ignore
+        self.text_encoder = pipe.text_encoder  # type: ignore
+        self.unet = pipe.unet  # type: ignore
+        self.tokenizer = pipe.tokenizer
+        self.scheduler = pipe.scheduler
+        self.requires_safety_checker = False
+        self.safety_checker = pipe.safety_checker  # type: ignore
+        self.feature_extractor = pipe.feature_extractor  # type: ignore
+
+        self.clip_ait_exe = pipe.clip_ait_exe
+        self.unet_ait_exe = pipe.unet_ait_exe
+        self.vae_ait_exe = pipe.vae_ait_exe
+
+        self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
+        self.type = "dynamic"
 
     def unload(self):
         for property_ in (
             "vae",
             "text_encoder",
+            "unet",
             "tokenizer",
             "scheduler",
             "safety_checker",
@@ -250,10 +299,19 @@ class AITemplateStableDiffusion(InferenceModel):
         "Generates images from text"
 
         from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
+        from core.aitemplate.src.dynamic_ait_txt2img import (
+            StableDiffusionDynamicAITPipeline,
+        )
+
+        if self.type == "static":
+            cls = StableDiffusionAITPipeline
+        else:
+            cls = StableDiffusionDynamicAITPipeline
 
         self.manage_optional_components()
 
-        pipe = StableDiffusionAITPipeline(
+        pipe = cls(
+            unet=self.unet,
             vae=self.vae,
             directory=self.directory,
             text_encoder=self.text_encoder,
@@ -321,6 +379,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self.manage_optional_components()
 
         pipe = StableDiffusionImg2ImgAITPipeline(
+            unet=self.unet,
             vae=self.vae,
             directory=self.directory,
             text_encoder=self.text_encoder,
@@ -394,6 +453,7 @@ class AITemplateStableDiffusion(InferenceModel):
         )
 
         pipe = StableDiffusionControlNetAITPipeline(
+            unet=self.unet,
             vae=self.vae,
             directory=self.directory,
             text_encoder=self.text_encoder,
