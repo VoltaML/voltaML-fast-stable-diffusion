@@ -698,4 +698,7 @@ class GPU:
         image: Image.Image
         time_: float
         image, time_ = await run_in_thread_async(generate_call, args=(job,))
+
+        save_images([image], job)
+
         return image, time_
