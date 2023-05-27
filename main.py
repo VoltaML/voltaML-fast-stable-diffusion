@@ -68,6 +68,9 @@ parser.add_argument(
     action="store_true",
     help="Enable Cloudflare R2 bucket upload support",
 )
+parser.add_argument(
+    "-p", "--port", type=int, help="Port to expose the API on", default=5003
+)
 
 parser.add_argument(
     "--install-only",
@@ -142,7 +145,7 @@ def main(exit_after_init: bool = False):
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
 
-    uvi_config = Config(app=api_app, host=host, port=5003)
+    uvi_config = Config(app=api_app, host=host, port=args.port)
     uvi_server = Server(config=uvi_config)
 
     uvi_config.setup_event_loop()
