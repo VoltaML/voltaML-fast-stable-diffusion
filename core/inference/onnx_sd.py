@@ -360,6 +360,7 @@ class OnnxStableDiffusion(InferenceModel):
         else:
             return model.run(None, inputs)
 
+    # TODO: controlnet
     @torch.no_grad()
     def convert_pytorch_to_onnx(
         self,
@@ -916,14 +917,20 @@ class OnnxStableDiffusion(InferenceModel):
             with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
                 for field in fields(target):
                     fn, prov = field.name, getattr(target, field.name)
-                    if fn == "unet":
-                        t = (
-                            "CPUExecutionProvider"
-                            if prov
-                            else "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
-                        )
+
+                    # If's here for readibility
+                    if prov == "no-quant":
+                        if "cuda" in device.type:
+                            t = "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
+                        else:
+                            t = "DmlExecutionProvider"
+                    elif prov == "uint8":
+                        t = "CPUExecutionProvider"
                     else:
-                        t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
+                        if "cuda" in device.type:
+                            t = "TensorrtExecutionProvider"
+                        else:
+                            t = "CPUExecutionProvider"
                     f.write(f"{fn}: {t} \n")
         websocket_manager.broadcast_sync(
             Data(data_type="onnx_compile", data={"cleanup": "finish"})
