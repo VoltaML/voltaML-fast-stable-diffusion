@@ -1,5 +1,9 @@
 # WSL Installation
 
+::: warning
+This setup will requires WSL2. If you installed WSL before the version 2 was released, you will need to switch manually to WSL2. How to upgrade guide: [CLICK HERE](https://learn.microsoft.com/en-us/windows/wsl/install#upgrade-version-from-wsl-1-to-wsl-2).
+:::
+
 ## Backends
 
 - ✅ Backend available and supported

@@ -1,6 +1,6 @@
 # Docker
 
-If you are using Windows, refer to the [Local Installation guide](/installation/local#windows) as it provides a better experience.
+Docker is not recommended as it is updated less frequently than the [Windows](/installation/windows), [WSL](/installation/wsl) and [Linux](/installation/linux) installations. However, it is the easiest way to get started with VoltaML in the cloud or on [Vast.ai](https://vast.ai/).
 
 ::: warning
 This setup will require WSL2 on Windows. If you installed WSL or Docker before it was released, you will need to switch manually to WSL2.
