@@ -25,6 +25,9 @@ export default defineConfig({
 		],
 	],
 	themeConfig: {
+		search: {
+			provider: "local",
+		},
 		nav: [
 			{ text: "Home", link: "/" },
 			{ text: "Docs", link: "/getting-started/introduction" },
@@ -151,11 +154,6 @@ export default defineConfig({
 				collapsed: false,
 			},
 		],
-		algolia: {
-			appId: "M9XJK5W9ML",
-			apiKey: "8447ad2a43b65f2c280b8c883c76dc3f",
-			indexName: "voltaml-fast-stable-diffusion",
-		},
 	},
 	cleanUrls: true,
 	ignoreDeadLinks: "localhostLinks",
