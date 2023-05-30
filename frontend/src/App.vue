@@ -1,13 +1,15 @@
 <template>
   <NConfigProvider :theme="theme" :theme-overrides="overrides" class="main">
-    <NNotificationProvider placement="bottom-right">
-      <NMessageProvider>
-        <CollapsileNavbarVue />
-        <TopBarVue />
-        <routerContainerVue style="margin-top: 52px" />
-        <PerformanceDrawer />
-      </NMessageProvider>
-    </NNotificationProvider>
+    <NThemeEditor>
+      <NNotificationProvider placement="bottom-right">
+        <NMessageProvider>
+          <CollapsileNavbarVue />
+          <TopBarVue />
+          <routerContainerVue style="margin-top: 52px" />
+          <PerformanceDrawer />
+        </NMessageProvider>
+      </NNotificationProvider>
+    </NThemeEditor>
   </NConfigProvider>
 </template>
 
@@ -16,6 +18,7 @@ import {
   NConfigProvider,
   NMessageProvider,
   NNotificationProvider,
+  NThemeEditor,
   darkTheme,
   lightTheme,
   type GlobalThemeOverrides,
