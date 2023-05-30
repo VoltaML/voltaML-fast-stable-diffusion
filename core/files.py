@@ -143,12 +143,12 @@ class CachedModelList:
             )
 
         return models
-    
+
     def onnx(self):
         "List of ONNX models"
 
         models: List[ModelResponse] = []
-        
+
         for model in os.listdir(self.onnx_path):
             logger.debug(f"Found ONNX {model}")
 

@@ -368,7 +368,7 @@ class OnnxStableDiffusion(InferenceModel):
     def convert_pytorch_to_onnx(
         self,
         model_id: str,
-        device: torch.device,
+        device: Union[torch.device, str],
         target: Optional[QuantizationDict] = None,
         simplify_unet: bool = False,
         convert_to_fp16: bool = False,
