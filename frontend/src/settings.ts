@@ -23,22 +23,22 @@ export interface IAutoloadedLora {
 }
 
 export interface IQuantDict {
-  vae_decoder: boolean | null;
-  vae_encoder: boolean | null;
-  unet: boolean | null;
-  text_encoder: boolean | null;
+  vae_decoder: "no-quant" | "uint8" | "int8";
+  vae_encoder: "no-quant" | "uint8" | "int8";
+  unet: "no-quant" | "uint8" | "int8";
+  text_encoder: "no-quant" | "uint8" | "int8";
 }
 
 export interface ISettings {
   $schema: string;
-  backend: "PyTorch" | "TensorRT" | "AITemplate" | "unknown";
+  backend: "PyTorch" | "TensorRT" | "AITemplate" | "ONNX" | "unknown";
   model: ModelEntry | null;
   extra: {
     highres: {
       scale: number;
       latent_scale_mode:
         | "nearest"
-        | "linear"
+        | "area"
         | "bilinear"
         | "bicubic"
         | "nearest-exact";
@@ -183,6 +183,7 @@ export interface ISettings {
   };
   onnx: {
     quant_dict: IQuantDict;
+    convert_to_fp16: boolean;
     simplify_unet: boolean;
   };
   bot: {
@@ -336,11 +337,12 @@ export const defaultSettings: ISettings = {
   },
   onnx: {
     quant_dict: {
-      text_encoder: null,
-      unet: null,
-      vae_decoder: null,
-      vae_encoder: null,
+      text_encoder: "no-quant",
+      unet: "no-quant",
+      vae_decoder: "no-quant",
+      vae_encoder: "no-quant",
     },
+    convert_to_fp16: true,
     simplify_unet: false,
   },
   bot: {

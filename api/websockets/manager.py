@@ -153,7 +153,12 @@ class WebSocketManager:
 
         for connection in self.active_connections:
             if connection.application_state.CONNECTED:
-                await connection.send_json(data.to_json())
+                try:
+                    await connection.send_json(data.to_json())
+                except RuntimeError:
+                    logger.debug("RuntimeError, removing connection")
+                    await connection.close()
+                    self.active_connections.remove(connection)
             else:
                 self.active_connections.remove(connection)
 

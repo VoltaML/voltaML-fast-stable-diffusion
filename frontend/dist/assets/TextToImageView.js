@@ -590,7 +590,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             options: [
                               { label: "Nearest", value: "nearest" },
                               { label: "Nearest exact", value: "nearest-exact" },
-                              { label: "Linear", value: "linear" },
+                              { label: "Area", value: "area" },
                               { label: "Bilinear", value: "bilinear" },
                               { label: "Bicubic", value: "bicubic" }
                             ]

@@ -33,6 +33,12 @@ export interface StateInterface {
     vae: StepProgress;
     cleanup: StepProgress;
   };
+  onnxBuildStep: {
+    unet: StepProgress;
+    clip: StepProgress;
+    vae: StepProgress;
+    cleanup: StepProgress;
+  };
   txt2img: {
     currentImage: string;
     highres: boolean;
@@ -96,6 +102,12 @@ export const useState = defineStore("state", () => {
     aitBuildStep: {
       unet: "wait",
       controlnet_unet: "wait",
+      clip: "wait",
+      vae: "wait",
+      cleanup: "wait",
+    },
+    onnxBuildStep: {
+      unet: "wait",
       clip: "wait",
       vae: "wait",
       cleanup: "wait",
