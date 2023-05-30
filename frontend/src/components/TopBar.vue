@@ -275,40 +275,6 @@
                 </div>
               </NCard>
             </NTabPane>
-            <NTabPane name="ONNX">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in onnxModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload</NButton
-                    >
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                      >Load</NButton
-                    >
-                  </div>
-                </div>
-              </NCard>
-            </NTabPane>
             <NTabPane name="Extra">
               <NCard title="Models" style="height: 100%">
                 <div
@@ -464,12 +430,6 @@ const aitModels = computed(() => {
   });
 });
 
-const onnxModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "ONNX";
-  });
-});
-
 const trtModels = computed(() => {
   return filteredModels.value.filter((model) => {
     return model.backend === "TensorRT";
@@ -533,7 +493,6 @@ function refreshModels() {
             const allLoaded = [
               ...loadedPyTorchModels.value,
               ...loadedAitModels.value,
-              ...loadedOnnxModels.value,
               ...loadedExtraModels.value,
             ];
 
@@ -727,11 +686,6 @@ const loadedAitModels = computed(() => {
     return model.backend === "AITemplate" && model.state === "loaded";
   });
 });
-const loadedOnnxModels = computed(() => {
-  return global.state.models.filter((model) => {
-    return model.backend === "ONNX" && model.state === "loaded";
-  });
-});
 const loadedExtraModels = computed(() => {
   return global.state.models.filter((model) => {
     return model.backend === "unknown" && model.state === "loaded";
@@ -766,20 +720,6 @@ const aitOptions: ComputedRef<SelectMixedOption> = computed(() => {
   };
 });
 
-const onnxOptions: ComputedRef<SelectMixedOption> = computed(() => {
-  return {
-    type: "group",
-    label: "ONNX",
-    key: "onnx",
-    children: loadedOnnxModels.value.map((model) => {
-      return {
-        label: model.name,
-        value: `${model.path}:ONNX`,
-      };
-    }),
-  };
-});
-
 const extraOptions: ComputedRef<SelectMixedOption> = computed(() => {
   return {
     type: "group",
@@ -795,12 +735,7 @@ const extraOptions: ComputedRef<SelectMixedOption> = computed(() => {
 });
 
 const generatedModelOptions: ComputedRef<SelectMixedOption[]> = computed(() => {
-  return [
-    pyTorchOptions.value,
-    aitOptions.value,
-    onnxOptions.value,
-    extraOptions.value,
-  ];
+  return [pyTorchOptions.value, aitOptions.value, extraOptions.value];
 });
 
 const message = useMessage();

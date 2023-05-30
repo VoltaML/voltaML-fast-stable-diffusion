@@ -169,12 +169,7 @@ const showUnloadModal = ref(false);
 const modelOptions = computed(() => {
   const options: SelectOption[] = [];
   for (const model of global.state.models) {
-    if (
-      model.backend === "PyTorch" &&
-      model.valid &&
-      !model.name.endsWith(".safetensors") &&
-      !model.name.endsWith(".ckpt")
-    ) {
+    if (model.backend === "PyTorch" && model.valid) {
       options.push({
         label: model.name,
         value: model.path,

@@ -413,7 +413,7 @@
                 :options="[
                   { label: 'Nearest', value: 'nearest' },
                   { label: 'Nearest exact', value: 'nearest-exact' },
-                  { label: 'Area', value: 'area' },
+                  { label: 'Linear', value: 'linear' },
                   { label: 'Bilinear', value: 'bilinear' },
                   { label: 'Bicubic', value: 'bicubic' },
                 ]"

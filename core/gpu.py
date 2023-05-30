@@ -1,10 +1,9 @@
-import asyncio
 import logging
 import math
 import multiprocessing
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Union
+from typing import TYPE_CHECKING, Dict, List, Optional, Union
 
 import torch
 from PIL import Image
@@ -17,7 +16,8 @@ from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoade
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.functions import download_model
-from core.inference.pytorch import PyTorchSDUpscaler, PyTorchStableDiffusion
+from core.inference.pytorch import PyTorchStableDiffusion
+from core.inference.pytorch_upscale import PyTorchSDUpscaler
 from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
@@ -39,7 +39,7 @@ from core.types import (
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
 )
-from core.utils import image_grid
+from core.utils import image_grid, run_in_thread_async
 
 if TYPE_CHECKING:
     from core.inference.onnx_sd import OnnxStableDiffusion
@@ -88,7 +88,7 @@ class GPU:
     ):
         "Generate images from the queue"
 
-        def generate_thread_call(job: Job) -> List[Image.Image]:
+        def generate_thread_call(job: Job) -> Union[List[Image.Image], List[str]]:
             try:
                 model: Union[
                     "TensorRTModel",
@@ -191,7 +191,10 @@ class GPU:
 
             # Generate images
             try:
-                generated_images = await asyncio.to_thread(generate_thread_call, job)
+                generated_images: Optional[List[Image.Image]]
+                generated_images = await run_in_thread_async(
+                    func=generate_thread_call, args=(job,)
+                )
 
                 assert generated_images is not None
 
@@ -382,7 +385,7 @@ class GPU:
                 )
             )
 
-        await asyncio.to_thread(load_model_thread_call, model, backend)
+        await run_in_thread_async(func=load_model_thread_call, args=(model, backend))
 
     def loaded_models_list(self) -> list:
         "Return a list of loaded models"
@@ -401,27 +404,25 @@ class GPU:
     async def unload(self, model_type: str):
         "Unload a model from memory and free up GPU memory"
 
-        def unload_thread_call(model_type: str):
-            if model_type in self.loaded_models:
-                model = self.loaded_models[model_type]
+        if model_type in self.loaded_models:
+            model = self.loaded_models[model_type]
 
-                if hasattr(model, "unload"):
-                    logger.debug(f"Unloading model: {model_type}")
-                    model.unload()
-                else:
-                    from core.tensorrt.volta_accelerate import TRTModel
+            if isinstance(model, PyTorchStableDiffusion):
+                logger.debug(f"Unloading PyTorch model: {model_type}")
+                model.unload()
+            elif isinstance(model, AITemplateStableDiffusion):
+                logger.debug(f"Unloading AITemplate model: {model_type}")
+                model.unload()
+            else:
+                from core.tensorrt.volta_accelerate import TRTModel
 
-                    assert isinstance(
-                        model, TRTModel
-                    ), "Model is not a TRTModel and does not have an unload method"
-                    logger.debug(f"Unloading TensorRT model: {model_type}")
-                    model.teardown()
+                assert isinstance(model, TRTModel)
+                logger.debug(f"Unloading TensorRT model: {model_type}")
+                model.teardown()
 
-                del self.loaded_models[model_type]
-                self.memory_cleanup()
-                logger.debug("Unloaded model")
-
-        await asyncio.to_thread(unload_thread_call, model_type)
+            del self.loaded_models[model_type]
+            self.memory_cleanup()
+            logger.debug("Unloaded model")
 
     async def unload_all(self):
         "Unload all models from memory and free up GPU memory"
@@ -444,7 +445,7 @@ class GPU:
             model = TensorRTModel(model_id=request.model_id, use_f32=False)
             model.generate_engine(request=request)
 
-        await asyncio.to_thread(trt_build_thread_call)
+        await run_in_thread_async(func=trt_build_thread_call)
         logger.info("TensorRT engine successfully built")
 
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
@@ -473,7 +474,7 @@ class GPU:
 
             self.memory_cleanup()
 
-        await asyncio.to_thread(ait_build_thread_call)
+        await run_in_thread_async(func=ait_build_thread_call)
 
         logger.debug(f"AI Template built for {request.model_id}.")
 
@@ -508,7 +509,7 @@ class GPU:
 
             self.memory_cleanup()
 
-        await asyncio.to_thread(ait_build_thread_call)
+        await run_in_thread_async(func=ait_build_thread_call)
 
         logger.debug(f"AI Template built for {request.model_id}.")
 
@@ -531,13 +532,12 @@ class GPU:
                 device=config.api.device,
                 model_id=request.model_id,
                 simplify_unet=request.simplify_unet,
-                convert_to_fp16=request.convert_to_fp16,
                 target=request.quant_dict,
             )
 
             self.memory_cleanup()
 
-        await asyncio.to_thread(onnx_build_thread_call)
+        await run_in_thread_async(func=onnx_build_thread_call)
 
         logger.info(f"ONNX engine successfully built for {request.model_id}.")
 
@@ -562,14 +562,14 @@ class GPU:
             )
             pt_model.unload()
 
-        await asyncio.to_thread(model_to_f16_thread_call)
+        await run_in_thread_async(func=model_to_f16_thread_call)
 
         logger.debug(f"Converted {model}.")
 
     async def download_huggingface_model(self, model: str):
         "Download a model from the internet."
 
-        await asyncio.to_thread(download_model, model)
+        await run_in_thread_async(download_model, args=(model,))
 
     async def load_lora(self, req: LoraLoadRequest):
         "Inject a Lora model into a model"
@@ -665,7 +665,9 @@ class GPU:
             else:
                 raise ValueError(f"Model {job.model} not implemented")
 
-        output: InterrogationResult = await asyncio.to_thread(generate_call, job)
+        output: InterrogationResult = await run_in_thread_async(
+            generate_call, args=(job,)
+        )
         return output
 
     async def upscale(self, job: UpscaleQueueEntry):
@@ -695,7 +697,7 @@ class GPU:
 
         image: Image.Image
         time_: float
-        image, time_ = await asyncio.to_thread(generate_call, job)
+        image, time_ = await run_in_thread_async(generate_call, args=(job,))
 
         save_images([image], job)
 

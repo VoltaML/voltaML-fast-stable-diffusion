@@ -1,6 +1,6 @@
 import asyncio
 from concurrent.futures import ThreadPoolExecutor
-from typing import TYPE_CHECKING, List, Optional, Union
+from typing import TYPE_CHECKING, Union, Optional, List
 
 if TYPE_CHECKING:
     from uvicorn import Server

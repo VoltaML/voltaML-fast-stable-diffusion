@@ -1,14 +1,18 @@
 <template>
   <div style="margin: 16px">
-    <NCard title="Acceleration progress (around 5 minutes)">
+    <NCard title="Acceleration progress (around 20 minutes)">
       <NSpace vertical justify="center">
         <NSteps>
-          <NStep title="CLIP" :status="global.state.onnxBuildStep.clip" />
-          <NStep title="UNet" :status="global.state.onnxBuildStep.unet" />
-          <NStep title="VAE" :status="global.state.onnxBuildStep.vae" />
+          <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
+          <NStep
+            title="ControlNet UNet"
+            :status="global.state.aitBuildStep.controlnet_unet"
+          />
+          <NStep title="CLIP" :status="global.state.aitBuildStep.clip" />
+          <NStep title="VAE" :status="global.state.aitBuildStep.vae" />
           <NStep
             title="Cleanup"
-            :status="global.state.onnxBuildStep.cleanup"
+            :status="global.state.aitBuildStep.cleanup"
           /> </NSteps></NSpace
     ></NCard>
 
@@ -29,22 +33,16 @@
         <NSwitch v-model:value="conf.data.settings.onnx.simplify_unet" />
       </div>
 
-      <!-- Downcast to FP16 operations -->
-      <div class="flex-container">
-        <p class="slider-label">Downcast to FP16</p>
-        <NSwitch v-model:value="conf.data.settings.onnx.convert_to_fp16" />
-      </div>
-
       <!-- Quantization -->
       <h3>Quantization</h3>
       <div class="flex-container">
         <p class="slider-label">Text Encoder</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.text_encoder"
+          v-model:value="proxyQuantDict.text_encoder"
           :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
+            { label: 'None', value: 'null' },
+            { label: 'True', value: 'true' },
+            { label: 'False', value: 'false' },
           ]"
           style="margin-right: 12px"
         />
@@ -52,11 +50,11 @@
       <div class="flex-container">
         <p class="slider-label">UNet</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.unet"
+          v-model:value="proxyQuantDict.unet"
           :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
+            { label: 'None', value: 'null' },
+            { label: 'True', value: 'true' },
+            { label: 'False', value: 'false' },
           ]"
           style="margin-right: 12px"
         />
@@ -64,11 +62,11 @@
       <div class="flex-container">
         <p class="slider-label">VAE Encoder</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.vae_encoder"
+          v-model:value="proxyQuantDict.vae_encoder"
           :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
+            { label: 'None', value: 'null' },
+            { label: 'True', value: 'true' },
+            { label: 'False', value: 'false' },
           ]"
           style="margin-right: 12px"
         />
@@ -76,11 +74,11 @@
       <div class="flex-container">
         <p class="slider-label">VAE Decoder</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.vae_decoder"
+          v-model:value="proxyQuantDict.vae_decoder"
           :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
+            { label: 'None', value: 'null' },
+            { label: 'True', value: 'true' },
+            { label: 'False', value: 'false' },
           ]"
           style="margin-right: 12px"
         />
@@ -130,7 +128,7 @@ import {
   useMessage,
   type SelectOption,
 } from "naive-ui";
-import { computed, ref } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useSettings } from "../store/settings";
 
 const message = useMessage();
@@ -142,15 +140,43 @@ const model = ref("");
 const building = ref(false);
 const showUnloadModal = ref(false);
 
+const proxyQuantDict: {
+  text_encoder: "null" | "true" | "false";
+  vae_encoder: "null" | "true" | "false";
+  vae_decoder: "null" | "true" | "false";
+  unet: "null" | "true" | "false";
+} = reactive({
+  text_encoder: "null",
+  vae_encoder: "null",
+  vae_decoder: "null",
+  unet: "null",
+});
+
+function quantDictStrToValue(value: "null" | "true" | "false"): boolean | null {
+  if (value === "null") {
+    return null;
+  } else if (value === "true") {
+    return true;
+  } else if (value === "false") {
+    return false;
+  }
+  return null;
+}
+
+watch(proxyQuantDict, () => {
+  console.log("Change detected in proxyQuantDict");
+  conf.data.settings.onnx.quant_dict = {
+    text_encoder: quantDictStrToValue(proxyQuantDict.text_encoder),
+    vae_encoder: quantDictStrToValue(proxyQuantDict.vae_encoder),
+    vae_decoder: quantDictStrToValue(proxyQuantDict.vae_decoder),
+    unet: quantDictStrToValue(proxyQuantDict.unet),
+  };
+});
+
 const modelOptions = computed(() => {
   const options: SelectOption[] = [];
   for (const model of global.state.models) {
-    if (
-      model.backend === "PyTorch" &&
-      model.valid &&
-      !model.name.endsWith(".safetensors") &&
-      !model.name.endsWith(".ckpt")
-    ) {
+    if (model.backend === "PyTorch" && model.valid) {
       options.push({
         label: model.name,
         value: model.path,
@@ -188,7 +214,6 @@ const accelerate = async () => {
       model_id: model.value,
       quant_dict: conf.data.settings.onnx.quant_dict,
       simplify_unet: conf.data.settings.onnx.simplify_unet,
-      convert_to_fp16: conf.data.settings.onnx.convert_to_fp16,
     }),
   })
     .then(() => {

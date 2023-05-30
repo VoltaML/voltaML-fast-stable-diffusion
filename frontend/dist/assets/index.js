@@ -36207,12 +36207,6 @@ const useState = defineStore("state", () => {
       vae: "wait",
       cleanup: "wait"
     },
-    onnxBuildStep: {
-      unet: "wait",
-      clip: "wait",
-      vae: "wait",
-      cleanup: "wait"
-    },
     txt2img: {
       images: [],
       highres: false,
@@ -36466,13 +36460,6 @@ function processWebSocket(message, global2, notificationProvider) {
     case "aitemplate_compile": {
       global2.state.aitBuildStep = {
         ...global2.state.aitBuildStep,
-        ...message.data
-      };
-      break;
-    }
-    case "onnx_compile": {
-      global2.state.onnxBuildStep = {
-        ...global2.state.onnxBuildStep,
         ...message.data
       };
       break;
@@ -37134,12 +37121,11 @@ const defaultSettings = {
   },
   onnx: {
     quant_dict: {
-      text_encoder: "no-quant",
-      unet: "no-quant",
-      vae_decoder: "no-quant",
-      vae_encoder: "no-quant"
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null
     },
-    convert_to_fp16: true,
     simplify_unet: false
   },
   bot: {
@@ -37312,7 +37298,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-ac6c1b70"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-64ec7da2"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -37332,7 +37318,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "740dd506": unref(backgroundColor)
+      "1535c576": unref(backgroundColor)
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -37353,11 +37339,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const aitModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "AITemplate";
-      });
-    });
-    const onnxModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "ONNX";
       });
     });
     const trtModels = computed(() => {
@@ -37410,7 +37391,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               const allLoaded = [
                 ...loadedPyTorchModels.value,
                 ...loadedAitModels.value,
-                ...loadedOnnxModels.value,
                 ...loadedExtraModels.value
               ];
               console.log("All loaded models: ", allLoaded);
@@ -37585,11 +37565,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         return model.backend === "AITemplate" && model.state === "loaded";
       });
     });
-    const loadedOnnxModels = computed(() => {
-      return global2.state.models.filter((model) => {
-        return model.backend === "ONNX" && model.state === "loaded";
-      });
-    });
     const loadedExtraModels = computed(() => {
       return global2.state.models.filter((model) => {
         return model.backend === "unknown" && model.state === "loaded";
@@ -37621,19 +37596,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         })
       };
     });
-    const onnxOptions = computed(() => {
-      return {
-        type: "group",
-        label: "ONNX",
-        key: "onnx",
-        children: loadedOnnxModels.value.map((model) => {
-          return {
-            label: model.name,
-            value: `${model.path}:ONNX`
-          };
-        })
-      };
-    });
     const extraOptions = computed(() => {
       return {
         type: "group",
@@ -37648,12 +37610,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       };
     });
     const generatedModelOptions = computed(() => {
-      return [
-        pyTorchOptions.value,
-        aitOptions.value,
-        onnxOptions.value,
-        extraOptions.value
-      ];
+      return [pyTorchOptions.value, aitOptions.value, extraOptions.value];
     });
     const message = useMessage();
     const showModal = ref(false);
@@ -38050,51 +38007,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(NTabPane), { name: "ONNX" }, {
-                        default: withCtx(() => [
-                          createVNode(unref(NCard), {
-                            title: "Models",
-                            style: { "height": "100%" }
-                          }, {
-                            default: withCtx(() => [
-                              (openBlock(true), createElementBlock(Fragment, null, renderList(unref(onnxModels), (model) => {
-                                return openBlock(), createElementBlock("div", {
-                                  style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                  key: model.path
-                                }, [
-                                  createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                  createBaseVNode("div", null, [
-                                    model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
-                                      key: 0,
-                                      type: "error",
-                                      ghost: "",
-                                      onClick: ($event) => unloadModel(model)
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Unload")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
-                                      key: 1,
-                                      type: "success",
-                                      ghost: "",
-                                      onClick: ($event) => loadModel(model),
-                                      loading: model.state === "loading"
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Load")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick", "loading"]))
-                                  ])
-                                ]);
-                              }), 128))
-                            ]),
-                            _: 1
-                          })
-                        ]),
-                        _: 1
-                      }),
                       createVNode(unref(NTabPane), { name: "Extra" }, {
                         default: withCtx(() => [
                           createVNode(unref(NCard), {
@@ -38212,7 +38124,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_ac6c1b70_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_64ec7da2_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -38220,7 +38132,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-ac6c1b70"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-64ec7da2"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

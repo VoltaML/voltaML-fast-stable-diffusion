@@ -1,8 +1,19 @@
 from typing import Dict, Optional
-import importlib
 
 from diffusers import (
+    DDIMScheduler,
+    DDPMScheduler,
+    DEISMultistepScheduler,
     DiffusionPipeline,
+    DPMSolverMultistepScheduler,
+    DPMSolverSinglestepScheduler,
+    EulerAncestralDiscreteScheduler,
+    EulerDiscreteScheduler,
+    HeunDiscreteScheduler,
+    KDPM2AncestralDiscreteScheduler,
+    KDPM2DiscreteScheduler,
+    LMSDiscreteScheduler,
+    PNDMScheduler,
     StableDiffusionControlNetPipeline,
     StableDiffusionDepth2ImgPipeline,
     StableDiffusionImg2ImgPipeline,
@@ -10,6 +21,7 @@ from diffusers import (
     StableDiffusionInstructPix2PixPipeline,
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
+    UniPCMultistepScheduler,
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
@@ -23,6 +35,8 @@ def change_scheduler(
     autoload: bool = True,
 ):
     "Change the scheduler of the model"
+
+    new_scheduler = None
 
     if not isinstance(
         model,
@@ -42,9 +56,33 @@ def change_scheduler(
     else:
         config = model.scheduler.config  # type: ignore
 
-    try:
-        new_scheduler = getattr(importlib.import_module("diffusers"), scheduler.name)
-    except AttributeError:
+    if scheduler == KarrasDiffusionSchedulers.DDIMScheduler:
+        new_scheduler = DDIMScheduler
+    elif scheduler == KarrasDiffusionSchedulers.DDPMScheduler:
+        new_scheduler = DDPMScheduler
+    elif scheduler == KarrasDiffusionSchedulers.DEISMultistepScheduler:
+        new_scheduler = DEISMultistepScheduler
+    elif scheduler == KarrasDiffusionSchedulers.HeunDiscreteScheduler:
+        new_scheduler = HeunDiscreteScheduler
+    elif scheduler == KarrasDiffusionSchedulers.KDPM2DiscreteScheduler:
+        new_scheduler = KDPM2DiscreteScheduler
+    elif scheduler == KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler:
+        new_scheduler = KDPM2AncestralDiscreteScheduler
+    elif scheduler == KarrasDiffusionSchedulers.LMSDiscreteScheduler:
+        new_scheduler = LMSDiscreteScheduler
+    elif scheduler == KarrasDiffusionSchedulers.PNDMScheduler:
+        new_scheduler = PNDMScheduler
+    elif scheduler == KarrasDiffusionSchedulers.EulerDiscreteScheduler:
+        new_scheduler = EulerDiscreteScheduler
+    elif scheduler == KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler:
+        new_scheduler = EulerAncestralDiscreteScheduler
+    elif scheduler == KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler:
+        new_scheduler = DPMSolverSinglestepScheduler
+    elif scheduler == KarrasDiffusionSchedulers.DPMSolverMultistepScheduler:
+        new_scheduler = DPMSolverMultistepScheduler
+    elif scheduler == KarrasDiffusionSchedulers.UniPCMultistepScheduler:
+        new_scheduler = UniPCMultistepScheduler
+    else:
         new_scheduler = model.scheduler  # type: ignore
 
     if autoload:

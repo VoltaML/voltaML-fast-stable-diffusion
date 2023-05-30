@@ -23,9 +23,9 @@ from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
-from core.inference.pytorch.latents import scale_latents
-from core.inference.pytorch.lwp import get_weighted_text_embeddings
-from core.inference.pytorch.lwp_sd import StableDiffusionLongPromptWeightingPipeline
+from core.inference.latents import scale_latents
+from core.inference.lwp import get_weighted_text_embeddings
+from core.inference.lwp_sd import StableDiffusionLongPromptWeightingPipeline
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,

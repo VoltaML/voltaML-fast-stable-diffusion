@@ -22,7 +22,6 @@ export interface ModelEntry {
     | "TensorRT"
     | "PyTorch"
     | "AITemplate"
-    | "ONNX"
     | "unknown"
     | "LoRA"
     | "Textual Inversion";

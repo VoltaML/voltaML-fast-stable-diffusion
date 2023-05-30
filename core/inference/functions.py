@@ -4,7 +4,6 @@ import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
-from packaging import version
 
 import torch
 from diffusers import StableDiffusionPipeline
@@ -35,14 +34,11 @@ from rich.console import Console
 
 from core.config import config
 from core.files import get_full_model_path
+from core.optimizations import optimize_model
 
 console = Console()
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
-
-
-torch_older_than_200 = version.parse(torch.__version__) < version.parse("2.0.0")
-torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 
 
 def is_ipex_available():
@@ -436,8 +432,6 @@ def load_pytorch_pipeline(
     assert isinstance(pipe, StableDiffusionPipeline)
 
     if optimize:
-        from core.optimizations import optimize_model
-
         optimize_model(
             pipe=pipe,
             device=device,
