@@ -7434,7 +7434,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             }, null, 8, ["value"]),
             createVNode(unref(NDataTable), {
               columns,
-              data: dataRef.value,
+              data: unref(dataRef),
               pagination,
               bordered: true,
               style: { "padding-bottom": "24px" }
@@ -7756,7 +7756,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 1
                     }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(pyTorchModels.value, (model) => {
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(pyTorchModels), (model) => {
                       return openBlock(), createElementBlock("div", {
                         style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                         key: model.path
@@ -7828,7 +7828,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 1
                     }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(loraModels.value, (model) => {
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(loraModels), (model) => {
                       return openBlock(), createElementBlock("div", {
                         style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                         key: model.path
@@ -7900,7 +7900,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 1
                     }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (model) => {
+                    (openBlock(true), createElementBlock(Fragment, null, renderList(unref(textualInversionModels), (model) => {
                       return openBlock(), createElementBlock("div", {
                         style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                         key: model.path

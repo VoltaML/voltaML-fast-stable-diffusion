@@ -533,6 +533,7 @@ function refreshModels() {
             const allLoaded = [
               ...loadedPyTorchModels.value,
               ...loadedAitModels.value,
+              ...loadedOnnxModels.value,
               ...loadedExtraModels.value,
             ];
 
@@ -794,7 +795,12 @@ const extraOptions: ComputedRef<SelectMixedOption> = computed(() => {
 });
 
 const generatedModelOptions: ComputedRef<SelectMixedOption[]> = computed(() => {
-  return [pyTorchOptions.value, aitOptions.value, onnxOptions.value, extraOptions.value];
+  return [
+    pyTorchOptions.value,
+    aitOptions.value,
+    onnxOptions.value,
+    extraOptions.value,
+  ];
 });
 
 const message = useMessage();

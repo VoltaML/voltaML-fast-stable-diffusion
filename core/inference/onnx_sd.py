@@ -50,6 +50,7 @@ from core.inference_callbacks import (
     txt2img_callback,
 )
 from core.types import (
+    Backend,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     Job,
@@ -129,6 +130,8 @@ class OnnxStableDiffusion(InferenceModel):
             import onnxruntime as ort
 
             super().__init__(model_id)
+            self.backend: Backend = "ONNX"
+
             self.vae_encoder: ort.InferenceSession
             self.vae_decoder: ort.InferenceSession
             self.unet: ort.InferenceSession
