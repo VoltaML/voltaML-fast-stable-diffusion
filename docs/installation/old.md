@@ -10,9 +10,9 @@ This section is for the old VoltaML, which is no longer maintained. It is kept h
 
 ### Docker setup (if required)
 
-Setup docker on Ubuntu using [these intructions](https://docs.docker.com/engine/install/ubuntu/).
+Setup docker on Ubuntu using [these instructions](https://docs.docker.com/engine/install/ubuntu/).
 
-Setup docker on Windows using [these intructions](https://docs.docker.com/desktop/install/windows-install/)
+Setup docker on Windows using [these instructions](https://docs.docker.com/desktop/install/windows-install/)
 
 ### Launch voltaML container
 
@@ -51,7 +51,7 @@ docker-compose up
 2.  There are two backends to run the SD on, PyTorch and TensorRT (fastest version by NVIDIA).
 3.  To run on PyTorch inference, you have to select the model, the model will be downloaded (which will take a few mins) into the container and the inference will be displayed. Downloaded models will be shown as below
     ![download_sd](https://user-images.githubusercontent.com/107309002/206983689-5f40f446-426b-45b7-88fa-db224099dd8e.png)
-4.  To run TensoRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. <br/>
+4.  To run TensorRT inference, go to the Accelerate tab, pick a model from our model hub and click on the accelerate button. <br/>
     ![Screenshot from 2022-12-12 13-17-23](https://user-images.githubusercontent.com/107309002/206989892-6f04dbdf-312b-41b3-bb69-684610659fae.png)
 5.  Once acceleration is done, the model will show up in your TensorRT drop down menu.
 6.  Switch your backend to TensorRT, select the model and enjoy the fastest outputs 🚀🚀
