@@ -1,4 +1,4 @@
-from typing import TYPE_CHECKING, Dict, List
+from typing import TYPE_CHECKING, Any, Dict, List
 
 import discord
 from aiohttp import ClientSession
@@ -26,17 +26,20 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.get("http://localhost:5003/api/models/loaded") as r:
                 status = r.status
-                response: Dict[str, List[str]] = await r.json()
+                response: List[Dict[str, Any]] = await r.json()
 
+        models = []
         if status == 200:
-            for device in response.keys():
-                models = list(response[device])
-                embed = discord.Embed(title=f"GPU-{device}")
-                embed.add_field(
-                    name="Models",
-                    value="\n".join(models),
-                )
-                await ctx.send(embed=embed)
+            for model in response:
+                models.append(f"{model['name']} - {model['backend']}")
+
+            embed = discord.Embed(
+                title="Loaded Models",
+                description="\n".join(models)
+                if len(models) > 0
+                else "No models loaded",
+            )
+            await ctx.send(embed=embed)
         else:
             await ctx.send(f"Error: {status}")
 
@@ -50,10 +53,12 @@ class Models(Cog):
                 "http://localhost:5003/api/models/available"
             ) as response:
                 status = response.status
-                data: List[Dict[str, str]] = await response.json()
+                data: List[Dict[str, Any]] = await response.json()
 
         if status == 200:
-            models = set([i["name"] for i in data])
+            models = {
+                i["name"] for i in filter(lambda model: (model["valid"] is True), data)
+            }
             await ctx.send("Available models:\n{}".format("\n ".join(models)))
         else:
             await ctx.send(f"Error: {status}")
@@ -64,7 +69,6 @@ class Models(Cog):
         self,
         ctx: Context,
         model: SupportedModel,
-        device: str = "cuda",
         backend: InferenceBackend = "PyTorch",
     ) -> None:
         "Load a model"
@@ -74,7 +78,7 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.post(
                 "http://localhost:5003/api/models/load",
-                params={"model": model.value, "backend": backend, "device": device},
+                params={"model": model.value, "backend": backend},
             ) as response:
                 status = response.status
                 response = await response.json()
@@ -90,7 +94,6 @@ class Models(Cog):
         self,
         ctx: Context,
         model: str,
-        device: str = "cuda",
         backend: InferenceBackend = "PyTorch",
     ) -> None:
         "Load a model"
@@ -100,7 +103,7 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.post(
                 "http://localhost:5003/api/models/load",
-                params={"model": model, "backend": backend, "device": device},
+                params={"model": model, "backend": backend},
             ) as response:
                 status = response.status
                 response = await response.json()
@@ -112,9 +115,7 @@ class Models(Cog):
 
     @commands.hybrid_command(name="unload")
     @commands.has_permissions(administrator=True)
-    async def unload_model(
-        self, ctx: Context, model: SupportedModel, gpu_id: int
-    ) -> None:
+    async def unload_model(self, ctx: Context, model: SupportedModel) -> None:
         "Unload a model"
 
         message = await ctx.send(f"Unloading model {model.value}...")
@@ -122,7 +123,7 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.post(
                 "http://localhost:5003/api/models/unload",
-                params={"model": model.value, "gpu_id": gpu_id},
+                params={"model": model.value},
             ) as response:
                 status = response.status
                 response = await response.json()
@@ -132,11 +133,9 @@ class Models(Cog):
         else:
             await message.edit(content=f"Error: {status}")
 
-    @commands.hybrid_command(name="unload-unspported")
+    @commands.hybrid_command(name="unload-unsupported")
     @commands.has_permissions(administrator=True)
-    async def unload_model_unsupported(
-        self, ctx: Context, model: str, gpu_id: int
-    ) -> None:
+    async def unload_model_unsupported(self, ctx: Context, model: str) -> None:
         "Unload a model"
 
         message = await ctx.send(f"Unloading model {model}...")
@@ -144,7 +143,7 @@ class Models(Cog):
         async with ClientSession() as session:
             async with session.post(
                 "http://localhost:5003/api/models/unload",
-                params={"model": model, "gpu_id": gpu_id},
+                params={"model": model},
             ) as response:
                 status = response.status
                 response = await response.json()
