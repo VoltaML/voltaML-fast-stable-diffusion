@@ -90,3 +90,6 @@ manager/target
 
 # Profiler stuff
 profile.html
+
+# dotenv file
+.env
