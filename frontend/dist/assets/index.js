@@ -158,7 +158,7 @@ function normalizeStyle(value) {
 }
 const listDelimiterRE = /;(?![^(]*\))/g;
 const propertyDelimiterRE = /:([^]+)/;
-const styleCommentRE = new RegExp("\\/\\*.*?\\*\\/", "gs");
+const styleCommentRE = /\/\*[^]*?\*\//g;
 function parseStringStyle(cssText) {
   const ret = {};
   cssText.replace(styleCommentRE, "").split(listDelimiterRE).forEach((item) => {
@@ -5739,7 +5739,7 @@ const useSSRContext = () => {
     return ctx2;
   }
 };
-const version = "3.3.2";
+const version = "3.3.4";
 const svgNS = "http://www.w3.org/2000/svg";
 const doc = typeof document !== "undefined" ? document : null;
 const templateContainer = doc && /* @__PURE__ */ doc.createElement("template");
@@ -6607,7 +6607,7 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.1.1
+  * pinia v2.1.3
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -7297,7 +7297,6 @@ const render$1 = (r, ...args) => {
     return null;
   }
 };
-/* @__PURE__ */ new Set();
 function warn$2(location2, message) {
   console.error(`[naive/${location2}]: ${message}`);
 }
@@ -9077,7 +9076,6 @@ const clickoutside = {
   }
 };
 const clickoutside$1 = clickoutside;
-/* @__PURE__ */ new Set();
 function warn$1(location2, message) {
   console.error(`[vdirs/${location2}]: ${message}`);
 }
@@ -14111,17 +14109,21 @@ const NFadeInExpandTransition = defineComponent({
       (_a2 = props.onAfterEnter) === null || _a2 === void 0 ? void 0 : _a2.call(props);
     }
     return () => {
-      const type = props.group ? TransitionGroup : Transition;
-      return h(type, {
-        name: props.width ? "fade-in-width-expand-transition" : "fade-in-height-expand-transition",
-        mode: props.mode,
-        appear: props.appear,
+      const { group, width, appear, mode } = props;
+      const type = group ? TransitionGroup : Transition;
+      const resolvedProps = {
+        name: width ? "fade-in-width-expand-transition" : "fade-in-height-expand-transition",
+        appear,
         onEnter: handleEnter,
         onAfterEnter: handleAfterEnter,
         onBeforeLeave: handleBeforeLeave,
         onLeave: handleLeave,
         onAfterLeave: handleAfterLeave
-      }, slots);
+      };
+      if (!group) {
+        resolvedProps.mode = mode;
+      }
+      return h(type, resolvedProps, slots);
     };
   }
 });
@@ -17505,7 +17507,6 @@ function appendEvents(vNode, trigger2, events2) {
     }
   });
 }
-const textVNodeType = createTextVNode("").type;
 const popoverBaseProps = {
   show: {
     type: Boolean,
@@ -17815,7 +17816,7 @@ const NPopover = defineComponent({
       }
       if (triggerVNode) {
         triggerVNode = cloneVNode(triggerVNode);
-        triggerVNode = triggerVNode.type === textVNodeType ? h("span", [triggerVNode]) : triggerVNode;
+        triggerVNode = triggerVNode.type === Text ? h("span", [triggerVNode]) : triggerVNode;
         const handlers = {
           onClick: this.handleClick,
           onMouseenter: this.handleMouseEnter,
@@ -19282,8 +19283,12 @@ const NInternalSelection = defineComponent({
       const { labelField } = this;
       const createTag = (option) => h("div", { class: `${clsPrefix}-base-selection-tag-wrapper`, key: option.value }, renderTag ? renderTag({
         option,
-        handleClose: () => this.handleDeleteOption(option)
-      }) : h(NTag, { size: size2, closable: !option.disabled, disabled, onClose: () => this.handleDeleteOption(option), internalCloseIsButtonTag: false, internalCloseFocusable: false }, {
+        handleClose: () => {
+          this.handleDeleteOption(option);
+        }
+      }) : h(NTag, { size: size2, closable: !option.disabled, disabled, onClose: () => {
+        this.handleDeleteOption(option);
+      }, internalCloseIsButtonTag: false, internalCloseFocusable: false }, {
         default: () => renderLabel ? renderLabel(option, true) : render$1(option[labelField], option, true)
       }));
       const createOriginalTagNodes = () => (maxTagCountNumeric ? this.selectedOptions.slice(0, maxTagCount) : this.selectedOptions).map(createTag);
@@ -20327,6 +20332,9 @@ const style$i = cB("input", `
  `)])]),
   cNotM("textarea", [cE("placeholder", "white-space: nowrap;")]),
   cE("eye", `
+ display: flex;
+ align-items: center;
+ justify-content: center;
  transition: color .3s var(--n-bezier);
  `),
   // textarea
@@ -20391,9 +20399,6 @@ const style$i = cB("input", `
  color: var(--n-icon-color-disabled);
  `)])]),
   cNotM("disabled", [cE("eye", `
- display: flex;
- align-items: center;
- justify-content: center;
  color: var(--n-icon-color);
  cursor: pointer;
  `, [c$1("&:hover", `
@@ -21309,7 +21314,9 @@ const NInput = defineComponent({
                 this.textDecorationStyle[0],
                 (_b2 = this.inputProps) === null || _b2 === void 0 ? void 0 : _b2.style,
                 scrollContainerWidthStyle
-              ], onBlur: this.handleInputBlur, onFocus: (e) => this.handleInputFocus(e, 2), onInput: this.handleInput, onChange: this.handleChange, onScroll: this.handleTextAreaScroll })),
+              ], onBlur: this.handleInputBlur, onFocus: (e) => {
+                this.handleInputFocus(e, 2);
+              }, onInput: this.handleInput, onChange: this.handleChange, onScroll: this.handleTextAreaScroll })),
               this.showPlaceholder1 ? h("div", { class: `${mergedClsPrefix}-input__placeholder`, style: [
                 this.placeholderStyle,
                 scrollContainerWidthStyle
@@ -21328,7 +21335,13 @@ const NInput = defineComponent({
           ], style: [
             this.textDecorationStyle[0],
             (_b = this.inputProps) === null || _b === void 0 ? void 0 : _b.style
-          ], tabindex: this.passivelyActivated && !this.activated ? -1 : void 0, placeholder: this.mergedPlaceholder[0], disabled: this.mergedDisabled, maxlength: countGraphemes ? void 0 : this.maxlength, minlength: countGraphemes ? void 0 : this.minlength, value: Array.isArray(this.mergedValue) ? this.mergedValue[0] : this.mergedValue, readonly: this.readonly, autofocus: this.autofocus, size: this.attrSize, onBlur: this.handleInputBlur, onFocus: (e) => this.handleInputFocus(e, 0), onInput: (e) => this.handleInput(e, 0), onChange: (e) => this.handleChange(e, 0) })),
+          ], tabindex: this.passivelyActivated && !this.activated ? -1 : void 0, placeholder: this.mergedPlaceholder[0], disabled: this.mergedDisabled, maxlength: countGraphemes ? void 0 : this.maxlength, minlength: countGraphemes ? void 0 : this.minlength, value: Array.isArray(this.mergedValue) ? this.mergedValue[0] : this.mergedValue, readonly: this.readonly, autofocus: this.autofocus, size: this.attrSize, onBlur: this.handleInputBlur, onFocus: (e) => {
+            this.handleInputFocus(e, 0);
+          }, onInput: (e) => {
+            this.handleInput(e, 0);
+          }, onChange: (e) => {
+            this.handleChange(e, 0);
+          } })),
           this.showPlaceholder1 ? h(
             "div",
             { class: `${mergedClsPrefix}-input__placeholder` },
@@ -21371,7 +21384,13 @@ const NInput = defineComponent({
         h(
           "div",
           { class: `${mergedClsPrefix}-input__input` },
-          h("input", { ref: "inputEl2Ref", type: this.type, class: `${mergedClsPrefix}-input__input-el`, tabindex: this.passivelyActivated && !this.activated ? -1 : void 0, placeholder: this.mergedPlaceholder[1], disabled: this.mergedDisabled, maxlength: countGraphemes ? void 0 : this.maxlength, minlength: countGraphemes ? void 0 : this.minlength, value: Array.isArray(this.mergedValue) ? this.mergedValue[1] : void 0, readonly: this.readonly, style: this.textDecorationStyle[1], onBlur: this.handleInputBlur, onFocus: (e) => this.handleInputFocus(e, 1), onInput: (e) => this.handleInput(e, 1), onChange: (e) => this.handleChange(e, 1) }),
+          h("input", { ref: "inputEl2Ref", type: this.type, class: `${mergedClsPrefix}-input__input-el`, tabindex: this.passivelyActivated && !this.activated ? -1 : void 0, placeholder: this.mergedPlaceholder[1], disabled: this.mergedDisabled, maxlength: countGraphemes ? void 0 : this.maxlength, minlength: countGraphemes ? void 0 : this.minlength, value: Array.isArray(this.mergedValue) ? this.mergedValue[1] : void 0, readonly: this.readonly, style: this.textDecorationStyle[1], onBlur: this.handleInputBlur, onFocus: (e) => {
+            this.handleInputFocus(e, 1);
+          }, onInput: (e) => {
+            this.handleInput(e, 1);
+          }, onChange: (e) => {
+            this.handleChange(e, 1);
+          } }),
           this.showPlaceholder2 ? h(
             "div",
             { class: `${mergedClsPrefix}-input__placeholder` },
@@ -22889,7 +22908,8 @@ const self$S = (vars) => {
     textColor: textColor2,
     arrowColor: textColor2,
     arrowColorDisabled: textColorDisabled,
-    itemMargin: "16px 0 0 0"
+    itemMargin: "16px 0 0 0",
+    titlePadding: "16px 0 0 0"
   };
 };
 const collapseLight = {
@@ -23179,6 +23199,10 @@ const selectProps = Object.assign(Object.assign({}, useTheme.props), {
   defaultValue: {
     type: [String, Number, Array],
     default: null
+  },
+  keyboard: {
+    type: Boolean,
+    default: true
   },
   value: [String, Number, Array],
   placeholder: String,
@@ -23672,6 +23696,10 @@ const NSelect = defineComponent({
     }
     function handleKeydown(e) {
       var _a2, _b, _c, _d, _e;
+      if (!props.keyboard) {
+        e.preventDefault();
+        return;
+      }
       switch (e.key) {
         case " ":
           if (props.filterable)
@@ -24294,7 +24322,8 @@ const NTooltip = defineComponent({
   props: tooltipProps,
   __popover__: true,
   setup(props) {
-    const themeRef = useTheme("Tooltip", "-tooltip", void 0, tooltipLight$1, props);
+    const { mergedClsPrefixRef } = useConfig(props);
+    const themeRef = useTheme("Tooltip", "-tooltip", void 0, tooltipLight$1, props, mergedClsPrefixRef);
     const popoverRef = ref(null);
     const tooltipExposedMethod = {
       syncPosition() {
@@ -28554,39 +28583,51 @@ const sizeVariables$1 = {
   tabGapSmallLine: "36px",
   tabGapMediumLine: "36px",
   tabGapLargeLine: "36px",
+  tabGapSmallLineVertical: "8px",
+  tabGapMediumLineVertical: "8px",
+  tabGapLargeLineVertical: "8px",
   tabPaddingSmallLine: "6px 0",
   tabPaddingMediumLine: "10px 0",
   tabPaddingLargeLine: "14px 0",
-  tabPaddingVerticalSmallLine: "0 6px",
-  tabPaddingVerticalMediumLine: "0 10px",
-  tabPaddingVerticalLargeLine: "0 14px",
+  tabPaddingVerticalSmallLine: "6px 12px",
+  tabPaddingVerticalMediumLine: "8px 16px",
+  tabPaddingVerticalLargeLine: "10px 20px",
   tabGapSmallBar: "36px",
   tabGapMediumBar: "36px",
   tabGapLargeBar: "36px",
+  tabGapSmallBarVertical: "8px",
+  tabGapMediumBarVertical: "8px",
+  tabGapLargeBarVertical: "8px",
   tabPaddingSmallBar: "4px 0",
   tabPaddingMediumBar: "6px 0",
   tabPaddingLargeBar: "10px 0",
-  tabPaddingVerticalSmallBar: "0 4px",
-  tabPaddingVerticalMediumBar: "0 6px ",
-  tabPaddingVerticalLargeBar: "0 10px ",
+  tabPaddingVerticalSmallBar: "6px 12px",
+  tabPaddingVerticalMediumBar: "8px 16px",
+  tabPaddingVerticalLargeBar: "10px 20px",
   tabGapSmallCard: "4px",
   tabGapMediumCard: "4px",
   tabGapLargeCard: "4px",
-  tabPaddingSmallCard: "6px 10px",
-  tabPaddingMediumCard: "8px 12px",
-  tabPaddingLargeCard: "8px 16px",
+  tabGapSmallCardVertical: "4px",
+  tabGapMediumCardVertical: "4px",
+  tabGapLargeCardVertical: "4px",
+  tabPaddingSmallCard: "8px 16px",
+  tabPaddingMediumCard: "10px 20px",
+  tabPaddingLargeCard: "12px 24px",
   tabPaddingSmallSegment: "4px 0",
   tabPaddingMediumSegment: "6px 0",
   tabPaddingLargeSegment: "8px 0",
   tabPaddingVerticalLargeSegment: "0 8px",
-  tabPaddingVerticalSmallCard: "10px 6px",
-  tabPaddingVerticalMediumCard: "12px 8px",
-  tabPaddingVerticalLargeCard: "16px 8px",
+  tabPaddingVerticalSmallCard: "8px 12px",
+  tabPaddingVerticalMediumCard: "10px 16px",
+  tabPaddingVerticalLargeCard: "12px 20px",
   tabPaddingVerticalSmallSegment: "0 4px",
   tabPaddingVerticalMediumSegment: "0 6px",
   tabGapSmallSegment: "0",
   tabGapMediumSegment: "0",
   tabGapLargeSegment: "0",
+  tabGapSmallSegmentVertical: "0",
+  tabGapMediumSegmentVertical: "0",
+  tabGapLargeSegmentVertical: "0",
   panePaddingSmall: "8px 0 0 0",
   panePaddingMedium: "12px 0 0 0",
   panePaddingLarge: "16px 0 0 0",
@@ -30345,7 +30386,7 @@ const menuProps = Object.assign(Object.assign({}, useTheme.props), {
   disabled: Boolean,
   show: {
     type: Boolean,
-    defalut: true
+    default: true
   },
   inverted: Boolean,
   "onUpdate:expandedKeys": [Function, Array],
@@ -31554,6 +31595,8 @@ const style$5 = c$1([cB("notification-container", `
  `), cE("description", `
  margin-top: 8px;
  font-size: var(--n-description-font-size);
+ white-space: pre-wrap;
+ word-wrap: break-word;
  transition: color .3s var(--n-bezier-ease-out);
  color: var(--n-description-text-color);
  `), cE("content", `
@@ -32469,7 +32512,7 @@ const NResult = defineComponent({
     );
   }
 });
-const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), { trigger: String, xScrollable: Boolean, onScroll: Function });
+const scrollbarProps = Object.assign(Object.assign({}, useTheme.props), { trigger: String, xScrollable: Boolean, onScroll: Function, size: Number });
 const Scrollbar = defineComponent({
   name: "Scrollbar",
   props: scrollbarProps,
@@ -32531,7 +32574,9 @@ function useRefs() {
   const setRefs = (index) => (el) => {
     refs.value.set(index, el);
   };
-  onBeforeUpdate(() => refs.value.clear());
+  onBeforeUpdate(() => {
+    refs.value.clear();
+  });
   return [refs, setRefs];
 }
 const style$2 = c$1([cB("slider", `
@@ -32744,7 +32789,7 @@ const NSlider = defineComponent({
     const { mergedDisabledRef } = formItem;
     const precisionRef = computed(() => {
       const { step } = props;
-      if (step <= 0 || step === "mark")
+      if (Number(step) <= 0 || step === "mark")
         return 0;
       const stepString = step.toString();
       let precision = 0;
@@ -32926,7 +32971,7 @@ const NSlider = defineComponent({
     }
     function getRoundValue(value) {
       const { step, min } = props;
-      if (step <= 0 || step === "mark")
+      if (Number(step) <= 0 || step === "mark")
         return value;
       const newValue = Math.round((value - min) / step) * step + min;
       return Number(newValue.toFixed(precisionRef.value));
@@ -32998,7 +33043,7 @@ const NSlider = defineComponent({
         return;
       const { step } = props;
       const currentValue = arrifiedValueRef.value[activeIndex];
-      const nextValue = step <= 0 || step === "mark" ? currentValue : currentValue + step * ratio;
+      const nextValue = Number(step) <= 0 || step === "mark" ? currentValue : currentValue + step * ratio;
       doDispatchValue(
         // Avoid the number of value does not change when `step` is null
         sanitizeValue(nextValue, currentValue, ratio > 0 ? 1 : -1),
@@ -33204,7 +33249,15 @@ const NSlider = defineComponent({
           return h(VBinder, null, {
             default: () => [
               h(VTarget, null, {
-                default: () => h("div", { ref: this.setHandleRefs(index), class: `${mergedClsPrefix}-slider-handle-wrapper`, tabindex: this.mergedDisabled ? -1 : 0, style: this.getHandleStyle(value, index), onFocus: () => this.handleHandleFocus(index), onBlur: () => this.handleHandleBlur(index), onMouseenter: () => this.handleHandleMouseEnter(index), onMouseleave: () => this.handleHandleMouseLeave(index) }, resolveSlot(this.$slots.thumb, () => [
+                default: () => h("div", { ref: this.setHandleRefs(index), class: `${mergedClsPrefix}-slider-handle-wrapper`, tabindex: this.mergedDisabled ? -1 : 0, style: this.getHandleStyle(value, index), onFocus: () => {
+                  this.handleHandleFocus(index);
+                }, onBlur: () => {
+                  this.handleHandleBlur(index);
+                }, onMouseenter: () => {
+                  this.handleHandleMouseEnter(index);
+                }, onMouseleave: () => {
+                  this.handleHandleMouseLeave(index);
+                } }, resolveSlot(this.$slots.thumb, () => [
                   h("div", { class: `${mergedClsPrefix}-slider-handle` })
                 ]))
               }),
@@ -33385,7 +33438,11 @@ const style$1 = cB("tabs", `
  border-color .3s var(--n-bezier);
 `, [cM("segment-type", [cB("tabs-rail", [c$1("&.transition-disabled", "color: red;", [cB("tabs-tab", `
  transition: none;
- `)])])]), cM("left, right", `
+ `)])])]), cM("top", [cB("tab-pane", `
+ padding: var(--n-pane-padding-top) var(--n-pane-padding-right) var(--n-pane-padding-bottom) var(--n-pane-padding-left);
+ `)]), cM("left", [cB("tab-pane", `
+ padding: var(--n-pane-padding-right) var(--n-pane-padding-bottom) var(--n-pane-padding-left) var(--n-pane-padding-top);
+ `)]), cM("left, right", `
  flex-direction: row;
  `, [cB("tabs-bar", `
  width: 2px;
@@ -33398,12 +33455,16 @@ const style$1 = cB("tabs", `
  padding: var(--n-tab-padding-vertical); 
  `)]), cM("right", `
  flex-direction: row-reverse;
- `, [cB("tabs-bar", `
+ `, [cB("tab-pane", `
+ padding: var(--n-pane-padding-left) var(--n-pane-padding-top) var(--n-pane-padding-right) var(--n-pane-padding-bottom);
+ `), cB("tabs-bar", `
  left: 0;
  `)]), cM("bottom", `
  flex-direction: column-reverse;
  justify-content: flex-end;
- `, [cB("tabs-bar", `
+ `, [cB("tab-pane", `
+ padding: var(--n-pane-padding-bottom) var(--n-pane-padding-right) var(--n-pane-padding-top) var(--n-pane-padding-left);
+ `), cB("tabs-bar", `
  top: 0;
  `)]), cB("tabs-rail", `
  padding: 3px;
@@ -33447,15 +33508,39 @@ const style$1 = cB("tabs", `
  `, [cE("prefix, suffix", `
  display: flex;
  align-items: center;
- `), cE("prefix", "padding-right: 16px;"), cE("suffix", "padding-left: 16px;")]), cB("tabs-nav-scroll-wrapper", `
+ `), cE("prefix", "padding-right: 16px;"), cE("suffix", "padding-left: 16px;")]), cM("top, bottom", [cB("tabs-nav-scroll-wrapper", [c$1("&::before", `
+ top: 0;
+ bottom: 0;
+ left: 0;
+ width: 20px;
+ `), c$1("&::after", `
+ top: 0;
+ bottom: 0;
+ right: 0;
+ width: 20px;
+ `), cM("shadow-start", [c$1("&::before", `
+ box-shadow: inset 10px 0 8px -8px rgba(0, 0, 0, .12);
+ `)]), cM("shadow-end", [c$1("&::after", `
+ box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, .12);
+ `)])])]), cM("left, right", [cB("tabs-nav-scroll-wrapper", [c$1("&::before", `
+ top: 0;
+ left: 0;
+ right: 0;
+ height: 20px;
+ `), c$1("&::after", `
+ bottom: 0;
+ left: 0;
+ right: 0;
+ height: 20px;
+ `), cM("shadow-start", [c$1("&::before", `
+ box-shadow: inset 0 10px 8px -8px rgba(0, 0, 0, .12);
+ `)]), cM("shadow-end", [c$1("&::after", `
+ box-shadow: inset 0 -10px 8px -8px rgba(0, 0, 0, .12);
+ `)])])]), cB("tabs-nav-scroll-wrapper", `
  flex: 1;
  position: relative;
  overflow: hidden;
- `, [cM("shadow-before", [c$1("&::before", `
- box-shadow: inset 10px 0 8px -8px rgba(0, 0, 0, .12);
- `)]), cM("shadow-after", [c$1("&::after", `
- box-shadow: inset -10px 0 8px -8px rgba(0, 0, 0, .12);
- `)]), cB("tabs-nav-y-scroll", `
+ `, [cB("tabs-nav-y-scroll", `
  height: 100%;
  width: 100%;
  overflow-y: auto; 
@@ -33468,19 +33553,13 @@ const style$1 = cB("tabs", `
  pointer-events: none;
  content: "";
  position: absolute;
- top: 0;
- bottom: 0;
- width: 20px;
  z-index: 1;
- `), c$1("&::before", `
- left: 0;
- `), c$1("&::after", `
- right: 0;
  `)]), cB("tabs-nav-scroll-content", `
  display: flex;
  position: relative;
  min-width: 100%;
  width: fit-content;
+ box-sizing: border-box;
  `), cB("tabs-wrapper", `
  display: inline-flex;
  flex-wrap: nowrap;
@@ -33536,7 +33615,6 @@ const style$1 = cB("tabs", `
  `), cB("tab-pane", `
  color: var(--n-pane-text-color);
  width: 100%;
- padding: var(--n-pane-padding);
  transition:
  color .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -33562,6 +33640,7 @@ const style$1 = cB("tabs", `
  transform: translateX(0);
  opacity: 1;
  `)]), cB("tabs-tab-pad", `
+ box-sizing: border-box;
  width: var(--n-tab-gap);
  flex-grow: 0;
  flex-shrink: 0;
@@ -33576,15 +33655,36 @@ const style$1 = cB("tabs", `
  font-weight: var(--n-tab-font-weight-active);
  `), cM("disabled", {
   color: "var(--n-tab-text-color-disabled)"
-})])]), cB("tabs-nav", [cM("line-type", [cE("prefix, suffix", `
- transition: border-color .3s var(--n-bezier);
+})])]), cB("tabs-nav", [cM("line-type", [cM("top", [cE("prefix, suffix", `
  border-bottom: 1px solid var(--n-tab-border-color);
  `), cB("tabs-nav-scroll-content", `
- transition: border-color .3s var(--n-bezier);
  border-bottom: 1px solid var(--n-tab-border-color);
  `), cB("tabs-bar", `
- border-radius: 0;
  bottom: -1px;
+ `)]), cM("left", [cE("prefix, suffix", `
+ border-right: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-nav-scroll-content", `
+ border-right: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-bar", `
+ right: -1px;
+ `)]), cM("right", [cE("prefix, suffix", `
+ border-left: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-nav-scroll-content", `
+ border-left: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-bar", `
+ left: -1px;
+ `)]), cM("bottom", [cE("prefix, suffix", `
+ border-top: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-nav-scroll-content", `
+ border-top: 1px solid var(--n-tab-border-color);
+ `), cB("tabs-bar", `
+ top: -1px;
+ `)]), cE("prefix, suffix", `
+ transition: border-color .3s var(--n-bezier);
+ `), cB("tabs-nav-scroll-content", `
+ transition: border-color .3s var(--n-bezier);
+ `), cB("tabs-bar", `
+ border-radius: 0;
  `)]), cM("card-type", [cE("prefix, suffix", `
  transition: border-color .3s var(--n-bezier);
  border-bottom: 1px solid var(--n-tab-border-color);
@@ -33594,12 +33694,9 @@ const style$1 = cB("tabs", `
  border-bottom: 1px solid var(--n-tab-border-color);
  `), cB("tabs-tab-pad", `
  transition: border-color .3s var(--n-bezier);
- border-bottom: 1px solid var(--n-tab-border-color);
  `), cB("tabs-tab", `
  font-weight: var(--n-tab-font-weight);
  border: 1px solid var(--n-tab-border-color);
- border-top-left-radius: var(--n-tab-border-radius);
- border-top-right-radius: var(--n-tab-border-radius);
  background-color: var(--n-tab-color);
  box-sizing: border-box;
  position: relative;
@@ -33617,8 +33714,7 @@ const style$1 = cB("tabs", `
  font-size: var(--n-tab-font-size);
  `), cNotM("disabled", [c$1("&:hover", `
  color: var(--n-tab-text-color-hover);
- `)])]), cM("closable", "padding-right: 6px;"), cM("active", `
- border-bottom: 1px solid #0000;
+ `)])]), cM("closable", "padding-right: 8px;"), cM("active", `
  background-color: #0000;
  font-weight: var(--n-tab-font-weight-active);
  color: var(--n-tab-text-color-active);
@@ -33627,19 +33723,37 @@ const style$1 = cB("tabs", `
  `, [cB("tabs-tab-wrapper", `
  flex-direction: column;
  `, [cB("tabs-tab-pad", `
- height: var(--n-tab-gap);
+ height: var(--n-tab-gap-vertical);
  width: 100%;
- `)])]), cB("tabs-nav-scroll-content", `
- border-bottom: none;
- `)]), cM("left", [cB("tabs-nav-scroll-content", `
- box-sizing: border-box;
+ `)])])]), cM("top", [cM("card-type", [cB("tabs-tab", `
+ border-top-left-radius: var(--n-tab-border-radius);
+ border-top-right-radius: var(--n-tab-border-radius);
+ `, [cM("active", `
+ border-bottom: 1px solid #0000;
+ `)]), cB("tabs-tab-pad", `
+ border-bottom: 1px solid var(--n-tab-border-color);
+ `)])]), cM("left", [cM("card-type", [cB("tabs-tab", `
+ border-top-left-radius: var(--n-tab-border-radius);
+ border-bottom-left-radius: var(--n-tab-border-radius);
+ `, [cM("active", `
+ border-right: 1px solid #0000;
+ `)]), cB("tabs-tab-pad", `
  border-right: 1px solid var(--n-tab-border-color);
- `)]), cM("right", [cB("tabs-nav-scroll-content", `
+ `)])]), cM("right", [cM("card-type", [cB("tabs-tab", `
+ border-top-right-radius: var(--n-tab-border-radius);
+ border-bottom-right-radius: var(--n-tab-border-radius);
+ `, [cM("active", `
+ border-left: 1px solid #0000;
+ `)]), cB("tabs-tab-pad", `
  border-left: 1px solid var(--n-tab-border-color);
- `)]), cM("bottom", [cB("tabs-nav-scroll-content", `
+ `)])]), cM("bottom", [cM("card-type", [cB("tabs-tab", `
+ border-bottom-left-radius: var(--n-tab-border-radius);
+ border-bottom-right-radius: var(--n-tab-border-radius);
+ `, [cM("active", `
+ border-top: 1px solid #0000;
+ `)]), cB("tabs-tab-pad", `
  border-top: 1px solid var(--n-tab-border-color);
- border-bottom: none;
- `)])])]);
+ `)])])])]);
 const tabsProps = Object.assign(Object.assign({}, useTheme.props), {
   value: [String, Number],
   defaultValue: [String, Number],
@@ -33665,6 +33779,8 @@ const tabsProps = Object.assign(Object.assign({}, useTheme.props), {
   barWidth: Number,
   paneClass: String,
   paneStyle: [String, Object],
+  paneWrapperClass: String,
+  paneWrapperStyle: [String, Object],
   addable: [Boolean, Object],
   tabsPadding: {
     type: Number,
@@ -33693,8 +33809,8 @@ const NTabs = defineComponent({
     const scrollWrapperElRef = ref(null);
     const addTabInstRef = ref(null);
     const xScrollInstRef = ref(null);
-    const leftReachedRef = ref(true);
-    const rightReachedRef = ref(true);
+    const startReachedRef = ref(true);
+    const endReachedRef = ref(true);
     const compitableSizeRef = useCompitable(props, ["labelSize", "size"]);
     const compitableValueRef = useCompitable(props, ["activeName", "value"]);
     const uncontrolledValueRef = ref((_b = (_a2 = compitableValueRef.value) !== null && _a2 !== void 0 ? _a2 : props.defaultValue) !== null && _b !== void 0 ? _b : slots.default ? (_d = (_c = flatten$2(slots.default())[0]) === null || _c === void 0 ? void 0 : _c.props) === null || _d === void 0 ? void 0 : _d.name : null);
@@ -33958,9 +34074,16 @@ const NTabs = defineComponent({
     function deriveScrollShadow(el) {
       if (!el)
         return;
-      const { scrollLeft, scrollWidth, offsetWidth } = el;
-      leftReachedRef.value = scrollLeft <= 0;
-      rightReachedRef.value = scrollLeft + offsetWidth >= scrollWidth;
+      const { placement } = props;
+      if (placement === "top" || placement === "bottom") {
+        const { scrollLeft, scrollWidth, offsetWidth } = el;
+        startReachedRef.value = scrollLeft <= 0;
+        endReachedRef.value = scrollLeft + offsetWidth >= scrollWidth;
+      } else {
+        const { scrollTop, scrollHeight, offsetHeight } = el;
+        startReachedRef.value = scrollTop <= 0;
+        endReachedRef.value = scrollTop + offsetHeight >= scrollHeight;
+      }
     }
     const handleScroll = throttle((e) => {
       deriveScrollShadow(e.target);
@@ -33986,20 +34109,20 @@ const NTabs = defineComponent({
     });
     watchEffect(() => {
       const { value: el } = scrollWrapperElRef;
-      if (!el || ["left", "right"].includes(props.placement))
+      if (!el)
         return;
       const { value: clsPrefix } = mergedClsPrefixRef;
-      const shadowBeforeClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-before`;
-      const shadowAfterClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-after`;
-      if (leftReachedRef.value) {
-        el.classList.remove(shadowBeforeClass);
+      const shadowStartClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-start`;
+      const shadowEndClass = `${clsPrefix}-tabs-nav-scroll-wrapper--shadow-end`;
+      if (startReachedRef.value) {
+        el.classList.remove(shadowStartClass);
       } else {
-        el.classList.add(shadowBeforeClass);
+        el.classList.add(shadowStartClass);
       }
-      if (rightReachedRef.value) {
-        el.classList.remove(shadowAfterClass);
+      if (endReachedRef.value) {
+        el.classList.remove(shadowEndClass);
       } else {
-        el.classList.add(shadowAfterClass);
+        el.classList.add(shadowEndClass);
       }
     });
     const tabsRailElRef = ref(null);
@@ -34030,7 +34153,7 @@ const NTabs = defineComponent({
         segment: "Segment"
       }[type];
       const sizeType = `${size2}${typeSuffix}`;
-      const { self: { barColor, closeIconColor, closeIconColorHover, closeIconColorPressed, tabColor, tabBorderColor, paneTextColor, tabFontWeight, tabBorderRadius, tabFontWeightActive, colorSegment, fontWeightStrong, tabColorSegment, closeSize, closeIconSize, closeColorHover, closeColorPressed, closeBorderRadius, [createKey("panePadding", size2)]: panePadding, [createKey("tabPadding", sizeType)]: tabPadding, [createKey("tabPaddingVertical", sizeType)]: tabPaddingVertical, [createKey("tabGap", sizeType)]: tabGap, [createKey("tabTextColor", type)]: tabTextColor, [createKey("tabTextColorActive", type)]: tabTextColorActive, [createKey("tabTextColorHover", type)]: tabTextColorHover, [createKey("tabTextColorDisabled", type)]: tabTextColorDisabled, [createKey("tabFontSize", size2)]: tabFontSize }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
+      const { self: { barColor, closeIconColor, closeIconColorHover, closeIconColorPressed, tabColor, tabBorderColor, paneTextColor, tabFontWeight, tabBorderRadius, tabFontWeightActive, colorSegment, fontWeightStrong, tabColorSegment, closeSize, closeIconSize, closeColorHover, closeColorPressed, closeBorderRadius, [createKey("panePadding", size2)]: panePadding, [createKey("tabPadding", sizeType)]: tabPadding, [createKey("tabPaddingVertical", sizeType)]: tabPaddingVertical, [createKey("tabGap", sizeType)]: tabGap, [createKey("tabGap", `${sizeType}Vertical`)]: tabGapVertical, [createKey("tabTextColor", type)]: tabTextColor, [createKey("tabTextColorActive", type)]: tabTextColorActive, [createKey("tabTextColorHover", type)]: tabTextColorHover, [createKey("tabTextColorDisabled", type)]: tabTextColorDisabled, [createKey("tabFontSize", size2)]: tabFontSize }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
       return {
         "--n-bezier": cubicBezierEaseInOut2,
         "--n-color-segment": colorSegment,
@@ -34057,7 +34180,11 @@ const NTabs = defineComponent({
         "--n-tab-padding": tabPadding,
         "--n-tab-padding-vertical": tabPaddingVertical,
         "--n-tab-gap": tabGap,
-        "--n-pane-padding": panePadding,
+        "--n-tab-gap-vertical": tabGapVertical,
+        "--n-pane-padding-left": getMargin(panePadding, "left"),
+        "--n-pane-padding-right": getMargin(panePadding, "right"),
+        "--n-pane-padding-top": getMargin(panePadding, "top"),
+        "--n-pane-padding-bottom": getMargin(panePadding, "bottom"),
         "--n-font-weight-strong": fontWeightStrong,
         "--n-tab-color-segment": tabColorSegment
       };
@@ -34093,7 +34220,7 @@ const NTabs = defineComponent({
     }, exposedMethods);
   },
   render() {
-    const { mergedClsPrefix, type, placement, addTabFixed, addable, mergedSize, renderNameListRef, onRender, $slots: { default: defaultSlot, prefix: prefixSlot, suffix: suffixSlot } } = this;
+    const { mergedClsPrefix, type, placement, addTabFixed, addable, mergedSize, renderNameListRef, onRender, paneWrapperClass, paneWrapperStyle, $slots: { default: defaultSlot, prefix: prefixSlot, suffix: suffixSlot } } = this;
     onRender === null || onRender === void 0 ? void 0 : onRender();
     const tabPaneChildren = defaultSlot ? flatten$2(defaultSlot()).filter((v) => {
       return v.type.__TAB_PANE__ === true;
@@ -34137,6 +34264,7 @@ const NTabs = defineComponent({
         isCard ? null : h("div", { ref: "barElRef", class: `${mergedClsPrefix}-tabs-bar` })
       );
     };
+    const resolvedPlacement = isSegment ? "top" : placement;
     return h(
       "div",
       { class: [
@@ -34145,7 +34273,7 @@ const NTabs = defineComponent({
         `${mergedClsPrefix}-tabs--${type}-type`,
         `${mergedClsPrefix}-tabs--${mergedSize}-size`,
         mergedJustifyContent && `${mergedClsPrefix}-tabs--flex`,
-        `${mergedClsPrefix}-tabs--${placement}`
+        `${mergedClsPrefix}-tabs--${resolvedPlacement}`
       ], style: this.cssVars },
       h(
         "div",
@@ -34155,7 +34283,7 @@ const NTabs = defineComponent({
           // other. adding a class will make it easy to write the
           // style.
           `${mergedClsPrefix}-tabs-nav--${type}-type`,
-          `${mergedClsPrefix}-tabs-nav--${placement}`,
+          `${mergedClsPrefix}-tabs-nav--${resolvedPlacement}`,
           `${mergedClsPrefix}-tabs-nav`
         ] },
         resolveWrappedSlot(prefixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__prefix` }, children)),
@@ -34172,14 +34300,14 @@ const NTabs = defineComponent({
             return createLeftPaddedTabVNode(tabVNode);
           }
         })) : h(VResizeObserver, { onResize: this.handleNavResize }, {
-          default: () => h("div", { class: `${mergedClsPrefix}-tabs-nav-scroll-wrapper`, ref: "scrollWrapperElRef" }, ["top", "bottom"].includes(placement) ? h(VXScroll, { ref: "xScrollInstRef", onScroll: this.handleScroll }, {
+          default: () => h("div", { class: `${mergedClsPrefix}-tabs-nav-scroll-wrapper`, ref: "scrollWrapperElRef" }, ["top", "bottom"].includes(resolvedPlacement) ? h(VXScroll, { ref: "xScrollInstRef", onScroll: this.handleScroll }, {
             default: scrollContent
-          }) : h("div", { class: `${mergedClsPrefix}-tabs-nav-y-scroll` }, scrollContent()))
+          }) : h("div", { class: `${mergedClsPrefix}-tabs-nav-y-scroll`, onScroll: this.handleScroll }, scrollContent()))
         }),
         addTabFixed && addable && isCard ? createAddTag(addable, true) : null,
         resolveWrappedSlot(suffixSlot, (children) => children && h("div", { class: `${mergedClsPrefix}-tabs-nav__suffix` }, children))
       ),
-      showPane && (this.animated ? h("div", { ref: "tabsPaneWrapperRef", class: `${mergedClsPrefix}-tabs-pane-wrapper` }, filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames, this.onAnimationBeforeLeave, this.onAnimationEnter, this.onAnimationAfterEnter, this.animationDirection)) : filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames))
+      showPane && (this.animated && (resolvedPlacement === "top" || resolvedPlacement === "bottom") ? h("div", { ref: "tabsPaneWrapperRef", style: paneWrapperStyle, class: [`${mergedClsPrefix}-tabs-pane-wrapper`, paneWrapperClass] }, filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames, this.onAnimationBeforeLeave, this.onAnimationEnter, this.onAnimationAfterEnter, this.animationDirection)) : filterMapTabPanes(tabPaneChildren, this.mergedValue, this.renderedNames))
     );
   }
 });
@@ -35030,7 +35158,7 @@ const WifiSharp = defineComponent({
   }
 });
 /*!
-  * vue-router v4.2.0
+  * vue-router v4.2.2
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -37326,7 +37454,6 @@ function useEventListener(...args) {
 const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
 const globalKey = "__vueuse_ssr_handlers__";
 _global[globalKey] = _global[globalKey] || {};
-/* @__PURE__ */ new Map();
 var SwipeDirection;
 (function(SwipeDirection2) {
   SwipeDirection2["UP"] = "UP";

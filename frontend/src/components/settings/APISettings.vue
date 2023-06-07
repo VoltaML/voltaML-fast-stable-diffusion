@@ -80,25 +80,28 @@
       </NSelect>
     </NFormItem>
 
-    <!-- CPU Threads -->
-    <div class="flex-container" v-if="settings.defaultSettings.api.attention_processor == 'subquadratic'">
-        <p class="slider-label">Subquadratic chunk size (affects VRAM usage)</p>
-        <NSlider
-          v-model:value="settings.defaultSettings.api.subquadratic_size"
-          :step="64"
-          :min="64"
-          :max="8192"
-          style="margin-right: 12px"
-        />
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.subquadratic_size"
-          size="small"
-          style="min-width: 96px; width: 96px"
-          :step="64"
-          :min="64"
-          :max="8192"
-        />
-      </div>
+    <!-- Subquadratic attention params -->
+    <div
+      class="flex-container"
+      v-if="settings.defaultSettings.api.attention_processor == 'subquadratic'"
+    >
+      <p class="slider-label">Subquadratic chunk size (affects VRAM usage)</p>
+      <NSlider
+        v-model:value="settings.defaultSettings.api.subquadratic_size"
+        :step="64"
+        :min="64"
+        :max="8192"
+        style="margin-right: 12px"
+      />
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.subquadratic_size"
+        size="small"
+        style="min-width: 96px; width: 96px"
+        :step="64"
+        :min="64"
+        :max="8192"
+      />
+    </div>
 
     <NFormItem label="Attention Slicing">
       <NSelect
@@ -293,7 +296,14 @@
 </template>
 
 <script lang="ts" setup>
-import { NForm, NFormItem, NInputNumber, NSelect, NSwitch, NSlider } from "naive-ui";
+import {
+  NForm,
+  NFormItem,
+  NInputNumber,
+  NSelect,
+  NSlider,
+  NSwitch,
+} from "naive-ui";
 import { computed } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";

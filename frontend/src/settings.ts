@@ -156,7 +156,12 @@ export interface ISettings {
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
 
     autocast: boolean;
-    attention_processor: "xformers" | "sdpa" | "cross-attention" | "subquadratic" | "multihead";
+    attention_processor:
+      | "xformers"
+      | "sdpa"
+      | "cross-attention"
+      | "subquadratic"
+      | "multihead";
     subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;

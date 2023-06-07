@@ -124,7 +124,7 @@ def optimize_model(
 
         # xFormers and SPDA
         if not is_for_aitemplate:
-            set_attention_processor(pipe, logger)
+            set_attention_processor(pipe)
 
             if config.api.autocast:
                 logger.info("Optimization: Enabled autocast")

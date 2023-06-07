@@ -1,21 +1,25 @@
-from packaging import version
+import logging
 
+import torch
 from diffusers.models.attention_processor import AttnProcessor, AttnProcessor2_0
 from diffusers.utils import is_xformers_available
-import torch
+from packaging import version
 
 from core.config import config
-from .sub_quadratic import apply_subquadratic_attention
+
 from .multihead_attention import apply_multihead_attention
+from .sub_quadratic import apply_subquadratic_attention
+
+logger = logging.getLogger(__name__)
 
 
-def _xf(p):
+def _xf(pipe):
     try:
         if is_xformers_available() and config.api.device_type != "directml":
             return False
-        p.enable_xformers_memory_efficient_attention()
+        pipe.enable_xformers_memory_efficient_attention()
         return True
-    except Exception:  # pylint: disable=broad-exception-caught
+    except Exception:  # pylint: disable=broad-except
         pass
     return False
 
@@ -38,7 +42,7 @@ ATTENTION_PROCESSORS = {
 }
 
 
-def set_attention_processor(pipe, logger):
+def set_attention_processor(pipe):
     "Set attention processor to the first one available/the one set in the config"
 
     res = False
@@ -48,12 +52,14 @@ def set_attention_processor(pipe, logger):
         )
     except ValueError:
         curr_processor = 0
-    l = list(ATTENTION_PROCESSORS.items())
+    attention_processors_list = list(ATTENTION_PROCESSORS.items())
     while not res:
-        res = l[curr_processor][1](pipe)
+        res = attention_processors_list[curr_processor][1](pipe)
         if res:
-            logger.info(f"Optimization: Enabled {l[curr_processor][0]} attention")
-        curr_processor = (curr_processor + 1) % len(l)
+            logger.info(
+                f"Optimization: Enabled {attention_processors_list[curr_processor][0]} attention"
+            )
+        curr_processor = (curr_processor + 1) % len(attention_processors_list)
 
 
 __all__ = [

@@ -860,7 +860,8 @@ const NPopselect = defineComponent({
   inheritAttrs: false,
   __popover__: true,
   setup(props) {
-    const themeRef = useTheme("Popselect", "-popselect", void 0, popselectLight, props);
+    const { mergedClsPrefixRef } = useConfig(props);
+    const themeRef = useTheme("Popselect", "-popselect", void 0, popselectLight, props, mergedClsPrefixRef);
     const popoverInstRef = ref(null);
     function syncPosition() {
       var _a;
@@ -1631,7 +1632,9 @@ const NPagination = defineComponent({
                   type !== "page" && (type === "fast-backward" && this.showFastBackwardMenu || type === "fast-forward" && this.showFastForwardMenu) && `${mergedClsPrefix}-pagination-item--hover`,
                   disabled && `${mergedClsPrefix}-pagination-item--disabled`,
                   type === "page" && `${mergedClsPrefix}-pagination-item--clickable`
-                ], onClick: () => handlePageItemClick(pageItem), onMouseenter, onMouseleave }, contentNode);
+                ], onClick: () => {
+                  handlePageItemClick(pageItem);
+                }, onMouseenter, onMouseleave }, contentNode);
                 if (type === "page" && !pageItem.mayBeFastBackward && !pageItem.mayBeFastForward) {
                   return itemNode;
                 } else {
@@ -3191,13 +3194,17 @@ const TableHeader = defineComponent({
               isColumnSortable(column) ? h(SortButton, { column }) : null
             ),
             isColumnFilterable(column) ? h(FilterButton, { column, options: column.filterOptions }) : null,
-            isColumnResizable(column) ? h(ResizeButton, { onResizeStart: () => handleColumnResizeStart(column), onResize: (displacementX) => handleColumnResize(column, displacementX) }) : null
+            isColumnResizable(column) ? h(ResizeButton, { onResizeStart: () => {
+              handleColumnResizeStart(column);
+            }, onResize: (displacementX) => {
+              handleColumnResize(column, displacementX);
+            } }) : null
           );
         };
         const leftFixed = key in fixedColumnLeftMap;
         const rightFixed = key in fixedColumnRightMap;
         return h("th", { ref: (el) => cellElsRef[key] = el, key, style: {
-          textAlign: column.align,
+          textAlign: column.titleAlign || column.align,
           left: pxfy((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start),
           right: pxfy((_b = fixedColumnRightMap[key]) === null || _b === void 0 ? void 0 : _b.start)
         }, colspan: colSpan, rowspan: rowSpan, "data-col-key": key, class: [
@@ -3312,7 +3319,9 @@ const ExpandTrigger = defineComponent({
       ], onClick: this.onClick },
       h(NIconSwitchTransition, null, {
         default: () => {
-          return this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: this.clsPrefix, radius: 85, strokeWidth: 15, scale: 0.88 }) : this.renderExpandIcon ? this.renderExpandIcon() : h(NBaseIcon, { clsPrefix, key: "base-icon" }, {
+          return this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: this.clsPrefix, radius: 85, strokeWidth: 15, scale: 0.88 }) : this.renderExpandIcon ? this.renderExpandIcon({
+            expanded: this.expanded
+          }) : h(NBaseIcon, { clsPrefix, key: "base-icon" }, {
             default: () => h(ChevronRightIcon, null)
           });
         }
@@ -3929,7 +3938,13 @@ const TableBody = defineComponent({
                   handleUpdateExpanded(rowKey, rowInfo.tmNode);
                 } })
               ] : null,
-              column.type === "selection" ? !isSummary ? column.multiple === false ? h(RenderSafeRadio, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: () => handleRadioUpdateChecked(rowInfo.tmNode) }) : h(RenderSafeCheckbox, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: (checked, e) => handleCheckboxUpdateChecked(rowInfo.tmNode, checked, e.shiftKey) }) : null : column.type === "expand" ? !isSummary ? !column.expandable || ((_e = column.expandable) === null || _e === void 0 ? void 0 : _e.call(column, rowData)) ? h(ExpandTrigger, { clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, onClick: () => handleUpdateExpanded(rowKey, null) }) : null : null : h(Cell, { clsPrefix: mergedClsPrefix, index: actualRowIndex, row: rowData, column, isSummary, mergedTheme: mergedTheme2, renderCell: this.renderCell })
+              column.type === "selection" ? !isSummary ? column.multiple === false ? h(RenderSafeRadio, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: () => {
+                handleRadioUpdateChecked(rowInfo.tmNode);
+              } }) : h(RenderSafeCheckbox, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: (checked, e) => {
+                handleCheckboxUpdateChecked(rowInfo.tmNode, checked, e.shiftKey);
+              } }) : null : column.type === "expand" ? !isSummary ? !column.expandable || ((_e = column.expandable) === null || _e === void 0 ? void 0 : _e.call(column, rowData)) ? h(ExpandTrigger, { clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, onClick: () => {
+                handleUpdateExpanded(rowKey, null);
+              } }) : null : null : h(Cell, { clsPrefix: mergedClsPrefix, index: actualRowIndex, row: rowData, column, isSummary, mergedTheme: mergedTheme2, renderCell: this.renderCell })
             );
           }));
           return row;
@@ -6808,7 +6823,7 @@ const NUpload = defineComponent({
             });
           });
         });
-        return yield nextTickChain;
+        yield nextTickChain;
       })).then(() => {
         if (props.defaultUpload) {
           submit();
@@ -6994,8 +7009,7 @@ const NUpload = defineComponent({
       accept: this.accept,
       multiple: this.mergedMultiple,
       onChange: this.handleFileInputChange,
-      // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
-      // @ts-ignore // seems vue-tsc will add the prop, so we can't use expect-error
+      // @ts-expect-error // seems vue-tsc will add the prop, so we can't use expect-error
       webkitdirectory: directory || void 0,
       directory: directory || void 0
     }));

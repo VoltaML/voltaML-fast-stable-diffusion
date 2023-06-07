@@ -915,8 +915,12 @@ const NImageGroup = defineComponent({
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       previewInstRef,
-      next: () => go(1),
-      prev: () => go(-1)
+      next: () => {
+        go(1);
+      },
+      prev: () => {
+        go(-1);
+      }
     };
   },
   render() {
@@ -962,21 +966,18 @@ const NImage = defineComponent({
       (_a = imageRef.value) === null || _a === void 0 ? void 0 : _a.setAttribute("data-group-id", (imageGroupHandle === null || imageGroupHandle === void 0 ? void 0 : imageGroupHandle.groupId) || "");
     });
     onMounted(() => {
-      if (isImageSupportNativeLazy) {
-        return;
-      }
-      let unobserve;
-      const stopWatchHandle = watchEffect(() => {
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-        unobserve = void 0;
-        if (props.lazy) {
+      if (props.lazy && props.intersectionObserverOptions) {
+        let unobserve;
+        const stopWatchHandle = watchEffect(() => {
+          unobserve === null || unobserve === void 0 ? void 0 : unobserve();
+          unobserve = void 0;
           unobserve = observeIntersection(imageRef.value, props.intersectionObserverOptions, shouldStartLoadingRef);
-        }
-      });
-      onBeforeUnmount(() => {
-        stopWatchHandle();
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-      });
+        });
+        onBeforeUnmount(() => {
+          stopWatchHandle();
+          unobserve === null || unobserve === void 0 ? void 0 : unobserve();
+        });
+      }
     });
     watchEffect(() => {
       var _a;
@@ -1021,12 +1022,12 @@ const NImage = defineComponent({
     var _a, _b;
     const { mergedClsPrefix, imgProps = {}, loaded, $attrs, lazy } = this;
     const placeholderNode = (_b = (_a = this.$slots).placeholder) === null || _b === void 0 ? void 0 : _b.call(_a);
-    const loadSrc = this.src || imgProps.src || "";
+    const loadSrc = this.src || imgProps.src;
     const imgNode = h("img", Object.assign(Object.assign({}, imgProps), {
       ref: "imageRef",
       width: this.width || imgProps.width,
       height: this.height || imgProps.height,
-      src: isImageSupportNativeLazy ? loadSrc : this.showError ? this.fallbackSrc : this.shouldStartLoading ? loadSrc : void 0,
+      src: this.showError ? this.fallbackSrc : lazy && this.intersectionObserverOptions ? this.shouldStartLoading ? loadSrc : void 0 : loadSrc,
       alt: this.alt || imgProps.alt,
       "aria-label": this.alt || imgProps.alt,
       onClick: this.mergedOnClick,

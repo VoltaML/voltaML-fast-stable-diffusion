@@ -87,7 +87,9 @@ const formProps = Object.assign(Object.assign({}, useTheme.props), { inline: Boo
   default: true
 }, onSubmit: {
   type: Function,
-  default: (e) => e.preventDefault()
+  default: (e) => {
+    e.preventDefault();
+  }
 }, showLabel: {
   type: Boolean,
   default: void 0
@@ -108,7 +110,7 @@ const NForm = defineComponent({
     };
     function validate(validateCallback, shouldRuleBeApplied = () => true) {
       return __awaiter$1(this, void 0, void 0, function* () {
-        return yield new Promise((resolve, reject) => {
+        yield new Promise((resolve, reject) => {
           const formItemValidationPromises = [];
           for (const key of keysOf(formItems)) {
             const formItemInstances = formItems[key];
@@ -1618,7 +1620,7 @@ const NFormItem = defineComponent({
           shouldRuleBeApplied = options.shouldRuleBeApplied;
           asyncValidatorOptions = options.options;
         }
-        return yield new Promise((resolve, reject) => {
+        yield new Promise((resolve, reject) => {
           void internalValidate(trigger, shouldRuleBeApplied, asyncValidatorOptions).then(({ valid, errors }) => {
             if (valid) {
               if (validateCallback) {
