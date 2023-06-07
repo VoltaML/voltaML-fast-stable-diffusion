@@ -3,7 +3,7 @@
     <NThemeEditor>
       <NNotificationProvider placement="bottom-right">
         <NMessageProvider>
-          <CollapsileNavbarVue />
+          <CollapsibleNavbarVue />
           <TopBarVue />
           <routerContainerVue style="margin-top: 52px" />
           <PerformanceDrawer />
@@ -24,7 +24,7 @@ import {
   type GlobalThemeOverrides,
 } from "naive-ui";
 import { computed } from "vue";
-import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
+import CollapsibleNavbarVue from "./components/CollapsibleNavbar.vue";
 import PerformanceDrawer from "./components/PerformanceDrawer.vue";
 import TopBarVue from "./components/TopBar.vue";
 import routerContainerVue from "./router/router-container.vue";

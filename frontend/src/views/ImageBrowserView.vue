@@ -45,20 +45,28 @@
                 style="height: calc(((100vh - 200px) - 53px) - 24px)"
               >
                 <NScrollbar trigger="hover" style="height: 100%">
-                  <span
-                    v-for="(i, index) in txt2imgData"
-                    @click="txt2imgClick(index)"
-                    v-bind:key="index"
-                    class="img-container"
+                  <div
+                    style="
+                      display: grid;
+                      gap: 12px;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                    "
                   >
                     <NImage
+                      v-for="(i, index) in txt2imgData"
+                      @click="txt2imgClick(index)"
+                      v-bind:key="index"
                       class="img-slider"
                       :src="urlFromPath(i.path)"
                       lazy
                       preview-disabled
+                      object-fit="contain"
                       style="justify-content: center"
+                      :img-props="{
+                        style: { width: '100%' },
+                      }"
                     />
-                  </span>
+                  </div>
                 </NScrollbar>
               </NTabPane>
 
@@ -67,20 +75,28 @@
                 style="height: calc(((100vh - 200px) - 53px) - 24px)"
               >
                 <NScrollbar trigger="hover" style="height: 100%">
-                  <span
-                    v-for="(i, index) in img2imgData"
-                    @click="img2imgClick(index)"
-                    v-bind:key="index"
-                    class="img-container"
+                  <div
+                    style="
+                      display: grid;
+                      gap: 4px;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                    "
                   >
                     <NImage
+                      v-for="(i, index) in img2imgData"
+                      @click="img2imgClick(index)"
+                      v-bind:key="index"
                       class="img-slider"
                       :src="urlFromPath(i.path)"
                       lazy
                       preview-disabled
+                      object-fit="contain"
                       style="justify-content: center"
+                      :img-props="{
+                        style: { width: '100%' },
+                      }"
                     />
-                  </span>
+                  </div>
                 </NScrollbar>
               </NTabPane>
 
@@ -89,20 +105,28 @@
                 style="height: calc(((100vh - 200px) - 53px) - 24px)"
               >
                 <NScrollbar trigger="hover" style="height: 100%">
-                  <span
-                    v-for="(i, index) in extraData"
-                    @click="extraClick(index)"
-                    v-bind:key="index"
-                    class="img-container"
+                  <div
+                    style="
+                      display: grid;
+                      gap: 4px;
+                      grid-template-columns: repeat(2, minmax(0, 1fr));
+                    "
                   >
                     <NImage
+                      v-for="(i, index) in extraData"
+                      @click="extraClick(index)"
+                      v-bind:key="index"
                       class="img-slider"
                       :src="urlFromPath(i.path)"
                       lazy
                       preview-disabled
+                      object-fit="contain"
                       style="justify-content: center"
+                      :img-props="{
+                        style: { width: '100%' },
+                      }"
                     />
-                  </span>
+                  </div>
                 </NScrollbar>
               </NTabPane>
             </NTabs>
@@ -164,6 +188,7 @@
       <NGi span="3">
         <NDescriptions
           bordered
+          label-style="font-weight: bold"
           v-if="global.state.imageBrowser.currentImageMetadata.size !== 0"
         >
           <NDescriptionsItem
@@ -173,7 +198,7 @@
               .currentImageMetadata"
             v-bind:key="item.toString()"
           >
-            {{ item }}
+            {{ item.length > 0 ? item : "N/A" }}
           </NDescriptionsItem>
         </NDescriptions>
       </NGi>
@@ -371,16 +396,8 @@ refreshImages();
 
 <style scoped>
 .img-slider {
-  aspect-ratio: 1/1;
-  height: 182px;
-  width: auto;
-}
-
-.img-container:not(:last-child) {
-  margin-right: 6px;
-}
-
-.img-container {
+  height: 200px;
+  width: 100%;
   cursor: pointer;
 }
 </style>
