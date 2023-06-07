@@ -592,9 +592,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                               { label: "Nearest exact", value: "nearest-exact" },
                               { label: "Area", value: "area" },
                               { label: "Bilinear", value: "bilinear" },
-                              { label: "Bicubic", value: "bicubic" }
+                              { label: "Bicubic", value: "bicubic" },
+                              {
+                                label: "Bislerp (Original, slow)",
+                                value: "bislerp-original"
+                              },
+                              {
+                                label: "Bislerp (Tortured, fast)",
+                                value: "bislerp-tortured"
+                              }
                             ]
-                          }, null, 8, ["value"])
+                          }, null, 8, ["value", "options"])
                         ])
                       ]),
                       _: 1
