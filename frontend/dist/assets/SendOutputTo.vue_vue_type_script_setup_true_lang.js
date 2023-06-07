@@ -1,4 +1,4 @@
-import { X as c, Y as cB, aq as cNotM, $ as cM, Z as cE, a1 as insideModal, a2 as insidePopover, d as defineComponent, Q as useConfig, a5 as useTheme, c as computed, a9 as useThemeClass, bk as useCompitable, aC as flatten, D as h, aD as getSlot, bl as descriptionsLight, a8 as createKey, bm as useRouter, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, m as createTextVNode, z as NGrid, i as NCard, y as createCommentVNode } from "./index.js";
+import { F as NButton, i as NCard, N as NGi, z as NGrid, X as c, Y as cB, Z as cE, $ as cM, aq as cNotM, c as computed, x as createBlock, y as createCommentVNode, a8 as createKey, m as createTextVNode, g as createVNode, d as defineComponent, bl as descriptionsLight, aC as flatten, aD as getSlot, D as h, a1 as insideModal, a2 as insidePopover, e as openBlock, h as unref, bk as useCompitable, Q as useConfig, bm as useRouter, a as useSettings, u as useState, a5 as useTheme, a9 as useThemeClass, w as withCtx } from "./index.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
   if (children !== null && typeof children === "object" && !Array.isArray(children)) {
@@ -398,7 +398,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-  NDescriptionsItem as N,
-  _sfc_main as _,
-  NDescriptions as a
+NDescriptionsItem as N,
+_sfc_main as _,
+NDescriptions as a
 };

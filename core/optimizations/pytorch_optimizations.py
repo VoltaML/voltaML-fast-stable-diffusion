@@ -8,13 +8,15 @@ from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 )
-from diffusers.utils import is_accelerate_available, is_xformers_available
+from diffusers.utils import is_accelerate_available
+from packaging import version
 from rich.console import Console
 
 from core.config import config
-from core.inference.functions import torch_older_than_200
 from core.files import get_full_model_path
+from core.inference.functions import torch_older_than_200
 
+from .attn import set_attention_processor
 from .iree import convert_pipe_state_to_iree
 from .trace_utils import generate_inputs, trace_model
 
@@ -123,36 +125,10 @@ def optimize_model(
 
         # xFormers and SPDA
         if not is_for_aitemplate:
-            if (
-                is_xformers_available()
-                and config.api.attention_processor == "xformers"
-                and config.api.device_type != "directml"
-            ):
-                pipe.enable_xformers_memory_efficient_attention()
-                logger.info("Optimization: Enabled xFormers memory efficient attention")
-            elif not torch_older_than_200 and (
-                config.api.attention_processor == "spda"
-                or config.api.attention_processor == "sdpa"
-                or (
-                    config.api.attention_processor == "xformers"
-                    and config.api.device_type == "directml"
-                )
-            ):
-                # Here for legacy reasons
-                from diffusers.models.attention_processor import AttnProcessor2_0
+            set_attention_processor(pipe)
 
-                pipe.unet.set_attn_processor(AttnProcessor2_0())  # type: ignore
-                logger.info("Optimization: Enabled SDPA")
-            else:
-                # This should only be the case if an old version of torch_directml is used
-                # This isn't a hot-spot either, so it's fine (imo) to put in safety nets.
-                from diffusers.models.attention_processor import AttnProcessor
-
-                pipe.unet.set_attn_processor(AttnProcessor())  # type: ignore
-                logger.info("Optimization: Enabled Cross-Attention processor")
-
-        if config.api.autocast:
-            logger.info("Optimization: Enabled autocast")
+            if config.api.autocast:
+                logger.info("Optimization: Enabled autocast")
 
         if can_offload:
             if not is_accelerate_available():
