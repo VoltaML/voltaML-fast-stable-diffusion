@@ -40652,7 +40652,8 @@ function getTextBoundaries(elem) {
   console.log("Element is not input");
   return [0, 0];
 }
-function promptHandleKeyUp(e) {
+function promptHandleKeyUp(e, data, key) {
+  console.log(data);
   if (e.key === "ArrowUp") {
     const values = getTextBoundaries(
       document.activeElement
@@ -40678,6 +40679,7 @@ function promptHandleKeyUp(e) {
           new_value
         )}${afterString}`;
         elem.value = newString;
+        data[key] = newString;
         elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
       }
     } else if (boundaryIndexStart !== boundaryIndexEnd) {
@@ -40685,6 +40687,7 @@ function promptHandleKeyUp(e) {
       const beforeString = elem.value.substring(0, boundaryIndexStart);
       const afterString = elem.value.substring(boundaryIndexEnd);
       elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
       elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
     } else {
       console.log("No selection, cannot parse for weighting");
@@ -40715,6 +40718,7 @@ function promptHandleKeyUp(e) {
           new_value
         )}${afterString}`;
         elem.value = newString;
+        data[key] = newString;
         elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
       }
     } else if (boundaryIndexStart !== boundaryIndexEnd) {
@@ -40722,6 +40726,7 @@ function promptHandleKeyUp(e) {
       const beforeString = elem.value.substring(0, boundaryIndexStart);
       const afterString = elem.value.substring(boundaryIndexEnd);
       elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
       elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
     } else {
       console.log("No selection, cannot parse for weighting");
