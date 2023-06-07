@@ -1,4 +1,4 @@
-import { L as Fragment, bq as LazyTeleport, au as NBaseIcon, q as NTooltip, aX as Transition, aV as beforeNextFrameOnce, X as c, Y as cB, aq as cNotM, c as computed, aa as createId, V as createInjectionKey, d as defineComponent, aW as fadeInScaleUpTransition, bn as fadeInTransition, be as getCurrentInstance, D as h, bo as imageLight, a3 as inject, a_ as isBrowser, bp as isMounted, bv as kebabCase, bu as normalizeStyle, aI as off, ac as on, aH as onBeforeUnmount, bi as onMounted, T as provide, E as ref, P as replaceable, U as toRef, Q as useConfig, ar as useLocale, a5 as useTheme, a9 as useThemeClass, bt as vShow, J as watch, as as watchEffect, br as withDirectives, bs as zindexable } from "./index.js";
+import { P as replaceable, D as h, d as defineComponent, a_ as isBrowser, a5 as useTheme, V as createInjectionKey, X as c, Y as cB, bn as fadeInTransition, aW as fadeInScaleUpTransition, aq as cNotM, U as toRef, bo as imageLight, E as ref, ar as useLocale, J as watch, aH as onBeforeUnmount, aI as off, a3 as inject, c as computed, Q as useConfig, a9 as useThemeClass, bp as isMounted, bq as LazyTeleport, br as withDirectives, bs as zindexable, aX as Transition, L as Fragment, au as NBaseIcon, bt as vShow, ac as on, bu as normalizeStyle, bv as kebabCase, q as NTooltip, aV as beforeNextFrameOnce, aa as createId, T as provide, be as getCurrentInstance, bi as onMounted, as as watchEffect } from "./index.js";
 const RotateClockwiseIcon = replaceable("rotateClockwise", h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
@@ -796,6 +796,6 @@ const NImage = defineComponent({
   }
 });
 export {
-NImage as N,
-NImageGroup as a
+  NImage as N,
+  NImageGroup as a
 };

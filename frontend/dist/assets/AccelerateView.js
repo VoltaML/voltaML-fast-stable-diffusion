@@ -1,4 +1,4 @@
-import { X as c, W as call, Y as cB, Z as cE, $ as cM, aq as cNotM, c as computed, n as createBaseVNode, x as createBlock, f as createElementBlock, V as createInjectionKey, a8 as createKey, m as createTextVNode, g as createVNode, d as defineComponent, bd as ErrorIcon, bc as FinishedIcon, aC as flatten, aD as getSlot, D as h, a0 as iconSwitchTransition, a3 as inject, au as NBaseIcon, F as NButton, i as NCard, ab as NIconSwitchTransition, b9 as NModal, r as NSelect, v as NSlider, j as NSpace, H as NTabPane, I as NTabs, e as openBlock, T as provide, E as ref, at as resolveSlot, aB as resolveWrappedSlot, s as serverUrl, bb as stepsLight, aZ as throwError, h as unref, Q as useConfig, b as useMessage, a7 as useRtl, a as useSettings, u as useState, a5 as useTheme, a9 as useThemeClass, w as withCtx } from "./index.js";
+import { Y as cB, $ as cM, X as c, Z as cE, a0 as iconSwitchTransition, aq as cNotM, d as defineComponent, Q as useConfig, a7 as useRtl, a5 as useTheme, T as provide, D as h, aC as flatten, aD as getSlot, V as createInjectionKey, bb as stepsLight, a3 as inject, aZ as throwError, c as computed, a9 as useThemeClass, aB as resolveWrappedSlot, at as resolveSlot, ab as NIconSwitchTransition, a8 as createKey, W as call, au as NBaseIcon, bc as FinishedIcon, bd as ErrorIcon, b as useMessage, u as useState, E as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, v as NSlider, r as NSelect, F as NButton, m as createTextVNode, b9 as NModal, s as serverUrl, a as useSettings, x as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 const style = cB("steps", `
@@ -731,11 +731,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               ghost: "",
               loading: building.value,
               disabled: building.value || modelOptions.value.length === 0,
-<<<<<<< HEAD
               onClick: _cache[7] || (_cache[7] = ($event) => showUnloadModal.value = true)
-=======
-              onClick: _cache[6] || (_cache[6] = ($event) => showUnloadModal.value = true)
->>>>>>> pr/gabe56f/94
             }, {
               default: withCtx(() => [
                 createTextVNode("Accelerate")
@@ -835,5 +831,5 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-_sfc_main as default
+  _sfc_main as default
 };

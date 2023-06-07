@@ -1,4 +1,4 @@
-import { X as c, Y as cB, Z as cE, $ as cM, bg as commonVariables, c as computed, n as createBaseVNode, x as createBlock, f as createElementBlock, aa as createId, V as createInjectionKey, a8 as createKey, m as createTextVNode, g as createVNode, bj as defaultSettings, d as defineComponent, aF as formatLength, bh as formItemInjectionKey, bf as formLight, aM as get, be as getCurrentInstance, D as h, a3 as inject, ai as keysOf, F as NButton, i as NCard, k as NInput, r as NSelect, H as NTabPane, I as NTabs, aH as onBeforeUnmount, bi as onMounted, e as openBlock, T as provide, E as ref, aB as resolveWrappedSlot, s as serverUrl, U as toRef, aX as Transition, h as unref, Q as useConfig, b as useMessage, a as useSettings, u as useState, a5 as useTheme, a9 as useThemeClass, aQ as warn, J as watch, w as withCtx } from "./index.js";
+import { a3 as inject, be as getCurrentInstance, J as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, T as provide, D as h, bf as formLight, ai as keysOf, c as computed, aF as formatLength, aM as get, bg as commonVariables, Z as cE, U as toRef, aa as createId, bh as formItemInjectionKey, bi as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, r as NSelect, f as createElementBlock, v as NSlider, y as createCommentVNode, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, k as NInput, b as useMessage, F as NButton, m as createTextVNode, bj as defaultSettings, s as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -3072,5 +3072,5 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-_sfc_main as default
+  _sfc_main as default
 };
