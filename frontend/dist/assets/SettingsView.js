@@ -2346,13 +2346,21 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                         value: "bicubic"
                       },
                       {
+                        label: "Bislerp (Original, slow)",
+                        value: "bislerp-original"
+                      },
+                      {
+                        label: "Bislerp (Tortured, fast)",
+                        value: "bislerp-tortured"
+                      },
+                      {
                         label: "Nearest Exact",
                         value: "nearest-exact"
                       }
                     ],
                     value: unref(settings).defaultSettings.extra.highres.latent_scale_mode,
                     "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.extra.highres.latent_scale_mode = $event)
-                  }, null, 8, ["value"])
+                  }, null, 8, ["options", "value"])
                 ]),
                 _: 1
               }),
