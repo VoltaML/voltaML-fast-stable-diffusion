@@ -40,6 +40,8 @@ export interface ISettings {
         | "nearest"
         | "area"
         | "bilinear"
+        | "bislerp-original"
+        | "bislerp-tortured"
         | "bicubic"
         | "nearest-exact";
       strength: number;
