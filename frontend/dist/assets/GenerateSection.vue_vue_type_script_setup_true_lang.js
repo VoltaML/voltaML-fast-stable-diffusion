@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, e as createElementBlock, m as createBaseVNode, u as useState, a as useSettings, D as ref, bi as onMounted, aO as onUnmounted, z as serverUrl, s as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, E as NButton, F as NIcon, l as createTextVNode, x as NGrid, bx as NAlert, v as createCommentVNode, h as NCard } from "./index.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, E as ref, bi as onMounted, o as onUnmounted, s as serverUrl, x as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, G as NIcon, m as createTextVNode, z as NGrid, bx as NAlert, y as createCommentVNode, i as NCard } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -50,6 +50,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     generate: {
       type: Function,
       required: true
+    },
+    doNotDisableGenerate: {
+      type: Boolean,
+      default: false
     }
   },
   setup(__props) {
@@ -105,7 +109,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ref_key: "generateButton",
                         ref: generateButton,
                         onClick: props.generate,
-                        disabled: unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0,
+                        disabled: !props.doNotDisableGenerate && (unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0),
                         loading: unref(global).state.generating,
                         style: { "width": "100%" },
                         ghost: ""

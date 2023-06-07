@@ -1,4 +1,4 @@
-import { d as defineComponent, C as h, M as replaceable, O as useConfig, P as useFormItem, D as ref, c as computed, Q as useMergedState, R as provide, S as toRef, T as createInjectionKey, U as call, V as c, W as cB, X as cE, Y as cM, Z as iconSwitchTransition, $ as insideModal, a0 as insidePopover, a1 as inject, a2 as useMemo, a3 as useTheme, a4 as checkboxLight, a5 as useRtl, a6 as createKey, a7 as useThemeClass, a8 as createId, a9 as NIconSwitchTransition, aa as on, ab as popselectLight, ac as watch, ad as NInternalSelectMenu, ae as createTreeMate, af as happensIn, ag as nextTick, ah as keysOf, ai as createTmOptions, aj as keep, ak as createRefSetter, al as mergeEventHandlers, am as omit, an as NPopover, ao as popoverBaseProps, ap as cNotM, aq as useLocale, ar as watchEffect, as as resolveSlot, j as NInput, q as NSelect, J as Fragment, at as NBaseIcon, au as useAdjustedTo, av as paginationLight, aw as ellipsisLight, ax as onDeactivated, n as NTooltip, ay as mergeProps, az as radioLight, aA as resolveWrappedSlot, aB as flatten$1, aC as getSlot, aD as depx, aE as formatLength, E as NButton, aF as NScrollbar, aG as onBeforeUnmount, aH as off, aI as ChevronDownIcon, aJ as NDropdown, aK as pxfy, aL as get, aM as NBaseLoading, aN as ChevronRightIcon, aO as onUnmounted, aP as VResizeObserver, aQ as warn, aR as VVirtualList, aS as NEmpty, aT as cssrAnchorMetaName, aU as repeat, aV as beforeNextFrameOnce, aW as fadeInScaleUpTransition, aX as Transition, aY as dataTableLight, aZ as throwError, a_ as isBrowser, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, o as openBlock, e as createElementBlock, m as createBaseVNode, s as createBlock, w as withCtx, f as createVNode, g as unref, F as NIcon, b6 as NResult, u as useState, b as useMessage, b7 as reactive, b8 as huggingfaceModelsFile, l as createTextVNode, h as NCard, z as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, i as NSpace, b9 as NModal, N as NGi, ba as NText, K as renderList, x as NGrid, t as toDisplayString, G as NTabPane, H as NTabs } from "./index.js";
+import { d as defineComponent, D as h, P as replaceable, Q as useConfig, R as useFormItem, E as ref, c as computed, S as useMergedState, T as provide, U as toRef, V as createInjectionKey, W as call, X as c, Y as cB, Z as cE, $ as cM, a0 as iconSwitchTransition, a1 as insideModal, a2 as insidePopover, a3 as inject, a4 as useMemo, a5 as useTheme, a6 as checkboxLight, a7 as useRtl, a8 as createKey, a9 as useThemeClass, aa as createId, ab as NIconSwitchTransition, ac as on, ad as popselectLight, J as watch, ae as NInternalSelectMenu, af as createTreeMate, ag as happensIn, ah as nextTick, ai as keysOf, aj as createTmOptions, ak as keep, al as createRefSetter, am as mergeEventHandlers, an as omit, ao as NPopover, ap as popoverBaseProps, aq as cNotM, ar as useLocale, as as watchEffect, at as resolveSlot, k as NInput, r as NSelect, L as Fragment, au as NBaseIcon, av as useAdjustedTo, aw as paginationLight, ax as ellipsisLight, ay as onDeactivated, q as NTooltip, az as mergeProps, aA as radioLight, aB as resolveWrappedSlot, aC as flatten$1, aD as getSlot, aE as depx, aF as formatLength, F as NButton, aG as NScrollbar, aH as onBeforeUnmount, aI as off, aJ as ChevronDownIcon, aK as NDropdown, aL as pxfy, aM as get, aN as NBaseLoading, aO as ChevronRightIcon, o as onUnmounted, aP as VResizeObserver, aQ as warn, aR as VVirtualList, aS as NEmpty, aT as cssrAnchorMetaName, aU as repeat, aV as beforeNextFrameOnce, aW as fadeInScaleUpTransition, aX as Transition, aY as dataTableLight, aZ as throwError, a_ as isBrowser, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, e as openBlock, f as createElementBlock, n as createBaseVNode, x as createBlock, w as withCtx, g as createVNode, h as unref, G as NIcon, b6 as NResult, u as useState, b as useMessage, b7 as reactive, b8 as huggingfaceModelsFile, m as createTextVNode, i as NCard, s as serverUrl, B as pushScopeId, C as popScopeId, _ as _export_sfc, j as NSpace, b9 as NModal, N as NGi, ba as NText, M as renderList, z as NGrid, t as toDisplayString, H as NTabPane, I as NTabs } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NImage, a as NImageGroup } from "./Image.js";
 import { C as CloudUpload } from "./CloudUpload.js";
@@ -860,7 +860,8 @@ const NPopselect = defineComponent({
   inheritAttrs: false,
   __popover__: true,
   setup(props) {
-    const themeRef = useTheme("Popselect", "-popselect", void 0, popselectLight, props);
+    const { mergedClsPrefixRef } = useConfig(props);
+    const themeRef = useTheme("Popselect", "-popselect", void 0, popselectLight, props, mergedClsPrefixRef);
     const popoverInstRef = ref(null);
     function syncPosition() {
       var _a;
@@ -1631,7 +1632,9 @@ const NPagination = defineComponent({
                   type !== "page" && (type === "fast-backward" && this.showFastBackwardMenu || type === "fast-forward" && this.showFastForwardMenu) && `${mergedClsPrefix}-pagination-item--hover`,
                   disabled && `${mergedClsPrefix}-pagination-item--disabled`,
                   type === "page" && `${mergedClsPrefix}-pagination-item--clickable`
-                ], onClick: () => handlePageItemClick(pageItem), onMouseenter, onMouseleave }, contentNode);
+                ], onClick: () => {
+                  handlePageItemClick(pageItem);
+                }, onMouseenter, onMouseleave }, contentNode);
                 if (type === "page" && !pageItem.mayBeFastBackward && !pageItem.mayBeFastForward) {
                   return itemNode;
                 } else {
@@ -3191,13 +3194,17 @@ const TableHeader = defineComponent({
               isColumnSortable(column) ? h(SortButton, { column }) : null
             ),
             isColumnFilterable(column) ? h(FilterButton, { column, options: column.filterOptions }) : null,
-            isColumnResizable(column) ? h(ResizeButton, { onResizeStart: () => handleColumnResizeStart(column), onResize: (displacementX) => handleColumnResize(column, displacementX) }) : null
+            isColumnResizable(column) ? h(ResizeButton, { onResizeStart: () => {
+              handleColumnResizeStart(column);
+            }, onResize: (displacementX) => {
+              handleColumnResize(column, displacementX);
+            } }) : null
           );
         };
         const leftFixed = key in fixedColumnLeftMap;
         const rightFixed = key in fixedColumnRightMap;
         return h("th", { ref: (el) => cellElsRef[key] = el, key, style: {
-          textAlign: column.align,
+          textAlign: column.titleAlign || column.align,
           left: pxfy((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start),
           right: pxfy((_b = fixedColumnRightMap[key]) === null || _b === void 0 ? void 0 : _b.start)
         }, colspan: colSpan, rowspan: rowSpan, "data-col-key": key, class: [
@@ -3312,7 +3319,9 @@ const ExpandTrigger = defineComponent({
       ], onClick: this.onClick },
       h(NIconSwitchTransition, null, {
         default: () => {
-          return this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: this.clsPrefix, radius: 85, strokeWidth: 15, scale: 0.88 }) : this.renderExpandIcon ? this.renderExpandIcon() : h(NBaseIcon, { clsPrefix, key: "base-icon" }, {
+          return this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: this.clsPrefix, radius: 85, strokeWidth: 15, scale: 0.88 }) : this.renderExpandIcon ? this.renderExpandIcon({
+            expanded: this.expanded
+          }) : h(NBaseIcon, { clsPrefix, key: "base-icon" }, {
             default: () => h(ChevronRightIcon, null)
           });
         }
@@ -3929,7 +3938,13 @@ const TableBody = defineComponent({
                   handleUpdateExpanded(rowKey, rowInfo.tmNode);
                 } })
               ] : null,
-              column.type === "selection" ? !isSummary ? column.multiple === false ? h(RenderSafeRadio, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: () => handleRadioUpdateChecked(rowInfo.tmNode) }) : h(RenderSafeCheckbox, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: (checked, e) => handleCheckboxUpdateChecked(rowInfo.tmNode, checked, e.shiftKey) }) : null : column.type === "expand" ? !isSummary ? !column.expandable || ((_e = column.expandable) === null || _e === void 0 ? void 0 : _e.call(column, rowData)) ? h(ExpandTrigger, { clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, onClick: () => handleUpdateExpanded(rowKey, null) }) : null : null : h(Cell, { clsPrefix: mergedClsPrefix, index: actualRowIndex, row: rowData, column, isSummary, mergedTheme: mergedTheme2, renderCell: this.renderCell })
+              column.type === "selection" ? !isSummary ? column.multiple === false ? h(RenderSafeRadio, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: () => {
+                handleRadioUpdateChecked(rowInfo.tmNode);
+              } }) : h(RenderSafeCheckbox, { key: currentPage, rowKey, disabled: rowInfo.tmNode.disabled, onUpdateChecked: (checked, e) => {
+                handleCheckboxUpdateChecked(rowInfo.tmNode, checked, e.shiftKey);
+              } }) : null : column.type === "expand" ? !isSummary ? !column.expandable || ((_e = column.expandable) === null || _e === void 0 ? void 0 : _e.call(column, rowData)) ? h(ExpandTrigger, { clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, onClick: () => {
+                handleUpdateExpanded(rowKey, null);
+              } }) : null : null : h(Cell, { clsPrefix: mergedClsPrefix, index: actualRowIndex, row: rowData, column, isSummary, mergedTheme: mergedTheme2, renderCell: this.renderCell })
             );
           }));
           return row;
@@ -6808,7 +6823,7 @@ const NUpload = defineComponent({
             });
           });
         });
-        return yield nextTickChain;
+        yield nextTickChain;
       })).then(() => {
         if (props.defaultUpload) {
           submit();
@@ -6994,8 +7009,7 @@ const NUpload = defineComponent({
       accept: this.accept,
       multiple: this.mergedMultiple,
       onChange: this.handleFileInputChange,
-      // eslint-disable-next-line @typescript-eslint/prefer-ts-expect-error
-      // @ts-ignore // seems vue-tsc will add the prop, so we can't use expect-error
+      // @ts-expect-error // seems vue-tsc will add the prop, so we can't use expect-error
       webkitdirectory: directory || void 0,
       directory: directory || void 0
     }));

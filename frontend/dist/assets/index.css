@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-64ec7da2] {
+.progress-container[data-v-ac6c1b70] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-64ec7da2] {
+.top-bar[data-v-ac6c1b70] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,15 +23,15 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--1535c576);
+  background-color: var(--740dd506);
 }
-.logo[data-v-64ec7da2] {
+.logo[data-v-ac6c1b70] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
-.main[data-v-fedbc04b] {
-  background-color: var(--33343887);
+.main[data-v-58f67f74] {
+  background-color: var(--2ad9c920);
 }
 body {
   min-height: 100vh;

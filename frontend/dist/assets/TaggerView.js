@@ -1,11 +1,11 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, D as ref, c as computed, o as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, m as createBaseVNode, q as NSelect, n as NTooltip, l as createTextVNode, r as NSlider, j as NInput, t as toDisplayString, x as NGrid, z as serverUrl, y as spaceRegex, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, E as ref, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, q as NTooltip, m as createTextVNode, v as NSlider, k as NInput, t as toDisplayString, z as NGrid, s as serverUrl, A as spaceRegex, B as pushScopeId, C as popScopeId, _ as _export_sfc } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-57b0ec9b"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-e404f3d8"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -181,7 +181,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$1, { generate }),
+                createVNode(_sfc_main$1, {
+                  generate,
+                  "do-not-disable-generate": ""
+                }),
                 createVNode(unref(NCard), null, {
                   default: withCtx(() => [
                     createBaseVNode("div", _hoisted_6, [
@@ -228,8 +231,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_57b0ec9b_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-57b0ec9b"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_e404f3d8_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-e404f3d8"]]);
 export {
   TaggerView as default
 };
