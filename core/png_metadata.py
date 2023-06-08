@@ -3,6 +3,7 @@ import logging
 from dataclasses import fields
 from io import BytesIO
 from os import makedirs
+from core.config import config
 from pathlib import Path
 from typing import List, Union
 
@@ -134,8 +135,17 @@ def save_images(
             else:
                 logger.debug("No provided Dev R2 URL, uploaded but returning empty URL")
         else:
-            # Save locally
-            path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
+
+            if hasattr(config.frontend, 'save_to_sub_folder'):
+                # Save locally to subfolder or not:
+                print(config.frontend.save_to_sub_folder)
+                if config.frontend.save_to_sub_folder == False:
+                    path = Path(f"data/outputs/{folder}/{filename}")
+                else :
+                    path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
+            else:
+                path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
+            
             makedirs(path.parent, exist_ok=True)
 
             with path.open("wb") as f:

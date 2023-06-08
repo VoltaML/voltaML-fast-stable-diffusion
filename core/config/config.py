@@ -236,6 +236,7 @@ class FrontendConfig:
 
     theme: Literal["dark", "light"] = "dark"
     on_change_timer: int = 0
+    save_to_sub_folder: bool = True
 
 
 @dataclass_json(undefined=Undefined.INCLUDE)

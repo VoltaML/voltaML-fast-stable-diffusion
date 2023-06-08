@@ -1,4 +1,4 @@
-import { a3 as inject, be as getCurrentInstance, J as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, T as provide, D as h, bf as formLight, ai as keysOf, c as computed, aF as formatLength, aM as get, bg as commonVariables, Z as cE, U as toRef, aa as createId, bh as formItemInjectionKey, bi as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, r as NSelect, f as createElementBlock, v as NSlider, y as createCommentVNode, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, k as NInput, b as useMessage, F as NButton, m as createTextVNode, bj as defaultSettings, s as serverUrl } from "./index.js";
+import { a3 as inject, be as getCurrentInstance, J as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, T as provide, D as h, bf as formLight, ai as keysOf, c as computed, aF as formatLength, aM as get, bg as commonVariables, Z as cE, U as toRef, aa as createId, bh as formItemInjectionKey, bi as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, r as NSelect, f as createElementBlock, v as NSlider, y as createCommentVNode, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, k as NInput, bj as resolveComponent, b as useMessage, F as NButton, m as createTextVNode, bk as defaultSettings, s as serverUrl } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1839,7 +1839,7 @@ const NFormItem = defineComponent({
   }
 });
 const _hoisted_1$2 = /* @__PURE__ */ createBaseVNode("h2", null, "Autoload", -1);
-const _hoisted_2 = /* @__PURE__ */ createBaseVNode("h2", null, "Timings and Queue", -1);
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("h2", null, "Timings and Queue", -1);
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
 const _hoisted_4 = {
   key: 0,
@@ -1903,7 +1903,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          _hoisted_2,
+          _hoisted_2$1,
           createVNode(unref(NFormItem), { label: "WebSocket Performance Monitor Interval" }, {
             default: withCtx(() => [
               createVNode(unref(NInputNumber), {
@@ -2956,25 +2956,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   }
 });
 const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("h2", null, "Timers", -1);
+const _hoisted_2 = /* @__PURE__ */ createBaseVNode("h2", null, "Saving", -1);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "GeneralSettings",
   setup(__props) {
     const settings = useSettings();
     watch(settings.defaultSettings.frontend, () => {
       settings.data.settings.frontend.on_change_timer = settings.defaultSettings.frontend.on_change_timer;
+      settings.data.settings.frontend.save_to_sub_folder = settings.defaultSettings.frontend.save_to_sub_folder;
     });
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NForm), null, {
+      const _component_NCard = resolveComponent("NCard");
+      return openBlock(), createBlock(_component_NCard, null, {
         default: withCtx(() => [
-          _hoisted_1$1,
-          createVNode(unref(NFormItem), { label: "Continuous generation timeout (0 for disabled) [ms]" }, {
+          createVNode(unref(NForm), null, {
             default: withCtx(() => [
-              createVNode(unref(NInputNumber), {
-                value: unref(settings).defaultSettings.frontend.on_change_timer,
-                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
-                min: 0,
-                step: 50
-              }, null, 8, ["value"])
+              _hoisted_1$1,
+              createVNode(unref(NFormItem), { label: "Continuous generation timeout (0 for disabled) [ms]" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.frontend.on_change_timer,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
+                    min: 0,
+                    step: 50
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              _hoisted_2,
+              createVNode(unref(NFormItem), { label: "Enable saving to Prompt Sub Folder" }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.frontend.save_to_sub_folder,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.save_to_sub_folder = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
             ]),
             _: 1
           })

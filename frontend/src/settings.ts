@@ -202,6 +202,7 @@ export interface ISettings {
   frontend: {
     theme: "dark" | "light";
     on_change_timer: number;
+    save_to_sub_folder: boolean;
   };
 }
 
@@ -362,6 +363,7 @@ export const defaultSettings: ISettings = {
   frontend: {
     theme: "dark",
     on_change_timer: 2000,
+    save_to_sub_folder: true,
   },
 };
 
