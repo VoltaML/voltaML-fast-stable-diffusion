@@ -1,16 +1,14 @@
 <template>
-  <NCard>
-    <NForm>
-      <h2>Timers</h2>
-      <NFormItem label="Continuous generation timeout (0 for disabled) [ms]">
-        <NInputNumber
-          v-model:value="settings.defaultSettings.frontend.on_change_timer"
-          :min="0"
-          :step="50"
-        />
-      </NFormItem>
-    </NForm>
-  </NCard>
+  <NForm>
+    <h2>Timers</h2>
+    <NFormItem label="Continuous generation timeout (0 for disabled) [ms]">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.frontend.on_change_timer"
+        :min="0"
+        :step="50"
+      />
+    </NFormItem>
+  </NForm>
 </template>
 
 <script setup lang="ts">
