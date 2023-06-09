@@ -40883,7 +40883,8 @@ const defaultSettings = {
     lora_text_encoder_weight: 0.5,
     lora_unet_weight: 0.5,
     autoloaded_loras: /* @__PURE__ */ new Map(),
-    autoloaded_textual_inversions: []
+    autoloaded_textual_inversions: [],
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}"
   },
   aitemplate: {
     num_threads: 8
@@ -40905,8 +40906,7 @@ const defaultSettings = {
   },
   frontend: {
     theme: "dark",
-    on_change_timer: 2e3,
-    save_to_sub_folder: true
+    on_change_timer: 2e3
   }
 };
 let rSettings = JSON.parse(JSON.stringify(defaultSettings));

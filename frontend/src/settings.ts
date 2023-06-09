@@ -185,6 +185,8 @@ export interface ISettings {
 
     autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
+
+    save_path_template: string;
   };
   aitemplate: {
     num_threads: number;
@@ -202,7 +204,6 @@ export interface ISettings {
   frontend: {
     theme: "dark" | "light";
     on_change_timer: number;
-    save_to_sub_folder: boolean;
   };
 }
 
@@ -341,6 +342,7 @@ export const defaultSettings: ISettings = {
     lora_unet_weight: 0.5,
     autoloaded_loras: new Map(),
     autoloaded_textual_inversions: [],
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
   },
   aitemplate: {
     num_threads: 8,
@@ -363,7 +365,6 @@ export const defaultSettings: ISettings = {
   frontend: {
     theme: "dark",
     on_change_timer: 2000,
-    save_to_sub_folder: true,
   },
 };
 

@@ -3,13 +3,13 @@ import logging
 from dataclasses import fields
 from io import BytesIO
 from os import makedirs
-from core.config import config
 from pathlib import Path
 from typing import List, Union
 
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
+from core.config import config
 from core.types import (
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
@@ -116,6 +116,7 @@ def save_images(
             folder = "img2img"
 
         filename = f"{job.data.id}-{i}.png"
+        extension = "png"
         metadata = create_metadata(job, i)
 
         if job.save_image == "r2":
@@ -135,17 +136,22 @@ def save_images(
             else:
                 logger.debug("No provided Dev R2 URL, uploaded but returning empty URL")
         else:
+            base_dir = Path("data/outputs")
+            extra_path = config.api.save_path_template.format(
+                **{
+                    "prompt": prompt,
+                    "id": job.data.id,
+                    "folder": folder,
+                    "seed": job.data.seed
+                    if not isinstance(job, UpscaleQueueEntry)
+                    else "0",
+                    "index": i,
+                    "extension": extension,
+                }
+            )
 
-            if hasattr(config.frontend, 'save_to_sub_folder'):
-                # Save locally to subfolder or not:
-                print(config.frontend.save_to_sub_folder)
-                if config.frontend.save_to_sub_folder == False:
-                    path = Path(f"data/outputs/{folder}/{filename}")
-                else :
-                    path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
-            else:
-                path = Path(f"data/outputs/{folder}/{prompt}/{filename}")
-            
+            path = base_dir / extra_path
+
             makedirs(path.parent, exist_ok=True)
 
             with path.open("wb") as f:

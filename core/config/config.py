@@ -157,6 +157,9 @@ class APIConfig:
     autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
 
+    # Save paths
+    save_path_template: str = "{folder}/{prompt}/{id}-{index}.{extension}"
+
     @property
     def dtype(self):
         "Return selected data type"
@@ -236,7 +239,6 @@ class FrontendConfig:
 
     theme: Literal["dark", "light"] = "dark"
     on_change_timer: int = 0
-    save_to_sub_folder: bool = True
 
 
 @dataclass_json(undefined=Undefined.INCLUDE)
