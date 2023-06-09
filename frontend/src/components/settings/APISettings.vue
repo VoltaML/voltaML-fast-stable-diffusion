@@ -1,5 +1,10 @@
 <template>
   <NForm>
+    <h2>Saving outputs</h2>
+    <NFormItem label="Template for saving outputs">
+      <NInput v-model:value="settings.defaultSettings.api.save_path_template" />
+    </NFormItem>
+
     <h2>Autoload</h2>
     <NFormItem label="Textual Inversions">
       <NSelect
@@ -299,6 +304,7 @@
 import {
   NForm,
   NFormItem,
+  NInput,
   NInputNumber,
   NSelect,
   NSlider,

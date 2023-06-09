@@ -185,6 +185,8 @@ export interface ISettings {
 
     autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
+
+    save_path_template: string;
   };
   aitemplate: {
     num_threads: number;
@@ -340,6 +342,7 @@ export const defaultSettings: ISettings = {
     lora_unet_weight: 0.5,
     autoloaded_loras: new Map(),
     autoloaded_textual_inversions: [],
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
   },
   aitemplate: {
     num_threads: 8,
