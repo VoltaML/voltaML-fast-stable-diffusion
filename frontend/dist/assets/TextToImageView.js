@@ -186,28 +186,32 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           type: "textarea",
                           placeholder: "Prompt",
                           "show-count": "",
-                          onKeyup: unref(promptHandleKeyUp),
+                          onKeyup: _cache[1] || (_cache[1] = ($event) => unref(promptHandleKeyUp)($event, unref(conf).data.settings.txt2img, "prompt")),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(promptCount.value), 1)
                           ]),
                           _: 1
-                        }, 8, ["value", "onKeyup", "onKeydown"]),
+                        }, 8, ["value", "onKeydown"]),
                         createVNode(unref(NInput), {
                           value: unref(conf).data.settings.txt2img.negative_prompt,
-                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.txt2img.negative_prompt = $event),
+                          "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.txt2img.negative_prompt = $event),
                           type: "textarea",
                           placeholder: "Negative prompt",
                           "show-count": "",
-                          onKeyup: unref(promptHandleKeyUp),
+                          onKeyup: _cache[3] || (_cache[3] = ($event) => unref(promptHandleKeyUp)(
+                            $event,
+                            unref(conf).data.settings.txt2img,
+                            "negative_prompt"
+                          )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
                             createTextVNode(toDisplayString(negativePromptCount.value), 1)
                           ]),
                           _: 1
-                        }, 8, ["value", "onKeyup", "onKeydown"]),
+                        }, 8, ["value", "onKeydown"]),
                         createBaseVNode("div", _hoisted_2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -223,7 +227,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           createVNode(unref(NSelect), {
                             options: unref(conf).scheduler_options,
                             value: unref(conf).data.settings.txt2img.sampler,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.txt2img.sampler = $event),
+                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.txt2img.sampler = $event),
                             style: { "flex-grow": "1" }
                           }, null, 8, ["options", "value"])
                         ]),
@@ -248,7 +252,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _hoisted_9,
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.txt2img.width,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.txt2img.width = $event),
+                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.txt2img.width = $event),
                             min: 128,
                             max: 2048,
                             step: 8,
@@ -256,7 +260,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.width,
-                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.txt2img.width = $event),
+                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.txt2img.width = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             step: 8,
@@ -285,7 +289,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _hoisted_13,
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.txt2img.height,
-                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.txt2img.height = $event),
+                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.txt2img.height = $event),
                             min: 128,
                             max: 2048,
                             step: 8,
@@ -293,7 +297,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.height,
-                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.txt2img.height = $event),
+                            "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.txt2img.height = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             step: 8,
@@ -314,14 +318,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.txt2img.steps,
-                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
+                            "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
                             min: 5,
                             max: 300,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.steps,
-                            "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
+                            "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 5,
@@ -341,7 +345,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.txt2img.cfg_scale,
-                            "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
+                            "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
                             min: 1,
                             max: 30,
                             step: 0.5,
@@ -349,7 +353,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.cfg_scale,
-                            "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
+                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -370,7 +374,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.txt2img.self_attention_scale,
-                            "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
+                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
                             min: 0,
                             max: 1,
                             step: 0.05,
@@ -378,7 +382,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.self_attention_scale,
-                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
+                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 0,
@@ -398,14 +402,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.txt2img.batch_count,
-                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.txt2img.batch_count = $event),
+                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.txt2img.batch_count = $event),
                             min: 1,
                             max: 9,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.batch_count,
-                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.txt2img.batch_count = $event),
+                            "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(conf).data.settings.txt2img.batch_count = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -447,14 +451,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.txt2img.batch_size,
-                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.txt2img.batch_size = $event),
+                            "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.txt2img.batch_size = $event),
                             min: 1,
                             max: 9,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.batch_size,
-                            "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(conf).data.settings.txt2img.batch_size = $event),
+                            "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(conf).data.settings.txt2img.batch_size = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -474,7 +478,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.txt2img.seed,
-                            "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.txt2img.seed = $event),
+                            "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.txt2img.seed = $event),
                             size: "small",
                             min: -1,
                             max: 999999999999,
@@ -496,7 +500,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       _hoisted_33,
                       createVNode(unref(NSwitch), {
                         value: unref(global).state.txt2img.highres,
-                        "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(global).state.txt2img.highres = $event),
+                        "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(global).state.txt2img.highres = $event),
                         disabled: !isSelectedModelPyTorch.value
                       }, null, 8, ["value", "disabled"])
                     ]),
@@ -519,14 +523,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.extra.highres.steps,
-                            "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.extra.highres.steps = $event),
+                            "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(conf).data.settings.extra.highres.steps = $event),
                             min: 5,
                             max: 300,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.extra.highres.steps,
-                            "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(conf).data.settings.extra.highres.steps = $event),
+                            "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(conf).data.settings.extra.highres.steps = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 5,
@@ -537,7 +541,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _hoisted_38,
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.extra.highres.scale,
-                            "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(conf).data.settings.extra.highres.scale = $event),
+                            "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(conf).data.settings.extra.highres.scale = $event),
                             min: 1,
                             max: 8,
                             step: 1,
@@ -545,7 +549,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.extra.highres.scale,
-                            "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(conf).data.settings.extra.highres.scale = $event),
+                            "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(conf).data.settings.extra.highres.scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -557,7 +561,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _hoisted_40,
                           createVNode(unref(NSlider), {
                             value: unref(conf).data.settings.extra.highres.strength,
-                            "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(conf).data.settings.extra.highres.strength = $event),
+                            "onUpdate:value": _cache[25] || (_cache[25] = ($event) => unref(conf).data.settings.extra.highres.strength = $event),
                             min: 0.1,
                             max: 0.9,
                             step: 0.05,
@@ -565,7 +569,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.extra.highres.strength,
-                            "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(conf).data.settings.extra.highres.strength = $event),
+                            "onUpdate:value": _cache[26] || (_cache[26] = ($event) => unref(conf).data.settings.extra.highres.strength = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 0.1,
@@ -577,14 +581,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           _hoisted_42,
                           createVNode(unref(NSwitch), {
                             value: unref(conf).data.settings.extra.highres.antialiased,
-                            "onUpdate:value": _cache[25] || (_cache[25] = ($event) => unref(conf).data.settings.extra.highres.antialiased = $event)
+                            "onUpdate:value": _cache[27] || (_cache[27] = ($event) => unref(conf).data.settings.extra.highres.antialiased = $event)
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_43, [
                           _hoisted_44,
                           createVNode(unref(NSelect), {
                             value: unref(conf).data.settings.extra.highres.latent_scale_mode,
-                            "onUpdate:value": _cache[26] || (_cache[26] = ($event) => unref(conf).data.settings.extra.highres.latent_scale_mode = $event),
+                            "onUpdate:value": _cache[28] || (_cache[28] = ($event) => unref(conf).data.settings.extra.highres.latent_scale_mode = $event),
                             size: "small",
                             style: { "flex-grow": "1" },
                             options: [
@@ -619,7 +623,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 createVNode(_sfc_main$2, {
                   "current-image": unref(global).state.txt2img.currentImage,
                   images: unref(global).state.txt2img.images,
-                  onImageClicked: _cache[27] || (_cache[27] = ($event) => unref(global).state.txt2img.currentImage = $event)
+                  onImageClicked: _cache[29] || (_cache[29] = ($event) => unref(global).state.txt2img.currentImage = $event)
                 }, null, 8, ["current-image", "images"]),
                 createVNode(_sfc_main$3, {
                   output: unref(global).state.txt2img.currentImage

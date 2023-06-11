@@ -40652,7 +40652,8 @@ function getTextBoundaries(elem) {
   console.log("Element is not input");
   return [0, 0];
 }
-function promptHandleKeyUp(e) {
+function promptHandleKeyUp(e, data, key) {
+  console.log(data);
   if (e.key === "ArrowUp") {
     const values = getTextBoundaries(
       document.activeElement
@@ -40678,6 +40679,7 @@ function promptHandleKeyUp(e) {
           new_value
         )}${afterString}`;
         elem.value = newString;
+        data[key] = newString;
         elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
       }
     } else if (boundaryIndexStart !== boundaryIndexEnd) {
@@ -40685,6 +40687,7 @@ function promptHandleKeyUp(e) {
       const beforeString = elem.value.substring(0, boundaryIndexStart);
       const afterString = elem.value.substring(boundaryIndexEnd);
       elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
       elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
     } else {
       console.log("No selection, cannot parse for weighting");
@@ -40715,6 +40718,7 @@ function promptHandleKeyUp(e) {
           new_value
         )}${afterString}`;
         elem.value = newString;
+        data[key] = newString;
         elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
       }
     } else if (boundaryIndexStart !== boundaryIndexEnd) {
@@ -40722,6 +40726,7 @@ function promptHandleKeyUp(e) {
       const beforeString = elem.value.substring(0, boundaryIndexStart);
       const afterString = elem.value.substring(boundaryIndexEnd);
       elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
       elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
     } else {
       console.log("No selection, cannot parse for weighting");
@@ -40878,7 +40883,8 @@ const defaultSettings = {
     lora_text_encoder_weight: 0.5,
     lora_unet_weight: 0.5,
     autoloaded_loras: /* @__PURE__ */ new Map(),
-    autoloaded_textual_inversions: []
+    autoloaded_textual_inversions: [],
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}"
   },
   aitemplate: {
     num_threads: 8
@@ -42251,9 +42257,10 @@ export {
   reactive as b7,
   huggingfaceModelsFile as b8,
   NModal as b9,
-  XButton as bA,
-  isSlotEmpty as bB,
-  switchLight$1 as bC,
+  rgba as bA,
+  XButton as bB,
+  isSlotEmpty as bC,
+  switchLight$1 as bD,
   NText as ba,
   stepsLight$1 as bb,
   FinishedIcon as bc,
@@ -42263,23 +42270,23 @@ export {
   commonVariables$m as bg,
   formItemInjectionKey as bh,
   onMounted as bi,
-  defaultSettings as bj,
-  useCompitable as bk,
-  descriptionsLight$1 as bl,
-  useRouter as bm,
-  fadeInTransition as bn,
-  imageLight as bo,
-  isMounted as bp,
-  LazyTeleport as bq,
-  withDirectives as br,
-  zindexable$1 as bs,
-  vShow as bt,
-  normalizeStyle as bu,
-  kebabCase$1 as bv,
-  withModifiers as bw,
-  NAlert as bx,
-  inputNumberLight$1 as by,
-  rgba as bz,
+  resolveComponent as bj,
+  defaultSettings as bk,
+  useCompitable as bl,
+  descriptionsLight$1 as bm,
+  useRouter as bn,
+  fadeInTransition as bo,
+  imageLight as bp,
+  isMounted as bq,
+  LazyTeleport as br,
+  withDirectives as bs,
+  zindexable$1 as bt,
+  vShow as bu,
+  normalizeStyle as bv,
+  kebabCase$1 as bw,
+  withModifiers as bx,
+  NAlert as by,
+  inputNumberLight$1 as bz,
   computed as c,
   defineComponent as d,
   openBlock as e,

@@ -54,7 +54,9 @@ export function getTextBoundaries(elem: HTMLInputElement | null) {
   return [0, 0];
 }
 
-export function promptHandleKeyUp(e: KeyboardEvent) {
+export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
+  console.log(data);
+
   // Handle ArrowUp
   if (e.key === "ArrowUp") {
     const values = getTextBoundaries(
@@ -90,6 +92,7 @@ export function promptHandleKeyUp(e: KeyboardEvent) {
         )}${afterString}`;
 
         elem.value = newString;
+        data[key] = newString;
 
         // Set the hightlight as it was lost after the value was changed
         elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
@@ -99,7 +102,9 @@ export function promptHandleKeyUp(e: KeyboardEvent) {
       const new_inner_string = `(${current_selection}:1.1)`;
       const beforeString = elem.value.substring(0, boundaryIndexStart);
       const afterString = elem.value.substring(boundaryIndexEnd);
+
       elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
 
       // Set the hightlight as it was lost after the value was changed
       elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
@@ -143,6 +148,7 @@ export function promptHandleKeyUp(e: KeyboardEvent) {
         )}${afterString}`;
 
         elem.value = newString;
+        data[key] = newString;
 
         // Set the hightlight as it was lost after the value was changed
         elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
@@ -152,7 +158,9 @@ export function promptHandleKeyUp(e: KeyboardEvent) {
       const new_inner_string = `(${current_selection}:0.9)`;
       const beforeString = elem.value.substring(0, boundaryIndexStart);
       const afterString = elem.value.substring(boundaryIndexEnd);
+
       elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
 
       // Set the hightlight as it was lost after the value was changed
       elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
