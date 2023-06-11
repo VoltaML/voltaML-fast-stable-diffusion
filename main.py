@@ -20,6 +20,10 @@ from core.install_requirements import (  # pylint: disable=wrong-import-position
 
 # Handle arguments passed to the script
 app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]
+extra_args = os.getenv("EXTRA_ARGS")
+
+if extra_args:
+    app_args.extend(shlex.split(extra_args))
 
 # Parse arguments
 parser = ArgumentParser(
@@ -209,19 +213,11 @@ def checks():
 
     dotenv.load_dotenv()
 
-    # Handle arguments passed to the script
-    extra_args = os.getenv("EXTRA_ARGS")
-
-    if extra_args:
-        app_args.extend(shlex.split(extra_args))
-
-    args_with_extras = parser.parse_args(args=app_args)
-
     # Inject better logger
     from rich.logging import RichHandler
 
     logging.basicConfig(
-        level=args_with_extras.log_level,
+        level=args.log_level,
         format="%(asctime)s | %(name)s » %(message)s",
         datefmt="%H:%M:%S",
         handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
@@ -229,13 +225,13 @@ def checks():
     logger = logging.getLogger()  # pylint: disable=redefined-outer-name
 
     # Check tokens
-    if not os.getenv("HUGGINGFACE_TOKEN") and not args_with_extras.install_only:
+    if not os.getenv("HUGGINGFACE_TOKEN") and not args.install_only:
         logger.error(
             "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
         )
         sys.exit(1)
 
-    if args_with_extras.bot and not args_with_extras.install_only:
+    if args.bot and not args.install_only:
         if not os.getenv("DISCORD_BOT_TOKEN"):
             logger.error(
                 "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
@@ -246,14 +242,12 @@ def checks():
     version_check(commit_hash())
 
     # Install pytorch and api requirements
-    install_pytorch(
-        args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1
-    )
+    install_pytorch(args.pytorch_type if args.pytorch_type else -1)
 
     # Save the token to config
     from core import shared
 
-    if not args_with_extras.install_only:
+    if not args.install_only:
         shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
 
     # Create the diffusers cache folder
@@ -267,7 +261,7 @@ def checks():
     logger.info(f"Precision: {config.api.data_type}")
 
     # Initialize R2 bucket if needed
-    if args_with_extras.enable_r2:
+    if args.enable_r2:
         from core import shared_dependent
         from core.extra.cloudflare_r2 import R2Bucket
 
@@ -276,13 +270,11 @@ def checks():
 
         shared_dependent.r2 = R2Bucket(endpoint=endpoint, bucket_name=bucket_name)
 
-    return args_with_extras
-
 
 if __name__ == "__main__":
     print("Starting the API...")
 
-    args = checks()
+    checks()
 
     try:
         main(exit_after_init=args.install_only)
