@@ -40,6 +40,8 @@ export interface ISettings {
         | "nearest"
         | "area"
         | "bilinear"
+        | "bislerp-original"
+        | "bislerp-tortured"
         | "bicubic"
         | "nearest-exact";
       strength: number;
@@ -156,7 +158,13 @@ export interface ISettings {
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
 
     autocast: boolean;
-    attention_processor: "xformers" | "sdpa" | "cross-attention";
+    attention_processor:
+      | "xformers"
+      | "sdpa"
+      | "cross-attention"
+      | "subquadratic"
+      | "multihead";
+    subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
     vae_slicing: boolean;
@@ -177,6 +185,8 @@ export interface ISettings {
 
     autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
+
+    save_path_template: string;
   };
   aitemplate: {
     num_threads: number;
@@ -310,6 +320,7 @@ export const defaultSettings: ISettings = {
     concurrent_jobs: 1,
     autocast: true,
     attention_processor: "xformers",
+    subquadratic_size: 512,
     attention_slicing: "disabled",
     channels_last: true,
     vae_slicing: false,
@@ -331,6 +342,7 @@ export const defaultSettings: ISettings = {
     lora_unet_weight: 0.5,
     autoloaded_loras: new Map(),
     autoloaded_textual_inversions: [],
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
   },
   aitemplate: {
     num_threads: 8,

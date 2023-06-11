@@ -193,7 +193,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 unref(global).state.imageBrowser.currentImage.path !== "" ? (openBlock(), createBlock(unref(NImage), {
                   key: 0,
-                  src: unref(imageSrc),
+                  src: imageSrc.value,
                   "object-fit": "contain",
                   style: { "width": "100%", "height": "100%", "justify-content": "center", "margin": "8px" },
                   "img-props": { style: { maxWidth: "95%", maxHeight: "95%" } }

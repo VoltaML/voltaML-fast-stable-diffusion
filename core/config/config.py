@@ -121,7 +121,10 @@ class APIConfig:
 
     # General optimizations
     autocast: bool = False
-    attention_processor: Literal["xformers", "sdpa", "cross_attention"] = "sdpa"
+    attention_processor: Literal[
+        "xformers", "sdpa", "cross-attention", "subquadratic", "multihead"
+    ] = "xformers"
+    subquadratic_size: int = 512
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
     vae_slicing: bool = True
@@ -153,6 +156,9 @@ class APIConfig:
     # Autoload
     autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
+
+    # Save paths
+    save_path_template: str = "{folder}/{prompt}/{id}-{index}.{extension}"
 
     @property
     def dtype(self):

@@ -119,7 +119,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ])
           ]),
           createBaseVNode("div", _hoisted_7, [
-            createBaseVNode("p", null, toDisplayString(unref(width)) + "x" + toDisplayString(unref(height)), 1)
+            createBaseVNode("p", null, toDisplayString(width.value) + "x" + toDisplayString(height.value), 1)
           ]),
           createBaseVNode("input", {
             type: "file",

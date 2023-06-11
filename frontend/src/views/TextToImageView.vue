@@ -11,7 +11,9 @@
               type="textarea"
               placeholder="Prompt"
               show-count
-              @keyup="promptHandleKeyUp"
+              @keyup="
+                promptHandleKeyUp($event, conf.data.settings.txt2img, 'prompt')
+              "
               @keydown="promptHandleKeyDown"
             >
               <template #count>{{ promptCount }}</template>
@@ -21,7 +23,13 @@
               type="textarea"
               placeholder="Negative prompt"
               show-count
-              @keyup="promptHandleKeyUp"
+              @keyup="
+                promptHandleKeyUp(
+                  $event,
+                  conf.data.settings.txt2img,
+                  'negative_prompt'
+                )
+              "
               @keydown="promptHandleKeyDown"
             >
               <template #count>{{ negativePromptCount }}</template>
@@ -416,6 +424,14 @@
                   { label: 'Area', value: 'area' },
                   { label: 'Bilinear', value: 'bilinear' },
                   { label: 'Bicubic', value: 'bicubic' },
+                  {
+                    label: 'Bislerp (Original, slow)',
+                    value: 'bislerp-original',
+                  },
+                  {
+                    label: 'Bislerp (Tortured, fast)',
+                    value: 'bislerp-tortured',
+                  },
                 ]"
               />
             </div>

@@ -25,4 +25,5 @@ jobs:
       - name: Deploy preview
         uses: rossjrw/pr-preview-action@v1
         with:
+          token: ${{ secrets.GITHUB_TOKEN }}
           source-dir: docs/.vitepress/dist
