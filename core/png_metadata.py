@@ -18,6 +18,7 @@ from core.types import (
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
 )
+from core.utils import unwrap_enum_name
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +43,7 @@ def create_metadata(
         data.seed = str(job.data.seed) + (f"({index})" if index > 0 else "")  # type: ignore Overwrite for sequencialy generated images
 
     def write_metadata(key: str):
-        metadata.add_text(key, str(data.__dict__.get(key, "")))
+        metadata.add_text(key, str(unwrap_enum_name(data.__dict__.get(key, ""))))
 
     for key in fields(data):
         if key.name not in ("image", "mask_image"):
