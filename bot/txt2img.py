@@ -158,7 +158,9 @@ class Inference(Cog):
             )
             await message.add_files(
                 File(
-                    convert_base64_to_bytes(response["images"][0].replace("data:image/png;base64,", "")),
+                    convert_base64_to_bytes(
+                        response["images"][0].replace("data:image/png;base64,", "")
+                    ),
                     filename=f"{seed}.png",
                 )
             )
@@ -275,7 +277,9 @@ class Inference(Cog):
             )
             await message.add_files(
                 File(
-                    convert_base64_to_bytes(response["images"][0].replace("data:image/png;base64,", "")),
+                    convert_base64_to_bytes(
+                        response["images"][0].replace("data:image/png;base64,", "")
+                    ),
                     filename=f"{seed}.png",
                 )
             )

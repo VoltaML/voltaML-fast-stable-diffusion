@@ -48,7 +48,9 @@ class Hardware(Cog):
         await ctx.defer()
 
         async with ClientSession() as session:
-            async with session.post("http://localhost:5003/api/models/memory-cleanup") as resp:
+            async with session.post(
+                "http://localhost:5003/api/models/memory-cleanup"
+            ) as resp:
                 status = resp.status
 
         if status != 200:
