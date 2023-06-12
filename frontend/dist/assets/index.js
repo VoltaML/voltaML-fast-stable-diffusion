@@ -40906,6 +40906,8 @@ const defaultSettings = {
   },
   frontend: {
     theme: "dark",
+    enable_theme_editor: false,
+    image_browser_columns: 5,
     on_change_timer: 2e3
   }
 };
@@ -41988,7 +41990,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "2ad9c920": backgroundColor.value
+      "79262321": backgroundColor.value
     }));
     const settings = useSettings();
     const theme = computed(() => {
@@ -42020,19 +42022,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         class: "main"
       }, {
         default: withCtx(() => [
-          createVNode(unref(NThemeEditor), null, {
+          unref(settings).data.settings.frontend.enable_theme_editor ? (openBlock(), createBlock(unref(NThemeEditor), { key: 0 })) : createCommentVNode("", true),
+          createVNode(unref(NNotificationProvider), { placement: "bottom-right" }, {
             default: withCtx(() => [
-              createVNode(unref(NNotificationProvider), { placement: "bottom-right" }, {
+              createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
-                  createVNode(unref(NMessageProvider), null, {
-                    default: withCtx(() => [
-                      createVNode(_sfc_main$4),
-                      createVNode(TopBarVue),
-                      createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
-                      createVNode(_sfc_main$3)
-                    ]),
-                    _: 1
-                  })
+                  createVNode(_sfc_main$4),
+                  createVNode(TopBarVue),
+                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
+                  createVNode(_sfc_main$3)
                 ]),
                 _: 1
               })
@@ -42045,8 +42043,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const App_vue_vue_type_style_index_0_scoped_58f67f74_lang = "";
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-58f67f74"]]);
+const App_vue_vue_type_style_index_0_scoped_ff9d4f45_lang = "";
+const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-ff9d4f45"]]);
 const scriptRel = "modulepreload";
 const assetsURL = function(dep) {
   return "/" + dep;
@@ -42210,9 +42208,9 @@ export {
   ChevronRightIcon as aO,
   VResizeObserver as aP,
   warn$2 as aQ,
-  VVirtualList as aR,
-  NEmpty as aS,
-  cssrAnchorMetaName as aT,
+  cssrAnchorMetaName as aR,
+  VVirtualList as aS,
+  NEmpty as aT,
   repeat as aU,
   beforeNextFrameOnce as aV,
   fadeInScaleUpTransition as aW,
@@ -42270,8 +42268,8 @@ export {
   commonVariables$m as bg,
   formItemInjectionKey as bh,
   onMounted as bi,
-  resolveComponent as bj,
-  defaultSettings as bk,
+  defaultSettings as bj,
+  useCssVars as bk,
   useCompitable as bl,
   descriptionsLight$1 as bm,
   useRouter as bn,

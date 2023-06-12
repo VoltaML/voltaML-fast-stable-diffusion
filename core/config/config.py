@@ -238,6 +238,8 @@ class FrontendConfig:
     "Configuration for the frontend"
 
     theme: Literal["dark", "light"] = "dark"
+    enable_theme_editor: bool = False
+    image_browser_columns: int = 5
     on_change_timer: int = 0
 
 
@@ -245,8 +247,6 @@ class FrontendConfig:
 @dataclass
 class Configuration(DataClassJsonMixin):
     "Main configuration class for the application"
-
-    # default_factory= instead of default= so we're python3.11 compatible
 
     txt2img: Txt2ImgConfig = field(default_factory=Txt2ImgConfig)
     img2img: Img2ImgConfig = field(default_factory=Img2ImgConfig)

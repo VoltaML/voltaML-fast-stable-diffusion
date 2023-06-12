@@ -15,16 +15,21 @@
     "
     class="top-bar"
   >
-    <NIcon style="margin-right: 12px" size="24">
+    <NInput
+      v-model:value="itemFilter"
+      style="margin: 0 12px"
+      placeholder="Filter"
+    />
+    <NIcon style="margin-right: 12px" size="22">
       <GridOutline />
     </NIcon>
     <NSlider
-      :tooltip="false"
-      style="width: 20vw"
-      :min="100"
-      :max="500"
-      v-model:value="gridWidth"
-    />
+      style="width: 50vw"
+      :min="1"
+      :max="10"
+      v-model:value="conf.data.settings.frontend.image_browser_columns"
+    >
+    </NSlider>
   </div>
   <div class="main-container" style="margin-top: 114px">
     <NModal
@@ -48,7 +53,7 @@
       style="width: 85vw"
       title="Image Info"
     >
-      <NGrid cols="2" x-gap="12">
+      <NGrid cols="1 m:2" x-gap="12" y-gap="12" responsive="screen">
         <!-- Left side -->
         <NGi>
           <NImage
@@ -119,14 +124,29 @@
         </NGi>
       </NGrid>
     </NModal>
-    <div class="image-grid-container" ref="scrollComponent">
-      <img
-        :src="urlFromPath(i.path)"
-        v-for="(i, index) in imgData.slice(0, computedImgDataLimit)"
-        v-bind:key="index"
-        style="width: 100%; height: auto; border-radius: 8px; cursor: pointer"
-        @click="imgClick(index)"
-      />
+    <div ref="scrollComponent">
+      <div class="image-grid">
+        <div
+          v-for="(column, column_index) in columns"
+          v-bind:key="column_index"
+          class="image-column"
+          ref="gridColumnRefs"
+        >
+          <img
+            v-for="(item, item_index) in column"
+            :src="urlFromPath(item.path)"
+            v-bind:key="item_index"
+            style="
+              width: 100%;
+              height: auto;
+              border-radius: 8px;
+              cursor: pointer;
+              margin-bottom: 6px;
+            "
+            @click="imgClick(column_index, item_index)"
+          />
+        </div>
+      </div>
     </div>
   </div>
 </template>
@@ -144,6 +164,7 @@ import {
   NGrid,
   NIcon,
   NImage,
+  NInput,
   NModal,
   NScrollbar,
   NSlider,
@@ -160,11 +181,9 @@ const showImageModal = ref(false);
 
 const scrollComponent = ref<HTMLElement | null>(null);
 const imageLimit = ref(30);
+const itemFilter = ref("");
 
-const gridWidth = ref(250);
-const computedGridWidth = computed(() => {
-  return gridWidth.value.toString() + "px";
-});
+const gridColumnRefs = ref<HTMLElement[]>([]);
 
 function urlFromPath(path: string) {
   const url = new URL(path, serverUrl);
@@ -188,6 +207,12 @@ function deleteImage() {
       // Close the modal
       showImageModal.value = false;
 
+      // Remove the image from the list
+      const index = imgData.findIndex((el) => {
+        return el.path === global.state.imageBrowser.currentImage.path;
+      });
+      imgData.splice(index, 1);
+
       global.state.imageBrowser.currentImage = {
         path: "",
         id: "",
@@ -198,14 +223,6 @@ function deleteImage() {
         string,
         string
       >();
-
-      // Remove the image from the list
-      imgData.splice(
-        imgData.findIndex(
-          (i) => i.path === global.state.imageBrowser.currentImage.path
-        ),
-        1
-      );
     });
 }
 
@@ -258,11 +275,12 @@ function setByte64FromImage(path: string) {
     });
 }
 
-function imgClick(i: number) {
-  global.state.imageBrowser.currentImage = imgData[i];
-  setByte64FromImage(imgData[i].path);
+function imgClick(column_index: number, item_index: number) {
+  const item = columns.value[column_index][item_index];
+  global.state.imageBrowser.currentImage = item;
+  setByte64FromImage(item.path);
   const url = new URL(`${serverUrl}/api/output/data/`);
-  url.searchParams.append("filename", imgData[i].path);
+  url.searchParams.append("filename", item.path);
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
@@ -271,9 +289,32 @@ function imgClick(i: number) {
   showImageModal.value = true;
 }
 
-const imgData: IImgData[] = reactive([]);
+const imgData: IImgData[] = reactive<IImgData[]>([]);
+
+const filteredImgData = computed(() => {
+  return imgData.filter((item) => {
+    if (itemFilter.value === "") {
+      return true;
+    }
+    return item.path.includes(itemFilter.value);
+  });
+});
+
 const computedImgDataLimit = computed(() => {
-  return Math.min(imgData.length, imageLimit.value);
+  return Math.min(filteredImgData.value.length, imageLimit.value);
+});
+
+const columns = computed(() => {
+  const cols: IImgData[][] = [];
+  for (let i = 0; i < conf.data.settings.frontend.image_browser_columns; i++) {
+    cols.push([]);
+  }
+  for (let i = 0; i < computedImgDataLimit.value; i++) {
+    cols[i % conf.data.settings.frontend.image_browser_columns].push(
+      filteredImgData.value[i]
+    );
+  }
+  return cols;
 });
 
 async function refreshImages() {
@@ -312,11 +353,31 @@ async function refreshImages() {
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const handleScroll = (e: Event) => {
+  // Check for the scroll component, as it is required to continue
   let element = scrollComponent.value;
   if (element === null) {
     return;
   }
-  if (element.getBoundingClientRect().bottom - 200 < window.innerHeight) {
+
+  // Get the smallest possible value of the bottom of the images columns
+  let minBox = 0;
+  for (const col of gridColumnRefs.value) {
+    const lastImg = col.childNodes.item(
+      col.childNodes.length - 2
+    ) as HTMLElement;
+    const bottombbox = lastImg.getBoundingClientRect().bottom;
+    if (minBox === 0) {
+      minBox = bottombbox;
+    } else if (bottombbox < minBox) {
+      minBox = bottombbox;
+    }
+  }
+
+  // Extend the image limit if the bottom of the images is less than 50px from the bottom of the screen
+  if (minBox - 50 < window.innerHeight) {
+    if (imageLimit.value >= filteredImgData.value.length) {
+      return;
+    }
     imageLimit.value += 30;
   }
 };
@@ -347,17 +408,21 @@ const backgroundColor = computed(() => {
   width: auto;
 }
 
-.image-grid-container {
+.image-grid {
   display: grid;
-  gap: 6px;
   grid-template-columns: repeat(
-    auto-fit,
-    minmax(v-bind(computedGridWidth), 1fr)
+    v-bind("conf.data.settings.frontend.image_browser_columns"),
+    1fr
   );
-  grid-auto-flow: dense;
+  grid-gap: 8px;
 }
 
 .top-bar {
   background-color: v-bind(backgroundColor);
+}
+
+.image-column {
+  display: flex;
+  flex-direction: column;
 }
 </style>

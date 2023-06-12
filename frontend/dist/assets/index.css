@@ -30,8 +30,8 @@
   margin-left: 16px;
 }
 
-.main[data-v-58f67f74] {
-  background-color: var(--2ad9c920);
+.main[data-v-ff9d4f45] {
+  background-color: var(--79262321);
 }
 body {
   min-height: 100vh;
@@ -66,10 +66,6 @@ body {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #00ad49;
-}
-
-::-webkit-scrollbar {
-  display: none;
 }
 
 a,
