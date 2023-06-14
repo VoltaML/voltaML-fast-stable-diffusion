@@ -87,6 +87,7 @@ core/submodules
 
 # Manager
 manager/target
+voltaml-manager
 
 # Profiler stuff
 profile.html
