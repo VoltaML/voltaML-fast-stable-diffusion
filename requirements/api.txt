@@ -1,6 +1,6 @@
 requests
-fastapi
-websockets
+fastapi==0.95.0
+websockets==11.0
 uvicorn
 coloredlogs
 pyngrok
