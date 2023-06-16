@@ -17,5 +17,5 @@ Settings are not automatically saved. You need to click the `Save Settings` butt
 :::
 
 ::: warning
-When resetting the settings, the settings will be reset to the default values, but will once again need to be saved manully.
+When resetting the settings, the settings will be reset to the default values, but will once again need to be saved manually.
 :::

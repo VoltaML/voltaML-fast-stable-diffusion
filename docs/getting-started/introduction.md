@@ -22,7 +22,7 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 
 - Easy install with Docker
 - Clean and simple Web UI
-- Supports PyTorch as well as AITemplat for inference
+- Supports PyTorch as well as AITemplate for inference
 - Support for Windows and Linux
 - xFormers supported out of the box
 - GPU cluster load balancing
