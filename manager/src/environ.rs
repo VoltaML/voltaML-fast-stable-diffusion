@@ -6,7 +6,29 @@ use std::fs::{File, OpenOptions};
 use std::io::{BufReader, Read, Write};
 use std::path::Path;
 
+pub fn create_env_file() {
+    if Path::new(".env").exists() {
+        return;
+    } else {
+        // Copy the .env.example file to .env
+        let mut file = File::create(".env").expect("Failed to create file");
+        // Read the contents of the example file
+        let mut contents = String::new();
+        let mut reader = BufReader::new(
+            File::open("example.env")
+                .expect("Failed to open file .env.example. Please create it manually."),
+        );
+        reader
+            .read_to_string(&mut contents)
+            .expect("Failed to read file");
+        // Write the contents to the new file
+        file.write_all(contents.as_bytes())
+            .expect("Failed to write to file");
+    }
+}
+
 pub fn inject_variable(name: &str, value: &str) {
+    create_env_file();
     let envfile = Path::new(".env");
     let file = OpenOptions::new()
         .read(true)
@@ -34,6 +56,15 @@ pub fn change_huggingface_token() {
         .unwrap();
 
     inject_variable("HUGGINGFACE_TOKEN", &input);
+}
+
+pub fn change_discord_bot_token() {
+    let input: String = Input::with_theme(&ColorfulTheme::default())
+        .with_prompt("Discord bot token")
+        .interact_text()
+        .unwrap();
+
+    inject_variable("DISCORD_BOT_TOKEN", &input);
 }
 
 pub fn change_logging_level() {

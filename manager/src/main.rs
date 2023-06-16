@@ -77,17 +77,25 @@ fn main() {
 
 fn configure() {
     loop {
-        let items = vec!["Back", "Huggingface Token", "Logging Level"];
-        let response = Select::with_theme(&ColorfulTheme::default())
+        let items = vec![
+            "Back",
+            "Huggingface Token",
+            "Logging Level",
+            "Discord Bot Token",
+        ];
+        let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
             .items(&items)
             .interact()
             .unwrap_or(0);
 
+        let response = items[response_id];
+
         match response {
-            0 => break,
-            1 => environ::change_huggingface_token(),
-            2 => environ::change_logging_level(),
+            "Back" => break,
+            "Huggingface Token" => environ::change_huggingface_token(),
+            "Logging Level" => environ::change_logging_level(),
+            "Discord Bot Token" => environ::change_discord_bot_token(),
             _ => println!("Error"),
         }
     }

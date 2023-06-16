@@ -91,3 +91,6 @@ voltaml-manager
 
 # Profiler stuff
 profile.html
+
+# dotenv file
+.env
