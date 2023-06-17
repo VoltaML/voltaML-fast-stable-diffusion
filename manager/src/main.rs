@@ -126,6 +126,7 @@ fn debug_menu() {
             "Check AITemplate folder",
             "Is aitemplate python package installed",
             "Checkout AITemplate commit",
+            "Reinstall AITemplate python package",
         ];
         let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
@@ -368,6 +369,22 @@ fn debug_menu() {
                         "{} {}",
                         style("[ERROR]").red(),
                         "Failed to checkout AITemplate commit"
+                    );
+                }
+            }
+            "Reinstall AITemplate Python package" => {
+                let res = crate::utils::aitemplate::reinstall_aitemplate_python_package();
+                if res.is_ok() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "Reinstalled AITemplate python package"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to reinstall AITemplate python package"
                     );
                 }
             }
