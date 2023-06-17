@@ -58,7 +58,7 @@ export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
   console.log(data);
 
   // Handle ArrowUp
-  if (e.key === "ArrowUp") {
+  if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
       document.activeElement as HTMLInputElement
     );
@@ -114,7 +114,7 @@ export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
   }
 
   // Handle ArrowDown
-  if (e.key === "ArrowDown") {
+  if (e.key === "ArrowDown" && e.ctrlKey) {
     const values = getTextBoundaries(
       document.activeElement as HTMLInputElement
     );

@@ -40654,7 +40654,7 @@ function getTextBoundaries(elem) {
 }
 function promptHandleKeyUp(e, data, key) {
   console.log(data);
-  if (e.key === "ArrowUp") {
+  if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
       document.activeElement
     );
@@ -40693,7 +40693,7 @@ function promptHandleKeyUp(e, data, key) {
       console.log("No selection, cannot parse for weighting");
     }
   }
-  if (e.key === "ArrowDown") {
+  if (e.key === "ArrowDown" && e.ctrlKey) {
     const values = getTextBoundaries(
       document.activeElement
     );
@@ -42208,9 +42208,9 @@ export {
   ChevronRightIcon as aO,
   VResizeObserver as aP,
   warn$2 as aQ,
-  cssrAnchorMetaName as aR,
-  VVirtualList as aS,
-  NEmpty as aT,
+  VVirtualList as aR,
+  NEmpty as aS,
+  cssrAnchorMetaName as aT,
   repeat as aU,
   beforeNextFrameOnce as aV,
   fadeInScaleUpTransition as aW,

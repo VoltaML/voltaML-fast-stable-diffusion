@@ -1,4 +1,4 @@
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, bk as useCssVars, u as useState, a as useSettings, E as ref, c as computed, b7 as reactive, J as watch, bi as onMounted, o as onUnmounted, g as createVNode, h as unref, w as withCtx, L as Fragment, M as renderList, s as serverUrl, k as NInput, G as NIcon, v as NSlider, b9 as NModal, z as NGrid, N as NGi, F as NButton, m as createTextVNode, O as NScrollbar, x as createBlock, t as toDisplayString, y as createCommentVNode, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, bk as useCssVars, u as useState, a as useSettings, E as ref, c as computed, b7 as reactive, bi as onMounted, o as onUnmounted, g as createVNode, h as unref, w as withCtx, L as Fragment, M as renderList, s as serverUrl, k as NInput, G as NIcon, v as NSlider, b9 as NModal, z as NGrid, N as NGi, F as NButton, m as createTextVNode, O as NScrollbar, x as createBlock, t as toDisplayString, y as createCommentVNode, _ as _export_sfc } from "./index.js";
 import { _ as _sfc_main$1, N as NDescriptionsItem, a as NDescriptions } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { T as TrashBin } from "./TrashBin.js";
 import { N as NImage } from "./Image.js";
@@ -136,8 +136,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "476687c0": unref(conf).data.settings.frontend.image_browser_columns,
-      "05fdd5be": backgroundColor.value
+      "1c7b9a17": unref(conf).data.settings.frontend.image_browser_columns,
+      "4dc33d16": backgroundColor.value
     }));
     const global = useState();
     const conf = useSettings();
@@ -228,9 +228,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       showImageModal.value = true;
     }
     const imgData = reactive([]);
-    watch(imgData, () => {
-      console.log("imgData changed");
-    });
     const filteredImgData = computed(() => {
       return imgData.filter((item) => {
         if (itemFilter.value === "") {
@@ -238,9 +235,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
         return item.path.includes(itemFilter.value);
       });
-    });
-    watch(filteredImgData, () => {
-      console.log("filteredImgData changed");
     });
     const computedImgDataLimit = computed(() => {
       return Math.min(filteredImgData.value.length, imageLimit.value);
@@ -256,9 +250,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         );
       }
       return cols;
-    });
-    watch(columns, () => {
-      console.log("columns changed");
     });
     async function refreshImages() {
       imgData.splice(0, imgData.length);
@@ -523,8 +514,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_8b343c17_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-8b343c17"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_f1c06e25_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f1c06e25"]]);
 export {
   ImageBrowserView as default
 };
