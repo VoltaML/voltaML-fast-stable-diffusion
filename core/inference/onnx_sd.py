@@ -28,8 +28,8 @@ from numpy.random import MT19937, RandomState, SeedSequence
 from PIL import Image
 from torch.onnx import export
 from tqdm.auto import tqdm
-from transformers import CLIPTextModel, CLIPTokenizerFast
 from transformers.modeling_outputs import BaseModelOutputWithPooling
+from transformers.models.clip import CLIPTextModel, CLIPTokenizerFast
 from transformers.utils import is_safetensors_available
 
 from api import websocket_manager

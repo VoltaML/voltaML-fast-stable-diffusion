@@ -28,7 +28,7 @@ from diffusers.schedulers import (
     PNDMScheduler,
 )
 from PIL import Image
-from transformers import CLIPTextModel, CLIPTokenizer
+from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 
 def make_transparency_mask(size, overlap_pixels, remove_borders: Optional[List] = None):

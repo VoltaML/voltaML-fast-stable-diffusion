@@ -5,8 +5,9 @@ import platform
 import subprocess
 import sys
 from dataclasses import dataclass
+from importlib.metadata import PackageNotFoundError
 from pathlib import Path
-from typing import Optional, List, Union
+from typing import List, Optional, Union
 
 renamed_requirements = {
     "opencv-contrib-python-headless": "cv2",
@@ -18,25 +19,8 @@ renamed_requirements = {
 logger = logging.getLogger(__name__)
 
 
-def check_requirements(path_to_requirements: str = "requirements.txt"):
-    "Check if all requirements are installed"
-
-    with open(path_to_requirements, encoding="utf-8", mode="r") as f:
-        requirements = {}
-        for i in f.read().splitlines():
-            if "==" in i:
-                requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
-            elif ">=" in i:
-                requirements[i.split(">=")[0]] = i.replace(i.split(">=")[0], "").strip()
-            elif "<=" in i:
-                requirements[i.split("<=")[0]] = i.replace(i.split("<=")[0], "").strip()
-
-        for requirement in requirements:
-            fixed_name = requirement.replace("-", "_").lower()
-            if not is_installed(fixed_name, requirements[requirement]):
-                return False
-
-        return True
+class NoModuleSpecFound(Exception):
+    "Exception raised when no module spec is found"
 
 
 def install_requirements(path_to_requirements: str = "requirements.txt"):
@@ -44,9 +28,9 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
 
     with open(path_to_requirements, encoding="utf-8", mode="r") as f:
         requirements = {}
-        for i in [r.strip() for r in f.read().splitlines()]:
-            split = i.split(";")
-            i = split[0].strip()
+        for line in [r.strip() for r in f.read().splitlines()]:
+            split = line.split(";")
+            i: str = split[0].strip()
 
             if len(split) > 1:
                 check = split[1].strip()
@@ -73,6 +57,7 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
 
         try:
             for requirement in requirements:
+                # Skip extra commands for pip and comments
                 if requirement.startswith("#") or requirement.startswith("--"):
                     continue
 
@@ -90,7 +75,10 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                     logger.debug(f"Requirement {requirement_name} is not installed")
                     raise ImportError
 
-        except ImportError:
+        except ImportError as e:
+            logger.debug(
+                f"Installing requirements: {path_to_requirements}, because: {e} ({e.__class__.__name__})"
+            )
             try:
                 subprocess.check_call(
                     [
@@ -313,28 +301,34 @@ def is_installed(package: str, version: Optional[str] = None):
     try:
         spec = importlib.util.find_spec(package)
         if spec is None:
-            raise ModuleNotFoundError
+            raise NoModuleSpecFound
 
         if version is not None:
-            from packaging import version as packaging_version
+            try:
+                from packaging import version as packaging_version
 
-            version_number = version.split("=")[-1]
-            version_type = version[:2]
-            required_version = packaging_version.parse(version_number)
-            current_version = packaging_version.parse(
-                importlib.metadata.version(package)
-            )
+                version_number = version.split("=")[-1]
+                version_type = version[:2]
+                required_version = packaging_version.parse(version_number)
+                current_version = packaging_version.parse(
+                    importlib.metadata.version(package)
+                )
+                logger.debug(
+                    f"Required version: {required_version} - Current version: {current_version} - version type: {version_type}"
+                )
 
-            logger.debug(
-                f"Required version: {required_version} - Current version: {current_version} - version type: {version_type}"
-            )
-
-            if version_type == "==":
-                assert current_version == required_version
-            elif version_type == ">=":
-                assert current_version >= required_version
-            elif version_type == "<=":
-                assert current_version <= required_version
+                if version_type == "==":
+                    assert current_version == required_version
+                elif version_type == ">=":
+                    assert current_version >= required_version
+                elif version_type == "<=":
+                    assert current_version <= required_version
+            except PackageNotFoundError:
+                logger.debug(
+                    f"Version metadata not found for {package}, skipping version check"
+                )
+        else:
+            logger.debug(f"Package {package} - ok")
 
     except AssertionError:
         logger.debug(
@@ -342,7 +336,7 @@ def is_installed(package: str, version: Optional[str] = None):
         )
         return False
 
-    except ModuleNotFoundError:
+    except NoModuleSpecFound:
         logger.debug(f"Package {package} - not found")
         return False
 

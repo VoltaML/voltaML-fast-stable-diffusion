@@ -160,6 +160,8 @@ async def get_current_cached_preprocessor():
     if not shared_dependent.cached_controlnet_preprocessor:
         return {
             "preprocessor": shared_dependent.cached_controlnet_preprocessor.__class__.__name__
+            if shared_dependent.cached_controlnet_preprocessor
+            else None
         }
     else:
         return {"preprocessor": None}

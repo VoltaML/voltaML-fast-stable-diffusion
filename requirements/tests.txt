@@ -1,4 +1,4 @@
-httpx
-pytest
-pytest-optional-tests
-pytest-cov
+httpx==0.24.1
+pytest==7.3.2
+pytest-optional-tests==0.1.1
+pytest-cov==4.1.0

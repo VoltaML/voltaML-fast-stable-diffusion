@@ -12,7 +12,7 @@ if TYPE_CHECKING:
         MLSDdetector,
         OpenposeDetector,
     )
-    from transformers import UperNetForSemanticSegmentation
+    from transformers.models.upernet import UperNetForSemanticSegmentation
 
     from core.extra.cloudflare_r2 import R2Bucket
 

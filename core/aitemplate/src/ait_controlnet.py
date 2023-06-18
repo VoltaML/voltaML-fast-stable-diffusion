@@ -22,7 +22,7 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.utils import PIL_INTERPOLATION, deprecate
 from PIL import Image
-from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+from transformers.models.clip import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from core.aitemplate.config import get_unet_in_channels
 

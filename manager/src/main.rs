@@ -126,7 +126,8 @@ fn debug_menu() {
             "Check AITemplate folder",
             "Is aitemplate python package installed",
             "Checkout AITemplate commit",
-            "Reinstall AITemplate python package",
+            "Reinstall AITemplate Python package",
+            "Wipe AITemplate cache dir",
         ];
         let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
@@ -385,6 +386,18 @@ fn debug_menu() {
                         "{} {}",
                         style("[ERROR]").red(),
                         "Failed to reinstall AITemplate python package"
+                    );
+                }
+            }
+            "Wipe AITemplate cache dir" => {
+                let res = crate::utils::aitemplate::wipe_aitemplate_cache_dir();
+                if res.is_ok() {
+                    println!("{} {}", style("[OK]").green(), "Wiped AITemplate cache dir");
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to wipe AITemplate cache dir"
                     );
                 }
             }

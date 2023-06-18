@@ -14,8 +14,9 @@ from diffusers.pipelines.stable_diffusion import (
     StableDiffusionSafetyChecker,
 )
 from diffusers.utils import PIL_INTERPOLATION, logging
-from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+from transformers.models.clip import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
+from core.config import config
 from core.inference.pytorch.latents import prepare_latents
 from core.inference.pytorch.lwp import get_weighted_text_embeddings
 from core.inference.pytorch.sag import (
@@ -25,7 +26,6 @@ from core.inference.pytorch.sag import (
     sag_masking,
 )
 from core.optimizations import autocast
-from core.config import config
 
 # ------------------------------------------------------------------------------
 

@@ -49,6 +49,9 @@ def compile_diffusers(
     convert_conv_to_gemm=True,
     device: str = "cuda",
 ):
+    # Wipe out cache
+    os.remove("~/.aitemplate/cuda.db")
+
     torch.manual_seed(4896)
     start_time = time.time()
 

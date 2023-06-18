@@ -1,2 +1,2 @@
-open_clip_torch
+open_clip_torch==2.20.0
 git+https://github.com/dhansmair/flamingo-mini.git@3f2234da433cad5aae07d5fee12c6c61cda9cca0
