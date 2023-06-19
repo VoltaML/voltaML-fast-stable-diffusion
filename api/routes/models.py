@@ -13,6 +13,7 @@ from streaming_form_data.targets import FileTarget
 
 from api import websocket_manager
 from api.websockets.data import Data
+from core.files import get_full_model_path
 from core.shared_dependent import cached_model_list, gpu
 from core.types import (
     DeleteModelRequest,
@@ -214,23 +215,23 @@ async def delete_model(req: DeleteModelRequest):
     "Delete a model from the server"
 
     if req.model_type == "pytorch":
-        directory = model_upload_dir
+        path = get_full_model_path(req.model_path, diffusers_skip_ref_follow=True)
     elif req.model_type == "lora":
-        directory = lora_upload_dir
+        path = lora_upload_dir.joinpath(req.model_path)
     elif req.model_type == "textual-inversion":
-        directory = textual_inversions_UploadDir
+        path = textual_inversions_UploadDir.joinpath(req.model_path)
     else:
         raise HTTPException(422, "Invalid model type")
 
-    model_path = directory.joinpath(req.model_path)
+    logger.warning(f"Deleting model {path} of type {req.model_type}")
 
-    if not model_path.exists():
+    if not path.exists():
         raise HTTPException(404, "Model not found")
 
-    if model_path.is_dir():
-        shutil.rmtree(model_path)
+    if path.is_dir():
+        shutil.rmtree(path)
     else:
-        os.unlink(model_path)
+        os.unlink(path)
 
     await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model deleted"}
