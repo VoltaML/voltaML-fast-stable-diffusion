@@ -7224,7 +7224,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-6a6fb4b4"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-95c9f01a"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
@@ -7357,7 +7357,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NInput), {
                   value: customModel.value,
                   "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
-                  placeholder: "andite/anything-v4.0",
+                  placeholder: "Azher/Anything-v4.5-vae-fp16-diffuser",
                   style: { "width": "350px" }
                 }, null, 8, ["value"]),
                 createVNode(unref(NButton), {
@@ -7406,8 +7406,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_6a6fb4b4_lang = "";
-const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-6a6fb4b4"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_95c9f01a_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-95c9f01a"]]);
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "FP32", -1);

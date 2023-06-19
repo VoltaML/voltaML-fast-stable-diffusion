@@ -22,7 +22,7 @@ from tests.functions import generate_random_image, generate_random_image_base64
 def pipe_fixture():
     "Preloaded pipe that will be shared across all tests"
 
-    return PyTorchStableDiffusion("andite/anything-v4.0")
+    return PyTorchStableDiffusion("Azher/Anything-v4.5-vae-fp16-diffuser")
 
 
 def test_txt2img(pipe: PyTorchStableDiffusion):
@@ -34,7 +34,7 @@ def test_txt2img(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),
-        model="andite/anything-v4.0",
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
 
     pipe.generate(job)
@@ -49,7 +49,7 @@ def test_txt2img_hr_fix(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),
-        model="andite/anything-v4.0",
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
         flags={
             "high_resolution": {
                 "scale": 2,
@@ -74,7 +74,7 @@ def test_img2img(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),
-        model="andite/anything-v4.0",
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
 
     pipe.generate(job)
@@ -95,7 +95,7 @@ def test_inpaint(pipe: PyTorchStableDiffusion):
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
         ),
-        model="andite/anything-v4.0",
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
 
     pipe.generate(job)
@@ -112,7 +112,7 @@ def test_controlnet(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             controlnet="lllyasviel/sd-controlnet-canny",
         ),
-        model="andite/anything-v4.0",
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
 
     pipe.generate(job)
@@ -147,7 +147,7 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             controlnet="lllyasviel/sd-controlnet-canny",
             is_preprocessed=True,
         ),
-        model="andite/anything-v4.0",
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
 
     pipe.generate(job)
@@ -156,8 +156,8 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
 def test_lora(pipe: PyTorchStableDiffusion):
     "Load LoRA model and inject it into the pipe"
 
-    # Dowload: https://civitai.com/models/4830/shenhe-lora-collection-of-trauters
-    pipe.load_lora("data/lora/shenheLoraCollection_shenheHard.safetensors")
+    # Dowload: https://civitai.com/models/82098/add-more-details-detail-enhancer-tweaker-lora
+    pipe.load_lora("data/lora/more_details.safetensors")
 
 
 def test_txt2img_with_lora(pipe: PyTorchStableDiffusion):
@@ -169,7 +169,7 @@ def test_txt2img_with_lora(pipe: PyTorchStableDiffusion):
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),
-        model="andite/anything-v4.0",
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
 
     pipe.generate(job)
