@@ -11,7 +11,7 @@ Please read the rules before you start editing the documentation.
 - All images will be in WEBP format with maximal 90% image quality
 - Images will be of sensible resolution (no 4k or higher resolution images)
 - English only
-- Grammarly correct when possible
+- Grammatically correct when possible
 - Keep it simple
 
 ## How to edit

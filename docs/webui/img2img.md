@@ -34,7 +34,7 @@ Show an example of the Canny mode (input, output, and the Canny edges)
 :::
 
 Canny is just an edge detection algorithm. It will detect edges in the image and use them as a guide for the model.
-This approach doesnt require any additional models like OpenPose or MLSD, so it can be considered lightweight.
+This approach doesn't require any additional models like OpenPose or MLSD, so it can be considered lightweight.
 
 #### Low threshold and High threshold
 

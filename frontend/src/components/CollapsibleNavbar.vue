@@ -20,12 +20,14 @@
           vertical
           justify="space-between"
           style="height: 100%; overflow: visible; overflow-x: visible"
+          item-style="height: 100%"
         >
           <n-menu
             :collapsed="collapsed"
             :collapsed-width="64"
             :collapsed-icon-size="22"
             :options="menuOptionsMain"
+            style="height: 100%; display: flex; flex-direction: column"
           />
         </NSpace>
       </n-layout-sider>
@@ -37,9 +39,8 @@
 import {
   Albums,
   Create,
-  Download,
+  Cube,
   Duplicate,
-  GitCompare,
   Image,
   Images,
   SettingsSharp,
@@ -78,16 +79,9 @@ const menuOptionsMain: MenuOption[] = [
     icon: renderIcon(Duplicate),
   },
   {
-    label: () =>
-      h(RouterLink, { to: "/download" }, { default: () => "Download" }),
-    key: "download",
-    icon: renderIcon(Download),
-  },
-  {
-    label: () =>
-      h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
-    key: "plugins",
-    icon: renderIcon(Speedometer),
+    label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
+    key: "tagger",
+    icon: renderIcon(Create),
   },
   {
     label: () =>
@@ -100,15 +94,15 @@ const menuOptionsMain: MenuOption[] = [
     icon: renderIcon(Albums),
   },
   {
-    label: () => h(RouterLink, { to: "/tagger" }, { default: () => "Tagger" }),
-    key: "tagger",
-    icon: renderIcon(Create),
+    label: () => h(RouterLink, { to: "/models" }, { default: () => "Models" }),
+    key: "models",
+    icon: renderIcon(Cube),
   },
   {
     label: () =>
-      h(RouterLink, { to: "/convert" }, { default: () => "Convert" }),
-    key: "convert",
-    icon: renderIcon(GitCompare),
+      h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
+    key: "plugins",
+    icon: renderIcon(Speedometer),
   },
   {
     label: () =>
@@ -119,7 +113,7 @@ const menuOptionsMain: MenuOption[] = [
 ];
 
 if (import.meta.env.DEV) {
-  menuOptionsMain.push({
+  menuOptionsMain.splice(-1, 0, {
     label: () => h(RouterLink, { to: "/test" }, { default: () => "Test" }),
     key: "test",
     icon: renderIcon(Warning),
@@ -135,6 +129,6 @@ let collapsed = ref(true);
   top: 0;
   left: 0;
   height: 100%;
-  z-index: 1;
+  z-index: 2;
 }
 </style>

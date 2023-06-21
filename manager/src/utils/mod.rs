@@ -1,3 +1,4 @@
+pub mod aitemplate;
 pub mod nvidia;
 pub mod python;
 pub mod shell;

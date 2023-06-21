@@ -55,6 +55,11 @@
           :min="-1"
         />
       </NFormItem>
+      <NFormItem label="Is Preprocessed">
+        <NSwitch
+          v-model:value="settings.defaultSettings.controlnet.is_preprocessed"
+        />
+      </NFormItem>
       <NFormItem label="Steps">
         <NInputNumber
           v-model:value="settings.defaultSettings.controlnet.steps"
@@ -89,6 +94,7 @@ import {
   NInput,
   NInputNumber,
   NSelect,
+  NSwitch,
 } from "naive-ui";
 
 const settings = useSettings();

@@ -18,10 +18,18 @@ export interface imgMetadata {
 export interface ModelEntry {
   name: string;
   path: string;
-  backend: "TensorRT" | "PyTorch" | "AITemplate" | "unknown" | "LoRA";
+  backend:
+    | "TensorRT"
+    | "PyTorch"
+    | "AITemplate"
+    | "ONNX"
+    | "unknown"
+    | "LoRA"
+    | "Textual Inversion";
   valid: boolean;
   state: "loading" | "loaded" | "not loaded";
   loras: string[];
+  textua_inversions: string[];
 }
 
 export enum ControlNetType {

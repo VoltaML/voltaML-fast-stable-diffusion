@@ -22,7 +22,7 @@ pub fn install(wsl: bool, experimental: bool) {
     let res = crate::git::clone::clone_repo(
         "https://github.com/voltaML/voltaML-fast-stable-diffusion",
         "tmp",
-        if experimental { "main" } else { "experimental" },
+        if experimental { "experimental" } else { "main" },
     );
     if res.is_err() {
         println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
@@ -62,12 +62,22 @@ pub fn install(wsl: bool, experimental: bool) {
     }
 
     // Check virtualenv
-    if !crate::utils::python::is_virtualenv_installed() {
-        let res = crate::apt::install("python3-virtualenv");
+    let virtualenv_installed = crate::utils::python::is_virtualenv_installed();
+    if !virtualenv_installed {
+        println!(
+            "{} virtualenv not installed, installing...",
+            style("[INFO]").green()
+        );
+        let res = crate::apt::install("python3-venv");
         if res.is_err() {
             println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
             return;
         }
+    } else {
+        println!(
+            "{} virtualenv installed, skipping...",
+            style("[INFO]").green()
+        );
     }
 
     // Install GPU Inference dependencies
@@ -100,7 +110,7 @@ pub fn install(wsl: bool, experimental: bool) {
     }
 
     // Install wheel
-    let res = crate::utils::python::pip_install("wheel");
+    let res = crate::utils::python::pip_install_venv("wheel");
     if res.is_err() {
         println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
         return;
@@ -117,7 +127,7 @@ pub fn install(wsl: bool, experimental: bool) {
     println!(
         "{} {}",
         style("[OK]").green(),
-        "Installation complete, please run 'bash start.sh' to start the application'"
+        "Installation complete, please select 'Start' to start the application'"
     );
 }
 

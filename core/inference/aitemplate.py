@@ -7,7 +7,8 @@ from diffusers import ControlNetModel
 from diffusers.models.autoencoder_kl import AutoencoderKL
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from PIL import Image
-from transformers import CLIPFeatureExtractor
+from rich.console import Console
+from transformers.models.clip import CLIPFeatureExtractor
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
@@ -22,11 +23,9 @@ from core.inference_callbacks import (
     img2img_callback,
     txt2img_callback,
 )
-from core.optimizations import optimize_model
 from core.schedulers import change_scheduler
 from core.types import (
     Backend,
-    ControlNetMode,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     Job,
@@ -35,6 +34,7 @@ from core.types import (
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
+console = Console()
 
 
 class AITemplateStableDiffusion(InferenceModel):
@@ -69,9 +69,12 @@ class AITemplateStableDiffusion(InferenceModel):
         self.vae_ait_exe: Model
 
         self.controlnet: Optional[ControlNetModel] = None
-        self.current_controlnet: ControlNetMode = ControlNetMode.NONE
+        self.current_controlnet: str = ""
 
-        self.load()
+        if "__dynamic" in self.model_id:
+            self.load_dynamic()
+        else:
+            self.load()
 
     @property
     def directory(self) -> str:
@@ -88,32 +91,29 @@ class AITemplateStableDiffusion(InferenceModel):
             is_for_aitemplate=True,
         )
 
+        pipe.to(self.device)
+
         pipe.unet = None  # type: ignore
         self.memory_cleanup()
 
-        pipe = StableDiffusionAITPipeline(
-            vae=pipe.vae,  # type: ignore
-            text_encoder=pipe.text_encoder,  # type: ignore
-            tokenizer=pipe.tokenizer,  # type: ignore
-            scheduler=pipe.scheduler,  # type: ignore
-            directory=self.directory,
-            clip_ait_exe=None,
-            unet_ait_exe=None,
-            vae_ait_exe=None,
-            requires_safety_checker=False,
-            safety_checker=None,  # type: ignore
-            feature_extractor=None,  # type: ignore
-        )
+        with console.status("[bold green]Loading AITemplate model..."):
+            pipe = StableDiffusionAITPipeline(
+                unet=pipe.unet,  # type: ignore
+                vae=pipe.vae,  # type: ignore
+                text_encoder=pipe.text_encoder,  # type: ignore
+                tokenizer=pipe.tokenizer,  # type: ignore
+                scheduler=pipe.scheduler,  # type: ignore
+                directory=self.directory,
+                clip_ait_exe=None,
+                unet_ait_exe=None,
+                vae_ait_exe=None,
+                requires_safety_checker=False,
+                safety_checker=None,  # type: ignore
+                feature_extractor=None,  # type: ignore
+            )
         assert isinstance(pipe, StableDiffusionAITPipeline)
 
-        # Disable optLevel for AITemplate models and optimize the model
-        optimize_model(
-            pipe=pipe,
-            device=self.device,
-            use_fp32=config.api.use_fp32,
-            is_for_aitemplate=True,
-        )
-
+        self.unet = pipe.unet  # type: ignore
         self.vae = pipe.vae
         self.text_encoder = pipe.text_encoder
         self.tokenizer = pipe.tokenizer
@@ -127,26 +127,78 @@ class AITemplateStableDiffusion(InferenceModel):
         self.vae_ait_exe = pipe.vae_ait_exe
 
         self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
+        self.type: Literal["static", "dynamic"] = "static"
+
+    def load_dynamic(self):
+        from core.aitemplate.src.dynamic_ait_txt2img import (
+            StableDiffusionDynamicAITPipeline,
+        )
+
+        pipe = load_pytorch_pipeline(
+            self.model_id,
+            device=self.device,
+            is_for_aitemplate=True,
+        )
+
+        pipe.to(self.device)
+
+        self.memory_cleanup()
+
+        with console.status("[bold green]Loading AITemplate model..."):
+            pipe = StableDiffusionDynamicAITPipeline(
+                vae=pipe.vae,  # type: ignore
+                text_encoder=pipe.text_encoder,  # type: ignore
+                tokenizer=pipe.tokenizer,  # type: ignore
+                scheduler=pipe.scheduler,  # type: ignore
+                unet=pipe.unet,  # type: ignore
+                directory=self.directory,
+                clip_ait_exe=None,
+                unet_ait_exe=None,
+                vae_ait_exe=None,
+                requires_safety_checker=False,
+                safety_checker=None,  # type: ignore
+                feature_extractor=None,  # type: ignore
+            )
+        assert isinstance(pipe, StableDiffusionDynamicAITPipeline)
+
+        self.vae = pipe.vae  # type: ignore
+        self.text_encoder = pipe.text_encoder  # type: ignore
+        self.unet = pipe.unet  # type: ignore
+        self.tokenizer = pipe.tokenizer
+        self.scheduler = pipe.scheduler
+        self.requires_safety_checker = False
+        self.safety_checker = pipe.safety_checker  # type: ignore
+        self.feature_extractor = pipe.feature_extractor  # type: ignore
+
+        self.clip_ait_exe = pipe.clip_ait_exe
+        self.unet_ait_exe = pipe.unet_ait_exe
+        self.vae_ait_exe = pipe.vae_ait_exe
+
+        self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
+        self.type = "dynamic"
 
     def unload(self):
-        del (
-            self.vae,
-            self.text_encoder,
-            self.tokenizer,
-            self.scheduler,
-            self.requires_safety_checker,
-            self.safety_checker,
-            self.clip_ait_exe,
-            self.unet_ait_exe,
-            self.vae_ait_exe,
-        )
+        for property_ in (
+            "vae",
+            "text_encoder",
+            "unet",
+            "tokenizer",
+            "scheduler",
+            "safety_checker",
+            "clip_ait_exe",
+            "unet_ait_exe",
+            "vae_ait_exe",
+            "controlnet",
+        ):
+            if hasattr(self, property_):
+                del self.__dict__[property_]
 
         self.memory_cleanup()
 
     def manage_optional_components(
         self,
         *,
-        target_controlnet: ControlNetMode = ControlNetMode.NONE,
+        target_controlnet: str = "",
     ) -> None:
         "Cleanup old components"
 
@@ -159,7 +211,7 @@ class AITemplateStableDiffusion(InferenceModel):
             self.controlnet = None
             self.memory_cleanup()
 
-            if target_controlnet == ControlNetMode.NONE:
+            if not target_controlnet:
                 # Load basic unet if requested
 
                 if self.current_unet == "controlnet_unet":
@@ -202,9 +254,9 @@ class AITemplateStableDiffusion(InferenceModel):
 
             # Load new controlnet if needed
             cn = ControlNetModel.from_pretrained(
-                target_controlnet.value,
+                target_controlnet,
                 resume_download=True,
-                torch_dtype=torch.float32 if config.api.use_fp32 else torch.float16,
+                torch_dtype=config.api.dtype,
                 use_auth_token=self.auth,
             )
 
@@ -240,14 +292,27 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return images
 
-    def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
+    def txt2img(
+        self,
+        job: Txt2ImgQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from text"
 
-        from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
+        if self.type == "static":
+            from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
+
+            cls = StableDiffusionAITPipeline
+        else:
+            from core.aitemplate.src.dynamic_ait_txt2img import (
+                StableDiffusionDynamicAITPipeline,
+            )
+
+            cls = StableDiffusionDynamicAITPipeline
 
         self.manage_optional_components()
 
-        pipe = StableDiffusionAITPipeline(
+        pipe = cls(
+            unet=self.unet,
             vae=self.vae,
             directory=self.directory,
             text_encoder=self.text_encoder,
@@ -304,7 +369,10 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return total_images
 
-    def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
+    def img2img(
+        self,
+        job: Img2ImgQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from images"
 
         from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
@@ -312,6 +380,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self.manage_optional_components()
 
         pipe = StableDiffusionImg2ImgAITPipeline(
+            unet=self.unet,
             vae=self.vae,
             directory=self.directory,
             text_encoder=self.text_encoder,
@@ -370,7 +439,10 @@ class AITemplateStableDiffusion(InferenceModel):
 
         return total_images
 
-    def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
+    def controlnet2img(
+        self,
+        job: ControlNetQueueEntry,
+    ) -> List[Image.Image]:
         "Generates images from images"
 
         self.manage_optional_components(target_controlnet=job.data.controlnet)
@@ -382,6 +454,7 @@ class AITemplateStableDiffusion(InferenceModel):
         )
 
         pipe = StableDiffusionControlNetAITPipeline(
+            unet=self.unet,
             vae=self.vae,
             directory=self.directory,
             text_encoder=self.text_encoder,
@@ -400,12 +473,14 @@ class AITemplateStableDiffusion(InferenceModel):
 
         change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
+        from core.controlnet_preprocessing import image_to_controlnet_input
+
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
 
-        from core.controlnet_preprocessing import image_to_controlnet_input
-
-        input_image = image_to_controlnet_input(input_image, job.data)
+        # Preprocess the image if needed
+        if not job.data.is_preprocessed:
+            input_image = image_to_controlnet_input(input_image, job.data)
 
         total_images: List[Image.Image] = [input_image]
 

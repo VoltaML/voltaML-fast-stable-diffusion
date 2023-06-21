@@ -1,5 +1,27 @@
 <template>
   <NForm>
+    <h2>Saving outputs</h2>
+    <NFormItem label="Template for saving outputs">
+      <NInput v-model:value="settings.defaultSettings.api.save_path_template" />
+    </NFormItem>
+
+    <h2>Autoload</h2>
+    <NFormItem label="Textual Inversions">
+      <NSelect
+        multiple
+        :options="textualInversionOptions"
+        v-model:value="
+          settings.defaultSettings.api.autoloaded_textual_inversions
+        "
+      >
+      </NSelect>
+    </NFormItem>
+
+    <NFormItem label="LoRAs (not functional yet)">
+      <NSelect multiple :options="loraOptions"> </NSelect>
+    </NFormItem>
+
+    <h2>Timings and Queue</h2>
     <NFormItem label="WebSocket Performance Monitor Interval">
       <NInputNumber
         v-model:value="settings.defaultSettings.api.websocket_perf_interval"
@@ -21,7 +43,18 @@
       />
     </NFormItem>
 
+    <NFormItem label="Concurrent jobs">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.concurrent_jobs"
+        :step="1"
+      />
+    </NFormItem>
+
     <h2>Optimizations</h2>
+
+    <NFormItem label="Autocast">
+      <NSwitch v-model:value="settings.defaultSettings.api.autocast" />
+    </NFormItem>
 
     <NFormItem label="Attention Processor">
       <NSelect
@@ -31,14 +64,49 @@
             label: 'xFormers (less memory hungry)',
           },
           {
-            value: 'spda',
-            label: 'SPD Attention',
+            value: 'sdpa',
+            label: 'SDP Attention',
+          },
+          {
+            value: 'cross-attention',
+            label: 'Cross-Attention',
+          },
+          {
+            value: 'subquadratic',
+            label: 'Sub-quadratic Attention',
+          },
+          {
+            value: 'multihead',
+            label: 'Multihead attention',
           },
         ]"
         v-model:value="settings.defaultSettings.api.attention_processor"
       >
       </NSelect>
     </NFormItem>
+
+    <!-- Subquadratic attention params -->
+    <div
+      class="flex-container"
+      v-if="settings.defaultSettings.api.attention_processor == 'subquadratic'"
+    >
+      <p class="slider-label">Subquadratic chunk size (affects VRAM usage)</p>
+      <NSlider
+        v-model:value="settings.defaultSettings.api.subquadratic_size"
+        :step="64"
+        :min="64"
+        :max="8192"
+        style="margin-right: 12px"
+      />
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.subquadratic_size"
+        size="small"
+        style="min-width: 96px; width: 96px"
+        :step="64"
+        :min="64"
+        :max="8192"
+      />
+    </div>
 
     <NFormItem label="Attention Slicing">
       <NSelect
@@ -61,8 +129,49 @@
       <NSwitch v-model:value="settings.defaultSettings.api.channels_last" />
     </NFormItem>
 
+    <NFormItem label="Deterministic generation">
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.deterministic_generation"
+      />
+    </NFormItem>
+
+    <NFormItem label="Reduced Precision (RTX 30xx and newer cards)">
+      <NSwitch v-model:value="settings.defaultSettings.api.reduced_precision" />
+    </NFormItem>
+
+    <NFormItem
+      label="CudNN Benchmark (big VRAM spikes - use on 8GB+ cards only)"
+    >
+      <NSwitch v-model:value="settings.defaultSettings.api.cudnn_benchmark" />
+    </NFormItem>
+
+    <NFormItem label="Clean Memory">
+      <NSelect
+        :options="[
+          {
+            value: 'always',
+            label: 'Always',
+          },
+          {
+            value: 'never',
+            label: 'Never',
+          },
+          {
+            value: 'after_disconnect',
+            label: 'After disconnect',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.clear_memory_policy"
+      >
+      </NSelect>
+    </NFormItem>
+
     <NFormItem label="VAE Slicing">
       <NSwitch v-model:value="settings.defaultSettings.api.vae_slicing" />
+    </NFormItem>
+
+    <NFormItem label="VAE Tiling">
+      <NSwitch v-model:value="settings.defaultSettings.api.vae_tiling" />
     </NFormItem>
 
     <NFormItem label="Trace UNet">
@@ -109,7 +218,19 @@
           },
           {
             value: 'directml',
-            label: 'DirectML (NOT IMPLEMENTED)',
+            label: 'DirectML',
+          },
+          {
+            value: 'intel',
+            label: 'Intel',
+          },
+          {
+            value: 'vulkan',
+            label: 'Vulkan (Not Implemented)',
+          },
+          {
+            value: 'iree',
+            label: 'IREE (Not Implemented)',
           },
         ]"
         v-model:value="settings.defaultSettings.api.device_type"
@@ -120,8 +241,24 @@
       <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
     </NFormItem>
 
-    <NFormItem label="Use FP32 precision">
-      <NSwitch v-model:value="settings.defaultSettings.api.use_fp32" />
+    <NFormItem label="Precision">
+      <NSelect
+        :options="[
+          {
+            value: 'float16',
+            label: '16-bit float',
+          },
+          {
+            value: 'float32',
+            label: '32-bit float',
+          },
+          {
+            value: 'bfloat16',
+            label: '16-bit bfloat (CPU and Ampere+)',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.data_type"
+      />
     </NFormItem>
 
     <h2>TomeSD</h2>
@@ -164,8 +301,49 @@
 </template>
 
 <script lang="ts" setup>
-import { NForm, NFormItem, NInputNumber, NSelect, NSwitch } from "naive-ui";
+import {
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSelect,
+  NSlider,
+  NSwitch,
+} from "naive-ui";
+import { computed } from "vue";
 import { useSettings } from "../../store/settings";
+import { useState } from "../../store/state";
 
 const settings = useSettings();
+const global = useState();
+
+const textualInversions = computed(() => {
+  return global.state.models.filter((model) => {
+    return model.backend === "Textual Inversion";
+  });
+});
+
+const textualInversionOptions = computed(() => {
+  return textualInversions.value.map((model) => {
+    return {
+      value: model.path,
+      label: model.name,
+    };
+  });
+});
+
+const loras = computed(() => {
+  return global.state.models.filter((model) => {
+    return model.backend === "LoRA";
+  });
+});
+
+const loraOptions = computed(() => {
+  return loras.value.map((model) => {
+    return {
+      value: model.path,
+      label: model.name,
+    };
+  });
+});
 </script>

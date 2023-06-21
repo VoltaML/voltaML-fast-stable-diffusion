@@ -1,266 +1,4 @@
-import { be as toString, bf as replaceable, z as h, d as defineComponent, bg as isBrowser, Z as useTheme, O as createInjectionKey, bh as createTheme, bi as commonLight, bj as tooltipLight, Q as c, R as cB, bk as fadeInTransition, aR as fadeInScaleUpTransition, ak as cNotM, M as toRef, A as ref, al as useLocale, a7 as watch, aB as onBeforeUnmount, aC as off, c as computed, I as useConfig, a2 as useThemeClass, bl as isMounted, bm as LazyTeleport, bn as withDirectives, bo as zindexable, aS as Transition, F as Fragment, ao as NBaseIcon, bp as vShow, a5 as on, X as inject, bq as normalizeStyle, m as NTooltip, aQ as beforeNextFrameOnce, a3 as createId, L as provide, b4 as getCurrentInstance, b8 as onMounted, am as watchEffect } from "./index.js";
-function arrayReduce(array, iteratee, accumulator, initAccum) {
-  var index = -1, length = array == null ? 0 : array.length;
-  if (initAccum && length) {
-    accumulator = array[++index];
-  }
-  while (++index < length) {
-    accumulator = iteratee(accumulator, array[index], index, array);
-  }
-  return accumulator;
-}
-function basePropertyOf(object) {
-  return function(key) {
-    return object == null ? void 0 : object[key];
-  };
-}
-var deburredLetters = {
-  // Latin-1 Supplement block.
-  "À": "A",
-  "Á": "A",
-  "Â": "A",
-  "Ã": "A",
-  "Ä": "A",
-  "Å": "A",
-  "à": "a",
-  "á": "a",
-  "â": "a",
-  "ã": "a",
-  "ä": "a",
-  "å": "a",
-  "Ç": "C",
-  "ç": "c",
-  "Ð": "D",
-  "ð": "d",
-  "È": "E",
-  "É": "E",
-  "Ê": "E",
-  "Ë": "E",
-  "è": "e",
-  "é": "e",
-  "ê": "e",
-  "ë": "e",
-  "Ì": "I",
-  "Í": "I",
-  "Î": "I",
-  "Ï": "I",
-  "ì": "i",
-  "í": "i",
-  "î": "i",
-  "ï": "i",
-  "Ñ": "N",
-  "ñ": "n",
-  "Ò": "O",
-  "Ó": "O",
-  "Ô": "O",
-  "Õ": "O",
-  "Ö": "O",
-  "Ø": "O",
-  "ò": "o",
-  "ó": "o",
-  "ô": "o",
-  "õ": "o",
-  "ö": "o",
-  "ø": "o",
-  "Ù": "U",
-  "Ú": "U",
-  "Û": "U",
-  "Ü": "U",
-  "ù": "u",
-  "ú": "u",
-  "û": "u",
-  "ü": "u",
-  "Ý": "Y",
-  "ý": "y",
-  "ÿ": "y",
-  "Æ": "Ae",
-  "æ": "ae",
-  "Þ": "Th",
-  "þ": "th",
-  "ß": "ss",
-  // Latin Extended-A block.
-  "Ā": "A",
-  "Ă": "A",
-  "Ą": "A",
-  "ā": "a",
-  "ă": "a",
-  "ą": "a",
-  "Ć": "C",
-  "Ĉ": "C",
-  "Ċ": "C",
-  "Č": "C",
-  "ć": "c",
-  "ĉ": "c",
-  "ċ": "c",
-  "č": "c",
-  "Ď": "D",
-  "Đ": "D",
-  "ď": "d",
-  "đ": "d",
-  "Ē": "E",
-  "Ĕ": "E",
-  "Ė": "E",
-  "Ę": "E",
-  "Ě": "E",
-  "ē": "e",
-  "ĕ": "e",
-  "ė": "e",
-  "ę": "e",
-  "ě": "e",
-  "Ĝ": "G",
-  "Ğ": "G",
-  "Ġ": "G",
-  "Ģ": "G",
-  "ĝ": "g",
-  "ğ": "g",
-  "ġ": "g",
-  "ģ": "g",
-  "Ĥ": "H",
-  "Ħ": "H",
-  "ĥ": "h",
-  "ħ": "h",
-  "Ĩ": "I",
-  "Ī": "I",
-  "Ĭ": "I",
-  "Į": "I",
-  "İ": "I",
-  "ĩ": "i",
-  "ī": "i",
-  "ĭ": "i",
-  "į": "i",
-  "ı": "i",
-  "Ĵ": "J",
-  "ĵ": "j",
-  "Ķ": "K",
-  "ķ": "k",
-  "ĸ": "k",
-  "Ĺ": "L",
-  "Ļ": "L",
-  "Ľ": "L",
-  "Ŀ": "L",
-  "Ł": "L",
-  "ĺ": "l",
-  "ļ": "l",
-  "ľ": "l",
-  "ŀ": "l",
-  "ł": "l",
-  "Ń": "N",
-  "Ņ": "N",
-  "Ň": "N",
-  "Ŋ": "N",
-  "ń": "n",
-  "ņ": "n",
-  "ň": "n",
-  "ŋ": "n",
-  "Ō": "O",
-  "Ŏ": "O",
-  "Ő": "O",
-  "ō": "o",
-  "ŏ": "o",
-  "ő": "o",
-  "Ŕ": "R",
-  "Ŗ": "R",
-  "Ř": "R",
-  "ŕ": "r",
-  "ŗ": "r",
-  "ř": "r",
-  "Ś": "S",
-  "Ŝ": "S",
-  "Ş": "S",
-  "Š": "S",
-  "ś": "s",
-  "ŝ": "s",
-  "ş": "s",
-  "š": "s",
-  "Ţ": "T",
-  "Ť": "T",
-  "Ŧ": "T",
-  "ţ": "t",
-  "ť": "t",
-  "ŧ": "t",
-  "Ũ": "U",
-  "Ū": "U",
-  "Ŭ": "U",
-  "Ů": "U",
-  "Ű": "U",
-  "Ų": "U",
-  "ũ": "u",
-  "ū": "u",
-  "ŭ": "u",
-  "ů": "u",
-  "ű": "u",
-  "ų": "u",
-  "Ŵ": "W",
-  "ŵ": "w",
-  "Ŷ": "Y",
-  "ŷ": "y",
-  "Ÿ": "Y",
-  "Ź": "Z",
-  "Ż": "Z",
-  "Ž": "Z",
-  "ź": "z",
-  "ż": "z",
-  "ž": "z",
-  "Ĳ": "IJ",
-  "ĳ": "ij",
-  "Œ": "Oe",
-  "œ": "oe",
-  "ŉ": "'n",
-  "ſ": "s"
-};
-var deburrLetter = basePropertyOf(deburredLetters);
-const deburrLetter$1 = deburrLetter;
-var reLatin = /[\xc0-\xd6\xd8-\xf6\xf8-\xff\u0100-\u017f]/g;
-var rsComboMarksRange$1 = "\\u0300-\\u036f", reComboHalfMarksRange$1 = "\\ufe20-\\ufe2f", rsComboSymbolsRange$1 = "\\u20d0-\\u20ff", rsComboRange$1 = rsComboMarksRange$1 + reComboHalfMarksRange$1 + rsComboSymbolsRange$1;
-var rsCombo$1 = "[" + rsComboRange$1 + "]";
-var reComboMark = RegExp(rsCombo$1, "g");
-function deburr(string) {
-  string = toString(string);
-  return string && string.replace(reLatin, deburrLetter$1).replace(reComboMark, "");
-}
-var reAsciiWord = /[^\x00-\x2f\x3a-\x40\x5b-\x60\x7b-\x7f]+/g;
-function asciiWords(string) {
-  return string.match(reAsciiWord) || [];
-}
-var reHasUnicodeWord = /[a-z][A-Z]|[A-Z]{2}[a-z]|[0-9][a-zA-Z]|[a-zA-Z][0-9]|[^a-zA-Z0-9 ]/;
-function hasUnicodeWord(string) {
-  return reHasUnicodeWord.test(string);
-}
-var rsAstralRange = "\\ud800-\\udfff", rsComboMarksRange = "\\u0300-\\u036f", reComboHalfMarksRange = "\\ufe20-\\ufe2f", rsComboSymbolsRange = "\\u20d0-\\u20ff", rsComboRange = rsComboMarksRange + reComboHalfMarksRange + rsComboSymbolsRange, rsDingbatRange = "\\u2700-\\u27bf", rsLowerRange = "a-z\\xdf-\\xf6\\xf8-\\xff", rsMathOpRange = "\\xac\\xb1\\xd7\\xf7", rsNonCharRange = "\\x00-\\x2f\\x3a-\\x40\\x5b-\\x60\\x7b-\\xbf", rsPunctuationRange = "\\u2000-\\u206f", rsSpaceRange = " \\t\\x0b\\f\\xa0\\ufeff\\n\\r\\u2028\\u2029\\u1680\\u180e\\u2000\\u2001\\u2002\\u2003\\u2004\\u2005\\u2006\\u2007\\u2008\\u2009\\u200a\\u202f\\u205f\\u3000", rsUpperRange = "A-Z\\xc0-\\xd6\\xd8-\\xde", rsVarRange = "\\ufe0e\\ufe0f", rsBreakRange = rsMathOpRange + rsNonCharRange + rsPunctuationRange + rsSpaceRange;
-var rsApos$1 = "['’]", rsBreak = "[" + rsBreakRange + "]", rsCombo = "[" + rsComboRange + "]", rsDigits = "\\d+", rsDingbat = "[" + rsDingbatRange + "]", rsLower = "[" + rsLowerRange + "]", rsMisc = "[^" + rsAstralRange + rsBreakRange + rsDigits + rsDingbatRange + rsLowerRange + rsUpperRange + "]", rsFitz = "\\ud83c[\\udffb-\\udfff]", rsModifier = "(?:" + rsCombo + "|" + rsFitz + ")", rsNonAstral = "[^" + rsAstralRange + "]", rsRegional = "(?:\\ud83c[\\udde6-\\uddff]){2}", rsSurrPair = "[\\ud800-\\udbff][\\udc00-\\udfff]", rsUpper = "[" + rsUpperRange + "]", rsZWJ = "\\u200d";
-var rsMiscLower = "(?:" + rsLower + "|" + rsMisc + ")", rsMiscUpper = "(?:" + rsUpper + "|" + rsMisc + ")", rsOptContrLower = "(?:" + rsApos$1 + "(?:d|ll|m|re|s|t|ve))?", rsOptContrUpper = "(?:" + rsApos$1 + "(?:D|LL|M|RE|S|T|VE))?", reOptMod = rsModifier + "?", rsOptVar = "[" + rsVarRange + "]?", rsOptJoin = "(?:" + rsZWJ + "(?:" + [rsNonAstral, rsRegional, rsSurrPair].join("|") + ")" + rsOptVar + reOptMod + ")*", rsOrdLower = "\\d*(?:1st|2nd|3rd|(?![123])\\dth)(?=\\b|[A-Z_])", rsOrdUpper = "\\d*(?:1ST|2ND|3RD|(?![123])\\dTH)(?=\\b|[a-z_])", rsSeq = rsOptVar + reOptMod + rsOptJoin, rsEmoji = "(?:" + [rsDingbat, rsRegional, rsSurrPair].join("|") + ")" + rsSeq;
-var reUnicodeWord = RegExp([
-  rsUpper + "?" + rsLower + "+" + rsOptContrLower + "(?=" + [rsBreak, rsUpper, "$"].join("|") + ")",
-  rsMiscUpper + "+" + rsOptContrUpper + "(?=" + [rsBreak, rsUpper + rsMiscLower, "$"].join("|") + ")",
-  rsUpper + "?" + rsMiscLower + "+" + rsOptContrLower,
-  rsUpper + "+" + rsOptContrUpper,
-  rsOrdUpper,
-  rsOrdLower,
-  rsDigits,
-  rsEmoji
-].join("|"), "g");
-function unicodeWords(string) {
-  return string.match(reUnicodeWord) || [];
-}
-function words(string, pattern, guard) {
-  string = toString(string);
-  pattern = guard ? void 0 : pattern;
-  if (pattern === void 0) {
-    return hasUnicodeWord(string) ? unicodeWords(string) : asciiWords(string);
-  }
-  return string.match(pattern) || [];
-}
-var rsApos = "['’]";
-var reApos = RegExp(rsApos, "g");
-function createCompounder(callback) {
-  return function(string) {
-    return arrayReduce(words(deburr(string).replace(reApos, "")), callback, "");
-  };
-}
-var kebabCase = createCompounder(function(result, word, index) {
-  return result + (index ? "-" : "") + word.toLowerCase();
-});
-const kebabCase$1 = kebabCase;
+import { P as replaceable, D as h, d as defineComponent, a_ as isBrowser, a5 as useTheme, V as createInjectionKey, X as c, Y as cB, bo as fadeInTransition, aW as fadeInScaleUpTransition, aq as cNotM, U as toRef, bp as imageLight, E as ref, ar as useLocale, J as watch, aH as onBeforeUnmount, aI as off, a3 as inject, c as computed, Q as useConfig, a9 as useThemeClass, bq as isMounted, br as LazyTeleport, bs as withDirectives, bt as zindexable, aX as Transition, L as Fragment, au as NBaseIcon, bu as vShow, ac as on, bv as normalizeStyle, bw as kebabCase, q as NTooltip, aV as beforeNextFrameOnce, aa as createId, T as provide, be as getCurrentInstance, bi as onMounted, as as watchEffect } from "./index.js";
 const RotateClockwiseIcon = replaceable("rotateClockwise", h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
@@ -377,22 +115,6 @@ const observeIntersection = (el, options, shouldStartLoadingRef) => {
 };
 const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), { showToolbar: { type: Boolean, default: true }, showToolbarTooltip: Boolean });
 const imageContextKey = createInjectionKey("n-image");
-function self() {
-  return {
-    toolbarIconColor: "rgba(255, 255, 255, .9)",
-    toolbarColor: "rgba(0, 0, 0, .35)",
-    toolbarBoxShadow: "none",
-    toolbarBorderRadius: "24px"
-  };
-}
-const imageLight = createTheme({
-  name: "Image",
-  common: commonLight,
-  peers: {
-    Tooltip: tooltipLight
-  },
-  self
-});
 const prevIcon = h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
@@ -708,7 +430,7 @@ const NImagePreview = defineComponent({
         controlledStyleString = controlledStyle + ";";
       } else {
         for (const key in controlledStyle) {
-          controlledStyleString += `${kebabCase$1(key)}: ${controlledStyle[key]};`;
+          controlledStyleString += `${kebabCase(key)}: ${controlledStyle[key]};`;
         }
       }
       const transformStyle = `transform-origin: center; transform: translateX(${offsetX}px) translateY(${offsetY}px) rotate(${rotate}deg) scale(${scale});`;
@@ -887,7 +609,7 @@ const NImagePreview = defineComponent({
 });
 const imageGroupInjectionKey = createInjectionKey("n-image-group");
 const imageGroupProps = imagePreviewSharedProps;
-defineComponent({
+const NImageGroup = defineComponent({
   name: "ImageGroup",
   props: imageGroupProps,
   setup(props) {
@@ -931,8 +653,12 @@ defineComponent({
     return {
       mergedClsPrefix: mergedClsPrefixRef,
       previewInstRef,
-      next: () => go(1),
-      prev: () => go(-1)
+      next: () => {
+        go(1);
+      },
+      prev: () => {
+        go(-1);
+      }
     };
   },
   render() {
@@ -978,21 +704,18 @@ const NImage = defineComponent({
       (_a = imageRef.value) === null || _a === void 0 ? void 0 : _a.setAttribute("data-group-id", (imageGroupHandle === null || imageGroupHandle === void 0 ? void 0 : imageGroupHandle.groupId) || "");
     });
     onMounted(() => {
-      if (isImageSupportNativeLazy) {
-        return;
-      }
-      let unobserve;
-      const stopWatchHandle = watchEffect(() => {
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-        unobserve = void 0;
-        if (props.lazy) {
+      if (props.lazy && props.intersectionObserverOptions) {
+        let unobserve;
+        const stopWatchHandle = watchEffect(() => {
+          unobserve === null || unobserve === void 0 ? void 0 : unobserve();
+          unobserve = void 0;
           unobserve = observeIntersection(imageRef.value, props.intersectionObserverOptions, shouldStartLoadingRef);
-        }
-      });
-      onBeforeUnmount(() => {
-        stopWatchHandle();
-        unobserve === null || unobserve === void 0 ? void 0 : unobserve();
-      });
+        });
+        onBeforeUnmount(() => {
+          stopWatchHandle();
+          unobserve === null || unobserve === void 0 ? void 0 : unobserve();
+        });
+      }
     });
     watchEffect(() => {
       var _a;
@@ -1037,12 +760,12 @@ const NImage = defineComponent({
     var _a, _b;
     const { mergedClsPrefix, imgProps = {}, loaded, $attrs, lazy } = this;
     const placeholderNode = (_b = (_a = this.$slots).placeholder) === null || _b === void 0 ? void 0 : _b.call(_a);
-    const loadSrc = this.src || imgProps.src || "";
+    const loadSrc = this.src || imgProps.src;
     const imgNode = h("img", Object.assign(Object.assign({}, imgProps), {
       ref: "imageRef",
       width: this.width || imgProps.width,
       height: this.height || imgProps.height,
-      src: isImageSupportNativeLazy ? loadSrc : this.showError ? this.fallbackSrc : this.shouldStartLoading ? loadSrc : void 0,
+      src: this.showError ? this.fallbackSrc : lazy && this.intersectionObserverOptions ? this.shouldStartLoading ? loadSrc : void 0 : loadSrc,
       alt: this.alt || imgProps.alt,
       "aria-label": this.alt || imgProps.alt,
       onClick: this.mergedOnClick,
@@ -1073,5 +796,6 @@ const NImage = defineComponent({
   }
 });
 export {
-  NImage as N
+  NImage as N,
+  NImageGroup as a
 };

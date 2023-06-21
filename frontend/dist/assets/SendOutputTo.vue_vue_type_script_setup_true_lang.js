@@ -1,4 +1,4 @@
-import { Q as c, R as cB, ak as cNotM, T as cM, S as cE, V as insideModal, W as insidePopover, d as defineComponent, I as useConfig, Z as useTheme, c as computed, a2 as useThemeClass, bb as useCompitable, aw as flatten, z as h, ax as getSlot, bc as descriptionsLight, a1 as createKey, a as useSettings, u as useState, o as openBlock, p as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, B as NButton, k as createTextVNode, r as NGrid, h as NCard, q as createCommentVNode, bd as router } from "./index.js";
+import { X as c, Y as cB, aq as cNotM, $ as cM, Z as cE, a1 as insideModal, a2 as insidePopover, d as defineComponent, Q as useConfig, a5 as useTheme, c as computed, a9 as useThemeClass, bl as useCompitable, aC as flatten, D as h, aD as getSlot, bm as descriptionsLight, a8 as createKey, bn as useRouter, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, m as createTextVNode, z as NGrid, i as NCard, y as createCommentVNode } from "./index.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
   if (children !== null && typeof children === "object" && !Array.isArray(children)) {
@@ -284,10 +284,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     output: {
       type: String,
       required: true
+    },
+    card: {
+      type: Boolean,
+      default: true
     }
   },
   setup(__props) {
     const props = __props;
+    const router = useRouter();
     const conf = useSettings();
     const state = useState();
     async function toImg2Img() {
@@ -306,12 +311,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       await router.push("/image2image");
     }
     async function toUpscale() {
-      conf.data.settings.realesrgan.image = props.output;
+      conf.data.settings.upscale.image = props.output;
       state.state.extra.tab = "Upscale";
       await router.push("/extra");
     }
     return (_ctx, _cache) => {
-      return __props.output ? (openBlock(), createBlock(unref(NCard), {
+      return __props.output && __props.card ? (openBlock(), createBlock(unref(NCard), {
         key: 0,
         style: { "margin": "12px 0" },
         title: "Send To"
@@ -384,6 +389,79 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     ]),
                     _: 1
                   })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      })) : __props.output ? (openBlock(), createBlock(unref(NGrid), {
+        key: 1,
+        cols: "4",
+        "x-gap": "4",
+        "y-gap": "4"
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NGi), null, {
+            default: withCtx(() => [
+              createVNode(unref(NButton), {
+                type: "default",
+                onClick: toImg2Img,
+                style: { "width": "100%" },
+                ghost: ""
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("Img2Img")
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NGi), null, {
+            default: withCtx(() => [
+              createVNode(unref(NButton), {
+                type: "default",
+                onClick: toControlNet,
+                style: { "width": "100%" },
+                ghost: ""
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("ControlNet")
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NGi), null, {
+            default: withCtx(() => [
+              createVNode(unref(NButton), {
+                type: "default",
+                onClick: toInpainting,
+                style: { "width": "100%" },
+                ghost: ""
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("Inpainting")
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NGi), null, {
+            default: withCtx(() => [
+              createVNode(unref(NButton), {
+                type: "default",
+                onClick: toUpscale,
+                style: { "width": "100%" },
+                ghost: ""
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("Upscale")
                 ]),
                 _: 1
               })

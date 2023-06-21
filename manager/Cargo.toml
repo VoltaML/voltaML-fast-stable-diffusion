@@ -13,4 +13,6 @@ console = "0.15.5"
 prettytable-rs = "0.10.0"
 regex = "1.7.3"
 shellexpand = "3.1.0"
-git2 = { version = "0.17.0", features = ["vendored-openssl"] }
+
+[target.'cfg(target_os = "windows")'.build-dependencies]
+winres = "0.1"

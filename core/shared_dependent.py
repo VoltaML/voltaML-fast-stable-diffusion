@@ -12,11 +12,12 @@ if TYPE_CHECKING:
         MLSDdetector,
         OpenposeDetector,
     )
-    from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
+    from transformers.models.upernet import UperNetForSemanticSegmentation
 
     from core.extra.cloudflare_r2 import R2Bucket
 
 
+disable_hardware_warning: bool = False
 cached_model_list = CachedModelList()
 gpu = GPU(config.api.device_id)
 cached_controlnet_preprocessor: Union[

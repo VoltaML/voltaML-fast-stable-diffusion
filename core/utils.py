@@ -3,16 +3,33 @@ import base64
 import logging
 import math
 import re
+from enum import Enum
 from io import BytesIO
 from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
-import requests
-from tqdm import tqdm
 
+import requests
 from PIL import Image
+from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
 
 logger = logging.getLogger(__name__)
+
+
+def unwrap_enum(possible_enum: Union[Enum, Any]):
+    "Unwrap an enum to its value"
+
+    if isinstance(possible_enum, Enum):
+        return possible_enum.value
+    return possible_enum
+
+
+def unwrap_enum_name(possible_enum: Union[Enum, Any]):
+    "Unwrap an enum to its name"
+
+    if isinstance(possible_enum, Enum):
+        return possible_enum.name
+    return possible_enum
 
 
 def get_grid_dimension(length: int) -> Tuple[int, int]:

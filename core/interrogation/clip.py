@@ -11,17 +11,17 @@ from diffusers.utils import is_accelerate_available
 from PIL import Image
 from safetensors.numpy import load_file, save_file
 from tqdm import tqdm
-from transformers import (
-    AutoModelForCausalLM,
-    AutoProcessor,
-    Blip2ForConditionalGeneration,
-    BlipForConditionalGeneration,
-    PreTrainedModel,
-)
+from transformers.modeling_utils import PreTrainedModel
+from transformers.models.auto.modeling_auto import AutoModelForCausalLM
+from transformers.models.auto.processing_auto import AutoProcessor
+from transformers.models.blip.modeling_blip import BlipForConditionalGeneration
+from transformers.models.blip_2 import Blip2ForConditionalGeneration
 
 from core.config import config
 from core.files import get_full_model_path
+from core.inference.functions import is_bitsandbytes_available
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
+from core.optimizations import autocast
 from core.types import InterrogatorQueueEntry, Job
 from core.utils import convert_to_image, download_file
 
@@ -32,9 +32,7 @@ CACHE_URL = "https://huggingface.co/pharma/ci-preprocess/resolve/main/"
 class CLIPInterrogator(InterrogationModel):
     "internal"
 
-    def __init__(
-        self, device: str = "cuda", use_fp32: bool = False, autoload: bool = False
-    ):
+    def __init__(self, device: str = "cuda", autoload: bool = False):
         super().__init__(device)
 
         self.device = device
@@ -45,11 +43,7 @@ class CLIPInterrogator(InterrogationModel):
         self.caption_processor: AutoProcessor
         self.clip_model = None
         self.clip_preprocess = None
-        self.dtype: torch.dtype = (
-            torch.float32
-            if use_fp32
-            else (torch.bfloat16 if is_cpu(device) else torch.float16)
-        )
+        self.dtype: torch.dtype = config.api.dtype
 
         if autoload:
             self.load()
@@ -78,7 +72,7 @@ class CLIPInterrogator(InterrogationModel):
 
     def _image_to_features(self, image: Image.Image) -> torch.Tensor:
         images = self.clip_preprocess(image).unsqueeze(0).to(self.device, dtype=self.dtype)  # type: ignore
-        with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+        with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
             image_features = self.clip_model.encode_image(images)  # type: ignore
             image_features /= image_features.norm(dim=-1, keepdim=True)
         return image_features
@@ -110,7 +104,7 @@ class CLIPInterrogator(InterrogationModel):
         ) -> str:
             def _similarity(image_features: torch.Tensor, text: str) -> float:
                 text_tokens = self.tokenize([text]).to(self.device, dtype=self.dtype)
-                with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+                with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
                     text_features = self.clip_model.encode_text(text_tokens)  # type: ignore
                     text_features /= text_features.norm(dim=-1, keepdim=True)
                     similarity = text_features @ image_features.T
@@ -175,7 +169,7 @@ class CLIPInterrogator(InterrogationModel):
         text_tokens = self.tokenize([text for text in text_array]).to(
             self.device, dtype=self.dtype
         )
-        with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+        with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
             text_features = self.clip_model.encode_text(text_tokens)  # type: ignore
             text_features /= text_features.norm(dim=-1, keepdim=True)
             similarity = text_features @ image_features.T
@@ -187,17 +181,20 @@ class CLIPInterrogator(InterrogationModel):
         # load captioner model (BLIP)
         import open_clip
 
-        match config.interrogator.caption_model.split("/")[1].split("-")[0].lower():
-            case "git":
-                # Not sure this supports fp16... only time will tell :)
-                self.caption_model = AutoModelForCausalLM.from_pretrained(
-                    config.interrogator.caption_model, torch_dtype=self.dtype
-                )
-            case "blip2":
-                self.caption_model = Blip2ForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype)  # type: ignore
-            case _:
-                self.caption_model = BlipForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype)  # type: ignore
-        self.caption_processor = AutoProcessor.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype)  # type: ignore
+        t = config.interrogator.caption_model.split("/")[1].split("-")[0].lower()
+
+        if t == "git":
+            # Not sure this supports fp16... only time will tell :)
+            self.caption_model = AutoModelForCausalLM.from_pretrained(
+                config.interrogator.caption_model,
+                torch_dtype=self.dtype,
+                load_in_8bit=is_bitsandbytes_available(),
+            )
+        elif t == "blip2":
+            self.caption_model = Blip2ForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
+        else:
+            self.caption_model = BlipForConditionalGeneration.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
+        self.caption_processor = AutoProcessor.from_pretrained(config.interrogator.caption_model, torch_dtype=self.dtype, load_in_8bit=is_bitsandbytes_available())  # type: ignore
 
         if config.interrogator.offload_captioner:
             if is_accelerate_available() and self.device != "cpu":
@@ -221,7 +218,7 @@ class CLIPInterrogator(InterrogationModel):
             self.caption_processor.to(self.device, dtype=self.dtype)  # type: ignore
 
         # load visualizer (CLIP)
-
+        # tf is this, black???
         (
             self.clip_model,
             _,
@@ -261,7 +258,7 @@ class LabelTable:
     "internal"
 
     def __init__(self, labels: List[str], descriptor: str, interrogator):
-        self.ignore_on_merge = descriptor.startswith("ingore-")
+        self.ignore_on_merge = descriptor.startswith("ignore-")
         if self.ignore_on_merge:
             descriptor = descriptor.removeprefix("ignore-")
 
@@ -290,7 +287,7 @@ class LabelTable:
                 chunks, desc=f"Preprocessing {descriptor}" if descriptor else None
             ):
                 text_tokens = self.tokenize(chunk).to(self.device)
-                with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+                with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
                     text_features = interrogator.clip_model.encode_text(text_tokens)
                     text_features /= text_features.norm(dim=-1, keepdim=True)
                     # if no workie, put a half() before the cpu()
@@ -343,7 +340,7 @@ class LabelTable:
         text_embeds = torch.stack([torch.from_numpy(t) for t in text_embeds]).to(
             self.device, dtype=self.dtype
         )
-        with torch.no_grad(), torch.autocast(device_type="cpu" if is_cpu(self.device) else "cuda", dtype=self.dtype):  # type: ignore
+        with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
             similarity = image_features @ text_embeds.T
             if reverse:
                 similarity = -similarity

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 from enum import Enum
-from typing import Any, Dict, List, Literal, Optional, Union
+from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 from uuid import uuid4
 
 from diffusers import (
@@ -16,7 +16,9 @@ from diffusers import (
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate", "ONNX"]
-Backend = Literal["PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA"]
+Backend = Literal[
+    "PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA", "Textual Inversion", "ONNX"
+]
 
 
 @dataclass
@@ -27,7 +29,6 @@ class Job:
     model: str
     websocket_id: Union[str, None] = field(default=None)
     save_image: Literal[True, False, "r2"] = True
-    save_grid: bool = False
     flags: Dict[str, Dict] = field(default_factory=dict)
 
 
@@ -46,27 +47,13 @@ class SupportedModel(Enum):
     AnythingV4 = "andite/anything-v4.0"
 
 
-class ControlNetMode(Enum):
-    "Enum of modes for the ControlNet"
-
-    CANNY = "lllyasviel/sd-controlnet-canny"
-    DEPTH = "lllyasviel/sd-controlnet-depth"
-    HED = "lllyasviel/sd-controlnet-hed"
-    MLSD = "lllyasviel/sd-controlnet-mlsd"
-    NORMAL = "lllyasviel/sd-controlnet-normal"
-    OPENPOSE = "lllyasviel/sd-controlnet-openpose"
-    SCRIBBLE = "lllyasviel/sd-controlnet-scribble"
-    SEGMENTATION = "lllyasviel/sd-controlnet-seg"
-    NONE = "none"
-
-
 @dataclass
 class InterrogationData:
     "Dataclass for the data of an interrogation request"
 
     image: Union[bytes, str]
     caption: Optional[str] = field(default=None)
-    treshold: float = field(default=0.5)
+    threshold: float = field(default=0.5)
     id: str = field(default_factory=lambda: uuid4().hex)
 
 
@@ -82,6 +69,7 @@ class Txt2imgData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
+    self_attention_scale: float = field(default=0.0)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -100,6 +88,7 @@ class Img2imgData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
+    self_attention_scale: float = field(default=0.0)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -120,6 +109,7 @@ class InpaintData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
+    self_attention_scale: float = field(default=0.0)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -132,7 +122,7 @@ class ControlNetData:
     prompt: str
     image: Union[bytes, str]
     scheduler: KarrasDiffusionSchedulers
-    controlnet: ControlNetMode
+    controlnet: str
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -151,14 +141,20 @@ class ControlNetData:
     mlsd_thr_v: float = field(default=0.1)
     mlsd_thr_d: float = field(default=0.1)
 
+    is_preprocessed: bool = field(default=False)
+    save_preprocessed: bool = field(default=False)
+    return_preprocessed: bool = field(default=True)
+
 
 @dataclass
-class RealESRGanData:
+class UpscaleData:
     "Dataclass for the data of a real esrgan request"
 
     image: Union[bytes, str]
     id: str = field(default_factory=lambda: uuid4().hex)
-    upscale_factor: int = field(default=4)
+    upscale_factor: float = field(default=4)
+    tile_size: int = field(default=128)
+    tile_padding: int = field(default=10)
 
 
 @dataclass
@@ -217,10 +213,10 @@ class ControlNetQueueEntry(Job):
 
 
 @dataclass
-class RealESRGANQueueEntry(Job):
+class UpscaleQueueEntry(Job):
     "Dataclass for a real esrgan job"
 
-    data: RealESRGanData
+    data: UpscaleData
 
 
 @dataclass
@@ -257,10 +253,10 @@ class TRTBuildRequest:
 class QuantizationDict:
     "Dataclass for quantization parameters"
 
-    vae_encoder: Literal[True, False, None] = None
-    vae_decoder: Literal[True, False, None] = None
-    unet: Literal[True, False, None] = None
-    text_encoder: Literal[True, False, None] = None
+    vae_encoder: Literal["no-quant", "uint8", "int8"] = "no-quant"
+    vae_decoder: Literal["no-quant", "uint8", "int8"] = "no-quant"
+    unet: Literal["no-quant", "uint8", "int8"] = "no-quant"
+    text_encoder: Literal["no-quant", "uint8", "int8"] = "no-quant"
 
 
 @dataclass
@@ -269,6 +265,7 @@ class ONNXBuildRequest:
 
     model_id: str
     simplify_unet: bool = False
+    convert_to_fp16: bool = False
     quant_dict: QuantizationDict = field(default_factory=QuantizationDict)
 
 
@@ -277,7 +274,6 @@ class ConvertModelRequest:
     "Dataclass for requesting a conversion of a model"
 
     model: str
-    use_fp32: bool = False
     safetensors: bool = False
 
 
@@ -305,6 +301,18 @@ class AITemplateBuildRequest:
 
 
 @dataclass
+class AITemplateDynamicBuildRequest:
+    "Dataclass for requesting a build of an engine"
+
+    model_id: str
+    width: Tuple[int, int] = field(default=(64, 2048))
+    height: Tuple[int, int] = field(default=(64, 2048))
+    batch_size: Tuple[int, int] = field(default=(1, 4))
+    clip_chunks: int = field(default=6)
+    threads: Optional[int] = field(default=None)
+
+
+@dataclass
 class ModelResponse:
     "Dataclass for a response containing a loaded model info"
 
@@ -314,3 +322,30 @@ class ModelResponse:
     valid: bool
     state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
     loras: List[str] = field(default_factory=list)
+    textual_inversions: List[str] = field(default_factory=list)
+
+
+@dataclass
+class LoraLoadRequest:
+    "Dataclass for loading a LoRA onto a model"
+
+    model: str
+    lora: str
+    unet_weight: float = 0.5
+    text_encoder_weight: float = 0.5
+
+
+@dataclass
+class TextualInversionLoadRequest:
+    "Dataclass for loading a textual inversion onto a model"
+
+    model: str
+    textual_inversion: str
+
+
+@dataclass
+class DeleteModelRequest:
+    "Dataclass for requesting a deletion of a model"
+
+    model_path: str
+    model_type: Literal["pytorch", "lora", "textual-inversion", "aitemplate"]

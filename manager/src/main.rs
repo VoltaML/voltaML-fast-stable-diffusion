@@ -7,9 +7,9 @@ mod targets;
 mod utils;
 
 use console::style;
-use dialoguer::{theme::ColorfulTheme, Select};
-use std::{env, error::Error};
-use utils::shell::spawn_command;
+use dialoguer::{theme::ColorfulTheme, Input, Select};
+use std::{env, error::Error, process::Command};
+use utils::{python::get_venv_python, shell::spawn_command};
 
 fn main() {
     // Check the Git repo update status
@@ -46,7 +46,7 @@ fn main() {
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(items.len() - 1);
         let response = items[response_id];
 
         match response {
@@ -77,17 +77,25 @@ fn main() {
 
 fn configure() {
     loop {
-        let items = vec!["Back", "Huggingface Token", "Logging Level"];
-        let response = Select::with_theme(&ColorfulTheme::default())
+        let items = vec![
+            "Back",
+            "Huggingface Token",
+            "Logging Level",
+            "Discord Bot Token",
+        ];
+        let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(0);
+
+        let response = items[response_id];
 
         match response {
-            0 => break,
-            1 => environ::change_huggingface_token(),
-            2 => environ::change_logging_level(),
+            "Back" => break,
+            "Huggingface Token" => environ::change_huggingface_token(),
+            "Logging Level" => environ::change_logging_level(),
+            "Discord Bot Token" => environ::change_discord_bot_token(),
             _ => println!("Error"),
         }
     }
@@ -97,6 +105,7 @@ fn debug_menu() {
     loop {
         let items = vec![
             "Back",
+            "Get current branch",
             "Check NVCC",
             "Check Python",
             "Detect OS",
@@ -114,17 +123,41 @@ fn debug_menu() {
             "Show $PATH",
             "Check CUDA exports in .bashrc",
             "Insert CUDA exports to .bashrc",
+            "Check AITemplate folder",
+            "Is aitemplate python package installed",
+            "Checkout AITemplate commit",
+            "Reinstall AITemplate Python package",
+            "Wipe AITemplate cache dir",
         ];
         let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
             .items(&items)
             .interact()
-            .unwrap();
+            .unwrap_or(0);
 
         let response = items[response_id];
 
         match response {
             "Back" => break,
+            "Get current branch" => {
+                let output = Command::new("git")
+                    .args(&["rev-parse", "--abbrev-ref", "HEAD"])
+                    .output();
+                if output.is_ok() {
+                    let current_branch = String::from_utf8(output.unwrap().stdout);
+                    println!(
+                        "{} Current branch: {}",
+                        style("[OK]").green(),
+                        current_branch.unwrap()
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Could not get current branch"
+                    );
+                }
+            }
             "Check NVCC" => {
                 if utils::nvidia::is_nvcc_installed() {
                     let version = utils::nvidia::nvcc_version();
@@ -248,7 +281,7 @@ fn debug_menu() {
                 }
             }
             "Install virtualenv" => {
-                let res = utils::python::install_virtualenv();
+                let res = utils::python::pip_install("virtualenv");
                 if res.is_ok() {
                     println!("{} {}", style("[OK]").green(), "virtualenv installed");
                 } else {
@@ -293,12 +326,87 @@ fn debug_menu() {
                     );
                 }
             }
-            _ => println!("Error"),
+            "Check AITemplate folder" => {
+                if crate::utils::aitemplate::does_aitemplate_folder_exist() {
+                    println!("{} {}", style("[OK]").green(), "AITemplate folder exists");
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "AITemplate folder does not exist"
+                    );
+                }
+            }
+            "Is aitemplate python package installed" => {
+                if crate::utils::aitemplate::is_aitemplate_installed() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "AITemplate python package installed"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "AITemplate python package not installed"
+                    );
+                }
+            }
+            "Checkout AITemplate commit" => {
+                let commit_id: String = Input::with_theme(&ColorfulTheme::default())
+                    .with_prompt("Commit hash")
+                    .interact_text()
+                    .unwrap();
+
+                let res = crate::git::checkout::checkout_commit("AITemplate", &commit_id);
+                if res.is_ok() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "Checked out AITemplate commit"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to checkout AITemplate commit"
+                    );
+                }
+            }
+            "Reinstall AITemplate Python package" => {
+                let res = crate::utils::aitemplate::reinstall_aitemplate_python_package();
+                if res.is_ok() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "Reinstalled AITemplate python package"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to reinstall AITemplate python package"
+                    );
+                }
+            }
+            "Wipe AITemplate cache dir" => {
+                let res = crate::utils::aitemplate::wipe_aitemplate_cache_dir();
+                if res.is_ok() {
+                    println!("{} {}", style("[OK]").green(), "Wiped AITemplate cache dir");
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to wipe AITemplate cache dir"
+                    );
+                }
+            }
+            _ => println!("Command not found in match statement"),
         }
     }
 }
 
 fn start_api() -> Result<(), Box<dyn Error>> {
-    spawn_command("venv/bin/python main.py", "Run the API")?;
+    spawn_command(&format!("{} main.py", get_venv_python()), "Run the API")?;
     Ok(())
 }

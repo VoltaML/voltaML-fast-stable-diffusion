@@ -17,9 +17,11 @@ class CachedModelList:
     def __init__(self):
         self.pytorch_path = Path(DIFFUSERS_CACHE)
         self.checkpoint_converted_path = Path("data/models")
+        self.onnx_path = Path("data/onnx")
         self.tensorrt_engine_path = Path("data/tensorrt")
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
+        self.textual_inversion_path = Path("data/textual-inversion")
 
     def pytorch(self) -> List[ModelResponse]:
         "List of models downloaded for PyTorch"
@@ -142,6 +144,26 @@ class CachedModelList:
 
         return models
 
+    def onnx(self):
+        "List of ONNX models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.onnx_path):
+            logger.debug(f"Found ONNX {model}")
+
+            models.append(
+                ModelResponse(
+                    name=model,
+                    path=os.path.join(self.onnx_path, model),
+                    backend="ONNX",
+                    valid=True,
+                    loras=[],
+                    state="not loaded",
+                )
+            )
+        return models
+
     def lora(self):
         "List of LoRA models"
 
@@ -164,10 +186,43 @@ class CachedModelList:
 
         return models
 
-    def all(self):
-        "List PyTorch, TensorRT and AITemplate models"
+    def textual_inversion(self):
+        "List of textual inversion models"
 
-        return self.pytorch() + self.tensorrt() + self.aitemplate() + self.lora()
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.textual_inversion_path):
+            logger.debug(f"Found textual inversion model {model}")
+            model_name = (
+                model.replace(".safetensors", "")
+                .replace(".ckpt", "")
+                .replace(".pt", "")
+            )
+
+            models.append(
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.textual_inversion_path, model),
+                    backend="Textual Inversion",
+                    valid=True,
+                    loras=[],
+                    state="not loaded",
+                )
+            )
+
+        return models
+
+    def all(self):
+        "List all models"
+
+        return (
+            self.pytorch()
+            + self.tensorrt()
+            + self.aitemplate()
+            + self.onnx()
+            + self.lora()
+            + self.textual_inversion()
+        )
 
 
 def is_valid_diffusers_model(model_path: Union[str, Path]):
@@ -202,7 +257,7 @@ def is_valid_diffusers_model(model_path: Union[str, Path]):
         if len([path / folder / i for i in found_files if i.endswith(".bin")]) < 1:
             has_binaries = False
 
-        # Check if there is at least one .safetensor file in the folder
+        # Check if there is at least one .safetensors file in the folder
         has_safetensors = True
         found_files = os.listdir(path / folder)
         if (
@@ -294,6 +349,7 @@ def get_full_model_path(
     revision: str = "main",
     model_folder: str = "models",
     force: bool = False,
+    diffusers_skip_ref_follow: bool = False,
 ) -> Path:
     "Return the path to the actual model"
 
@@ -322,6 +378,9 @@ def get_full_model_path(
 
     if not ref:
         raise ValueError("No ref found")
+
+    if diffusers_skip_ref_follow:
+        return Path(storage)
 
     return Path(storage) / "snapshots" / ref
 

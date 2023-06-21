@@ -25,9 +25,12 @@ export default defineConfig({
 		],
 	],
 	themeConfig: {
+		search: {
+			provider: "local",
+		},
 		nav: [
 			{ text: "Home", link: "/" },
-			{ text: "Docs", link: "/introduction" },
+			{ text: "Docs", link: "/getting-started/introduction" },
 		],
 		editLink: {
 			pattern:
@@ -43,6 +46,14 @@ export default defineConfig({
 				icon: "discord",
 				link: "https://discord.gg/pY5SVyHmWm",
 			},
+			{
+				icon: "linkedin",
+				link: "https://www.linkedin.com/in/tom%C3%A1%C5%A1-nov%C3%A1k-5a163321b/",
+			},
+			{
+				icon: "linkedin",
+				link: "https://www.linkedin.com/in/márton-kissik/",
+			},
 		],
 		sidebar: [
 			{
@@ -57,7 +68,9 @@ export default defineConfig({
 			{
 				text: "Installation",
 				items: [
-					{ text: "Local", link: "/installation/local" },
+					{ text: "Windows", link: "/installation/windows" },
+					{ text: "Linux", link: "/installation/linux" },
+					{ text: "WSL", link: "/installation/wsl" },
 					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Old", link: "/installation/old" },
 				],
@@ -109,7 +122,7 @@ export default defineConfig({
 			{
 				text: "Developers",
 				items: [
-					{ text: "PyTorch", link: "/developers/pytorch" },
+					{ text: "API", link: "/developers/api" },
 					{
 						text: "Frontend",
 						link: "/developers/frontend",
@@ -141,11 +154,6 @@ export default defineConfig({
 				collapsed: false,
 			},
 		],
-		algolia: {
-			appId: "M9XJK5W9ML",
-			apiKey: "8447ad2a43b65f2c280b8c883c76dc3f",
-			indexName: "voltaml-fast-stable-diffusion",
-		},
 	},
 	cleanUrls: true,
 	ignoreDeadLinks: "localhostLinks",

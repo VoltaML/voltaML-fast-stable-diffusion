@@ -251,7 +251,7 @@ class UNet2DConditionModel(nn.Module):
         if down_block_additional_residuals is not None:
             new_down_block_res_samples = ()
 
-            for down_block_res_sample, down_block_additional_residual in zip(
+            for down_block_res_sample, down_block_additional_residual in zip(  # type: ignore
                 down_block_res_samples, down_block_additional_residuals
             ):
                 down_block_res_sample += down_block_additional_residual

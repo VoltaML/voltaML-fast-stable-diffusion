@@ -1,0 +1,46 @@
+{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "type": "object",
+    "properties": {
+        "$schema": {
+            "type": "string"
+        },
+        "models": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {
+                        "type": "string",
+                        "description": "The name of the model. This is the name that will be displayed in the UI"
+                    },
+                    "huggingface_id": {
+                        "type": "string",
+                        "description": "The ID of the model on HuggingFace. This is the ID that will be used to fetch the model from HuggingFace"
+                    },
+                    "huggingface_url": {
+                        "type": "string",
+                        "format": "uri",
+                        "description": "The URL of the model on HuggingFace. Not used by the app, but user can click on it to go to the model page on HuggingFace"
+                    },
+                    "example_image_url": {
+                        "type": "string",
+                        "description": "Not used currently"
+                    },
+                    "nsfw": {
+                        "type": "boolean",
+                        "description": "Whether the model is NSFW or not. UI will display a NSFW tag next to it"
+                    }
+                },
+                "required": [
+                    "name",
+                    "huggingface_id",
+                    "huggingface_url"
+                ]
+            }
+        }
+    },
+    "required": [
+        "models"
+    ]
+}

@@ -3,16 +3,16 @@
     <NCard title="Acceleration progress (around 20 minutes)">
       <NSpace vertical justify="center">
         <NSteps>
-          <NStep title="UNet" :status="state.state.aitBuildStep.unet" />
+          <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
           <NStep
             title="ControlNet UNet"
-            :status="state.state.aitBuildStep.controlnet_unet"
+            :status="global.state.aitBuildStep.controlnet_unet"
           />
-          <NStep title="CLIP" :status="state.state.aitBuildStep.clip" />
-          <NStep title="VAE" :status="state.state.aitBuildStep.vae" />
+          <NStep title="CLIP" :status="global.state.aitBuildStep.clip" />
+          <NStep title="VAE" :status="global.state.aitBuildStep.vae" />
           <NStep
             title="Cleanup"
-            :status="state.state.aitBuildStep.cleanup"
+            :status="global.state.aitBuildStep.cleanup"
           /> </NSteps></NSpace
     ></NCard>
 
@@ -137,7 +137,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { ModelEntry } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 import { useState } from "@/store/state";
 import {
@@ -153,41 +152,39 @@ import {
   useMessage,
   type SelectOption,
 } from "naive-ui";
-import { reactive, ref } from "vue";
+import { computed, ref } from "vue";
 
 const message = useMessage();
+const global = useState();
 
-const state = useState();
 const width = ref(512);
 const height = ref(512);
 const batchSize = ref(1);
 const model = ref("");
 const threads = ref(8);
-const modelOptions: Array<SelectOption> = reactive([]);
 
 const building = ref(false);
 const showUnloadModal = ref(false);
 
-fetch(`${serverUrl}/api/models/available`).then((res) => {
-  res.json().then((data: Array<ModelEntry>) => {
-    modelOptions.splice(0, modelOptions.length);
-
-    const pyTorch = data.filter((x) => x.backend === "PyTorch");
-
-    if (pyTorch) {
-      for (const model of pyTorch) {
-        modelOptions.push({
-          label: model.name,
-          value: model.name,
-          disabled: !model.valid,
-        });
-      }
-      if (pyTorch.length > 0) {
-        model.value = pyTorch[0].name;
-      }
+const modelOptions = computed(() => {
+  const options: SelectOption[] = [];
+  for (const model of global.state.models) {
+    if (
+      model.backend === "PyTorch" &&
+      model.valid &&
+      !model.name.endsWith(".safetensors") &&
+      !model.name.endsWith(".ckpt")
+    ) {
+      options.push({
+        label: model.name,
+        value: model.path,
+      });
     }
-  });
+  }
+  return options;
 });
+
+model.value = modelOptions.value[0]?.value?.toString() ?? "";
 
 const accelerateUnload = async () => {
   try {

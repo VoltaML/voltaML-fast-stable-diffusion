@@ -1,5 +1,5 @@
 <template>
-  <div style="margin: 18px">
+  <div class="main-container">
     <NCard>
       <NTabs>
         <NTabPane name="Frontend">

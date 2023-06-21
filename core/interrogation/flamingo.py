@@ -4,6 +4,7 @@ import torch
 from flamingo_mini import FlamingoModel, FlamingoProcessor
 from PIL import Image
 
+from core.config import config
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.interrogation.clip import is_cpu
 from core.types import InterrogatorQueueEntry, Job
@@ -13,20 +14,16 @@ from core.utils import convert_to_image
 class FlamingoInterrogator(InterrogationModel):
     "Model that uses Flamingo Mini to generate image captions."
 
-    def __init__(self, device: str = "cuda", use_fp32: bool = False):
+    def __init__(self, device: str = "cuda"):
         super().__init__(device)
 
         self.device = device
-        self.dtype = (
-            torch.float32
-            if use_fp32
-            else (torch.bfloat16 if is_cpu(device) else torch.float16)
-        )
+        self.dtype = config.api.dtype
         self.model: FlamingoModel
         self.processor: FlamingoProcessor
 
     def load(self):
-        model = FlamingoModel.from_pretrained("")
+        model = FlamingoModel.from_pretrained(config.interrogator.flamingo_model)
         assert isinstance(model, FlamingoModel)
         self.model = model
         self.model.to(self.device, dtype=self.dtype)

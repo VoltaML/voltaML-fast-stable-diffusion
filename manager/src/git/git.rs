@@ -1,55 +1,24 @@
 use std::error::Error;
 
-use console::style;
-use git2::{BranchType, Repository};
+use crate::utils::shell::{run_command, spawn_command};
 
 pub fn is_git_repo_up_to_date() -> Result<bool, Box<dyn Error>> {
-    let repo = Repository::discover(".");
-    let repo = repo?;
+    run_command("git fetch", "")?;
 
-    let head = repo.head()?;
-    let branch = head.shorthand().unwrap();
+    let current_branch_raw =
+        run_command(&"git rev-parse --abbrev-ref HEAD", "Get current git branch")?;
+    let current_branch = current_branch_raw.trim();
 
-    let branch_ref = repo.find_branch(branch, BranchType::Local)?;
-    let upstream = branch_ref.upstream()?;
-    let upstream_oid = upstream.get().peel_to_commit()?.id();
+    let remote_command = format!("git rev-parse origin/{}", current_branch);
+    let remote_commit = run_command(&remote_command, "Parse remote commit hash")?;
 
-    let head_oid = head.peel_to_commit()?.id();
-    let is_up_to_date = head_oid == upstream_oid;
+    let local_commit_raw = run_command("git rev-parse HEAD", "Parse local commit hash")?;
+    let local_commit = local_commit_raw.trim();
 
-    return Ok(is_up_to_date);
+    Ok(remote_commit == local_commit)
 }
 
 pub fn update_git_repo() -> Result<String, Box<dyn Error>> {
-    let repo = Repository::discover(".")?;
-    let binding = repo.head()?;
-    let current_branch = binding.shorthand().unwrap();
-
-    repo.find_remote("origin")?
-        .fetch(&[current_branch], None, None)?;
-
-    let fetch_head = repo.find_reference("FETCH_HEAD")?;
-    let fetch_commit = repo.reference_to_annotated_commit(&fetch_head)?;
-    let analysis = repo.merge_analysis(&[&fetch_commit])?;
-    if analysis.0.is_up_to_date() {
-        Ok(format!("{} {}", style("[Ok]").red(), "Already up-to-date."))
-    } else if analysis.0.is_fast_forward() {
-        let refname = format!("refs/heads/{}", current_branch);
-        let mut reference = repo.find_reference(&refname)?;
-        reference.set_target(fetch_commit.id(), "Fast-Forward")?;
-        repo.set_head(&refname)?;
-        repo.checkout_head(Some(git2::build::CheckoutBuilder::default().force()))?;
-        Ok(format!(
-            "{} {}",
-            style("[Ok]").green(),
-            "Repository updated."
-        ))
-    } else {
-        println!(
-            "{} {}",
-            style("[!]").red(),
-            "Cannot fast-forward, please merge manually."
-        );
-        Err("Cannot fast-forward, please merge manually.".into())
-    }
+    let output = spawn_command("git pull", "Update git repo")?;
+    Ok(output)
 }

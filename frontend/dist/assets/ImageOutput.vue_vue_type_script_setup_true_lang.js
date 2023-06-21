@@ -1,5 +1,5 @@
 import { N as NImage } from "./Image.js";
-import { d as defineComponent, c as computed, o as openBlock, p as createBlock, w as withCtx, l as createBaseVNode, g as unref, q as createCommentVNode, e as createElementBlock, f as createVNode, F as Fragment, G as renderList, H as NScrollbar, h as NCard } from "./index.js";
+import { d as defineComponent, c as computed, e as openBlock, x as createBlock, w as withCtx, n as createBaseVNode, h as unref, y as createCommentVNode, f as createElementBlock, g as createVNode, L as Fragment, M as renderList, O as NScrollbar, i as NCard } from "./index.js";
 const _hoisted_1 = { style: { "width": "100%", "display": "flex", "justify-content": "center" } };
 const _hoisted_2 = {
   key: 0,
@@ -39,9 +39,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }, {
         default: withCtx(() => [
           createBaseVNode("div", _hoisted_1, [
-            unref(displayedImage) ? (openBlock(), createBlock(unref(NImage), {
+            displayedImage.value ? (openBlock(), createBlock(unref(NImage), {
               key: 0,
-              src: unref(displayedImage).toString(),
+              src: displayedImage.value.toString(),
               "img-props": {
                 style: "max-width: 100%; max-height: 70vh; width: 100%"
               },

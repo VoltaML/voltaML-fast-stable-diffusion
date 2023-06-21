@@ -1,12 +1,21 @@
 
-.img-slider[data-v-a83deb7b] {
+.img-slider[data-v-f1c06e25] {
   aspect-ratio: 1/1;
   height: 182px;
   width: auto;
 }
-.img-container[data-v-a83deb7b]:not(:last-child) {
-  margin-right: 6px;
+.image-grid[data-v-f1c06e25] {
+  display: grid;
+  grid-template-columns: repeat(
+    var(--1c7b9a17),
+    1fr
+  );
+  grid-gap: 8px;
 }
-.img-container[data-v-a83deb7b] {
-  cursor: pointer;
+.top-bar[data-v-f1c06e25] {
+  background-color: var(--4dc33d16);
+}
+.image-column[data-v-f1c06e25] {
+  display: flex;
+  flex-direction: column;
 }

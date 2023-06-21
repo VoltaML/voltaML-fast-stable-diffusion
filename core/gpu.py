@@ -1,9 +1,10 @@
+import asyncio
 import logging
 import math
 import multiprocessing
 import time
 from pathlib import Path
-from typing import TYPE_CHECKING, Dict, List, Optional, Union
+from typing import TYPE_CHECKING, Dict, List, Union
 
 import torch
 from PIL import Image
@@ -16,27 +17,29 @@ from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoade
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.functions import download_model
-from core.inference.pytorch import PyTorchStableDiffusion
-from core.inference.pytorch_upscale import PyTorchSDUpscaler
+from core.inference.pytorch import PyTorchSDUpscaler, PyTorchStableDiffusion
 from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
+    AITemplateDynamicBuildRequest,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
+    LoraLoadRequest,
     ONNXBuildRequest,
-    RealESRGANQueueEntry,
     SDUpscaleQueueEntry,
+    TextualInversionLoadRequest,
     TRTBuildRequest,
     Txt2ImgQueueEntry,
+    UpscaleQueueEntry,
 )
-from core.utils import image_grid, run_in_thread_async
+from core.utils import image_grid
 
 if TYPE_CHECKING:
     from core.inference.onnx_sd import OnnxStableDiffusion
@@ -57,7 +60,6 @@ class GPU:
                 "TensorRTModel",
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
-                "RealESRGAN",
                 PyTorchSDUpscaler,
                 "OnnxStableDiffusion",
             ],
@@ -81,38 +83,49 @@ class GPU:
             Img2ImgQueueEntry,
             InpaintQueueEntry,
             ControlNetQueueEntry,
-            RealESRGANQueueEntry,
             SDUpscaleQueueEntry,
         ],
     ):
         "Generate images from the queue"
 
-        def generate_thread_call(job: Job) -> Union[List[Image.Image], List[str]]:
-            model: Union[
-                "TensorRTModel",
-                PyTorchStableDiffusion,
-                AITemplateStableDiffusion,
-                RealESRGAN,
-                PyTorchSDUpscaler,
-                "OnnxStableDiffusion",
-            ] = self.loaded_models[job.model]
+        def generate_thread_call(job: Job) -> List[Image.Image]:
+            try:
+                model: Union[
+                    "TensorRTModel",
+                    PyTorchStableDiffusion,
+                    AITemplateStableDiffusion,
+                    PyTorchSDUpscaler,
+                    "OnnxStableDiffusion",
+                ] = self.loaded_models[job.model]
+            except KeyError as err:
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "error",
+                        "Model not loaded",
+                        f"Model {job.model} is not loaded, please load it first",
+                    )
+                )
+
+                logger.debug("Model not loaded on any GPU. Raising error")
+                raise ModelNotLoadedError(f"Model {job.model} is not loaded") from err
+
+            shared.interrupt = False
 
             if job.flags:
                 logger.debug(f"Job flags: {job.flags}")
 
-            if not isinstance(job, RealESRGANQueueEntry):
-                steps = job.data.steps
+            steps = job.data.steps
 
-                strength: float = getattr(job.data, "strength", 1.0)
-                steps = math.floor(steps * strength)
+            strength: float = getattr(job.data, "strength", 1.0)
+            steps = math.floor(steps * strength)
 
-                extra_steps: int = 0
-                if "highres_fix" in job.flags:
-                    flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
-                    extra_steps = math.floor(flag.steps * flag.strength)
+            extra_steps: int = 0
+            if "highres_fix" in job.flags:
+                flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
+                extra_steps = math.floor(flag.steps * flag.strength)
 
-                shared.current_steps = steps * job.data.batch_count + extra_steps
-                shared.current_done_steps = 0
+            shared.current_steps = steps * job.data.batch_count + extra_steps
+            shared.current_done_steps = 0
 
             if not isinstance(job, ControlNetQueueEntry):
                 from core import shared_dependent
@@ -125,35 +138,20 @@ class GPU:
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             elif isinstance(model, PyTorchSDUpscaler):
                 logger.debug("Generating with PyTorchSDUpscaler")
                 images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
-            elif isinstance(model, RealESRGAN):
-                logger.debug("Generating with RealESRGAN")
-                images: List[Image.Image] = model.generate(job)
-                self.memory_cleanup()
-                return images
             else:
-                assert not isinstance(job, RealESRGANQueueEntry)
-
                 from core.inference.onnx_sd import OnnxStableDiffusion
 
                 if isinstance(model, OnnxStableDiffusion):
                     logger.debug("Generating with ONNX")
                     images: List[Image.Image] = model.generate(job)
-                    self.memory_cleanup()
-                    return images
-
-                raise NotImplementedError("TensorRT is not supported at the moment")
+                else:
+                    raise NotImplementedError("TensorRT is not supported at the moment")
 
                 # logger.debug("Generating with TensorRT")
                 # images: List[Image.Image]
@@ -170,14 +168,18 @@ class GPU:
                 #     num_of_infer_steps=job.data.steps,
                 #     scheduler=job.data.scheduler,
                 # )
-                # self.memory_cleanup()
+                # if config.api.clear_memory_policy == "always":
+                #     self.memory_cleanup()
                 # return images
+
+            self.memory_cleanup()
+            return images
 
         try:
             # Check width and height passed by the user
             if not isinstance(
                 job,
-                (RealESRGANQueueEntry, SDUpscaleQueueEntry),
+                SDUpscaleQueueEntry,
             ):
                 if job.data.width % 8 != 0 or job.data.height % 8 != 0:
                     raise DimensionError("Width and height must be divisible by 8")
@@ -189,73 +191,76 @@ class GPU:
 
             # Generate images
             try:
-                generated_images: Optional[List[Image.Image]]
-                generated_images = await run_in_thread_async(
-                    func=generate_thread_call, args=(job,)
-                )
+                generated_images = await asyncio.to_thread(generate_thread_call, job)
 
                 assert generated_images is not None
 
+                # [pre, out...]
                 images = generated_images
-
-                # Save Grid
                 grid = image_grid(images)
-                if job.save_grid and len(images) > 1:
-                    images = [grid, *images]
 
-                # Save Images
+                # Save only if needed
                 if job.save_image:
-                    out = save_images(generated_images, job)
+                    if isinstance(job, ControlNetQueueEntry):
+                        if not job.data.save_preprocessed:  # type: ignore
+                            # Save only the output
+                            preprocessed = images[0]
+                            images = images[1:]
+
+                            out = save_images(images, job)
+                            images = [preprocessed, *images]
+                        else:
+                            out = save_images(images, job)
+                    else:
+                        out = save_images(images, job)
+
+                    # URL Strings returned from R2 bucket if saved there
                     if out:
+                        logger.debug(f"Strings returned from R2: {len(out)}")
                         images = out
 
             except Exception as err:  # pylint: disable=broad-except
                 self.memory_cleanup()
-                self.queue.mark_finished()
+                await self.queue.mark_finished(job.data.id)
                 raise err
 
             deltatime = time.time() - start_time
 
             # Mark job as finished, so the next job can start
             self.memory_cleanup()
-            self.queue.mark_finished()
+            await self.queue.mark_finished(job.data.id)
 
-            # Append grid to the list of images as it is appended only if images are strings (R2 bucket)
+            # Check if user wants the preprocessed image back (ControlNet only)
+            if isinstance(job, ControlNetQueueEntry):
+                if not job.data.return_preprocessed:  # type: ignore
+                    # Remove the preprocessed image
+                    images = images[1:]
+
+            # Append grid to the list of images if needed
             if isinstance(images[0], Image.Image) and len(images) > 1:
                 images = [grid, *images]
 
             return (images, deltatime)
         except InferenceInterruptedError:
-            await websocket_manager.broadcast(
-                Notification(
-                    "warning",
-                    "Inference interrupted",
-                    "The inference was forcefully interrupted",
+            if config.frontend.on_change_timer == 0:
+                await websocket_manager.broadcast(
+                    Notification(
+                        "warning",
+                        "Inference interrupted",
+                        "The inference was forcefully interrupted",
+                    )
                 )
-            )
             return ([], 0.0)
 
-        except ValueError as err:
-            websocket_manager.broadcast_sync(
-                Notification(
-                    "error",
-                    "Model not loaded",
-                    "The model you are trying to use is not loaded, please load it first",
-                )
-            )
-
-            logger.debug("Model not loaded on any GPU. Raising error")
-            logger.debug(err)
-            raise ModelNotLoadedError("Model not loaded on any GPU") from err
-
         except Exception as e:  # pylint: disable=broad-except
-            await websocket_manager.broadcast(
-                Notification(
-                    "error",
-                    "Inference error",
-                    f"An error occurred: {type(e).__name__} - {e}",
+            if not isinstance(e, ModelNotLoadedError):
+                await websocket_manager.broadcast(
+                    Notification(
+                        "error",
+                        "Inference error",
+                        f"An error occurred: {type(e).__name__} - {e}",
+                    )
                 )
-            )
 
             raise e
 
@@ -344,10 +349,7 @@ class GPU:
 
                 from core.inference.onnx_sd import OnnxStableDiffusion
 
-                pt_model = OnnxStableDiffusion(
-                    model_id=model,
-                    use_fp32=config.api.use_fp32,
-                )
+                pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
             else:
                 logger.debug("Selecting PyTorch")
@@ -360,17 +362,7 @@ class GPU:
                     )
                 )
 
-                if model in [
-                    "RealESRGAN_x4plus",
-                    "RealESRNet_x4plus",
-                    "RealESRGAN_x4plus_anime_6B",
-                    "RealESRGAN_x2plus",
-                    "RealESR-general-x4v3",
-                ]:
-                    pt_model = RealESRGAN(
-                        model_name=model,
-                    )
-                elif model in ["stabilityai/stable-diffusion-x4-upscaler"]:
+                if model in ["stabilityai/stable-diffusion-x4-upscaler"]:
                     pt_model = PyTorchSDUpscaler()
 
                 else:
@@ -390,7 +382,7 @@ class GPU:
                 )
             )
 
-        await run_in_thread_async(func=load_model_thread_call, args=(model, backend))
+        await asyncio.to_thread(load_model_thread_call, model, backend)
 
     def loaded_models_list(self) -> list:
         "Return a list of loaded models"
@@ -398,36 +390,38 @@ class GPU:
 
     def memory_cleanup(self):
         "Release all unused memory"
+        if config.api.clear_memory_policy == "always":
+            if torch.cuda.is_available():
+                logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
 
-        if torch.cuda.is_available():
-            logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
-
-            with torch.cuda.device(self.gpu_id):
-                torch.cuda.empty_cache()
-                torch.cuda.ipc_collect()
+                with torch.cuda.device(self.gpu_id):
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
 
     async def unload(self, model_type: str):
         "Unload a model from memory and free up GPU memory"
 
-        if model_type in self.loaded_models:
-            model = self.loaded_models[model_type]
+        def unload_thread_call(model_type: str):
+            if model_type in self.loaded_models:
+                model = self.loaded_models[model_type]
 
-            if isinstance(model, PyTorchStableDiffusion):
-                logger.debug(f"Unloading PyTorch model: {model_type}")
-                model.unload()
-            elif isinstance(model, AITemplateStableDiffusion):
-                logger.debug(f"Unloading AITemplate model: {model_type}")
-                model.unload()
-            else:
-                from core.tensorrt.volta_accelerate import TRTModel
+                if hasattr(model, "unload"):
+                    logger.debug(f"Unloading model: {model_type}")
+                    model.unload()
+                else:
+                    from core.tensorrt.volta_accelerate import TRTModel
 
-                assert isinstance(model, TRTModel)
-                logger.debug(f"Unloading TensorRT model: {model_type}")
-                model.teardown()
+                    assert isinstance(
+                        model, TRTModel
+                    ), "Model is not a TRTModel and does not have an unload method"
+                    logger.debug(f"Unloading TensorRT model: {model_type}")
+                    model.teardown()
 
-            del self.loaded_models[model_type]
-            self.memory_cleanup()
-            logger.debug("Unloaded model")
+                del self.loaded_models[model_type]
+                self.memory_cleanup()
+                logger.debug("Unloaded model")
+
+        await asyncio.to_thread(unload_thread_call, model_type)
 
     async def unload_all(self):
         "Unload all models from memory and free up GPU memory"
@@ -450,7 +444,7 @@ class GPU:
             model = TensorRTModel(model_id=request.model_id, use_f32=False)
             model.generate_engine(request=request)
 
-        await run_in_thread_async(func=trt_build_thread_call)
+        await asyncio.to_thread(trt_build_thread_call)
         logger.info("TensorRT engine successfully built")
 
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
@@ -479,7 +473,42 @@ class GPU:
 
             self.memory_cleanup()
 
-        await run_in_thread_async(func=ait_build_thread_call)
+        await asyncio.to_thread(ait_build_thread_call)
+
+        logger.debug(f"AI Template built for {request.model_id}.")
+
+        logger.info("AITemplate engine successfully built")
+
+    async def build_dynamic_aitemplate_engine(
+        self, request: AITemplateDynamicBuildRequest
+    ):
+        "Convert a model to a AITemplate engine"
+
+        logger.debug(f"Building AI Template for {request.model_id}...")
+
+        # Set the number of threads to use and keep them within boundaries of the system
+        if request.threads:
+            if request.threads < 1:
+                request.threads = 1
+            elif request.threads > multiprocessing.cpu_count():
+                request.threads = multiprocessing.cpu_count()
+            else:
+                config.aitemplate.num_threads = request.threads
+
+        def ait_build_thread_call():
+            from core.aitemplate.dynamic_compile import compile_diffusers
+
+            compile_diffusers(
+                batch_size=request.batch_size,
+                local_dir_or_id=request.model_id,
+                height=request.height,
+                width=request.width,
+                clip_chunks=request.clip_chunks,
+            )
+
+            self.memory_cleanup()
+
+        await asyncio.to_thread(ait_build_thread_call)
 
         logger.debug(f"AI Template built for {request.model_id}.")
 
@@ -495,7 +524,6 @@ class GPU:
         def onnx_build_thread_call():
             pipe = OnnxStableDiffusion(
                 model_id=request.model_id,
-                use_fp32=config.api.use_fp32,
                 autoload=False,
             )
 
@@ -503,12 +531,13 @@ class GPU:
                 device=config.api.device,
                 model_id=request.model_id,
                 simplify_unet=request.simplify_unet,
+                convert_to_fp16=request.convert_to_fp16,
                 target=request.quant_dict,
             )
 
             self.memory_cleanup()
 
-        await run_in_thread_async(func=onnx_build_thread_call)
+        await asyncio.to_thread(onnx_build_thread_call)
 
         logger.info(f"ONNX engine successfully built for {request.model_id}.")
 
@@ -533,31 +562,35 @@ class GPU:
             )
             pt_model.unload()
 
-        await run_in_thread_async(func=model_to_f16_thread_call)
+        await asyncio.to_thread(model_to_f16_thread_call)
 
         logger.debug(f"Converted {model}.")
 
     async def download_huggingface_model(self, model: str):
         "Download a model from the internet."
 
-        await run_in_thread_async(download_model, args=(model,))
+        await asyncio.to_thread(download_model, model)
 
-    async def load_lora(self, model: str, lora: str):
+    async def load_lora(self, req: LoraLoadRequest):
         "Inject a Lora model into a model"
 
-        if model in self.loaded_models:
-            internal_model = self.loaded_models[model]
+        if req.model in self.loaded_models:
+            internal_model = self.loaded_models[req.model]
 
             if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.debug(f"Loading Lora model: {lora}")
+                logger.info(
+                    f"Loading Lora model: {req.lora}, weights: ({req.unet_weight}, {req.text_encoder_weight})"
+                )
 
-                internal_model.load_lora(lora)
+                internal_model.load_lora(
+                    req.lora, req.unet_weight, req.text_encoder_weight
+                )
 
                 websocket_manager.broadcast_sync(
                     Notification(
                         "success",
                         "Lora model loaded",
-                        f"Lora model {lora} loaded",
+                        f"Lora model {req.lora} loaded",
                     )
                 )
 
@@ -566,10 +599,39 @@ class GPU:
                 Notification(
                     "error",
                     "Model not found",
-                    f"Model {model} not found",
+                    f"Model {req.model} not found",
                 )
             )
-            logger.error(f"Model {model} not found")
+            logger.error(f"Model {req.model} not found")
+
+    async def load_textual_inversion(self, req: TextualInversionLoadRequest):
+        "Inject a textual inversion model into a model"
+
+        if req.model in self.loaded_models:
+            internal_model = self.loaded_models[req.model]
+
+            if isinstance(internal_model, PyTorchStableDiffusion):
+                logger.info(f"Loading textual inversion model: {req.textual_inversion}")
+
+                internal_model.load_textual_inversion(req.textual_inversion)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Textual inversion model loaded",
+                        f"Textual inversion model {req.textual_inversion} loaded",
+                    )
+                )
+
+        else:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not found",
+                    f"Model {req.model} not found",
+                )
+            )
+            logger.error(f"Model {req.model} not found")
 
     async def interrogate(self, job: InterrogatorQueueEntry):
         "Generate captions for image"
@@ -603,7 +665,38 @@ class GPU:
             else:
                 raise ValueError(f"Model {job.model} not implemented")
 
-        output: InterrogationResult = await run_in_thread_async(
-            generate_call, args=(job,)
-        )
+        output: InterrogationResult = await asyncio.to_thread(generate_call, job)
         return output
+
+    async def upscale(self, job: UpscaleQueueEntry):
+        "Upscale an image by a specified factor"
+
+        def generate_call(job: UpscaleQueueEntry):
+            if job.model in [
+                "RealESRGAN_x4plus",
+                "RealESRNet_x4plus",
+                "RealESRGAN_x4plus_anime_6B",
+                "RealESRGAN_x2plus",
+                "RealESR-general-x4v3",
+            ]:
+                t = time.time()
+                pipe = RealESRGAN(
+                    model_name=job.model,
+                    tile=job.data.tile_size,
+                    tile_pad=job.data.tile_padding,
+                )
+
+                image = pipe.generate(job)
+                pipe.unload()
+                deltatime = time.time() - t
+                return image, deltatime
+            else:
+                raise ValueError(f"Model {job.model} not implemented")
+
+        image: Image.Image
+        time_: float
+        image, time_ = await asyncio.to_thread(generate_call, job)
+
+        save_images([image], job)
+
+        return image, time_

@@ -22,6 +22,7 @@ from pathlib import Path
 
 import torch
 from aitemplate.testing import detect_target
+from rich.console import Console
 
 from api import websocket_manager
 from api.websockets import Data, Notification
@@ -34,6 +35,7 @@ from .src.compile_lib.compile_unet import compile_unet
 from .src.compile_lib.compile_vae import compile_vae
 
 logger = logging.getLogger(__name__)
+console = Console()
 
 
 def compile_diffusers(
@@ -47,7 +49,13 @@ def compile_diffusers(
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
 
-    use_fp16_acc = not config.api.use_fp32
+    # Wipe out cache
+    if os.path.exists("~/.aitemplate/cuda.db"):
+        logger.info("Wiping out cache...")
+        os.remove("~/.aitemplate/cuda.db")
+        logger.info("Cache wiped out")
+
+    use_fp16_acc = config.api.data_type != "float32"
     start_time = time.time()
 
     torch.manual_seed(4896)
@@ -96,219 +104,232 @@ def compile_diffusers(
             },
         )
     )
-    try:
-        if (
-            invalidate_cache
-            or not Path(dump_dir).joinpath("UNet2DConditionModel/test.so").exists()
-        ):
-            compile_unet(
-                pipe.unet,  # type: ignore
-                batch_size=batch_size * 2,
-                width=ww,
-                height=hh,
-                use_fp16_acc=use_fp16_acc,
-                convert_conv_to_gemm=convert_conv_to_gemm,
-                hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
-                attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
-                dump_dir=dump_dir,
+    with console.status("[bold green]Compiling UNet..."):
+        try:
+            if (
+                invalidate_cache
+                or not Path(dump_dir).joinpath("UNet2DConditionModel/test.so").exists()
+            ):
+                compile_unet(
+                    pipe.unet,  # type: ignore
+                    batch_size=batch_size * 2,
+                    width=ww,
+                    height=hh,
+                    use_fp16_acc=use_fp16_acc,
+                    convert_conv_to_gemm=convert_conv_to_gemm,
+                    hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
+                    attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
+                    dump_dir=dump_dir,
+                )
+            else:
+                logger.info("UNet already compiled. Skipping...")
+
+            # Dump UNet config
+            with open(
+                os.path.join(dump_dir, "UNet2DConditionModel", "config.json"),
+                "w",
+                encoding="utf-8",
+            ) as f:
+                json.dump(pipe.unet.config, f, indent=4, ensure_ascii=False)  # type: ignore
+                logger.info("UNet config saved")
+
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"unet": "finish"})
             )
-        else:
-            logger.info("UNet already compiled. Skipping...")
 
-        # Dump UNet config
-        with open(
-            os.path.join(dump_dir, "UNet2DConditionModel", "config.json"),
-            "w",
-            encoding="utf-8",
-        ) as f:
-            json.dump(pipe.unet.config, f, indent=4, ensure_ascii=False)  # type: ignore
-            logger.info("UNet config saved")
-
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"unet": "finish"})
-        )
-
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error(e)
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"unet": "error"})
-        )
-        websocket_manager.broadcast_sync(
-            Notification(
-                severity="error",
-                title="AITemplate",
-                message=f"Error while compiling UNet: {e}",
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(e)
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"unet": "error"})
             )
-        )
-        raise e
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="AITemplate",
+                    message=f"Error while compiling UNet: {e}",
+                )
+            )
+            raise e
 
     # ControlNet UNet
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"controlnet_unet": "process"})
     )
-    try:
-        if (
-            invalidate_cache
-            or not Path(dump_dir)
-            .joinpath("ControlNetUNet2DConditionModel/test.so")
-            .exists()
-        ):
-            compile_controlnet_unet(
-                pipe.unet,  # type: ignore
-                batch_size=batch_size * 2,
-                width=ww,
-                height=hh,
-                use_fp16_acc=use_fp16_acc,
-                convert_conv_to_gemm=convert_conv_to_gemm,
-                hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
-                attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
-                dump_dir=dump_dir,
-            )
-        else:
-            logger.info("ControlNet UNet already compiled. Skipping...")
 
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"controlnet_unet": "finish"})
-        )
+    with console.status("[bold green]Compiling ControlNet UNet..."):
+        try:
+            if (
+                invalidate_cache
+                or not Path(dump_dir)
+                .joinpath("ControlNetUNet2DConditionModel/test.so")
+                .exists()
+            ):
+                compile_controlnet_unet(
+                    pipe.unet,  # type: ignore
+                    batch_size=batch_size * 2,
+                    width=ww,
+                    height=hh,
+                    use_fp16_acc=use_fp16_acc,
+                    convert_conv_to_gemm=convert_conv_to_gemm,
+                    hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
+                    attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
+                    dump_dir=dump_dir,
+                )
+            else:
+                logger.info("ControlNet UNet already compiled. Skipping...")
 
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error(e)
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"controlnet_unet": "error"})
-        )
-        websocket_manager.broadcast_sync(
-            Notification(
-                severity="error",
-                title="AITemplate",
-                message=f"Error while compiling ControlNet UNet: {e}",
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"controlnet_unet": "finish"})
             )
-        )
+
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(e)
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"controlnet_unet": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="AITemplate",
+                    message=f"Error while compiling ControlNet UNet: {e}",
+                )
+            )
 
     # CLIP
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"clip": "process"})
     )
-    try:
-        if (
-            invalidate_cache
-            or not Path(dump_dir).joinpath("CLIPTextModel/test.so").exists()
-        ):
-            compile_clip(
-                pipe.text_encoder,  # type: ignore
-                batch_size=batch_size,
-                use_fp16_acc=use_fp16_acc,
-                convert_conv_to_gemm=convert_conv_to_gemm,
-                depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
-                num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
-                dim=pipe.text_encoder.config.hidden_size,  # type: ignore
-                act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
-                dump_dir=dump_dir,
-            )
-        else:
-            logger.info("CLIP already compiled. Skipping...")
 
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error(e)
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"clip": "error"})
-        )
-        websocket_manager.broadcast_sync(
-            Notification(
-                severity="error",
-                title="AITemplate",
-                message=f"Error while compiling CLIP: {e}",
+    with console.status("[bold green]Compiling CLIP..."):
+        try:
+            if (
+                invalidate_cache
+                or not Path(dump_dir).joinpath("CLIPTextModel/test.so").exists()
+            ):
+                compile_clip(
+                    pipe.text_encoder,  # type: ignore
+                    batch_size=batch_size,
+                    use_fp16_acc=use_fp16_acc,
+                    convert_conv_to_gemm=convert_conv_to_gemm,
+                    depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
+                    num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
+                    dim=pipe.text_encoder.config.hidden_size,  # type: ignore
+                    act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
+                    dump_dir=dump_dir,
+                )
+
+                websocket_manager.broadcast_sync(
+                    Data(data_type="aitemplate_compile", data={"clip": "finish"})
+                )
+            else:
+                logger.info("CLIP already compiled. Skipping...")
+
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(e)
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"clip": "error"})
             )
-        )
-        raise e
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="AITemplate",
+                    message=f"Error while compiling CLIP: {e}",
+                )
+            )
+            raise e
 
     # VAE
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"vae": "process"})
     )
-    try:
-        if (
-            invalidate_cache
-            or not Path(dump_dir).joinpath("AutoencoderKL/test.so").exists()
-        ):
-            compile_vae(
-                pipe.vae,  # type: ignore
-                batch_size=batch_size,
-                width=ww,
-                height=hh,
-                use_fp16_acc=use_fp16_acc,
-                convert_conv_to_gemm=convert_conv_to_gemm,
-                dump_dir=dump_dir,
+
+    with console.status("[bold green]Compiling VAE..."):
+        try:
+            if (
+                invalidate_cache
+                or not Path(dump_dir).joinpath("AutoencoderKL/test.so").exists()
+            ):
+                compile_vae(
+                    pipe.vae,  # type: ignore
+                    batch_size=batch_size,
+                    width=ww,
+                    height=hh,
+                    use_fp16_acc=use_fp16_acc,
+                    convert_conv_to_gemm=convert_conv_to_gemm,
+                    dump_dir=dump_dir,
+                )
+            else:
+                logger.info("VAE already compiled. Skipping...")
+
+            # Dump VAE config
+            with open(
+                os.path.join(dump_dir, "AutoencoderKL", "config.json"),
+                "w",
+                encoding="utf-8",
+            ) as f:
+                json.dump(pipe.vae.config, f, indent=4, ensure_ascii=False)  # type: ignore
+                logger.info("VAE config saved")
+
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"vae": "finish"})
             )
-        else:
-            logger.info("VAE already compiled. Skipping...")
 
-        # Dump VAE config
-        with open(
-            os.path.join(dump_dir, "AutoencoderKL", "config.json"),
-            "w",
-            encoding="utf-8",
-        ) as f:
-            json.dump(pipe.vae.config, f, indent=4, ensure_ascii=False)  # type: ignore
-            logger.info("VAE config saved")
-
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"vae": "finish"})
-        )
-
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error(e)
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"vae": "error"})
-        )
-        websocket_manager.broadcast_sync(
-            Notification(
-                severity="error",
-                title="AITemplate",
-                message=f"Error while compiling VAE: {e}",
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(e)
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"vae": "error"})
             )
-        )
-        raise e
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="AITemplate",
+                    message=f"Error while compiling VAE: {e}",
+                )
+            )
+            raise e
 
     # Cleanup
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"cleanup": "process"})
     )
 
-    try:
-        # Clean all files except test.so recursively
-        for root, _dirs, files in os.walk(dump_dir):
-            for file in files:
-                if file not in ["test.so", "config.json"]:
-                    os.remove(os.path.join(root, file))
-
-        # Clean profiler (sometimes not present)
+    with console.status("[bold green]Cleaning up..."):
         try:
-            shutil.rmtree(os.path.join(dump_dir, "profiler"))
-        except FileNotFoundError:
-            pass
+            # Clean all files except test.so recursively
+            for root, _dirs, files in os.walk(dump_dir):
+                for file in files:
+                    if file not in ["test.so", "config.json"]:
+                        os.remove(os.path.join(root, file))
 
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"cleanup": "finish"})
-        )
+            # Clean profiler (sometimes not present)
+            try:
+                shutil.rmtree(os.path.join(dump_dir, "profiler"))
+            except FileNotFoundError:
+                pass
 
-    except Exception as e:  # pylint: disable=broad-except
-        logger.error(e)
-        websocket_manager.broadcast_sync(
-            Data(data_type="aitemplate_compile", data={"cleanup": "error"})
-        )
-        websocket_manager.broadcast_sync(
-            Notification(
-                severity="error",
-                title="AITemplate",
-                message=f"Error while cleaning up: {e}",
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"cleanup": "finish"})
             )
-        )
-        raise e
 
-    del pipe
-    torch.cuda.empty_cache()
-    torch.cuda.ipc_collect()
-    gc.collect()
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(e)
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"cleanup": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="AITemplate",
+                    message=f"Error while cleaning up: {e}",
+                )
+            )
+            raise e
+
+    with console.status("[bold green]Releasing memory"):
+        del pipe
+        torch.cuda.empty_cache()
+        torch.cuda.ipc_collect()
+        gc.collect()
 
     deltatime = time.time() - start_time
 

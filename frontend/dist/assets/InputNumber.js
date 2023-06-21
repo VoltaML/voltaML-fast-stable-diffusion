@@ -1,4 +1,4 @@
-import { d as defineComponent, z as h, bh as createTheme, bi as commonLight, by as buttonLight, bz as inputLight, Q as c, R as cB, I as useConfig, Z as useTheme, al as useLocale, J as useFormItem, A as ref, M as toRef, K as useMergedState, Y as useMemo, a7 as watch, a0 as useRtl, c as computed, j as NInput, av as resolveWrappedSlot, a5 as on, bA as rgba, an as resolveSlot, ao as NBaseIcon, bB as XButton, bC as AddIcon, P as call, ac as nextTick } from "./index.js";
+import { d as defineComponent, D as h, X as c, Y as cB, Q as useConfig, a5 as useTheme, ar as useLocale, R as useFormItem, E as ref, U as toRef, S as useMergedState, a4 as useMemo, J as watch, a7 as useRtl, c as computed, k as NInput, aB as resolveWrappedSlot, bz as inputNumberLight, ac as on, bA as rgba, at as resolveSlot, au as NBaseIcon, bB as XButton, a$ as AddIcon, W as call, ah as nextTick } from "./index.js";
 const RemoveIcon = defineComponent({
   name: "Remove",
   render() {
@@ -9,22 +9,6 @@ const RemoveIcon = defineComponent({
     );
   }
 });
-const self = (vars) => {
-  const { textColorDisabled } = vars;
-  return {
-    iconColorDisabled: textColorDisabled
-  };
-};
-const inputNumberLight = createTheme({
-  name: "InputNumber",
-  common: commonLight,
-  peers: {
-    Button: buttonLight,
-    Input: inputLight
-  },
-  self
-});
-const inputNumberLight$1 = inputNumberLight;
 function parse(value) {
   if (value === void 0 || value === null || typeof value === "string" && value.trim() === "") {
     return null;
@@ -132,7 +116,7 @@ const NInputNumber = defineComponent({
   props: inputNumberProps,
   setup(props) {
     const { mergedBorderedRef, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("InputNumber", "-input-number", style, inputNumberLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("InputNumber", "-input-number", style, inputNumberLight, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("InputNumber");
     const formItem = useFormItem(props);
     const { mergedSizeRef, mergedDisabledRef, mergedStatusRef } = formItem;

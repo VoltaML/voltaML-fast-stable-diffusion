@@ -5,25 +5,37 @@ on:
     branches: ["main", "experimental"]
     paths:
       - "**.rs"
+      - ".github/workflows/**"
   pull_request:
     branches: ["main", "experimental"]
     paths:
       - "**.rs"
+      - ".github/workflows/**"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to build"
+        required: true
+        default: "main"
 
 env:
   CARGO_TERM_COLOR: always
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+
+    runs-on: ${{ matrix.os }}
 
     steps:
       - uses: actions/checkout@v3
       - name: Build
-        run: cd manager && cargo build --verbose --release
+        run: cd manager && cargo build --release
       - name: Output binary
         uses: actions/upload-artifact@v3
         with:
           name: volta-manager
-          path: manager/target/release/voltaml-manager
+          path: manager/target/release/voltaml-manager*
           retention-days: 3

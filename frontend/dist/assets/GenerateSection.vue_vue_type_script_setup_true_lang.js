@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, e as createElementBlock, l as createBaseVNode, u as useState, p as createBlock, w as withCtx, f as createVNode, g as unref, N as NGi, B as NButton, C as NIcon, k as createTextVNode, r as NGrid, h as NCard, v as serverUrl } from "./index.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, E as ref, bi as onMounted, o as onUnmounted, s as serverUrl, x as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, G as NIcon, m as createTextVNode, z as NGrid, by as NAlert, y as createCommentVNode, i as NCard } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -50,11 +50,37 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     generate: {
       type: Function,
       required: true
+    },
+    doNotDisableGenerate: {
+      type: Boolean,
+      default: false
     }
   },
   setup(__props) {
     const props = __props;
     const global = useState();
+    const conf = useSettings();
+    const generateButton = ref(null);
+    onMounted(() => {
+      window.addEventListener("keydown", handleKeyDown);
+    });
+    onUnmounted(() => {
+      window.removeEventListener("keydown", handleKeyDown);
+    });
+    function handleKeyDown(e) {
+      if (e.key === "Enter" && e.ctrlKey) {
+        e.preventDefault();
+        if (global.state.generating) {
+          return;
+        }
+        const fn = props.generate;
+        fn(e);
+      }
+      if (e.key === "Escape") {
+        e.preventDefault();
+        interrupt();
+      }
+    }
     function interrupt() {
       fetch(`${serverUrl}/api/general/interrupt`, {
         method: "POST"
@@ -66,67 +92,82 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NCard), { style: { "margin-bottom": "12px" } }, {
-        default: withCtx(() => [
-          createVNode(unref(NGrid), {
-            cols: "2",
-            "x-gap": "24"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: props.generate,
-                    disabled: unref(global).state.generating,
-                    loading: unref(global).state.generating,
-                    style: { "width": "100%" },
-                    ghost: ""
-                  }, {
-                    icon: withCtx(() => [
-                      createVNode(unref(NIcon), null, {
+        default: withCtx(() => {
+          var _a, _b;
+          return [
+            createVNode(unref(NGrid), {
+              cols: "2",
+              "x-gap": "24"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NGi), null, {
+                  default: withCtx(() => {
+                    var _a2, _b2;
+                    return [
+                      createVNode(unref(NButton), {
+                        type: "success",
+                        ref_key: "generateButton",
+                        ref: generateButton,
+                        onClick: props.generate,
+                        disabled: !props.doNotDisableGenerate && (unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0),
+                        loading: unref(global).state.generating,
+                        style: { "width": "100%" },
+                        ghost: ""
+                      }, {
+                        icon: withCtx(() => [
+                          createVNode(unref(NIcon), null, {
+                            default: withCtx(() => [
+                              createVNode(unref(Play))
+                            ]),
+                            _: 1
+                          })
+                        ]),
                         default: withCtx(() => [
-                          createVNode(unref(Play))
+                          createTextVNode("Generate ")
                         ]),
                         _: 1
-                      })
-                    ]),
-                    default: withCtx(() => [
-                      createTextVNode("Generate ")
-                    ]),
-                    _: 1
-                  }, 8, ["onClick", "disabled", "loading"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NGi), null, {
-                default: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "error",
-                    onClick: interrupt,
-                    style: { "width": "100%" },
-                    ghost: "",
-                    disabled: !unref(global).state.generating
-                  }, {
-                    icon: withCtx(() => [
-                      createVNode(unref(NIcon), null, {
-                        default: withCtx(() => [
-                          createVNode(unref(Skull))
-                        ]),
-                        _: 1
-                      })
-                    ]),
-                    default: withCtx(() => [
-                      createTextVNode("Interrupt ")
-                    ]),
-                    _: 1
-                  }, 8, ["disabled"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
+                      }, 8, ["onClick", "disabled", "loading"])
+                    ];
+                  }),
+                  _: 1
+                }),
+                createVNode(unref(NGi), null, {
+                  default: withCtx(() => [
+                    createVNode(unref(NButton), {
+                      type: "error",
+                      onClick: interrupt,
+                      style: { "width": "100%" },
+                      ghost: "",
+                      disabled: !unref(global).state.generating
+                    }, {
+                      icon: withCtx(() => [
+                        createVNode(unref(NIcon), null, {
+                          default: withCtx(() => [
+                            createVNode(unref(Skull))
+                          ]),
+                          _: 1
+                        })
+                      ]),
+                      default: withCtx(() => [
+                        createTextVNode("Interrupt ")
+                      ]),
+                      _: 1
+                    }, 8, ["disabled"])
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            }),
+            ((_a = unref(conf).data.settings.model) == null ? void 0 : _a.name) === "" || ((_b = unref(conf).data.settings.model) == null ? void 0 : _b.name) === void 0 ? (openBlock(), createBlock(unref(NAlert), {
+              key: 0,
+              style: { "margin-top": "12px" },
+              type: "warning",
+              title: "No model loaded",
+              bordered: false
+            })) : createCommentVNode("", true)
+          ];
+        }),
         _: 1
       });
     };

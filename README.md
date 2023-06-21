@@ -53,7 +53,7 @@
 </div>
 
 <hr>
-<h3 align="center">Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a></h3>
+<h3 align="center">Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a> and the community</h3>
 <hr>
 
 <br />
@@ -67,7 +67,6 @@
   - [Speed comparison](#speed-comparison)
   - [Installation](#installation)
 - [Contributing](#contributing)
-  - [Code of Conduct](#code-of-conduct)
 - [License](#license)
 - [Contact](#contact)
 
@@ -136,17 +135,11 @@
 
 ## Speed comparison
 
-The below benchmarks have been done for generating a 512x512 image, batch size 1 for 50 iterations.
-
-| GPU (it/s) | T4  | A10  | A100 | 4090 | 4080 | 3090 | 2080Ti | 3050 |
-| ---------- | --- | ---- | ---- | ---- | ---- | ---- | ------ | ---- |
-| PyTorch    | 4.3 | 8.8  | 15.1 | 19   | 15.5 | 11   | 8      | 4.1  |
-| xFormers   | 5.5 | 15.6 | 27.5 | 28   | 20.2 | 15.7 | N/A    | 5.1  |
-| AITemplate | N/A | 23   | N/A  | N/A  | 40.5 | N/A  | N/A    | 10.2 |
+Please refer to this [table](https://voltaml.github.io/voltaML-fast-stable-diffusion/getting-started/introduction#speed-comparison). Data had a small sample size and was usually collected on a single machine. Your results may vary.
 
 ## Installation
 
-Please see the [documentation](https://voltaml.github.io/voltaML-fast-stable-diffusion/installation/docker.html) for installation instructions.
+Please see the [documentation](https://voltaml.github.io/voltaML-fast-stable-diffusion/installation/local) for installation instructions.
 
 # Contributing
 
@@ -157,10 +150,6 @@ Please see the [documentation](https://voltaml.github.io/voltaML-fast-stable-dif
 Contributions are always welcome!
 
 See `contributing.md` for ways to get started.
-
-## Code of Conduct
-
-Please read the [Code of Conduct](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/master/CODE_OF_CONDUCT.md)
 
 # License
 

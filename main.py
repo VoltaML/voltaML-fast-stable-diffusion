@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import shlex
@@ -19,10 +20,6 @@ from core.install_requirements import (  # pylint: disable=wrong-import-position
 
 # Handle arguments passed to the script
 app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]
-extra_args = os.getenv("EXTRA_ARGS")
-
-if extra_args:
-    app_args.extend(shlex.split(extra_args))
 
 # Parse arguments
 parser = ArgumentParser(
@@ -55,12 +52,20 @@ parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose th
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
 parser.add_argument("--in-container", action="store_true", help="Skip virtualenv check")
 parser.add_argument(
+    "--pytorch-type",
+    help="Force voltaml to use a specific type of pytorch distribution.",
+    choices=["cpu", "cuda", "rocm", "directml", "intel", "vulkan"],
+)
+parser.add_argument(
     "--bot", action="store_true", help="Run in tandem with the Discord bot"
 )
 parser.add_argument(
     "--enable-r2",
     action="store_true",
     help="Enable Cloudflare R2 bucket upload support",
+)
+parser.add_argument(
+    "-p", "--port", type=int, help="Port to expose the API on", default=5003
 )
 
 parser.add_argument(
@@ -70,8 +75,7 @@ parser.add_argument(
 )
 args = parser.parse_args(args=app_args)
 
-logging.basicConfig(level=args.log_level)
-logger = logging.getLogger(__name__)
+logger: logging.Logger = logging.getLogger()
 
 # Suppress some annoying logs
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
@@ -84,6 +88,7 @@ Path("data/onnx").mkdir(exist_ok=True)
 Path("data/models").mkdir(exist_ok=True)
 Path("data/outputs").mkdir(exist_ok=True)
 Path("data/lora").mkdir(exist_ok=True)
+Path("data/textual-inversion").mkdir(exist_ok=True)
 Path("data/tensorrt").mkdir(exist_ok=True)
 
 # Suppress some annoying warnings
@@ -129,14 +134,28 @@ def main(exit_after_init: bool = False):
         bot_thread.start()
 
     # Start the API
-    from uvicorn import run as uvicorn_run
+    from uvicorn import Config, Server
 
     from api.app import app as api_app
+    from core import shared
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
 
+    uvi_config = Config(app=api_app, host=host, port=args.port)
+    uvi_server = Server(config=uvi_config)
+
+    uvi_config.setup_event_loop()
+    loop = asyncio.new_event_loop()
+
+    shared.uvicorn_loop = loop
+    shared.uvicorn_server = uvi_server
+
     if not exit_after_init:
-        uvicorn_run(api_app, host=host, port=5003)
+        try:
+            asyncio.run(uvi_server.serve())
+        except RuntimeError:
+            logger.info("Server stopped")
+            sys.exit(0)
     else:
         logger.warning("Exit after initialization requested, exiting now")
 
@@ -148,18 +167,18 @@ def checks():
         if not in_virtualenv():
             create_environment()
 
-            logger.error("Please run the script from a virtual environment")
+            print("Please run the script from a virtual environment")
             sys.exit(1)
 
     # Install more user friendly logging
-    if not is_installed("coloredlogs"):
+    if not is_installed("rich"):
         subprocess.check_call(
             [
                 sys.executable,
                 "-m",
                 "pip",
                 "install",
-                "coloredlogs",
+                "rich",
             ]
         )
 
@@ -185,50 +204,56 @@ def checks():
             ]
         )
 
+    # Handle dotenv file
     import dotenv
 
     dotenv.load_dotenv()
 
+    # Handle arguments passed to the script
+    extra_args = os.getenv("EXTRA_ARGS")
+
+    if extra_args:
+        app_args.extend(shlex.split(extra_args))
+
+    args_with_extras = parser.parse_args(args=app_args)
+
+    # Inject better logger
+    from rich.logging import RichHandler
+
+    logging.basicConfig(
+        level=args_with_extras.log_level,
+        format="%(asctime)s | %(name)s » %(message)s",
+        datefmt="%H:%M:%S",
+        handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
+    )
+    logger = logging.getLogger()  # pylint: disable=redefined-outer-name
+
     # Check tokens
-    if not os.getenv("HUGGINGFACE_TOKEN") and not args.install_only:
+    if not os.getenv("HUGGINGFACE_TOKEN") and not args_with_extras.install_only:
         logger.error(
             "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
         )
         sys.exit(1)
 
-    if args.bot and not args.install_only:
+    if args_with_extras.bot and not args_with_extras.install_only:
         if not os.getenv("DISCORD_BOT_TOKEN"):
             logger.error(
                 "Bot start requested, but no Discord token provided. Please provide a token with DISCORD_BOT_TOKEN environment variable"
             )
             sys.exit(1)
 
-    # Inject coloredlogs
-    import coloredlogs
-
-    coloredlogs.DEFAULT_LEVEL_STYLES = {
-        **coloredlogs.DEFAULT_LEVEL_STYLES,
-        "info": {"color": "magenta", "bright": True},
-        "error": {"color": "red", "bright": True, "bold": True},
-        "warning": {"color": "yellow", "bright": True, "bold": True},
-    }
-
-    coloredlogs.install(
-        level=args.log_level,
-        fmt="%(asctime)s | %(name)s | %(levelname)s » %(message)s",
-        datefmt="%H:%M:%S",
-    )
-
     # Check if we are up to date with the latest release
     version_check(commit_hash())
 
     # Install pytorch and api requirements
-    install_pytorch()
+    install_pytorch(
+        args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1
+    )
 
     # Save the token to config
     from core import shared
 
-    if not args.install_only:
+    if not args_with_extras.install_only:
         shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
 
     # Create the diffusers cache folder
@@ -239,10 +264,10 @@ def checks():
     from core.config import config
 
     logger.info(f"Device: {config.api.device}")
-    logger.info(f"Precision: {'FP32' if config.api.use_fp32 else 'FP16'}")
+    logger.info(f"Precision: {config.api.data_type}")
 
     # Initialize R2 bucket if needed
-    if args.enable_r2:
+    if args_with_extras.enable_r2:
         from core import shared_dependent
         from core.extra.cloudflare_r2 import R2Bucket
 
@@ -251,11 +276,13 @@ def checks():
 
         shared_dependent.r2 = R2Bucket(endpoint=endpoint, bucket_name=bucket_name)
 
+    return args_with_extras
+
 
 if __name__ == "__main__":
     print("Starting the API...")
 
-    checks()
+    args = checks()
 
     try:
         main(exit_after_init=args.install_only)

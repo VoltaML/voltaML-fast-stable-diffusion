@@ -11,6 +11,10 @@
               type="textarea"
               placeholder="Prompt"
               show-count
+              @keyup="
+                promptHandleKeyUp($event, conf.data.settings.txt2img, 'prompt')
+              "
+              @keydown="promptHandleKeyDown"
             >
               <template #count>{{ promptCount }}</template>
             </NInput>
@@ -19,6 +23,14 @@
               type="textarea"
               placeholder="Negative prompt"
               show-count
+              @keyup="
+                promptHandleKeyUp(
+                  $event,
+                  conf.data.settings.txt2img,
+                  'negative_prompt'
+                )
+              "
+              @keydown="promptHandleKeyDown"
             >
               <template #count>{{ negativePromptCount }}</template>
             </NInput>
@@ -32,8 +44,7 @@
                 The sampler is the method used to generate the image. Your
                 result may vary drastically depending on the sampler you choose.
                 <b class="highlight"
-                  >We recommend using Euler A for the best results (but it also
-                  takes more time).
+                  >We recommend using DPMSolverMultistep for the best results .
                 </b>
                 <a
                   target="_blank"
@@ -183,6 +194,36 @@
               />
             </div>
 
+            <!-- Self Attention Scale -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Self Attention Scale</p>
+                </template>
+                <b class="highlight">PyTorch ONLY.</b> If self attention is >0,
+                SAG will guide the model and improve the quality of the image at
+                the cost of speed. Higher values will follow the guidance more
+                closely, which can lead to better, more sharp and detailed
+                outputs.
+              </NTooltip>
+
+              <NSlider
+                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                :min="0"
+                :max="1"
+                :step="0.05"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="0"
+                :max="1"
+                :step="0.05"
+              />
+            </div>
+
             <!-- Number of images -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -273,18 +314,24 @@
           </NSpace>
         </NCard>
 
-        <NCard title="Highres fix" style="margin-top: 12px">
+        <NCard
+          title="Highres fix"
+          style="margin-top: 12px; margin-bottom: 12px"
+        >
           <div class="flex-container">
             <div class="slider-label">
               <p>Enabled</p>
             </div>
-            <NSwitch v-model:value="global.state.txt2img.highres" />
+            <NSwitch
+              v-model:value="global.state.txt2img.highres"
+              :disabled="!isSelectedModelPyTorch"
+            />
           </div>
 
           <NSpace
             vertical
             class="left-container"
-            v-if="global.state.txt2img.highres"
+            v-if="global.state.txt2img.highres && isSelectedModelPyTorch"
           >
             <!-- Steps -->
             <div class="flex-container">
@@ -373,9 +420,17 @@
                 :options="[
                   { label: 'Nearest', value: 'nearest' },
                   { label: 'Nearest exact', value: 'nearest-exact' },
-                  { label: 'Linear', value: 'linear' },
+                  { label: 'Area', value: 'area' },
                   { label: 'Bilinear', value: 'bilinear' },
                   { label: 'Bicubic', value: 'bicubic' },
+                  {
+                    label: 'Bislerp (Original, slow)',
+                    value: 'bislerp-original',
+                  },
+                  {
+                    label: 'Bislerp (Tortured, fast)',
+                    value: 'bislerp-tortured',
+                  },
                 ]"
               />
             </div>
@@ -413,7 +468,11 @@ import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
-import { spaceRegex } from "@/functions";
+import {
+  promptHandleKeyDown,
+  promptHandleKeyUp,
+  spaceRegex,
+} from "@/functions";
 import {
   NCard,
   NGi,
@@ -428,7 +487,8 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed } from "vue";
+import { computed, onUnmounted } from "vue";
+import { BurnerClock } from "../clock";
 import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
@@ -487,6 +547,7 @@ const generate = () => {
           : conf.data.settings.txt2img.batch_size,
         batch_count: conf.data.settings.txt2img.batch_count,
         scheduler: conf.data.settings.txt2img.sampler,
+        self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
       },
       model: conf.data.settings.model?.name,
       backend: "PyTorch",
@@ -512,6 +573,7 @@ const generate = () => {
       global.state.generating = false;
       res.json().then((data) => {
         global.state.txt2img.images = data.images;
+        global.state.txt2img.currentImage = data.images[0];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
@@ -528,4 +590,14 @@ const generate = () => {
       console.log(err);
     });
 };
+
+const isSelectedModelPyTorch = computed(() => {
+  return conf.data.settings.model?.backend === "PyTorch";
+});
+
+// Burner clock
+const burner = new BurnerClock(conf.data.settings.txt2img, conf, generate);
+onUnmounted(() => {
+  burner.cleanup();
+});
 </script>

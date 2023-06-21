@@ -89,11 +89,31 @@ async def custom_http_exception_handler(_request, _exc):
 async def startup_event():
     "Prepare the event loop for other asynchronous tasks"
 
+    # Inject the logger
+    from rich.logging import RichHandler
+
+    # Disable duplicate logger
+    logging.getLogger("uvicorn").handlers = []
+
+    for logger_ in ("uvicorn.access", "uvicorn.error", "fastapi"):
+        l = logging.getLogger(logger_)
+        handler = RichHandler(rich_tracebacks=True, show_time=False)
+        handler.setFormatter(
+            logging.Formatter(
+                fmt="%(asctime)s | %(name)s » %(message)s", datefmt="%H:%M:%S"
+            )
+        )
+        l.handlers = [handler]
+
     shared.asyncio_loop = asyncio.get_event_loop()
 
-    asyncio.create_task(websocket_manager.sync_loop())
+    sync_task = asyncio.create_task(websocket_manager.sync_loop())
     logger.info("Started WebSocketManager sync loop")
-    asyncio.create_task(websocket_manager.perf_loop())
+    perf_task = asyncio.create_task(websocket_manager.perf_loop())
+
+    shared.asyncio_tasks.append(sync_task)
+    shared.asyncio_tasks.append(perf_task)
+
     logger.info("Started WebSocketManager performance monitoring loop")
     logger.info("UI Available at: http://localhost:5003/")
 
@@ -105,18 +125,6 @@ async def shutdown_event():
     logger.info("Closing all WebSocket connections")
     await websocket_manager.close_all()
 
-
-# Origins that are allowed to access the API
-origins = ["*"]
-
-# Allow CORS for specified origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
 
 # Enable FastAPI Analytics if key is provided
 key = os.getenv("FASTAPI_ANALYTICS_KEY")
@@ -149,7 +157,7 @@ app.mount("/data/outputs", StaticFiles(directory="data/outputs"), name="outputs"
 static_app = FastAPI()
 static_app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -160,3 +168,12 @@ static_app.add_middleware(
 static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
 
 app.mount("/assets", static_app)
+
+# Allow CORS for specified origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

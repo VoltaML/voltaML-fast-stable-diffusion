@@ -5,12 +5,13 @@ from typing import Any, Tuple
 import numpy as np
 import torch
 from PIL import Image
-from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
+from transformers.models.auto.image_processing_auto import AutoImageProcessor
+from transformers.models.upernet import UperNetForSemanticSegmentation
 
 from core import shared_dependent
 from core.config import config
 from core.controlnet_utils import ade_palette
-from core.types import ControlNetData, ControlNetMode
+from core.types import ControlNetData
 
 logger = logging.getLogger(__name__)
 
@@ -57,36 +58,36 @@ def image_to_controlnet_input(
 
     model = data.controlnet
 
-    if model == ControlNetMode.NONE:
+    if model == "none":
         return input_image
-    elif model == ControlNetMode.CANNY:
+    elif "canny" in model:
         return canny(
             input_image,
             low_threshold=data.canny_low_threshold,
             high_threshold=data.canny_low_threshold * 3,
         )
-    elif model == ControlNetMode.DEPTH:
+    elif "depth" in model:
         return depth(input_image)
-    elif model == ControlNetMode.HED:
+    elif "hed" in model:
         return hed(
             input_image,
             detect_resolution=data.detection_resolution,
             image_resolution=min(input_image.size),
         )
-    elif model == ControlNetMode.MLSD:
+    elif "mlsd" in model:
         return mlsd(
             input_image,
             resolution=data.detection_resolution,
             score_thr=data.mlsd_thr_v,
             dist_thr=data.mlsd_thr_d,
         )
-    elif model == ControlNetMode.NORMAL:
+    elif "normal" in model:
         return normal(input_image)
-    elif model == ControlNetMode.OPENPOSE:
+    elif "openpose" in model:
         return openpose(input_image)
-    elif model == ControlNetMode.SCRIBBLE:
+    elif "scribble" in model:
         return scribble(input_image)
-    elif model == ControlNetMode.SEGMENTATION:
+    elif "seg" in model:
         return segmentation(input_image)
 
     raise NotImplementedError
@@ -190,7 +191,10 @@ def normal(input_image: Image.Image) -> Image.Image:
 
     image = midas_detector(input_image, depth_and_normal=True)  # type: ignore
 
-    return image[1]
+    if isinstance(image, tuple):
+        return image[1]
+    else:
+        raise ValueError("MidasDetector did not return a tuple")
 
 
 def openpose(input_image: Image.Image) -> Image.Image:
@@ -212,7 +216,7 @@ def openpose(input_image: Image.Image) -> Image.Image:
 def scribble(input_image: Image.Image) -> Image.Image:
     "Applies scribble to an image"
 
-    raise NotImplementedError
+    return input_image
 
 
 def segmentation(input_image: Image.Image) -> Image.Image:

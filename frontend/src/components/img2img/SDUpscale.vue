@@ -10,7 +10,7 @@
           @file-dropped="conf.data.settings.sd_upscale.image = $event"
         />
 
-        <NCard title="Settings">
+        <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
@@ -18,6 +18,14 @@
               type="textarea"
               placeholder="Prompt"
               show-count
+              @keyup="
+                promptHandleKeyUp(
+                  $event,
+                  conf.data.settings.sd_upscale,
+                  'prompt'
+                )
+              "
+              @keydown="promptHandleKeyDown"
             >
               <template #count>{{ promptCount }}</template>
             </NInput>
@@ -26,6 +34,14 @@
               type="textarea"
               placeholder="Negative prompt"
               show-count
+              @keyup="
+                promptHandleKeyUp(
+                  $event,
+                  conf.data.settings.sd_upscale,
+                  'negative_prompt'
+                )
+              "
+              @keydown="promptHandleKeyDown"
             >
               <template #count>{{ negativePromptCount }}</template>
             </NInput>
@@ -39,8 +55,7 @@
                 The sampler is the method used to generate the image. Your
                 result may vary drastically depending on the sampler you choose.
                 <b class="highlight"
-                  >We recommend using Euler A for the best results (but it also
-                  takes more time).
+                  >We recommend using DPMSolverMultistep for the best results .
                 </b>
                 <a
                   target="_blank"
@@ -288,12 +303,17 @@
 
 <script setup lang="ts">
 import "@/assets/2img.css";
+import { BurnerClock } from "@/clock";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
 import { serverUrl } from "@/env";
-import { spaceRegex } from "@/functions";
+import {
+  promptHandleKeyDown,
+  promptHandleKeyUp,
+  spaceRegex,
+} from "@/functions";
 import {
   NCard,
   NGi,
@@ -307,7 +327,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed } from "vue";
+import { computed, onUnmounted } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
@@ -379,6 +399,7 @@ const generate = () => {
       global.state.generating = false;
       res.json().then((data) => {
         global.state.sd_upscale.images = data.images;
+        global.state.sd_upscale.currentImage = data.images[0];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
@@ -395,6 +416,12 @@ const generate = () => {
       console.log(err);
     });
 };
+
+// Burner clock
+const burner = new BurnerClock(conf.data.settings.sd_upscale, conf, generate);
+onUnmounted(() => {
+  burner.cleanup();
+});
 </script>
 <style scoped>
 .image-container img {

@@ -6,8 +6,31 @@ import {
   Settings,
   defaultSettings as defaultSettingsTemplate,
   recievedSettings,
-  type SettingsInterface,
+  type ISettings,
 } from "../settings";
+
+export const upscalerOptions: SelectMixedOption[] = [
+  {
+    label: "RealESRGAN_x4plus",
+    value: "RealESRGAN_x4plus",
+  },
+  {
+    label: "RealESRNet_x4plus",
+    value: "RealESRNet_x4plus",
+  },
+  {
+    label: "RealESRGAN_x4plus_anime_6B",
+    value: "RealESRGAN_x4plus_anime_6B",
+  },
+  {
+    label: "RealESRGAN_x2plus",
+    value: "RealESRGAN_x2plus",
+  },
+  {
+    label: "RealESR-general-x4v3",
+    value: "RealESR-general-x4v3",
+  },
+];
 
 export function getSchedulerOptions() {
   // Create key, value pairs for scheduler options depending on if the backend is PyTorch(KDiffusionSampler) or TensorRT(Sampler)
@@ -124,7 +147,7 @@ export const useSettings = defineStore("settings", () => {
   }
 
   // Deep copy default settings
-  const defaultSettings: SettingsInterface = reactive(deepcopiedSettings);
+  const defaultSettings: ISettings = reactive(deepcopiedSettings);
 
   return {
     data,

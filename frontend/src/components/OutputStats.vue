@@ -11,7 +11,7 @@
 
 <script lang="ts" setup>
 import { NCard, NDescriptions, NDescriptionsItem } from "naive-ui";
-import { defineProps, type PropType } from "vue";
+import type { PropType } from "vue";
 import type { GenerationData } from "../store/state";
 
 defineProps({

@@ -20,7 +20,6 @@ RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirem
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/pytorch.txt
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/interrogation.txt
 RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install python-dotenv
-RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -U xformers
 
 COPY . /app
 

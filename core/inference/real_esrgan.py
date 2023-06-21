@@ -1,5 +1,5 @@
 import os
-from typing import List, Optional
+from typing import Optional
 
 import numpy as np
 from basicsr.archs.rrdbnet_arch import RRDBNet
@@ -10,7 +10,7 @@ from realesrgan.archs.srvgg_arch import SRVGGNetCompact
 
 from core.config import config
 from core.inference.base_model import InferenceModel
-from core.types import Job, RealESRGANQueueEntry
+from core.types import Job, UpscaleQueueEntry
 from core.utils import convert_to_image
 
 
@@ -20,8 +20,8 @@ class RealESRGAN(InferenceModel):
     def __init__(
         self,
         model_name: str,
-        use_f32: bool = False,
         device: str = "cuda",
+        scale: int = 4,
         denoise_strength: float = 1.0,
         tile: int = 0,
         tile_pad: int = 10,
@@ -33,6 +33,8 @@ class RealESRGAN(InferenceModel):
         self.tile = tile
         self.tile_pad = tile_pad
         self.pre_pad = pre_pad
+        self.scale = scale
+
         self.upsampler: Optional[RealESRGANer] = None
 
         self.load()
@@ -129,7 +131,7 @@ class RealESRGAN(InferenceModel):
 
         # use dni to control the denoise strength
         dni_weight = None
-        if self.model_id == "realesr-general-x4v3" and self.denoise_strength != 1:
+        if self.model_id == "RealESR-general-x4v3" and self.denoise_strength != 1:
             wdn_model_path = model_path.replace(
                 "realesr-general-x4v3", "realesr-general-wdn-x4v3"
             )
@@ -144,7 +146,7 @@ class RealESRGAN(InferenceModel):
             tile=self.tile,
             tile_pad=self.tile_pad,
             pre_pad=self.pre_pad,
-            half=not config.api.use_fp32,
+            half=config.api.data_type != "float32",
             gpu_id=self.gpu_id,
         )
 
@@ -153,8 +155,8 @@ class RealESRGAN(InferenceModel):
         self.upsampler = None
         self.memory_cleanup()
 
-    def generate(self, job: Job) -> List[Image.Image]:
-        assert isinstance(job, RealESRGANQueueEntry), "Wrong job type"
+    def generate(self, job: Job) -> Image.Image:
+        assert isinstance(job, UpscaleQueueEntry), "Wrong job type"
         input_image = convert_to_image(job.data.image)
         img = np.array(input_image)
 
@@ -163,4 +165,4 @@ class RealESRGAN(InferenceModel):
 
         self.memory_cleanup()
 
-        return [Image.fromarray(output)]
+        return Image.fromarray(output)

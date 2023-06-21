@@ -25,16 +25,16 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 )
 from diffusers.utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
-from packaging import version
 from PIL import Image
 from torch.onnx import export
 from tqdm.auto import tqdm
-from transformers import CLIPTextModel, CLIPTokenizerFast
 from transformers.modeling_outputs import BaseModelOutputWithPooling
+from transformers.models.clip import CLIPTextModel, CLIPTokenizerFast
 from transformers.utils import is_safetensors_available
 
 from api import websocket_manager
-from api.websockets import Data
+from api.websockets import Data, Notification
+from core.config import config
 from core.files import get_full_model_path
 from core.inference.base_model import InferenceModel
 from core.inference.functions import (
@@ -42,6 +42,7 @@ from core.inference.functions import (
     is_onnxconverter_available,
     is_onnxscript_available,
     is_onnxsim_available,
+    torch_newer_than_201,
 )
 from core.inference_callbacks import (
     img2img_callback,
@@ -49,6 +50,7 @@ from core.inference_callbacks import (
     txt2img_callback,
 )
 from core.types import (
+    Backend,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     Job,
@@ -77,14 +79,14 @@ class UNet2DConditionWrapper(UNet2DConditionModel):
         ______=None,
         _______: bool = True,
     ) -> Tuple:
-        sample = sample.to(dtype=torch.float16)
-        timestep = timestep.to(dtype=torch.long)  # type: ignore
-        encoder_hidden_states = encoder_hidden_states.to(dtype=torch.float16)
+        sample = sample.to(self.device, dtype=self.dtype)
+        timestep = timestep.to(self.device, dtype=torch.long)  # type: ignore
+        encoder_hidden_states = encoder_hidden_states.to(self.device, dtype=self.dtype)
 
         sample = UNet2DConditionModel.forward(
             self, sample, timestep, encoder_hidden_states, return_dict=True
         ).sample  # type: ignore
-        return (sample.to(dtype=torch.float16),)
+        return (sample.to(self.device, dtype=self.dtype),)
 
 
 class CLIPTextModelWrapper(CLIPTextModel):
@@ -95,8 +97,8 @@ class CLIPTextModelWrapper(CLIPTextModel):
             self, input_ids=input_ids, return_dict=True
         )  # type: ignore
         return (
-            outputs.last_hidden_state.to(dtype=torch.float32),
-            outputs.pooler_output.to(dtype=torch.float32),
+            outputs.last_hidden_state.to(self.device, dtype=self.dtype),
+            outputs.pooler_output.to(self.device, dtype=self.dtype),
         )
 
 
@@ -104,14 +106,14 @@ class AutoencoderKLWrapper(AutoencoderKL):
     "Internal class"
 
     def encode(self, x) -> Tuple:  # pylint: disable=arguments-differ
-        x = x.to(dtype=torch.float16)
+        x = x.to(self.device, dtype=self.dtype)
         outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)
-        return (outputs.latent_dist.sample().to(dtype=torch.float32),)
+        return (outputs.latent_dist.sample().to(self.device, dtype=self.dtype),)
 
     def decode(self, z) -> Tuple:  # pylint: disable=arguments-differ
-        z = z.to(dtype=torch.float16)
+        z = z.to(self.device, dtype=self.dtype)
         outputs: DecoderOutput = AutoencoderKL.decode(self, z, True)  # type: ignore
-        return (outputs.sample.to(dtype=torch.float32),)
+        return (outputs.sample.to(self.device, dtype=self.dtype),)
 
 
 class OnnxStableDiffusion(InferenceModel):
@@ -122,14 +124,14 @@ class OnnxStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        use_fp32: bool = False,
         autoload: bool = True,
     ) -> None:
         if is_onnx_available():
             import onnxruntime as ort
 
             super().__init__(model_id)
-            self.use_fp32 = use_fp32
+            self.backend: Backend = "ONNX"
+
             self.vae_encoder: ort.InferenceSession
             self.vae_decoder: ort.InferenceSession
             self.unet: ort.InferenceSession
@@ -194,29 +196,28 @@ class OnnxStableDiffusion(InferenceModel):
                         return r
                 else:
                     if file.is_dir():
-                        match file.stem:
-                            case "tokenizer":
-                                return CLIPTokenizerFast.from_pretrained(file)
-                            case "scheduler":
-                                # TODO: during conversion save which scheduler was used.
-                                scheduler_reg = r"_class_name\": \"(.*)\","
-                                with open(
-                                    file / "scheduler_config.json",
-                                    "r",
-                                    encoding="utf-8",
-                                ) as f:
-                                    matches = re.search(
-                                        scheduler_reg, "\n".join(f.readlines())
-                                    )
-                                    module = importlib.import_module("diffusers")
-                                    assert (
-                                        matches is not None
-                                    ), "Scheduler not found in the scheduler_config.json"
-                                    scheduler = getattr(module, matches.group(1))
-                                    f = getattr(scheduler, "from_pretrained")
-                                    return f(pretrained_model_name_or_path=str(file))
-                            case _:
-                                raise ValueError("Bad argument 'file' provided.")
+                        if file.stem == "tokenizer":
+                            return CLIPTokenizerFast.from_pretrained(file)
+                        elif file.stem == "scheduler":
+                            # TODO: during conversion save which scheduler was used.
+                            scheduler_reg = r"_class_name\": \"(.*)\","
+                            with open(
+                                file / "scheduler_config.json",
+                                "r",
+                                encoding="utf-8",
+                            ) as f:
+                                matches = re.search(
+                                    scheduler_reg, "\n".join(f.readlines())
+                                )
+                                module = importlib.import_module("diffusers")
+                                assert (
+                                    matches is not None
+                                ), "Scheduler not found in the scheduler_config.json"
+                                scheduler = getattr(module, matches.group(1))
+                                f = getattr(scheduler, "from_pretrained")
+                                return f(pretrained_model_name_or_path=str(file))
+                        else:
+                            raise ValueError("Bad argument 'file' provided.")
                     else:
                         sess_options = ort.SessionOptions()
 
@@ -237,10 +238,12 @@ class OnnxStableDiffusion(InferenceModel):
                             sess_options.execution_mode = ort.ExecutionMode.ORT_PARALLEL
 
                         return ort.InferenceSession(
-                            str(file), providers=providers, sess_options=sess_options
+                            str(file.as_posix()),
+                            providers=providers,
+                            sess_options=sess_options,
                         )
 
-            folder = Path("data/onnx").joinpath(self.model_id)
+            folder = Path(self.model_id)
 
             if (folder / "providers.txt").exists():
                 providers = _load(folder / "providers.txt")
@@ -248,7 +251,7 @@ class OnnxStableDiffusion(InferenceModel):
                 providers = {
                     "vae_encoder": ["CPUExecutionProvider"],
                     "vae_decoder": ["CPUExecutionProvider"],
-                    "unet": ["CUDAExecutionProvider"],
+                    "unet": ["DmlExecutionProvider"],
                     "text_encoder": ["CPUExecutionProvider"],
                 }
 
@@ -262,8 +265,12 @@ class OnnxStableDiffusion(InferenceModel):
                 logger.info(f"Loaded {module} in {(time() - s):.2f}s.")
 
             self.memory_cleanup()
+        else:
+            logger.error(
+                "ONNX is not available. Please install ONNX by running 'pip install onnx onnxruntime-gpu'"
+            )
 
-    def _setup(self, opset_version: int = 17):
+    def _setup(self, opset_version: int = 17) -> bool:
         if is_onnxscript_available():
             # Until implemented in pytorch
             # https://github.com/pytorch/pytorch/issues/97262#issuecomment-1487141914
@@ -271,8 +278,10 @@ class OnnxStableDiffusion(InferenceModel):
 
             import onnxscript  # pylint: disable=import-error,unreachable
 
-            # make dynamic?
-            from onnxscript.onnx_opset import opset17 as op  # pylint: disable=E0401
+            op = getattr(
+                importlib.import_module("onnxscript").onnx_opset,
+                f"opset{opset_version}",
+            )
 
             custom_opset = onnxscript.values.Opset(
                 domain="torch.onnx", version=opset_version
@@ -333,16 +342,17 @@ class OnnxStableDiffusion(InferenceModel):
                 symbolic_fn=custom_scaled_dot_product_attention,
                 opset_version=opset_version,
             )
+            return True
+        else:
+            logger.warning(
+                "Could not setup SDPA for your opset_version. Cross-Attention forced."
+            )
+            return False
 
     def _run_model(self, model, **kwargs):
         inputs = {k: np.array(v) for k, v in kwargs.items()}
 
-        # This was originally any(map(lambda x: x == "CUDAExecutionProvider", model.get_providers()))
-        # I think I classify as a retard
-        if (
-            "CPUExecutionProvider" not in model.get_providers()
-            and len(model.get_providers()) != 1
-        ):
+        if len(model.get_providers()) != 1:
             iob = model.io_binding()
             for k, v in inputs.items():
                 iob.bind_cpu_input(k, v)
@@ -353,13 +363,15 @@ class OnnxStableDiffusion(InferenceModel):
         else:
             return model.run(None, inputs)
 
+    # TODO: controlnet
     @torch.no_grad()
     def convert_pytorch_to_onnx(
         self,
         model_id: str,
+        device: Union[torch.device, str],
         target: Optional[QuantizationDict] = None,
-        device: Union[torch.device, str] = "cuda",
         simplify_unet: bool = False,
+        convert_to_fp16: bool = False,
     ):
         """
         Converts a pytorch model into an onnx model and tries to quantize it. Depending on model size, can take up to 6gigabytes of vram
@@ -368,17 +380,37 @@ class OnnxStableDiffusion(InferenceModel):
 
         model  -- a repository, or a huggingface model name inside data/models/
 
-        target -- default: {"vae_decoder": None, "vae_encoder": None, "unet": None, "text_encoder": None}. If any of them set to true, they will be quantized using uint8 instead of int8, and will be ran on cpu during inference. If set to false, quantization will be disabled.
+        target -- default: nothing quantized.
 
         device -- default: "cuda." The device on which torch will run. If you have a gpu, you should use "cuda" or "cuda:0" or "cuda:1" etc. If you have a cpu, you should use "cpu". If on windows, and on amd, use torch_directml.device()
 
         simplify_unet -- default: False. Whether the UNet should be simplified (this uses upwards of 20gb of RAM)
         """
+        can_fp16 = (
+            "cuda" in (device.type if isinstance(device, torch.device) else device)
+            and convert_to_fp16
+        )
+        dtype = torch.float16 if can_fp16 else torch.float32
+
+        if (
+            "cuda" not in (device.type if isinstance(device, torch.device) else device)
+            and convert_to_fp16
+        ):
+            device = torch.device("cpu")
+
+        if not isinstance(device, torch.device):
+            device = torch.device(device)
+
+        websocket_manager.broadcast_sync(
+            Notification(
+                severity="info",
+                title="ONNX",
+                message=f"Compiling {model_id} to ONNX format ({'fp16' if can_fp16 else 'fp32'}-{device.type})",
+            )
+        )
 
         if target is None:
-            target = QuantizationDict(
-                vae_encoder=None, vae_decoder=None, unet=None, text_encoder=None
-            )
+            target = QuantizationDict(*["no-quant"] * 4)  # type: ignore
 
         def onnx_export(
             model,
@@ -412,9 +444,9 @@ class OnnxStableDiffusion(InferenceModel):
                     time() - rt,
                 )
             # quantize
-            quantize_success = False if signed is not None else True
+            quantize_success = False if signed != "no-quant" else True
             try:
-                if signed is not None:
+                if not quantize_success:
                     from onnxruntime.quantization import QuantType, quantize_dynamic
 
                     t = time()
@@ -427,7 +459,9 @@ class OnnxStableDiffusion(InferenceModel):
                     quantize_dynamic(
                         in_path,
                         output_path,
-                        weight_type=QuantType.QUInt8 if signed else QuantType.QInt8,
+                        weight_type=QuantType.QUInt8
+                        if signed == "uint8"
+                        else QuantType.QInt8,
                         per_channel=True,
                         reduce_range=True,
                     )
@@ -453,25 +487,29 @@ class OnnxStableDiffusion(InferenceModel):
 
             self.memory_cleanup()
 
-            if is_onnxconverter_available():
-                if not quantize_success and not signed and not self.use_fp32:
-                    logger.info(f"Starting FP16 conversion on {str(output_path)}")
-                    t = time()
-                    import onnx
-                    import onnxruntime as ort  # pylint: disable=import-error
-                    from onnxconverter_common import float16  # pylint: disable=E0401
+            if not can_fp16 and convert_to_fp16:
+                if is_onnxconverter_available():
+                    if not quantize_success and not signed:
+                        logger.info(f"Starting FP16 conversion on {str(output_path)}")
+                        t = time()
+                        import onnx
+                        from onnxconverter_common import (
+                            float16,
+                        )  # pylint: disable=E0401
 
-                    model = onnx.load(str(output_path))  # pylint: disable=no-member
-                    model = float16.convert_float_to_float16(model, keep_io_types=True)
-                    onnx.save(model, str(output_path))  # pylint: disable=no-member
-                    del model
-                    logger.info(
-                        f"Conversion successful on model {str(output_path)} in {(time() - t):.2f}s."
+                        model = onnx.load(str(output_path))  # pylint: disable=no-member
+                        model = float16.convert_float_to_float16(
+                            model, keep_io_types=True
+                        )
+                        onnx.save(model, str(output_path))  # pylint: disable=no-member
+                        del model
+                        logger.info(
+                            f"Conversion successful on model {str(output_path)} in {(time() - t):.2f}s."
+                        )
+                elif not quantize_success:
+                    logger.warning(
+                        "Onnxconverter-common is not available, skipping float16 conversion process. Model will run in FP32."
                     )
-            elif not self.use_fp32 and not quantize_success:
-                logger.warning(
-                    "Onnxconverter-common is not available, skipping float16 conversion process. Model will run in FP32."
-                )
 
             self.memory_cleanup()
 
@@ -479,7 +517,7 @@ class OnnxStableDiffusion(InferenceModel):
                 if is_onnxsim_available():
                     logger.info("Starting simplification process on %s", output_path)
                     try:
-                        import onnx  # pylint: disable=import-self
+                        import onnx
                         import onnxsim as onx  # pylint: disable=import-error
 
                         t = time()
@@ -566,12 +604,15 @@ class OnnxStableDiffusion(InferenceModel):
                 main_folder / "text_encoder"
             )
             assert isinstance(text_encoder, CLIPTextModelWrapper)
-            text_encoder.to(dtype=torch.float16, device=device)
+            text_encoder.to(dtype=dtype, device=device)
             text_encoder.eval()
 
             num_tokens = text_encoder.config.max_position_embeddings
             text_hidden_size = text_encoder.config.hidden_size
             max_length = tokenizer.model_max_length
+
+            if (output_folder / "text_encoder.onnx").exists():
+                return num_tokens, text_hidden_size
 
             text_input = tokenizer(
                 "You miss 100% of the shots you don't take, but you also don't shoot them all, even when you do.",
@@ -598,13 +639,15 @@ class OnnxStableDiffusion(InferenceModel):
         def convert_unet(
             main_folder: Path,
             output_folder: Path,
+            sdpa_success: bool,
             num_tokens: int,
             text_hidden_size: int,
             opset: int,
         ) -> int:
-            unet = load(UNet2DConditionWrapper, main_folder / "unet", dtype=torch.float16)  # type: ignore
+            unet = load(UNet2DConditionWrapper, main_folder / "unet", dtype=dtype)  # type: ignore
+            unet.to(device)
 
-            if version.parse(torch.__version__) > version.parse("2.0.0"):
+            if torch_newer_than_201 or sdpa_success:
                 from diffusers.models.attention_processor import AttnProcessor2_0
 
                 logger.info("Compiling SDPA into model")
@@ -634,15 +677,17 @@ class OnnxStableDiffusion(InferenceModel):
             if needs_collate:
                 unet_out_path = output_folder / "unet_data"
                 unet_out_path.mkdir(parents=True, exist_ok=True)
+            if (unet_out_path / "unet.onnx").exists():
+                return sample_size
             onnx_export(
                 unet,
                 model_args=(
                     torch.randn(2, in_channels, sample_size, sample_size + 1).to(
-                        device=device, dtype=torch.float32
+                        device=device, dtype=dtype
                     ),
-                    torch.randn(2).to(device=device, dtype=torch.float32),
+                    torch.randn(2).to(device=device, dtype=dtype),
                     torch.randn(2, (num_tokens * 3) - 2, text_hidden_size).to(
-                        device=device, dtype=torch.float32
+                        device=device, dtype=dtype
                     ),
                 ),
                 output_path=unet_out_path / "unet.onnx",
@@ -684,12 +729,38 @@ class OnnxStableDiffusion(InferenceModel):
             return sample_size
 
         def convert_vae(
-            main_folder: Path, output_folder: Path, unet_sample_size: int, opset: int
+            main_folder: Path,
+            output_folder: Path,
+            sdpa_success: bool,
+            unet_sample_size: int,
+            opset: int,
         ):
-            vae = load(AutoencoderKLWrapper, main_folder / "vae", dtype=torch.float16)  # type: ignore
+            vae = load(AutoencoderKLWrapper, main_folder / "vae", dtype=dtype)  # type: ignore
             vae_in_channels = vae.config["in_channels"]
             vae_sample_size = vae.config["sample_size"]
             vae_latent_channels = vae.config["latent_channels"]
+
+            if (output_folder / "vae_encoder.onnx").exists():
+                return
+
+            def set_attn_processor(proc, processor):
+                def fn_recursive_attn_processor(
+                    name: str, module: torch.nn.Module, processor
+                ):
+                    if hasattr(module, "set_processor"):
+                        module.set_processor(processor)  # type: ignore
+
+                    for sub_name, child in module.named_children():
+                        fn_recursive_attn_processor(
+                            f"{name}.{sub_name}", child, processor
+                        )
+
+                for name, module in proc.named_children():
+                    fn_recursive_attn_processor(name, module, processor)
+
+            # SDPA is forced here... and it doesn't work..??????
+            logger.info("Compiling cross-attention into model")
+            set_attn_processor(vae, AttnProcessor())
 
             vae.forward = lambda sample: vae.encode(sample)[0]  # type: ignore
             onnx_export(
@@ -697,7 +768,7 @@ class OnnxStableDiffusion(InferenceModel):
                 model_args=(
                     torch.randn(
                         1, vae_in_channels, vae_sample_size, vae_sample_size
-                    ).to(device=device, dtype=torch.float32),
+                    ).to(device=device, dtype=dtype),
                 ),
                 output_path=output_folder / "vae_encoder.onnx",
                 ordered_input_names=["sample"],
@@ -715,7 +786,7 @@ class OnnxStableDiffusion(InferenceModel):
                 model_args=(
                     torch.randn(
                         1, vae_latent_channels, unet_sample_size, unet_sample_size
-                    ).to(device=device, dtype=torch.float32),
+                    ).to(device=device, dtype=dtype),
                 ),
                 output_path=output_folder / "vae_decoder.onnx",
                 ordered_input_names=["latent_sample"],
@@ -734,39 +805,139 @@ class OnnxStableDiffusion(InferenceModel):
             del vae
             self.memory_cleanup()
 
-        opset = 17
+        opset = 14 if torch_newer_than_201 else 17
         main_folder = get_full_model_path(model_id)
         model_id_fixed = model_id.replace("/", "--")
         output_folder = Path(f"data/onnx/{model_id_fixed}")
 
-        if is_onnx_available():
-            # register aten::scaled_dot_product_attention
-            self._setup(opset)
+        websocket_manager.broadcast_sync(
+            Data(
+                data_type="onnx_compile",
+                data={
+                    "unet": "wait",
+                    "clip": "process",
+                    "vae": "wait",
+                    "cleanup": "wait",
+                },
+            )
+        )
 
+        try:
+            # register aten::scaled_dot_product_attention
+            sdpa_success = True if torch_newer_than_201 else self._setup(opset)
+        except Exception as e:
+            websocket_manager.broadcast_sync(
+                Data(data_type="onnx_compile", data={"clip": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="ONNX",
+                    message=f"Error while compiling CLIP: {e}",
+                )
+            )
+            raise e
+
+        try:
             tokenizer = CLIPTokenizerFast.from_pretrained(main_folder / "tokenizer")
 
             num_tokens, text_hidden_size = convert_text_encoder(
                 main_folder, output_folder, tokenizer, opset
             )
-            unet_sample_size = convert_unet(
-                main_folder, output_folder, num_tokens, text_hidden_size, opset
+            websocket_manager.broadcast_sync(
+                Data(data_type="onnx_compile", data={"clip": "finish"})
             )
-            convert_vae(main_folder, output_folder, unet_sample_size, opset)
+        except Exception as e:
+            websocket_manager.broadcast_sync(
+                Data(data_type="onnx_compile", data={"clip": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="ONNX",
+                    message=f"Error while compiling CLIP: {e}",
+                )
+            )
+            raise e
+        websocket_manager.broadcast_sync(
+            Data(data_type="onnx_compile", data={"unet": "process"})
+        )
+        try:
+            unet_sample_size = convert_unet(
+                main_folder,
+                output_folder,
+                sdpa_success,
+                num_tokens,
+                text_hidden_size,
+                opset,
+            )
+            websocket_manager.broadcast_sync(
+                Data(data_type="onnx_compile", data={"unet": "finish"})
+            )
+        except Exception as e:
+            websocket_manager.broadcast_sync(
+                Data(data_type="onnx_compile", data={"unet": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="ONNX",
+                    message=f"Error while compiling UNet: {e}",
+                )
+            )
+            raise e
+        websocket_manager.broadcast_sync(
+            Data(data_type="onnx_compile", data={"vae": "process"})
+        )
+        try:
+            convert_vae(
+                main_folder, output_folder, sdpa_success, unet_sample_size, opset
+            )
+            websocket_manager.broadcast_sync(
+                Data(data_type="onnx_compile", data={"vae": "finish"})
+            )
+        except Exception as e:
+            websocket_manager.broadcast_sync(
+                Data(data_type="onnx_compile", data={"vae": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="ONNX",
+                    message=f"Error while compiling VAE: {e}",
+                )
+            )
+            raise e
+        websocket_manager.broadcast_sync(
+            Data(data_type="onnx_compile", data={"cleanup": "process"})
+        )
+        if not (output_folder / "tokenizer").exists():
             shutil.copytree(main_folder / "tokenizer", output_folder / "tokenizer")
+        if not (output_folder / "scheduler").exists():
             shutil.copytree(main_folder / "scheduler", output_folder / "scheduler")
 
+        if not (output_folder / "providers.txt").exists():
             with open(output_folder / "providers.txt", mode="x", encoding="utf-8") as f:
                 for field in fields(target):
                     fn, prov = field.name, getattr(target, field.name)
-                    if fn == "unet":
-                        t = (
-                            "CPUExecutionProvider"
-                            if prov
-                            else "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
-                        )
+
+                    # If's here for readibility
+                    if prov == "no-quant":
+                        if "cuda" in device.type:
+                            t = "CUDAExecutionProvider cudnn_conv_use_max_workspace enable_cuda_graph cudnn_conv1d_pad_to_nc1d"
+                        else:
+                            t = "DmlExecutionProvider"
+                    elif prov == "uint8":
+                        t = "CPUExecutionProvider"
                     else:
-                        t = "CPUExecutionProvider" if prov else "CUDAExecutionProvider"
+                        if "cuda" in device.type:
+                            t = "TensorrtExecutionProvider"
+                        else:
+                            t = "CPUExecutionProvider"
                     f.write(f"{fn}: {t} \n")
+        websocket_manager.broadcast_sync(
+            Data(data_type="onnx_compile", data={"cleanup": "finish"})
+        )
 
     def _encode_prompt(
         self,
@@ -926,8 +1097,7 @@ class OnnxStableDiffusion(InferenceModel):
         return image
 
     @torch.no_grad()
-    # broken
-    # TODO: fix later
+    # not broken, only works with 9-channel inpaint models
     def _inpaint(
         self,
         prompt: str,

@@ -26,6 +26,14 @@
               value: 'bicubic',
             },
             {
+              label: 'Bislerp (Original, slow)',
+              value: 'bislerp-original',
+            },
+            {
+              label: 'Bislerp (Tortured, fast)',
+              value: 'bislerp-tortured',
+            },
+            {
               label: 'Nearest Exact',
               value: 'nearest-exact',
             },
