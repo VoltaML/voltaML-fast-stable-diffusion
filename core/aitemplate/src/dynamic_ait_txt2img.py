@@ -29,7 +29,7 @@ from diffusers.pipelines.stable_diffusion import (
 from diffusers.schedulers import KarrasDiffusionSchedulers, LMSDiscreteScheduler
 from diffusers.utils.pil_utils import numpy_to_pil
 from tqdm import tqdm
-from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+from transformers.models.clip import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 from .compile_lib_dynamic.compile_vae_alt import map_vae_params
 from .modeling_dynamic.vae import AutoencoderKL as ait_AutoencoderKL

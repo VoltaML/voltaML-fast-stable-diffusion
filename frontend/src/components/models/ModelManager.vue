@@ -183,13 +183,7 @@
 
 <script lang="ts" setup>
 import { serverUrl } from "@/env";
-import {
-  CloudUpload,
-  GitCompare,
-  PlayForward,
-  Settings,
-  TrashBin,
-} from "@vicons/ionicons5";
+import { CloudUpload, Settings, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
   NCard,
@@ -254,16 +248,16 @@ function createPyTorchOptions(model_path: string) {
       key: `delete:${model_path}`,
       icon: renderIcon(TrashBin),
     },
-    {
-      label: "Convert",
-      key: `convert:${model_path}`,
-      icon: renderIcon(GitCompare),
-    },
-    {
-      label: "Accelerate",
-      key: `accelerate:${model_path}`,
-      icon: renderIcon(PlayForward),
-    },
+    // {
+    //   label: "Convert",
+    //   key: `convert:${model_path}`,
+    //   icon: renderIcon(GitCompare),
+    // },
+    // {
+    //   label: "Accelerate",
+    //   key: `accelerate:${model_path}`,
+    //   icon: renderIcon(PlayForward),
+    // },
   ];
 }
 

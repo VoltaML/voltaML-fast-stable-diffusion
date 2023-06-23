@@ -257,7 +257,7 @@ def is_valid_diffusers_model(model_path: Union[str, Path]):
         if len([path / folder / i for i in found_files if i.endswith(".bin")]) < 1:
             has_binaries = False
 
-        # Check if there is at least one .safetensor file in the folder
+        # Check if there is at least one .safetensors file in the folder
         has_safetensors = True
         found_files = os.listdir(path / folder)
         if (
@@ -349,6 +349,7 @@ def get_full_model_path(
     revision: str = "main",
     model_folder: str = "models",
     force: bool = False,
+    diffusers_skip_ref_follow: bool = False,
 ) -> Path:
     "Return the path to the actual model"
 
@@ -377,6 +378,9 @@ def get_full_model_path(
 
     if not ref:
         raise ValueError("No ref found")
+
+    if diffusers_skip_ref_follow:
+        return Path(storage)
 
     return Path(storage) / "snapshots" / ref
 

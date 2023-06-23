@@ -22,7 +22,7 @@ from core.types import (
 )
 from core.utils import convert_bytes_to_image_stream, convert_image_to_base64
 
-router = APIRouter(tags=["txt2img"])
+router = APIRouter(tags=["generate"])
 logger = logging.getLogger(__name__)
 
 

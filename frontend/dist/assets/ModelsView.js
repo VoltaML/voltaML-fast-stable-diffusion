@@ -1,4 +1,4 @@
-import { d as defineComponent, D as h, P as replaceable, Q as useConfig, R as useFormItem, E as ref, c as computed, S as useMergedState, T as provide, U as toRef, V as createInjectionKey, W as call, X as c, Y as cB, Z as cE, $ as cM, a0 as iconSwitchTransition, a1 as insideModal, a2 as insidePopover, a3 as inject, a4 as useMemo, a5 as useTheme, a6 as checkboxLight, a7 as useRtl, a8 as createKey, a9 as useThemeClass, aa as createId, ab as NIconSwitchTransition, ac as on, ad as popselectLight, J as watch, ae as NInternalSelectMenu, af as createTreeMate, ag as happensIn, ah as nextTick, ai as keysOf, aj as createTmOptions, ak as keep, al as createRefSetter, am as mergeEventHandlers, an as omit, ao as NPopover, ap as popoverBaseProps, aq as cNotM, ar as useLocale, as as watchEffect, at as resolveSlot, k as NInput, r as NSelect, L as Fragment, au as NBaseIcon, av as useAdjustedTo, aw as paginationLight, ax as ellipsisLight, ay as onDeactivated, q as NTooltip, az as mergeProps, aA as radioLight, aB as resolveWrappedSlot, aC as flatten$1, aD as getSlot, aE as depx, aF as formatLength, F as NButton, aG as NScrollbar, aH as onBeforeUnmount, aI as off, aJ as ChevronDownIcon, aK as NDropdown, aL as pxfy, aM as get, aN as NBaseLoading, aO as ChevronRightIcon, o as onUnmounted, aP as VResizeObserver, aQ as warn, aR as VVirtualList, aS as NEmpty, aT as cssrAnchorMetaName, aU as repeat, aV as beforeNextFrameOnce, aW as fadeInScaleUpTransition, aX as Transition, aY as dataTableLight, aZ as throwError, a_ as isBrowser, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, e as openBlock, f as createElementBlock, n as createBaseVNode, x as createBlock, w as withCtx, g as createVNode, h as unref, G as NIcon, b6 as NResult, u as useState, b as useMessage, b7 as reactive, b8 as huggingfaceModelsFile, m as createTextVNode, i as NCard, s as serverUrl, B as pushScopeId, C as popScopeId, _ as _export_sfc, j as NSpace, b9 as NModal, N as NGi, ba as NText, M as renderList, z as NGrid, t as toDisplayString, H as NTabPane, I as NTabs } from "./index.js";
+import { d as defineComponent, D as h, P as replaceable, Q as useConfig, R as useFormItem, E as ref, c as computed, S as useMergedState, T as provide, U as toRef, V as createInjectionKey, W as call, X as c, Y as cB, Z as cE, $ as cM, a0 as iconSwitchTransition, a1 as insideModal, a2 as insidePopover, a3 as inject, a4 as useMemo, a5 as useTheme, a6 as checkboxLight, a7 as useRtl, a8 as createKey, a9 as useThemeClass, aa as createId, ab as NIconSwitchTransition, ac as on, ad as popselectLight, J as watch, ae as NInternalSelectMenu, af as createTreeMate, ag as happensIn, ah as nextTick, ai as keysOf, aj as createTmOptions, ak as keep, al as createRefSetter, am as mergeEventHandlers, an as omit, ao as NPopover, ap as popoverBaseProps, aq as cNotM, ar as useLocale, as as watchEffect, at as resolveSlot, k as NInput, r as NSelect, L as Fragment, au as NBaseIcon, av as useAdjustedTo, aw as paginationLight, ax as ellipsisLight, ay as onDeactivated, q as NTooltip, az as mergeProps, aA as radioLight, aB as resolveWrappedSlot, aC as flatten$1, aD as getSlot, aE as depx, aF as formatLength, F as NButton, aG as NScrollbar, aH as onBeforeUnmount, aI as off, aJ as ChevronDownIcon, aK as NDropdown, aL as pxfy, aM as get, aN as NBaseLoading, aO as ChevronRightIcon, o as onUnmounted, aP as VResizeObserver, aQ as warn, aR as VVirtualList, aS as NEmpty, aT as cssrAnchorMetaName, aU as repeat, aV as beforeNextFrameOnce, aW as fadeInScaleUpTransition, aX as Transition, aY as dataTableLight, aZ as throwError, a_ as isBrowser, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, e as openBlock, f as createElementBlock, n as createBaseVNode, x as createBlock, w as withCtx, g as createVNode, h as unref, G as NIcon, b6 as NResult, u as useState, b as useMessage, b7 as reactive, b8 as huggingfaceModelsFile, m as createTextVNode, i as NCard, s as serverUrl, B as pushScopeId, C as popScopeId, _ as _export_sfc, j as NSpace, b9 as NModal, N as NGi, ba as NText, M as renderList, t as toDisplayString, z as NGrid, H as NTabPane, I as NTabs } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NImage, a as NImageGroup } from "./Image.js";
 import { C as CloudUpload } from "./CloudUpload.js";
@@ -1876,8 +1876,8 @@ const RenderSorter = defineComponent({
     }
   },
   render() {
-    const { render: render7, order } = this;
-    return render7({
+    const { render: render5, order } = this;
+    return render5({
       order
     });
   }
@@ -2053,8 +2053,8 @@ const RenderFilter = defineComponent({
     }
   },
   render() {
-    const { render: render7, active, show } = this;
-    return render7({
+    const { render: render5, active, show } = this;
+    return render5({
       active,
       show
     });
@@ -3271,9 +3271,9 @@ const Cell = defineComponent({
   render() {
     const { isSummary, column, row, renderCell } = this;
     let cell;
-    const { render: render7, key, ellipsis } = column;
-    if (render7 && !isSummary) {
-      cell = render7(row, this.index);
+    const { render: render5, key, ellipsis } = column;
+    if (render5 && !isSummary) {
+      cell = render5(row, this.index);
     } else {
       if (isSummary) {
         cell = row[key].value;
@@ -7036,12 +7036,12 @@ const NUpload = defineComponent({
     );
   }
 });
-const _hoisted_1$8 = {
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M393.87 190a32.1 32.1 0 0 1-45.25 0l-26.57-26.57a32.09 32.09 0 0 1 0-45.26L382.19 58a1 1 0 0 0-.3-1.64c-38.82-16.64-89.15-8.16-121.11 23.57c-30.58 30.35-32.32 76-21.12 115.84a31.93 31.93 0 0 1-9.06 32.08L64 380a48.17 48.17 0 1 0 68 68l153.86-167a31.93 31.93 0 0 1 31.6-9.13c39.54 10.59 84.54 8.6 114.72-21.19c32.49-32 39.5-88.56 23.75-120.93a1 1 0 0 0-1.6-.26z",
@@ -7055,7 +7055,7 @@ const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   "circle",
   {
     cx: "96",
@@ -7067,51 +7067,19 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$7 = [_hoisted_2$8, _hoisted_3$8];
+const _hoisted_4$6 = [_hoisted_2$6, _hoisted_3$6];
 const BuildOutline = defineComponent({
   name: "BuildOutline",
   render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_4$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_4$6);
   }
 });
-const _hoisted_1$7 = {
+const _hoisted_1$5 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M218.31 340.69A16 16 0 0 0 191 352v32h-20a28 28 0 0 1-28-28V152a64 64 0 1 0-64-1.16V356a92.1 92.1 0 0 0 92 92h20v32a16 16 0 0 0 27.31 11.31l64-64a16 16 0 0 0 0-22.62zM112 64a32 32 0 1 1-32 32a32 32 0 0 1 32-32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M432 360.61V156a92.1 92.1 0 0 0-92-92h-20V32a16 16 0 0 0-27.31-11.31l-64 64a16 16 0 0 0 0 22.62l64 64A16 16 0 0 0 320 160v-32h20a28 28 0 0 1 28 28v204.61a64 64 0 1 0 64 0zM400 448a32 32 0 1 1 32-32a32 32 0 0 1-32 32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$6 = [_hoisted_2$7, _hoisted_3$7];
-const GitCompare = defineComponent({
-  name: "GitCompare",
-  render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$6);
-  }
-});
-const _hoisted_1$6 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M261.56 101.28a8 8 0 0 0-11.06 0L66.4 277.15a8 8 0 0 0-2.47 5.79L63.9 448a32 32 0 0 0 32 32H192a16 16 0 0 0 16-16V328a8 8 0 0 1 8-8h80a8 8 0 0 1 8 8v136a16 16 0 0 0 16 16h96.06a32 32 0 0 0 32-32V282.94a8 8 0 0 0-2.47-5.79z",
@@ -7121,7 +7089,7 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M490.91 244.15l-74.8-71.56V64a16 16 0 0 0-16-16h-48a16 16 0 0 0-16 16v32l-57.92-55.38C272.77 35.14 264.71 32 256 32c-8.68 0-16.72 3.14-22.14 8.63l-212.7 203.5c-6.22 6-7 15.87-1.34 22.37A16 16 0 0 0 43 267.56L250.5 69.28a8 8 0 0 1 11.06 0l207.52 198.28a16 16 0 0 0 22.59-.44c6.14-6.36 5.63-16.86-.76-22.97z",
@@ -7131,19 +7099,19 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = [_hoisted_2$6, _hoisted_3$6];
+const _hoisted_4$5 = [_hoisted_2$5, _hoisted_3$5];
 const Home = defineComponent({
   name: "Home",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_4$5);
+  render: function render2(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_4$5);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$4 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -7157,7 +7125,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -7185,33 +7153,11 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$2 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$4];
+const _hoisted_5$2 = [_hoisted_2$4, _hoisted_3$4, _hoisted_4$4];
 const Menu = defineComponent({
   name: "Menu",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$2);
-  }
-});
-const _hoisted_1$4 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M481.29 229.47l-188.87-113a30.54 30.54 0 0 0-31.09-.39a33.74 33.74 0 0 0-16.76 29.47v79.05L63.85 116.44a30.54 30.54 0 0 0-31.09-.39A33.74 33.74 0 0 0 16 145.52v221A33.74 33.74 0 0 0 32.76 396a30.54 30.54 0 0 0 31.09-.39L244.57 287.4v79.08A33.74 33.74 0 0 0 261.33 396a30.54 30.54 0 0 0 31.09-.39l188.87-113a31.27 31.27 0 0 0 0-53z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$4 = [_hoisted_2$4];
-const PlayForward = defineComponent({
-  name: "PlayForward",
-  render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_3$4);
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_5$2);
   }
 });
 const _hoisted_1$3 = {
@@ -7244,7 +7190,7 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$3 = [_hoisted_2$3, _hoisted_3$3];
 const Settings = defineComponent({
   name: "Settings",
-  render: function render6(_ctx, _cache) {
+  render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_4$3);
   }
 });
@@ -7278,7 +7224,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-6a6fb4b4"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-95c9f01a"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
@@ -7411,7 +7357,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NInput), {
                   value: customModel.value,
                   "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
-                  placeholder: "andite/anything-v4.0",
+                  placeholder: "Azher/Anything-v4.5-vae-fp16-diffuser",
                   style: { "width": "350px" }
                 }, null, 8, ["value"]),
                 createVNode(unref(NButton), {
@@ -7460,8 +7406,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_6a6fb4b4_lang = "";
-const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-6a6fb4b4"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_95c9f01a_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-95c9f01a"]]);
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "FP32", -1);
@@ -7643,17 +7589,17 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           label: "Delete",
           key: `delete:${model_path}`,
           icon: renderIcon(TrashBin)
-        },
-        {
-          label: "Convert",
-          key: `convert:${model_path}`,
-          icon: renderIcon(GitCompare)
-        },
-        {
-          label: "Accelerate",
-          key: `accelerate:${model_path}`,
-          icon: renderIcon(PlayForward)
         }
+        // {
+        //   label: "Convert",
+        //   key: `convert:${model_path}`,
+        //   icon: renderIcon(GitCompare),
+        // },
+        // {
+        //   label: "Accelerate",
+        //   key: `accelerate:${model_path}`,
+        //   icon: renderIcon(PlayForward),
+        // },
       ];
     }
     function createLoraOptions(model_path) {

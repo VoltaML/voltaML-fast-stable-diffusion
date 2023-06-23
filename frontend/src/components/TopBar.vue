@@ -132,7 +132,11 @@
                 <!-- LoRA -->
                 <NGi>
                   <NCard :title="lora_title">
-                    <NCard style="width: 100%; margin-bottom: 8px">
+                    <NCard
+                      style="width: 100%; margin-bottom: 8px"
+                      title="LoRA strength"
+                      header-style="padding-bottom: 0; font-size: 16px"
+                    >
                       <div class="flex-container">
                         <p class="slider-label">Text Encoder</p>
                         <NSlider

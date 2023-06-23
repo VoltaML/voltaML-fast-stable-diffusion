@@ -21,6 +21,6 @@
 | Image Browser                   | ✅           |
 | Model Conversion                | ✅           |
 | Model Training                  | ❌           |
-| Confiruration                   | ✅           |
+| Configuration                   | ✅           |
 | UI Performance monitoring       | ✅           |
 | Loading from CKPT / Safetensors | ✅           |

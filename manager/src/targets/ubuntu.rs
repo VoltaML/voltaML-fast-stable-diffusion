@@ -68,7 +68,7 @@ pub fn install(wsl: bool, experimental: bool) {
             "{} virtualenv not installed, installing...",
             style("[INFO]").green()
         );
-        let res = crate::utils::python::pip_install("virtualenv");
+        let res = crate::apt::install("python3-venv");
         if res.is_err() {
             println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
             return;
@@ -110,7 +110,7 @@ pub fn install(wsl: bool, experimental: bool) {
     }
 
     // Install wheel
-    let res = crate::utils::python::pip_install("wheel");
+    let res = crate::utils::python::pip_install_venv("wheel");
     if res.is_err() {
         println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
         return;

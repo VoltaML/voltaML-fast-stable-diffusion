@@ -11,19 +11,17 @@ from diffusers.utils import is_accelerate_available
 from PIL import Image
 from safetensors.numpy import load_file, save_file
 from tqdm import tqdm
-from transformers import (
-    AutoModelForCausalLM,
-    AutoProcessor,
-    Blip2ForConditionalGeneration,
-    BlipForConditionalGeneration,
-    PreTrainedModel,
-)
+from transformers.modeling_utils import PreTrainedModel
+from transformers.models.auto.modeling_auto import AutoModelForCausalLM
+from transformers.models.auto.processing_auto import AutoProcessor
+from transformers.models.blip.modeling_blip import BlipForConditionalGeneration
+from transformers.models.blip_2 import Blip2ForConditionalGeneration
 
 from core.config import config
 from core.files import get_full_model_path
-from core.optimizations import autocast
 from core.inference.functions import is_bitsandbytes_available
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
+from core.optimizations import autocast
 from core.types import InterrogatorQueueEntry, Job
 from core.utils import convert_to_image, download_file
 

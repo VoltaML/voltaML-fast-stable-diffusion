@@ -37,7 +37,7 @@ from diffusers.pipelines.stable_diffusion import (
 )
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from diffusers.utils import deprecate
-from transformers import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+from transformers.models.clip import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
 
 logger = logging.getLogger(__name__)
 

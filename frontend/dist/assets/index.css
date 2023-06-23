@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-ac6c1b70] {
+.progress-container[data-v-19a4868f] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-ac6c1b70] {
+.top-bar[data-v-19a4868f] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,15 +23,15 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--740dd506);
+  background-color: var(--68605410);
 }
-.logo[data-v-ac6c1b70] {
+.logo[data-v-19a4868f] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
-.main[data-v-58f67f74] {
-  background-color: var(--2ad9c920);
+.main[data-v-ff9d4f45] {
+  background-color: var(--79262321);
 }
 body {
   min-height: 100vh;
@@ -66,10 +66,6 @@ body {
 /* Handle on hover */
 ::-webkit-scrollbar-thumb:hover {
   background: #00ad49;
-}
-
-::-webkit-scrollbar {
-  display: none;
 }
 
 a,

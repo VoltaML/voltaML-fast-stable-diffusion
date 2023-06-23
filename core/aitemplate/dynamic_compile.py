@@ -49,6 +49,12 @@ def compile_diffusers(
     convert_conv_to_gemm=True,
     device: str = "cuda",
 ):
+    # Wipe out cache
+    if os.path.exists("~/.aitemplate/cuda.db"):
+        logger.info("Wiping out cache...")
+        os.remove("~/.aitemplate/cuda.db")
+        logger.info("Cache wiped out")
+
     torch.manual_seed(4896)
     start_time = time.time()
 

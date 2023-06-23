@@ -87,6 +87,11 @@ core/submodules
 
 # Manager
 manager/target
+voltaml-manager
+voltaml-manager.exe
 
 # Profiler stuff
 profile.html
+
+# dotenv file
+.env

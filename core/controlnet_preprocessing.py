@@ -5,7 +5,8 @@ from typing import Any, Tuple
 import numpy as np
 import torch
 from PIL import Image
-from transformers import AutoImageProcessor, UperNetForSemanticSegmentation
+from transformers.models.auto.image_processing_auto import AutoImageProcessor
+from transformers.models.upernet import UperNetForSemanticSegmentation
 
 from core import shared_dependent
 from core.config import config

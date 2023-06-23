@@ -203,6 +203,8 @@ export interface ISettings {
   };
   frontend: {
     theme: "dark" | "light";
+    enable_theme_editor: boolean;
+    image_browser_columns: number;
     on_change_timer: number;
   };
 }
@@ -364,6 +366,8 @@ export const defaultSettings: ISettings = {
   },
   frontend: {
     theme: "dark",
+    enable_theme_editor: false,
+    image_browser_columns: 5,
     on_change_timer: 2000,
   },
 };

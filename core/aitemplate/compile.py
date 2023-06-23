@@ -49,6 +49,12 @@ def compile_diffusers(
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
 
+    # Wipe out cache
+    if os.path.exists("~/.aitemplate/cuda.db"):
+        logger.info("Wiping out cache...")
+        os.remove("~/.aitemplate/cuda.db")
+        logger.info("Cache wiped out")
+
     use_fp16_acc = config.api.data_type != "float32"
     start_time = time.time()
 

@@ -37,7 +37,7 @@ features:
     details: Many featues are available out of the box like Tagger, ControlNet and Image Browser.
   - icon: 📖
     title: API Documentation
-    details: VoltaML has a comprehensive API documentation. Integerating into other projects should be easy.
+    details: VoltaML has a comprehensive API documentation. Integrating into other projects should be easy.
   - icon: 🫂
     title: Support
     details: Feel free to join our Discord server and ask for help if needed. Or just hang out with us.

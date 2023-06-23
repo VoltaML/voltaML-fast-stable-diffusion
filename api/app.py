@@ -126,15 +126,6 @@ async def shutdown_event():
     await websocket_manager.close_all()
 
 
-# Allow CORS for specified origins
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-
 # Enable FastAPI Analytics if key is provided
 key = os.getenv("FASTAPI_ANALYTICS_KEY")
 if key:
@@ -177,3 +168,12 @@ static_app.add_middleware(
 static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
 
 app.mount("/assets", static_app)
+
+# Allow CORS for specified origins
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)

@@ -77,17 +77,25 @@ fn main() {
 
 fn configure() {
     loop {
-        let items = vec!["Back", "Huggingface Token", "Logging Level"];
-        let response = Select::with_theme(&ColorfulTheme::default())
+        let items = vec![
+            "Back",
+            "Huggingface Token",
+            "Logging Level",
+            "Discord Bot Token",
+        ];
+        let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
             .items(&items)
             .interact()
             .unwrap_or(0);
 
+        let response = items[response_id];
+
         match response {
-            0 => break,
-            1 => environ::change_huggingface_token(),
-            2 => environ::change_logging_level(),
+            "Back" => break,
+            "Huggingface Token" => environ::change_huggingface_token(),
+            "Logging Level" => environ::change_logging_level(),
+            "Discord Bot Token" => environ::change_discord_bot_token(),
             _ => println!("Error"),
         }
     }
@@ -118,6 +126,8 @@ fn debug_menu() {
             "Check AITemplate folder",
             "Is aitemplate python package installed",
             "Checkout AITemplate commit",
+            "Reinstall AITemplate Python package",
+            "Wipe AITemplate cache dir",
         ];
         let response_id = Select::with_theme(&ColorfulTheme::default())
             .default(0)
@@ -360,6 +370,34 @@ fn debug_menu() {
                         "{} {}",
                         style("[ERROR]").red(),
                         "Failed to checkout AITemplate commit"
+                    );
+                }
+            }
+            "Reinstall AITemplate Python package" => {
+                let res = crate::utils::aitemplate::reinstall_aitemplate_python_package();
+                if res.is_ok() {
+                    println!(
+                        "{} {}",
+                        style("[OK]").green(),
+                        "Reinstalled AITemplate python package"
+                    );
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to reinstall AITemplate python package"
+                    );
+                }
+            }
+            "Wipe AITemplate cache dir" => {
+                let res = crate::utils::aitemplate::wipe_aitemplate_cache_dir();
+                if res.is_ok() {
+                    println!("{} {}", style("[OK]").green(), "Wiped AITemplate cache dir");
+                } else {
+                    println!(
+                        "{} {}",
+                        style("[ERROR]").red(),
+                        "Failed to wipe AITemplate cache dir"
                     );
                 }
             }

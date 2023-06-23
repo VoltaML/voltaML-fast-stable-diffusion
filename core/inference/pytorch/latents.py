@@ -1,7 +1,7 @@
 import logging
-from typing import Optional, Union
 import math
 from time import time
+from typing import Optional, Union
 
 import torch
 import torch.nn.functional as F
@@ -289,9 +289,9 @@ def scale_latents(
 
     # Scale the latents
     if latent_scale_mode == "bislerp-tortured":
-        interpolated = bislerp_gabeified(latents, width_truncated, height_truncated)
+        interpolated = bislerp_gabeified(latents, height_truncated, width_truncated)
     elif latent_scale_mode == "bislerp-original":
-        interpolated = bislerp_original(latents, width_truncated, height_truncated)
+        interpolated = bislerp_original(latents, height_truncated, width_truncated)
     else:
         interpolated = F.interpolate(
             latents,

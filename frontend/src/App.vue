@@ -1,15 +1,14 @@
 <template>
   <NConfigProvider :theme="theme" :theme-overrides="overrides" class="main">
-    <NThemeEditor>
-      <NNotificationProvider placement="bottom-right">
-        <NMessageProvider>
-          <CollapsileNavbarVue />
-          <TopBarVue />
-          <routerContainerVue style="margin-top: 52px" />
-          <PerformanceDrawer />
-        </NMessageProvider>
-      </NNotificationProvider>
-    </NThemeEditor>
+    <NThemeEditor v-if="settings.data.settings.frontend.enable_theme_editor" />
+    <NNotificationProvider placement="bottom-right">
+      <NMessageProvider>
+        <CollapsileNavbarVue />
+        <TopBarVue />
+        <routerContainerVue style="margin-top: 52px" />
+        <PerformanceDrawer />
+      </NMessageProvider>
+    </NNotificationProvider>
   </NConfigProvider>
 </template>
 

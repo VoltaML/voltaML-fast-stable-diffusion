@@ -13,7 +13,7 @@ This page will teach you how to download models with the power of HuggingFaceðŸ¤
 
 ## How to use
 
-Select something from the currated models (will be updated soon) and click the `Download` button.
+Select something from the curated models (will be updated soon) and click the `Download` button.
 
 **OR**
 
