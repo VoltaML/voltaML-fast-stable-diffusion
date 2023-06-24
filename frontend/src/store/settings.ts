@@ -1,4 +1,3 @@
-import { ControlNetType } from "@/core/interfaces";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { defineStore } from "pinia";
 import { computed, reactive } from "vue";
@@ -95,36 +94,103 @@ export function getSchedulerOptions() {
 function getControlNetOptions() {
   const controlnet_options: SelectMixedOption[] = [
     {
-      label: "Canny",
-      value: ControlNetType.CANNY,
+      type: "group",
+      label: "ControlNet 1.1",
+      key: "ControlNet 1.1",
+      children: [
+        {
+          label: "lllyasviel/control_v11p_sd15_canny",
+          value: "lllyasviel/control_v11p_sd15_canny",
+        },
+        {
+          label: "lllyasviel/control_v11f1p_sd15_depth",
+          value: "lllyasviel/control_v11f1p_sd15_depth",
+        },
+        {
+          label: "lllyasviel/control_v11e_sd15_ip2p",
+          value: "lllyasviel/control_v11e_sd15_ip2p",
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_softedge",
+          value: "lllyasviel/control_v11p_sd15_softedge",
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_openpose",
+          value: "lllyasviel/control_v11p_sd15_openpose",
+        },
+        {
+          label: "lllyasviel/control_v11f1e_sd15_tile",
+          value: "lllyasviel/control_v11f1e_sd15_tile",
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_mlsd",
+          value: "lllyasviel/control_v11p_sd15_mlsd",
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_scribble",
+          value: "lllyasviel/control_v11p_sd15_scribble",
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_seg",
+          value: "lllyasviel/control_v11p_sd15_seg",
+        },
+      ],
     },
+
     {
-      label: "Depth",
-      value: ControlNetType.DEPTH,
+      type: "group",
+      label: "Special",
+      key: "Special",
+      children: [
+        {
+          label: "DionTimmer/controlnet_qrcode",
+          value: "DionTimmer/controlnet_qrcode",
+        },
+        {
+          label: "CrucibleAI/ControlNetMediaPipeFace",
+          value: "CrucibleAI/ControlNetMediaPipeFace",
+        },
+      ],
     },
+
     {
-      label: "HED",
-      value: ControlNetType.HED,
-    },
-    {
-      label: "MLSD",
-      value: ControlNetType.MLSD,
-    },
-    {
-      label: "Normal",
-      value: ControlNetType.NORMAL,
-    },
-    {
-      label: "OpenPose",
-      value: ControlNetType.OPENPOSE,
-    },
-    {
-      label: "Scribble",
-      value: ControlNetType.SCRIBBLE,
-    },
-    {
-      label: "Segmentation",
-      value: ControlNetType.SEGMENTATION,
+      type: "group",
+      label: "Original",
+      key: "Original",
+      children: [
+        {
+          label: "lllyasviel/sd-controlnet-canny",
+          value: "lllyasviel/sd-controlnet-canny",
+        },
+        {
+          label: "lllyasviel/sd-controlnet-depth",
+          value: "lllyasviel/sd-controlnet-depth",
+        },
+        {
+          label: "lllyasviel/sd-controlnet-hed",
+          value: "lllyasviel/sd-controlnet-hed",
+        },
+        {
+          label: "lllyasviel/sd-controlnet-mlsd",
+          value: "lllyasviel/sd-controlnet-mlsd",
+        },
+        {
+          label: "lllyasviel/sd-controlnet-normal",
+          value: "lllyasviel/sd-controlnet-normal",
+        },
+        {
+          label: "lllyasviel/sd-controlnet-openpose",
+          value: "lllyasviel/sd-controlnet-openpose",
+        },
+        {
+          label: "lllyasviel/sd-controlnet-scribble",
+          value: "lllyasviel/sd-controlnet-scribble",
+        },
+        {
+          label: "lllyasviel/sd-controlnet-seg",
+          value: "lllyasviel/sd-controlnet-seg",
+        },
+      ],
     },
   ];
   return controlnet_options;

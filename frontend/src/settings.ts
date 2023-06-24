@@ -116,21 +116,6 @@ export interface ISettings {
     save_preprocessed: boolean;
     return_preprocessed: boolean;
   };
-  sd_upscale: {
-    prompt: string;
-    negative_prompt: string;
-    seed: number;
-    cfg_scale: number;
-    steps: number;
-    batch_count: number;
-    batch_size: number;
-    sampler: Sampler;
-    tile_size: number;
-    tile_border: number;
-    original_image_slice: number;
-    noise_level: number;
-    image: string;
-  };
   upscale: {
     image: string;
     upscale_factor: number;
@@ -288,21 +273,6 @@ export const defaultSettings: ISettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
-  },
-  sd_upscale: {
-    prompt: "",
-    negative_prompt: "",
-    seed: -1,
-    cfg_scale: 7,
-    steps: 75,
-    batch_count: 1,
-    batch_size: 1,
-    sampler: Sampler.DPMSolverMultistep,
-    tile_size: 128,
-    tile_border: 32,
-    original_image_slice: 32,
-    noise_level: 40,
-    image: "",
   },
   upscale: {
     image: "",

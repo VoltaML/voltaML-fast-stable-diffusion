@@ -8,8 +8,11 @@ if TYPE_CHECKING:
     from controlnet_aux import (
         CannyDetector,
         HEDdetector,
+        LineartAnimeDetector,
+        LineartDetector,
         MidasDetector,
         MLSDdetector,
+        NormalBaeDetector,
         OpenposeDetector,
     )
     from transformers.models.upernet import UperNetForSemanticSegmentation
@@ -27,6 +30,9 @@ cached_controlnet_preprocessor: Union[
     "HEDdetector",
     "MLSDdetector",
     "OpenposeDetector",
+    "NormalBaeDetector",
+    "LineartDetector",
+    "LineartAnimeDetector",
     Tuple["Any", "UperNetForSemanticSegmentation"],
 ] = None
 

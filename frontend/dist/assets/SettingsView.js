@@ -2519,7 +2519,9 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(NSelect), {
                     options: unref(settings).controlnet_options,
                     value: unref(settings).defaultSettings.controlnet.controlnet,
-                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.controlnet.controlnet = $event)
+                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.controlnet.controlnet = $event),
+                    filterable: "",
+                    tag: ""
                   }, null, 8, ["options", "value"])
                 ]),
                 _: 1

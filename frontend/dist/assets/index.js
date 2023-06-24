@@ -40829,21 +40829,6 @@ const defaultSettings = {
     save_preprocessed: false,
     return_preprocessed: true
   },
-  sd_upscale: {
-    prompt: "",
-    negative_prompt: "",
-    seed: -1,
-    cfg_scale: 7,
-    steps: 75,
-    batch_count: 1,
-    batch_size: 1,
-    sampler: 8,
-    tile_size: 128,
-    tile_border: 32,
-    original_image_slice: 32,
-    noise_level: 40,
-    image: ""
-  },
   upscale: {
     image: "",
     upscale_factor: 4,
@@ -41015,36 +41000,101 @@ function getSchedulerOptions() {
 function getControlNetOptions() {
   const controlnet_options = [
     {
-      label: "Canny",
-      value: ControlNetType.CANNY
+      type: "group",
+      label: "ControlNet 1.1",
+      key: "ControlNet 1.1",
+      children: [
+        {
+          label: "lllyasviel/control_v11p_sd15_canny",
+          value: "lllyasviel/control_v11p_sd15_canny"
+        },
+        {
+          label: "lllyasviel/control_v11f1p_sd15_depth",
+          value: "lllyasviel/control_v11f1p_sd15_depth"
+        },
+        {
+          label: "lllyasviel/control_v11e_sd15_ip2p",
+          value: "lllyasviel/control_v11e_sd15_ip2p"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_softedge",
+          value: "lllyasviel/control_v11p_sd15_softedge"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_openpose",
+          value: "lllyasviel/control_v11p_sd15_openpose"
+        },
+        {
+          label: "lllyasviel/control_v11f1e_sd15_tile",
+          value: "lllyasviel/control_v11f1e_sd15_tile"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_mlsd",
+          value: "lllyasviel/control_v11p_sd15_mlsd"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_scribble",
+          value: "lllyasviel/control_v11p_sd15_scribble"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_seg",
+          value: "lllyasviel/control_v11p_sd15_seg"
+        }
+      ]
     },
     {
-      label: "Depth",
-      value: ControlNetType.DEPTH
+      type: "group",
+      label: "Special",
+      key: "Special",
+      children: [
+        {
+          label: "DionTimmer/controlnet_qrcode",
+          value: "DionTimmer/controlnet_qrcode"
+        },
+        {
+          label: "CrucibleAI/ControlNetMediaPipeFace",
+          value: "CrucibleAI/ControlNetMediaPipeFace"
+        }
+      ]
     },
     {
-      label: "HED",
-      value: ControlNetType.HED
-    },
-    {
-      label: "MLSD",
-      value: ControlNetType.MLSD
-    },
-    {
-      label: "Normal",
-      value: ControlNetType.NORMAL
-    },
-    {
-      label: "OpenPose",
-      value: ControlNetType.OPENPOSE
-    },
-    {
-      label: "Scribble",
-      value: ControlNetType.SCRIBBLE
-    },
-    {
-      label: "Segmentation",
-      value: ControlNetType.SEGMENTATION
+      type: "group",
+      label: "Original",
+      key: "Original",
+      children: [
+        {
+          label: "lllyasviel/sd-controlnet-canny",
+          value: "lllyasviel/sd-controlnet-canny"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-depth",
+          value: "lllyasviel/sd-controlnet-depth"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-hed",
+          value: "lllyasviel/sd-controlnet-hed"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-mlsd",
+          value: "lllyasviel/sd-controlnet-mlsd"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-normal",
+          value: "lllyasviel/sd-controlnet-normal"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-openpose",
+          value: "lllyasviel/sd-controlnet-openpose"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-scribble",
+          value: "lllyasviel/sd-controlnet-scribble"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-seg",
+          value: "lllyasviel/sd-controlnet-seg"
+        }
+      ]
     }
   ];
   return controlnet_options;
@@ -41071,7 +41121,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-19a4868f"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-5ee2e1ec"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41091,7 +41141,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "68605410": backgroundColor.value
+      "4ff2a878": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41107,31 +41157,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const pyTorchModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "PyTorch" && model.valid === true;
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const aitModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "AITemplate";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const onnxModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "ONNX";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const trtModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "TensorRT";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const loraModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "LoRA";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const textualInversionModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "Textual Inversion";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     function refreshModels() {
@@ -41975,7 +42037,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_19a4868f_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_5ee2e1ec_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41983,7 +42045,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-19a4868f"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5ee2e1ec"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

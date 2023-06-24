@@ -47,6 +47,8 @@
         <NSelect
           :options="settings.controlnet_options"
           v-model:value="settings.defaultSettings.controlnet.controlnet"
+          filterable
+          tag
         />
       </NFormItem>
       <NFormItem label="Seed">

@@ -83,6 +83,8 @@
               <NSelect
                 :options="conf.controlnet_options"
                 v-model:value="conf.data.settings.controlnet.controlnet"
+                filterable
+                tag
                 style="flex-grow: 1"
               />
             </div>
