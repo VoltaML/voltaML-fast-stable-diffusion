@@ -509,6 +509,35 @@ const preview = ref("");
 
 const imageContainer = ref<HTMLElement>();
 
+function handleImageUpdate(img: HTMLImageElement) {
+  const containerWidth = imageContainer.value?.clientWidth;
+  if (containerWidth === undefined) return;
+
+  // Scale to fit container and keep aspect ratio
+  const containerScaledWidth = containerWidth;
+  const containerScaledHeight = (img.height * containerScaledWidth) / img.width;
+
+  // Scale to fit into 70vh of the screen
+  const screenHeight = window.innerHeight;
+  const screenHeightScaledHeight =
+    (containerScaledHeight * 0.7 * screenHeight) / containerScaledHeight;
+
+  // Scale width to keep aspect ratio
+  const screenHeightScaledWidth =
+    (img.width * screenHeightScaledHeight) / img.height;
+
+  // Select smaller of the two to fit into the container
+  if (containerScaledWidth < screenHeightScaledWidth) {
+    width.value = containerScaledWidth;
+    height.value = containerScaledHeight;
+  } else {
+    width.value = screenHeightScaledWidth;
+    height.value = screenHeightScaledHeight;
+  }
+
+  canvas.value?.redraw(false);
+}
+
 function previewImage(event: Event) {
   const input = event.target as HTMLInputElement;
   if (input.files) {
@@ -521,35 +550,8 @@ function previewImage(event: Event) {
         const img = new Image();
         img.src = s;
         img.onload = () => {
-          const containerWidth = imageContainer.value?.clientWidth;
-          if (containerWidth === undefined) return;
-
-          // Scale to fit container and keep aspect ratio
-          const containerScaledWidth = containerWidth;
-          const containerScaledHeight =
-            (img.height * containerScaledWidth) / img.width;
-
-          // Scale to fit into 70vh of the screen
-          const screenHeight = window.innerHeight;
-          const screenHeightScaledHeight =
-            (containerScaledHeight * 0.7 * screenHeight) /
-            containerScaledHeight;
-
-          // Scale width to keep aspect ratio
-          const screenHeightScaledWidth =
-            (img.width * screenHeightScaledHeight) / img.height;
-
-          // Select smaller of the two to fit into the container
-          if (containerScaledWidth < screenHeightScaledWidth) {
-            width.value = containerScaledWidth;
-            height.value = containerScaledHeight;
-          } else {
-            width.value = screenHeightScaledWidth;
-            height.value = screenHeightScaledHeight;
-          }
-
+          handleImageUpdate(img);
           conf.data.settings.inpainting.image = s;
-          canvas.value?.redraw(false);
         };
       }
     };
@@ -588,6 +590,16 @@ const burner = new BurnerClock(conf.data.settings.inpainting, conf, generate);
 onUnmounted(() => {
   burner.cleanup();
 });
+
+if (conf.data.settings.inpainting.image !== "") {
+  preview.value = conf.data.settings.inpainting.image;
+  const img = new Image();
+  img.src = conf.data.settings.inpainting.image;
+  img.onload = () => {
+    console.log(img);
+    handleImageUpdate(img);
+  };
+}
 </script>
 <style scoped>
 .hidden-input {

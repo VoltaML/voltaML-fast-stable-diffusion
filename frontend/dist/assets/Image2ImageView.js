@@ -1772,7 +1772,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-0bafc781"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-d4533a9a"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1896,6 +1896,25 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const eraser = ref(false);
     const preview = ref("");
     const imageContainer = ref();
+    function handleImageUpdate(img) {
+      var _a, _b;
+      const containerWidth = (_a = imageContainer.value) == null ? void 0 : _a.clientWidth;
+      if (containerWidth === void 0)
+        return;
+      const containerScaledWidth = containerWidth;
+      const containerScaledHeight = img.height * containerScaledWidth / img.width;
+      const screenHeight = window.innerHeight;
+      const screenHeightScaledHeight = containerScaledHeight * 0.7 * screenHeight / containerScaledHeight;
+      const screenHeightScaledWidth = img.width * screenHeightScaledHeight / img.height;
+      if (containerScaledWidth < screenHeightScaledWidth) {
+        width.value = containerScaledWidth;
+        height.value = containerScaledHeight;
+      } else {
+        width.value = screenHeightScaledWidth;
+        height.value = screenHeightScaledHeight;
+      }
+      (_b = canvas.value) == null ? void 0 : _b.redraw(false);
+    }
     function previewImage(event) {
       const input = event.target;
       if (input.files) {
@@ -1909,24 +1928,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             const img = new Image();
             img.src = s;
             img.onload = () => {
-              var _a2, _b;
-              const containerWidth = (_a2 = imageContainer.value) == null ? void 0 : _a2.clientWidth;
-              if (containerWidth === void 0)
-                return;
-              const containerScaledWidth = containerWidth;
-              const containerScaledHeight = img.height * containerScaledWidth / img.width;
-              const screenHeight = window.innerHeight;
-              const screenHeightScaledHeight = containerScaledHeight * 0.7 * screenHeight / containerScaledHeight;
-              const screenHeightScaledWidth = img.width * screenHeightScaledHeight / img.height;
-              if (containerScaledWidth < screenHeightScaledWidth) {
-                width.value = containerScaledWidth;
-                height.value = containerScaledHeight;
-              } else {
-                width.value = screenHeightScaledWidth;
-                height.value = screenHeightScaledHeight;
-              }
+              handleImageUpdate(img);
               conf.data.settings.inpainting.image = s;
-              (_b = canvas.value) == null ? void 0 : _b.redraw(false);
             };
           }
         };
@@ -1962,6 +1965,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     onUnmounted(() => {
       burner.cleanup();
     });
+    if (conf.data.settings.inpainting.image !== "") {
+      preview.value = conf.data.settings.inpainting.image;
+      const img = new Image();
+      img.src = conf.data.settings.inpainting.image;
+      img.onload = () => {
+        console.log(img);
+        handleImageUpdate(img);
+      };
+    }
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NGrid), {
@@ -2396,8 +2408,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_0bafc781_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-0bafc781"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_d4533a9a_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-d4533a9a"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {
