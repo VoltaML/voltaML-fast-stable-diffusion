@@ -548,9 +548,7 @@ class GPU:
 
         def model_to_f16_thread_call():
             pt_model = PyTorchStableDiffusion(
-                model_id=model,
-                device=config.api.device,
-                autoload=True,
+                model_id=model, device=config.api.device, autoload=True, bare=True
             )
 
             model_name = model.split("/")[-1]
