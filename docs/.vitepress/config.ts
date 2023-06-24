@@ -77,6 +77,19 @@ export default defineConfig({
 				collapsed: false,
 			},
 			{
+				text: "Basics",
+				items: [
+					{ text: "Models", link: "/basics/models" },
+					{ text: "LoRA", link: "/basics/lora" },
+					{ text: "Textual Inversion", link: "/basics/textual-inversion" },
+					{
+						text: "AITemplate Acceleration",
+						link: "/basics/aitemplate",
+					},
+				],
+				collapsed: false,
+			},
+			{
 				text: "WebUI",
 				items: [
 					{ text: "Models", link: "/webui/models" },
@@ -107,10 +120,6 @@ export default defineConfig({
 				items: [
 					{ text: "xFormers", link: "/experimental/xformers" },
 					{ text: "Settings", link: "/experimental/settings" },
-					{
-						text: "Safetensors/CKPT support",
-						link: "/experimental/checkpoints",
-					},
 				],
 				collapsed: false,
 			},
