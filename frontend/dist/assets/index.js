@@ -40829,21 +40829,6 @@ const defaultSettings = {
     save_preprocessed: false,
     return_preprocessed: true
   },
-  sd_upscale: {
-    prompt: "",
-    negative_prompt: "",
-    seed: -1,
-    cfg_scale: 7,
-    steps: 75,
-    batch_count: 1,
-    batch_size: 1,
-    sampler: 8,
-    tile_size: 128,
-    tile_border: 32,
-    original_image_slice: 32,
-    noise_level: 40,
-    image: ""
-  },
   upscale: {
     image: "",
     upscale_factor: 4,

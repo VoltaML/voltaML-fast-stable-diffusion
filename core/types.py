@@ -220,14 +220,6 @@ class UpscaleQueueEntry(Job):
 
 
 @dataclass
-class SDUpscaleQueueEntry(Job):
-    "Dataclass for a stable diffusion upscale job"
-
-    data: SDUpscaleData
-    model: str = field(default="stabilityai/stable-diffusion-x4-upscaler")
-
-
-@dataclass
 class TRTBuildRequest:
     "Dataclass for requesting a build of an engine"
 

@@ -70,16 +70,3 @@
   display: flex;
   justify-content: center;
 }
-
-.image-container img[data-v-aad3b6df] {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  overflow: hidden;
-}
-.image-container[data-v-aad3b6df] {
-  height: 70vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}

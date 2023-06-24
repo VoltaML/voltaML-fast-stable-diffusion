@@ -15,7 +15,6 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     ONNXBuildRequest,
-    SDUpscaleQueueEntry,
     TRTBuildRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
@@ -131,40 +130,6 @@ async def inpaint_job(job: InpaintQueueEntry):
 @router.post("/controlnet")
 async def controlnet_job(job: ControlNetQueueEntry):
     "Generate variations of the image"
-
-    image_bytes = job.data.image
-    assert isinstance(image_bytes, bytes)
-    job.data.image = convert_bytes_to_image_stream(image_bytes)
-
-    try:
-        images: Union[List[Image.Image], List[str]]
-        time: float
-        images, time = await gpu.generate(job)
-    except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
-
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
-
-
-@router.post("/sd-upscale")
-async def sd_upscale_job(job: SDUpscaleQueueEntry):
-    "Upscale image with SD Upscaling model"
 
     image_bytes = job.data.image
     assert isinstance(image_bytes, bytes)

@@ -17,7 +17,7 @@ from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoade
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.functions import download_model
-from core.inference.pytorch import PyTorchSDUpscaler, PyTorchStableDiffusion
+from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
@@ -33,7 +33,6 @@ from core.types import (
     Job,
     LoraLoadRequest,
     ONNXBuildRequest,
-    SDUpscaleQueueEntry,
     TextualInversionLoadRequest,
     TRTBuildRequest,
     Txt2ImgQueueEntry,
@@ -60,7 +59,6 @@ class GPU:
                 "TensorRTModel",
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
-                PyTorchSDUpscaler,
                 "OnnxStableDiffusion",
             ],
         ] = {}
@@ -83,7 +81,6 @@ class GPU:
             Img2ImgQueueEntry,
             InpaintQueueEntry,
             ControlNetQueueEntry,
-            SDUpscaleQueueEntry,
         ],
     ):
         "Generate images from the queue"
@@ -94,7 +91,6 @@ class GPU:
                     "TensorRTModel",
                     PyTorchStableDiffusion,
                     AITemplateStableDiffusion,
-                    PyTorchSDUpscaler,
                     "OnnxStableDiffusion",
                 ] = self.loaded_models[job.model]
             except KeyError as err:
@@ -141,9 +137,6 @@ class GPU:
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
                 images: List[Image.Image] = model.generate(job)
-            elif isinstance(model, PyTorchSDUpscaler):
-                logger.debug("Generating with PyTorchSDUpscaler")
-                images: List[Image.Image] = model.generate(job)
             else:
                 from core.inference.onnx_sd import OnnxStableDiffusion
 
@@ -177,12 +170,8 @@ class GPU:
 
         try:
             # Check width and height passed by the user
-            if not isinstance(
-                job,
-                SDUpscaleQueueEntry,
-            ):
-                if job.data.width % 8 != 0 or job.data.height % 8 != 0:
-                    raise DimensionError("Width and height must be divisible by 8")
+            if job.data.width % 8 != 0 or job.data.height % 8 != 0:
+                raise DimensionError("Width and height must be divisible by 8")
 
             # Wait for turn in the queue
             await self.queue.wait_for_turn(job.data.id)
@@ -362,14 +351,10 @@ class GPU:
                     )
                 )
 
-                if model in ["stabilityai/stable-diffusion-x4-upscaler"]:
-                    pt_model = PyTorchSDUpscaler()
-
-                else:
-                    pt_model = PyTorchStableDiffusion(
-                        model_id=model,
-                        device=config.api.device,
-                    )
+                pt_model = PyTorchStableDiffusion(
+                    model_id=model,
+                    device=config.api.device,
+                )
                 self.loaded_models[model] = pt_model
 
             logger.info(f"Finished loading in {time.time() - start_time:.2f}s")

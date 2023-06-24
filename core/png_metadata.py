@@ -14,7 +14,6 @@ from core.types import (
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
-    SDUpscaleQueueEntry,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
 )
@@ -29,7 +28,6 @@ def create_metadata(
         Img2ImgQueueEntry,
         InpaintQueueEntry,
         ControlNetQueueEntry,
-        SDUpscaleQueueEntry,
         UpscaleQueueEntry,
     ],
     index: int,
@@ -76,7 +74,6 @@ def save_images(
         InpaintQueueEntry,
         ControlNetQueueEntry,
         UpscaleQueueEntry,
-        SDUpscaleQueueEntry,
     ],
 ):
     "Save image to disk or r2"
@@ -109,7 +106,7 @@ def save_images(
 
     urls: List[str] = []
     for i, image in enumerate(images):
-        if isinstance(job, (UpscaleQueueEntry, SDUpscaleQueueEntry)):
+        if isinstance(job, UpscaleQueueEntry):
             folder = "extra"
         elif isinstance(job, Txt2ImgQueueEntry):
             folder = "txt2img"
