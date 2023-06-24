@@ -131,7 +131,7 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             id="test",
             image="",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet="lllyasviel/sd-controlnet-canny",
+            controlnet="lllyasviel/control_v11p_sd15_canny",
         ),
     )
     preprocessed_image_str = convert_image_to_base64(
@@ -144,7 +144,7 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet="lllyasviel/sd-controlnet-canny",
+            controlnet="lllyasviel/control_v11p_sd15_canny",
             is_preprocessed=True,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",

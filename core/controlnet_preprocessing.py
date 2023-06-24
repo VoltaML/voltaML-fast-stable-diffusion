@@ -19,8 +19,11 @@ try:
     from controlnet_aux import (
         CannyDetector,
         HEDdetector,
+        LineartAnimeDetector,
+        LineartDetector,
         MidasDetector,
         MLSDdetector,
+        NormalBaeDetector,
         OpenposeDetector,
     )
 except ImportError:
@@ -56,9 +59,9 @@ def image_to_controlnet_input(
 ) -> Image.Image:
     "Converts an image to the format expected by the controlnet model"
 
-    model = data.controlnet
+    model = data.controlnet.split("/")[-1]
 
-    if model == "none":
+    if any(item in model for item in ["none", "scribble", "ip2p", "tile", "qrcode"]):
         return input_image
     elif "canny" in model:
         return canny(
@@ -67,8 +70,8 @@ def image_to_controlnet_input(
             high_threshold=data.canny_low_threshold * 3,
         )
     elif "depth" in model:
-        return depth(input_image)
-    elif "hed" in model:
+        return midas(input_image)
+    elif any(item in model for item in ["hed", "softedge"]):
         return hed(
             input_image,
             detect_resolution=data.detection_resolution,
@@ -82,11 +85,9 @@ def image_to_controlnet_input(
             dist_thr=data.mlsd_thr_d,
         )
     elif "normal" in model:
-        return normal(input_image)
+        return normal_bae(input_image)
     elif "openpose" in model:
         return openpose(input_image)
-    elif "scribble" in model:
-        return scribble(input_image)
     elif "seg" in model:
         return segmentation(input_image)
 
@@ -112,14 +113,14 @@ def canny(
     return canny_image
 
 
-def depth(input_image: Image.Image) -> Image.Image:
+def midas(input_image: Image.Image) -> Image.Image:
     "Applies depth estimation to an image"
 
     if isinstance(shared_dependent.cached_controlnet_preprocessor, MidasDetector):
         midas_detector = shared_dependent.cached_controlnet_preprocessor
     else:
         wipe_old()
-        midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
+        midas_detector = MidasDetector.from_pretrained("lllyasviel/Annotators")
         cache_preprocessor(midas_detector)
 
     image = midas_detector(input_image)
@@ -139,7 +140,7 @@ def hed(
         hed_detector = shared_dependent.cached_controlnet_preprocessor
     else:
         wipe_old()
-        hed_detector = HEDdetector.from_pretrained("lllyasviel/ControlNet")
+        hed_detector = HEDdetector.from_pretrained("lllyasviel/Annotators")
         cache_preprocessor(hed_detector)
 
     image = hed_detector(
@@ -164,7 +165,7 @@ def mlsd(
         mlsd_detector = shared_dependent.cached_controlnet_preprocessor
     else:
         wipe_old()
-        mlsd_detector = MLSDdetector.from_pretrained("lllyasviel/ControlNet")
+        mlsd_detector = MLSDdetector.from_pretrained("lllyasviel/Annotators")
         cache_preprocessor(mlsd_detector)
 
     image = mlsd_detector(
@@ -179,22 +180,19 @@ def mlsd(
     return image
 
 
-def normal(input_image: Image.Image) -> Image.Image:
+def normal_bae(input_image: Image.Image) -> Image.Image:
     "Applies normal estimation to an image"
 
-    if isinstance(shared_dependent.cached_controlnet_preprocessor, MidasDetector):
-        midas_detector = shared_dependent.cached_controlnet_preprocessor
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, NormalBaeDetector):
+        normal_bae_detector = shared_dependent.cached_controlnet_preprocessor
     else:
         wipe_old()
-        midas_detector = MidasDetector.from_pretrained("lllyasviel/ControlNet")
-        cache_preprocessor(midas_detector)
+        normal_bae_detector = NormalBaeDetector.from_pretrained("lllyasviel/Annotators")
+        cache_preprocessor(normal_bae_detector)
 
-    image = midas_detector(input_image, depth_and_normal=True)  # type: ignore
+    image = normal_bae_detector(input_image, depth_and_normal=True)  # type: ignore
 
-    if isinstance(image, tuple):
-        return image[1]
-    else:
-        raise ValueError("MidasDetector did not return a tuple")
+    return image
 
 
 def openpose(input_image: Image.Image) -> Image.Image:
@@ -204,19 +202,13 @@ def openpose(input_image: Image.Image) -> Image.Image:
         op_detector = shared_dependent.cached_controlnet_preprocessor
     else:
         wipe_old()
-        op_detector = OpenposeDetector.from_pretrained("lllyasviel/ControlNet")
+        op_detector = OpenposeDetector.from_pretrained("lllyasviel/Annotators")
         cache_preprocessor(op_detector)
 
-    image = op_detector(input_image)
+    image = op_detector(input_image, hand_and_face=True)
 
     assert isinstance(image, Image.Image)
     return image
-
-
-def scribble(input_image: Image.Image) -> Image.Image:
-    "Applies scribble to an image"
-
-    return input_image
 
 
 def segmentation(input_image: Image.Image) -> Image.Image:
@@ -259,4 +251,38 @@ def segmentation(input_image: Image.Image) -> Image.Image:
     color_seg = color_seg.astype(np.uint8)
 
     image = Image.fromarray(color_seg)
+    return image
+
+
+def lineart(input_image: Image.Image) -> Image.Image:
+    "Applies lineart to an image"
+
+    if isinstance(shared_dependent.cached_controlnet_preprocessor, LineartDetector):
+        op_detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        op_detector = LineartDetector.from_pretrained("lllyasviel/Annotators")
+        cache_preprocessor(op_detector)
+
+    image = op_detector(input_image)
+
+    assert isinstance(image, Image.Image)
+    return image
+
+
+def lineart_anime(input_image: Image.Image) -> Image.Image:
+    "Applies lineart_anime to an image"
+
+    if isinstance(
+        shared_dependent.cached_controlnet_preprocessor, LineartAnimeDetector
+    ):
+        op_detector = shared_dependent.cached_controlnet_preprocessor
+    else:
+        wipe_old()
+        op_detector = LineartAnimeDetector.from_pretrained("lllyasviel/Annotators")
+        cache_preprocessor(op_detector)
+
+    image = op_detector(input_image)
+
+    assert isinstance(image, Image.Image)
     return image
