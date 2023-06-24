@@ -41136,7 +41136,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-19a4868f"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-5ee2e1ec"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41156,7 +41156,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "68605410": backgroundColor.value
+      "4ff2a878": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41172,31 +41172,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const pyTorchModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "PyTorch" && model.valid === true;
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const aitModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "AITemplate";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const onnxModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "ONNX";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const trtModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "TensorRT";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const loraModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "LoRA";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     const textualInversionModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "Textual Inversion";
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
       });
     });
     function refreshModels() {
@@ -42040,7 +42052,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_19a4868f_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_5ee2e1ec_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42048,7 +42060,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-19a4868f"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5ee2e1ec"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

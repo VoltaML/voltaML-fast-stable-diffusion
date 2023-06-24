@@ -7571,17 +7571,17 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const pyTorchModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "PyTorch" && model.valid === true;
-      });
+      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
     });
     const loraModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "LoRA";
-      });
+      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
     });
     const textualInversionModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "Textual Inversion";
-      });
+      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
     });
     function createPyTorchOptions(model_path) {
       return [

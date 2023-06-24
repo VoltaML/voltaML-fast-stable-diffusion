@@ -224,21 +224,27 @@ const filteredModels = computed(() => {
 });
 
 const pyTorchModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "PyTorch" && model.valid === true;
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "PyTorch" && model.valid === true;
+    })
+    .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
 });
 
 const loraModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "LoRA";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "LoRA";
+    })
+    .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
 });
 
 const textualInversionModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "Textual Inversion";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "Textual Inversion";
+    })
+    .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
 });
 
 function createPyTorchOptions(model_path: string) {

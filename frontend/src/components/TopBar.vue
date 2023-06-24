@@ -457,39 +457,63 @@ const filteredModels = computed(() => {
 });
 
 const pyTorchModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "PyTorch" && model.valid === true;
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "PyTorch" && model.valid === true;
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 const aitModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "AITemplate";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "AITemplate";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 const onnxModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "ONNX";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "ONNX";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 const trtModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "TensorRT";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "TensorRT";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 const loraModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "LoRA";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "LoRA";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 const textualInversionModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "Textual Inversion";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "Textual Inversion";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 function refreshModels() {
