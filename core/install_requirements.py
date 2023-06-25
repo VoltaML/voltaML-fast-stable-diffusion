@@ -443,7 +443,7 @@ def create_environment():
         logger.info(
             f"Virtual environment already exists, you just need to activate it with '{command}', then run the script again"
         )
-        sys.exit(1)
+        return
 
     if not in_virtualenv():
         logger.info("Creating virtual environment")
