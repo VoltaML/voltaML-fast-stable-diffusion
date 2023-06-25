@@ -52,6 +52,7 @@
       preset="card"
       style="width: 85vw"
       title="Image Info"
+      id="image-modal"
     >
       <NGrid cols="1 m:2" x-gap="12" y-gap="12" responsive="screen">
         <!-- Left side -->
@@ -275,7 +276,12 @@ function setByte64FromImage(path: string) {
     });
 }
 
+const currentColumn = ref(0);
+const currentRowIndex = ref(0);
+
 function imgClick(column_index: number, item_index: number) {
+  currentRowIndex.value = item_index;
+  currentColumn.value = column_index;
   const item = columns.value[column_index][item_index];
   global.state.imageBrowser.currentImage = item;
   setByte64FromImage(item.path);
@@ -382,12 +388,52 @@ const handleScroll = (e: Event) => {
   }
 };
 
+function moveImage(direction: number) {
+  const numColumns = conf.data.settings.frontend.image_browser_columns;
+
+  if (direction === -1) {
+    // Traverse all the columns before removing one from the currentIndexOfColumn
+    if (currentColumn.value > 0) {
+      imgClick(currentColumn.value - 1, currentRowIndex.value);
+    } else {
+      imgClick(numColumns - 1, currentRowIndex.value - 1);
+    }
+  } else if (direction === 1) {
+    // Traverse all the columns before adding one from the currentIndexOfColumn
+    if (currentColumn.value < numColumns - 1) {
+      imgClick(currentColumn.value + 1, currentRowIndex.value);
+    } else {
+      imgClick(0, currentRowIndex.value + 1);
+    }
+  }
+}
+
 onMounted(() => {
+  // Infinite Scroll
   window.addEventListener("scroll", handleScroll);
+
+  // Attach event handler for keys to move to the next/previous image
+  window.addEventListener("keydown", (e: any) => {
+    if (e.key === "ArrowLeft") {
+      moveImage(-1);
+    } else if (e.key === "ArrowRight") {
+      moveImage(1);
+    }
+  });
 });
 
 onUnmounted(() => {
+  // Infinite Scroll
   window.removeEventListener("scroll", handleScroll);
+
+  // Remove event handler for keys to move to the next/previous image
+  window.removeEventListener("keydown", (e: any) => {
+    if (e.key === "ArrowLeft") {
+      moveImage(-1);
+    } else if (e.key === "ArrowRight") {
+      moveImage(1);
+    }
+  });
 });
 
 refreshImages();

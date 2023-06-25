@@ -55,8 +55,6 @@ export function getTextBoundaries(elem: HTMLInputElement | null) {
 }
 
 export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
-  console.log(data);
-
   // Handle ArrowUp
   if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
@@ -173,7 +171,7 @@ export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
 export function promptHandleKeyDown(e: KeyboardEvent) {
   // Prevent arrow keys from moving the cursor
 
-  if (arrowKeys.includes(e.keyCode)) {
+  if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
     e.preventDefault();
   }
 }

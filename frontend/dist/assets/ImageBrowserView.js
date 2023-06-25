@@ -136,8 +136,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "1c7b9a17": unref(conf).data.settings.frontend.image_browser_columns,
-      "4dc33d16": backgroundColor.value
+      "1f7ee6b5": unref(conf).data.settings.frontend.image_browser_columns,
+      "54303593": backgroundColor.value
     }));
     const global = useState();
     const conf = useSettings();
@@ -216,7 +216,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         };
       });
     }
+    const currentColumn = ref(0);
+    const currentRowIndex = ref(0);
     function imgClick(column_index, item_index) {
+      currentRowIndex.value = item_index;
+      currentColumn.value = column_index;
       const item = columns.value[column_index][item_index];
       global.state.imageBrowser.currentImage = item;
       setByte64FromImage(item.path);
@@ -296,11 +300,41 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         imageLimit.value += 30;
       }
     };
+    function moveImage(direction) {
+      const numColumns = conf.data.settings.frontend.image_browser_columns;
+      if (direction === -1) {
+        if (currentColumn.value > 0) {
+          imgClick(currentColumn.value - 1, currentRowIndex.value);
+        } else {
+          imgClick(numColumns - 1, currentRowIndex.value - 1);
+        }
+      } else if (direction === 1) {
+        if (currentColumn.value < numColumns - 1) {
+          imgClick(currentColumn.value + 1, currentRowIndex.value);
+        } else {
+          imgClick(0, currentRowIndex.value + 1);
+        }
+      }
+    }
     onMounted(() => {
       window.addEventListener("scroll", handleScroll);
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+          moveImage(-1);
+        } else if (e.key === "ArrowRight") {
+          moveImage(1);
+        }
+      });
     });
     onUnmounted(() => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+          moveImage(-1);
+        } else if (e.key === "ArrowRight") {
+          moveImage(1);
+        }
+      });
     });
     refreshImages();
     const backgroundColor = computed(() => {
@@ -358,7 +392,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "mask-closable": "",
             preset: "card",
             style: { "width": "85vw" },
-            title: "Image Info"
+            title: "Image Info",
+            id: "image-modal"
           }, {
             default: withCtx(() => [
               createVNode(unref(NGrid), {
@@ -514,8 +549,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_f1c06e25_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f1c06e25"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_00cbea3d_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-00cbea3d"]]);
 export {
   ImageBrowserView as default
 };

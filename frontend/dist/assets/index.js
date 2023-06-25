@@ -40653,7 +40653,6 @@ function getTextBoundaries(elem) {
   return [0, 0];
 }
 function promptHandleKeyUp(e, data, key) {
-  console.log(data);
   if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
       document.activeElement
@@ -40734,7 +40733,7 @@ function promptHandleKeyUp(e, data, key) {
   }
 }
 function promptHandleKeyDown(e) {
-  if (arrowKeys.includes(e.keyCode)) {
+  if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
     e.preventDefault();
   }
 }
