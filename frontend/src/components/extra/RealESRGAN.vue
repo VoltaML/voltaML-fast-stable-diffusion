@@ -18,6 +18,8 @@
               <NSelect
                 v-model:value="conf.data.settings.upscale.model"
                 style="margin-right: 12px"
+                filterable
+                tag
                 :options="upscalerOptions"
               />
             </div>

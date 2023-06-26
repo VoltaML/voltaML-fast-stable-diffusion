@@ -655,26 +655,17 @@ class GPU:
         "Upscale an image by a specified factor"
 
         def generate_call(job: UpscaleQueueEntry):
-            if job.model in [
-                "RealESRGAN_x4plus",
-                "RealESRNet_x4plus",
-                "RealESRGAN_x4plus_anime_6B",
-                "RealESRGAN_x2plus",
-                "RealESR-general-x4v3",
-            ]:
-                t = time.time()
-                pipe = RealESRGAN(
-                    model_name=job.model,
-                    tile=job.data.tile_size,
-                    tile_pad=job.data.tile_padding,
-                )
+            t: float = time.time()
+            pipe = RealESRGAN(
+                model_name=job.model,
+                tile=job.data.tile_size,
+                tile_pad=job.data.tile_padding,
+            )
 
-                image = pipe.generate(job)
-                pipe.unload()
-                deltatime = time.time() - t
-                return image, deltatime
-            else:
-                raise ValueError(f"Model {job.model} not implemented")
+            image = pipe.generate(job)
+            pipe.unload()
+            deltatime = time.time() - t
+            return image, deltatime
 
         image: Image.Image
         time_: float
