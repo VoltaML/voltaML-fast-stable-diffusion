@@ -1,3 +1,6 @@
+import hashlib
+import io
+
 import numpy as np
 from PIL import Image
 
@@ -21,3 +24,20 @@ def generate_random_image(w: int = 512, h: int = 512) -> Image.Image:
     image = Image.fromarray(np_image)
 
     return image
+
+
+def hash_image(image: Image.Image) -> str:
+    "Return sha256 hash of image, computed partially so that it does not overflow memory"
+
+    hash_ = hashlib.sha256()
+    image_bytes = io.BytesIO()
+    image.save(image_bytes, format="PNG")
+    image_bytes.seek(0)
+    while True:
+        data = image_bytes.read(65536)
+        if not data:
+            break
+        hash_.update(data)
+
+    image_bytes.close()
+    return hash_.hexdigest()

@@ -29,7 +29,7 @@ export interface ModelEntry {
   valid: boolean;
   state: "loading" | "loaded" | "not loaded";
   loras: string[];
-  textua_inversions: string[];
+  textual_inversions: string[];
 }
 
 export enum ControlNetType {

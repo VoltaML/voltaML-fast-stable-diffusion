@@ -40038,7 +40038,8 @@ const useState = defineStore("state", () => {
       enabled: false,
       gpus: []
     },
-    models: []
+    models: [],
+    selected_model: ref(null)
   });
   return { state };
 });
@@ -41124,7 +41125,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-5ee2e1ec"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-c9ae0c7d"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41144,7 +41145,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "4ff2a878": backgroundColor.value
+      "a80436f6": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41290,6 +41291,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     }
     async function unloadModel(model) {
+      if (model === global2.state.selected_model) {
+        global2.state.selected_model = null;
+      }
       const load_url = new URL(`${serverUrl}/api/models/unload`);
       const params = { model: model.name };
       load_url.search = new URLSearchParams(params).toString();
@@ -41302,7 +41306,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     }
     async function loadLoRA(lora) {
-      if (selectedModel.value) {
+      if (global2.state.selected_model) {
         try {
           await fetch(`${serverUrl}/api/models/load-lora`, {
             method: "POST",
@@ -41310,13 +41314,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: selectedModel.value.name,
+              model: global2.state.selected_model.name,
               lora: lora.path,
               unet_weight: conf.data.settings.api.lora_unet_weight,
               text_encoder_weight: conf.data.settings.api.lora_text_encoder_weight
             })
           });
-          selectedModel.value.loras.push(lora.path);
+          global2.state.selected_model.loras.push(lora.path);
         } catch (e) {
           console.error(e);
         }
@@ -41325,7 +41329,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     }
     async function loadTextualInversion(textualInversion) {
-      if (selectedModel.value) {
+      if (global2.state.selected_model) {
         try {
           await fetch(`${serverUrl}/api/models/load-textual-inversion`, {
             method: "POST",
@@ -41333,11 +41337,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               "Content-Type": "application/json"
             },
             body: JSON.stringify({
-              model: selectedModel.value.name,
+              model: global2.state.selected_model.name,
               textual_inversion: textualInversion.path
             })
           });
-          selectedModel.value.loras.push(textualInversion.path);
+          global2.state.selected_model.textual_inversions.push(
+            textualInversion.path
+          );
         } catch (e) {
           console.error(e);
         }
@@ -41481,12 +41487,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     });
     const message = useMessage();
     const showModal = ref(false);
-    const selectedModel = ref();
     const lora_title = computed(() => {
-      return `LoRA (${selectedModel.value ? selectedModel.value.name : "No model selected"})`;
+      return `LoRA (${global2.state.selected_model ? global2.state.selected_model.name : "No model selected"})`;
     });
     const textual_inversions_title = computed(() => {
-      return `Textual Inversions (${selectedModel.value ? selectedModel.value.name : "No model selected"})`;
+      return `Textual Inversions (${global2.state.selected_model ? global2.state.selected_model.name : "No model selected"})`;
     });
     const renderIcon = (icon) => {
       return () => {
@@ -41680,7 +41685,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                               type: "info",
                                               style: { "margin-left": "4px" },
                                               ghost: "",
-                                              onClick: ($event) => selectedModel.value = model,
+                                              onClick: ($event) => unref(global2).state.selected_model = model,
                                               disabled: model.state !== "loaded"
                                             }, {
                                               default: withCtx(() => [
@@ -41740,7 +41745,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }, [
                                           createBaseVNode("p", null, toDisplayString(lora.name), 1),
                                           createBaseVNode("div", _hoisted_11, [
-                                            ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(lora.path)) ? (openBlock(), createBlock(unref(NButton), {
+                                            ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.loras.includes(
+                                              lora.path
+                                            )) ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
                                               ghost: "",
@@ -41755,7 +41762,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                               type: "success",
                                               ghost: "",
                                               onClick: ($event) => loadLoRA(lora),
-                                              disabled: selectedModel.value === void 0,
+                                              disabled: unref(global2).state.selected_model === void 0,
                                               loading: lora.state === "loading"
                                             }, {
                                               default: withCtx(() => [
@@ -41795,7 +41802,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         }, [
                                           createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
                                           createBaseVNode("div", _hoisted_13, [
-                                            ((_a3 = selectedModel.value) == null ? void 0 : _a3.loras.includes(textualInversion.path)) ? (openBlock(), createBlock(unref(NButton), {
+                                            ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
+                                              textualInversion.path
+                                            )) ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
                                               ghost: "",
@@ -41810,7 +41819,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                               type: "success",
                                               ghost: "",
                                               onClick: ($event) => loadTextualInversion(textualInversion),
-                                              disabled: selectedModel.value === void 0,
+                                              disabled: unref(global2).state.selected_model === void 0,
                                               loading: textualInversion.state === "loading"
                                             }, {
                                               default: withCtx(() => [
@@ -42040,7 +42049,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_5ee2e1ec_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_c9ae0c7d_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42048,7 +42057,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5ee2e1ec"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-c9ae0c7d"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
