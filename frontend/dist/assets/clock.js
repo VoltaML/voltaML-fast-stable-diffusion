@@ -5,7 +5,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, m as createTextVNode, t as toDisplayString, i as NCard, y as createCommentVNode, J as watch, E as ref, s as serverUrl } from "./index.js";
+import { d as defineComponent, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, m as createTextVNode, t as toDisplayString, i as NCard, y as createCommentVNode, K as watch, F as ref, s as serverUrl } from "./index.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "OutputStats",
   props: {
