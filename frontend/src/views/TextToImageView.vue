@@ -60,6 +60,25 @@
               />
             </div>
 
+            <!-- Karras Sigmas -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p style="width: 120px">Karras Sigmas</p>
+                </template>
+                Changes the sigmas used in the Karras diffusion process. Might
+                provide better results for some images.
+                <b class="highlight"
+                  >Works only with KDPM samplers. Ignored by other samplers.</b
+                >
+              </NTooltip>
+
+              <NSwitch
+                v-model:value="conf.data.settings.txt2img.use_karras_sigmas"
+                style="justify-self: flex-end"
+              />
+            </div>
+
             <!-- Dimensions -->
             <div class="flex-container" v-if="conf.data.settings.aitDim.width">
               <p class="slider-label">Width</p>
@@ -548,6 +567,7 @@ const generate = () => {
         batch_count: conf.data.settings.txt2img.batch_count,
         scheduler: conf.data.settings.txt2img.sampler,
         self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
+        use_karras_sigmas: conf.data.settings.txt2img.use_karras_sigmas,
       },
       model: conf.data.settings.model?.name,
       backend: "PyTorch",

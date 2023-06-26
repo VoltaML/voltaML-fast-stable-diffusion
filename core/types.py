@@ -70,6 +70,7 @@ class Txt2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -89,6 +90,7 @@ class Img2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -110,6 +112,7 @@ class InpaintData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -129,6 +132,7 @@ class ControlNetData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -155,26 +159,6 @@ class UpscaleData:
     upscale_factor: float = field(default=4)
     tile_size: int = field(default=128)
     tile_padding: int = field(default=10)
-
-
-@dataclass
-class SDUpscaleData:
-    "Dataclass for the data of Stable Diffusion Tiled Upscale request"
-
-    prompt: str
-    image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
-    id: str = field(default_factory=lambda: uuid4().hex)
-    negative_prompt: str = field(default="")
-    steps: int = field(default=25)
-    guidance_scale: float = field(default=7)
-    seed: int = field(default=0)
-    batch_size: int = field(default=1)
-    batch_count: int = field(default=1)
-    tile_size: int = field(default=128)
-    tile_border: int = field(default=32)
-    original_image_slice: int = field(default=32)
-    noise_level: int = field(default=40)
 
 
 @dataclass

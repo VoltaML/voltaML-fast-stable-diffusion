@@ -40,6 +40,22 @@ def test_txt2img(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
+def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
+    "Generate an image with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler,
+            id="test",
+            use_karras_sigmas=True,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
 def test_txt2img_hr_fix(pipe: PyTorchStableDiffusion):
     "Generate an image with high resolution latent upscale"
 

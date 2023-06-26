@@ -332,6 +332,7 @@ class AITemplateStableDiffusion(InferenceModel):
             change_scheduler(
                 model=pipe,
                 scheduler=job.data.scheduler,
+                use_karras_sigmas=job.data.use_karras_sigmas,
             )
 
         total_images: List[Image.Image] = []
@@ -396,7 +397,11 @@ class AITemplateStableDiffusion(InferenceModel):
 
         generator = torch.Generator(self.device).manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+        change_scheduler(
+            model=pipe,
+            scheduler=job.data.scheduler,
+            use_karras_sigmas=job.data.use_karras_sigmas,
+        )
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
@@ -471,7 +476,11 @@ class AITemplateStableDiffusion(InferenceModel):
 
         generator = torch.Generator(self.device).manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+        change_scheduler(
+            model=pipe,
+            scheduler=job.data.scheduler,
+            use_karras_sigmas=job.data.use_karras_sigmas,
+        )
 
         from core.controlnet_preprocessing import image_to_controlnet_input
 

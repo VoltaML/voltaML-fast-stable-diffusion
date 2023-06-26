@@ -245,6 +245,7 @@ class PyTorchStableDiffusion(InferenceModel):
             change_scheduler(
                 model=pipe,
                 scheduler=job.data.scheduler,
+                use_karras_sigmas=job.data.use_karras_sigmas,
             )
 
         total_images: List[Image.Image] = []
@@ -339,7 +340,11 @@ class PyTorchStableDiffusion(InferenceModel):
         else:
             generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+        change_scheduler(
+            model=pipe,
+            scheduler=job.data.scheduler,
+            use_karras_sigmas=job.data.use_karras_sigmas,
+        )
 
         # Preprocess the image
         input_image = convert_to_image(job.data.image)
@@ -423,7 +428,11 @@ class PyTorchStableDiffusion(InferenceModel):
         else:
             generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+        change_scheduler(
+            model=pipe,
+            scheduler=job.data.scheduler,
+            use_karras_sigmas=job.data.use_karras_sigmas,
+        )
 
         # Preprocess images
         input_image = convert_to_image(job.data.image).convert("RGB")
@@ -530,7 +539,11 @@ class PyTorchStableDiffusion(InferenceModel):
         else:
             generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+        change_scheduler(
+            model=pipe,
+            scheduler=job.data.scheduler,
+            use_karras_sigmas=job.data.use_karras_sigmas,
+        )
 
         # Preprocess the image
         from core.controlnet_preprocessing import image_to_controlnet_input
