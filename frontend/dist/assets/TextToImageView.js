@@ -265,9 +265,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             value: unref(conf).data.settings.aitDim.width,
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
+                            step: 8
                           }, null, 8, ["value"])
                         ])) : (openBlock(), createElementBlock("div", _hoisted_11, [
                           _hoisted_12,
@@ -284,9 +282,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.txt2img.width = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
+                            step: 8
                           }, null, 8, ["value"])
                         ])),
                         unref(conf).data.settings.aitDim.height ? (openBlock(), createElementBlock("div", _hoisted_13, [
@@ -302,9 +298,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             value: unref(conf).data.settings.aitDim.height,
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
+                            step: 8
                           }, null, 8, ["value"])
                         ])) : (openBlock(), createElementBlock("div", _hoisted_15, [
                           _hoisted_16,
@@ -321,9 +315,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.txt2img.height = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            step: 8,
-                            min: 128,
-                            max: 2048
+                            step: 8
                           }, null, 8, ["value"])
                         ])),
                         createBaseVNode("div", _hoisted_17, [
@@ -348,9 +340,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             value: unref(conf).data.settings.txt2img.steps,
                             "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.txt2img.steps = $event),
                             size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 5,
-                            max: 300
+                            style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_20, [
@@ -377,8 +367,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.txt2img.cfg_scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 30,
                             step: 0.5
                           }, null, 8, ["value"])
                         ]),
@@ -406,8 +394,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            min: 0,
-                            max: 1,
                             step: 0.05
                           }, null, 8, ["value"])
                         ]),
@@ -432,9 +418,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             value: unref(conf).data.settings.txt2img.batch_count,
                             "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.txt2img.batch_count = $event),
                             size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 9
+                            style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
                         unref(conf).data.settings.aitDim.batch_size ? (openBlock(), createElementBlock("div", _hoisted_28, [
@@ -456,9 +440,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           createVNode(unref(NInputNumber), {
                             value: unref(conf).data.settings.aitDim.batch_size,
                             size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 9
+                            style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ])) : (openBlock(), createElementBlock("div", _hoisted_30, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -481,9 +463,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             value: unref(conf).data.settings.txt2img.batch_size,
                             "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.txt2img.batch_size = $event),
                             size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 9
+                            style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ])),
                         createBaseVNode("div", _hoisted_32, [
@@ -501,8 +481,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             value: unref(conf).data.settings.txt2img.seed,
                             "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(conf).data.settings.txt2img.seed = $event),
                             size: "small",
-                            min: -1,
-                            max: 999999999999,
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
                         ])
@@ -553,9 +531,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             value: unref(conf).data.settings.extra.highres.steps,
                             "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(conf).data.settings.extra.highres.steps = $event),
                             size: "small",
-                            style: { "min-width": "96px", "width": "96px" },
-                            min: 5,
-                            max: 300
+                            style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_40, [
@@ -565,7 +541,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(conf).data.settings.extra.highres.scale = $event),
                             min: 1,
                             max: 8,
-                            step: 1,
+                            step: 0.1,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
@@ -573,9 +549,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             "onUpdate:value": _cache[25] || (_cache[25] = ($event) => unref(conf).data.settings.extra.highres.scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
-                            min: 1,
-                            max: 8,
-                            step: 1
+                            step: 0.1
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_42, [

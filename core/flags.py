@@ -23,7 +23,7 @@ class Flag:
 class HighResFixFlag(Flag, DataClassJsonMixin):
     "Flag to fix high resolution images"
 
-    scale: int
+    scale: float
     latent_scale_mode: LatentScaleModel = "bilinear"
     strength: float = 0.7
     steps: int = 50

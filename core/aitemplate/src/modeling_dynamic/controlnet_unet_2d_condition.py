@@ -136,7 +136,7 @@ class ControlNetModel(nn.Module):
         # down
         output_channel = block_out_channels[0]
 
-        controlnet_block = nn.Conv2dBias(output_channel, output_channel, 1)
+        controlnet_block = nn.Conv2dBias(output_channel, output_channel, 1)  # type: ignore # pylint: disable=no-value-for-parameter
         controlnet_block = controlnet_block
         self.controlnet_down_blocks.append(controlnet_block)
 
@@ -162,19 +162,19 @@ class ControlNetModel(nn.Module):
             self.down_blocks.append(down_block)  # type: ignore
 
             for _ in range(layers_per_block):
-                controlnet_block = nn.Conv2dBias(output_channel, output_channel, 1)
+                controlnet_block = nn.Conv2dBias(output_channel, output_channel, 1)  # type: ignore # pylint: disable=no-value-for-parameter
                 controlnet_block = controlnet_block
                 self.controlnet_down_blocks.append(controlnet_block)
 
             if not is_final_block:
-                controlnet_block = nn.Conv2dBias(output_channel, output_channel, 1)
+                controlnet_block = nn.Conv2dBias(output_channel, output_channel, 1)  # type: ignore # pylint: disable=no-value-for-parameter
                 controlnet_block = controlnet_block
                 self.controlnet_down_blocks.append(controlnet_block)
 
         # mid
         mid_block_channel = block_out_channels[-1]
 
-        controlnet_block = nn.Conv2dBias(mid_block_channel, mid_block_channel, 1)
+        controlnet_block = nn.Conv2dBias(mid_block_channel, mid_block_channel, 1)  # type: ignore # pylint: disable=no-value-for-parameter
         controlnet_block = controlnet_block
         self.controlnet_mid_block = controlnet_block
 

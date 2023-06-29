@@ -94,8 +94,6 @@
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="8"
-                :min="128"
-                :max="2048"
               />
             </div>
             <div class="flex-container" v-else>
@@ -112,8 +110,6 @@
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="8"
-                :min="128"
-                :max="2048"
               />
             </div>
             <div class="flex-container" v-if="conf.data.settings.aitDim.height">
@@ -130,8 +126,6 @@
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="8"
-                :min="128"
-                :max="2048"
               />
             </div>
             <div class="flex-container" v-else>
@@ -148,8 +142,6 @@
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="8"
-                :min="128"
-                :max="2048"
               />
             </div>
 
@@ -177,8 +169,6 @@
                 v-model:value="conf.data.settings.txt2img.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="5"
-                :max="300"
               />
             </div>
 
@@ -207,8 +197,6 @@
                 v-model:value="conf.data.settings.txt2img.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="30"
                 :step="0.5"
               />
             </div>
@@ -237,8 +225,6 @@
                 v-model:value="conf.data.settings.txt2img.self_attention_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="0"
-                :max="1"
                 :step="0.05"
               />
             </div>
@@ -261,8 +247,6 @@
                 v-model:value="conf.data.settings.txt2img.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
               />
             </div>
             <div
@@ -285,8 +269,6 @@
                 :value="conf.data.settings.aitDim.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
               />
             </div>
             <div class="flex-container" v-else>
@@ -306,8 +288,6 @@
                 v-model:value="conf.data.settings.txt2img.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
               />
             </div>
 
@@ -325,8 +305,6 @@
               <NInputNumber
                 v-model:value="conf.data.settings.txt2img.seed"
                 size="small"
-                :min="-1"
-                :max="999_999_999_999"
                 style="flex-grow: 1"
               />
             </div>
@@ -376,8 +354,6 @@
                 v-model:value="conf.data.settings.extra.highres.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="5"
-                :max="300"
               />
             </div>
 
@@ -388,16 +364,14 @@
                 v-model:value="conf.data.settings.extra.highres.scale"
                 :min="1"
                 :max="8"
-                :step="1"
+                :step="0.1"
                 style="margin-right: 12px"
               />
               <NInputNumber
                 v-model:value="conf.data.settings.extra.highres.scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="8"
-                :step="1"
+                :step="0.1"
               />
             </div>
 
