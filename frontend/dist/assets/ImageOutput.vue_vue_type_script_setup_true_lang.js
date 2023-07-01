@@ -95,6 +95,7 @@ const _hoisted_2 = {
 };
 const _hoisted_3 = ["onClick"];
 const _hoisted_4 = ["src"];
+const _hoisted_5 = { key: 1 };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageOutput",
   props: {
@@ -154,7 +155,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }), 128))
               ]),
               _: 1
-            }),
+            })
+          ])) : createCommentVNode("", true),
+          props.currentImage ? (openBlock(), createElementBlock("div", _hoisted_5, [
             createVNode(_sfc_main$1, {
               base64image: props.currentImage,
               style: { "margin-bottom": "4px" }

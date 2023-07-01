@@ -30,7 +30,8 @@
           />
         </span>
       </NScrollbar>
-
+    </div>
+    <div v-if="props.currentImage">
       <DownloadDelete
         :base64image="props.currentImage"
         style="margin-bottom: 4px"
