@@ -176,6 +176,7 @@ export interface ISettings {
     autoloaded_textual_inversions: string[];
 
     save_path_template: string;
+    disable_grid: boolean;
   };
   aitemplate: {
     num_threads: number;
@@ -323,6 +324,7 @@ export const defaultSettings: ISettings = {
     autoloaded_loras: new Map(),
     autoloaded_textual_inversions: [],
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
+    disable_grid: false,
   },
   aitemplate: {
     num_threads: 8,

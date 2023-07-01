@@ -4,6 +4,9 @@
     <NFormItem label="Template for saving outputs">
       <NInput v-model:value="settings.defaultSettings.api.save_path_template" />
     </NFormItem>
+    <NFormItem label="Disable generating grid image">
+      <NSwitch v-model:value="settings.defaultSettings.api.disable_grid" />
+    </NFormItem>
 
     <h2>Autoload</h2>
     <NFormItem label="Textual Inversions">

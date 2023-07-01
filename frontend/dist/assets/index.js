@@ -40877,7 +40877,8 @@ const defaultSettings = {
     lora_unet_weight: 0.5,
     autoloaded_loras: /* @__PURE__ */ new Map(),
     autoloaded_textual_inversions: [],
-    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}"
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
+    disable_grid: false
   },
   aitemplate: {
     num_threads: 8
@@ -42195,7 +42196,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/imageBrowser",
