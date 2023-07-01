@@ -175,3 +175,8 @@ export function promptHandleKeyDown(e: KeyboardEvent) {
     e.preventDefault();
   }
 }
+
+export function urlFromPath(path: string) {
+  const url = new URL(path, serverUrl);
+  return url.href;
+}

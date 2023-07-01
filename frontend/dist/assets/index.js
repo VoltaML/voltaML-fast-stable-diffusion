@@ -40738,6 +40738,10 @@ function promptHandleKeyDown(e) {
     e.preventDefault();
   }
 }
+function urlFromPath(path) {
+  const url = new URL(path, serverUrl);
+  return url.href;
+}
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
   ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
@@ -42173,22 +42177,22 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/clock.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/v4.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/v4.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/Image.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
     },
     {
       path: "/models",
       name: "models",
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/Switch.js","assets/Image.js","assets/CloudUpload.js","assets/TrashBin.js","assets/ModelsView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
     },
     {
       path: "/about",
@@ -42213,7 +42217,7 @@ const router = createRouter({
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/Image.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
     },
     {
       path: "/tagger",
@@ -42333,11 +42337,12 @@ export {
   NResult as b7,
   reactive as b8,
   huggingfaceModelsFile as b9,
-  inputNumberLight$1 as bA,
-  rgba as bB,
-  XButton as bC,
-  isSlotEmpty as bD,
-  switchLight$1 as bE,
+  NAlert as bA,
+  inputNumberLight$1 as bB,
+  rgba as bC,
+  XButton as bD,
+  isSlotEmpty as bE,
+  switchLight$1 as bF,
   NModal as ba,
   NText as bb,
   stepsLight$1 as bc,
@@ -42350,20 +42355,20 @@ export {
   onMounted as bj,
   defaultSettings as bk,
   useCssVars as bl,
-  useCompitable as bm,
-  descriptionsLight$1 as bn,
-  useRouter as bo,
-  fadeInTransition as bp,
-  imageLight as bq,
-  isMounted as br,
-  LazyTeleport as bs,
-  withDirectives as bt,
-  zindexable$1 as bu,
-  vShow as bv,
-  normalizeStyle as bw,
-  kebabCase$1 as bx,
-  withModifiers as by,
-  NAlert as bz,
+  urlFromPath as bm,
+  useCompitable as bn,
+  descriptionsLight$1 as bo,
+  useRouter as bp,
+  fadeInTransition as bq,
+  imageLight as br,
+  isMounted as bs,
+  LazyTeleport as bt,
+  withDirectives as bu,
+  zindexable$1 as bv,
+  vShow as bw,
+  normalizeStyle as bx,
+  kebabCase$1 as by,
+  withModifiers as bz,
   computed as c,
   defineComponent as d,
   openBlock as e,

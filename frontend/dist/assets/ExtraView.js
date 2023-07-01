@@ -3,7 +3,8 @@ import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_l
 import { I as ImageUpload } from "./ImageUpload.js";
 import { d as defineComponent, u as useState, a as useSettings, b as useMessage, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, L as upscalerOptions, q as NTooltip, m as createTextVNode, v as NSlider, z as NGrid, s as serverUrl, B as pushScopeId, C as popScopeId, _ as _export_sfc, x as createBlock, I as NTabPane, J as NTabs } from "./index.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import "./Image.js";
+import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import "./TrashBin.js";
 import "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-45b49aa5"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };

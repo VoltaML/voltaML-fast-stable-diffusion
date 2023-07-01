@@ -443,8 +443,6 @@
           @image-clicked="global.state.txt2img.currentImage = $event"
         />
 
-        <SendOutputTo :output="global.state.txt2img.currentImage" />
-
         <OutputStats
           style="margin-top: 12px"
           :gen-data="global.state.txt2img.genData"
@@ -459,7 +457,6 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,

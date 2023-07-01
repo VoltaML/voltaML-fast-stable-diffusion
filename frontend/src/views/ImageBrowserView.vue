@@ -156,6 +156,7 @@
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import type { imgData as IImgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
+import { urlFromPath } from "@/functions";
 import { Download, GridOutline, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
@@ -185,11 +186,6 @@ const imageLimit = ref(30);
 const itemFilter = ref("");
 
 const gridColumnRefs = ref<HTMLElement[]>([]);
-
-function urlFromPath(path: string) {
-  const url = new URL(path, serverUrl);
-  return url.href;
-}
 
 const imageSrc = computed(() => {
   const url = urlFromPath(global.state.imageBrowser.currentImage.path);

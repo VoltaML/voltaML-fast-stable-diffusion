@@ -407,8 +407,6 @@
           @image-clicked="global.state.controlnet.currentImage = $event"
         />
 
-        <SendOutputTo :output="global.state.controlnet.currentImage" />
-
         <OutputStats
           style="margin-top: 12px"
           :gen-data="global.state.controlnet.genData"
@@ -425,7 +423,6 @@ import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,

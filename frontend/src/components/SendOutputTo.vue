@@ -24,7 +24,7 @@
       </NGi>
     </NGrid>
   </NCard>
-  <NGrid cols="4" x-gap="4" y-gap="4" v-else-if="output">
+  <NGrid cols="3" x-gap="4" y-gap="4" v-else-if="output">
     <NGi>
       <NButton type="default" @click="toImg2Img" style="width: 100%" ghost
         >Img2Img</NButton
@@ -43,6 +43,11 @@
     <NGi>
       <NButton type="default" @click="toUpscale" style="width: 100%" ghost
         >Upscale</NButton
+      >
+    </NGi>
+    <NGi>
+      <NButton type="default" @click="toTagger" style="width: 100%" ghost
+        >Tagger</NButton
       >
     </NGi>
   </NGrid>
@@ -91,5 +96,10 @@ async function toUpscale() {
   conf.data.settings.upscale.image = props.output;
   state.state.extra.tab = "Upscale";
   await router.push("/extra");
+}
+
+async function toTagger() {
+  conf.data.settings.tagger.image = props.output;
+  await router.push("/tagger");
 }
 </script>

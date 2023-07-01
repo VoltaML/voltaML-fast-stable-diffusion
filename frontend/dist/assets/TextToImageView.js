@@ -1,12 +1,13 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$2 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
-import { B as BurnerClock, _ as _sfc_main$4 } from "./clock.js";
-import { _ as _sfc_main$3 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import { B as BurnerClock, _ as _sfc_main$3 } from "./clock.js";
 import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as NSlider, x as createBlock, y as createCommentVNode, z as NGrid, A as spaceRegex } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import "./Image.js";
+import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import "./TrashBin.js";
+import "./DescriptionsItem.js";
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "100px" } }, "Sampler", -1);
@@ -621,9 +622,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   onImageClicked: _cache[30] || (_cache[30] = ($event) => unref(global).state.txt2img.currentImage = $event)
                 }, null, 8, ["current-image", "images"]),
                 createVNode(_sfc_main$3, {
-                  output: unref(global).state.txt2img.currentImage
-                }, null, 8, ["output"]),
-                createVNode(_sfc_main$4, {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.txt2img.genData
                 }, null, 8, ["gen-data"])

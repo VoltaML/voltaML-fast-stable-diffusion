@@ -382,8 +382,6 @@
           @image-clicked="global.state.inpainting.currentImage = $event"
         />
 
-        <SendOutputTo :output="global.state.inpainting.currentImage" />
-
         <OutputStats
           style="margin-top: 12px"
           :gen-data="global.state.inpainting.genData"
@@ -399,7 +397,6 @@ import { BurnerClock } from "@/clock";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,

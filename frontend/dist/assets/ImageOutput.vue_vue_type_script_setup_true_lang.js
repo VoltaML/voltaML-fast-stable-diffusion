@@ -1,9 +1,97 @@
-import { N as NImage } from "./Image.js";
-import { d as defineComponent, c as computed, e as openBlock, x as createBlock, w as withCtx, n as createBaseVNode, h as unref, y as createCommentVNode, f as createElementBlock, g as createVNode, M as Fragment, O as renderList, P as NScrollbar, i as NCard } from "./index.js";
+import { d as defineComponent, F as ref, u as useState, e as openBlock, x as createBlock, w as withCtx, h as unref, N as NGi, g as createVNode, H as NIcon, m as createTextVNode, G as NButton, y as createCommentVNode, z as NGrid, c as computed, n as createBaseVNode, f as createElementBlock, M as Fragment, O as renderList, P as NScrollbar, i as NCard } from "./index.js";
+import { D as Download, _ as _sfc_main$2 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import { T as TrashBin, N as NImage } from "./TrashBin.js";
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "DownloadDelete",
+  props: {
+    imagePath: {
+      type: String,
+      required: false
+    },
+    base64image: {
+      type: String,
+      required: true
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const showDeleteModal = ref(false);
+    const global = useState();
+    function downloadImage() {
+      const a = document.createElement("a");
+      a.href = props.base64image;
+      a.download = global.state.imageBrowser.currentImage.id;
+      a.target = "_blank";
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NGrid), {
+        cols: "2",
+        "x-gap": "4",
+        style: { "margin-top": "12px" }
+      }, {
+        default: withCtx(() => [
+          props.base64image ? (openBlock(), createBlock(unref(NGi), { key: 0 }, {
+            default: withCtx(() => [
+              createVNode(unref(NButton), {
+                type: "success",
+                onClick: downloadImage,
+                style: { "width": "100%" },
+                ghost: ""
+              }, {
+                icon: withCtx(() => [
+                  createVNode(unref(NIcon), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(Download))
+                    ]),
+                    _: 1
+                  })
+                ]),
+                default: withCtx(() => [
+                  createTextVNode("Download")
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })) : createCommentVNode("", true),
+          createVNode(unref(NGi), null, {
+            default: withCtx(() => [
+              createVNode(unref(NButton), {
+                type: "error",
+                onClick: _cache[0] || (_cache[0] = ($event) => showDeleteModal.value = true),
+                style: { "width": "100%" },
+                ghost: "",
+                disabled: props.imagePath === void 0
+              }, {
+                icon: withCtx(() => [
+                  createVNode(unref(NIcon), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(TrashBin))
+                    ]),
+                    _: 1
+                  })
+                ]),
+                default: withCtx(() => [
+                  createTextVNode(" Delete")
+                ]),
+                _: 1
+              }, 8, ["disabled"])
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
 const _hoisted_1 = { style: { "width": "100%", "display": "flex", "justify-content": "center" } };
 const _hoisted_2 = {
   key: 0,
-  style: { "height": "150px", "margin-top": "12px" }
+  style: { "margin-top": "12px" }
 };
 const _hoisted_3 = ["onClick"];
 const _hoisted_4 = ["src"];
@@ -66,7 +154,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }), 128))
               ]),
               _: 1
-            })
+            }),
+            createVNode(_sfc_main$1, {
+              base64image: props.currentImage,
+              style: { "margin-bottom": "4px" }
+            }, null, 8, ["base64image"]),
+            createVNode(_sfc_main$2, {
+              output: props.currentImage,
+              card: false
+            }, null, 8, ["output"])
           ])) : createCommentVNode("", true)
         ]),
         _: 1

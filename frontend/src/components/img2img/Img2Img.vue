@@ -355,8 +355,6 @@
           @image-clicked="global.state.img2img.currentImage = $event"
         />
 
-        <SendOutputTo :output="global.state.img2img.currentImage" />
-
         <OutputStats
           style="margin-top: 12px"
           :gen-data="global.state.img2img.genData"
@@ -373,7 +371,6 @@ import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,

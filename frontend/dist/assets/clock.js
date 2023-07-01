@@ -4,7 +4,7 @@ var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
-import { N as NDescriptionsItem, a as NDescriptions } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 import { d as defineComponent, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, m as createTextVNode, t as toDisplayString, i as NCard, y as createCommentVNode, K as watch, F as ref, s as serverUrl } from "./index.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "OutputStats",
