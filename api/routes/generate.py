@@ -6,11 +6,19 @@ from PIL import Image
 
 from core.errors import ModelNotLoadedError
 from core.shared_dependent import gpu
-from core.types import (AITemplateBuildRequest, AITemplateDynamicBuildRequest,
-                        ControlNetQueueEntry, ConvertModelRequest,
-                        Img2ImgQueueEntry, InpaintQueueEntry,
-                        InterrogatorQueueEntry, ONNXBuildRequest,
-                        TRTBuildRequest, Txt2ImgQueueEntry, UpscaleQueueEntry)
+from core.types import (
+    AITemplateBuildRequest,
+    AITemplateDynamicBuildRequest,
+    ControlNetQueueEntry,
+    ConvertModelRequest,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    InterrogatorQueueEntry,
+    ONNXBuildRequest,
+    TRTBuildRequest,
+    Txt2ImgQueueEntry,
+    UpscaleQueueEntry,
+)
 from core.utils import convert_bytes_to_image_stream, convert_image_to_base64
 
 router = APIRouter(tags=["generate"])
