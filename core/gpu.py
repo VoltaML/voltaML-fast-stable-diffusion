@@ -42,7 +42,6 @@ from core.utils import image_grid
 
 if TYPE_CHECKING:
     from core.inference.onnx_sd import OnnxStableDiffusion
-    from core.inference.tensorrt import TensorRTModel
 
 logger = logging.getLogger(__name__)
 
@@ -56,7 +55,6 @@ class GPU:
         self.loaded_models: Dict[
             str,
             Union[
-                "TensorRTModel",
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
                 "OnnxStableDiffusion",
@@ -88,7 +86,6 @@ class GPU:
         def generate_thread_call(job: Job) -> List[Image.Image]:
             try:
                 model: Union[
-                    "TensorRTModel",
                     PyTorchStableDiffusion,
                     AITemplateStableDiffusion,
                     "OnnxStableDiffusion",
@@ -144,26 +141,7 @@ class GPU:
                     logger.debug("Generating with ONNX")
                     images: List[Image.Image] = model.generate(job)
                 else:
-                    raise NotImplementedError("TensorRT is not supported at the moment")
-
-                # logger.debug("Generating with TensorRT")
-                # images: List[Image.Image]
-
-                # _, images = model.infer(
-                #     [job.data.prompt],
-                #     [job.data.negative_prompt],
-                #     job.data.height,
-                #     job.data.width,
-                #     guidance_scale=job.data.guidance_scale,
-                #     verbose=False,
-                #     seed=job.data.seed,
-                #     output_dir="output",
-                #     num_of_infer_steps=job.data.steps,
-                #     scheduler=job.data.scheduler,
-                # )
-                # if config.api.clear_memory_policy == "always":
-                #     self.memory_cleanup()
-                # return images
+                    raise NotImplementedError("Unknown model type")
 
             self.memory_cleanup()
             return images
@@ -186,7 +164,11 @@ class GPU:
 
                 # [pre, out...]
                 images = generated_images
-                grid = image_grid(images)
+
+                if not config.api.disable_grid:
+                    grid = image_grid(images)
+                else:
+                    grid = None
 
                 # Save only if needed
                 if job.save_image:
@@ -227,7 +209,7 @@ class GPU:
 
             # Append grid to the list of images if needed
             if isinstance(images[0], Image.Image) and len(images) > 1:
-                images = [grid, *images]
+                images = [grid, *images] if grid else images
 
             return (images, deltatime)
         except InferenceInterruptedError:
@@ -266,7 +248,7 @@ class GPU:
                 Notification(
                     "info",
                     "Model already loaded",
-                    f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchStableDiffusion) else 'TensorRT'} backend",
+                    f"{model} is already loaded",
                 )
             )
             return
@@ -283,33 +265,14 @@ class GPU:
                     Notification(
                         "info",
                         "Model already loaded",
-                        f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchStableDiffusion) else 'TensorRT'} backend",
+                        f"{model} is already loaded",
                     )
                 )
                 return
 
             start_time = time.time()
 
-            if backend == "TensorRT":
-                logger.debug("Selecting TensorRT")
-
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        "info",
-                        "TensorRT",
-                        f"Loading {model} into memory, this may take a while",
-                    )
-                )
-
-                from core.inference.tensorrt import TensorRTModel
-
-                trt_model = TensorRTModel(
-                    model_id=model,
-                )
-                self.loaded_models[model] = trt_model
-                logger.debug("Loading done")
-
-            elif backend == "AITemplate":
+            if backend == "AITemplate":
                 logger.debug("Selecting AITemplate")
 
                 websocket_manager.broadcast_sync(
@@ -393,14 +356,6 @@ class GPU:
                 if hasattr(model, "unload"):
                     logger.debug(f"Unloading model: {model_type}")
                     model.unload()
-                else:
-                    from core.tensorrt.volta_accelerate import TRTModel
-
-                    assert isinstance(
-                        model, TRTModel
-                    ), "Model is not a TRTModel and does not have an unload method"
-                    logger.debug(f"Unloading TensorRT model: {model_type}")
-                    model.teardown()
 
                 del self.loaded_models[model_type]
                 self.memory_cleanup()
@@ -417,20 +372,6 @@ class GPU:
             await self.unload(model)
 
         self.memory_cleanup()
-
-    async def build_trt_engine(self, request: TRTBuildRequest):
-        "Build a TensorRT engine from a request"
-
-        from .inference.tensorrt import TensorRTModel
-
-        logger.debug(f"Building engine for {request.model_id}...")
-
-        def trt_build_thread_call():
-            model = TensorRTModel(model_id=request.model_id, use_f32=False)
-            model.generate_engine(request=request)
-
-        await asyncio.to_thread(trt_build_thread_call)
-        logger.info("TensorRT engine successfully built")
 
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
         "Convert a model to a AITemplate engine"

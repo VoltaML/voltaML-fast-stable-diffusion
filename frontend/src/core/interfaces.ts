@@ -19,7 +19,6 @@ export interface ModelEntry {
   name: string;
   path: string;
   backend:
-    | "TensorRT"
     | "PyTorch"
     | "AITemplate"
     | "ONNX"

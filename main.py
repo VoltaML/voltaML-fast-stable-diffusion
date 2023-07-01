@@ -89,7 +89,6 @@ Path("data/models").mkdir(exist_ok=True)
 Path("data/outputs").mkdir(exist_ok=True)
 Path("data/lora").mkdir(exist_ok=True)
 Path("data/textual-inversion").mkdir(exist_ok=True)
-Path("data/tensorrt").mkdir(exist_ok=True)
 
 # Suppress some annoying warnings
 warnings.filterwarnings("ignore", category=UserWarning)

@@ -294,7 +294,7 @@ const _hoisted_8$1 = { class: "flex-container" };
 const _hoisted_9$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CPU Threads (affects RAM usage)", -1);
 const _hoisted_10$1 = { class: "flex-container" };
 const _hoisted_11$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "AITemplateAccelerate",
   setup(__props) {
     var _a, _b;
@@ -545,7 +545,7 @@ const _hoisted_13 = { class: "flex-container" };
 const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Encoder", -1);
 const _hoisted_15 = { class: "flex-container" };
 const _hoisted_16 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Decoder", -1);
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ONNXAccelerate",
   setup(__props) {
     var _a, _b;
@@ -759,47 +759,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "TensorRTAccelerate",
-  setup(__props) {
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { title: "Acceleration progress" }, {
-        default: withCtx(() => [
-          createVNode(unref(NSpace), {
-            vertical: "",
-            justify: "center"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NSteps), { current: 1 }, {
-                default: withCtx(() => [
-                  createVNode(unref(NStep), {
-                    title: "Start",
-                    description: "Start the acceleration process by clicking the button next to the model"
-                  }),
-                  createVNode(unref(NStep), {
-                    title: "Convert to ONNX",
-                    description: "This process might take a while"
-                  }),
-                  createVNode(unref(NStep), {
-                    title: "Convert to TensorRT",
-                    description: "This process might take a while"
-                  }),
-                  createVNode(unref(NStep), {
-                    title: "Package and cleanup",
-                    description: "This process might take a while"
-                  })
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "AccelerateView",
   setup(__props) {
@@ -808,17 +767,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           createVNode(unref(NTabPane), { name: "AITemplate" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$3)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "ONNX" }, {
-            default: withCtx(() => [
               createVNode(_sfc_main$2)
             ]),
             _: 1
           }),
-          createVNode(unref(NTabPane), { name: "TensorRT" }, {
+          createVNode(unref(NTabPane), { name: "ONNX" }, {
             default: withCtx(() => [
               createVNode(_sfc_main$1)
             ]),

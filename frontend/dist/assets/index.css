@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-c9ae0c7d] {
+.progress-container[data-v-7d400240] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-c9ae0c7d] {
+.top-bar[data-v-7d400240] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,15 +23,15 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--a80436f6);
+  background-color: var(--16032d10);
 }
-.logo[data-v-c9ae0c7d] {
+.logo[data-v-7d400240] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
-.main[data-v-ff9d4f45] {
-  background-color: var(--79262321);
+.main[data-v-ecf88e41] {
+  background-color: var(--23745276);
 }
 body {
   min-height: 100vh;
@@ -59,13 +59,8 @@ body {
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: rgb(77, 77, 77);
+  background: rgb(39, 39, 39);
   border-radius: 10px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #00ad49;
 }
 
 a,

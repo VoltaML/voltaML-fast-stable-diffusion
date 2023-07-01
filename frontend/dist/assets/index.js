@@ -41129,27 +41129,31 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-c9ae0c7d"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-7d400240"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
 const _hoisted_4 = { key: 2 };
 const _hoisted_5 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
 const _hoisted_6 = { style: { "display": "inline-flex" } };
-const _hoisted_7 = { class: "flex-container" };
-const _hoisted_8 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Text Encoder", -1));
-const _hoisted_9 = { class: "flex-container" };
-const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1));
-const _hoisted_11 = { style: { "display": "inline-flex" } };
-const _hoisted_12 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_13 = { style: { "display": "inline-flex" } };
-const _hoisted_14 = { class: "progress-container" };
-const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_7 = { key: 0 };
+const _hoisted_8 = { class: "flex-container" };
+const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Text Encoder", -1));
+const _hoisted_10 = { class: "flex-container" };
+const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1));
+const _hoisted_12 = { style: { "display": "inline-flex" } };
+const _hoisted_13 = { key: 1 };
+const _hoisted_14 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_15 = { key: 0 };
+const _hoisted_16 = { style: { "display": "inline-flex" } };
+const _hoisted_17 = { key: 1 };
+const _hoisted_18 = { class: "progress-container" };
+const _hoisted_19 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "a80436f6": backgroundColor.value
+      "16032d10": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41179,13 +41183,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const onnxModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "ONNX";
-      }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
-      });
-    });
-    const trtModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "TensorRT";
       }).sort((a, b) => {
         return a.name.localeCompare(b.name);
       });
@@ -41710,73 +41707,87 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: lora_title.value }, {
                                     default: withCtx(() => [
-                                      createVNode(unref(NCard), {
-                                        style: { "width": "100%", "margin-bottom": "8px" },
-                                        title: "LoRA strength",
-                                        "header-style": "padding-bottom: 0; font-size: 16px"
-                                      }, {
-                                        default: withCtx(() => [
-                                          createBaseVNode("div", _hoisted_7, [
-                                            _hoisted_8,
-                                            createVNode(unref(NSlider), {
-                                              value: unref(conf).data.settings.api.lora_text_encoder_weight,
-                                              "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.api.lora_text_encoder_weight = $event),
-                                              min: 0.1,
-                                              max: 1,
-                                              step: 0.01,
-                                              style: { "margin-right": "12px" }
-                                            }, null, 8, ["value"])
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                                        createVNode(unref(NCard), {
+                                          style: { "width": "100%", "margin-bottom": "8px" },
+                                          title: "LoRA strength",
+                                          "header-style": "padding-bottom: 0; font-size: 16px"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createBaseVNode("div", _hoisted_8, [
+                                              _hoisted_9,
+                                              createVNode(unref(NSlider), {
+                                                value: unref(conf).data.settings.api.lora_text_encoder_weight,
+                                                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.api.lora_text_encoder_weight = $event),
+                                                min: 0.1,
+                                                max: 1,
+                                                step: 0.01,
+                                                style: { "margin-right": "12px" }
+                                              }, null, 8, ["value"])
+                                            ]),
+                                            createBaseVNode("div", _hoisted_10, [
+                                              _hoisted_11,
+                                              createVNode(unref(NSlider), {
+                                                value: unref(conf).data.settings.api.lora_unet_weight,
+                                                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.api.lora_unet_weight = $event),
+                                                min: 0.1,
+                                                max: 1,
+                                                step: 0.01,
+                                                style: { "margin-right": "12px" }
+                                              }, null, 8, ["value"])
+                                            ])
                                           ]),
-                                          createBaseVNode("div", _hoisted_9, [
-                                            _hoisted_10,
-                                            createVNode(unref(NSlider), {
-                                              value: unref(conf).data.settings.api.lora_unet_weight,
-                                              "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.api.lora_unet_weight = $event),
-                                              min: 0.1,
-                                              max: 1,
-                                              step: 0.01,
-                                              style: { "margin-right": "12px" }
-                                            }, null, 8, ["value"])
-                                          ])
-                                        ]),
-                                        _: 1
-                                      }),
-                                      (openBlock(true), createElementBlock(Fragment, null, renderList(loraModels.value, (lora) => {
-                                        var _a3;
-                                        return openBlock(), createElementBlock("div", {
-                                          style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                          key: lora.path
-                                        }, [
-                                          createBaseVNode("p", null, toDisplayString(lora.name), 1),
-                                          createBaseVNode("div", _hoisted_11, [
-                                            ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.loras.includes(
-                                              lora.path
-                                            )) ? (openBlock(), createBlock(unref(NButton), {
-                                              key: 0,
-                                              type: "error",
-                                              ghost: "",
-                                              disabled: ""
-                                            }, {
-                                              default: withCtx(() => [
-                                                createTextVNode("Loaded")
-                                              ]),
-                                              _: 1
-                                            })) : (openBlock(), createBlock(unref(NButton), {
-                                              key: 1,
-                                              type: "success",
-                                              ghost: "",
-                                              onClick: ($event) => loadLoRA(lora),
-                                              disabled: unref(global2).state.selected_model === void 0,
-                                              loading: lora.state === "loading"
-                                            }, {
-                                              default: withCtx(() => [
-                                                createTextVNode("Load")
-                                              ]),
-                                              _: 2
-                                            }, 1032, ["onClick", "disabled", "loading"]))
-                                          ])
-                                        ]);
-                                      }), 128))
+                                          _: 1
+                                        }),
+                                        (openBlock(true), createElementBlock(Fragment, null, renderList(loraModels.value, (lora) => {
+                                          var _a3;
+                                          return openBlock(), createElementBlock("div", {
+                                            style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                            key: lora.path
+                                          }, [
+                                            createBaseVNode("p", null, toDisplayString(lora.name), 1),
+                                            createBaseVNode("div", _hoisted_12, [
+                                              ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.loras.includes(
+                                                lora.path
+                                              )) ? (openBlock(), createBlock(unref(NButton), {
+                                                key: 0,
+                                                type: "error",
+                                                ghost: "",
+                                                disabled: ""
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Loaded")
+                                                ]),
+                                                _: 1
+                                              })) : (openBlock(), createBlock(unref(NButton), {
+                                                key: 1,
+                                                type: "success",
+                                                ghost: "",
+                                                onClick: ($event) => loadLoRA(lora),
+                                                disabled: unref(global2).state.selected_model === void 0,
+                                                loading: lora.state === "loading"
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Load")
+                                                ]),
+                                                _: 2
+                                              }, 1032, ["onClick", "disabled", "loading"]))
+                                            ])
+                                          ]);
+                                        }), 128))
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_13, [
+                                        createVNode(unref(NAlert), {
+                                          type: "warning",
+                                          "show-icon": "",
+                                          title: "No model selected",
+                                          style: { "margin-top": "4px" }
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Please select a model first ")
+                                          ]),
+                                          _: 1
+                                        })
+                                      ]))
                                     ]),
                                     _: 1
                                   }, 8, ["title"])
@@ -41788,52 +41799,66 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                   createVNode(unref(NCard), { title: textual_inversions_title.value }, {
                                     default: withCtx(() => [
                                       createVNode(unref(NAlert), {
-                                        type: "warning",
+                                        type: "info",
                                         "show-icon": "",
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_12,
-                                          createTextVNode(". The name of the inversion that is displayed here will be the actual token ")
+                                          _hoisted_14,
+                                          createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
-                                        var _a3;
-                                        return openBlock(), createElementBlock("div", {
-                                          style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                          key: textualInversion.path
-                                        }, [
-                                          createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                          createBaseVNode("div", _hoisted_13, [
-                                            ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
-                                              textualInversion.path
-                                            )) ? (openBlock(), createBlock(unref(NButton), {
-                                              key: 0,
-                                              type: "error",
-                                              ghost: "",
-                                              disabled: ""
-                                            }, {
-                                              default: withCtx(() => [
-                                                createTextVNode("Loaded")
-                                              ]),
-                                              _: 1
-                                            })) : (openBlock(), createBlock(unref(NButton), {
-                                              key: 1,
-                                              type: "success",
-                                              ghost: "",
-                                              onClick: ($event) => loadTextualInversion(textualInversion),
-                                              disabled: unref(global2).state.selected_model === void 0,
-                                              loading: textualInversion.state === "loading"
-                                            }, {
-                                              default: withCtx(() => [
-                                                createTextVNode("Load")
-                                              ]),
-                                              _: 2
-                                            }, 1032, ["onClick", "disabled", "loading"]))
-                                          ])
-                                        ]);
-                                      }), 128))
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_15, [
+                                        (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
+                                          var _a3;
+                                          return openBlock(), createElementBlock("div", {
+                                            style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                            key: textualInversion.path
+                                          }, [
+                                            createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
+                                            createBaseVNode("div", _hoisted_16, [
+                                              ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
+                                                textualInversion.path
+                                              )) ? (openBlock(), createBlock(unref(NButton), {
+                                                key: 0,
+                                                type: "error",
+                                                ghost: "",
+                                                disabled: ""
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Loaded")
+                                                ]),
+                                                _: 1
+                                              })) : (openBlock(), createBlock(unref(NButton), {
+                                                key: 1,
+                                                type: "success",
+                                                ghost: "",
+                                                onClick: ($event) => loadTextualInversion(textualInversion),
+                                                disabled: unref(global2).state.selected_model === void 0,
+                                                loading: textualInversion.state === "loading"
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Load")
+                                                ]),
+                                                _: 2
+                                              }, 1032, ["onClick", "disabled", "loading"]))
+                                            ])
+                                          ]);
+                                        }), 128))
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_17, [
+                                        createVNode(unref(NAlert), {
+                                          type: "warning",
+                                          "show-icon": "",
+                                          title: "No model selected",
+                                          style: { "margin-top": "4px" }
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Please select a model first ")
+                                          ]),
+                                          _: 1
+                                        })
+                                      ]))
                                     ]),
                                     _: 1
                                   }, 8, ["title"])
@@ -41935,51 +41960,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           })
                         ]),
                         _: 1
-                      }),
-                      createVNode(unref(NTabPane), { name: "Extra" }, {
-                        default: withCtx(() => [
-                          createVNode(unref(NCard), {
-                            title: "Models",
-                            style: { "height": "100%" }
-                          }, {
-                            default: withCtx(() => [
-                              (openBlock(true), createElementBlock(Fragment, null, renderList(trtModels.value, (model) => {
-                                return openBlock(), createElementBlock("div", {
-                                  style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                  key: model.path
-                                }, [
-                                  createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                  createBaseVNode("div", null, [
-                                    model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
-                                      key: 0,
-                                      type: "error",
-                                      ghost: "",
-                                      onClick: ($event) => unloadModel(model)
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Unload")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
-                                      key: 1,
-                                      type: "success",
-                                      ghost: "",
-                                      onClick: ($event) => loadModel(model),
-                                      loading: model.state === "loading"
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Load")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick", "loading"]))
-                                  ])
-                                ]);
-                              }), 128))
-                            ]),
-                            _: 1
-                          })
-                        ]),
-                        _: 1
                       })
                     ]),
                     _: 1
@@ -41991,7 +41971,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_14, [
+        createBaseVNode("div", _hoisted_18, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -42011,7 +41991,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_15, [
+        createBaseVNode("div", _hoisted_19, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -42053,7 +42033,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_c9ae0c7d_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_7d400240_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42061,7 +42041,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-c9ae0c7d"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-7d400240"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42072,7 +42052,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "79262321": backgroundColor.value
+      "23745276": backgroundColor.value
     }));
     const settings = useSettings();
     const theme = computed(() => {
@@ -42105,7 +42085,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }, {
         default: withCtx(() => [
           unref(settings).data.settings.frontend.enable_theme_editor ? (openBlock(), createBlock(unref(NThemeEditor), { key: 0 })) : createCommentVNode("", true),
-          createVNode(unref(NNotificationProvider), { placement: "bottom-right" }, {
+          createVNode(unref(NNotificationProvider), {
+            placement: "bottom-right",
+            max: 3
+          }, {
             default: withCtx(() => [
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
@@ -42125,8 +42108,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const App_vue_vue_type_style_index_0_scoped_ff9d4f45_lang = "";
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-ff9d4f45"]]);
+const App_vue_vue_type_style_index_0_scoped_ecf88e41_lang = "";
+const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-ecf88e41"]]);
 const scriptRel = "modulepreload";
 const assetsURL = function(dep) {
   return "/" + dep;

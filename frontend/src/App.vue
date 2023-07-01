@@ -1,7 +1,7 @@
 <template>
   <NConfigProvider :theme="theme" :theme-overrides="overrides" class="main">
     <NThemeEditor v-if="settings.data.settings.frontend.enable_theme_editor" />
-    <NNotificationProvider placement="bottom-right">
+    <NNotificationProvider placement="bottom-right" :max="3">
       <NMessageProvider>
         <CollapsileNavbarVue />
         <TopBarVue />

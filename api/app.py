@@ -97,7 +97,9 @@ async def startup_event():
 
     for logger_ in ("uvicorn.access", "uvicorn.error", "fastapi"):
         l = logging.getLogger(logger_)
-        handler = RichHandler(rich_tracebacks=True, show_time=False)
+        handler = RichHandler(
+            rich_tracebacks=True, show_time=False, omit_repeated_times=False
+        )
         handler.setFormatter(
             logging.Formatter(
                 fmt="%(asctime)s | %(name)s » %(message)s", datefmt="%H:%M:%S"

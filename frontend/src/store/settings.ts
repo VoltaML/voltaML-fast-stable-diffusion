@@ -32,8 +32,6 @@ export const upscalerOptions: SelectMixedOption[] = [
 ];
 
 export function getSchedulerOptions() {
-  // Create key, value pairs for scheduler options depending on if the backend is PyTorch(KDiffusionSampler) or TensorRT(Sampler)
-
   const scheduler_options: SelectMixedOption[] = [
     {
       label: "DDIM",

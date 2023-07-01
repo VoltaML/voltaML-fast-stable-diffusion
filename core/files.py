@@ -18,7 +18,6 @@ class CachedModelList:
         self.pytorch_path = Path(DIFFUSERS_CACHE)
         self.checkpoint_converted_path = Path("data/models")
         self.onnx_path = Path("data/onnx")
-        self.tensorrt_engine_path = Path("data/tensorrt")
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
         self.textual_inversion_path = Path("data/textual-inversion")
@@ -88,32 +87,6 @@ class CachedModelList:
                 # Junk file, notify user
                 logger.debug(
                     f"Found junk file {model_name} in {self.checkpoint_converted_path}, skipping..."
-                )
-
-        return models
-
-    def tensorrt(self) -> List[ModelResponse]:
-        "List of models converted to TRT"
-
-        models: List[ModelResponse] = []
-
-        logger.debug(f"Looking for TensorRT models in {self.tensorrt_engine_path}")
-
-        for author in os.listdir(self.tensorrt_engine_path):
-            logger.debug(f"Found author {author}")
-            for model_name in os.listdir(self.tensorrt_engine_path.joinpath(author)):
-                logger.debug(f"Found model {model_name}")
-                models.append(
-                    ModelResponse(
-                        name="/".join([author, model_name]),
-                        path="/".join([author, model_name]),
-                        backend="TensorRT",
-                        valid=is_valid_tensorrt_model(
-                            self.tensorrt_engine_path.joinpath(author, model_name)
-                        ),
-                        loras=[],
-                        state="not loaded",
-                    )
                 )
 
         return models
@@ -217,7 +190,6 @@ class CachedModelList:
 
         return (
             self.pytorch()
-            + self.tensorrt()
             + self.aitemplate()
             + self.onnx()
             + self.lora()
@@ -271,27 +243,6 @@ def is_valid_diffusers_model(model_path: Union[str, Path]):
             is_valid = False
 
     # Check all the other files that should be present
-    for file in files:
-        if not os.path.exists(path / file):
-            is_valid = False
-
-    return is_valid
-
-
-def is_valid_tensorrt_model(model_path: Union[str, Path]):
-    "Check if the folder contains valid TensorRT files"
-
-    files = [
-        "clip.plan",
-        "vae.plan",
-        "unet_fp16.plan",
-    ]
-
-    is_valid = True
-
-    path = model_path if isinstance(model_path, Path) else Path(model_path)
-
-    # Check all the files that should be present
     for file in files:
         if not os.path.exists(path / file):
             is_valid = False

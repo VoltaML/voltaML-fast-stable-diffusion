@@ -132,71 +132,85 @@
                 <!-- LoRA -->
                 <NGi>
                   <NCard :title="lora_title">
-                    <NCard
-                      style="width: 100%; margin-bottom: 8px"
-                      title="LoRA strength"
-                      header-style="padding-bottom: 0; font-size: 16px"
-                    >
-                      <div class="flex-container">
-                        <p class="slider-label">Text Encoder</p>
-                        <NSlider
-                          v-model:value="
-                            conf.data.settings.api.lora_text_encoder_weight
-                          "
-                          :min="0.1"
-                          :max="1"
-                          :step="0.01"
-                          style="margin-right: 12px"
-                        />
-                      </div>
+                    <div v-if="global.state.selected_model !== null">
+                      <NCard
+                        style="width: 100%; margin-bottom: 8px"
+                        title="LoRA strength"
+                        header-style="padding-bottom: 0; font-size: 16px"
+                      >
+                        <div class="flex-container">
+                          <p class="slider-label">Text Encoder</p>
+                          <NSlider
+                            v-model:value="
+                              conf.data.settings.api.lora_text_encoder_weight
+                            "
+                            :min="0.1"
+                            :max="1"
+                            :step="0.01"
+                            style="margin-right: 12px"
+                          />
+                        </div>
 
-                      <div class="flex-container">
-                        <p class="slider-label">UNet</p>
-                        <NSlider
-                          v-model:value="
-                            conf.data.settings.api.lora_unet_weight
-                          "
-                          :min="0.1"
-                          :max="1"
-                          :step="0.01"
-                          style="margin-right: 12px"
-                        />
+                        <div class="flex-container">
+                          <p class="slider-label">UNet</p>
+                          <NSlider
+                            v-model:value="
+                              conf.data.settings.api.lora_unet_weight
+                            "
+                            :min="0.1"
+                            :max="1"
+                            :step="0.01"
+                            style="margin-right: 12px"
+                          />
+                        </div>
+                      </NCard>
+                      <div
+                        style="
+                          display: inline-flex;
+                          width: 100%;
+                          align-items: center;
+                          justify-content: space-between;
+                          border-bottom: 1px solid rgb(66, 66, 71);
+                        "
+                        v-for="lora in loraModels"
+                        v-bind:key="lora.path"
+                      >
+                        <p>{{ lora.name }}</p>
+                        <div style="display: inline-flex">
+                          <NButton
+                            type="error"
+                            ghost
+                            disabled
+                            v-if="
+                              global.state.selected_model?.loras.includes(
+                                lora.path
+                              )
+                            "
+                            >Loaded</NButton
+                          >
+                          <NButton
+                            type="success"
+                            ghost
+                            @click="loadLoRA(lora)"
+                            :disabled="
+                              global.state.selected_model === undefined
+                            "
+                            :loading="lora.state === 'loading'"
+                            v-else
+                            >Load</NButton
+                          >
+                        </div>
                       </div>
-                    </NCard>
-                    <div
-                      style="
-                        display: inline-flex;
-                        width: 100%;
-                        align-items: center;
-                        justify-content: space-between;
-                        border-bottom: 1px solid rgb(66, 66, 71);
-                      "
-                      v-for="lora in loraModels"
-                      v-bind:key="lora.path"
-                    >
-                      <p>{{ lora.name }}</p>
-                      <div style="display: inline-flex">
-                        <NButton
-                          type="error"
-                          ghost
-                          disabled
-                          v-if="
-                            global.state.selected_model?.loras.includes(
-                              lora.path
-                            )
-                          "
-                          >Loaded</NButton
-                        >
-                        <NButton
-                          type="success"
-                          ghost
-                          @click="loadLoRA(lora)"
-                          :disabled="global.state.selected_model === undefined"
-                          :loading="lora.state === 'loading'"
-                          v-else
-                          >Load</NButton
-                        >
-                      </div>
+                    </div>
+                    <div v-else>
+                      <NAlert
+                        type="warning"
+                        show-icon
+                        title="No model selected"
+                        style="margin-top: 4px"
+                      >
+                        Please select a model first
+                      </NAlert>
                     </div>
                   </NCard>
                 </NGi>
@@ -205,47 +219,62 @@
                 <NGi>
                   <NCard :title="textual_inversions_title">
                     <NAlert
-                      type="warning"
+                      type="info"
                       show-icon
                       title="Usage of textual inversion"
                     >
                       <b>Ignore the tokens on CivitAI</b>. The name of the
                       inversion that is displayed here will be the actual token
+                      (easynegative.pt -> easynegative)
                     </NAlert>
-                    <div
-                      style="
-                        display: inline-flex;
-                        width: 100%;
-                        align-items: center;
-                        justify-content: space-between;
-                        border-bottom: 1px solid rgb(66, 66, 71);
-                      "
-                      v-for="textualInversion in textualInversionModels"
-                      v-bind:key="textualInversion.path"
-                    >
-                      <p>{{ textualInversion.name }}</p>
-                      <div style="display: inline-flex">
-                        <NButton
-                          type="error"
-                          ghost
-                          disabled
-                          v-if="
-                            global.state.selected_model?.textual_inversions.includes(
-                              textualInversion.path
-                            )
-                          "
-                          >Loaded</NButton
-                        >
-                        <NButton
-                          type="success"
-                          ghost
-                          @click="loadTextualInversion(textualInversion)"
-                          :disabled="global.state.selected_model === undefined"
-                          :loading="textualInversion.state === 'loading'"
-                          v-else
-                          >Load</NButton
-                        >
+                    <div v-if="global.state.selected_model !== null">
+                      <div
+                        style="
+                          display: inline-flex;
+                          width: 100%;
+                          align-items: center;
+                          justify-content: space-between;
+                          border-bottom: 1px solid rgb(66, 66, 71);
+                        "
+                        v-for="textualInversion in textualInversionModels"
+                        v-bind:key="textualInversion.path"
+                      >
+                        <p>{{ textualInversion.name }}</p>
+                        <div style="display: inline-flex">
+                          <NButton
+                            type="error"
+                            ghost
+                            disabled
+                            v-if="
+                              global.state.selected_model?.textual_inversions.includes(
+                                textualInversion.path
+                              )
+                            "
+                            >Loaded</NButton
+                          >
+                          <NButton
+                            type="success"
+                            ghost
+                            @click="loadTextualInversion(textualInversion)"
+                            :disabled="
+                              global.state.selected_model === undefined
+                            "
+                            :loading="textualInversion.state === 'loading'"
+                            v-else
+                            >Load</NButton
+                          >
+                        </div>
                       </div>
+                    </div>
+                    <div v-else>
+                      <NAlert
+                        type="warning"
+                        show-icon
+                        title="No model selected"
+                        style="margin-top: 4px"
+                      >
+                        Please select a model first
+                      </NAlert>
                     </div>
                   </NCard>
                 </NGi>
@@ -296,40 +325,6 @@
                     border-bottom: 1px solid rgb(66, 66, 71);
                   "
                   v-for="model in onnxModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload</NButton
-                    >
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                      >Load</NButton
-                    >
-                  </div>
-                </div>
-              </NCard>
-            </NTabPane>
-            <NTabPane name="Extra">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in trtModels"
                   v-bind:key="model.path"
                 >
                   <p>{{ model.name }}</p>
@@ -486,16 +481,6 @@ const onnxModels = computed(() => {
   return filteredModels.value
     .filter((model) => {
       return model.backend === "ONNX";
-    })
-    .sort((a, b) => {
-      return a.name.localeCompare(b.name);
-    });
-});
-
-const trtModels = computed(() => {
-  return filteredModels.value
-    .filter((model) => {
-      return model.backend === "TensorRT";
     })
     .sort((a, b) => {
       return a.name.localeCompare(b.name);

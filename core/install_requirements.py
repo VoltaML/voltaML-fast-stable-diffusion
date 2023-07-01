@@ -289,12 +289,6 @@ def install_bot():
     install_requirements("requirements/bot.txt")
 
 
-def install_tensorrt():
-    "Install necessary requirements for TensorRT inference"
-
-    install_requirements("requirements/tensorrt.txt")
-
-
 def is_installed(package: str, version: Optional[str] = None):
     "Check if a package is installed"
 

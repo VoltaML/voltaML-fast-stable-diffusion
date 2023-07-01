@@ -160,6 +160,9 @@ class APIConfig:
     # Save paths
     save_path_template: str = "{folder}/{prompt}/{id}-{index}.{extension}"
 
+    # Grid
+    disable_grid: bool = False
+
     @property
     def dtype(self):
         "Return selected data type"
