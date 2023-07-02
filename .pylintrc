@@ -25,3 +25,4 @@ disable=
 generated-members=
     torch.*,
     cuda.*,
+    cv2.*,

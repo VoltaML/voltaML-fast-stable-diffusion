@@ -15,7 +15,6 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     ONNXBuildRequest,
-    TRTBuildRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
 )

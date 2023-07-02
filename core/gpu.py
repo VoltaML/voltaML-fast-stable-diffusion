@@ -16,6 +16,7 @@ from core.config import config
 from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
+from core.inference.esrgan.upscale import Upscaler
 from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.real_esrgan import RealESRGAN
@@ -34,11 +35,10 @@ from core.types import (
     LoraLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
-    TRTBuildRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
 )
-from core.utils import image_grid
+from core.utils import convert_to_image, image_grid
 
 if TYPE_CHECKING:
     from core.inference.onnx_sd import OnnxStableDiffusion
@@ -597,14 +597,30 @@ class GPU:
 
         def generate_call(job: UpscaleQueueEntry):
             t: float = time.time()
-            pipe = RealESRGAN(
-                model_name=job.model,
-                tile=job.data.tile_size,
-                tile_pad=job.data.tile_padding,
-            )
 
-            image = pipe.generate(job)
-            pipe.unload()
+            if "realesr" in job.model.lower():
+                pipe = RealESRGAN(
+                    model_name=job.model,
+                    tile=job.data.tile_size,
+                    tile_pad=job.data.tile_padding,
+                )
+
+                image = pipe.generate(job)
+                pipe.unload()
+
+            else:
+                pipe = Upscaler(
+                    model=job.model,
+                    device_id=config.api.device_id,
+                    cpu=config.api.device_type == "cpu",
+                    fp16=True,
+                )
+
+                input_image = convert_to_image(job.data.image)
+                image = pipe.run(input_img=input_image, scale=job.data.upscale_factor)[
+                    0
+                ]
+
             deltatime = time.time() - t
             return image, deltatime
 

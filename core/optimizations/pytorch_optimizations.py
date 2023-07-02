@@ -9,12 +9,10 @@ from diffusers import (
     StableDiffusionUpscalePipeline,
 )
 from diffusers.utils import is_accelerate_available
-from packaging import version
 from rich.console import Console
 
 from core.config import config
 from core.files import get_full_model_path
-from core.inference.functions import torch_older_than_200
 
 from .attn import set_attention_processor
 from .iree import convert_pipe_state_to_iree
@@ -272,6 +270,17 @@ def optimize_model(
             logger.warning(
                 "This is a temporary measure, tracing will work with IPEX-enabled devices later on"
             )
+
+        if config.api.torch_compile and not is_for_aitemplate:
+            logger.info("Optimization: Compiling model.")
+            if config.api.attention_processor == "xformers":
+                logger.warning(
+                    "Skipping torchscript compilation because xformers used for attention processor. Please change to SDPA to enable torchscript compilation."
+                )
+            else:
+                pipe.unet = torch.compile(
+                    pipe.unet, mode="max-autotune", fullgraph=True
+                )
 
 
 def supports_tf32(device: Optional[torch.device] = None) -> bool:
