@@ -279,7 +279,11 @@ def optimize_model(
                 )
             else:
                 pipe.unet = torch.compile(
-                    pipe.unet, mode="max-autotune", fullgraph=True
+                    pipe.unet,
+                    fullgraph=config.api.torch_compile_fullgraph,
+                    dynamic=config.api.torch_compile_dynamic,
+                    backend=config.api.torch_compile_backend,
+                    mode=config.api.torch_compile_mode,
                 )
 
 

@@ -1,4 +1,4 @@
-import { a4 as inject, bf as getCurrentInstance, K as watch, aI as onBeforeUnmount, Z as cB, a0 as cM, Y as c, W as createInjectionKey, d as defineComponent, R as useConfig, a6 as useTheme, F as ref, U as provide, E as h, bg as formLight, aj as keysOf, c as computed, aG as formatLength, aN as get, bh as commonVariables, $ as cE, V as toRef, ab as createId, bi as formItemInjectionKey, bj as onMounted, aa as useThemeClass, aY as Transition, aC as resolveWrappedSlot, a9 as createKey, aR as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, f as createElementBlock, v as NSlider, y as createCommentVNode, n as createBaseVNode, i as NCard, I as NTabPane, J as NTabs, b as useMessage, G as NButton, m as createTextVNode, bk as defaultSettings, s as serverUrl } from "./index.js";
+import { a4 as inject, bf as getCurrentInstance, K as watch, aI as onBeforeUnmount, Z as cB, a0 as cM, Y as c, W as createInjectionKey, d as defineComponent, R as useConfig, a6 as useTheme, F as ref, U as provide, E as h, bg as formLight, aj as keysOf, c as computed, aG as formatLength, aN as get, bh as commonVariables, $ as cE, V as toRef, ab as createId, bi as formItemInjectionKey, bj as onMounted, aa as useThemeClass, aY as Transition, aC as resolveWrappedSlot, a9 as createKey, aR as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, f as createElementBlock, v as NSlider, y as createCommentVNode, n as createBaseVNode, i as NCard, I as NTabPane, J as NTabs, b as useMessage, bk as useNotification, G as NButton, m as createTextVNode, bl as defaultSettings, s as serverUrl } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1849,6 +1849,8 @@ const _hoisted_5 = {
 const _hoisted_6 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
 const _hoisted_7 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("h2", null, "TomeSD", -1);
+const _hoisted_9 = /* @__PURE__ */ createBaseVNode("h2", null, "Torch Compile", -1);
+const _hoisted_10 = { key: 1 };
 const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
@@ -2274,7 +2276,68 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
               }, null, 8, ["value"])
             ]),
             _: 1
-          })
+          }),
+          _hoisted_9,
+          createVNode(unref(NFormItem), { label: "Torch Compile" }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.torch_compile,
+                "onUpdate:value": _cache[27] || (_cache[27] = ($event) => unref(settings).defaultSettings.api.torch_compile = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          unref(settings).defaultSettings.api.torch_compile ? (openBlock(), createElementBlock("div", _hoisted_10, [
+            createVNode(unref(NFormItem), { label: "Fullgraph" }, {
+              default: withCtx(() => [
+                createVNode(unref(NSwitch), {
+                  value: unref(settings).defaultSettings.api.torch_compile_fullgraph,
+                  "onUpdate:value": _cache[28] || (_cache[28] = ($event) => unref(settings).defaultSettings.api.torch_compile_fullgraph = $event)
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), { label: "Dynamic" }, {
+              default: withCtx(() => [
+                createVNode(unref(NSwitch), {
+                  value: unref(settings).defaultSettings.api.torch_compile_dynamic,
+                  "onUpdate:value": _cache[29] || (_cache[29] = ($event) => unref(settings).defaultSettings.api.torch_compile_dynamic = $event)
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), { label: "Backend" }, {
+              default: withCtx(() => [
+                createVNode(unref(NSelect), {
+                  value: unref(settings).defaultSettings.api.torch_compile_backend,
+                  "onUpdate:value": _cache[30] || (_cache[30] = ($event) => unref(settings).defaultSettings.api.torch_compile_backend = $event),
+                  tag: "",
+                  filterable: "",
+                  options: [
+                    {
+                      value: "inductor",
+                      label: "Inductor"
+                    }
+                  ]
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), { label: "Compile Mode" }, {
+              default: withCtx(() => [
+                createVNode(unref(NSelect), {
+                  value: unref(settings).defaultSettings.api.torch_compile_mode,
+                  "onUpdate:value": _cache[31] || (_cache[31] = ($event) => unref(settings).defaultSettings.api.torch_compile_mode = $event),
+                  options: [
+                    { value: "default", label: "Default" },
+                    { value: "reduce-overhead", label: "Reduce Overhead" },
+                    { value: "max-autotune", label: "Max Autotune" }
+                  ]
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            })
+          ])) : createCommentVNode("", true)
         ]),
         _: 1
       });
@@ -3097,6 +3160,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const message = useMessage();
     const settings = useSettings();
+    const notification = useNotification();
     function resetSettings() {
       Object.assign(
         settings.defaultSettings,
@@ -3107,7 +3171,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       );
     }
     function saveSettings() {
-      message.success("Settings Saved");
       console.log(settings.defaultSettings);
       fetch(`${serverUrl}/api/settings/save`, {
         method: "POST",
@@ -3115,6 +3178,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           "Content-Type": "application/json"
         },
         body: JSON.stringify(settings.defaultSettings)
+      }).then((res) => {
+        if (res.status === 200) {
+          message.success("Settings saved successfully");
+        } else {
+          res.json().then((data) => {
+            message.error("Error while saving settings");
+            notification.create({
+              title: "Error while saving settings",
+              content: data.message,
+              type: "error"
+            });
+          });
+        }
       });
     }
     return (_ctx, _cache) => {

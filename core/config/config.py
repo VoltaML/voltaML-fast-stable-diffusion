@@ -133,7 +133,6 @@ class APIConfig:
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
     data_type: Literal["float32", "float16", "bfloat16"] = "float16"
-    torch_compile: bool = False
 
     # CUDA specific optimizations
     reduced_precision: bool = False
@@ -163,6 +162,15 @@ class APIConfig:
 
     # Grid
     disable_grid: bool = False
+
+    # Torch compile
+    torch_compile: bool = False
+    torch_compile_fullgraph: bool = False
+    torch_compile_dynamic: bool = False
+    torch_compile_backend: str = "inductor"
+    torch_compile_mode: Literal[
+        "default", "reduce-overhead", "max-autotune"
+    ] = "default"
 
     @property
     def dtype(self):

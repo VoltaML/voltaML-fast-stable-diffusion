@@ -40175,16 +40175,6 @@ function processWebSocket(message, global2, notificationProvider) {
       global2.state.total_steps = message.data.total_steps;
       break;
     }
-    case "image_variations": {
-      global2.state.imageVariations.currentImage = message.data.image ? message.data.image : global2.state.imageVariations.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
     case "inpainting": {
       global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
       global2.state.progress = progressForward(message.data.progress, global2);
@@ -40852,6 +40842,7 @@ const defaultSettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    image_preview_delay: 2,
     concurrent_jobs: 1,
     autocast: true,
     attention_processor: "xformers",
@@ -40861,8 +40852,8 @@ const defaultSettings = {
     vae_slicing: false,
     vae_tiling: false,
     trace_model: false,
+    cudnn_benchmark: false,
     offload: "disabled",
-    image_preview_delay: 2,
     device_id: 0,
     device_type: "cuda",
     data_type: "float16",
@@ -40871,14 +40862,18 @@ const defaultSettings = {
     tomesd_downsample_layers: 1,
     deterministic_generation: false,
     reduced_precision: false,
-    cudnn_benchmark: false,
     clear_memory_policy: "always",
     lora_text_encoder_weight: 0.5,
     lora_unet_weight: 0.5,
     autoloaded_loras: /* @__PURE__ */ new Map(),
     autoloaded_textual_inversions: [],
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
-    disable_grid: false
+    disable_grid: false,
+    torch_compile: false,
+    torch_compile_fullgraph: false,
+    torch_compile_dynamic: false,
+    torch_compile_backend: "inductor",
+    torch_compile_mode: "default"
   },
   aitemplate: {
     num_threads: 8
@@ -42321,12 +42316,13 @@ export {
   NResult as b7,
   reactive as b8,
   huggingfaceModelsFile as b9,
-  NAlert as bA,
-  inputNumberLight$1 as bB,
-  rgba as bC,
-  XButton as bD,
-  isSlotEmpty as bE,
-  switchLight$1 as bF,
+  withModifiers as bA,
+  NAlert as bB,
+  inputNumberLight$1 as bC,
+  rgba as bD,
+  XButton as bE,
+  isSlotEmpty as bF,
+  switchLight$1 as bG,
   NModal as ba,
   NText as bb,
   stepsLight$1 as bc,
@@ -42337,22 +42333,22 @@ export {
   commonVariables$m as bh,
   formItemInjectionKey as bi,
   onMounted as bj,
-  defaultSettings as bk,
-  useCssVars as bl,
-  urlFromPath as bm,
-  useCompitable as bn,
-  descriptionsLight$1 as bo,
-  useRouter as bp,
-  fadeInTransition as bq,
-  imageLight as br,
-  isMounted as bs,
-  LazyTeleport as bt,
-  withDirectives as bu,
-  zindexable$1 as bv,
-  vShow as bw,
-  normalizeStyle as bx,
-  kebabCase$1 as by,
-  withModifiers as bz,
+  useNotification as bk,
+  defaultSettings as bl,
+  useCssVars as bm,
+  urlFromPath as bn,
+  useCompitable as bo,
+  descriptionsLight$1 as bp,
+  useRouter as bq,
+  fadeInTransition as br,
+  imageLight as bs,
+  isMounted as bt,
+  LazyTeleport as bu,
+  withDirectives as bv,
+  zindexable$1 as bw,
+  vShow as bx,
+  normalizeStyle as by,
+  kebabCase$1 as bz,
   computed as c,
   defineComponent as d,
   openBlock as e,

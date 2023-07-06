@@ -300,6 +300,50 @@
         v-model:value="settings.defaultSettings.api.tomesd_downsample_layers"
       />
     </NFormItem>
+
+    <h2>Torch Compile</h2>
+    <NFormItem label="Torch Compile">
+      <NSwitch v-model:value="settings.defaultSettings.api.torch_compile" />
+    </NFormItem>
+
+    <div v-if="settings.defaultSettings.api.torch_compile">
+      <NFormItem label="Fullgraph">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.torch_compile_fullgraph"
+        />
+      </NFormItem>
+
+      <NFormItem label="Dynamic">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.torch_compile_dynamic"
+        />
+      </NFormItem>
+
+      <NFormItem label="Backend">
+        <NSelect
+          v-model:value="settings.defaultSettings.api.torch_compile_backend"
+          tag
+          filterable
+          :options="[
+            {
+              value: 'inductor',
+              label: 'Inductor',
+            },
+          ]"
+        />
+      </NFormItem>
+
+      <NFormItem label="Compile Mode">
+        <NSelect
+          v-model:value="settings.defaultSettings.api.torch_compile_mode"
+          :options="[
+            { value: 'default', label: 'Default' },
+            { value: 'reduce-overhead', label: 'Reduce Overhead' },
+            { value: 'max-autotune', label: 'Max Autotune' },
+          ]"
+        />
+      </NFormItem>
+    </div>
   </NForm>
 </template>
 

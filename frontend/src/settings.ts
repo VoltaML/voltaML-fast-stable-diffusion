@@ -177,6 +177,12 @@ export interface ISettings {
 
     save_path_template: string;
     disable_grid: boolean;
+
+    torch_compile: boolean;
+    torch_compile_fullgraph: boolean;
+    torch_compile_dynamic: boolean;
+    torch_compile_backend: string;
+    torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
   };
   aitemplate: {
     num_threads: number;
@@ -298,7 +304,9 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    image_preview_delay: 2.0,
     concurrent_jobs: 1,
+
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
@@ -307,24 +315,34 @@ export const defaultSettings: ISettings = {
     vae_slicing: false,
     vae_tiling: false,
     trace_model: false,
+    cudnn_benchmark: false,
     offload: "disabled",
-    image_preview_delay: 2.0,
+
     device_id: 0,
     device_type: "cuda",
     data_type: "float16",
+
     use_tomesd: true,
     tomesd_ratio: 0.4,
     tomesd_downsample_layers: 1,
+
     deterministic_generation: false,
     reduced_precision: false,
-    cudnn_benchmark: false,
     clear_memory_policy: "always",
+
     lora_text_encoder_weight: 0.5,
     lora_unet_weight: 0.5,
     autoloaded_loras: new Map(),
     autoloaded_textual_inversions: [],
+
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
     disable_grid: false,
+
+    torch_compile: false,
+    torch_compile_fullgraph: false,
+    torch_compile_dynamic: false,
+    torch_compile_backend: "inductor",
+    torch_compile_mode: "default",
   },
   aitemplate: {
     num_threads: 8,

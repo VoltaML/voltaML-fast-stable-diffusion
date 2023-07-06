@@ -44,10 +44,18 @@ import GeneralSettings from "@/components/settings/GeneralSettings.vue";
 import { serverUrl } from "@/env";
 import { defaultSettings } from "@/settings";
 import { useSettings } from "@/store/settings";
-import { NButton, NCard, NTabPane, NTabs, useMessage } from "naive-ui";
+import {
+  NButton,
+  NCard,
+  NTabPane,
+  NTabs,
+  useMessage,
+  useNotification,
+} from "naive-ui";
 
 const message = useMessage();
 const settings = useSettings();
+const notification = useNotification();
 
 function resetSettings() {
   // Deepcopy and assign
@@ -62,7 +70,6 @@ function resetSettings() {
 }
 
 function saveSettings() {
-  message.success("Settings Saved");
   console.log(settings.defaultSettings);
   fetch(`${serverUrl}/api/settings/save`, {
     method: "POST",
@@ -70,6 +77,19 @@ function saveSettings() {
       "Content-Type": "application/json",
     },
     body: JSON.stringify(settings.defaultSettings),
+  }).then((res) => {
+    if (res.status === 200) {
+      message.success("Settings saved successfully");
+    } else {
+      res.json().then((data) => {
+        message.error("Error while saving settings");
+        notification.create({
+          title: "Error while saving settings",
+          content: data.message,
+          type: "error",
+        });
+      });
+    }
   });
 }
 </script>

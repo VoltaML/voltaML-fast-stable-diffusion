@@ -136,18 +136,6 @@ export function processWebSocket(
       global.state.total_steps = message.data.total_steps;
       break;
     }
-    case "image_variations": {
-      global.state.imageVariations.currentImage = message.data.image
-        ? message.data.image
-        : global.state.imageVariations.currentImage;
-      global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = currentStepForward(
-        message.data.current_step,
-        global
-      );
-      global.state.total_steps = message.data.total_steps;
-      break;
-    }
     case "inpainting": {
       global.state.inpainting.currentImage = message.data.image
         ? message.data.image
