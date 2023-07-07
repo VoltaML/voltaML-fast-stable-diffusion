@@ -165,12 +165,12 @@ class APIConfig:
 
     # Torch compile
     torch_compile: bool = False
-    torch_compile_fullgraph: bool = True
+    torch_compile_fullgraph: bool = False
     torch_compile_dynamic: bool = False
     torch_compile_backend: str = "inductor"
     torch_compile_mode: Literal[
-        "default", "reduce-overhead", "max-autotune"
-    ] = "max-autotune"
+        "default", "reduce-overhead", "max-autotune",
+    ] = "reduce-overhead"
 
     @property
     def dtype(self):

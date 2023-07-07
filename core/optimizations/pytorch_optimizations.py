@@ -30,7 +30,8 @@ def optimize_model(
     device,
     is_for_aitemplate: bool = False,
 ) -> None:
-    "Optimize the model for inference"
+    "Optimize the model for inference."
+
     from core.inference.functions import is_ipex_available
 
     with console.status("[bold green]Optimizing model..."):
@@ -272,23 +273,32 @@ def optimize_model(
             )
 
         if config.api.torch_compile and not is_for_aitemplate:
-            logger.info("Optimization: Compiling model.")
             if config.api.attention_processor == "xformers":
                 logger.warning(
                     "Skipping torchscript compilation because xformers used for attention processor. Please change to SDPA to enable torchscript compilation."
                 )
             else:
+                logger.info(
+                    "Optimization: Compiling model with: %s",
+                    {
+                        "fullgraph": config.api.torch_compile_fullgraph,
+                        "dynamic": config.api.torch_compile_dynamic,
+                        "backend": config.api.torch_compile_backend,
+                        "mode": config.api.torch_compile_mode,
+                    },
+                )
                 pipe.unet = torch.compile(
                     pipe.unet,
                     fullgraph=config.api.torch_compile_fullgraph,
                     dynamic=config.api.torch_compile_dynamic,
-                    backend=config.api.torch_compile_backend,
                     mode=config.api.torch_compile_mode,
                 )
+                logger.info("Optimization: Finished compiling model.")
 
 
 def supports_tf32(device: Optional[torch.device] = None) -> bool:
-    "Checks if device is post-Ampere"
+    "Checks if device is post-Ampere."
+
     major, _ = torch.cuda.get_device_capability(device)
     return major >= 8
 
