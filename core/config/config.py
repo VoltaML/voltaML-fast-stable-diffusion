@@ -169,7 +169,9 @@ class APIConfig:
     torch_compile_dynamic: bool = False
     torch_compile_backend: str = "inductor"
     torch_compile_mode: Literal[
-        "default", "reduce-overhead", "max-autotune",
+        "default",
+        "reduce-overhead",
+        "max-autotune",
     ] = "reduce-overhead"
 
     @property
