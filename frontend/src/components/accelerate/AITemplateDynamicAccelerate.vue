@@ -1,87 +1,106 @@
 <template>
   <div style="margin: 16px">
-    <NCard title="Acceleration progress (around 5 minutes)">
+    <NCard title="Acceleration progress (around 20 minutes)">
       <NSpace vertical justify="center">
         <NSteps>
-          <NStep title="CLIP" :status="global.state.onnxBuildStep.clip" />
-          <NStep title="UNet" :status="global.state.onnxBuildStep.unet" />
-          <NStep title="VAE" :status="global.state.onnxBuildStep.vae" />
+          <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
+          <NStep
+            title="ControlNet UNet"
+            :status="global.state.aitBuildStep.controlnet_unet"
+          />
+          <NStep title="CLIP" :status="global.state.aitBuildStep.clip" />
+          <NStep title="VAE" :status="global.state.aitBuildStep.vae" />
           <NStep
             title="Cleanup"
-            :status="global.state.onnxBuildStep.cleanup"
+            :status="global.state.aitBuildStep.cleanup"
           /> </NSteps></NSpace
     ></NCard>
 
     <NCard style="margin-top: 16px">
+      <!-- Width -->
+      <div class="flex-container">
+        <p class="slider-label">Width</p>
+        <NSlider
+          v-model:value="width"
+          :min="128"
+          :max="2048"
+          :step="64"
+          range
+          style="margin-right: 12px"
+        />
+      </div>
+
+      <!-- Height -->
+      <div class="flex-container">
+        <p class="slider-label">Height</p>
+        <NSlider
+          v-model:value="height"
+          :min="128"
+          :max="2048"
+          :step="64"
+          style="margin-right: 12px"
+          range
+        />
+      </div>
+
+      <!-- Batch Size -->
+      <div class="flex-container">
+        <p class="slider-label">Batch Size</p>
+        <NSlider
+          v-model:value="batchSize"
+          :min="1"
+          :max="9"
+          :step="1"
+          style="margin-right: 12px"
+          range
+        />
+      </div>
+
+      <!-- Clip chunks -->
+      <div class="flex-container">
+        <p class="slider-label">Clip Chunks</p>
+        <NSlider
+          v-model:value="clipChunks"
+          :step="1"
+          :min="1"
+          :max="16"
+          style="margin-right: 12px"
+        />
+        <NInputNumber
+          v-model:value="clipChunks"
+          size="small"
+          style="min-width: 96px; width: 96px"
+          :step="1"
+          :min="1"
+        />
+      </div>
+
+      <!-- CPU Threads -->
+      <div class="flex-container">
+        <p class="slider-label">CPU Threads (affects RAM usage)</p>
+        <NSlider
+          v-model:value="threads"
+          :step="1"
+          :min="1"
+          :max="64"
+          style="margin-right: 12px"
+        />
+        <NInputNumber
+          v-model:value="threads"
+          size="small"
+          style="min-width: 96px; width: 96px"
+          :step="1"
+          :min="1"
+          :max="64"
+        />
+      </div>
+
       <!-- Model select -->
       <div class="flex-container">
         <p class="slider-label">Model</p>
         <NSelect
           v-model:value="model"
           :options="modelOptions"
-          style="margin-right: 12px"
-        />
-      </div>
-
-      <!-- Simplify UNet -->
-      <div class="flex-container">
-        <p class="slider-label">Simplify UNet</p>
-        <NSwitch v-model:value="conf.data.settings.onnx.simplify_unet" />
-      </div>
-
-      <!-- Downcast to FP16 operations -->
-      <div class="flex-container">
-        <p class="slider-label">Downcast to FP16</p>
-        <NSwitch v-model:value="conf.data.settings.onnx.convert_to_fp16" />
-      </div>
-
-      <!-- Quantization -->
-      <h3>Quantization</h3>
-      <div class="flex-container">
-        <p class="slider-label">Text Encoder</p>
-        <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.text_encoder"
-          :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
-          ]"
-          style="margin-right: 12px"
-        />
-      </div>
-      <div class="flex-container">
-        <p class="slider-label">UNet</p>
-        <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.unet"
-          :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
-          ]"
-          style="margin-right: 12px"
-        />
-      </div>
-      <div class="flex-container">
-        <p class="slider-label">VAE Encoder</p>
-        <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.vae_encoder"
-          :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
-          ]"
-          style="margin-right: 12px"
-        />
-      </div>
-      <div class="flex-container">
-        <p class="slider-label">VAE Decoder</p>
-        <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.vae_decoder"
-          :options="[
-            { label: 'No quantization', value: 'no-quant' },
-            { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
-            { label: 'Signed int8', value: 'int8' },
-          ]"
           style="margin-right: 12px"
         />
       </div>
@@ -121,23 +140,27 @@ import { useState } from "@/store/state";
 import {
   NButton,
   NCard,
+  NInputNumber,
   NModal,
   NSelect,
+  NSlider,
   NSpace,
   NStep,
   NSteps,
-  NSwitch,
   useMessage,
   type SelectOption,
 } from "naive-ui";
 import { computed, ref } from "vue";
-import { useSettings } from "../store/settings";
 
 const message = useMessage();
 const global = useState();
-const conf = useSettings();
 
+const width = ref([512, 1024]);
+const height = ref([512, 1024]);
+const batchSize = ref([1, 1]);
 const model = ref("");
+const threads = ref(8);
+const clipChunks = ref(6);
 
 const building = ref(false);
 const showUnloadModal = ref(false);
@@ -179,16 +202,18 @@ const accelerateUnload = async () => {
 const accelerate = async () => {
   showUnloadModal.value = false;
   building.value = true;
-  await fetch(`${serverUrl}/api/generate/generate-onnx`, {
+  await fetch(`${serverUrl}/api/generate/generate-dynamic-aitemplate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       model_id: model.value,
-      quant_dict: conf.data.settings.onnx.quant_dict,
-      simplify_unet: conf.data.settings.onnx.simplify_unet,
-      convert_to_fp16: conf.data.settings.onnx.convert_to_fp16,
+      width: width.value,
+      height: height.value,
+      batch_size: batchSize.value,
+      clip_chunks: clipChunks.value,
+      threads: threads.value,
     }),
   })
     .then(() => {

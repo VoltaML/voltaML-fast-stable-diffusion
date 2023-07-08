@@ -79,20 +79,32 @@ def compile_controlnet_unet(  # pylint: disable=dangerous-default-value
     text_embeddings_pt_ait = Tensor(
         [batch_size, 64, hidden_dim], name="input2", is_input=True  # type: ignore
     )
-    dbar_0_pt_ait = Tensor([batch_size, 64, 64, 320], name="input3", is_input=True)  # type: ignore
-    dbar_1_pt_ait = Tensor([batch_size, 64, 64, 320], name="input4", is_input=True)  # type: ignore
-    dbar_2_pt_ait = Tensor([batch_size, 64, 64, 320], name="input5", is_input=True)  # type: ignore
-    dbar_3_pt_ait = Tensor([batch_size, 32, 32, 320], name="input6", is_input=True)  # type: ignore
-    dbar_4_pt_ait = Tensor([batch_size, 32, 32, 640], name="input7", is_input=True)  # type: ignore
-    dbar_5_pt_ait = Tensor([batch_size, 32, 32, 640], name="input8", is_input=True)  # type: ignore
-    dbar_6_pt_ait = Tensor([batch_size, 16, 16, 640], name="input9", is_input=True)  # type: ignore
-    dbar_7_pt_ait = Tensor([batch_size, 16, 16, 1280], name="input10", is_input=True)  # type: ignore
-    dbar_8_pt_ait = Tensor([batch_size, 16, 16, 1280], name="input11", is_input=True)  # type: ignore
-    dbar_9_pt_ait = Tensor([batch_size, 8, 8, 1280], name="input12", is_input=True)  # type: ignore
-    dbar_10_pt_ait = Tensor([batch_size, 8, 8, 1280], name="input13", is_input=True)  # type: ignore
-    dbar_11_pt_ait = Tensor([batch_size, 8, 8, 1280], name="input14", is_input=True)  # type: ignore
+
+    width_d_8 = width // 8
+    height_d_8 = height // 8
+    width_d_16 = width // 16
+    height_d_16 = height // 16
+    width_d_32 = width // 32
+    height_d_32 = height // 32
+    width_d_64 = width // 64
+    height_d_64 = height // 64
+
+    dbar_0_pt_ait = Tensor([batch_size, height_d_8, width_d_8, 320], name="input3", is_input=True)  # type: ignore
+    dbar_1_pt_ait = Tensor([batch_size, height_d_8, width_d_8, 320], name="input4", is_input=True)  # type: ignore
+    dbar_2_pt_ait = Tensor([batch_size, height_d_8, width_d_8, 320], name="input5", is_input=True)  # type: ignore
+    dbar_3_pt_ait = Tensor([batch_size, height_d_16, width_d_16, 320], name="input6", is_input=True)  # type: ignore
+    dbar_4_pt_ait = Tensor([batch_size, height_d_16, width_d_16, 640], name="input7", is_input=True)  # type: ignore
+    dbar_5_pt_ait = Tensor([batch_size, height_d_16, width_d_16, 640], name="input8", is_input=True)  # type: ignore
+    dbar_6_pt_ait = Tensor([batch_size, height_d_32, width_d_32, 640], name="input9", is_input=True)  # type: ignore
+    dbar_7_pt_ait = Tensor([batch_size, height_d_32, width_d_32, 1280], name="input10", is_input=True)  # type: ignore
+    dbar_8_pt_ait = Tensor([batch_size, height_d_32, width_d_32, 1280], name="input11", is_input=True)  # type: ignore
+    dbar_9_pt_ait = Tensor([batch_size, height_d_64, width_d_64, 1280], name="input12", is_input=True)  # type: ignore
+    dbar_10_pt_ait = Tensor([batch_size, height_d_64, width_d_64, 1280], name="input13", is_input=True)  # type: ignore
+    dbar_11_pt_ait = Tensor([batch_size, height_d_64, width_d_64, 1280], name="input14", is_input=True)  # type: ignore
     mid_block_additional_residual_pt_ait = Tensor(
-        [batch_size, 8, 8, 1280], name="input15", is_input=True  # type: ignore
+        [batch_size, height_d_64, width_d_64, 1280],  # type: ignore
+        name="input15",
+        is_input=True,
     )
 
     Y = ait_mod(
