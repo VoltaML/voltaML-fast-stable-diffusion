@@ -462,6 +462,9 @@ class StableDiffusionImg2ImgAITPipeline(StableDiffusionImg2ImgPipeline):
 
         latents = init_latents
 
+        logger.warning(
+            f"steps: {num_inference_steps}, init_timestep: {init_timestep}, offset: {offset}, timesteps: {self.scheduler.timesteps}, final: {self.scheduler.timesteps[max(num_inference_steps - init_timestep + offset, 0):]}"
+        )
         t_start = max(num_inference_steps - init_timestep + offset, 0)
         for i, t in enumerate(self.progress_bar(self.scheduler.timesteps[t_start:])):
             t_index = t_start + i

@@ -376,11 +376,39 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
 
-        from core.aitemplate.src.ait_img2img import StableDiffusionImg2ImgAITPipeline
+        if self.type == "static":
+            from core.aitemplate.src.ait_img2img import (
+                StableDiffusionImg2ImgAITPipeline,
+            )
+
+            cls = StableDiffusionImg2ImgAITPipeline
+        else:
+            from core.aitemplate.src.dynamic_ait_img2img import (
+                StableDiffusionDynamicAITPipeline,
+            )
+
+            cls = StableDiffusionDynamicAITPipeline
 
         self.manage_optional_components()
 
-        pipe = StableDiffusionImg2ImgAITPipeline(
+        pipe = cls(
+            unet=self.unet,
+            vae=self.vae,
+            directory=self.directory,
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            safety_checker=self.safety_checker,
+            requires_safety_checker=self.requires_safety_checker,
+            feature_extractor=self.feature_extractor,
+            clip_ait_exe=self.clip_ait_exe,
+            unet_ait_exe=self.unet_ait_exe,
+            vae_ait_exe=self.vae_ait_exe,
+        )
+
+        self.manage_optional_components()
+
+        pipe = cls(
             unet=self.unet,
             vae=self.vae,
             directory=self.directory,
