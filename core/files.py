@@ -144,7 +144,20 @@ class CachedModelList:
 
         for model in os.listdir(self.lora_path):
             logger.debug(f"Found LoRA {model}")
-            model_name = model.replace(".safetensors", "").replace(".ckpt", "")
+
+            # Skip if it is not a LoRA model
+            if not any(
+                x in model for x in [".safetensors", ".ckpt", ".pt", ".bin", ".pth"]
+            ):
+                continue
+
+            model_name = (
+                model.replace(".safetensors", "")
+                .replace(".ckpt", "")
+                .replace(".pt", "")
+                .replace(".bin", "")
+                .replace(".pth", "")
+            )
 
             models.append(
                 ModelResponse(
@@ -166,10 +179,19 @@ class CachedModelList:
 
         for model in os.listdir(self.textual_inversion_path):
             logger.debug(f"Found textual inversion model {model}")
+
+            # Skip if it is not a Texutal Inversion
+            if not any(
+                x in model for x in [".safetensors", ".ckpt", ".pt", ".bin", ".pth"]
+            ):
+                continue
+
             model_name = (
                 model.replace(".safetensors", "")
                 .replace(".ckpt", "")
                 .replace(".pt", "")
+                .replace(".bin", "")
+                .replace(".pth", "")
             )
 
             models.append(
