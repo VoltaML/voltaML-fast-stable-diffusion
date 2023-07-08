@@ -134,7 +134,7 @@ if key:
     app.add_middleware(Analytics, api_key=key)
     logger.info("Enabled FastAPI Analytics")
 else:
-    logger.info("No FastAPI Analytics key provided, skipping")
+    logger.debug("No FastAPI Analytics key provided, skipping")
 
 # Mount routers
 ## HTTP
