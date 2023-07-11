@@ -139,7 +139,7 @@ Please refer to this [table](https://voltaml.github.io/voltaML-fast-stable-diffu
 
 ## Installation
 
-Please see the [documentation](https://voltaml.github.io/voltaML-fast-stable-diffusion/installation/local) for installation instructions.
+Please see the [documentation](https://voltaml.github.io/voltaML-fast-stable-diffusion/) for installation instructions.
 
 # Contributing
 
