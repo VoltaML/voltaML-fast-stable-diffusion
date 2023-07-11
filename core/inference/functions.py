@@ -275,7 +275,6 @@ def load_config(
 
 def download_model(
     pretrained_model_name: str,
-    auth_token: Optional[str] = os.environ["HUGGINGFACE_TOKEN"],
     cache_dir: Path = Path(DIFFUSERS_CACHE),
     resume_download: bool = True,
     revision: Optional[str] = None,
@@ -291,7 +290,6 @@ def download_model(
             resume_download=resume_download,
             force_download=force_download,
             local_files_only=local_files_only,
-            use_auth_token=auth_token,
             revision=revision,
         )
         # make sure we only download sub-folders and `diffusers` filenames
@@ -311,7 +309,6 @@ def download_model(
         if is_safetensors_available() and not local_files_only:
             info = model_info(
                 repo_id=pretrained_model_name,
-                token=auth_token,
                 revision=revision,
             )
             if is_safetensors_compatible(info):
@@ -328,7 +325,6 @@ def download_model(
             cache_dir=cache_dir,
             resume_download=resume_download,
             local_files_only=local_files_only,
-            token=auth_token,
             revision=revision,
             allow_patterns=allow_patterns,
             ignore_patterns=ignore_patterns,
@@ -378,7 +374,6 @@ class HiddenPrints:
 
 def load_pytorch_pipeline(
     model_id_or_path: str,
-    auth: str = os.environ["HUGGINGFACE_TOKEN"],
     device: str = "cuda",
     optimize: bool = True,
     is_for_aitemplate: bool = False,
@@ -423,7 +418,6 @@ def load_pytorch_pipeline(
             pipe = StableDiffusionPipeline.from_pretrained(
                 pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
                 torch_dtype=config.api.dtype,
-                use_auth_token=auth,
                 safety_checker=None,
                 requires_safety_checker=False,
                 feature_extractor=None,

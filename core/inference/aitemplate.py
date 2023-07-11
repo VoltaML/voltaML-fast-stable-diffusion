@@ -43,15 +43,11 @@ class AITemplateStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         device: str = "cuda",
     ):
         super().__init__(model_id, device)
 
         self.backend: Backend = "AITemplate"
-
-        # HuggingFace auth token
-        self.auth = auth_token
 
         self.vae: AutoencoderKL
         self.unet: UNet2DConditionModel
@@ -257,7 +253,6 @@ class AITemplateStableDiffusion(InferenceModel):
                 target_controlnet,
                 resume_download=True,
                 torch_dtype=config.api.dtype,
-                use_auth_token=self.auth,
             )
 
             assert isinstance(cn, ControlNetModel)

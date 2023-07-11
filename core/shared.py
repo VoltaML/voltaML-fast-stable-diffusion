@@ -14,7 +14,6 @@ current_steps: int = 50
 current_done_steps: int = 0
 asyncio_loop: asyncio.AbstractEventLoop = asyncio.get_event_loop()
 interrupt: bool = False
-hf_token = ""
 threadpool = ThreadPoolExecutor(max_workers=1)
 
 uvicorn_server: Optional["Server"] = None

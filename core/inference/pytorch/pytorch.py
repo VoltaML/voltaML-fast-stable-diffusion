@@ -1,5 +1,4 @@
 import logging
-import os
 from pathlib import Path
 from typing import Any, List, Optional
 
@@ -53,7 +52,6 @@ class PyTorchStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
         device: str = "cuda",
         autoload: bool = True,
         bare: bool = False,
@@ -62,9 +60,6 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.backend: Backend = "PyTorch"
         self.bare: bool = bare
-
-        # HuggingFace
-        self.auth: str = auth_token
 
         # Components
         self.vae: AutoencoderKL
@@ -93,7 +88,6 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe = load_pytorch_pipeline(
             self.model_id,
-            auth=self.auth,
             device=self.device,
             optimize=not self.bare,
         )
@@ -200,7 +194,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 target_controlnet,
                 resume_download=True,
                 torch_dtype=config.api.dtype,
-                use_auth_token=self.auth,
             )
 
             assert isinstance(cn, ControlNetModel)
@@ -671,7 +664,6 @@ class PyTorchStableDiffusion(InferenceModel):
             self.unet.load_attn_procs(
                 pretrained_model_name_or_path_or_dict=lora,
                 resume_download=True,
-                use_auth_token=self.auth,
             )
         self.loras.append(lora)
         logger.info(f"LoRA model {lora} loaded successfully")

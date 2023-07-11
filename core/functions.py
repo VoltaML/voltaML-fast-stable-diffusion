@@ -71,8 +71,3 @@ def inject_var_into_dotenv(key: str, value: str) -> None:
 
     os.environ[key] = value
     logger.info("Variable injected into current environment")
-
-    if key == "HUGGINGFACE_TOKEN":
-        from core import shared
-
-        shared.hf_token = value

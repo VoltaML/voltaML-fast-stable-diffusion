@@ -245,10 +245,7 @@ def checks():
     # Save the token to config
     from core import shared
 
-    if os.getenv("HUGGINGFACE_TOKEN"):
-        if not args_with_extras.install_only:
-            shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
-    else:
+    if not os.getenv("HUGGINGFACE_TOKEN"):
         logger.warning(
             "No HuggingFace token provided, some features will be disabled until it is provided in the .env file or in the web interface"
         )
