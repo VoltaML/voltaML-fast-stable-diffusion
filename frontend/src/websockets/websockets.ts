@@ -189,6 +189,12 @@ export function processWebSocket(
       global.state.perf_drawer.gpus = message.data;
       break;
     }
+    case "token": {
+      if (message.data.huggingface === "missing") {
+        global.state.secrets.huggingface = "missing";
+      }
+      break;
+    }
     default: {
       console.log(message);
     }

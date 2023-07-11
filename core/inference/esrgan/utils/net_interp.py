@@ -2,8 +2,9 @@
 # -*- coding: utf-8 -*-
 
 import sys
-import torch
 from collections import OrderedDict
+
+import torch
 
 alpha = float(sys.argv[1])
 

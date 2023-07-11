@@ -1,15 +1,15 @@
-from typing import Literal, List
 import io
 import logging
 import warnings
+from typing import List, Literal
 
-import torch
 import numpy as np
+import torch
 from torch.utils._pytree import tree_map
 
 from core.config import config
-from .trace_utils import generate_inputs
 
+from .trace_utils import generate_inputs
 
 Backend = Literal["llvm-cpu", "vmvx", "cuda", "vulkan"]
 
@@ -21,7 +21,6 @@ def is_iree_available():
     try:
         import iree.compiler  # pylint: disable=unused-import
         import iree.runtime
-
         import torch_mlir  # pylint: disable=unused-import
 
         return True

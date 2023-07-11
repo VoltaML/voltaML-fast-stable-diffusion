@@ -1,11 +1,12 @@
 import logging
+import os
 
 from fastapi import APIRouter
 
 from core import config
 from core.config.config import update_config
 
-router = APIRouter()
+router = APIRouter(tags=["settings"])
 
 logger = logging.getLogger(__name__)
 
@@ -46,3 +47,26 @@ async def get_configuration():
 
     logger.debug(f"Sending configuration to frontend: {config.config}")
     return config.config
+
+
+@router.post("/inject-var-into-dotenv")
+async def set_hf_token(key: str, value: str):
+    "Set the HuggingFace token in the environment variables and in the .env file"
+
+    from core.functions import inject_var_into_dotenv
+
+    inject_var_into_dotenv(key, value)
+    return {"message": "success"}
+
+
+@router.get(
+    "/hf-whoami",
+)
+async def hf_whoami():
+    "Return the current HuggingFace user"
+
+    from huggingface_hub import HfApi
+
+    api = HfApi()
+
+    return api.whoami(token=os.getenv("HUGGINGFACE_TOKEN"))

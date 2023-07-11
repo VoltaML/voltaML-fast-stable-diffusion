@@ -3,6 +3,7 @@
     <NThemeEditor v-if="settings.data.settings.frontend.enable_theme_editor" />
     <NNotificationProvider placement="bottom-right" :max="3">
       <NMessageProvider>
+        <SecretsHandlerVue />
         <CollapsileNavbarVue />
         <TopBarVue />
         <routerContainerVue style="margin-top: 52px" />
@@ -25,6 +26,7 @@ import {
 import { computed } from "vue";
 import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
 import PerformanceDrawer from "./components/PerformanceDrawer.vue";
+import SecretsHandlerVue from "./components/SecretsHandler.vue";
 import TopBarVue from "./components/TopBar.vue";
 import routerContainerVue from "./router/router-container.vue";
 import { useSettings } from "./store/settings";

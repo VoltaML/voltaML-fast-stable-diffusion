@@ -4,7 +4,6 @@ import os
 import sys
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
-from packaging import version
 
 import torch
 from diffusers import StableDiffusionPipeline
@@ -30,6 +29,7 @@ from huggingface_hub.utils._errors import (
     RepositoryNotFoundError,
     RevisionNotFoundError,
 )
+from packaging import version
 from requests import HTTPError
 from rich.console import Console
 

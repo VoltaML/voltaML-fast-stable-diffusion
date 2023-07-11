@@ -1,7 +1,7 @@
 from typing import Optional
 
-from diffusers.models.attention import Attention
 import torch
+from diffusers.models.attention import Attention
 
 
 class MultiheadAttention(torch.nn.MultiheadAttention):

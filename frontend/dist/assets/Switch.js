@@ -1,4 +1,4 @@
-import { Z as cB, $ as cE, a1 as iconSwitchTransition, Y as c, a0 as cM, ar as cNotM, d as defineComponent, R as useConfig, a6 as useTheme, S as useFormItem, F as ref, V as toRef, T as useMergedState, c as computed, aa as useThemeClass, bF as isSlotEmpty, E as h, aC as resolveWrappedSlot, bG as switchLight, a9 as createKey, aM as pxfy, aF as depx, ac as NIconSwitchTransition, aO as NBaseLoading, X as call } from "./index.js";
+import { a5 as cB, a8 as cE, a9 as iconSwitchTransition, a4 as c, a6 as cM, as as cNotM, d as defineComponent, aa as useConfig, ab as useTheme, ac as useFormItem, F as ref, ad as toRef, ae as useMergedState, c as computed, af as useThemeClass, bF as isSlotEmpty, E as h, ax as resolveWrappedSlot, bG as switchLight, ay as createKey, b2 as pxfy, aY as depx, a2 as NIconSwitchTransition, b4 as NBaseLoading, al as call } from "./index.js";
 const style = cB("switch", `
  height: var(--n-height);
  min-width: var(--n-width);

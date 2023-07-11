@@ -227,13 +227,6 @@ def checks():
     )
     logger = logging.getLogger()  # pylint: disable=redefined-outer-name
 
-    # Check tokens
-    if not os.getenv("HUGGINGFACE_TOKEN") and not args_with_extras.install_only:
-        logger.error(
-            "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
-        )
-        sys.exit(1)
-
     if args_with_extras.bot and not args_with_extras.install_only:
         if not os.getenv("DISCORD_BOT_TOKEN"):
             logger.error(
@@ -252,8 +245,13 @@ def checks():
     # Save the token to config
     from core import shared
 
-    if not args_with_extras.install_only:
-        shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
+    if os.getenv("HUGGINGFACE_TOKEN"):
+        if not args_with_extras.install_only:
+            shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
+    else:
+        logger.warning(
+            "No HuggingFace token provided, some features will be disabled until it is provided in the .env file or in the web interface"
+        )
 
     # Create the diffusers cache folder
     from diffusers.utils import DIFFUSERS_CACHE
