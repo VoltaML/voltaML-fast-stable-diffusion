@@ -28,6 +28,7 @@ def map_vae_params(ait_module, pt_module, batch_size=1, seq_len=4096):
     else:
         pt_params = pt_module
     mapped_pt_params = {}
+    # print(pt_params.keys())
     for name, _ in ait_module.named_parameters():
         ait_name = name.replace(".", "_")
         if name in pt_params:
@@ -44,37 +45,37 @@ def map_vae_params(ait_module, pt_module, batch_size=1, seq_len=4096):
                 mapped_pt_params[ait_name] = pt_params[name]
         elif name.endswith("attention.proj.weight"):
             prefix = name[: -len("attention.proj.weight")]
-            pt_name = prefix + "proj_attn.weight"
+            pt_name = prefix + "to_out.0.weight"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.proj.bias"):
             prefix = name[: -len("attention.proj.bias")]
-            pt_name = prefix + "proj_attn.bias"
+            pt_name = prefix + "to_out.0.bias"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.cu_length"):
             ...
         elif name.endswith("attention.proj_q.weight"):
             prefix = name[: -len("attention.proj_q.weight")]
-            pt_name = prefix + "query.weight"
+            pt_name = prefix + "to_q.weight"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.proj_q.bias"):
             prefix = name[: -len("attention.proj_q.bias")]
-            pt_name = prefix + "query.bias"
+            pt_name = prefix + "to_q.bias"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.proj_k.weight"):
             prefix = name[: -len("attention.proj_k.weight")]
-            pt_name = prefix + "key.weight"
+            pt_name = prefix + "to_k.weight"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.proj_k.bias"):
             prefix = name[: -len("attention.proj_k.bias")]
-            pt_name = prefix + "key.bias"
+            pt_name = prefix + "to_k.bias"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.proj_v.weight"):
             prefix = name[: -len("attention.proj_v.weight")]
-            pt_name = prefix + "value.weight"
+            pt_name = prefix + "to_v.weight"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.proj_v.bias"):
             prefix = name[: -len("attention.proj_v.bias")]
-            pt_name = prefix + "value.bias"
+            pt_name = prefix + "to_v.bias"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         else:
             pt_param = pt_module.get_parameter(name)  # type: ignore

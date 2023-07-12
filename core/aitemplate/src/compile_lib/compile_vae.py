@@ -43,25 +43,25 @@ def map_vae_params(ait_module, pt_module, batch_size, seq_len):
                 mapped_pt_params[ait_name] = pt_params[name]
         elif name.endswith("attention.qkv.weight"):
             prefix = name[: -len("attention.qkv.weight")]
-            q_weight = pt_params[prefix + "query.weight"]
-            k_weight = pt_params[prefix + "key.weight"]
-            v_weight = pt_params[prefix + "value.weight"]
+            q_weight = pt_params[prefix + "to_q.weight"]
+            k_weight = pt_params[prefix + "to_k.weight"]
+            v_weight = pt_params[prefix + "to_v.weight"]
             qkv_weight = torch.cat([q_weight, k_weight, v_weight], dim=0)
             mapped_pt_params[ait_name] = qkv_weight
         elif name.endswith("attention.qkv.bias"):
             prefix = name[: -len("attention.qkv.bias")]
-            q_bias = pt_params[prefix + "query.bias"]
-            k_bias = pt_params[prefix + "key.bias"]
-            v_bias = pt_params[prefix + "value.bias"]
+            q_bias = pt_params[prefix + "to_q.bias"]
+            k_bias = pt_params[prefix + "to_k.bias"]
+            v_bias = pt_params[prefix + "to_v.bias"]
             qkv_bias = torch.cat([q_bias, k_bias, v_bias], dim=0)
             mapped_pt_params[ait_name] = qkv_bias
         elif name.endswith("attention.proj.weight"):
             prefix = name[: -len("attention.proj.weight")]
-            pt_name = prefix + "proj_attn.weight"
+            pt_name = prefix + "to_out.0.weight"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.proj.bias"):
             prefix = name[: -len("attention.proj.bias")]
-            pt_name = prefix + "proj_attn.bias"
+            pt_name = prefix + "to_out.0.bias"
             mapped_pt_params[ait_name] = pt_params[pt_name]
         elif name.endswith("attention.cu_length"):
             cu_len = np.cumsum([0] + [seq_len] * batch_size).astype("int32")

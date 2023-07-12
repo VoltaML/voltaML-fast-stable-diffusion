@@ -480,7 +480,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             def get_map_size(_, __, output):
                 nonlocal map_size
-                map_size = output.sample.shape[-2:]
+                map_size = output[0].shape[-2:]  # output.sample.shape[-2:] in older diffusers
 
             # 8. Denoising loop
             with ExitStack() as gs:
