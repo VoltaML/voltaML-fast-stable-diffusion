@@ -287,13 +287,13 @@ def optimize_model(
                         "mode": config.api.torch_compile_mode,
                     },
                 )
-                pipe.unet = torch.compile(
-                    pipe.unet,
-                    fullgraph=config.api.torch_compile_fullgraph,
-                    dynamic=config.api.torch_compile_dynamic,
-                    mode=config.api.torch_compile_mode,
-                )
-                logger.info("Optimization: Finished compiling model.")
+                # Wrong place!
+                # pipe.unet = torch.compile(
+                #     pipe.unet,
+                #     fullgraph=config.api.torch_compile_fullgraph,
+                #     dynamic=config.api.torch_compile_dynamic,
+                #     mode=config.api.torch_compile_mode,
+                # )
 
 
 def supports_tf32(device: Optional[torch.device] = None) -> bool:

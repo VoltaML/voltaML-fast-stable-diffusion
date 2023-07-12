@@ -395,6 +395,14 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
+        if config.api.torch_compile:
+            self.unet = torch.compile(
+                self.unet,
+                fullgraph=config.api.torch_compile_fullgraph,
+                dynamic=config.api.torch_compile_dynamic,
+                mode=config.api.torch_compile_mode,
+            )  # type: ignore
+
         # 0. Default height and width to unet
         with autocast(
             dtype=self.unet.dtype,
