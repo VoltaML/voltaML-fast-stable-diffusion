@@ -1,4 +1,5 @@
 import copy
+import json
 import logging
 from dataclasses import fields
 from io import BytesIO
@@ -6,6 +7,8 @@ from os import makedirs
 from pathlib import Path
 from typing import List, Union
 
+import piexif
+import piexif.helper
 from PIL import Image
 from PIL.PngImagePlugin import PngInfo
 
@@ -35,17 +38,27 @@ def create_metadata(
     "Return image with metadata burned into it"
 
     data = copy.copy(job.data)
-    metadata = PngInfo()
+
+    text_metadata = PngInfo()
+    exif_meta_dict = {}
 
     if not isinstance(job, UpscaleQueueEntry):
         data.seed = str(job.data.seed) + (f"({index})" if index > 0 else "")  # type: ignore Overwrite for sequencialy generated images
 
-    def write_metadata(key: str):
-        metadata.add_text(key, str(unwrap_enum_name(data.__dict__.get(key, ""))))
+    def write_metadata_text(key: str):
+        text_metadata.add_text(key, str(unwrap_enum_name(data.__dict__.get(key, ""))))
 
-    for key in fields(data):
-        if key.name not in ("image", "mask_image"):
-            write_metadata(key.name)
+    def write_metadata_exif(key: str):
+        exif_meta_dict[key] = str(unwrap_enum_name(data.__dict__.get(key, "")))
+
+    if config.api.image_extension == "png":
+        for key in fields(data):
+            if key.name not in ("image", "mask_image"):
+                write_metadata_text(key.name)
+    else:
+        for key in fields(data):
+            if key.name not in ("image", "mask_image"):
+                write_metadata_exif(key.name)
 
     if isinstance(job, Txt2ImgQueueEntry):
         procedure = "txt2img"
@@ -60,10 +73,19 @@ def create_metadata(
     else:
         procedure = "unknown"
 
-    metadata.add_text("procedure", procedure)
-    metadata.add_text("model", job.model)
+    if config.api.image_extension == "png":
+        text_metadata.add_text("procedure", procedure)
+        text_metadata.add_text("model", job.model)
+        user_comment: bytes = b""  # for type checking
+    else:
+        exif_meta_dict["procedure"] = procedure
+        exif_meta_dict["model"] = job.model
 
-    return metadata
+        user_comment = piexif.helper.UserComment.dump(
+            json.dumps(exif_meta_dict, ensure_ascii=False), encoding="unicode"
+        )
+
+    return text_metadata if config.api.image_extension == "png" else user_comment
 
 
 def save_images(
@@ -114,7 +136,6 @@ def save_images(
             folder = "img2img"
 
         filename = f"{job.data.id}-{i}.png"
-        extension = "png"
         metadata = create_metadata(job, i)
 
         if job.save_image == "r2":
@@ -124,7 +145,7 @@ def save_images(
             assert r2 is not None, "R2 is not configured, enable debug mode to see why"
 
             image_bytes = BytesIO()
-            image.save(image_bytes, pnginfo=metadata, format="png")
+            image.save(image_bytes, pnginfo=metadata, format=config.api.image_extension)
             image_bytes.seek(0)
 
             url = r2.upload_file(file=image_bytes, filename=filename)
@@ -144,7 +165,7 @@ def save_images(
                     if not isinstance(job, UpscaleQueueEntry)
                     else "0",
                     "index": i,
-                    "extension": extension,
+                    "extension": config.api.image_extension,
                 }
             )
 
@@ -154,6 +175,25 @@ def save_images(
 
             with path.open("wb") as f:
                 logger.debug(f"Saving image to {path.as_posix()}")
-                image.save(f, pnginfo=metadata)
+
+                if config.api.image_extension == "png":
+                    image.save(f, pnginfo=metadata)
+                else:
+                    # ! This is using 2 filesystem calls, find a way to save directly to disk with metadata properly inserted
+
+                    # Save the image
+                    image.save(f, quality=config.api.image_quality)
+
+                    # Insert metadata
+                    exif_metadata = {
+                        "0th": {},
+                        "Exif": Image.Exif(),
+                        "GPS": {},
+                        "Interop": {},
+                        "1st": {},
+                    }
+                    exif_metadata["Exif"][piexif.ExifIFD.UserComment] = metadata
+                    exif_bytes = piexif.dump(exif_metadata)
+                    piexif.insert(exif_bytes, path.as_posix())
 
     return urls

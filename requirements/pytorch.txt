@@ -21,3 +21,4 @@ boto3==1.26.153
 tomesd==0.1.2
 cpufeature==0.2.1
 pyamdgpuinfo; platform_system == "Linux"
+piexif==1.1.3

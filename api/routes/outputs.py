@@ -12,6 +12,8 @@ router = APIRouter(tags=["output"])
 thread_pool = ThreadPoolExecutor()
 logger = logging.getLogger(__name__)
 
+valid_extensions = ["png", "jpeg", "webp"]
+
 
 @router.get("/txt2img")
 def txt2img() -> List[Dict[str, Any]]:
@@ -23,10 +25,11 @@ def txt2img() -> List[Dict[str, Any]]:
         return []
 
     data: List[Dict[str, Any]] = []
-    for i in path.rglob("**/*.png"):
-        data.append(
-            {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
-        )
+    for extension in valid_extensions:
+        for i in path.rglob(f"**/*.{extension}"):
+            data.append(
+                {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
+            )
 
     return data
 
@@ -41,10 +44,11 @@ def img2img() -> List[Dict[str, Any]]:
         return []
 
     data: List[Dict[str, Any]] = []
-    for i in path.rglob("**/*.png"):
-        data.append(
-            {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
-        )
+    for extension in valid_extensions:
+        for i in path.rglob(f"**/*.{extension}"):
+            data.append(
+                {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
+            )
 
     return data
 
@@ -59,10 +63,11 @@ def extra() -> List[Dict[str, Any]]:
         return []
 
     data: List[Dict[str, Any]] = []
-    for i in path.rglob("**/*.png"):
-        data.append(
-            {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
-        )
+    for extension in valid_extensions:
+        for i in path.rglob(f"**/*.{extension}"):
+            data.append(
+                {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
+            )
 
     return data
 

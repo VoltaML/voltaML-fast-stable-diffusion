@@ -4,7 +4,8 @@ from dataclasses import Field, dataclass, field, fields
 from typing import Dict, List, Literal, Optional, Union
 
 import torch
-from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
+from dataclasses_json import (CatchAll, DataClassJsonMixin, Undefined,
+                              dataclass_json)
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 logger = logging.getLogger(__name__)
@@ -157,8 +158,11 @@ class APIConfig:
     autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
 
-    # Save paths
+    # Saving
     save_path_template: str = "{folder}/{prompt}/{id}-{index}.{extension}"
+    image_extension: Literal["png", "webp", "jpeg"] = "png"
+    image_quality: int = 95
+    image_return_format: Literal["bytes", "base64"] = "base64"
 
     # Grid
     disable_grid: bool = False

@@ -1,9 +1,12 @@
+import json
 import logging
 import os
 import re
 from pathlib import Path
 from typing import Dict
 
+import piexif
+import piexif.helper
 from PIL import Image
 from requests import HTTPError
 
@@ -13,11 +16,19 @@ logger = logging.getLogger(__name__)
 def image_meta_from_file(path: Path) -> Dict[str, str]:
     "Return image metadata from a file"
 
-    with path.open("rb") as f:
-        image = Image.open(f)
-        text = image.text  # type: ignore
+    extension = path.suffix.lower()
+    if extension == ".png":
+        with path.open("rb") as f:
+            image = Image.open(f)
+            meta = image.text  # type: ignore
 
-        return text
+            return meta
+    else:
+        data = piexif.load(path.as_posix())
+        meta: Dict[str, str] = json.loads(
+            piexif.helper.UserComment.load(data["Exif"][piexif.ExifIFD.UserComment])
+        )
+        return meta
 
 
 def init_ait_module(

@@ -10,13 +10,8 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from core.install_requirements import (  # pylint: disable=wrong-import-position
-    commit_hash,
-    create_environment,
-    in_virtualenv,
-    install_pytorch,
-    is_installed,
-    version_check,
-)
+    commit_hash, create_environment, in_virtualenv, install_pytorch,
+    is_installed, version_check)
 
 # Handle arguments passed to the script
 app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]
@@ -242,11 +237,8 @@ def checks():
         args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1
     )
 
-    # Save the token to config
-    from core import shared
-
     if not os.getenv("HUGGINGFACE_TOKEN"):
-        logger.warning(
+        logger.info(
             "No HuggingFace token provided, some features will be disabled until it is provided in the .env file or in the web interface"
         )
 

@@ -7,6 +7,33 @@
     <NFormItem label="Disable generating grid image">
       <NSwitch v-model:value="settings.defaultSettings.api.disable_grid" />
     </NFormItem>
+    <NFormItem label="Image extension">
+      <NSelect
+        v-model:value="settings.defaultSettings.api.image_extension"
+        :options="[
+          {
+            label: 'PNG',
+            value: 'png',
+          },
+          {
+            label: 'WebP',
+            value: 'webp',
+          },
+          {
+            label: 'JPEG',
+            value: 'jpeg',
+          },
+        ]"
+      />
+    </NFormItem>
+    <NFormItem label="Image quality (JPEG/WebP only)">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.image_quality"
+        :min="0"
+        :max="100"
+        :step="1"
+      />
+    </NFormItem>
 
     <h2>Autoload</h2>
     <NFormItem label="Textual Inversions">

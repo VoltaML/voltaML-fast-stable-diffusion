@@ -176,6 +176,9 @@ export interface ISettings {
     autoloaded_textual_inversions: string[];
 
     save_path_template: string;
+    image_extension: "webp" | "png" | "jpeg";
+    image_quality: number;
+
     disable_grid: boolean;
 
     torch_compile: boolean;
@@ -336,6 +339,9 @@ export const defaultSettings: ISettings = {
     autoloaded_textual_inversions: [],
 
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
+    image_extension: "png",
+    image_quality: 95,
+
     disable_grid: false,
 
     torch_compile: false,

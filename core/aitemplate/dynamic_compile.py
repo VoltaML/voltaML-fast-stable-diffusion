@@ -232,6 +232,7 @@ def compile_diffusers(
             severity="success",
             title="AITemplate",
             message=f"Successfully compiled {local_dir_or_id} to AITemplate format in {deltatime:.2f} seconds",
+            timeout=0,
         )
     )
 
