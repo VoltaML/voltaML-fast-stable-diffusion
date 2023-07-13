@@ -4,7 +4,9 @@ from typing import List, Union
 from fastapi import APIRouter, HTTPException
 from PIL import Image
 
+from core.config import config
 from core.errors import ModelNotLoadedError
+from core.functions import images_to_response, img_to_bytes
 from core.shared_dependent import gpu
 from core.types import (
     AITemplateBuildRequest,
@@ -37,21 +39,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/img2img")
@@ -71,21 +59,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/inpainting")
@@ -109,21 +83,7 @@ async def inpaint_job(job: InpaintQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/controlnet")
@@ -143,21 +103,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/upscale")
@@ -179,7 +125,9 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
 
     return {
         "time": time,
-        "images": convert_image_to_base64(image),  # type: ignore
+        "images": convert_image_to_base64(image)
+        if config.api.image_return_format == "base64"
+        else img_to_bytes(image),
     }
 
 

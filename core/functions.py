@@ -2,13 +2,19 @@ import json
 import logging
 import os
 import re
+from io import BytesIO
 from pathlib import Path
-from typing import Dict
+from typing import Dict, List, Union
 
 import piexif
 import piexif.helper
+from fastapi import HTTPException
+from fastapi.responses import Response
 from PIL import Image
 from requests import HTTPError
+
+from core.config import config
+from core.utils import convert_image_to_base64
 
 logger = logging.getLogger(__name__)
 
@@ -82,3 +88,40 @@ def inject_var_into_dotenv(key: str, value: str) -> None:
 
     os.environ[key] = value
     logger.info("Variable injected into current environment")
+
+
+def img_to_bytes(img: Image.Image) -> bytes:
+    "Convert an image to bytes"
+
+    with BytesIO() as output:
+        img.save(output, format=config.api.image_extension)
+        return output.getvalue()
+
+
+def images_to_response(images: Union[List[Image.Image], List[str]], time: float):
+    "Generate a valid response for the API"
+
+    if len(images) == 0:
+        return {
+            "time": time,
+            "images": [],
+        }
+    elif isinstance(images[0], str):
+        return {
+            "time": time,
+            "images": images,
+        }
+    elif config.api.image_return_format == "bytes":
+        if len(images) > 1:
+            raise HTTPException(
+                status_code=500,
+                detail={
+                    "message": "Image return format is set to bytes, but {len(images)} images were returned"
+                },
+            )
+        return Response(img_to_bytes(images[0]), media_type="binary/octet-stream")  # type: ignore
+    else:
+        return {
+            "time": time,
+            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
+        }
