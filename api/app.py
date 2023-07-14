@@ -12,8 +12,7 @@ from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
 from fastapi_simple_cachecontrol.types import CacheControl
-
-# from huggingface_hub.hf_api import LocalTokenNotFoundError
+from huggingface_hub.hf_api import LocalTokenNotFoundError
 from starlette import status
 from starlette.responses import JSONResponse
 
@@ -81,23 +80,23 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
     )
 
 
-# @app.exception_handler(LocalTokenNotFoundError)
-# async def hf_token_error(_request, _exc):
-#     await websocket_manager.broadcast(
-#         data=Data(
-#             data_type="token",
-#             data={"huggingface": "missing"},
-#         )
-#     )
+@app.exception_handler(LocalTokenNotFoundError)
+async def hf_token_error(_request, _exc):
+    await websocket_manager.broadcast(
+        data=Data(
+            data_type="token",
+            data={"huggingface": "missing"},
+        )
+    )
 
-#     return JSONResponse(
-#         content={
-#             "status_code": 10422,
-#             "message": "HuggingFace token not found",
-#             "data": None,
-#         },
-#         status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-#     )
+    return JSONResponse(
+        content={
+            "status_code": 10422,
+            "message": "HuggingFace token not found",
+            "data": None,
+        },
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    )
 
 
 @app.exception_handler(404)
