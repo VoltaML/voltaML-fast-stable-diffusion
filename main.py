@@ -10,8 +10,13 @@ from argparse import ArgumentParser
 from pathlib import Path
 
 from core.install_requirements import (  # pylint: disable=wrong-import-position
-    commit_hash, create_environment, in_virtualenv, install_pytorch,
-    is_installed, version_check)
+    commit_hash,
+    create_environment,
+    in_virtualenv,
+    install_pytorch,
+    is_installed,
+    version_check,
+)
 
 # Handle arguments passed to the script
 app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]

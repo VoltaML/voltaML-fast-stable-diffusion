@@ -4,8 +4,7 @@ from dataclasses import Field, dataclass, field, fields
 from typing import Dict, List, Literal, Optional, Union
 
 import torch
-from dataclasses_json import (CatchAll, DataClassJsonMixin, Undefined,
-                              dataclass_json)
+from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 logger = logging.getLogger(__name__)
