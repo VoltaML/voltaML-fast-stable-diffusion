@@ -512,6 +512,10 @@ function refreshModels() {
   modelsLoading.value = true;
   fetch(`${serverUrl}/api/models/available`)
     .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
+
       res.json().then((data: Array<ModelEntry>) => {
         // TODO: Lora loaded state isnt updated
         global.state.models.splice(0, global.state.models.length);
@@ -592,6 +596,10 @@ function refreshModels() {
           }
         });
       });
+    })
+    .catch((e) => {
+      message.error(`Failed to refresh models: ${e}`);
+      modelsLoading.value = false;
     });
 }
 
@@ -602,15 +610,23 @@ async function loadModel(model: ModelEntry) {
   const params = { model: model.path, backend: model.backend };
   load_url.search = new URLSearchParams(params).toString();
 
-  try {
-    await fetch(load_url, {
-      method: "POST",
+  fetch(load_url, {
+    method: "POST",
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
+
+      model.state = "loaded";
+      modelsLoading.value = false;
+    })
+    .catch((e) => {
+      message.error(`Failed to load model: ${e}`);
+      console.error(e);
+      modelsLoading.value = false;
+      model.state = "not loaded";
     });
-  } catch (e) {
-    console.error(e);
-  } finally {
-    modelsLoading.value = false;
-  }
 }
 
 async function unloadModel(model: ModelEntry) {

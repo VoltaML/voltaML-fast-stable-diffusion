@@ -41213,7 +41213,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-7d400240"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-9d1421b3"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41237,7 +41237,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "16032d10": backgroundColor.value
+      "07c717be": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41289,6 +41289,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       console.log("Refreshing models");
       modelsLoading.value = true;
       fetch(`${serverUrl}/api/models/available`).then((res) => {
+        if (!res.ok) {
+          throw new Error(res.statusText);
+        }
         res.json().then((data) => {
           global2.state.models.splice(0, global2.state.models.length);
           data.forEach((model) => {
@@ -41357,6 +41360,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             }
           });
         });
+      }).catch((e) => {
+        message.error(`Failed to refresh models: ${e}`);
+        modelsLoading.value = false;
       });
     }
     async function loadModel(model) {
@@ -41365,15 +41371,20 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       const load_url = new URL(`${serverUrl}/api/models/load`);
       const params = { model: model.path, backend: model.backend };
       load_url.search = new URLSearchParams(params).toString();
-      try {
-        await fetch(load_url, {
-          method: "POST"
-        });
-      } catch (e) {
-        console.error(e);
-      } finally {
+      fetch(load_url, {
+        method: "POST"
+      }).then((res) => {
+        if (!res.ok) {
+          throw new Error(res.statusText);
+        }
+        model.state = "loaded";
         modelsLoading.value = false;
-      }
+      }).catch((e) => {
+        message.error(`Failed to load model: ${e}`);
+        console.error(e);
+        modelsLoading.value = false;
+        model.state = "not loaded";
+      });
     }
     async function unloadModel(model) {
       if (model === global2.state.selected_model) {
@@ -42117,7 +42128,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_7d400240_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_9d1421b3_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42125,7 +42136,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-7d400240"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-9d1421b3"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
