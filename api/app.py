@@ -8,7 +8,7 @@ from api_analytics.fastapi import Analytics
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
 from fastapi_simple_cachecontrol.types import CacheControl
@@ -103,7 +103,7 @@ async def hf_token_error(_request, _exc):
 async def custom_http_exception_handler(_request, _exc):
     "Redirect back to the main page (frontend will handle it)"
 
-    return RedirectResponse("/")
+    return FileResponse("frontend/dist/index.html")
 
 
 @app.on_event("startup")
