@@ -32,6 +32,7 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
+    LoraUnloadRequest,
     LoraLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
@@ -503,18 +504,49 @@ class GPU:
 
             if isinstance(internal_model, PyTorchStableDiffusion):
                 logger.info(
-                    f"Loading Lora model: {req.lora}, weights: ({req.unet_weight}, {req.text_encoder_weight})"
+                    f"Loading Lora model: {req.lora}, weights: ({req.weight})"
                 )
 
-                internal_model.load_lora(
-                    req.lora, req.unet_weight, req.text_encoder_weight
-                )
+                from .inference.lora import install_lora_hook
+                install_lora_hook(internal_model)
+                internal_model.apply_lora(req.lora, req.weight)  # type: ignore
 
                 websocket_manager.broadcast_sync(
                     Notification(
                         "success",
                         "Lora model loaded",
                         f"Lora model {req.lora} loaded",
+                    )
+                )
+
+        else:
+            websocket_manager.broadcast_sync(
+                Notification(
+                    "error",
+                    "Model not found",
+                    f"Model {req.model} not found",
+                )
+            )
+            logger.error(f"Model {req.model} not found")
+
+    async def unload_lora(self, req: LoraUnloadRequest):
+        "Inject a Lora model into a model"
+
+        if req.model in self.loaded_models:
+            internal_model = self.loaded_models[req.model]
+
+            if isinstance(internal_model, PyTorchStableDiffusion):
+                logger.info(
+                    f"Unloading Lora model: {req.lora})"
+                )
+
+                internal_model.remove_lora(req.lora)  # type: ignore
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Lora model unloaded",
+                        f"Lora model {req.lora} unloaded",
                     )
                 )
 
