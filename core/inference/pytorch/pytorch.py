@@ -106,6 +106,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 weight = config.api.autoloaded_loras[lora_name]
 
                 from ..lora import install_lora_hook
+
                 install_lora_hook(self)
 
                 self.apply_lora(lora_name, weight)  # type: ignore pylint: disable=no-member
@@ -151,9 +152,10 @@ class PyTorchStableDiffusion(InferenceModel):
         if hasattr(self, "controlnet"):
             if self.controlnet is not None:
                 del self.controlnet
-        
+
         if hasattr(self, "lora_injector"):
             from ..lora import uninstall_lora_hook
+
             uninstall_lora_hook(self)
 
         self.memory_cleanup()
@@ -165,6 +167,10 @@ class PyTorchStableDiffusion(InferenceModel):
         target_controlnet: str = "",
     ) -> None:
         "Cleanup old components"
+
+        from ..lora import load_lora_utilities
+
+        load_lora_utilities(self)
 
         if not variations:
             self.image_encoder = None
