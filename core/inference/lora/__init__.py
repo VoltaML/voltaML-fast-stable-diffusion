@@ -4,6 +4,7 @@ from .utils import LoRAHookInjector
 
 
 def load_lora_utilities(pipe):
+    "Reset/redirect Linear and Conv2ds forward to the lora processor"
     if hasattr(pipe, "lora_injector"):
         pipe.lora_injector.change_forwards()
     else:
@@ -12,7 +13,7 @@ def load_lora_utilities(pipe):
 
 
 def install_lora_hook(pipe):
-    """Install LoRAHook to the pipe."""
+    "Install LoRAHook to the pipe"
     if hasattr(pipe, "lora_injector"):
         return
     injector = LoRAHookInjector()
@@ -23,7 +24,7 @@ def install_lora_hook(pipe):
 
 
 def uninstall_lora_hook(pipe):
-    """Uninstall LoRAHook from the pipe."""
+    "Remove LoRAHook from the pipe"
     pipe.lora_injector.uninstall_hooks()
     del pipe.lora_injector
     del pipe.apply_lora

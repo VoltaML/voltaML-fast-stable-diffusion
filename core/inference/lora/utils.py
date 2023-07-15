@@ -5,19 +5,18 @@ import torch
 
 from ...config import config
 
-d = None
-torch.nn.Linear.old_forward = torch.nn.Linear.forward
-torch.nn.Conv2d.old_forward = torch.nn.Conv2d.forward
+torch.nn.Linear.old_forward = torch.nn.Linear.forward  # type: ignore
+torch.nn.Conv2d.old_forward = torch.nn.Conv2d.forward  # type: ignore
 
 
-class LoRAUpDown(object):
+class _LoRAUpDown(object):
     def __init__(self) -> None:
         self.down: Union[torch.nn.Conv2d, torch.nn.Linear] = None  # type: ignore
         self.up: Union[torch.nn.Conv2d, torch.nn.Linear] = None  # type: ignore
         self.alpha: float = 0.5
 
 
-class LoRAModule(object):
+class _LoRAModule(object):
     def __init__(self, name: str) -> None:
         self.name: str = name
         self.alpha: float = 1.0
@@ -25,9 +24,11 @@ class LoRAModule(object):
 
 
 class LoRAHookInjector(object):
+    "LoRA hook manager class"
+
     def __init__(self):
         super().__init__()
-        self.containers: Dict[str, LoRAModule] = {}
+        self.containers: Dict[str, _LoRAModule] = {}
         self.hooks = {}
         self.device: torch.device = None  # type: ignore
         self.dtype: torch.dtype = None  # type: ignore
@@ -54,11 +55,11 @@ class LoRAHookInjector(object):
         return target_modules
 
     def change_forwards(self):
-        """Redirect lora forward to this hook manager"""
+        "Redirect lora forward to this hook manager"
         d = self
 
-        def lora_forward(self, input):
-            d._apply_lora_state_dicts(self)
+        def lora_forward(self, input):  # pylint: disable=redefined-builtin
+            d._apply_lora_state_dicts(self)  # pylint: disable=protected-access
 
             return self.old_forward(input)
 
@@ -66,7 +67,7 @@ class LoRAHookInjector(object):
         torch.nn.Conv2d.forward = lora_forward
 
     def install_hooks(self, pipe):
-        """Install LoRAHook to the pipe."""
+        """Install LoRAHook to the pipe"""
         assert len(self.hooks) == 0
         text_encoder_targets = self._get_target_modules(
             pipe.text_encoder, "lora_te", ["CLIPAttention", "CLIPMLP"]
@@ -100,12 +101,12 @@ class LoRAHookInjector(object):
 
             lora_layer_name = getattr(p, "lora_layer_name", None)
             for _, lora in self.containers.items():
-                module: LoRAModule = lora.modules.get(lora_layer_name, None)
+                module: _LoRAModule = lora.modules.get(lora_layer_name, None)  # type: ignore
                 if module is None:
                     continue
                 with torch.no_grad():
-                    up = module.up.weight.to(p.weight.device, dtype=p.weight.dtype)
-                    down = module.down.weight.to(p.weight.device, dtype=p.weight.dtype)
+                    up = module.up.weight.to(p.weight.device, dtype=p.weight.dtype)  # type: ignore
+                    down = module.down.weight.to(p.weight.device, dtype=p.weight.dtype)  # type: ignore
 
                     if up.shape[2:] == (1, 1) and down.shape[2:] == (1, 1):
                         updown = (
@@ -119,7 +120,7 @@ class LoRAHookInjector(object):
                         updown
                         * lora.alpha
                         * (
-                            module.alpha / module.up.weight.shape[1]
+                            module.alpha / module.up.weight.shape[1]  # type: ignore
                             if module.alpha
                             else 1.0
                         )
@@ -130,8 +131,8 @@ class LoRAHookInjector(object):
         """Uninstall LoRAHook from the pipe."""
         self.hooks = {}
 
-    def _load_lora(self, name: str, state_dict: Dict[str, torch.Tensor]) -> LoRAModule:
-        lora = LoRAModule(name)
+    def _load_lora(self, name: str, state_dict: Dict[str, torch.Tensor]) -> _LoRAModule:
+        lora = _LoRAModule(name)
         for k, v in state_dict.items():
             key, lora_key = k.split(".", 1)
             module = self.hooks.get(key, None)
@@ -139,8 +140,8 @@ class LoRAHookInjector(object):
                 continue
             lora_module = lora.modules.get(key, None)
             if lora_module is None:
-                lora_module = LoRAUpDown()
-                lora.modules[key] = lora_module
+                lora_module = _LoRAUpDown()
+                lora.modules[key] = lora_module  # type: ignore
 
             if lora_key == "alpha":
                 lora_module.alpha = v.item()  # type: ignore
@@ -165,11 +166,11 @@ class LoRAHookInjector(object):
 
             state_dict = load_file(file)
         else:
-            state_dict = torch.load(file)  # .bin, etc...
+            state_dict = torch.load(file)  # .bin, .pt, .ckpt...
         return state_dict
 
     def apply_lora(
-        self, file: Union[Path, str], alpha: Optional[Union[torch.Tensor, float]] = None
+        self, file: Union[Path, str], alpha: Optional[Union[torch.Tensor, float]] = None  # type: ignore
     ):
         """Load LoRA weights and apply LoRA to the pipe."""
         if not isinstance(file, Path):
