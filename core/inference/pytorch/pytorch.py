@@ -628,8 +628,11 @@ class PyTorchStableDiffusion(InferenceModel):
             raise e
         if len(self.unload_loras) != 0:
             for l in self.unload_loras:
-                logger.debug(f"Unloading LoRA: {l}")
-                self.remove_lora(l)  # type: ignore
+                try:
+                    self.remove_lora(l)  # type: ignore
+                    logger.debug(f"Unloading LoRA: {l}")
+                except KeyError:
+                    pass
             self.unload_loras.clear()
 
         # Clean memory and return images
