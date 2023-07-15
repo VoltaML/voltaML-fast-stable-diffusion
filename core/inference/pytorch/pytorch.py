@@ -31,7 +31,6 @@ from core.inference_callbacks import (
     inpaint_callback,
     txt2img_callback,
 )
-from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
 from core.types import (
     Backend,
@@ -104,23 +103,12 @@ class PyTorchStableDiffusion(InferenceModel):
         if not self.bare:
             # Autoload LoRAs
             for lora_name in config.api.autoloaded_loras:
-                lora = config.api.autoloaded_loras[lora_name]
+                weight = config.api.autoloaded_loras[lora_name]
 
-                try:
-                    self.load_lora(
-                        lora_name,
-                        alpha_text_encoder=lora["text_encoder"],
-                        alpha_unet=lora["unet"],
-                    )
-                except Exception as e:  # pylint: disable=broad-except
-                    logger.warning(f"Failed to load LoRA {lora}: {e}")
-                    websocket_manager.broadcast_sync(
-                        Notification(
-                            severity="error",
-                            message=f"Failed to load LoRA: {lora}",
-                            title="Autoload Error",
-                        )
-                    )
+                from ..lora import install_lora_hook
+                install_lora_hook(self)
+
+                self.apply_lora(lora_name, weight)  # type: ignore pylint: disable=no-member
 
             # Autoload textual inversions
             for textural_inversion in config.api.autoloaded_textual_inversions:
@@ -163,6 +151,10 @@ class PyTorchStableDiffusion(InferenceModel):
         if hasattr(self, "controlnet"):
             if self.controlnet is not None:
                 del self.controlnet
+        
+        if hasattr(self, "lora_injector"):
+            from ..lora import uninstall_lora_hook
+            uninstall_lora_hook(self)
 
         self.memory_cleanup()
 
@@ -644,29 +636,6 @@ class PyTorchStableDiffusion(InferenceModel):
         )
 
         pipe.save_pretrained(path, safe_serialization=safetensors)
-
-    def load_lora(
-        self, lora: str, alpha_text_encoder: float = 0.5, alpha_unet: float = 0.5
-    ):
-        "Inject a LoRA model into the pipeline"
-
-        logger.info(f"Loading LoRA model {lora} onto {self.model_id}...")
-
-        if any(lora in l for l in self.loras):
-            logger.info(f"LoRA model {lora} already loaded onto {self.model_id}")
-            return
-
-        if ".safetensors" in lora:
-            load_safetensors_loras(
-                self.text_encoder, self.unet, lora, alpha_text_encoder, alpha_unet
-            )
-        else:
-            self.unet.load_attn_procs(
-                pretrained_model_name_or_path_or_dict=lora,
-                resume_download=True,
-            )
-        self.loras.append(lora)
-        logger.info(f"LoRA model {lora} loaded successfully")
 
     def load_textual_inversion(self, textual_inversion: str):
         "Inject a textual inversion model into the pipeline"

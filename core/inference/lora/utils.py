@@ -8,46 +8,53 @@ from ...config import config
 
 class LoRAModule(torch.nn.Module):
     def __init__(
-        self, org_module: torch.nn.Module, lora_dim: int = 4, alpha: float = 1.0, multiplier: Union[float, torch.Tensor] = 1.0
+        self, org_module: torch.nn.Module, lora_dim: int = 4,
+        alpha: float = 1.0, multiplier: Union[float, torch.Tensor] = 1.0
     ):
-        """if alpha == 0 or None, alpha is rank (no scaling)."""
         super().__init__()
 
-        if org_module.__class__.__name__ == "Conv2d":
+        module_name = org_module.__class__.__name__
+        if module_name == "Conv2d":
             in_dim = org_module.in_channels
             out_dim = org_module.out_channels
-        else:
-            in_dim = org_module.in_features
-            out_dim = org_module.out_features
-
-        self.lora_dim = lora_dim
-
-        if org_module.__class__.__name__ == "Conv2d":
             kernel_size = org_module.kernel_size
             stride = org_module.stride
             padding = org_module.padding
-            self.lora_down = torch.nn.Conv2d(
-                in_dim, self.lora_dim, kernel_size, stride, padding, bias=False
-            )
-            self.lora_up = torch.nn.Conv2d(
-                self.lora_dim, out_dim, (1, 1), (1, 1), bias=False
-            )
         else:
-            self.lora_down = torch.nn.Linear(in_dim, self.lora_dim, bias=False)
-            self.lora_up = torch.nn.Linear(self.lora_dim, out_dim, bias=False)
+            in_dim = org_module.in_features
+            out_dim = org_module.out_features
+            kernel_size = stride = padding = None
 
-        if alpha is None or alpha == 0:
-            self.alpha = self.lora_dim
-        else:
-            if isinstance(alpha, torch.Tensor):
-                alpha = alpha.detach().float().numpy()  # without casting, bf16 causes error
-            self.register_buffer("alpha", torch.tensor(alpha))  # Treatable as a constant.
+        self.lora_dim = lora_dim
+        self.lora_down = self._create_down_layer(module_name, in_dim, kernel_size, stride, padding)
+        self.lora_up = self._create_up_layer(module_name, out_dim)
 
-        # same as microsoft's
-        torch.nn.init.kaiming_uniform_(self.lora_down.weight, a=math.sqrt(5))
+        self.register_buffer("alpha", torch.tensor(self._get_alpha(alpha)))
+
+        torch.nn.init.kaiming_uniform_(self.lora_down.weight)
         torch.nn.init.zeros_(self.lora_up.weight)
 
         self.multiplier = multiplier
+
+    def _create_down_layer(self, module_name: str, in_dim: int, kernel_size, stride, padding):
+        if module_name == "Conv2d":
+            return torch.nn.Conv2d(in_dim, self.lora_dim, kernel_size, stride, padding, bias=False)
+        else:
+            return torch.nn.Linear(in_dim, self.lora_dim, bias=False)
+
+    def _create_up_layer(self, module_name: str, out_dim: int):
+        if module_name == "Conv2d":
+            return torch.nn.Conv2d(self.lora_dim, out_dim, (1, 1), (1, 1), bias=False)
+        else:
+            return torch.nn.Linear(self.lora_dim, out_dim, bias=False)
+
+    def _get_alpha(self, alpha: Union[float, torch.Tensor]):
+        if alpha is None or alpha == 0:
+            return self.lora_dim
+        else:
+            if isinstance(alpha, torch.Tensor):
+                alpha = alpha.detach().float().numpy()
+            return alpha
 
     def forward(self, x: torch.Tensor):
         scale = self.alpha / self.lora_dim
@@ -189,6 +196,11 @@ class LoRAHookInjector(object):
         assert len(self.hooks) != 0
         if not isinstance(file, Path):
             file = Path(file)
+
+        # Unload if loaded already
+        if file.name in self.containers:
+            self.containers[file.name]._remove_from_hooks(self.hooks)  # pylint: disable=protected-access
+
         if file.suffix == ".safetensors":
             from safetensors.torch import load_file
             state_dict = load_file(file)
@@ -202,8 +214,8 @@ class LoRAHookInjector(object):
         """Remove the individual LoRA from the pipe."""
         if isinstance(file, str):
             file = Path(file)
-        self.containers[file.name]._remove_from_hooks(self.hooks)
-        self.containers.pop(file.name)
+        self.containers[file.name]._remove_from_hooks(self.hooks)  # pylint: disable=protected-access
+        del self.containers[file.name]
 
     def _cleanup(self):
         if len(self.containers.keys()) == 0:

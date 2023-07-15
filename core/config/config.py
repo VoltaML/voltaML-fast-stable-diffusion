@@ -154,7 +154,7 @@ class APIConfig:
     enable_shutdown: bool = True
 
     # Autoload
-    autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
+    autoloaded_loras: Dict[str, float] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
 
     # Saving

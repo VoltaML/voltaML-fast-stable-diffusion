@@ -74,10 +74,8 @@
                     <div v-if="global.state.selected_model !== null">
                       <NCard style="width: 100%; margin-bottom: 8px" title="LoRA strength"
                         header-style="padding-bottom: 0; font-size: 16px">
-                        <div class="flex-container">
-                          <NSlider v-model:value="conf.data.settings.api.lora_weight
-                            " :min="0.1" :max="1" :step="0.01" style="margin-right: 12px" />
-                        </div>
+                        <NSlider v-model:value="conf.data.settings.api.lora_weight
+                          " :min="-1" :max="1" :step="0.05" />
                       </NCard>
                       <div style="
                           display: inline-flex;
