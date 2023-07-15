@@ -503,11 +503,10 @@ class GPU:
             internal_model = self.loaded_models[req.model]
 
             if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.info(
-                    f"Loading Lora model: {req.lora}, weights: ({req.weight})"
-                )
+                logger.info(f"Loading Lora model: {req.lora}, weights: ({req.weight})")
 
                 from .inference.lora import install_lora_hook
+
                 install_lora_hook(internal_model)
                 internal_model.apply_lora(req.lora, req.weight)  # type: ignore
 
@@ -536,9 +535,7 @@ class GPU:
             internal_model = self.loaded_models[req.model]
 
             if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.info(
-                    f"Unloading Lora model: {req.lora})"
-                )
+                logger.info(f"Unloading Lora model: {req.lora})")
 
                 internal_model.remove_lora(req.lora)  # type: ignore
 
