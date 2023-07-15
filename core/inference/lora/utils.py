@@ -86,6 +86,7 @@ class LoRAHookInjector(object):
         self.device = config.api.device  # type: ignore
         self.dtype = pipe.unet.dtype
 
+    @torch.no_grad()
     def _apply_lora_state_dicts(self, p: Union[torch.nn.Conv2d, torch.nn.Linear]):
         current_names = getattr(p, "lora_current_names", ())
         wanted_names = tuple((x[0], x[1].alpha) for x in self.containers.items())

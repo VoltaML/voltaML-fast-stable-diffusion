@@ -60,7 +60,12 @@ async def list_loaded_models() -> List[ModelResponse]:
                 backend=gpu.loaded_models[model_id].backend,
                 path=gpu.loaded_models[model_id].model_id,
                 state="loaded",
-                loras=gpu.loaded_models[model_id].__dict__.get("loras", []),
+                loras=list(
+                    map(
+                        lambda x: Path(x[0]).name,
+                        gpu.loaded_models[model_id].__dict__.get("loras", []),
+                    )
+                ),
                 textual_inversions=gpu.loaded_models[model_id].__dict__.get(
                     "textual_inversions", []
                 ),
