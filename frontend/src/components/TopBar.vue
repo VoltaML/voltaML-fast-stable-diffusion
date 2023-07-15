@@ -81,9 +81,9 @@
             >Refresh</NButton
           >
         </div>
-        <NScrollbar>
-          <NTabs type="segment" style="height: 70vh">
-            <NTabPane name="PyTorch" style="height: 100%">
+        <NTabs type="segment" style="height: calc(70vh + 40px)">
+          <NTabPane name="PyTorch" style="height: 100%">
+            <NScrollbar style="height: 70vh">
               <NGrid cols="1 900:3" :x-gap="8" :y-gap="8" style="height: 100%">
                 <!-- Models -->
                 <NGi>
@@ -279,8 +279,10 @@
                   </NCard>
                 </NGi>
               </NGrid>
-            </NTabPane>
-            <NTabPane name="AITemplate">
+            </NScrollbar>
+          </NTabPane>
+          <NTabPane name="AITemplate">
+            <NScrollbar style="height: 70vh">
               <NCard title="Models" style="height: 100%">
                 <div
                   style="
@@ -313,8 +315,10 @@
                   </div>
                 </div>
               </NCard>
-            </NTabPane>
-            <NTabPane name="ONNX">
+            </NScrollbar>
+          </NTabPane>
+          <NTabPane name="ONNX">
+            <NScrollbar style="height: 70vh">
               <NCard title="Models" style="height: 100%">
                 <div
                   style="
@@ -347,9 +351,9 @@
                   </div>
                 </div>
               </NCard>
-            </NTabPane>
-          </NTabs>
-        </NScrollbar>
+            </NScrollbar>
+          </NTabPane>
+        </NTabs>
       </div>
     </NModal>
 

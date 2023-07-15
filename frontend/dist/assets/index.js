@@ -41213,7 +41213,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-9d1421b3"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-fa230e48"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41237,7 +41237,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "07c717be": backgroundColor.value
+      "584a206c": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41722,17 +41722,17 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                   _: 1
                 })
               ]),
-              createVNode(unref(NScrollbar), null, {
+              createVNode(unref(NTabs), {
+                type: "segment",
+                style: { "height": "calc(70vh + 40px)" }
+              }, {
                 default: withCtx(() => [
-                  createVNode(unref(NTabs), {
-                    type: "segment",
-                    style: { "height": "70vh" }
+                  createVNode(unref(NTabPane), {
+                    name: "PyTorch",
+                    style: { "height": "100%" }
                   }, {
                     default: withCtx(() => [
-                      createVNode(unref(NTabPane), {
-                        name: "PyTorch",
-                        style: { "height": "100%" }
-                      }, {
+                      createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
                         default: withCtx(() => [
                           createVNode(unref(NGrid), {
                             cols: "1 900:3",
@@ -41965,8 +41965,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           })
                         ]),
                         _: 1
-                      }),
-                      createVNode(unref(NTabPane), { name: "AITemplate" }, {
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NTabPane), { name: "AITemplate" }, {
+                    default: withCtx(() => [
+                      createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
                         default: withCtx(() => [
                           createVNode(unref(NCard), {
                             title: "Models",
@@ -42010,8 +42015,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           })
                         ]),
                         _: 1
-                      }),
-                      createVNode(unref(NTabPane), { name: "ONNX" }, {
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NTabPane), { name: "ONNX" }, {
+                    default: withCtx(() => [
+                      createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
                         default: withCtx(() => [
                           createVNode(unref(NCard), {
                             title: "Models",
@@ -42128,7 +42138,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_9d1421b3_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_fa230e48_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42136,7 +42146,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-9d1421b3"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-fa230e48"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
