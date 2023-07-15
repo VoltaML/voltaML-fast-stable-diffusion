@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import torch
 from diffusers import (
@@ -74,7 +74,8 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.current_controlnet: str = ""
 
-        self.loras: List[str] = []
+        self.loras: List[Tuple[str, float]] = []
+        self.unload_loras: List[str] = []
         self.textual_inversions: List[str] = []
 
         if autoload:
@@ -218,6 +219,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.manage_optional_components()
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
             unet=self.unet,  # type: ignore
             text_encoder=self.text_encoder,
@@ -317,6 +319,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.manage_optional_components()
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
             unet=self.unet,  # type: ignore
             text_encoder=self.text_encoder,
@@ -401,6 +404,7 @@ class PyTorchStableDiffusion(InferenceModel):
             )
         elif self.unet.config["in_channels"] == 4:
             pipe = StableDiffusionLongPromptWeightingPipeline(
+                parent=self,
                 vae=self.vae,
                 unet=self.unet,  # type: ignore
                 text_encoder=self.text_encoder,
@@ -438,7 +442,7 @@ class PyTorchStableDiffusion(InferenceModel):
         for _ in range(job.data.batch_count):
             if isinstance(pipe, StableDiffusionInpaintPipeline):
                 prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                    pipe=pipe,  # type: ignore
+                    pipe=self,  # type: ignore
                     prompt=job.data.prompt,
                     uncond_prompt=job.data.negative_prompt,
                 )
@@ -553,7 +557,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         # Preprocess the prompt
         prompt_embeds, negative_embeds = get_weighted_text_embeddings(
-            pipe=pipe,  # type: ignore # implements same protocol, but doesn't inherit
+            pipe=self,  # type: ignore # implements same protocol, but doesn't inherit
             prompt=job.data.prompt,
             uncond_prompt=job.data.negative_prompt,
         )
@@ -622,6 +626,11 @@ class PyTorchStableDiffusion(InferenceModel):
         except Exception as e:
             self.memory_cleanup()
             raise e
+        if len(self.unload_loras) != 0:
+            for l in self.unload_loras:
+                logger.debug(f"Unloading LoRA: {l}")
+                self.remove_lora(l)  # type: ignore
+            self.unload_loras.clear()
 
         # Clean memory and return images
         self.memory_cleanup()
@@ -657,6 +666,7 @@ class PyTorchStableDiffusion(InferenceModel):
             return
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
             unet=self.unet,
             text_encoder=self.text_encoder,

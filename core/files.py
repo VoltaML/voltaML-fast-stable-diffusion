@@ -189,9 +189,9 @@ class CachedModelList:
             model_name = (
                 model.replace(".safetensors", "")
                 .replace(".ckpt", "")
+                .replace(".pth", "")
                 .replace(".pt", "")
                 .replace(".bin", "")
-                .replace(".pth", "")
             )
 
             models.append(

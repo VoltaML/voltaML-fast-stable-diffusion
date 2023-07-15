@@ -508,7 +508,7 @@ class GPU:
                 from .inference.lora import install_lora_hook
 
                 install_lora_hook(internal_model)
-                internal_model.apply_lora(req.lora, req.weight)  # type: ignore
+                internal_model.loras.append((req.lora, req.weight))
 
                 websocket_manager.broadcast_sync(
                     Notification(
@@ -537,7 +537,15 @@ class GPU:
             if isinstance(internal_model, PyTorchStableDiffusion):
                 logger.info(f"Unloading Lora model: {req.lora})")
 
-                internal_model.remove_lora(req.lora)  # type: ignore
+                nm = []
+                for lora, weight in internal_model.loras:
+                    if lora != req.lora:
+                        nm.append((lora, weight))
+                internal_model.loras = nm
+                try:
+                    internal_model.remove_lora(Path(req.lora).name)  # type: ignore
+                except KeyError:
+                    pass
 
                 websocket_manager.broadcast_sync(
                     Notification(

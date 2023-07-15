@@ -1,9 +1,13 @@
+from pathlib import Path
 import logging
 import re
-from typing import List, Optional, Union
+from typing import List, Optional, Union, Literal, Tuple, Dict
 
 import torch
 from diffusers import StableDiffusionPipeline
+
+from ...files import get_full_model_path
+from ...config import config
 
 logger = logging.getLogger(__name__)
 
@@ -31,37 +35,36 @@ special_parser = re.compile(
 )
 
 
-def parse_prompt_special(text: str, templates: dict):
+def parse_prompt_special(
+    text: str,
+) -> Tuple[str, Dict[Literal["ti", "lora"], List[Union[str, Tuple[str, float]]]]]:
     """
-    Replaces special tokens like <lora:more_details:0.7> with the correct format and token ids.
+    Replaces special tokens like <lora:more_details:0.7> with their correct format and outputs then into a dict.
 
-    >>> example_template = {
-        "lora": {
-            "more_details": "more_details_token",
-        },
-        "ti": {
-            "easy_negative": "easy_negative_token_41654",
-        },
-    }
-    >>> parse_prompt_special("This is a <lora:more_details:0.7> example.", example_template)
-    'This is a (more_details_token:0.7) example.'
-    >>> parse_prompt_special("This is a <lora:more_details:0.7> example.", {})
-    'This is a <lora:more_details:0.7> example.'
-    >>> parse_prompt_special("This is a <ti:easy_negative:0.7> example.", example_template)
-    'This is a (easy_negative_token_41654:0.7) example.'
+    >>> parse_prompt_special("This is a <ti:easynegative:0.7> example.")
+    'This is a (easynegative:0.7) example.'
+    >>> parse_prompt_special("This is a <lora:more_details:0.7> example.")
+    'This is a  example.' (lora "more_details" gets loaded with a=0.7)
     """
+
+    load_map = {}
 
     def replace(match):
-        type_ = match.group(1)
+        type_: Literal["ti", "lora"] = match.group(1)  # type: ignore
+        name = match.group(2)
+        strength = match.group(3)
 
-        if type_ not in templates:
-            print(f"Unknown special token type: {type_}")
-            return match.group(0)
+        if type_ == "ti":
+            load_map["ti"] = load_map.get("ti", list())
+            load_map["ti"].append(name)
+            return f"({name}:{strength})"
+        # LoRAs don't really have trigger words, they all modify the UNet at least a bit
+        load_map["lora"] = load_map.get("lora", list())
+        load_map["lora"].append((name, float(strength)))
+        return "" if not config.api.huggingface_style_parsing else name
 
-        template = templates[type_]
-        return f"({template.get(match.group(2), match.group(2))}:{match.group(3)})"
-
-    return special_parser.sub(replace, text)
+    parsed = special_parser.sub(replace, text)
+    return (parsed, load_map)
 
 
 def parse_prompt_attention(text):
@@ -305,6 +308,80 @@ def get_weighted_text_embeddings(
     max_length = (pipe.tokenizer.model_max_length - 2) * max_embeddings_multiples + 2  # type: ignore
     if isinstance(prompt, str):
         prompt = [prompt]
+
+    loralist = []
+    for l in pipe.loras:
+        loralist.append(l)
+    for i, prompt_ in enumerate(prompt):
+        prompt[i], load_map = parse_prompt_special(prompt_)
+        if len(load_map.keys()) != 0:
+            logger.debug(load_map)
+            if "lora" in load_map:
+                from ..lora import install_lora_hook
+
+                install_lora_hook(pipe)
+
+                if not hasattr(pipe.lora_injector, "old_containers"):
+                    pipe.lora_injector.old_containers = None
+                if pipe.lora_injector.old_containers is None:
+                    pipe.lora_injector.old_containers = pipe.lora_injector.containers
+                    logger.debug(f"Old containers: {pipe.lora_injector.old_containers}")
+
+                for lora, alpha in load_map["lora"]:
+                    correct_path = get_full_model_path(
+                        lora, model_folder="lora", force=True
+                    )
+                    for ext in [".safetensors", ".ckpt", ".bin", ".pt", ".pth"]:
+                        path = get_full_model_path(
+                            lora + ext, model_folder="lora", force=True
+                        )
+                        if path.exists():
+                            correct_path = path
+                            break
+                    loralist.append((correct_path, alpha))
+            elif "ti" in load_map:
+                for ti in load_map["ti"]:  # type: ignore
+                    ti: str
+                    correct_path = get_full_model_path(
+                        ti, model_folder="textual-inversion", force=True
+                    )
+                    for ext in [".safetensors", ".ckpt", ".bin", ".pt", ".pth"]:
+                        path = get_full_model_path(
+                            ti + ext, model_folder="textual-inversion", force=True
+                        )
+                        if path.exists():
+                            correct_path = path
+                            break
+                    logger.debug(f"Applying textual inversion {correct_path.name}")
+                    pipe.load_textual_inversion(correct_path.absolute().as_posix())
+
+    if config.api.huggingface_style_parsing and hasattr(pipe, "lora_injector"):
+        for prompt_ in prompt:
+            old_l = loralist
+            loralist = list(
+                filter(
+                    lambda x: Path(x[0]).stem.casefold() in prompt_.casefold(), loralist
+                )
+            )
+            for lora, weight in old_l:
+                if (lora, weight) not in loralist:
+                    try:
+                        pipe.remove_lora(Path(lora).name)
+                        logger.debug(f"Unloading LoRA: {Path(lora).name}")
+                    except KeyError:
+                        pass
+    if hasattr(pipe, "lora_injector"):
+        remove = pipe.unload_loras
+        for lora, alpha in loralist:
+            name = Path(lora).name
+            if name not in pipe.lora_injector.containers:
+                logger.debug(f"{pipe.loras}, {loralist}")
+                if lora not in map(lambda x: x[0], pipe.loras) and name not in remove:
+                    logger.debug(f"Adding LoRA {name} to the removal list")
+                    remove.append(name)
+                logger.debug(f"Applying LoRA {name} with strength {alpha}")
+                pipe.apply_lora(lora, alpha)
+        pipe.unload_loras = remove
 
     if not skip_parsing:
         prompt_tokens, prompt_weights = get_prompts_with_weights(

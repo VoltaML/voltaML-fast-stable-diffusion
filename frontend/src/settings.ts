@@ -169,6 +169,7 @@ export interface ISettings {
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
 
+    huggingface_style_parsing: boolean;
     lora_weight: number;
 
     autoloaded_loras: Map<string, IAutoloadedLora>;
@@ -332,6 +333,7 @@ export const defaultSettings: ISettings = {
     reduced_precision: false,
     clear_memory_policy: "always",
 
+    huggingface_style_parsing: false,
     lora_weight: 0.5,
     autoloaded_loras: new Map(),
     autoloaded_textual_inversions: [],

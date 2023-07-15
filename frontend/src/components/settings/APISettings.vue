@@ -8,42 +8,29 @@
       <NSwitch v-model:value="settings.defaultSettings.api.disable_grid" />
     </NFormItem>
     <NFormItem label="Image extension">
-      <NSelect
-        v-model:value="settings.defaultSettings.api.image_extension"
-        :options="[
-          {
-            label: 'PNG',
-            value: 'png',
-          },
-          {
-            label: 'WebP',
-            value: 'webp',
-          },
-          {
-            label: 'JPEG',
-            value: 'jpeg',
-          },
-        ]"
-      />
+      <NSelect v-model:value="settings.defaultSettings.api.image_extension" :options="[
+        {
+          label: 'PNG',
+          value: 'png',
+        },
+        {
+          label: 'WebP',
+          value: 'webp',
+        },
+        {
+          label: 'JPEG',
+          value: 'jpeg',
+        },
+      ]" />
     </NFormItem>
     <NFormItem label="Image quality (JPEG/WebP only)">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.image_quality"
-        :min="0"
-        :max="100"
-        :step="1"
-      />
+      <NInputNumber v-model:value="settings.defaultSettings.api.image_quality" :min="0" :max="100" :step="1" />
     </NFormItem>
 
     <h2>Autoload</h2>
     <NFormItem label="Textual Inversions">
-      <NSelect
-        multiple
-        :options="textualInversionOptions"
-        v-model:value="
-          settings.defaultSettings.api.autoloaded_textual_inversions
-        "
-      >
+      <NSelect multiple :options="textualInversionOptions" v-model:value="settings.defaultSettings.api.autoloaded_textual_inversions
+        ">
       </NSelect>
     </NFormItem>
 
@@ -51,33 +38,23 @@
       <NSelect multiple :options="loraOptions"> </NSelect>
     </NFormItem>
 
+    <NFormItem label="Huggingface-style prompting">
+      <NSwitch v-model:value="settings.defaultSettings.api.huggingface_style_parsing" />
+    </NFormItem>
+
     <h2>Timings and Queue</h2>
     <NFormItem label="WebSocket Performance Monitor Interval">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.websocket_perf_interval"
-        :min="0.1"
-        :step="0.1"
-      />
+      <NInputNumber v-model:value="settings.defaultSettings.api.websocket_perf_interval" :min="0.1" :step="0.1" />
     </NFormItem>
     <NFormItem label="WebSocket Sync Interval">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.websocket_sync_interval"
-        :min="0.001"
-        :step="0.01"
-      />
+      <NInputNumber v-model:value="settings.defaultSettings.api.websocket_sync_interval" :min="0.001" :step="0.01" />
     </NFormItem>
     <NFormItem label="Image Preview Interval (seconds)">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.image_preview_delay"
-        :step="0.1"
-      />
+      <NInputNumber v-model:value="settings.defaultSettings.api.image_preview_delay" :step="0.1" />
     </NFormItem>
 
     <NFormItem label="Concurrent jobs">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.concurrent_jobs"
-        :step="1"
-      />
+      <NInputNumber v-model:value="settings.defaultSettings.api.concurrent_jobs" :step="1" />
     </NFormItem>
 
     <h2>Optimizations</h2>
@@ -87,71 +64,51 @@
     </NFormItem>
 
     <NFormItem label="Attention Processor">
-      <NSelect
-        :options="[
-          {
-            value: 'xformers',
-            label: 'xFormers (less memory hungry)',
-          },
-          {
-            value: 'sdpa',
-            label: 'SDP Attention',
-          },
-          {
-            value: 'cross-attention',
-            label: 'Cross-Attention',
-          },
-          {
-            value: 'subquadratic',
-            label: 'Sub-quadratic Attention',
-          },
-          {
-            value: 'multihead',
-            label: 'Multihead attention',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.attention_processor"
-      >
+      <NSelect :options="[
+        {
+          value: 'xformers',
+          label: 'xFormers (less memory hungry)',
+        },
+        {
+          value: 'sdpa',
+          label: 'SDP Attention',
+        },
+        {
+          value: 'cross-attention',
+          label: 'Cross-Attention',
+        },
+        {
+          value: 'subquadratic',
+          label: 'Sub-quadratic Attention',
+        },
+        {
+          value: 'multihead',
+          label: 'Multihead attention',
+        },
+      ]" v-model:value="settings.defaultSettings.api.attention_processor">
       </NSelect>
     </NFormItem>
 
     <!-- Subquadratic attention params -->
-    <div
-      class="flex-container"
-      v-if="settings.defaultSettings.api.attention_processor == 'subquadratic'"
-    >
+    <div class="flex-container" v-if="settings.defaultSettings.api.attention_processor == 'subquadratic'">
       <p class="slider-label">Subquadratic chunk size (affects VRAM usage)</p>
-      <NSlider
-        v-model:value="settings.defaultSettings.api.subquadratic_size"
-        :step="64"
-        :min="64"
-        :max="8192"
-        style="margin-right: 12px"
-      />
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.subquadratic_size"
-        size="small"
-        style="min-width: 96px; width: 96px"
-        :step="64"
-        :min="64"
-        :max="8192"
-      />
+      <NSlider v-model:value="settings.defaultSettings.api.subquadratic_size" :step="64" :min="64" :max="8192"
+        style="margin-right: 12px" />
+      <NInputNumber v-model:value="settings.defaultSettings.api.subquadratic_size" size="small"
+        style="min-width: 96px; width: 96px" :step="64" :min="64" :max="8192" />
     </div>
 
     <NFormItem label="Attention Slicing">
-      <NSelect
-        :options="[
-          {
-            value: 'disabled',
-            label: 'None',
-          },
-          {
-            value: 'auto',
-            label: 'Auto',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.attention_slicing"
-      >
+      <NSelect :options="[
+        {
+          value: 'disabled',
+          label: 'None',
+        },
+        {
+          value: 'auto',
+          label: 'Auto',
+        },
+      ]" v-model:value="settings.defaultSettings.api.attention_slicing">
       </NSelect>
     </NFormItem>
 
@@ -160,39 +117,32 @@
     </NFormItem>
 
     <NFormItem label="Deterministic generation">
-      <NSwitch
-        v-model:value="settings.defaultSettings.api.deterministic_generation"
-      />
+      <NSwitch v-model:value="settings.defaultSettings.api.deterministic_generation" />
     </NFormItem>
 
     <NFormItem label="Reduced Precision (RTX 30xx and newer cards)">
       <NSwitch v-model:value="settings.defaultSettings.api.reduced_precision" />
     </NFormItem>
 
-    <NFormItem
-      label="CudNN Benchmark (big VRAM spikes - use on 8GB+ cards only)"
-    >
+    <NFormItem label="CudNN Benchmark (big VRAM spikes - use on 8GB+ cards only)">
       <NSwitch v-model:value="settings.defaultSettings.api.cudnn_benchmark" />
     </NFormItem>
 
     <NFormItem label="Clean Memory">
-      <NSelect
-        :options="[
-          {
-            value: 'always',
-            label: 'Always',
-          },
-          {
-            value: 'never',
-            label: 'Never',
-          },
-          {
-            value: 'after_disconnect',
-            label: 'After disconnect',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.clear_memory_policy"
-      >
+      <NSelect :options="[
+        {
+          value: 'always',
+          label: 'Always',
+        },
+        {
+          value: 'never',
+          label: 'Never',
+        },
+        {
+          value: 'after_disconnect',
+          label: 'After disconnect',
+        },
+      ]" v-model:value="settings.defaultSettings.api.clear_memory_policy">
       </NSelect>
     </NFormItem>
 
@@ -209,62 +159,56 @@
     </NFormItem>
 
     <NFormItem label="Offload">
-      <NSelect
-        :options="[
-          {
-            value: 'disabled',
-            label: 'Disabled',
-          },
-          {
-            value: 'model',
-            label: 'Offload the whole model to RAM when not used',
-          },
-          {
-            value: 'module',
-            label: 'Offload individual modules to RAM when not used',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.offload"
-      >
+      <NSelect :options="[
+        {
+          value: 'disabled',
+          label: 'Disabled',
+        },
+        {
+          value: 'model',
+          label: 'Offload the whole model to RAM when not used',
+        },
+        {
+          value: 'module',
+          label: 'Offload individual modules to RAM when not used',
+        },
+      ]" v-model:value="settings.defaultSettings.api.offload">
       </NSelect>
     </NFormItem>
 
     <h2>Device</h2>
 
     <NFormItem label="Device Type">
-      <NSelect
-        :options="[
-          {
-            value: 'cpu',
-            label: 'CPU',
-          },
-          {
-            value: 'cuda',
-            label: 'CUDA (NVIDIA) or ROCm (AMD)',
-          },
-          {
-            value: 'mps',
-            label: 'MPS (Apple)',
-          },
-          {
-            value: 'directml',
-            label: 'DirectML',
-          },
-          {
-            value: 'intel',
-            label: 'Intel',
-          },
-          {
-            value: 'vulkan',
-            label: 'Vulkan (Not Implemented)',
-          },
-          {
-            value: 'iree',
-            label: 'IREE (Not Implemented)',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.device_type"
-      />
+      <NSelect :options="[
+        {
+          value: 'cpu',
+          label: 'CPU',
+        },
+        {
+          value: 'cuda',
+          label: 'CUDA (NVIDIA) or ROCm (AMD)',
+        },
+        {
+          value: 'mps',
+          label: 'MPS (Apple)',
+        },
+        {
+          value: 'directml',
+          label: 'DirectML',
+        },
+        {
+          value: 'intel',
+          label: 'Intel',
+        },
+        {
+          value: 'vulkan',
+          label: 'Vulkan (Not Implemented)',
+        },
+        {
+          value: 'iree',
+          label: 'IREE (Not Implemented)',
+        },
+      ]" v-model:value="settings.defaultSettings.api.device_type" />
     </NFormItem>
 
     <NFormItem label="Device ID (GPU ID)">
@@ -272,23 +216,20 @@
     </NFormItem>
 
     <NFormItem label="Precision">
-      <NSelect
-        :options="[
-          {
-            value: 'float16',
-            label: '16-bit float',
-          },
-          {
-            value: 'float32',
-            label: '32-bit float',
-          },
-          {
-            value: 'bfloat16',
-            label: '16-bit bfloat (CPU and Ampere+)',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.data_type"
-      />
+      <NSelect :options="[
+        {
+          value: 'float16',
+          label: '16-bit float',
+        },
+        {
+          value: 'float32',
+          label: '32-bit float',
+        },
+        {
+          value: 'bfloat16',
+          label: '16-bit bfloat (CPU and Ampere+)',
+        },
+      ]" v-model:value="settings.defaultSettings.api.data_type" />
     </NFormItem>
 
     <h2>TomeSD</h2>
@@ -297,35 +238,28 @@
     </NFormItem>
 
     <NFormItem label="TomeSD Ratio">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.tomesd_ratio"
-        :min="0.1"
-        :max="1.0"
-      />
+      <NInputNumber v-model:value="settings.defaultSettings.api.tomesd_ratio" :min="0.1" :max="1.0" />
     </NFormItem>
 
     <NFormItem label="TomeSD Downsample layers">
-      <NSelect
-        :options="[
-          {
-            value: 1,
-            label: '1',
-          },
-          {
-            value: 2,
-            label: '2',
-          },
-          {
-            value: 4,
-            label: '4',
-          },
-          {
-            value: 8,
-            label: '8',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.tomesd_downsample_layers"
-      />
+      <NSelect :options="[
+        {
+          value: 1,
+          label: '1',
+        },
+        {
+          value: 2,
+          label: '2',
+        },
+        {
+          value: 4,
+          label: '4',
+        },
+        {
+          value: 8,
+          label: '8',
+        },
+      ]" v-model:value="settings.defaultSettings.api.tomesd_downsample_layers" />
     </NFormItem>
 
     <h2>Torch Compile</h2>
@@ -335,40 +269,28 @@
 
     <div v-if="settings.defaultSettings.api.torch_compile">
       <NFormItem label="Fullgraph">
-        <NSwitch
-          v-model:value="settings.defaultSettings.api.torch_compile_fullgraph"
-        />
+        <NSwitch v-model:value="settings.defaultSettings.api.torch_compile_fullgraph" />
       </NFormItem>
 
       <NFormItem label="Dynamic">
-        <NSwitch
-          v-model:value="settings.defaultSettings.api.torch_compile_dynamic"
-        />
+        <NSwitch v-model:value="settings.defaultSettings.api.torch_compile_dynamic" />
       </NFormItem>
 
       <NFormItem label="Backend">
-        <NSelect
-          v-model:value="settings.defaultSettings.api.torch_compile_backend"
-          tag
-          filterable
-          :options="[
-            {
-              value: 'inductor',
-              label: 'Inductor',
-            },
-          ]"
-        />
+        <NSelect v-model:value="settings.defaultSettings.api.torch_compile_backend" tag filterable :options="[
+          {
+            value: 'inductor',
+            label: 'Inductor',
+          },
+        ]" />
       </NFormItem>
 
       <NFormItem label="Compile Mode">
-        <NSelect
-          v-model:value="settings.defaultSettings.api.torch_compile_mode"
-          :options="[
-            { value: 'default', label: 'Default' },
-            { value: 'reduce-overhead', label: 'Reduce Overhead' },
-            { value: 'max-autotune', label: 'Max Autotune' },
-          ]"
-        />
+        <NSelect v-model:value="settings.defaultSettings.api.torch_compile_mode" :options="[
+          { value: 'default', label: 'Default' },
+          { value: 'reduce-overhead', label: 'Reduce Overhead' },
+          { value: 'max-autotune', label: 'Max Autotune' },
+        ]" />
       </NFormItem>
     </div>
   </NForm>

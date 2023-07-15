@@ -157,6 +157,8 @@ class APIConfig:
     autoloaded_loras: Dict[str, float] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
 
+    huggingface_style_parsing: bool = False
+
     # Saving
     save_path_template: str = "{folder}/{prompt}/{id}-{index}.{extension}"
     image_extension: Literal["png", "webp", "jpeg"] = "png"
