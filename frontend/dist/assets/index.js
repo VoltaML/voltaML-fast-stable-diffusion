@@ -40949,6 +40949,7 @@ const defaultSettings = {
     deterministic_generation: false,
     reduced_precision: false,
     clear_memory_policy: "always",
+    huggingface_style_parsing: false,
     lora_weight: 0.5,
     autoloaded_loras: /* @__PURE__ */ new Map(),
     autoloaded_textual_inversions: [],
