@@ -17,7 +17,7 @@ re_attention = re.compile(
 \\|
 \(|
 \[|
-:([+-]?[.\d]+)\)|
+:[\s]*([+-]?[.\d]+)\)|
 \)|
 ]|
 [^\\()\[\]:]+|
@@ -25,6 +25,43 @@ re_attention = re.compile(
 """,
     re.X,
 )
+
+special_parser = re.compile(
+    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+):[\s]*([+-]?(?:[0-9]*[.])?[0-9]+)\>"
+)
+
+
+def parse_prompt_special(text: str, templates: dict):
+    """
+    Replaces special tokens like <lora:more_details:0.7> with the correct format and token ids.
+
+    >>> example_template = {
+        "lora": {
+            "more_details": "more_details_token",
+        },
+        "ti": {
+            "easy_negative": "easy_negative_token_41654",
+        },
+    }
+    >>> parse_prompt_special("This is a <lora:more_details:0.7> example.", example_template)
+    'This is a (more_details_token:0.7) example.'
+    >>> parse_prompt_special("This is a <lora:more_details:0.7> example.", {})
+    'This is a <lora:more_details:0.7> example.'
+    >>> parse_prompt_special("This is a <ti:easy_negative:0.7> example.", example_template)
+    'This is a (easy_negative_token_41654:0.7) example.'
+    """
+
+    def replace(match):
+        type_ = match.group(1)
+
+        if type_ not in templates:
+            print(f"Unknown special token type: {type_}")
+            return match.group(0)
+
+        template = templates[type_]
+        return f"({template.get(match.group(2), match.group(2))}:{match.group(3)})"
+
+    return special_parser.sub(replace, text)
 
 
 def parse_prompt_attention(text):
