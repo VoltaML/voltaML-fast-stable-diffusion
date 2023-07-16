@@ -3,9 +3,40 @@ import { useWebsocket } from "./store/websockets";
 
 export const spaceRegex = new RegExp("[\\s,]+");
 const arrowKeys = [38, 40];
+let currentFocus: number = -1;
 
 export function dimensionValidator(value: number) {
   return value % 8 === 0;
+}
+
+function addActive(x: any) {
+  // a function to classify an item as "active":
+  if (!x) return false;
+  // start by removing the "active" class on all items:
+  removeActive(x);
+  if (currentFocus >= x.length) currentFocus = 0;
+  if (currentFocus < 0) currentFocus = x.length - 1;
+  // add class "autocomplete-active":
+  x[currentFocus].classList.add("autocomplete-active");
+}
+function removeActive(x: any) {
+  // a function to remove the "active" class from all autocomplete items:
+  for (var i = 0; i < x.length; i++) {
+    x[i].classList.remove("autocomplete-active");
+  }
+}
+function closeAllLists(
+  elmnt: HTMLElement | undefined | EventTarget | null,
+  input: any
+) {
+  /*close all autocomplete lists in the document,
+    except the one passed as an argument:*/
+  var x = document.getElementsByClassName("autocomplete-items");
+  for (var i = 0; i < x.length; i++) {
+    if (elmnt != x[i] && elmnt != input) {
+      x[i]?.parentNode?.removeChild(x[i]);
+    }
+  }
 }
 
 export async function startWebsocket(messageProvider: any) {
@@ -54,7 +85,12 @@ export function getTextBoundaries(elem: HTMLInputElement | null) {
   return [0, 0];
 }
 
-export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
+export function promptHandleKeyUp(
+  e: KeyboardEvent,
+  data: any,
+  key: string,
+  globalState: ReturnType<typeof import("@/store/state")["useState"]>
+) {
   // Handle ArrowUp
   if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
@@ -166,6 +202,94 @@ export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
       console.log("No selection, cannot parse for weighting");
     }
   }
+
+  // Handle autocomplete
+  const input = e.target as HTMLTextAreaElement;
+
+  if (input) {
+    const text = input.value;
+    const currentTokenStripped = text.split(",").pop()?.trim();
+
+    // close any already open lists of autocompleted values
+    closeAllLists(undefined, input);
+    if (!currentTokenStripped) {
+      return false;
+    }
+
+    const toAppend = [];
+    for (let i = 0; i < globalState.state.autofill.length; i++) {
+      // check if the item starts with the same letters as the text field value:
+      if (
+        globalState.state.autofill[i]
+          .toUpperCase()
+          .includes(currentTokenStripped.toUpperCase())
+      ) {
+        // create a DIV element for each matching element:
+        const b = document.createElement("DIV");
+        // make the matching letters bold:
+        b.innerText = globalState.state.autofill[i];
+        // insert a input field that will hold the current array item's value:
+        b.innerHTML +=
+          "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
+        // execute a function when someone clicks on the item value (DIV element):
+        b.addEventListener("click", function (e) {
+          input.value =
+            text.substring(0, text.lastIndexOf(",") + 1) +
+            globalState.state.autofill[i];
+          data[key] = input.value;
+
+          // close the list of autocompleted values, (or any other open lists of autocompleted values
+          closeAllLists(undefined, input);
+        });
+        toAppend.push(b);
+      }
+    }
+
+    if (toAppend.length === 0) {
+      return false;
+    }
+
+    // create a DIV element that will contain the items (values):
+    const div = document.createElement("DIV");
+    div.setAttribute("id", "autocomplete-list");
+    div.setAttribute("class", "autocomplete-items");
+    // append the DIV element as a child of the autocomplete container:
+    input.parentNode?.parentNode?.parentNode?.parentNode?.appendChild(div);
+    // for each item in the array...
+    for (let i = 0; i < toAppend.length; i++) {
+      div.appendChild(toAppend[i]);
+    }
+
+    // Handle Special keys
+    let autocompleteList = document.getElementById("autocomplete-list");
+    const x = autocompleteList?.getElementsByTagName("div");
+    if (e.key === "ArrowDown") {
+      /*If the arrow DOWN key is pressed,
+          increase the currentFocus variable:*/
+      currentFocus++;
+      // and and make the current item more visible:
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      //up
+      /*If the arrow UP key is pressed,
+          decrease the currentFocus variable:*/
+      currentFocus--;
+      // and and make the current item more visible
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      // simulate a click on the "active" item
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      if (currentFocus > -1) {
+        if (x) x[currentFocus].click();
+      }
+    } else if (e.key === "Escape") {
+      // close the list of autocompleted values, (or any other open lists of autocompleted values
+      closeAllLists(undefined, input);
+    }
+  }
 }
 
 export function promptHandleKeyDown(e: KeyboardEvent) {
@@ -173,6 +297,17 @@ export function promptHandleKeyDown(e: KeyboardEvent) {
 
   if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
     e.preventDefault();
+  }
+
+  if (document.getElementById("autocomplete-list")) {
+    if (
+      e.key === "Enter" ||
+      e.key === "Tab" ||
+      e.key === "ArrowDown" ||
+      e.key === "ArrowUp"
+    ) {
+      e.preventDefault();
+    }
   }
 }
 

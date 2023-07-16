@@ -499,6 +499,17 @@ function refreshModels() {
             conf.data.settings.aitDim.height = undefined;
             conf.data.settings.aitDim.batch_size = undefined;
           }
+
+          const autofillKeys = [];
+          for (const model of global.state.models) {
+            if (model.backend === "LoRA") {
+              autofillKeys.push(`<lora:${model.name}:1.0>`);
+            } else if (model.backend === "Textual Inversion") {
+              autofillKeys.push(`<ti:${model.name}:1.0>`);
+            }
+          }
+
+          global.state.autofill = autofillKeys;
         });
       });
     })

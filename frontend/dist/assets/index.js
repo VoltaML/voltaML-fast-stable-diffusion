@@ -39319,7 +39319,8 @@ const useState = defineStore("state", () => {
     selected_model: ref(null),
     secrets: {
       huggingface: "ok"
-    }
+    },
+    autofill: []
   });
   return { state };
 });
@@ -39971,6 +39972,31 @@ const useWebsocket = defineStore("websocket", () => {
 });
 const spaceRegex = new RegExp("[\\s,]+");
 const arrowKeys = [38, 40];
+let currentFocus = -1;
+function addActive(x) {
+  if (!x)
+    return false;
+  removeActive(x);
+  if (currentFocus >= x.length)
+    currentFocus = 0;
+  if (currentFocus < 0)
+    currentFocus = x.length - 1;
+  x[currentFocus].classList.add("autocomplete-active");
+}
+function removeActive(x) {
+  for (var i = 0; i < x.length; i++) {
+    x[i].classList.remove("autocomplete-active");
+  }
+}
+function closeAllLists(elmnt, input) {
+  var _a2, _b;
+  var x = document.getElementsByClassName("autocomplete-items");
+  for (var i = 0; i < x.length; i++) {
+    if (elmnt != x[i] && elmnt != input) {
+      (_b = (_a2 = x[i]) == null ? void 0 : _a2.parentNode) == null ? void 0 : _b.removeChild(x[i]);
+    }
+  }
+}
 async function startWebsocket(messageProvider) {
   const websocketState = useWebsocket();
   const timeout = 1e3;
@@ -40006,7 +40032,8 @@ function getTextBoundaries(elem) {
   console.log("Element is not input");
   return [0, 0];
 }
-function promptHandleKeyUp(e, data, key) {
+function promptHandleKeyUp(e, data, key, globalState) {
+  var _a2, _b, _c, _d, _e;
   if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
       document.activeElement
@@ -40085,10 +40112,68 @@ function promptHandleKeyUp(e, data, key) {
       console.log("No selection, cannot parse for weighting");
     }
   }
+  const input = e.target;
+  if (input) {
+    const text = input.value;
+    const currentTokenStripped = (_a2 = text.split(",").pop()) == null ? void 0 : _a2.trim();
+    closeAllLists(void 0, input);
+    if (!currentTokenStripped) {
+      return false;
+    }
+    const toAppend = [];
+    for (let i = 0; i < globalState.state.autofill.length; i++) {
+      if (globalState.state.autofill[i].toUpperCase().includes(currentTokenStripped.toUpperCase())) {
+        const b = document.createElement("DIV");
+        b.innerText = globalState.state.autofill[i];
+        b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
+        b.addEventListener("click", function(e2) {
+          input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
+          data[key] = input.value;
+          closeAllLists(void 0, input);
+        });
+        toAppend.push(b);
+      }
+    }
+    if (toAppend.length === 0) {
+      return false;
+    }
+    const div = document.createElement("DIV");
+    div.setAttribute("id", "autocomplete-list");
+    div.setAttribute("class", "autocomplete-items");
+    (_e = (_d = (_c = (_b = input.parentNode) == null ? void 0 : _b.parentNode) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.parentNode) == null ? void 0 : _e.appendChild(div);
+    for (let i = 0; i < toAppend.length; i++) {
+      div.appendChild(toAppend[i]);
+    }
+    let autocompleteList = document.getElementById("autocomplete-list");
+    const x = autocompleteList == null ? void 0 : autocompleteList.getElementsByTagName("div");
+    if (e.key === "ArrowDown") {
+      currentFocus++;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      currentFocus--;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      if (currentFocus > -1) {
+        if (x)
+          x[currentFocus].click();
+      }
+    } else if (e.key === "Escape") {
+      closeAllLists(void 0, input);
+    }
+  }
 }
 function promptHandleKeyDown(e) {
   if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
     e.preventDefault();
+  }
+  if (document.getElementById("autocomplete-list")) {
+    if (e.key === "Enter" || e.key === "Tab" || e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+    }
   }
 }
 function urlFromPath(path) {
@@ -40488,7 +40573,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-5d398d43"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-8de67429"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40505,7 +40590,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "218cc702": backgroundColor.value
+      "e848f004": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40619,6 +40704,15 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               conf.data.settings.aitDim.height = void 0;
               conf.data.settings.aitDim.batch_size = void 0;
             }
+            const autofillKeys = [];
+            for (const model of global2.state.models) {
+              if (model.backend === "LoRA") {
+                autofillKeys.push(`<lora:${model.name}:1.0>`);
+              } else if (model.backend === "Textual Inversion") {
+                autofillKeys.push(`<ti:${model.name}:1.0>`);
+              }
+            }
+            global2.state.autofill = autofillKeys;
           });
         });
       }).catch((e) => {
@@ -41272,7 +41366,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_5d398d43_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_8de67429_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41280,7 +41374,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5d398d43"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-8de67429"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -41291,7 +41385,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "0995cf9d": backgroundColor.value
+      "1d19c67b": backgroundColor.value,
+      "12b62b62": theme.value.common.popoverColor,
+      "753630fc": theme.value.common.borderRadius,
+      "53c6c405": theme.value.common.pressedColor,
+      "e7594bd2": theme.value.common.primaryColorHover
     }));
     const settings = useSettings();
     const theme = computed(() => {
@@ -41348,8 +41446,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const App_vue_vue_type_style_index_0_scoped_5e75b7fe_lang = "";
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5e75b7fe"]]);
+const App_vue_vue_type_style_index_0_lang = "";
 const scriptRel = "modulepreload";
 const assetsURL = function(dep) {
   return "/" + dep;
@@ -41451,7 +41548,7 @@ const router = createRouter({
 });
 const main = "";
 const pinia = createPinia();
-const app = createApp(App);
+const app = createApp(_sfc_main);
 app.use(pinia);
 app.use(router);
 app.mount("#app");

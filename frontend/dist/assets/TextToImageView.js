@@ -192,7 +192,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           type: "textarea",
                           placeholder: "Prompt",
                           "show-count": "",
-                          onKeyup: _cache[1] || (_cache[1] = ($event) => unref(promptHandleKeyUp)($event, unref(conf).data.settings.txt2img, "prompt")),
+                          onKeyup: _cache[1] || (_cache[1] = ($event) => unref(promptHandleKeyUp)(
+                            $event,
+                            unref(conf).data.settings.txt2img,
+                            "prompt",
+                            unref(global)
+                          )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
@@ -209,7 +214,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           onKeyup: _cache[3] || (_cache[3] = ($event) => unref(promptHandleKeyUp)(
                             $event,
                             unref(conf).data.settings.txt2img,
-                            "negative_prompt"
+                            "negative_prompt",
+                            unref(global)
                           )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
