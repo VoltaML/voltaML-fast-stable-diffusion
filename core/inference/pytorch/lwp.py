@@ -1,13 +1,13 @@
-from pathlib import Path
 import logging
 import re
-from typing import List, Optional, Union, Literal, Tuple, Dict
+from pathlib import Path
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
 
-from ...files import get_full_model_path
 from ...config import config
+from ...files import get_full_model_path
 
 logger = logging.getLogger(__name__)
 
@@ -360,7 +360,9 @@ def get_weighted_text_embeddings(
             old_l = loralist
             loralist = list(
                 filter(
-                    lambda x: Path(x[0]).stem.casefold() in prompt_.casefold(), loralist
+                    lambda x: Path(x[0]).stem.casefold()
+                    in prompt_.casefold(),  # pylint: disable=cell-var-from-loop
+                    loralist,
                 )
             )
             for lora, weight in old_l:
@@ -415,7 +417,7 @@ def get_weighted_text_embeddings(
     # round up the longest length of tokens to a multiple of (model_max_length - 2)
     max_length = max([len(token) for token in prompt_tokens])
     if uncond_prompt is not None:
-        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore
+        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore # pylint: disable=nested-min-max
 
     max_embeddings_multiples = min(
         max_embeddings_multiples,  # type: ignore

@@ -32,8 +32,6 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
-    LoraUnloadRequest,
-    LoraLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
@@ -495,75 +493,6 @@ class GPU:
         "Download a model from the internet."
 
         await asyncio.to_thread(download_model, model)
-
-    async def load_lora(self, req: LoraLoadRequest):
-        "Inject a Lora model into a model"
-
-        if req.model in self.loaded_models:
-            internal_model = self.loaded_models[req.model]
-
-            if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.info(f"Loading Lora model: {req.lora}, weights: ({req.weight})")
-
-                from .inference.lora import install_lora_hook
-
-                install_lora_hook(internal_model)
-                internal_model.loras.append((req.lora, req.weight))
-
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        "success",
-                        "Lora model loaded",
-                        f"Lora model {req.lora} loaded",
-                    )
-                )
-
-        else:
-            websocket_manager.broadcast_sync(
-                Notification(
-                    "error",
-                    "Model not found",
-                    f"Model {req.model} not found",
-                )
-            )
-            logger.error(f"Model {req.model} not found")
-
-    async def unload_lora(self, req: LoraUnloadRequest):
-        "Inject a Lora model into a model"
-
-        if req.model in self.loaded_models:
-            internal_model = self.loaded_models[req.model]
-
-            if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.info(f"Unloading Lora model: {req.lora})")
-
-                nm = []
-                for lora, weight in internal_model.loras:
-                    if lora != req.lora:
-                        nm.append((lora, weight))
-                internal_model.loras = nm
-                try:
-                    internal_model.remove_lora(Path(req.lora).name)  # type: ignore
-                except KeyError:
-                    pass
-
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        "success",
-                        "Lora model unloaded",
-                        f"Lora model {req.lora} unloaded",
-                    )
-                )
-
-        else:
-            websocket_manager.broadcast_sync(
-                Notification(
-                    "error",
-                    "Model not found",
-                    f"Model {req.model} not found",
-                )
-            )
-            logger.error(f"Model {req.model} not found")
 
     async def load_textual_inversion(self, req: TextualInversionLoadRequest):
         "Inject a textual inversion model into a model"
