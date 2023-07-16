@@ -73,13 +73,6 @@
       />
     </NFormItem>
 
-    <NFormItem label="Concurrent jobs">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.concurrent_jobs"
-        :step="1"
-      />
-    </NFormItem>
-
     <h2>Optimizations</h2>
 
     <NFormItem label="Autocast">
@@ -376,13 +369,13 @@
 
 <script lang="ts" setup>
 import {
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
-  NSelect,
-  NSlider,
-  NSwitch,
+NForm,
+NFormItem,
+NInput,
+NInputNumber,
+NSelect,
+NSlider,
+NSwitch,
 } from "naive-ui";
 import { computed } from "vue";
 import { useSettings } from "../../store/settings";

@@ -3,12 +3,8 @@
     <NCard title="Acceleration progress (around 20 minutes)">
       <NSpace vertical justify="center">
         <NSteps>
-          <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
-          <NStep
-            title="ControlNet UNet"
-            :status="global.state.aitBuildStep.controlnet_unet"
-          />
           <NStep title="CLIP" :status="global.state.aitBuildStep.clip" />
+          <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
           <NStep title="VAE" :status="global.state.aitBuildStep.vae" />
           <NStep
             title="Cleanup"
@@ -138,17 +134,17 @@
 import { serverUrl } from "@/env";
 import { useState } from "@/store/state";
 import {
-  NButton,
-  NCard,
-  NInputNumber,
-  NModal,
-  NSelect,
-  NSlider,
-  NSpace,
-  NStep,
-  NSteps,
-  useMessage,
-  type SelectOption,
+NButton,
+NCard,
+NInputNumber,
+NModal,
+NSelect,
+NSlider,
+NSpace,
+NStep,
+NSteps,
+useMessage,
+type SelectOption,
 } from "naive-ui";
 import { computed, ref } from "vue";
 
