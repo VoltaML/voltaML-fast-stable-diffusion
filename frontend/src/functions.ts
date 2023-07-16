@@ -10,18 +10,20 @@ export function dimensionValidator(value: number) {
 }
 
 function addActive(x: any) {
-  // a function to classify an item as "active":
   if (!x) return false;
-  // start by removing the "active" class on all items:
   removeActive(x);
-  if (currentFocus >= x.length) currentFocus = 0;
-  if (currentFocus < 0) currentFocus = x.length - 1;
-  // add class "autocomplete-active":
+
+  if (currentFocus >= x.length) {
+    currentFocus = 0;
+  }
+  if (currentFocus < 0) {
+    currentFocus = x.length - 1;
+  }
+
   x[currentFocus].classList.add("autocomplete-active");
 }
 function removeActive(x: any) {
-  // a function to remove the "active" class from all autocomplete items:
-  for (var i = 0; i < x.length; i++) {
+  for (let i = 0; i < x.length; i++) {
     x[i].classList.remove("autocomplete-active");
   }
 }
@@ -29,10 +31,8 @@ function closeAllLists(
   elmnt: HTMLElement | undefined | EventTarget | null,
   input: any
 ) {
-  /*close all autocomplete lists in the document,
-    except the one passed as an argument:*/
-  var x = document.getElementsByClassName("autocomplete-items");
-  for (var i = 0; i < x.length; i++) {
+  const x = document.getElementsByClassName("autocomplete-items");
+  for (let i = 0; i < x.length; i++) {
     if (elmnt != x[i] && elmnt != input) {
       x[i]?.parentNode?.removeChild(x[i]);
     }
@@ -212,33 +212,28 @@ export function promptHandleKeyUp(
 
     // close any already open lists of autocompleted values
     closeAllLists(undefined, input);
+
     if (!currentTokenStripped) {
       return false;
     }
 
     const toAppend = [];
     for (let i = 0; i < globalState.state.autofill.length; i++) {
-      // check if the item starts with the same letters as the text field value:
       if (
         globalState.state.autofill[i]
           .toUpperCase()
           .includes(currentTokenStripped.toUpperCase())
       ) {
-        // create a DIV element for each matching element:
         const b = document.createElement("DIV");
-        // make the matching letters bold:
         b.innerText = globalState.state.autofill[i];
-        // insert a input field that will hold the current array item's value:
         b.innerHTML +=
           "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
-        // execute a function when someone clicks on the item value (DIV element):
-        b.addEventListener("click", function (e) {
+        b.addEventListener("click", function () {
           input.value =
             text.substring(0, text.lastIndexOf(",") + 1) +
             globalState.state.autofill[i];
           data[key] = input.value;
 
-          // close the list of autocompleted values, (or any other open lists of autocompleted values
           closeAllLists(undefined, input);
         });
         toAppend.push(b);
@@ -249,44 +244,32 @@ export function promptHandleKeyUp(
       return false;
     }
 
-    // create a DIV element that will contain the items (values):
     const div = document.createElement("DIV");
     div.setAttribute("id", "autocomplete-list");
     div.setAttribute("class", "autocomplete-items");
-    // append the DIV element as a child of the autocomplete container:
     input.parentNode?.parentNode?.parentNode?.parentNode?.appendChild(div);
-    // for each item in the array...
     for (let i = 0; i < toAppend.length; i++) {
       div.appendChild(toAppend[i]);
     }
 
     // Handle Special keys
-    let autocompleteList = document.getElementById("autocomplete-list");
+    const autocompleteList = document.getElementById("autocomplete-list");
     const x = autocompleteList?.getElementsByTagName("div");
     if (e.key === "ArrowDown") {
-      /*If the arrow DOWN key is pressed,
-          increase the currentFocus variable:*/
       currentFocus++;
-      // and and make the current item more visible:
       addActive(x);
       e.preventDefault();
     } else if (e.key === "ArrowUp") {
-      //up
-      /*If the arrow UP key is pressed,
-          decrease the currentFocus variable:*/
       currentFocus--;
-      // and and make the current item more visible
       addActive(x);
       e.preventDefault();
     } else if (e.key === "Enter" || e.key === "Tab") {
-      // simulate a click on the "active" item
       e.stopImmediatePropagation();
       e.preventDefault();
       if (currentFocus > -1) {
         if (x) x[currentFocus].click();
       }
     } else if (e.key === "Escape") {
-      // close the list of autocompleted values, (or any other open lists of autocompleted values
       closeAllLists(undefined, input);
     }
   }

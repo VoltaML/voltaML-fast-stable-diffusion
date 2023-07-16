@@ -39977,21 +39977,23 @@ function addActive(x) {
   if (!x)
     return false;
   removeActive(x);
-  if (currentFocus >= x.length)
+  if (currentFocus >= x.length) {
     currentFocus = 0;
-  if (currentFocus < 0)
+  }
+  if (currentFocus < 0) {
     currentFocus = x.length - 1;
+  }
   x[currentFocus].classList.add("autocomplete-active");
 }
 function removeActive(x) {
-  for (var i = 0; i < x.length; i++) {
+  for (let i = 0; i < x.length; i++) {
     x[i].classList.remove("autocomplete-active");
   }
 }
 function closeAllLists(elmnt, input) {
   var _a2, _b;
-  var x = document.getElementsByClassName("autocomplete-items");
-  for (var i = 0; i < x.length; i++) {
+  const x = document.getElementsByClassName("autocomplete-items");
+  for (let i = 0; i < x.length; i++) {
     if (elmnt != x[i] && elmnt != input) {
       (_b = (_a2 = x[i]) == null ? void 0 : _a2.parentNode) == null ? void 0 : _b.removeChild(x[i]);
     }
@@ -40126,7 +40128,7 @@ function promptHandleKeyUp(e, data, key, globalState) {
         const b = document.createElement("DIV");
         b.innerText = globalState.state.autofill[i];
         b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
-        b.addEventListener("click", function(e2) {
+        b.addEventListener("click", function() {
           input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
           data[key] = input.value;
           closeAllLists(void 0, input);
@@ -40144,7 +40146,7 @@ function promptHandleKeyUp(e, data, key, globalState) {
     for (let i = 0; i < toAppend.length; i++) {
       div.appendChild(toAppend[i]);
     }
-    let autocompleteList = document.getElementById("autocomplete-list");
+    const autocompleteList = document.getElementById("autocomplete-list");
     const x = autocompleteList == null ? void 0 : autocompleteList.getElementsByTagName("div");
     if (e.key === "ArrowDown") {
       currentFocus++;
