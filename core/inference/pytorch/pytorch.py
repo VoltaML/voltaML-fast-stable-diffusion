@@ -102,16 +102,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.safety_checker = pipe.safety_checker  # type: ignore
 
         if not self.bare:
-            # Autoload LoRAs
-            for lora_name in config.api.autoloaded_loras:
-                weight = config.api.autoloaded_loras[lora_name]
-
-                from ..lora import install_lora_hook
-
-                install_lora_hook(self)
-
-                self.apply_lora(lora_name, weight)  # type: ignore pylint: disable=no-member
-
             # Autoload textual inversions
             for textural_inversion in config.api.autoloaded_textual_inversions:
                 try:

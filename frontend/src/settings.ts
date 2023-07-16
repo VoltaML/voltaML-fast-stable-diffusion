@@ -17,11 +17,6 @@ export enum Sampler {
   UniPCMultistep = 13,
 }
 
-export interface IAutoloadedLora {
-  text_encoder: number;
-  unet: number;
-}
-
 export interface IQuantDict {
   vae_decoder: "no-quant" | "uint8" | "int8";
   vae_encoder: "no-quant" | "uint8" | "int8";
@@ -37,13 +32,13 @@ export interface ISettings {
     highres: {
       scale: number;
       latent_scale_mode:
-      | "nearest"
-      | "area"
-      | "bilinear"
-      | "bislerp-original"
-      | "bislerp-tortured"
-      | "bicubic"
-      | "nearest-exact";
+        | "nearest"
+        | "area"
+        | "bilinear"
+        | "bislerp-original"
+        | "bislerp-tortured"
+        | "bicubic"
+        | "nearest-exact";
       strength: number;
       steps: 50;
       antialiased: boolean;
@@ -124,11 +119,11 @@ export interface ISettings {
     image: string;
     upscale_factor: number;
     model:
-    | "RealESRGAN_x4plus"
-    | "RealESRNet_x4plus"
-    | "RealESRGAN_x4plus_anime_6B"
-    | "RealESRGAN_x2plus"
-    | "RealESR-general-x4v3";
+      | "RealESRGAN_x4plus"
+      | "RealESRNet_x4plus"
+      | "RealESRGAN_x4plus_anime_6B"
+      | "RealESRGAN_x2plus"
+      | "RealESR-general-x4v3";
     tile_size: number;
     tile_padding: number;
   };
@@ -148,11 +143,11 @@ export interface ISettings {
 
     autocast: boolean;
     attention_processor:
-    | "xformers"
-    | "sdpa"
-    | "cross-attention"
-    | "subquadratic"
-    | "multihead";
+      | "xformers"
+      | "sdpa"
+      | "cross-attention"
+      | "subquadratic"
+      | "multihead";
     subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
@@ -170,9 +165,7 @@ export interface ISettings {
     clear_memory_policy: "always" | "after_disconnect" | "never";
 
     huggingface_style_parsing: boolean;
-    lora_weight: number;
 
-    autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
 
     save_path_template: string;
@@ -334,8 +327,6 @@ export const defaultSettings: ISettings = {
     clear_memory_policy: "always",
 
     huggingface_style_parsing: false,
-    lora_weight: 0.5,
-    autoloaded_loras: new Map(),
     autoloaded_textual_inversions: [],
 
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",

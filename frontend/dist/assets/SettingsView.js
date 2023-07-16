@@ -1,6 +1,7 @@
-import { a4 as inject, bf as getCurrentInstance, K as watch, aI as onBeforeUnmount, Z as cB, a0 as cM, Y as c, W as createInjectionKey, d as defineComponent, R as useConfig, a6 as useTheme, F as ref, U as provide, E as h, bg as formLight, aj as keysOf, c as computed, aG as formatLength, aN as get, bh as commonVariables, $ as cE, V as toRef, ab as createId, bi as formItemInjectionKey, bj as onMounted, aa as useThemeClass, aY as Transition, aC as resolveWrappedSlot, a9 as createKey, aR as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, f as createElementBlock, v as NSlider, y as createCommentVNode, n as createBaseVNode, i as NCard, I as NTabPane, J as NTabs, b as useMessage, bk as useNotification, G as NButton, m as createTextVNode, bl as defaultSettings, s as serverUrl } from "./index.js";
+import { a3 as inject, be as getCurrentInstance, J as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, T as provide, D as h, bf as formLight, ai as keysOf, c as computed, aF as formatLength, aM as get, bg as commonVariables, Z as cE, U as toRef, aa as createId, bh as formItemInjectionKey, bi as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, f as createElementBlock, x as createCommentVNode, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, b as useMessage, bj as useNotification, F as NButton, m as createTextVNode, bk as defaultSettings, s as serverUrl } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
+import { N as NSlider } from "./Slider.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
   const injection = inject(injectionName, null);
@@ -1869,19 +1870,6 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
         };
       });
     });
-    const loras = computed(() => {
-      return global.state.models.filter((model) => {
-        return model.backend === "LoRA";
-      });
-    });
-    const loraOptions = computed(() => {
-      return loras.value.map((model) => {
-        return {
-          value: model.path,
-          label: model.name
-        };
-      });
-    });
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NForm), null, {
         default: withCtx(() => [
@@ -1948,15 +1936,6 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 value: unref(settings).defaultSettings.api.autoloaded_textual_inversions,
                 "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.autoloaded_textual_inversions = $event)
               }, null, 8, ["options", "value"])
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NFormItem), { label: "LoRAs (not functional yet)" }, {
-            default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                multiple: "",
-                options: loraOptions.value
-              }, null, 8, ["options"])
             ]),
             _: 1
           }),
