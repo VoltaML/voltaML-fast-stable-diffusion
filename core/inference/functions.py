@@ -451,7 +451,7 @@ def load_pytorch_pipeline(
     return pipe
 
 
-def custom_convert_ldm_vae_checkpoint(checkpoint, config):
+def _custom_convert_ldm_vae_checkpoint(checkpoint, conf):
     vae_state_dict = checkpoint
 
     new_checkpoint = {}
@@ -535,7 +535,7 @@ def custom_convert_ldm_vae_checkpoint(checkpoint, config):
             new_checkpoint,
             vae_state_dict,
             additional_replacements=[meta_path],
-            config=config,
+            config=conf,
         )
 
     mid_resnets = [key for key in vae_state_dict if "encoder.mid.block" in key]
@@ -550,7 +550,7 @@ def custom_convert_ldm_vae_checkpoint(checkpoint, config):
             new_checkpoint,
             vae_state_dict,
             additional_replacements=[meta_path],
-            config=config,
+            config=conf,
         )
 
     mid_attentions = [key for key in vae_state_dict if "encoder.mid.attn" in key]
@@ -561,7 +561,7 @@ def custom_convert_ldm_vae_checkpoint(checkpoint, config):
         new_checkpoint,
         vae_state_dict,
         additional_replacements=[meta_path],
-        config=config,
+        config=conf,
     )
     conv_attn_to_linear(new_checkpoint)
 
@@ -588,7 +588,7 @@ def custom_convert_ldm_vae_checkpoint(checkpoint, config):
             new_checkpoint,
             vae_state_dict,
             additional_replacements=[meta_path],
-            config=config,
+            config=conf,
         )
 
     mid_resnets = [key for key in vae_state_dict if "decoder.mid.block" in key]
@@ -603,7 +603,7 @@ def custom_convert_ldm_vae_checkpoint(checkpoint, config):
             new_checkpoint,
             vae_state_dict,
             additional_replacements=[meta_path],
-            config=config,
+            config=conf,
         )
 
     mid_attentions = [key for key in vae_state_dict if "decoder.mid.attn" in key]
@@ -614,15 +614,18 @@ def custom_convert_ldm_vae_checkpoint(checkpoint, config):
         new_checkpoint,
         vae_state_dict,
         additional_replacements=[meta_path],
-        config=config,
+        config=conf,
     )
     conv_attn_to_linear(new_checkpoint)
     return new_checkpoint
 
 
 def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
+    "Convert a .pt/.bin/.satetensors VAE file into a diffusers AutoencoderKL"
+
     r = requests.get(
-        " https://raw.githubusercontent.com/CompVis/stable-diffusion/main/configs/stable-diffusion/v1-inference.yaml"
+        "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/configs/stable-diffusion/v1-inference.yaml",
+        timeout=10,
     )
     io_obj = io.BytesIO(r.content)
 
@@ -641,7 +644,9 @@ def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
 
     # Convert the VAE model.
     vae_config = create_vae_diffusers_config(original_config, image_size=image_size)
-    converted_vae_checkpoint = custom_convert_ldm_vae_checkpoint(checkpoint, vae_config)
+    converted_vae_checkpoint = _custom_convert_ldm_vae_checkpoint(
+        checkpoint, vae_config
+    )
 
     vae = AutoencoderKL(**vae_config)
     vae.load_state_dict(converted_vae_checkpoint)

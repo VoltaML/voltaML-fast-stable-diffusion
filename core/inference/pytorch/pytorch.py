@@ -153,9 +153,15 @@ class PyTorchStableDiffusion(InferenceModel):
         if vae == "default":
             self.vae = old_vae
         else:
-            self.vae = convert_vaept_to_diffusers(vae).to(
-                device=old_vae.device, dtype=old_vae.dtype
-            )
+            # Why the fuck do you think that's constant pylint?
+            # Are you mentally insane?
+            if Path(vae).is_dir:  # pylint: disable=using-constant-test
+                self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+            else:
+                self.vae = convert_vaept_to_diffusers(vae).to(
+                    device=old_vae.device, dtype=old_vae.dtype
+                )
+        # This is at the end 'cause I've read horror stories about pythons prefetch system
         self.vae_path = vae
 
     def unload(self) -> None:
@@ -179,6 +185,9 @@ class PyTorchStableDiffusion(InferenceModel):
         if hasattr(self, "controlnet"):
             if self.controlnet is not None:
                 del self.controlnet
+
+        if hasattr(self, "original_vae"):
+            del self.original_vae  # type: ignore
 
         self.memory_cleanup()
 

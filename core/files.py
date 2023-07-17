@@ -186,16 +186,18 @@ class CachedModelList:
         for model in os.listdir(self.vae_path):
             logger.debug(f"Found VAE model {model}")
 
-            # Skip if it is not a VAE model
-            if not any(x in model for x in self.ext_whitelist):
-                continue
+            path = Path(os.path.join(self.vae_path, model))
 
-            model_name = self.cleanup_string(model)
+            # Skip if it is not a VAE model
+            if path.suffix not in self.ext_whitelist and not path.is_dir:
+                continue
+            if path.is_dir and is_valid_diffusers_vae(path):
+                continue
 
             models.append(
                 ModelResponse(
-                    name=model_name,
-                    path=os.path.join(self.vae_path, model),
+                    name=path.stem,
+                    path=path.as_posix(),
                     backend="VAE",
                     valid=True,
                     vae="default",
@@ -245,6 +247,16 @@ class CachedModelList:
             + self.textual_inversion()
             + self.vae()
         )
+
+
+def is_valid_diffusers_vae(model_path: Path) -> bool:
+    "Check if the folder contains valid VAE files."
+
+    files = ["config.json", "diffusion_pytorch_model.bin"]
+    is_valid = True
+    for file in files:
+        is_valid = is_valid and Path(os.path.join(model_path, file)).exists()
+    return is_valid
 
 
 def is_valid_diffusers_model(model_path: Union[str, Path]):
