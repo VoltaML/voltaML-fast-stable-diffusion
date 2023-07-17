@@ -17,11 +17,6 @@ export enum Sampler {
   UniPCMultistep = 13,
 }
 
-export interface IAutoloadedLora {
-  text_encoder: number;
-  unet: number;
-}
-
 export interface IQuantDict {
   vae_decoder: "no-quant" | "uint8" | "int8";
   vae_encoder: "no-quant" | "uint8" | "int8";
@@ -37,13 +32,13 @@ export interface ISettings {
     highres: {
       scale: number;
       latent_scale_mode:
-      | "nearest"
-      | "area"
-      | "bilinear"
-      | "bislerp-original"
-      | "bislerp-tortured"
-      | "bicubic"
-      | "nearest-exact";
+        | "nearest"
+        | "area"
+        | "bilinear"
+        | "bislerp-original"
+        | "bislerp-tortured"
+        | "bicubic"
+        | "nearest-exact";
       strength: number;
       steps: 50;
       antialiased: boolean;
@@ -124,11 +119,11 @@ export interface ISettings {
     image: string;
     upscale_factor: number;
     model:
-    | "RealESRGAN_x4plus"
-    | "RealESRNet_x4plus"
-    | "RealESRGAN_x4plus_anime_6B"
-    | "RealESRGAN_x2plus"
-    | "RealESR-general-x4v3";
+      | "RealESRGAN_x4plus"
+      | "RealESRNet_x4plus"
+      | "RealESRGAN_x4plus_anime_6B"
+      | "RealESRGAN_x2plus"
+      | "RealESR-general-x4v3";
     tile_size: number;
     tile_padding: number;
   };
@@ -140,7 +135,6 @@ export interface ISettings {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
-    concurrent_jobs: number;
 
     use_tomesd: boolean;
     tomesd_ratio: number;
@@ -150,11 +144,11 @@ export interface ISettings {
 
     autocast: boolean;
     attention_processor:
-    | "xformers"
-    | "sdpa"
-    | "cross-attention"
-    | "subquadratic"
-    | "multihead";
+      | "xformers"
+      | "sdpa"
+      | "cross-attention"
+      | "subquadratic"
+      | "multihead";
     subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
@@ -171,10 +165,8 @@ export interface ISettings {
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
 
-    lora_text_encoder_weight: number;
-    lora_unet_weight: number;
+    huggingface_style_parsing: boolean;
 
-    autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
 
     save_path_template: string;
@@ -310,7 +302,6 @@ export const defaultSettings: ISettings = {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
     image_preview_delay: 2.0,
-    concurrent_jobs: 1,
 
     clip_skip: 1,
 
@@ -337,9 +328,7 @@ export const defaultSettings: ISettings = {
     reduced_precision: false,
     clear_memory_policy: "always",
 
-    lora_text_encoder_weight: 0.5,
-    lora_unet_weight: 0.5,
-    autoloaded_loras: new Map(),
+    huggingface_style_parsing: false,
     autoloaded_textual_inversions: [],
 
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",

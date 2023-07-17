@@ -21,6 +21,15 @@ class CachedModelList:
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
         self.textual_inversion_path = Path("data/textual-inversion")
+        self.vae_path = Path("data/vae")
+
+        self.ext_whitelist = [".safetensors", ".ckpt", ".pth", ".pt", ".bin"]
+
+    def model_path_to_name(self, path: str) -> str:
+        "Return only the stem of a file."
+
+        pth = Path(path)
+        return pth.stem
 
     def pytorch(self) -> List[ModelResponse]:
         "List of models downloaded for PyTorch"
@@ -43,6 +52,7 @@ class CachedModelList:
                         name=name,
                         path=name,
                         backend="PyTorch",
+                        vae="default",
                         valid=is_valid_diffusers_model(get_full_model_path(name)),
                         loras=[],
                         state="not loaded",
@@ -64,6 +74,7 @@ class CachedModelList:
                         name=model_name,
                         path=model_name,
                         backend="PyTorch",
+                        vae="default",
                         valid=is_valid_diffusers_model(
                             self.checkpoint_converted_path.joinpath(model_name)
                         ),
@@ -78,6 +89,7 @@ class CachedModelList:
                         name=model_name,
                         path=model_name,
                         backend="PyTorch",
+                        vae="default",
                         valid=True,
                         loras=[],
                         state="not loaded",
@@ -107,6 +119,7 @@ class CachedModelList:
                     name=model_name,
                     path=model,
                     backend="AITemplate",
+                    vae="default",
                     valid=is_valid_aitemplate_model(
                         self.aitemplate_path.joinpath(model)
                     ),
@@ -129,6 +142,7 @@ class CachedModelList:
                 ModelResponse(
                     name=model,
                     path=os.path.join(self.onnx_path, model),
+                    vae="default",
                     backend="ONNX",
                     valid=True,
                     loras=[],
@@ -146,25 +160,48 @@ class CachedModelList:
             logger.debug(f"Found LoRA {model}")
 
             # Skip if it is not a LoRA model
-            if not any(
-                x in model for x in [".safetensors", ".ckpt", ".pt", ".bin", ".pth"]
-            ):
+            if not any(x in model for x in self.ext_whitelist):
                 continue
 
-            model_name = (
-                model.replace(".safetensors", "")
-                .replace(".ckpt", "")
-                .replace(".pt", "")
-                .replace(".bin", "")
-                .replace(".pth", "")
-            )
+            model_name = self.model_path_to_name(model)
 
             models.append(
                 ModelResponse(
                     name=model_name,
                     path=os.path.join(self.lora_path, model),
+                    vae="default",
                     backend="LoRA",
                     valid=True,
+                    loras=[],
+                    state="not loaded",
+                )
+            )
+
+        return models
+
+    def vae(self):
+        "List of VAE models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.vae_path):
+            logger.debug(f"Found VAE model {model}")
+
+            path = Path(os.path.join(self.vae_path, model))
+
+            # Skip if it is not a VAE model
+            if path.suffix not in self.ext_whitelist and not path.is_dir():
+                continue
+            if path.is_dir() and not is_valid_diffusers_vae(path):
+                continue
+
+            models.append(
+                ModelResponse(
+                    name=path.stem,
+                    path=path.as_posix(),
+                    backend="VAE",
+                    valid=True,
+                    vae="default",
                     loras=[],
                     state="not loaded",
                 )
@@ -181,23 +218,16 @@ class CachedModelList:
             logger.debug(f"Found textual inversion model {model}")
 
             # Skip if it is not a Texutal Inversion
-            if not any(
-                x in model for x in [".safetensors", ".ckpt", ".pt", ".bin", ".pth"]
-            ):
+            if not any(x in model for x in self.ext_whitelist):
                 continue
 
-            model_name = (
-                model.replace(".safetensors", "")
-                .replace(".ckpt", "")
-                .replace(".pt", "")
-                .replace(".bin", "")
-                .replace(".pth", "")
-            )
+            model_name = self.model_path_to_name(model)
 
             models.append(
                 ModelResponse(
                     name=model_name,
                     path=os.path.join(self.textual_inversion_path, model),
+                    vae="default",
                     backend="Textual Inversion",
                     valid=True,
                     loras=[],
@@ -216,7 +246,18 @@ class CachedModelList:
             + self.onnx()
             + self.lora()
             + self.textual_inversion()
+            + self.vae()
         )
+
+
+def is_valid_diffusers_vae(model_path: Path) -> bool:
+    "Check if the folder contains valid VAE files."
+
+    files = ["config.json", "diffusion_pytorch_model.bin"]
+    is_valid = True
+    for file in files:
+        is_valid = is_valid and Path(os.path.join(model_path, file)).exists()
+    return is_valid
 
 
 def is_valid_diffusers_model(model_path: Union[str, Path]):

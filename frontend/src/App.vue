@@ -59,8 +59,29 @@ const overrides: GlobalThemeOverrides = {
 };
 </script>
 
-<style scoped>
+<style>
 .main {
   background-color: v-bind(backgroundColor);
+}
+
+.autocomplete {
+  position: relative;
+  display: inline-block;
+}
+.autocomplete-items {
+  position: absolute;
+  z-index: 99;
+  background-color: v-bind("theme.common.popoverColor");
+  border-radius: v-bind("theme.common.borderRadius");
+  padding: 2px;
+}
+.autocomplete-items div {
+  padding: 8px;
+  cursor: pointer;
+  border-radius: v-bind("theme.common.borderRadius");
+}
+.autocomplete-active {
+  background-color: v-bind("theme.common.pressedColor") !important;
+  color: v-bind("theme.common.primaryColorHover") !important;
 }
 </style>

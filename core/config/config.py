@@ -1,7 +1,7 @@
 import logging
 import multiprocessing
 from dataclasses import Field, dataclass, field, fields
-from typing import Dict, List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 
 import torch
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
@@ -110,7 +110,6 @@ class APIConfig:
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    concurrent_jobs: int = 1
 
     # TomeSD
     use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit
@@ -146,10 +145,6 @@ class APIConfig:
     ] = "cuda"
     iree_target: Literal["cuda", "vulkan", "llvm", "interpreted"] = "vulkan"
 
-    # Lora
-    lora_text_encoder_weight: float = 0.5
-    lora_unet_weight: float = 0.5
-
     # Critical
     enable_shutdown: bool = True
 
@@ -157,8 +152,9 @@ class APIConfig:
     clip_skip: int = 1
 
     # Autoload
-    autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
+
+    huggingface_style_parsing: bool = False
 
     # Saving
     save_path_template: str = "{folder}/{prompt}/{id}-{index}.{extension}"

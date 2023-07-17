@@ -57,8 +57,10 @@
       </NSelect>
     </NFormItem>
 
-    <NFormItem label="LoRAs (not functional yet)">
-      <NSelect multiple :options="loraOptions"> </NSelect>
+    <NFormItem label="Huggingface-style prompting">
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.huggingface_style_parsing"
+      />
     </NFormItem>
 
     <h2>Timings and Queue</h2>
@@ -80,13 +82,6 @@
       <NInputNumber
         v-model:value="settings.defaultSettings.api.image_preview_delay"
         :step="0.1"
-      />
-    </NFormItem>
-
-    <NFormItem label="Concurrent jobs">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.concurrent_jobs"
-        :step="1"
       />
     </NFormItem>
 
@@ -409,21 +404,6 @@ const textualInversions = computed(() => {
 
 const textualInversionOptions = computed(() => {
   return textualInversions.value.map((model) => {
-    return {
-      value: model.path,
-      label: model.name,
-    };
-  });
-});
-
-const loras = computed(() => {
-  return global.state.models.filter((model) => {
-    return model.backend === "LoRA";
-  });
-});
-
-const loraOptions = computed(() => {
-  return loras.value.map((model) => {
     return {
       value: model.path,
       label: model.name,

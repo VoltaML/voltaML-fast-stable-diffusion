@@ -16,7 +16,8 @@
       @click="showModal = true"
       :loading="modelsLoading"
       :type="conf.data.settings.model ? 'default' : 'success'"
-      >Load Model</NButton
+    >
+      Load Model</NButton
     >
     <NModal
       v-model:show="showModal"
@@ -106,8 +107,8 @@
                           ghost
                           @click="unloadModel(model)"
                           v-if="model.state === 'loaded'"
-                          >Unload</NButton
-                        >
+                          >Unload
+                        </NButton>
                         <NButton
                           type="success"
                           ghost
@@ -129,41 +130,10 @@
                   </NCard>
                 </NGi>
 
-                <!-- LoRA -->
+                <!-- VAE -->
                 <NGi>
-                  <NCard :title="lora_title">
+                  <NCard :title="vae_title">
                     <div v-if="global.state.selected_model !== null">
-                      <NCard
-                        style="width: 100%; margin-bottom: 8px"
-                        title="LoRA strength"
-                        header-style="padding-bottom: 0; font-size: 16px"
-                      >
-                        <div class="flex-container">
-                          <p class="slider-label">Text Encoder</p>
-                          <NSlider
-                            v-model:value="
-                              conf.data.settings.api.lora_text_encoder_weight
-                            "
-                            :min="0.1"
-                            :max="1"
-                            :step="0.01"
-                            style="margin-right: 12px"
-                          />
-                        </div>
-
-                        <div class="flex-container">
-                          <p class="slider-label">UNet</p>
-                          <NSlider
-                            v-model:value="
-                              conf.data.settings.api.lora_unet_weight
-                            "
-                            :min="0.1"
-                            :max="1"
-                            :step="0.01"
-                            style="margin-right: 12px"
-                          />
-                        </div>
-                      </NCard>
                       <div
                         style="
                           display: inline-flex;
@@ -172,30 +142,26 @@
                           justify-content: space-between;
                           border-bottom: 1px solid rgb(66, 66, 71);
                         "
-                        v-for="lora in loraModels"
-                        v-bind:key="lora.path"
+                        v-for="vae in vaeModels"
+                        v-bind:key="vae.path"
                       >
-                        <p>{{ lora.name }}</p>
+                        <p>{{ vae.name }}</p>
                         <div style="display: inline-flex">
                           <NButton
                             type="error"
                             ghost
                             disabled
-                            v-if="
-                              global.state.selected_model?.loras.includes(
-                                lora.path
-                              )
-                            "
-                            >Loaded</NButton
-                          >
+                            v-if="global.state.selected_model?.vae == vae.path"
+                            >Loaded
+                          </NButton>
                           <NButton
                             type="success"
                             ghost
-                            @click="loadLoRA(lora)"
+                            @click="loadVAE(vae)"
                             :disabled="
                               global.state.selected_model === undefined
                             "
-                            :loading="lora.state === 'loading'"
+                            :loading="vae.state === 'loading'"
                             v-else
                             >Load</NButton
                           >
@@ -281,72 +247,78 @@
               </NGrid>
             </NTabPane>
             <NTabPane name="AITemplate">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in aitModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload</NButton
-                    >
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                      >Load</NButton
-                    >
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in aitModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload
+                      </NButton>
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                      >
+                        Load</NButton
+                      >
+                    </div>
                   </div>
-                </div>
-              </NCard>
+                </NCard>
+              </NScrollbar>
             </NTabPane>
             <NTabPane name="ONNX">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in onnxModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload</NButton
-                    >
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                      >Load</NButton
-                    >
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in onnxModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload
+                      </NButton>
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                      >
+                        Load</NButton
+                      >
+                    </div>
                   </div>
-                </div>
-              </NCard>
+                </NCard>
+              </NScrollbar>
             </NTabPane>
           </NTabs>
         </NScrollbar>
@@ -414,7 +386,6 @@ import {
   NModal,
   NScrollbar,
   NSelect,
-  NSlider,
   NTabPane,
   NTabs,
   NText,
@@ -487,14 +458,26 @@ const onnxModels = computed(() => {
     });
 });
 
-const loraModels = computed(() => {
-  return filteredModels.value
-    .filter((model) => {
-      return model.backend === "LoRA";
-    })
-    .sort((a, b) => {
-      return a.name.localeCompare(b.name);
-    });
+const vaeModels = computed(() => {
+  return [
+    {
+      name: "Default VAE",
+      path: "default",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "default",
+      loras: [],
+      textual_inversions: [],
+    } as ModelEntry,
+    ...filteredModels.value
+      .filter((model) => {
+        return model.backend === "VAE";
+      })
+      .sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      }),
+  ];
 });
 
 const textualInversionModels = computed(() => {
@@ -517,7 +500,6 @@ function refreshModels() {
       }
 
       res.json().then((data: Array<ModelEntry>) => {
-        // TODO: Lora loaded state isnt updated
         global.state.models.splice(0, global.state.models.length);
         data.forEach((model) => {
           global.state.models.push(model);
@@ -594,6 +576,18 @@ function refreshModels() {
             conf.data.settings.aitDim.height = undefined;
             conf.data.settings.aitDim.batch_size = undefined;
           }
+
+          const autofillKeys = [];
+          for (const model of global.state.models) {
+            if (model.backend === "LoRA") {
+              autofillKeys.push(`<lora:${model.name}:1.0>`);
+            }
+            /*else if (model.backend === "Textual Inversion") {
+              autofillKeys.push(`<ti:${model.name}:1.0>`);
+            }*/
+          }
+
+          global.state.autofill = autofillKeys;
         });
       });
     })
@@ -647,22 +641,20 @@ async function unloadModel(model: ModelEntry) {
   }
 }
 
-async function loadLoRA(lora: ModelEntry) {
+async function loadVAE(vae: ModelEntry) {
   if (global.state.selected_model) {
     try {
-      await fetch(`${serverUrl}/api/models/load-lora`, {
+      await fetch(`${serverUrl}/api/models/load-vae`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
           model: global.state.selected_model.name,
-          lora: lora.path,
-          unet_weight: conf.data.settings.api.lora_unet_weight,
-          text_encoder_weight: conf.data.settings.api.lora_text_encoder_weight,
+          vae: vae.path,
         }),
       });
-      global.state.selected_model.loras.push(lora.path);
+      global.state.selected_model.vae = vae.path;
     } catch (e) {
       console.error(e);
     }
@@ -847,8 +839,8 @@ const generatedModelOptions: ComputedRef<SelectMixedOption[]> = computed(() => {
 const message = useMessage();
 
 const showModal = ref(false);
-const lora_title = computed(() => {
-  return `LoRA (${
+const vae_title = computed(() => {
+  return `VAE (${
     global.state.selected_model
       ? global.state.selected_model.name
       : "No model selected"
@@ -918,6 +910,7 @@ const backgroundColor = computed(() => {
   flex-grow: 1;
   width: 400px;
 }
+
 .top-bar {
   display: inline-flex;
   align-items: center;

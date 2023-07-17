@@ -43,8 +43,9 @@
     <NAlert
       style="margin-top: 12px"
       v-if="
-        conf.data.settings.model?.name === '' ||
-        conf.data.settings.model?.name === undefined
+        !props.doNotDisableGenerate &&
+        (conf.data.settings.model?.name === '' ||
+          conf.data.settings.model?.name === undefined)
       "
       type="warning"
       title="No model loaded"

@@ -1,4 +1,5 @@
-import { Z as cB, a0 as cM, Y as c, $ as cE, a1 as iconSwitchTransition, ar as cNotM, d as defineComponent, R as useConfig, a8 as useRtl, a6 as useTheme, U as provide, E as h, aD as flatten, aE as getSlot, W as createInjectionKey, bc as stepsLight, a4 as inject, a_ as throwError, c as computed, aa as useThemeClass, aC as resolveWrappedSlot, au as resolveSlot, ac as NIconSwitchTransition, a9 as createKey, X as call, av as NBaseIcon, bd as FinishedIcon, be as ErrorIcon, b as useMessage, u as useState, F as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, v as NSlider, r as NSelect, G as NButton, m as createTextVNode, ba as NModal, s as serverUrl, a as useSettings, x as createBlock, I as NTabPane, J as NTabs } from "./index.js";
+import { Y as cB, $ as cM, X as c, Z as cE, a0 as iconSwitchTransition, aq as cNotM, d as defineComponent, Q as useConfig, a7 as useRtl, a5 as useTheme, T as provide, D as h, aC as flatten, aD as getSlot, V as createInjectionKey, bb as stepsLight, a3 as inject, aZ as throwError, c as computed, a9 as useThemeClass, aB as resolveWrappedSlot, at as resolveSlot, ab as NIconSwitchTransition, a8 as createKey, W as call, au as NBaseIcon, bc as FinishedIcon, bd as ErrorIcon, b as useMessage, u as useState, E as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, r as NSelect, F as NButton, m as createTextVNode, b9 as NModal, s as serverUrl, a as useSettings, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSwitch } from "./Switch.js";
 const style = cB("steps", `
@@ -616,16 +617,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NSteps), null, {
                   default: withCtx(() => [
                     createVNode(unref(NStep), {
-                      title: "UNet",
-                      status: unref(global).state.aitBuildStep.unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
-                      title: "ControlNet UNet",
-                      status: unref(global).state.aitBuildStep.controlnet_unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
                       title: "CLIP",
                       status: unref(global).state.aitBuildStep.clip
+                    }, null, 8, ["status"]),
+                    createVNode(unref(NStep), {
+                      title: "UNet",
+                      status: unref(global).state.aitBuildStep.unet
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "VAE",

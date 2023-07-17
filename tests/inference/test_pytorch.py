@@ -169,19 +169,12 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-def test_lora(pipe: PyTorchStableDiffusion):
-    "Load LoRA model and inject it into the pipe"
-
-    # Dowload: https://civitai.com/models/82098/add-more-details-detail-enhancer-tweaker-lora
-    pipe.load_lora("data/lora/more_details.safetensors")
-
-
 def test_txt2img_with_lora(pipe: PyTorchStableDiffusion):
     "Generate an image with LoRA model"
 
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
-            prompt="shenhe (genshin)",
+            prompt="1girl, blonde, <lora:more_details:0.5>",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),

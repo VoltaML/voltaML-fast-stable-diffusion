@@ -69,8 +69,6 @@ async def queue_status():
 
     return {
         "jobs": queue.jobs,
-        "concurrent_jobs": queue.concurrent_jobs,
-        "locked": queue.lock.locked(),
     }
 
 

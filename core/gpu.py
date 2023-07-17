@@ -32,7 +32,7 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
-    LoraLoadRequest,
+    VaeLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
@@ -115,7 +115,9 @@ class GPU:
             extra_steps: int = 0
             if "highres_fix" in job.flags:
                 flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
-                extra_steps = math.floor(flag.steps * flag.strength)
+                extra_steps = math.floor(
+                    flag.steps * flag.strength * job.data.batch_count
+                )
 
             shared.current_steps = steps * job.data.batch_count + extra_steps
             shared.current_done_steps = 0
@@ -495,36 +497,27 @@ class GPU:
 
         await asyncio.to_thread(download_model, model)
 
-    async def load_lora(self, req: LoraLoadRequest):
-        "Inject a Lora model into a model"
+    async def load_vae(self, req: VaeLoadRequest):
+        "Change the models VAE"
 
         if req.model in self.loaded_models:
             internal_model = self.loaded_models[req.model]
 
             if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.info(
-                    f"Loading Lora model: {req.lora}, weights: ({req.unet_weight}, {req.text_encoder_weight})"
-                )
+                logger.info(f"Loading VAE model: {req.vae}")
 
-                internal_model.load_lora(
-                    req.lora, req.unet_weight, req.text_encoder_weight
-                )
+                internal_model.change_vae(req.vae)
 
                 websocket_manager.broadcast_sync(
                     Notification(
                         "success",
-                        "Lora model loaded",
-                        f"Lora model {req.lora} loaded",
+                        "VAE model loaded",
+                        f"VAE model {req.vae} loaded",
                     )
                 )
-
         else:
             websocket_manager.broadcast_sync(
-                Notification(
-                    "error",
-                    "Model not found",
-                    f"Model {req.model} not found",
-                )
+                Notification("error", "Model not found", f"Model {req.model} not found")
             )
             logger.error(f"Model {req.model} not found")
 

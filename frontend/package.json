@@ -8,6 +8,7 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{vue,js,jsx,ts,tsx,json,md}\"",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {

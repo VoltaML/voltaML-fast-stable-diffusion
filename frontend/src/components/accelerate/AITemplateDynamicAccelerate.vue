@@ -3,12 +3,8 @@
     <NCard title="Acceleration progress (around 20 minutes)">
       <NSpace vertical justify="center">
         <NSteps>
-          <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
-          <NStep
-            title="ControlNet UNet"
-            :status="global.state.aitBuildStep.controlnet_unet"
-          />
           <NStep title="CLIP" :status="global.state.aitBuildStep.clip" />
+          <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
           <NStep title="VAE" :status="global.state.aitBuildStep.vae" />
           <NStep
             title="Cleanup"

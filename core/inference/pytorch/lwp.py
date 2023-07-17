@@ -1,9 +1,13 @@
 import logging
 import re
-from typing import List, Optional, Union
+from pathlib import Path
+from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
+
+from ...config import config
+from ...files import get_full_model_path
 
 logger = logging.getLogger(__name__)
 
@@ -17,7 +21,7 @@ re_attention = re.compile(
 \\|
 \(|
 \[|
-:([+-]?[.\d]+)\)|
+:[\s]*([+-]?[.\d]+)\)|
 \)|
 ]|
 [^\\()\[\]:]+|
@@ -25,6 +29,42 @@ re_attention = re.compile(
 """,
     re.X,
 )
+
+special_parser = re.compile(
+    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>"
+)
+
+
+def parse_prompt_special(
+    text: str,
+) -> Tuple[str, Dict[Literal["ti", "lora"], List[Union[str, Tuple[str, float]]]]]:
+    """
+    Replaces special tokens like <lora:more_details:0.7> with their correct format and outputs then into a dict.
+
+    >>> parse_prompt_special("This is a <ti:easynegative:0.7> example.")
+    'This is a (easynegative:0.7) example.'
+    >>> parse_prompt_special("This is a <lora:more_details:0.7> example.")
+    'This is a  example.' (lora "more_details" gets loaded with a=0.7)
+    """
+
+    load_map = {}
+
+    def replace(match):
+        type_: Literal["ti", "lora"] = match.group(1)  # type: ignore
+        name = match.group(2)
+        strength = match.group(3)
+
+        if type_ == "ti":
+            load_map["ti"] = load_map.get("ti", list())
+            load_map["ti"].append(name)
+            return f"({name}:{strength if strength else '1.0'})"
+        # LoRAs don't really have trigger words, they all modify the UNet at least a bit
+        load_map["lora"] = load_map.get("lora", list())
+        load_map["lora"].append((name, float(strength) if strength else 1.0))
+        return "" if not config.api.huggingface_style_parsing else name
+
+    parsed = special_parser.sub(replace, text)
+    return (parsed, load_map)
 
 
 def parse_prompt_attention(text):
@@ -269,6 +309,85 @@ def get_weighted_text_embeddings(
     if isinstance(prompt, str):
         prompt = [prompt]
 
+    loralist = []
+    for l in pipe.loras:
+        loralist.append(l)
+    for i, prompt_ in enumerate(prompt):
+        prompt[i], load_map = parse_prompt_special(prompt_)
+        if len(load_map.keys()) != 0:
+            logger.debug(load_map)
+            if "lora" in load_map:
+                from ..lora import install_lora_hook
+
+                install_lora_hook(pipe)
+
+                if not hasattr(pipe.lora_injector, "old_containers"):
+                    pipe.lora_injector.old_containers = None
+                if pipe.lora_injector.old_containers is None:
+                    pipe.lora_injector.old_containers = pipe.lora_injector.containers
+                    logger.debug(f"Old containers: {pipe.lora_injector.old_containers}")
+
+                for lora, alpha in load_map["lora"]:
+                    correct_path = get_full_model_path(
+                        lora, model_folder="lora", force=True
+                    )
+                    for ext in [".safetensors", ".ckpt", ".bin", ".pt", ".pth"]:
+                        path = get_full_model_path(
+                            lora + ext, model_folder="lora", force=True
+                        )
+                        if path.exists():
+                            correct_path = path
+                            break
+                    loralist.append((correct_path, alpha))
+            elif "ti" in load_map:
+                # Disable TI for now as there's no reliable way to unload them
+                logger.info("Textual inversion via prompts is temporarily disabled.")
+                continue
+                for ti in load_map["ti"]:  # type: ignore
+                    ti: str
+                    correct_path = get_full_model_path(
+                        ti, model_folder="textual-inversion", force=True
+                    )
+                    for ext in [".safetensors", ".ckpt", ".bin", ".pt", ".pth"]:
+                        path = get_full_model_path(
+                            ti + ext, model_folder="textual-inversion", force=True
+                        )
+                        if path.exists():
+                            correct_path = path
+                            break
+                    logger.debug(f"Applying textual inversion {correct_path.name}")
+                    pipe.load_textual_inversion(correct_path.absolute().as_posix())
+
+    if config.api.huggingface_style_parsing and hasattr(pipe, "lora_injector"):
+        for prompt_ in prompt:
+            old_l = loralist
+            loralist = list(
+                filter(
+                    lambda x: Path(x[0]).stem.casefold()
+                    in prompt_.casefold(),  # pylint: disable=cell-var-from-loop
+                    loralist,
+                )
+            )
+            for lora, weight in old_l:
+                if (lora, weight) not in loralist:
+                    try:
+                        pipe.remove_lora(Path(lora).name)
+                        logger.debug(f"Unloading LoRA: {Path(lora).name}")
+                    except KeyError:
+                        pass
+    if hasattr(pipe, "lora_injector"):
+        remove = pipe.unload_loras
+        for lora, alpha in loralist:
+            name = Path(lora).name
+            if name not in pipe.lora_injector.containers:
+                logger.debug(f"{pipe.loras}, {loralist}")
+                if lora not in map(lambda x: x[0], pipe.loras) and name not in remove:
+                    logger.debug(f"Adding LoRA {name} to the removal list")
+                    remove.append(name)
+                logger.debug(f"Applying LoRA {name} with strength {alpha}")
+                pipe.apply_lora(lora, alpha)
+        pipe.unload_loras = remove
+
     if not skip_parsing:
         prompt_tokens, prompt_weights = get_prompts_with_weights(
             pipe, prompt, max_length - 2
@@ -301,7 +420,7 @@ def get_weighted_text_embeddings(
     # round up the longest length of tokens to a multiple of (model_max_length - 2)
     max_length = max([len(token) for token in prompt_tokens])
     if uncond_prompt is not None:
-        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore
+        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore # pylint: disable=nested-min-max
 
     max_embeddings_multiples = min(
         max_embeddings_multiples,  # type: ignore
