@@ -340,6 +340,9 @@ def get_weighted_text_embeddings(
                             break
                     loralist.append((correct_path, alpha))
             elif "ti" in load_map:
+                # Disable TI for now as there's no reliable way to unload them
+                logger.info("Textual inversion via prompts is temporarily disabled.")
+                continue
                 for ti in load_map["ti"]:  # type: ignore
                     ti: str
                     correct_path = get_full_model_path(

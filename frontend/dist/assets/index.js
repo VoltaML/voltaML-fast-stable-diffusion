@@ -40574,7 +40574,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-1a26c38c"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-9c537645"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40591,7 +40591,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "2dd27760": backgroundColor.value
+      "3fb837d2": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40709,8 +40709,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             for (const model of global2.state.models) {
               if (model.backend === "LoRA") {
                 autofillKeys.push(`<lora:${model.name}:1.0>`);
-              } else if (model.backend === "Textual Inversion") {
-                autofillKeys.push(`<ti:${model.name}:1.0>`);
               }
             }
             global2.state.autofill = autofillKeys;
@@ -41377,7 +41375,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_1a26c38c_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_9c537645_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41385,7 +41383,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-1a26c38c"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-9c537645"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
