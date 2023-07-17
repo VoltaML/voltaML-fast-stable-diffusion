@@ -26,9 +26,11 @@ class CachedModelList:
 
         self.ext_whitelist = [".safetensors", ".ckpt", ".pth", ".pt", ".bin"]
 
-    def cleanup_string(self, string: str) -> str:
+    def model_path_to_name(self, path: str) -> str:
         "Return only the stem of a file."
-        return re.sub("|".join(map(re.escape, self.ext_whitelist)), "", string)  # type: ignore
+
+        pth = Path(path)
+        return pth.stem
 
     def pytorch(self) -> List[ModelResponse]:
         "List of models downloaded for PyTorch"
@@ -162,7 +164,7 @@ class CachedModelList:
             if not any(x in model for x in self.ext_whitelist):
                 continue
 
-            model_name = self.cleanup_string(model)
+            model_name = self.model_path_to_name(model)
 
             models.append(
                 ModelResponse(
@@ -220,7 +222,7 @@ class CachedModelList:
             if not any(x in model for x in self.ext_whitelist):
                 continue
 
-            model_name = self.cleanup_string(model)
+            model_name = self.model_path_to_name(model)
 
             models.append(
                 ModelResponse(
