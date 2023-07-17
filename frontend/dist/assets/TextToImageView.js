@@ -1,9 +1,10 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$2 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { B as BurnerClock, _ as _sfc_main$3 } from "./clock.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as NSlider, x as createBlock, y as createCommentVNode, z as NGrid, A as spaceRegex } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as createBlock, x as createCommentVNode, y as NGrid, z as spaceRegex } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NSwitch } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
@@ -191,7 +192,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           type: "textarea",
                           placeholder: "Prompt",
                           "show-count": "",
-                          onKeyup: _cache[1] || (_cache[1] = ($event) => unref(promptHandleKeyUp)($event, unref(conf).data.settings.txt2img, "prompt")),
+                          onKeyup: _cache[1] || (_cache[1] = ($event) => unref(promptHandleKeyUp)(
+                            $event,
+                            unref(conf).data.settings.txt2img,
+                            "prompt",
+                            unref(global)
+                          )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
@@ -208,7 +214,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           onKeyup: _cache[3] || (_cache[3] = ($event) => unref(promptHandleKeyUp)(
                             $event,
                             unref(conf).data.settings.txt2img,
-                            "negative_prompt"
+                            "negative_prompt",
+                            unref(global)
                           )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {

@@ -32,7 +32,6 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
-    LoraLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
@@ -496,39 +495,6 @@ class GPU:
         "Download a model from the internet."
 
         await asyncio.to_thread(download_model, model)
-
-    async def load_lora(self, req: LoraLoadRequest):
-        "Inject a Lora model into a model"
-
-        if req.model in self.loaded_models:
-            internal_model = self.loaded_models[req.model]
-
-            if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.info(
-                    f"Loading Lora model: {req.lora}, weights: ({req.unet_weight}, {req.text_encoder_weight})"
-                )
-
-                internal_model.load_lora(
-                    req.lora, req.unet_weight, req.text_encoder_weight
-                )
-
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        "success",
-                        "Lora model loaded",
-                        f"Lora model {req.lora} loaded",
-                    )
-                )
-
-        else:
-            websocket_manager.broadcast_sync(
-                Notification(
-                    "error",
-                    "Model not found",
-                    f"Model {req.model} not found",
-                )
-            )
-            logger.error(f"Model {req.model} not found")
 
     async def load_textual_inversion(self, req: TextualInversionLoadRequest):
         "Inject a textual inversion model into a model"

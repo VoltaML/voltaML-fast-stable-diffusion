@@ -18,7 +18,6 @@ from core.shared_dependent import cached_model_list, gpu
 from core.types import (
     DeleteModelRequest,
     InferenceBackend,
-    LoraLoadRequest,
     ModelResponse,
     TextualInversionLoadRequest,
 )
@@ -59,7 +58,12 @@ async def list_loaded_models() -> List[ModelResponse]:
                 backend=gpu.loaded_models[model_id].backend,
                 path=gpu.loaded_models[model_id].model_id,
                 state="loaded",
-                loras=gpu.loaded_models[model_id].__dict__.get("loras", []),
+                loras=list(
+                    map(
+                        lambda x: Path(x[0]).name,
+                        gpu.loaded_models[model_id].__dict__.get("loras", []),
+                    )
+                ),
                 textual_inversions=gpu.loaded_models[model_id].__dict__.get(
                     "textual_inversions", []
                 ),
@@ -115,15 +119,6 @@ async def unload_all_models():
     await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
 
     return {"message": "All models unloaded"}
-
-
-@router.post("/load-lora")
-async def load_lora(req: LoraLoadRequest):
-    "Load a LoRA model into a model"
-
-    await gpu.load_lora(req)
-    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
-    return {"message": "LoRA model loaded"}
 
 
 @router.post("/load-textual-inversion")

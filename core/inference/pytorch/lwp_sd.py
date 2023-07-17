@@ -88,6 +88,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
     def __init__(
         self,
+        parent,
         vae: AutoencoderKL,
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
@@ -109,6 +110,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         )
         self.__init__additional__()
 
+        self.parent = parent
         self.vae: AutoencoderKL
         self.text_encoder: CLIPTextModel
         self.tokenizer: CLIPTokenizer
@@ -197,7 +199,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             )
 
         text_embeddings, uncond_embeddings = get_weighted_text_embeddings(
-            pipe=self,
+            pipe=self.parent,
             prompt=prompt,
             uncond_prompt=negative_prompt if do_classifier_free_guidance else None,
             max_embeddings_multiples=max_embeddings_multiples,

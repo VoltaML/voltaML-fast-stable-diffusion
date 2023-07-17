@@ -96,6 +96,7 @@ export interface StateInterface {
   secrets: {
     huggingface: "missing" | "ok";
   };
+  autofill: Array<string>;
 }
 
 export const useState = defineStore("state", () => {
@@ -195,6 +196,7 @@ export const useState = defineStore("state", () => {
     secrets: {
       huggingface: "ok",
     },
+    autofill: [],
   });
   return { state };
 });

@@ -3,9 +3,40 @@ import { useWebsocket } from "./store/websockets";
 
 export const spaceRegex = new RegExp("[\\s,]+");
 const arrowKeys = [38, 40];
+let currentFocus: number = -1;
 
 export function dimensionValidator(value: number) {
   return value % 8 === 0;
+}
+
+function addActive(x: any) {
+  if (!x) return false;
+  removeActive(x);
+
+  if (currentFocus >= x.length) {
+    currentFocus = 0;
+  }
+  if (currentFocus < 0) {
+    currentFocus = x.length - 1;
+  }
+
+  x[currentFocus].classList.add("autocomplete-active");
+}
+function removeActive(x: any) {
+  for (let i = 0; i < x.length; i++) {
+    x[i].classList.remove("autocomplete-active");
+  }
+}
+function closeAllLists(
+  elmnt: HTMLElement | undefined | EventTarget | null,
+  input: any
+) {
+  const x = document.getElementsByClassName("autocomplete-items");
+  for (let i = 0; i < x.length; i++) {
+    if (elmnt != x[i] && elmnt != input) {
+      x[i]?.parentNode?.removeChild(x[i]);
+    }
+  }
 }
 
 export async function startWebsocket(messageProvider: any) {
@@ -54,7 +85,12 @@ export function getTextBoundaries(elem: HTMLInputElement | null) {
   return [0, 0];
 }
 
-export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
+export function promptHandleKeyUp(
+  e: KeyboardEvent,
+  data: any,
+  key: string,
+  globalState: ReturnType<typeof import("@/store/state")["useState"]>
+) {
   // Handle ArrowUp
   if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
@@ -166,6 +202,77 @@ export function promptHandleKeyUp(e: KeyboardEvent, data: any, key: string) {
       console.log("No selection, cannot parse for weighting");
     }
   }
+
+  // Handle autocomplete
+  const input = e.target as HTMLTextAreaElement;
+
+  if (input) {
+    const text = input.value;
+    const currentTokenStripped = text.split(",").pop()?.trim();
+
+    // close any already open lists of autocompleted values
+    closeAllLists(undefined, input);
+
+    if (!currentTokenStripped) {
+      return false;
+    }
+
+    const toAppend = [];
+    for (let i = 0; i < globalState.state.autofill.length; i++) {
+      if (
+        globalState.state.autofill[i]
+          .toUpperCase()
+          .includes(currentTokenStripped.toUpperCase())
+      ) {
+        const b = document.createElement("DIV");
+        b.innerText = globalState.state.autofill[i];
+        b.innerHTML +=
+          "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
+        b.addEventListener("click", function () {
+          input.value =
+            text.substring(0, text.lastIndexOf(",") + 1) +
+            globalState.state.autofill[i];
+          data[key] = input.value;
+
+          closeAllLists(undefined, input);
+        });
+        toAppend.push(b);
+      }
+    }
+
+    if (toAppend.length === 0) {
+      return false;
+    }
+
+    const div = document.createElement("DIV");
+    div.setAttribute("id", "autocomplete-list");
+    div.setAttribute("class", "autocomplete-items");
+    input.parentNode?.parentNode?.parentNode?.parentNode?.appendChild(div);
+    for (let i = 0; i < toAppend.length; i++) {
+      div.appendChild(toAppend[i]);
+    }
+
+    // Handle Special keys
+    const autocompleteList = document.getElementById("autocomplete-list");
+    const x = autocompleteList?.getElementsByTagName("div");
+    if (e.key === "ArrowDown") {
+      currentFocus++;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      currentFocus--;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      if (currentFocus > -1) {
+        if (x) x[currentFocus].click();
+      }
+    } else if (e.key === "Escape") {
+      closeAllLists(undefined, input);
+    }
+  }
 }
 
 export function promptHandleKeyDown(e: KeyboardEvent) {
@@ -173,6 +280,17 @@ export function promptHandleKeyDown(e: KeyboardEvent) {
 
   if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
     e.preventDefault();
+  }
+
+  if (document.getElementById("autocomplete-list")) {
+    if (
+      e.key === "Enter" ||
+      e.key === "Tab" ||
+      e.key === "ArrowDown" ||
+      e.key === "ArrowUp"
+    ) {
+      e.preventDefault();
+    }
   }
 }
 
