@@ -21,7 +21,7 @@ from api.websockets.notification import Notification
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
-from core.inference.functions import load_pytorch_pipeline, convert_vaept_to_diffusers
+from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.pytorch.latents import scale_latents
 from core.inference.pytorch.lwp import get_weighted_text_embeddings
 from core.inference.pytorch.lwp_sd import StableDiffusionLongPromptWeightingPipeline
@@ -155,7 +155,7 @@ class PyTorchStableDiffusion(InferenceModel):
         else:
             # Why the fuck do you think that's constant pylint?
             # Are you mentally insane?
-            if Path(vae).is_dir:  # pylint: disable=using-constant-test
+            if Path(vae).is_dir():
                 self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
             else:
                 self.vae = convert_vaept_to_diffusers(vae).to(
