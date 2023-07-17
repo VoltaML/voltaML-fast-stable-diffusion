@@ -190,9 +190,9 @@ class CachedModelList:
             path = Path(os.path.join(self.vae_path, model))
 
             # Skip if it is not a VAE model
-            if path.suffix not in self.ext_whitelist and not path.is_dir:
+            if path.suffix not in self.ext_whitelist and not path.is_dir():
                 continue
-            if path.is_dir and is_valid_diffusers_vae(path):
+            if path.is_dir() and not is_valid_diffusers_vae(path):
                 continue
 
             models.append(
