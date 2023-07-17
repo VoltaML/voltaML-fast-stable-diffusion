@@ -1,6 +1,7 @@
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, bm as useCssVars, u as useState, a as useSettings, F as ref, c as computed, b8 as reactive, bj as onMounted, o as onUnmounted, g as createVNode, h as unref, w as withCtx, M as Fragment, O as renderList, s as serverUrl, k as NInput, H as NIcon, v as NSlider, ba as NModal, z as NGrid, N as NGi, G as NButton, m as createTextVNode, P as NScrollbar, x as createBlock, t as toDisplayString, y as createCommentVNode, bn as urlFromPath, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, bl as useCssVars, u as useState, a as useSettings, E as ref, c as computed, b7 as reactive, bi as onMounted, o as onUnmounted, g as createVNode, h as unref, w as withCtx, L as Fragment, M as renderList, s as serverUrl, k as NInput, G as NIcon, b9 as NModal, y as NGrid, N as NGi, F as NButton, m as createTextVNode, O as NScrollbar, v as createBlock, t as toDisplayString, x as createCommentVNode, bm as urlFromPath, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",

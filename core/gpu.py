@@ -33,6 +33,7 @@ from core.types import (
     InterrogatorQueueEntry,
     Job,
     LoraLoadRequest,
+    VaeLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
@@ -496,6 +497,30 @@ class GPU:
         "Download a model from the internet."
 
         await asyncio.to_thread(download_model, model)
+
+    async def load_vae(self, req: VaeLoadRequest):
+        "Change the models VAE"
+
+        if req.model in self.loaded_models:
+            internal_model = self.loaded_models[req.model]
+
+            if isinstance(internal_model, PyTorchStableDiffusion):
+                logger.info(f"Loading VAE model: {req.vae}")
+
+                internal_model.change_vae(req.vae)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "VAE model loaded",
+                        f"VAE model {req.vae} loaded",
+                    )
+                )
+        else:
+            websocket_manager.broadcast_sync(
+                Notification("error", "Model not found", f"Model {req.model} not found")
+            )
+            logger.error(f"Model {req.model} not found")
 
     async def load_lora(self, req: LoraLoadRequest):
         "Inject a Lora model into a model"

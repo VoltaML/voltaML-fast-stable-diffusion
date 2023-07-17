@@ -21,7 +21,7 @@ from api.websockets.notification import Notification
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
-from core.inference.functions import load_pytorch_pipeline
+from core.inference.functions import load_pytorch_pipeline, convert_vaept_to_diffusers
 from core.inference.pytorch.latents import scale_latents
 from core.inference.pytorch.lwp import get_weighted_text_embeddings
 from core.inference.pytorch.lwp_sd import StableDiffusionLongPromptWeightingPipeline
@@ -75,6 +75,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.current_controlnet: str = ""
 
+        self.vae_path: str = "default"
         self.loras: List[str] = []
         self.textual_inversions: List[str] = []
 
@@ -141,6 +142,21 @@ class PyTorchStableDiffusion(InferenceModel):
         # Free up memory
         del pipe
         self.memory_cleanup()
+
+    def change_vae(self, vae: str) -> None:
+        "Change the vae to the one specified"
+
+        if self.vae_path == "default":
+            setattr(self, "original_vae", self.vae)
+
+        old_vae = getattr(self, "original_vae")
+        if vae == "default":
+            self.vae = old_vae
+        else:
+            self.vae = convert_vaept_to_diffusers(vae).to(
+                device=old_vae.device, dtype=old_vae.dtype
+            )
+        self.vae_path = vae
 
     def unload(self) -> None:
         "Unload the model from memory"
