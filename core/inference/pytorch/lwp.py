@@ -31,7 +31,7 @@ re_attention = re.compile(
 )
 
 special_parser = re.compile(
-    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+):[\s]*([+-]?(?:[0-9]*[.])?[0-9]+)\>"
+    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>"
 )
 
 
@@ -57,10 +57,10 @@ def parse_prompt_special(
         if type_ == "ti":
             load_map["ti"] = load_map.get("ti", list())
             load_map["ti"].append(name)
-            return f"({name}:{strength})"
+            return f"({name}:{strength if strength else '1.0'})"
         # LoRAs don't really have trigger words, they all modify the UNet at least a bit
         load_map["lora"] = load_map.get("lora", list())
-        load_map["lora"].append((name, float(strength)))
+        load_map["lora"].append((name, float(strength) if strength else 1.0))
         return "" if not config.api.huggingface_style_parsing else name
 
     parsed = special_parser.sub(replace, text)
