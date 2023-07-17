@@ -617,16 +617,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NSteps), null, {
                   default: withCtx(() => [
                     createVNode(unref(NStep), {
-                      title: "UNet",
-                      status: unref(global).state.aitBuildStep.unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
-                      title: "ControlNet UNet",
-                      status: unref(global).state.aitBuildStep.controlnet_unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
                       title: "CLIP",
                       status: unref(global).state.aitBuildStep.clip
+                    }, null, 8, ["status"]),
+                    createVNode(unref(NStep), {
+                      title: "UNet",
+                      status: unref(global).state.aitBuildStep.unet
                     }, null, 8, ["status"]),
                     createVNode(unref(NStep), {
                       title: "VAE",

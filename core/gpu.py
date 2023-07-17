@@ -114,7 +114,9 @@ class GPU:
             extra_steps: int = 0
             if "highres_fix" in job.flags:
                 flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
-                extra_steps = math.floor(flag.steps * flag.strength)
+                extra_steps = math.floor(
+                    flag.steps * flag.strength * job.data.batch_count
+                )
 
             shared.current_steps = steps * job.data.batch_count + extra_steps
             shared.current_done_steps = 0

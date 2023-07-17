@@ -40293,7 +40293,6 @@ const defaultSettings = {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
     image_preview_delay: 2,
-    concurrent_jobs: 1,
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
@@ -40575,7 +40574,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-8de67429"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-1a26c38c"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40592,7 +40591,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "e848f004": backgroundColor.value
+      "2dd27760": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41208,43 +41207,48 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                       }),
                       createVNode(unref(NTabPane), { name: "AITemplate" }, {
                         default: withCtx(() => [
-                          createVNode(unref(NCard), {
-                            title: "Models",
-                            style: { "height": "100%" }
-                          }, {
+                          createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
                             default: withCtx(() => [
-                              (openBlock(true), createElementBlock(Fragment, null, renderList(aitModels.value, (model) => {
-                                return openBlock(), createElementBlock("div", {
-                                  style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                  key: model.path
-                                }, [
-                                  createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                  createBaseVNode("div", null, [
-                                    model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
-                                      key: 0,
-                                      type: "error",
-                                      ghost: "",
-                                      onClick: ($event) => unloadModel(model)
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Unload ")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
-                                      key: 1,
-                                      type: "success",
-                                      ghost: "",
-                                      onClick: ($event) => loadModel(model),
-                                      loading: model.state === "loading"
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode(" Load")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick", "loading"]))
-                                  ])
-                                ]);
-                              }), 128))
+                              createVNode(unref(NCard), {
+                                title: "Models",
+                                style: { "height": "100%" }
+                              }, {
+                                default: withCtx(() => [
+                                  (openBlock(true), createElementBlock(Fragment, null, renderList(aitModels.value, (model) => {
+                                    return openBlock(), createElementBlock("div", {
+                                      style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                      key: model.path
+                                    }, [
+                                      createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                      createBaseVNode("div", null, [
+                                        model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                          key: 0,
+                                          type: "error",
+                                          ghost: "",
+                                          onClick: ($event) => unloadModel(model)
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Unload ")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                          key: 1,
+                                          type: "success",
+                                          ghost: "",
+                                          onClick: ($event) => loadModel(model),
+                                          loading: model.state === "loading"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Load")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick", "loading"]))
+                                      ])
+                                    ]);
+                                  }), 128))
+                                ]),
+                                _: 1
+                              })
                             ]),
                             _: 1
                           })
@@ -41253,43 +41257,48 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                       }),
                       createVNode(unref(NTabPane), { name: "ONNX" }, {
                         default: withCtx(() => [
-                          createVNode(unref(NCard), {
-                            title: "Models",
-                            style: { "height": "100%" }
-                          }, {
+                          createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
                             default: withCtx(() => [
-                              (openBlock(true), createElementBlock(Fragment, null, renderList(onnxModels.value, (model) => {
-                                return openBlock(), createElementBlock("div", {
-                                  style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                  key: model.path
-                                }, [
-                                  createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                  createBaseVNode("div", null, [
-                                    model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
-                                      key: 0,
-                                      type: "error",
-                                      ghost: "",
-                                      onClick: ($event) => unloadModel(model)
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Unload ")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
-                                      key: 1,
-                                      type: "success",
-                                      ghost: "",
-                                      onClick: ($event) => loadModel(model),
-                                      loading: model.state === "loading"
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode(" Load")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick", "loading"]))
-                                  ])
-                                ]);
-                              }), 128))
+                              createVNode(unref(NCard), {
+                                title: "Models",
+                                style: { "height": "100%" }
+                              }, {
+                                default: withCtx(() => [
+                                  (openBlock(true), createElementBlock(Fragment, null, renderList(onnxModels.value, (model) => {
+                                    return openBlock(), createElementBlock("div", {
+                                      style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                      key: model.path
+                                    }, [
+                                      createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                      createBaseVNode("div", null, [
+                                        model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                          key: 0,
+                                          type: "error",
+                                          ghost: "",
+                                          onClick: ($event) => unloadModel(model)
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Unload ")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                          key: 1,
+                                          type: "success",
+                                          ghost: "",
+                                          onClick: ($event) => loadModel(model),
+                                          loading: model.state === "loading"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Load")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick", "loading"]))
+                                      ])
+                                    ]);
+                                  }), 128))
+                                ]),
+                                _: 1
+                              })
                             ]),
                             _: 1
                           })
@@ -41368,7 +41377,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_8de67429_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_1a26c38c_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41376,7 +41385,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-8de67429"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-1a26c38c"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

@@ -1,65 +1,34 @@
 <template>
   <div class="top-bar">
-    <NSelect
-      style="max-width: 250px; padding-left: 12px; padding-right: 12px"
-      :options="generatedModelOptions"
-      @update:value="onModelChange"
-      :loading="modelsLoading"
-      placeholder=""
-      :value="
-        conf.data.settings.model !== null ? conf.data.settings.model?.name : ''
-      "
-      :consistent-menu-width="false"
-      filterable
-    />
-    <NButton
-      @click="showModal = true"
-      :loading="modelsLoading"
-      :type="conf.data.settings.model ? 'default' : 'success'"
-    >
-      Load Model</NButton
-    >
-    <NModal
-      v-model:show="showModal"
-      closable
-      mask-closable
-      preset="card"
-      style="width: 85vw"
-      title="Models"
-      :auto-focus="false"
-    >
+    <NSelect style="max-width: 250px; padding-left: 12px; padding-right: 12px" :options="generatedModelOptions"
+      @update:value="onModelChange" :loading="modelsLoading" placeholder="" :value="conf.data.settings.model !== null ? conf.data.settings.model?.name : ''
+        " :consistent-menu-width="false" filterable />
+    <NButton @click="showModal = true" :loading="modelsLoading" :type="conf.data.settings.model ? 'default' : 'success'">
+      Load Model</NButton>
+    <NModal v-model:show="showModal" closable mask-closable preset="card" style="width: 85vw" title="Models"
+      :auto-focus="false">
       <div v-if="websocketState.readyState === 'CLOSED'">
-        <NResult
-          title="You are not connected to the server"
-          description="Click the button below to reconnect"
-          style="
+        <NResult title="You are not connected to the server" description="Click the button below to reconnect" style="
             height: 70vh;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-          "
-          status="500"
-        >
+          " status="500">
           <template #footer>
-            <NButton type="success" @click="startWebsocket(message)"
-              >Reconnect</NButton
-            >
+            <NButton type="success" @click="startWebsocket(message)">Reconnect</NButton>
           </template>
         </NResult>
       </div>
       <div v-else-if="global.state.models.length === 0">
-        <NResult
-          title="No models found"
-          description="Click on this icon in the LEFT MENU to access the model download page"
-          style="
+        <NResult title="No models found"
+          description="Click on this icon in the LEFT MENU to access the model download page" style="
             height: 70vh;
             display: flex;
             align-items: center;
             justify-content: center;
             flex-direction: column;
-          "
-        >
+          ">
           <template #icon>
             <NIcon size="64">
               <CubeSharp />
@@ -69,18 +38,8 @@
       </div>
       <div v-else>
         <div style="display: inline-flex; width: 100%; margin-bottom: 12px">
-          <NInput
-            v-model:value="filter"
-            clearable
-            placeholder="Filter Models"
-          />
-          <NButton
-            ghost
-            type="success"
-            style="margin-left: 4px"
-            @click="refreshModels"
-            >Refresh</NButton
-          >
+          <NInput v-model:value="filter" clearable placeholder="Filter Models" />
+          <NButton ghost type="success" style="margin-left: 4px" @click="refreshModels">Refresh</NButton>
         </div>
         <NScrollbar>
           <NTabs type="segment" style="height: 70vh">
@@ -89,42 +48,21 @@
                 <!-- Models -->
                 <NGi>
                   <NCard title="Models" style="height: 100%">
-                    <div
-                      style="
+                    <div style="
                         display: inline-flex;
                         width: 100%;
                         align-items: center;
                         justify-content: space-between;
                         border-bottom: 1px solid rgb(66, 66, 71);
-                      "
-                      v-for="model in pyTorchModels"
-                      v-bind:key="model.path"
-                    >
+                      " v-for="model in pyTorchModels" v-bind:key="model.path">
                       <p>{{ model.name }}</p>
                       <div style="display: inline-flex">
-                        <NButton
-                          type="error"
-                          ghost
-                          @click="unloadModel(model)"
-                          v-if="model.state === 'loaded'"
-                          >Unload
+                        <NButton type="error" ghost @click="unloadModel(model)" v-if="model.state === 'loaded'">Unload
                         </NButton>
-                        <NButton
-                          type="success"
-                          ghost
-                          @click="loadModel(model)"
-                          :loading="model.state === 'loading'"
-                          v-else
-                          >Load</NButton
-                        >
-                        <NButton
-                          type="info"
-                          style="margin-left: 4px"
-                          ghost
-                          @click="global.state.selected_model = model"
-                          :disabled="model.state !== 'loaded'"
-                          >Select</NButton
-                        >
+                        <NButton type="success" ghost @click="loadModel(model)" :loading="model.state === 'loading'"
+                          v-else>Load</NButton>
+                        <NButton type="info" style="margin-left: 4px" ghost @click="global.state.selected_model = model"
+                          :disabled="model.state !== 'loaded'">Select</NButton>
                       </div>
                     </div>
                   </NCard>
@@ -133,61 +71,32 @@
                 <!-- Textual Inversions -->
                 <NGi>
                   <NCard :title="textual_inversions_title">
-                    <NAlert
-                      type="info"
-                      show-icon
-                      title="Usage of textual inversion"
-                    >
+                    <NAlert type="info" show-icon title="Usage of textual inversion">
                       <b>Ignore the tokens on CivitAI</b>. The name of the
                       inversion that is displayed here will be the actual token
                       (easynegative.pt -> easynegative)
                     </NAlert>
                     <div v-if="global.state.selected_model !== null">
-                      <div
-                        style="
+                      <div style="
                           display: inline-flex;
                           width: 100%;
                           align-items: center;
                           justify-content: space-between;
                           border-bottom: 1px solid rgb(66, 66, 71);
-                        "
-                        v-for="textualInversion in textualInversionModels"
-                        v-bind:key="textualInversion.path"
-                      >
+                        " v-for="textualInversion in textualInversionModels" v-bind:key="textualInversion.path">
                         <p>{{ textualInversion.name }}</p>
                         <div style="display: inline-flex">
-                          <NButton
-                            type="error"
-                            ghost
-                            disabled
-                            v-if="
-                              global.state.selected_model?.textual_inversions.includes(
-                                textualInversion.path
-                              )
-                            "
-                            >Loaded</NButton
-                          >
-                          <NButton
-                            type="success"
-                            ghost
-                            @click="loadTextualInversion(textualInversion)"
-                            :disabled="
-                              global.state.selected_model === undefined
-                            "
-                            :loading="textualInversion.state === 'loading'"
-                            v-else
-                            >Load</NButton
-                          >
+                          <NButton type="error" ghost disabled v-if="global.state.selected_model?.textual_inversions.includes(
+                            textualInversion.path
+                          )
+                            ">Loaded</NButton>
+                          <NButton type="success" ghost @click="loadTextualInversion(textualInversion)" :disabled="global.state.selected_model === undefined
+                            " :loading="textualInversion.state === 'loading'" v-else>Load</NButton>
                         </div>
                       </div>
                     </div>
                     <div v-else>
-                      <NAlert
-                        type="warning"
-                        show-icon
-                        title="No model selected"
-                        style="margin-top: 4px"
-                      >
+                      <NAlert type="warning" show-icon title="No model selected" style="margin-top: 4px">
                         Please select a model first
                       </NAlert>
                     </div>
@@ -196,74 +105,46 @@
               </NGrid>
             </NTabPane>
             <NTabPane name="AITemplate">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div style="
                     display: inline-flex;
                     width: 100%;
                     align-items: center;
                     justify-content: space-between;
                     border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in aitModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload
-                    </NButton>
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                    >
-                      Load</NButton
-                    >
+                  " v-for="model in aitModels" v-bind:key="model.path">
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton type="error" ghost @click="unloadModel(model)" v-if="model.state === 'loaded'">Unload
+                      </NButton>
+                      <NButton type="success" ghost @click="loadModel(model)" :loading="model.state === 'loading'" v-else>
+                        Load</NButton>
+                    </div>
                   </div>
-                </div>
-              </NCard>
+                </NCard>
+              </NScrollbar>
             </NTabPane>
             <NTabPane name="ONNX">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div style="
                     display: inline-flex;
                     width: 100%;
                     align-items: center;
                     justify-content: space-between;
                     border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in onnxModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload
-                    </NButton>
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                    >
-                      Load</NButton
-                    >
+                  " v-for="model in onnxModels" v-bind:key="model.path">
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton type="error" ghost @click="unloadModel(model)" v-if="model.state === 'loaded'">Unload
+                      </NButton>
+                      <NButton type="success" ghost @click="loadModel(model)" :loading="model.state === 'loading'" v-else>
+                        Load</NButton>
+                    </div>
                   </div>
-                </div>
-              </NCard>
+                </NCard>
+              </NScrollbar>
             </NTabPane>
           </NTabs>
         </NScrollbar>
@@ -272,14 +153,8 @@
 
     <!-- Progress bar -->
     <div class="progress-container">
-      <NProgress
-        type="line"
-        :percentage="global.state.progress"
-        indicator-placement="outside"
-        :processing="global.state.progress < 100 && global.state.progress > 0"
-        color="#63e2b7"
-        :show-indicator="true"
-      >
+      <NProgress type="line" :percentage="global.state.progress" indicator-placement="outside"
+        :processing="global.state.progress < 100 && global.state.progress > 0" color="#63e2b7" :show-indicator="true">
         <NText>
           {{ global.state.current_step }} / {{ global.state.total_steps }}
         </NText>
@@ -287,34 +162,15 @@
     </div>
     <div style="display: inline-flex; align-items: center">
       <NDropdown :options="dropdownOptions" @select="dropdownSelected">
-        <NButton
-          :type="websocketState.color"
-          quaternary
-          icon-placement="left"
-          :render-icon="renderIcon(WifiSharp)"
-          :loading="websocketState.loading"
-          @click="startWebsocket(message)"
-          >{{ websocketState.text }}</NButton
-        >
+        <NButton :type="websocketState.color" quaternary icon-placement="left" :render-icon="renderIcon(WifiSharp)"
+          :loading="websocketState.loading" @click="startWebsocket(message)">{{ websocketState.text }}</NButton>
       </NDropdown>
-      <NButton
-        type="success"
-        quaternary
-        icon-placement="left"
-        :render-icon="perfIcon"
-        @click="global.state.perf_drawer.enabled = true"
-        :disabled="global.state.perf_drawer.enabled"
-      />
-      <NButton
-        quaternary
-        icon-placement="left"
-        :render-icon="themeIcon"
-        style="margin-right: 8px"
-        @click="
-          conf.data.settings.frontend.theme =
-            conf.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
-        "
-      />
+      <NButton type="success" quaternary icon-placement="left" :render-icon="perfIcon"
+        @click="global.state.perf_drawer.enabled = true" :disabled="global.state.perf_drawer.enabled" />
+      <NButton quaternary icon-placement="left" :render-icon="themeIcon" style="margin-right: 8px" @click="
+        conf.data.settings.frontend.theme =
+        conf.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
+        " />
     </div>
   </div>
 </template>
@@ -741,11 +597,10 @@ const message = useMessage();
 const showModal = ref(false);
 
 const textual_inversions_title = computed(() => {
-  return `Textual Inversions (${
-    global.state.selected_model
-      ? global.state.selected_model.name
-      : "No model selected"
-  })`;
+  return `Textual Inversions (${global.state.selected_model
+    ? global.state.selected_model.name
+    : "No model selected"
+    })`;
 });
 
 const renderIcon = (icon: Component) => {

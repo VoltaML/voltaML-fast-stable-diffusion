@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-8de67429] {
+.progress-container[data-v-1a26c38c] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-8de67429] {
+.top-bar[data-v-1a26c38c] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,9 +23,9 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--e848f004);
+  background-color: var(--2dd27760);
 }
-.logo[data-v-8de67429] {
+.logo[data-v-1a26c38c] {
   margin-right: 16px;
   margin-left: 16px;
 }

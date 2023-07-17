@@ -159,7 +159,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               ]),
               _: 1
             }),
-            ((_a = unref(conf).data.settings.model) == null ? void 0 : _a.name) === "" || ((_b = unref(conf).data.settings.model) == null ? void 0 : _b.name) === void 0 ? (openBlock(), createBlock(unref(NAlert), {
+            !props.doNotDisableGenerate && (((_a = unref(conf).data.settings.model) == null ? void 0 : _a.name) === "" || ((_b = unref(conf).data.settings.model) == null ? void 0 : _b.name) === void 0) ? (openBlock(), createBlock(unref(NAlert), {
               key: 0,
               style: { "margin-top": "12px" },
               type: "warning",
