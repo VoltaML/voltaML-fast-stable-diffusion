@@ -371,13 +371,13 @@
 
 <script lang="ts" setup>
 import {
-NForm,
-NFormItem,
-NInput,
-NInputNumber,
-NSelect,
-NSlider,
-NSwitch,
+  NForm,
+  NFormItem,
+  NInput,
+  NInputNumber,
+  NSelect,
+  NSlider,
+  NSwitch,
 } from "naive-ui";
 import { computed } from "vue";
 import { useSettings } from "../../store/settings";

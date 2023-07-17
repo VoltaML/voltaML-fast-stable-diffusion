@@ -21,7 +21,7 @@ from api.websockets.notification import Notification
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
-from core.inference.functions import load_pytorch_pipeline
+from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.pytorch.latents import scale_latents
 from core.inference.pytorch.lwp import get_weighted_text_embeddings
 from core.inference.pytorch.lwp_sd import StableDiffusionLongPromptWeightingPipeline
@@ -74,6 +74,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.current_controlnet: str = ""
 
+        self.vae_path: str = "default"
         self.loras: List[Tuple[str, float]] = []
         self.unload_loras: List[str] = []
         self.textual_inversions: List[str] = []
@@ -122,6 +123,27 @@ class PyTorchStableDiffusion(InferenceModel):
         del pipe
         self.memory_cleanup()
 
+    def change_vae(self, vae: str) -> None:
+        "Change the vae to the one specified"
+
+        if self.vae_path == "default":
+            setattr(self, "original_vae", self.vae)
+
+        old_vae = getattr(self, "original_vae")
+        if vae == "default":
+            self.vae = old_vae
+        else:
+            # Why the fuck do you think that's constant pylint?
+            # Are you mentally insane?
+            if Path(vae).is_dir():
+                self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+            else:
+                self.vae = convert_vaept_to_diffusers(vae).to(
+                    device=old_vae.device, dtype=old_vae.dtype
+                )
+        # This is at the end 'cause I've read horror stories about pythons prefetch system
+        self.vae_path = vae
+
     def unload(self) -> None:
         "Unload the model from memory"
 
@@ -143,6 +165,9 @@ class PyTorchStableDiffusion(InferenceModel):
         if hasattr(self, "controlnet"):
             if self.controlnet is not None:
                 del self.controlnet
+
+        if hasattr(self, "original_vae"):
+            del self.original_vae  # type: ignore
 
         if hasattr(self, "lora_injector"):
             from ..lora import uninstall_lora_hook

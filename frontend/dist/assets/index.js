@@ -40574,24 +40574,27 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-9c537645"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-37b1913e"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
 const _hoisted_4 = { key: 2 };
 const _hoisted_5 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
 const _hoisted_6 = { style: { "display": "inline-flex" } };
-const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_8 = { key: 0 };
-const _hoisted_9 = { style: { "display": "inline-flex" } };
-const _hoisted_10 = { key: 1 };
-const _hoisted_11 = { class: "progress-container" };
-const _hoisted_12 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_7 = { key: 0 };
+const _hoisted_8 = { style: { "display": "inline-flex" } };
+const _hoisted_9 = { key: 1 };
+const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_11 = { key: 0 };
+const _hoisted_12 = { style: { "display": "inline-flex" } };
+const _hoisted_13 = { key: 1 };
+const _hoisted_14 = { class: "progress-container" };
+const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "3fb837d2": backgroundColor.value
+      "2ac8c8e2": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40624,6 +40627,25 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }).sort((a, b) => {
         return a.name.localeCompare(b.name);
       });
+    });
+    const vaeModels = computed(() => {
+      return [
+        {
+          name: "Default VAE",
+          path: "default",
+          backend: "VAE",
+          valid: true,
+          state: "not loaded",
+          vae: "default",
+          loras: [],
+          textual_inversions: []
+        },
+        ...filteredModels.value.filter((model) => {
+          return model.backend === "VAE";
+        }).sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        })
+      ];
     });
     const textualInversionModels = computed(() => {
       return filteredModels.value.filter((model) => {
@@ -40753,6 +40775,27 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         });
       } catch (e) {
         console.error(e);
+      }
+    }
+    async function loadVAE(vae) {
+      if (global2.state.selected_model) {
+        try {
+          await fetch(`${serverUrl}/api/models/load-vae`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+              model: global2.state.selected_model.name,
+              vae: vae.path
+            })
+          });
+          global2.state.selected_model.vae = vae.path;
+        } catch (e) {
+          console.error(e);
+        }
+      } else {
+        message.error("No model selected");
       }
     }
     async function loadTextualInversion(textualInversion) {
@@ -40914,6 +40957,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     });
     const message = useMessage();
     const showModal = ref(false);
+    const vae_title = computed(() => {
+      return `VAE (${global2.state.selected_model ? global2.state.selected_model.name : "No model selected"})`;
+    });
     const textual_inversions_title = computed(() => {
       return `Textual Inversions (${global2.state.selected_model ? global2.state.selected_model.name : "No model selected"})`;
     });
@@ -41063,7 +41109,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                       }, {
                         default: withCtx(() => [
                           createVNode(unref(NGrid), {
-                            cols: "1 900:2",
+                            cols: "1 900:3",
                             "x-gap": 8,
                             "y-gap": 8,
                             style: { "height": "100%" }
@@ -41128,6 +41174,64 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               }),
                               createVNode(unref(NGi), null, {
                                 default: withCtx(() => [
+                                  createVNode(unref(NCard), { title: vae_title.value }, {
+                                    default: withCtx(() => [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                                        (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
+                                          var _a3;
+                                          return openBlock(), createElementBlock("div", {
+                                            style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                            key: vae.path
+                                          }, [
+                                            createBaseVNode("p", null, toDisplayString(vae.name), 1),
+                                            createBaseVNode("div", _hoisted_8, [
+                                              ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
+                                                key: 0,
+                                                type: "error",
+                                                ghost: "",
+                                                disabled: ""
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Loaded ")
+                                                ]),
+                                                _: 1
+                                              })) : (openBlock(), createBlock(unref(NButton), {
+                                                key: 1,
+                                                type: "success",
+                                                ghost: "",
+                                                onClick: ($event) => loadVAE(vae),
+                                                disabled: unref(global2).state.selected_model === void 0,
+                                                loading: vae.state === "loading"
+                                              }, {
+                                                default: withCtx(() => [
+                                                  createTextVNode("Load")
+                                                ]),
+                                                _: 2
+                                              }, 1032, ["onClick", "disabled", "loading"]))
+                                            ])
+                                          ]);
+                                        }), 128))
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_9, [
+                                        createVNode(unref(NAlert), {
+                                          type: "warning",
+                                          "show-icon": "",
+                                          title: "No model selected",
+                                          style: { "margin-top": "4px" }
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Please select a model first ")
+                                          ]),
+                                          _: 1
+                                        })
+                                      ]))
+                                    ]),
+                                    _: 1
+                                  }, 8, ["title"])
+                                ]),
+                                _: 1
+                              }),
+                              createVNode(unref(NGi), null, {
+                                default: withCtx(() => [
                                   createVNode(unref(NCard), { title: textual_inversions_title.value }, {
                                     default: withCtx(() => [
                                       createVNode(unref(NAlert), {
@@ -41136,12 +41240,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_7,
+                                          _hoisted_10,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_8, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_11, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -41149,7 +41253,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_9, [
+                                            createBaseVNode("div", _hoisted_12, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -41178,7 +41282,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_10, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_13, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -41313,7 +41417,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_11, [
+        createBaseVNode("div", _hoisted_14, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -41333,7 +41437,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_12, [
+        createBaseVNode("div", _hoisted_15, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -41375,7 +41479,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_9c537645_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_37b1913e_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41383,7 +41487,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-9c537645"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-37b1913e"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
