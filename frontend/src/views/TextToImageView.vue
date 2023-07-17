@@ -12,7 +12,12 @@
               placeholder="Prompt"
               show-count
               @keyup="
-                promptHandleKeyUp($event, conf.data.settings.txt2img, 'prompt')
+                promptHandleKeyUp(
+                  $event,
+                  conf.data.settings.txt2img,
+                  'prompt',
+                  global
+                )
               "
               @keydown="promptHandleKeyDown"
             >
@@ -27,7 +32,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.txt2img,
-                  'negative_prompt'
+                  'negative_prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"

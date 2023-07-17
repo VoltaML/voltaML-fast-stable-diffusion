@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple
 
 import torch
 from diffusers import (
@@ -31,7 +31,6 @@ from core.inference_callbacks import (
     inpaint_callback,
     txt2img_callback,
 )
-from core.lora import load_safetensors_loras
 from core.schedulers import change_scheduler
 from core.types import (
     Backend,
@@ -76,7 +75,8 @@ class PyTorchStableDiffusion(InferenceModel):
         self.current_controlnet: str = ""
 
         self.vae_path: str = "default"
-        self.loras: List[str] = []
+        self.loras: List[Tuple[str, float]] = []
+        self.unload_loras: List[str] = []
         self.textual_inversions: List[str] = []
 
         if autoload:
@@ -103,26 +103,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.safety_checker = pipe.safety_checker  # type: ignore
 
         if not self.bare:
-            # Autoload LoRAs
-            for lora_name in config.api.autoloaded_loras:
-                lora = config.api.autoloaded_loras[lora_name]
-
-                try:
-                    self.load_lora(
-                        lora_name,
-                        alpha_text_encoder=lora["text_encoder"],
-                        alpha_unet=lora["unet"],
-                    )
-                except Exception as e:  # pylint: disable=broad-except
-                    logger.warning(f"Failed to load LoRA {lora}: {e}")
-                    websocket_manager.broadcast_sync(
-                        Notification(
-                            severity="error",
-                            message=f"Failed to load LoRA: {lora}",
-                            title="Autoload Error",
-                        )
-                    )
-
             # Autoload textual inversions
             for textural_inversion in config.api.autoloaded_textual_inversions:
                 try:
@@ -189,6 +169,11 @@ class PyTorchStableDiffusion(InferenceModel):
         if hasattr(self, "original_vae"):
             del self.original_vae  # type: ignore
 
+        if hasattr(self, "lora_injector"):
+            from ..lora import uninstall_lora_hook
+
+            uninstall_lora_hook(self)
+
         self.memory_cleanup()
 
     def manage_optional_components(
@@ -198,6 +183,10 @@ class PyTorchStableDiffusion(InferenceModel):
         target_controlnet: str = "",
     ) -> None:
         "Cleanup old components"
+
+        from ..lora import load_lora_utilities
+
+        load_lora_utilities(self)
 
         if not variations:
             self.image_encoder = None
@@ -245,6 +234,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.manage_optional_components()
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
             unet=self.unet,  # type: ignore
             text_encoder=self.text_encoder,
@@ -344,6 +334,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.manage_optional_components()
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
             unet=self.unet,  # type: ignore
             text_encoder=self.text_encoder,
@@ -428,6 +419,7 @@ class PyTorchStableDiffusion(InferenceModel):
             )
         elif self.unet.config["in_channels"] == 4:
             pipe = StableDiffusionLongPromptWeightingPipeline(
+                parent=self,
                 vae=self.vae,
                 unet=self.unet,  # type: ignore
                 text_encoder=self.text_encoder,
@@ -465,7 +457,7 @@ class PyTorchStableDiffusion(InferenceModel):
         for _ in range(job.data.batch_count):
             if isinstance(pipe, StableDiffusionInpaintPipeline):
                 prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                    pipe=pipe,  # type: ignore
+                    pipe=self,  # type: ignore
                     prompt=job.data.prompt,
                     uncond_prompt=job.data.negative_prompt,
                 )
@@ -580,7 +572,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         # Preprocess the prompt
         prompt_embeds, negative_embeds = get_weighted_text_embeddings(
-            pipe=pipe,  # type: ignore # implements same protocol, but doesn't inherit
+            pipe=self,  # type: ignore # implements same protocol, but doesn't inherit
             prompt=job.data.prompt,
             uncond_prompt=job.data.negative_prompt,
         )
@@ -649,6 +641,14 @@ class PyTorchStableDiffusion(InferenceModel):
         except Exception as e:
             self.memory_cleanup()
             raise e
+        if len(self.unload_loras) != 0:
+            for l in self.unload_loras:
+                try:
+                    self.remove_lora(l)  # type: ignore
+                    logger.debug(f"Unloading LoRA: {l}")
+                except KeyError:
+                    pass
+            self.unload_loras.clear()
 
         # Clean memory and return images
         self.memory_cleanup()
@@ -670,29 +670,6 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe.save_pretrained(path, safe_serialization=safetensors)
 
-    def load_lora(
-        self, lora: str, alpha_text_encoder: float = 0.5, alpha_unet: float = 0.5
-    ):
-        "Inject a LoRA model into the pipeline"
-
-        logger.info(f"Loading LoRA model {lora} onto {self.model_id}...")
-
-        if any(lora in l for l in self.loras):
-            logger.info(f"LoRA model {lora} already loaded onto {self.model_id}")
-            return
-
-        if ".safetensors" in lora:
-            load_safetensors_loras(
-                self.text_encoder, self.unet, lora, alpha_text_encoder, alpha_unet
-            )
-        else:
-            self.unet.load_attn_procs(
-                pretrained_model_name_or_path_or_dict=lora,
-                resume_download=True,
-            )
-        self.loras.append(lora)
-        logger.info(f"LoRA model {lora} loaded successfully")
-
     def load_textual_inversion(self, textual_inversion: str):
         "Inject a textual inversion model into the pipeline"
 
@@ -707,6 +684,7 @@ class PyTorchStableDiffusion(InferenceModel):
             return
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
             unet=self.unet,
             text_encoder=self.text_encoder,

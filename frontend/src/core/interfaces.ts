@@ -19,13 +19,13 @@ export interface ModelEntry {
   name: string;
   path: string;
   backend:
-  | "PyTorch"
-  | "AITemplate"
-  | "ONNX"
-  | "unknown"
-  | "LoRA"
-  | "VAE"
-  | "Textual Inversion";
+    | "PyTorch"
+    | "AITemplate"
+    | "ONNX"
+    | "unknown"
+    | "LoRA"
+    | "VAE"
+    | "Textual Inversion";
   valid: boolean;
   vae: string;
   state: "loading" | "loaded" | "not loaded";

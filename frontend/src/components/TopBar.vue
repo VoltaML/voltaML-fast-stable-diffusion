@@ -82,9 +82,9 @@
             >Refresh</NButton
           >
         </div>
-        <NTabs type="segment" style="height: calc(70vh + 40px)">
-          <NTabPane name="PyTorch" style="height: 100%">
-            <NScrollbar style="height: 70vh">
+        <NScrollbar>
+          <NTabs type="segment" style="height: 70vh">
+            <NTabPane name="PyTorch" style="height: 100%">
               <NGrid cols="1 900:3" :x-gap="8" :y-gap="8" style="height: 100%">
                 <!-- Models -->
                 <NGi>
@@ -152,8 +152,8 @@
                             ghost
                             disabled
                             v-if="global.state.selected_model?.vae == vae.path"
-                            >Loaded</NButton
-                          >
+                            >Loaded
+                          </NButton>
                           <NButton
                             type="success"
                             ghost
@@ -213,7 +213,7 @@
                             disabled
                             v-if="
                               global.state.selected_model?.textual_inversions.includes(
-                                textualInversion.path,
+                                textualInversion.path
                               )
                             "
                             >Loaded</NButton
@@ -245,83 +245,83 @@
                   </NCard>
                 </NGi>
               </NGrid>
-            </NScrollbar>
-          </NTabPane>
-          <NTabPane name="AITemplate">
-            <NScrollbar style="height: 70vh">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in aitModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload
-                    </NButton>
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                    >
-                      Load</NButton
-                    >
+            </NTabPane>
+            <NTabPane name="AITemplate">
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in aitModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload
+                      </NButton>
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                      >
+                        Load</NButton
+                      >
+                    </div>
                   </div>
-                </div>
-              </NCard>
-            </NScrollbar>
-          </NTabPane>
-          <NTabPane name="ONNX">
-            <NScrollbar style="height: 70vh">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in onnxModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload
-                    </NButton>
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                    >
-                      Load</NButton
-                    >
+                </NCard>
+              </NScrollbar>
+            </NTabPane>
+            <NTabPane name="ONNX">
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in onnxModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload
+                      </NButton>
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                      >
+                        Load</NButton
+                      >
+                    </div>
                   </div>
-                </div>
-              </NCard>
-            </NScrollbar>
-          </NTabPane>
-        </NTabs>
+                </NCard>
+              </NScrollbar>
+            </NTabPane>
+          </NTabs>
+        </NScrollbar>
       </div>
     </NModal>
 
@@ -500,7 +500,6 @@ function refreshModels() {
       }
 
       res.json().then((data: Array<ModelEntry>) => {
-        // TODO: Lora loaded state isnt updated
         global.state.models.splice(0, global.state.models.length);
         data.forEach((model) => {
           global.state.models.push(model);
@@ -549,7 +548,7 @@ function refreshModels() {
               conf.data.settings.model = allLoaded[0];
               console.log(
                 "Set current model to first available model: ",
-                conf.data.settings.model,
+                conf.data.settings.model
               );
             } else {
               console.log("No models available");
@@ -577,6 +576,18 @@ function refreshModels() {
             conf.data.settings.aitDim.height = undefined;
             conf.data.settings.aitDim.batch_size = undefined;
           }
+
+          const autofillKeys = [];
+          for (const model of global.state.models) {
+            if (model.backend === "LoRA") {
+              autofillKeys.push(`<lora:${model.name}:1.0>`);
+            }
+            /*else if (model.backend === "Textual Inversion") {
+              autofillKeys.push(`<ti:${model.name}:1.0>`);
+            }*/
+          }
+
+          global.state.autofill = autofillKeys;
         });
       });
     })
@@ -666,7 +677,7 @@ async function loadTextualInversion(textualInversion: ModelEntry) {
         }),
       });
       global.state.selected_model.textual_inversions.push(
-        textualInversion.path,
+        textualInversion.path
       );
     } catch (e) {
       console.error(e);

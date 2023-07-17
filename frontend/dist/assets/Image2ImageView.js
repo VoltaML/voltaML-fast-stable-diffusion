@@ -144,7 +144,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$3);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-6ed02679"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-0c44a600"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -325,7 +325,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           onKeyup: _cache[2] || (_cache[2] = ($event) => unref(promptHandleKeyUp)(
                             $event,
                             unref(conf).data.settings.controlnet,
-                            "prompt"
+                            "prompt",
+                            unref(global)
                           )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
@@ -343,7 +344,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           onKeyup: _cache[4] || (_cache[4] = ($event) => unref(promptHandleKeyUp)(
                             $event,
                             unref(conf).data.settings.controlnet,
-                            "negative_prompt"
+                            "negative_prompt",
+                            unref(global)
                           )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
@@ -717,9 +719,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_6ed02679_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-6ed02679"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-8a2a6491"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_0c44a600_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-0c44a600"]]);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-1738835f"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -882,7 +884,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           type: "textarea",
                           placeholder: "Prompt",
                           "show-count": "",
-                          onKeyup: _cache[2] || (_cache[2] = ($event) => unref(promptHandleKeyUp)($event, unref(conf).data.settings.img2img, "prompt")),
+                          onKeyup: _cache[2] || (_cache[2] = ($event) => unref(promptHandleKeyUp)(
+                            $event,
+                            unref(conf).data.settings.img2img,
+                            "prompt",
+                            unref(global)
+                          )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
                           count: withCtx(() => [
@@ -899,7 +906,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           onKeyup: _cache[4] || (_cache[4] = ($event) => unref(promptHandleKeyUp)(
                             $event,
                             unref(conf).data.settings.img2img,
-                            "negative_prompt"
+                            "negative_prompt",
+                            unref(global)
                           )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
@@ -1234,8 +1242,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_8a2a6491_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-8a2a6491"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_1738835f_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-1738835f"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1811,7 +1819,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-c0022621"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-721f7818"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -2175,7 +2183,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           onKeyup: _cache[3] || (_cache[3] = ($event) => unref(promptHandleKeyUp)(
                             $event,
                             unref(conf).data.settings.inpainting,
-                            "prompt"
+                            "prompt",
+                            unref(global)
                           )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
@@ -2193,7 +2202,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           onKeyup: _cache[5] || (_cache[5] = ($event) => unref(promptHandleKeyUp)(
                             $event,
                             unref(conf).data.settings.inpainting,
-                            "negative_prompt"
+                            "negative_prompt",
+                            unref(global)
                           )),
                           onKeydown: unref(promptHandleKeyDown)
                         }, {
@@ -2466,8 +2476,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_c0022621_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-c0022621"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_721f7818_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-721f7818"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

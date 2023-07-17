@@ -286,8 +286,15 @@ class LoraLoadRequest:
 
     model: str
     lora: str
-    unet_weight: float = 0.5
-    text_encoder_weight: float = 0.5
+    weight: float = 0.5
+
+
+@dataclass
+class LoraUnloadRequest:
+    "Dataclass for unloading a LoRA from a model"
+
+    model: str
+    lora: str
 
 
 @dataclass

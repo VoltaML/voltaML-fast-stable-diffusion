@@ -39319,7 +39319,8 @@ const useState = defineStore("state", () => {
     selected_model: ref(null),
     secrets: {
       huggingface: "ok"
-    }
+    },
+    autofill: []
   });
   return { state };
 });
@@ -39971,6 +39972,33 @@ const useWebsocket = defineStore("websocket", () => {
 });
 const spaceRegex = new RegExp("[\\s,]+");
 const arrowKeys = [38, 40];
+let currentFocus = -1;
+function addActive(x) {
+  if (!x)
+    return false;
+  removeActive(x);
+  if (currentFocus >= x.length) {
+    currentFocus = 0;
+  }
+  if (currentFocus < 0) {
+    currentFocus = x.length - 1;
+  }
+  x[currentFocus].classList.add("autocomplete-active");
+}
+function removeActive(x) {
+  for (let i = 0; i < x.length; i++) {
+    x[i].classList.remove("autocomplete-active");
+  }
+}
+function closeAllLists(elmnt, input) {
+  var _a2, _b;
+  const x = document.getElementsByClassName("autocomplete-items");
+  for (let i = 0; i < x.length; i++) {
+    if (elmnt != x[i] && elmnt != input) {
+      (_b = (_a2 = x[i]) == null ? void 0 : _a2.parentNode) == null ? void 0 : _b.removeChild(x[i]);
+    }
+  }
+}
 async function startWebsocket(messageProvider) {
   const websocketState = useWebsocket();
   const timeout = 1e3;
@@ -40006,7 +40034,8 @@ function getTextBoundaries(elem) {
   console.log("Element is not input");
   return [0, 0];
 }
-function promptHandleKeyUp(e, data, key) {
+function promptHandleKeyUp(e, data, key, globalState) {
+  var _a2, _b, _c, _d, _e;
   if (e.key === "ArrowUp" && e.ctrlKey) {
     const values = getTextBoundaries(
       document.activeElement
@@ -40085,10 +40114,68 @@ function promptHandleKeyUp(e, data, key) {
       console.log("No selection, cannot parse for weighting");
     }
   }
+  const input = e.target;
+  if (input) {
+    const text = input.value;
+    const currentTokenStripped = (_a2 = text.split(",").pop()) == null ? void 0 : _a2.trim();
+    closeAllLists(void 0, input);
+    if (!currentTokenStripped) {
+      return false;
+    }
+    const toAppend = [];
+    for (let i = 0; i < globalState.state.autofill.length; i++) {
+      if (globalState.state.autofill[i].toUpperCase().includes(currentTokenStripped.toUpperCase())) {
+        const b = document.createElement("DIV");
+        b.innerText = globalState.state.autofill[i];
+        b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
+        b.addEventListener("click", function() {
+          input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
+          data[key] = input.value;
+          closeAllLists(void 0, input);
+        });
+        toAppend.push(b);
+      }
+    }
+    if (toAppend.length === 0) {
+      return false;
+    }
+    const div = document.createElement("DIV");
+    div.setAttribute("id", "autocomplete-list");
+    div.setAttribute("class", "autocomplete-items");
+    (_e = (_d = (_c = (_b = input.parentNode) == null ? void 0 : _b.parentNode) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.parentNode) == null ? void 0 : _e.appendChild(div);
+    for (let i = 0; i < toAppend.length; i++) {
+      div.appendChild(toAppend[i]);
+    }
+    const autocompleteList = document.getElementById("autocomplete-list");
+    const x = autocompleteList == null ? void 0 : autocompleteList.getElementsByTagName("div");
+    if (e.key === "ArrowDown") {
+      currentFocus++;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      currentFocus--;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      if (currentFocus > -1) {
+        if (x)
+          x[currentFocus].click();
+      }
+    } else if (e.key === "Escape") {
+      closeAllLists(void 0, input);
+    }
+  }
 }
 function promptHandleKeyDown(e) {
   if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
     e.preventDefault();
+  }
+  if (document.getElementById("autocomplete-list")) {
+    if (e.key === "Enter" || e.key === "Tab" || e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+    }
   }
 }
 function urlFromPath(path) {
@@ -40225,9 +40312,7 @@ const defaultSettings = {
     deterministic_generation: false,
     reduced_precision: false,
     clear_memory_policy: "always",
-    lora_text_encoder_weight: 0.5,
-    lora_unet_weight: 0.5,
-    autoloaded_loras: /* @__PURE__ */ new Map(),
+    huggingface_style_parsing: false,
     autoloaded_textual_inversions: [],
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
     image_extension: "png",
@@ -40489,7 +40574,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-cba2e643"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-37b1913e"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40509,7 +40594,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "0c390242": backgroundColor.value
+      "2ac8c8e2": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40544,20 +40629,23 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       });
     });
     const vaeModels = computed(() => {
-      return [{
-        name: "Default VAE",
-        path: "default",
-        backend: "VAE",
-        valid: true,
-        state: "not loaded",
-        vae: "default",
-        loras: [],
-        textual_inversions: []
-      }, ...filteredModels.value.filter((model) => {
-        return model.backend === "VAE";
-      }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
-      })];
+      return [
+        {
+          name: "Default VAE",
+          path: "default",
+          backend: "VAE",
+          valid: true,
+          state: "not loaded",
+          vae: "default",
+          loras: [],
+          textual_inversions: []
+        },
+        ...filteredModels.value.filter((model) => {
+          return model.backend === "VAE";
+        }).sort((a, b) => {
+          return a.name.localeCompare(b.name);
+        })
+      ];
     });
     const textualInversionModels = computed(() => {
       return filteredModels.value.filter((model) => {
@@ -40639,6 +40727,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               conf.data.settings.aitDim.height = void 0;
               conf.data.settings.aitDim.batch_size = void 0;
             }
+            const autofillKeys = [];
+            for (const model of global2.state.models) {
+              if (model.backend === "LoRA") {
+                autofillKeys.push(`<lora:${model.name}:1.0>`);
+              }
+            }
+            global2.state.autofill = autofillKeys;
           });
         });
       }).catch((e) => {
@@ -41001,17 +41096,17 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                   _: 1
                 })
               ]),
-              createVNode(unref(NTabs), {
-                type: "segment",
-                style: { "height": "calc(70vh + 40px)" }
-              }, {
+              createVNode(unref(NScrollbar), null, {
                 default: withCtx(() => [
-                  createVNode(unref(NTabPane), {
-                    name: "PyTorch",
-                    style: { "height": "100%" }
+                  createVNode(unref(NTabs), {
+                    type: "segment",
+                    style: { "height": "70vh" }
                   }, {
                     default: withCtx(() => [
-                      createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
+                      createVNode(unref(NTabPane), {
+                        name: "PyTorch",
+                        style: { "height": "100%" }
+                      }, {
                         default: withCtx(() => [
                           createVNode(unref(NGrid), {
                             cols: "1 900:3",
@@ -41097,7 +41192,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                                                 disabled: ""
                                               }, {
                                                 default: withCtx(() => [
-                                                  createTextVNode("Loaded")
+                                                  createTextVNode("Loaded ")
                                                 ]),
                                                 _: 1
                                               })) : (openBlock(), createBlock(unref(NButton), {
@@ -41211,101 +41306,101 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                           })
                         ]),
                         _: 1
-                      })
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NTabPane), { name: "AITemplate" }, {
-                    default: withCtx(() => [
-                      createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
+                      }),
+                      createVNode(unref(NTabPane), { name: "AITemplate" }, {
                         default: withCtx(() => [
-                          createVNode(unref(NCard), {
-                            title: "Models",
-                            style: { "height": "100%" }
-                          }, {
+                          createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
                             default: withCtx(() => [
-                              (openBlock(true), createElementBlock(Fragment, null, renderList(aitModels.value, (model) => {
-                                return openBlock(), createElementBlock("div", {
-                                  style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                  key: model.path
-                                }, [
-                                  createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                  createBaseVNode("div", null, [
-                                    model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
-                                      key: 0,
-                                      type: "error",
-                                      ghost: "",
-                                      onClick: ($event) => unloadModel(model)
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Unload ")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
-                                      key: 1,
-                                      type: "success",
-                                      ghost: "",
-                                      onClick: ($event) => loadModel(model),
-                                      loading: model.state === "loading"
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode(" Load")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick", "loading"]))
-                                  ])
-                                ]);
-                              }), 128))
+                              createVNode(unref(NCard), {
+                                title: "Models",
+                                style: { "height": "100%" }
+                              }, {
+                                default: withCtx(() => [
+                                  (openBlock(true), createElementBlock(Fragment, null, renderList(aitModels.value, (model) => {
+                                    return openBlock(), createElementBlock("div", {
+                                      style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                      key: model.path
+                                    }, [
+                                      createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                      createBaseVNode("div", null, [
+                                        model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                          key: 0,
+                                          type: "error",
+                                          ghost: "",
+                                          onClick: ($event) => unloadModel(model)
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Unload ")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                          key: 1,
+                                          type: "success",
+                                          ghost: "",
+                                          onClick: ($event) => loadModel(model),
+                                          loading: model.state === "loading"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Load")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick", "loading"]))
+                                      ])
+                                    ]);
+                                  }), 128))
+                                ]),
+                                _: 1
+                              })
                             ]),
                             _: 1
                           })
                         ]),
                         _: 1
-                      })
-                    ]),
-                    _: 1
-                  }),
-                  createVNode(unref(NTabPane), { name: "ONNX" }, {
-                    default: withCtx(() => [
-                      createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
+                      }),
+                      createVNode(unref(NTabPane), { name: "ONNX" }, {
                         default: withCtx(() => [
-                          createVNode(unref(NCard), {
-                            title: "Models",
-                            style: { "height": "100%" }
-                          }, {
+                          createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
                             default: withCtx(() => [
-                              (openBlock(true), createElementBlock(Fragment, null, renderList(onnxModels.value, (model) => {
-                                return openBlock(), createElementBlock("div", {
-                                  style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                  key: model.path
-                                }, [
-                                  createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                  createBaseVNode("div", null, [
-                                    model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
-                                      key: 0,
-                                      type: "error",
-                                      ghost: "",
-                                      onClick: ($event) => unloadModel(model)
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode("Unload ")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
-                                      key: 1,
-                                      type: "success",
-                                      ghost: "",
-                                      onClick: ($event) => loadModel(model),
-                                      loading: model.state === "loading"
-                                    }, {
-                                      default: withCtx(() => [
-                                        createTextVNode(" Load")
-                                      ]),
-                                      _: 2
-                                    }, 1032, ["onClick", "loading"]))
-                                  ])
-                                ]);
-                              }), 128))
+                              createVNode(unref(NCard), {
+                                title: "Models",
+                                style: { "height": "100%" }
+                              }, {
+                                default: withCtx(() => [
+                                  (openBlock(true), createElementBlock(Fragment, null, renderList(onnxModels.value, (model) => {
+                                    return openBlock(), createElementBlock("div", {
+                                      style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                      key: model.path
+                                    }, [
+                                      createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                      createBaseVNode("div", null, [
+                                        model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                          key: 0,
+                                          type: "error",
+                                          ghost: "",
+                                          onClick: ($event) => unloadModel(model)
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Unload ")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                          key: 1,
+                                          type: "success",
+                                          ghost: "",
+                                          onClick: ($event) => loadModel(model),
+                                          loading: model.state === "loading"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Load")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick", "loading"]))
+                                      ])
+                                    ]);
+                                  }), 128))
+                                ]),
+                                _: 1
+                              })
                             ]),
                             _: 1
                           })
@@ -41384,7 +41479,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_cba2e643_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_37b1913e_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41392,7 +41487,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-cba2e643"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-37b1913e"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -41403,7 +41498,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "0995cf9d": backgroundColor.value
+      "1d19c67b": backgroundColor.value,
+      "12b62b62": theme.value.common.popoverColor,
+      "753630fc": theme.value.common.borderRadius,
+      "53c6c405": theme.value.common.pressedColor,
+      "e7594bd2": theme.value.common.primaryColorHover
     }));
     const settings = useSettings();
     const theme = computed(() => {
@@ -41460,8 +41559,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const App_vue_vue_type_style_index_0_scoped_5e75b7fe_lang = "";
-const App = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-5e75b7fe"]]);
+const App_vue_vue_type_style_index_0_lang = "";
 const scriptRel = "modulepreload";
 const assetsURL = function(dep) {
   return "/" + dep;
@@ -41563,7 +41661,7 @@ const router = createRouter({
 });
 const main = "";
 const pinia = createPinia();
-const app = createApp(App);
+const app = createApp(_sfc_main);
 app.use(pinia);
 app.use(router);
 app.mount("#app");
