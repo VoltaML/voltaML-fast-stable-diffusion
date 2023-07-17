@@ -211,7 +211,10 @@ def get_unweighted_text_embeddings(
             # cover the head and the tail by the starting and the ending tokens
             text_input_chunk[:, 0] = text_input[0, 0]
             text_input_chunk[:, -1] = text_input[0, -1]
-            text_embedding = pipe.text_encoder(text_input_chunk)[0]  # type: ignore
+            if hasattr(pipe, "clip_inference"):
+                text_embedding = pipe.clip_inference(text_input_chunk)
+            else:
+                text_embedding = pipe.text_encoder(text_input_chunk)[0]  # type: ignore
 
             if no_boseos_middle:
                 if i == 0:
@@ -227,7 +230,10 @@ def get_unweighted_text_embeddings(
             text_embeddings.append(text_embedding)
         text_embeddings = torch.concat(text_embeddings, axis=1)  # type: ignore
     else:
-        text_embeddings = pipe.text_encoder(text_input)[0]  # type: ignore
+        if hasattr(pipe, "clip_inference"):
+            text_embeddings = pipe.clip_inference(text_input)
+        else:
+            text_embeddings = pipe.text_encoder(text_input)[0]  # type: ignore
     return text_embeddings
 
 
@@ -323,7 +329,7 @@ def get_weighted_text_embeddings(
         chunk_length=pipe.tokenizer.model_max_length,  # type: ignore
     )
     prompt_tokens = torch.tensor(
-        prompt_tokens, dtype=torch.long, device=pipe.text_encoder.device  # type: ignore
+        prompt_tokens, dtype=torch.long, device=pipe.device if hasattr(pipe, "clip_inference") else pipe.text_encoder.device  # type: ignore
     )
     if uncond_prompt is not None:
         uncond_tokens, uncond_weights = pad_tokens_and_weights(
@@ -336,7 +342,7 @@ def get_weighted_text_embeddings(
             chunk_length=pipe.tokenizer.model_max_length,  # type: ignore
         )
         uncond_tokens = torch.tensor(
-            uncond_tokens, dtype=torch.long, device=pipe.text_encoder.device  # type: ignore
+            uncond_tokens, dtype=torch.long, device=pipe.device if hasattr(pipe, "clip_inference") else pipe.text_encoder.device  # type: ignore
         )
 
     # get the embeddings
@@ -347,7 +353,7 @@ def get_weighted_text_embeddings(
         no_boseos_middle=no_boseos_middle,
     )
     prompt_weights = torch.tensor(
-        prompt_weights, dtype=text_embeddings.dtype, device=pipe.text_encoder.device  # type: ignore
+        prompt_weights, dtype=text_embeddings.dtype, device=pipe.device if hasattr(pipe, "clip_inference") else pipe.text_encoder.device  # type: ignore
     )
     if uncond_prompt is not None:
         uncond_embeddings = get_unweighted_text_embeddings(
@@ -357,7 +363,7 @@ def get_weighted_text_embeddings(
             no_boseos_middle=no_boseos_middle,
         )
         uncond_weights = torch.tensor(
-            uncond_weights, dtype=uncond_embeddings.dtype, device=pipe.text_encoder.device  # type: ignore
+            uncond_weights, dtype=uncond_embeddings.dtype, device=pipe.device if hasattr(pipe, "clip_inference") else pipe.text_encoder.device  # type: ignore
         )
 
     # assign weights to the prompts and normalize in the sense of mean

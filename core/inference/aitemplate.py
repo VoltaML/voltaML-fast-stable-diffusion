@@ -33,6 +33,8 @@ from core.types import (
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
+from .pytorch import get_weighted_text_embeddings
+
 logger = logging.getLogger(__name__)
 console = Console()
 
@@ -293,6 +295,7 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from text"
 
+        lwp = False
         if self.type == "static":
             from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
 
@@ -303,6 +306,7 @@ class AITemplateStableDiffusion(InferenceModel):
             )
 
             cls = StableDiffusionDynamicAITPipeline
+            lwp = True
 
         self.manage_optional_components()
 
@@ -333,18 +337,36 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            data = pipe(
-                prompt=job.data.prompt,
-                height=job.data.height,
-                width=job.data.width,
-                num_inference_steps=job.data.steps,
-                guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
-                output_type="pil",
-                generator=generator,
-                callback=txt2img_callback,
-                num_images_per_prompt=job.data.batch_size,
-            )
+            if lwp:
+                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                    pipe, job.data.prompt, job.data.negative_prompt
+                )
+                data = pipe(
+                    prompt_embeds=prompt_embeds,
+                    negative_prompt_embeds=negative_prompt_embeds,
+                    height=job.data.height,
+                    width=job.data.width,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    generator=generator,
+                    callback=txt2img_callback,
+                    num_images_per_prompt=job.data.batch_size,
+                )
+            else:
+                data = pipe(
+                    prompt=job.data.prompt,
+                    height=job.data.height,
+                    width=job.data.width,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    generator=generator,
+                    callback=txt2img_callback,
+                    num_images_per_prompt=job.data.batch_size,
+                )
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
@@ -371,6 +393,7 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
 
+        lwp = False
         if self.type == "static":
             from core.aitemplate.src.ait_img2img import (
                 StableDiffusionImg2ImgAITPipeline,
@@ -383,23 +406,7 @@ class AITemplateStableDiffusion(InferenceModel):
             )
 
             cls = StableDiffusionDynamicAITPipeline
-
-        self.manage_optional_components()
-
-        pipe = cls(
-            unet=self.unet,
-            vae=self.vae,
-            directory=self.directory,
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            safety_checker=self.safety_checker,
-            requires_safety_checker=self.requires_safety_checker,
-            feature_extractor=self.feature_extractor,
-            clip_ait_exe=self.clip_ait_exe,
-            unet_ait_exe=self.unet_ait_exe,
-            vae_ait_exe=self.vae_ait_exe,
-        )
+            lwp = True
 
         self.manage_optional_components()
 
@@ -432,19 +439,38 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            data = pipe(
-                prompt=job.data.prompt,
-                init_image=input_image,
-                num_inference_steps=job.data.steps,
-                guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
-                output_type="pil",
-                generator=generator,
-                callback=img2img_callback,
-                strength=job.data.strength,
-                return_dict=False,
-                num_images_per_prompt=job.data.batch_size,
-            )
+            if lwp:
+                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                    pipe, job.data.prompt, job.data.negative_prompt
+                )
+                data = pipe(
+                    prompt_embeds=prompt_embeds,
+                    negative_prompt_embeds=negative_prompt_embeds,
+                    init_image=input_image,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    generator=generator,
+                    callback=img2img_callback,
+                    strength=job.data.strength,
+                    return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
+                )
+            else:
+                data = pipe(
+                    prompt=job.data.prompt,
+                    init_image=input_image,
+                    num_inference_steps=job.data.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    generator=generator,
+                    callback=img2img_callback,
+                    strength=job.data.strength,
+                    return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
+                )
 
             images = data[0]
             assert isinstance(images, List)

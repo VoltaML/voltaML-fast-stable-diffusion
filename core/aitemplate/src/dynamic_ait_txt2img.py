@@ -854,7 +854,7 @@ class StableDiffusionDynamicAITPipeline(StableDiffusionPipeline):
     @torch.no_grad()
     def __call__(
         self,
-        prompt: Union[str, List[str]],
+        prompt: Optional[Union[str, List[str]]] = None,
         height: int = 512,
         width: int = 512,
         num_inference_steps: int = 50,
@@ -865,6 +865,8 @@ class StableDiffusionDynamicAITPipeline(StableDiffusionPipeline):
         latents: Optional[torch.FloatTensor] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
+        prompt_embeds: Optional[torch.Tensor] = None,
+        negative_prompt_embeds: Optional[torch.Tensor] = None,
         callback: Optional[Callable] = None,
         num_images_per_prompt: int = 1,
     ):
@@ -915,34 +917,35 @@ class StableDiffusionDynamicAITPipeline(StableDiffusionPipeline):
             (nsfw) content, according to the `safety_checker`.
         """
 
-        if num_images_per_prompt == 1:
-            assert isinstance(
-                prompt, str
-            ), "When `num_images_per_prompt` is 1, `prompt` has to be of type `str`."
-        else:
-            if isinstance(prompt, str):
-                prompt = [prompt] * num_images_per_prompt
-            elif isinstance(prompt, list):
-                assert (
-                    len(prompt) == num_images_per_prompt
-                ), "When `num_images_per_prompt` is > 1, `prompt` has to be a list of length `num_images_per_prompt`."
-
-            if negative_prompt is not None:
-                if isinstance(negative_prompt, str):
-                    negative_prompt = [negative_prompt] * num_images_per_prompt
-                elif isinstance(negative_prompt, list):
+        if prompt is not None:
+            if num_images_per_prompt == 1:
+                assert isinstance(
+                    prompt, str
+                ), "When `num_images_per_prompt` is 1, `prompt` has to be of type `str`."
+            else:
+                if isinstance(prompt, str):
+                    prompt = [prompt] * num_images_per_prompt
+                elif isinstance(prompt, list):
                     assert (
-                        len(negative_prompt) == num_images_per_prompt
-                    ), "When `num_images_per_prompt` is > 1, `negative_prompt` has to be a list of length `num_images_per_prompt`."
+                        len(prompt) == num_images_per_prompt
+                    ), "When `num_images_per_prompt` is > 1, `prompt` has to be a list of length `num_images_per_prompt`."
 
-        if isinstance(prompt, str):
-            num_images_per_prompt = 1
-        elif isinstance(prompt, list):
-            num_images_per_prompt = len(prompt)
-        else:
-            raise ValueError(
-                f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
-            )
+                if negative_prompt is not None:
+                    if isinstance(negative_prompt, str):
+                        negative_prompt = [negative_prompt] * num_images_per_prompt
+                    elif isinstance(negative_prompt, list):
+                        assert (
+                            len(negative_prompt) == num_images_per_prompt
+                        ), "When `num_images_per_prompt` is > 1, `negative_prompt` has to be a list of length `num_images_per_prompt`."
+
+            if isinstance(prompt, str):
+                num_images_per_prompt = 1
+            elif isinstance(prompt, list):
+                num_images_per_prompt = len(prompt)
+            else:
+                raise ValueError(
+                    f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
+                )
 
         if height % 8 != 0 or width % 8 != 0:
             raise ValueError(
@@ -954,57 +957,64 @@ class StableDiffusionDynamicAITPipeline(StableDiffusionPipeline):
         logger.debug(f"tokenizer max: {self.tokenizer.model_max_length}")
 
         # get prompt text embeddings
-        text_input = self.tokenizer(
-            prompt,
-            padding="max_length",
-            max_length=self.tokenizer.model_max_length,
-            truncation=True,
-            return_tensors="pt",
-        )
-        text_embeddings = self.clip_inference(text_input.input_ids.to(self.device))
-        # pytorch equivalent
-        # text_embeddings = self.clip_pt(text_input.input_ids.to(self.device)).last_hidden_state
-
-        # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
-        # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
-        # corresponds to doing no classifier free guidance.
         do_classifier_free_guidance = guidance_scale > 1.0
-        # get unconditional embeddings for classifier free guidance
-        if do_classifier_free_guidance:
-            uncond_tokens: List[str]
-            max_length = text_input.input_ids.shape[-1]
-            if negative_prompt is None:
-                uncond_tokens = [""] * num_images_per_prompt
-            elif type(prompt) is not type(negative_prompt):
-                raise TypeError(
-                    f"`negative_prompt` should be the same type to `prompt`, but got {type(negative_prompt)} !="
-                    f" {type(prompt)}."
-                )
-            elif isinstance(negative_prompt, str):
-                uncond_tokens = [negative_prompt]
-            elif num_images_per_prompt != len(negative_prompt):
-                raise ValueError(
-                    f"`negative_prompt`: {negative_prompt} has batch size {len(negative_prompt)}, but `prompt`:"
-                    f" {prompt} has batch size {num_images_per_prompt}. Please make sure that passed `negative_prompt` matches"
-                    " the batch size of `prompt`."
-                )
-            else:
-                uncond_tokens = negative_prompt
-            uncond_input = self.tokenizer(
-                uncond_tokens,
+        if prompt is not None:
+            text_input = self.tokenizer(
+                prompt,
                 padding="max_length",
-                max_length=max_length,
+                max_length=self.tokenizer.model_max_length,
                 truncation=True,
                 return_tensors="pt",
             )
-            uncond_embeddings = self.clip_inference(
-                uncond_input.input_ids.to(self.device)
-            )
+            if prompt_embeds is None:
+                prompt_embeds = self.clip_inference(
+                    text_input.input_ids.to(self.device)
+                )
+                # pytorch equivalent
+                # text_embeddings = self.clip_pt(text_input.input_ids.to(self.device)).last_hidden_state
 
+            # here `guidance_scale` is defined analog to the guidance weight `w` of equation (2)
+            # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
+            # corresponds to doing no classifier free guidance.
+            # get unconditional embeddings for classifier free guidance
+            if do_classifier_free_guidance and negative_prompt_embeds is None:
+                uncond_tokens: List[str]
+                max_length = text_input.input_ids.shape[-1]
+                if negative_prompt is None:
+                    uncond_tokens = [""] * num_images_per_prompt
+                elif type(prompt) is not type(negative_prompt):
+                    raise TypeError(
+                        f"`negative_prompt` should be the same type to `prompt`, but got {type(negative_prompt)} !="
+                        f" {type(prompt)}."
+                    )
+                elif isinstance(negative_prompt, str):
+                    uncond_tokens = [negative_prompt]
+                elif num_images_per_prompt != len(negative_prompt):
+                    raise ValueError(
+                        f"`negative_prompt`: {negative_prompt} has batch size {len(negative_prompt)}, but `prompt`:"
+                        f" {prompt} has batch size {num_images_per_prompt}. Please make sure that passed `negative_prompt` matches"
+                        " the batch size of `prompt`."
+                    )
+                else:
+                    uncond_tokens = negative_prompt
+                uncond_input = self.tokenizer(
+                    uncond_tokens,
+                    padding="max_length",
+                    max_length=max_length,
+                    truncation=True,
+                    return_tensors="pt",
+                )
+                negative_prompt_embeds = self.clip_inference(
+                    uncond_input.input_ids.to(self.device)
+                )
+
+        if do_classifier_free_guidance:
             # For classifier free guidance, we need to do two forward passes.
             # Here we concatenate the unconditional and text embeddings into a single batch
             # to avoid doing two forward passes
-            text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
+            text_embeddings = torch.cat([negative_prompt_embeds, prompt_embeds])  # type: ignore
+        else:
+            text_embeddings = prompt_embeds
 
         # get the initial random noise unless the user supplied it
 
