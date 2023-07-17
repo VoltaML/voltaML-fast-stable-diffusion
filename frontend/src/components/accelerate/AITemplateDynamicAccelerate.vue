@@ -134,17 +134,17 @@
 import { serverUrl } from "@/env";
 import { useState } from "@/store/state";
 import {
-NButton,
-NCard,
-NInputNumber,
-NModal,
-NSelect,
-NSlider,
-NSpace,
-NStep,
-NSteps,
-useMessage,
-type SelectOption,
+  NButton,
+  NCard,
+  NInputNumber,
+  NModal,
+  NSelect,
+  NSlider,
+  NSpace,
+  NStep,
+  NSteps,
+  useMessage,
+  type SelectOption,
 } from "naive-ui";
 import { computed, ref } from "vue";
 

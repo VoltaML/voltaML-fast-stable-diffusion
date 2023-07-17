@@ -107,7 +107,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.inpainting,
-                  'prompt'
+                  'prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"
@@ -123,7 +124,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.inpainting,
-                  'negative_prompt'
+                  'negative_prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"

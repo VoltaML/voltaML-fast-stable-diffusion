@@ -22,7 +22,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.controlnet,
-                  'prompt'
+                  'prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"
@@ -38,7 +39,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.controlnet,
-                  'negative_prompt'
+                  'negative_prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"

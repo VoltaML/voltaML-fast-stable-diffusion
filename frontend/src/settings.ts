@@ -17,11 +17,6 @@ export enum Sampler {
   UniPCMultistep = 13,
 }
 
-export interface IAutoloadedLora {
-  text_encoder: number;
-  unet: number;
-}
-
 export interface IQuantDict {
   vae_decoder: "no-quant" | "uint8" | "int8";
   vae_encoder: "no-quant" | "uint8" | "int8";
@@ -145,6 +140,8 @@ export interface ISettings {
     tomesd_ratio: number;
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
 
+    clip_skip: number;
+
     autocast: boolean;
     attention_processor:
       | "xformers"
@@ -168,10 +165,8 @@ export interface ISettings {
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
 
-    lora_text_encoder_weight: number;
-    lora_unet_weight: number;
+    huggingface_style_parsing: boolean;
 
-    autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
 
     save_path_template: string;
@@ -308,6 +303,8 @@ export const defaultSettings: ISettings = {
     websocket_perf_interval: 1,
     image_preview_delay: 2.0,
 
+    clip_skip: 1,
+
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
@@ -331,9 +328,7 @@ export const defaultSettings: ISettings = {
     reduced_precision: false,
     clear_memory_policy: "always",
 
-    lora_text_encoder_weight: 0.5,
-    lora_unet_weight: 0.5,
-    autoloaded_loras: new Map(),
+    huggingface_style_parsing: false,
     autoloaded_textual_inversions: [],
 
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
