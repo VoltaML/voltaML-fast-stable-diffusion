@@ -140,6 +140,8 @@ export interface ISettings {
     tomesd_ratio: number;
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
 
+    clip_skip: number;
+
     autocast: boolean;
     attention_processor:
       | "xformers"
@@ -300,6 +302,8 @@ export const defaultSettings: ISettings = {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
     image_preview_delay: 2.0,
+
+    clip_skip: 1,
 
     autocast: true,
     attention_processor: "xformers",

@@ -148,6 +148,9 @@ class APIConfig:
     # Critical
     enable_shutdown: bool = True
 
+    # CLIP
+    clip_skip: int = 1
+
     # Autoload
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
 

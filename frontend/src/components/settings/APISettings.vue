@@ -35,6 +35,16 @@
       />
     </NFormItem>
 
+    <h2>CLIP settings</h2>
+    <NFormItem label="CLIP skip">
+      <NInputNumber
+        v-model:value="settings.defaultSettings.api.clip_skip"
+        :min="1"
+        :max="11"
+        :step="1"
+      />
+    </NFormItem>
+
     <h2>Autoload</h2>
     <NFormItem label="Textual Inversions">
       <NSelect

@@ -25,6 +25,7 @@ from diffusers.utils.constants import (
     ONNX_WEIGHTS_NAME,
     WEIGHTS_NAME,
 )
+from transformers import CLIPTextModel
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
 from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
@@ -436,6 +437,13 @@ def load_pytorch_pipeline(
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
     assert isinstance(pipe, StableDiffusionPipeline)
+
+    with HiddenPrints():
+        conf = pipe.text_encoder.config
+        conf.num_hidden_layers = 13 - config.api.clip_skip
+        pipe.text_encoder = CLIPTextModel.from_pretrained(
+            None, config=conf, state_dict=pipe.text_encoder.state_dict()
+        )
 
     if optimize:
         from core.optimizations import optimize_model

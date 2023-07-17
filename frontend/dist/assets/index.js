@@ -40293,6 +40293,7 @@ const defaultSettings = {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
     image_preview_delay: 2,
+    clip_skip: 1,
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
