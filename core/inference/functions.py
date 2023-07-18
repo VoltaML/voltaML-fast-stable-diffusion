@@ -1,10 +1,10 @@
 import json
 import logging
-import os
 import io
-import sys
+import os
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
+from functools import partialmethod
 
 import torch
 from omegaconf import OmegaConf
@@ -367,20 +367,6 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
     return json.loads(text)
 
 
-class HiddenPrints:
-    "Taken from https://stackoverflow.com/a/45669280. Thank you @alexander-c"
-
-    def __enter__(self):
-        self._original_stdout = (  # pylint: disable=attribute-defined-outside-init
-            sys.stdout
-        )
-        sys.stdout = open(os.devnull, "w", encoding="utf-8")
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout.close()
-        sys.stdout = self._original_stdout
-
-
 def load_pytorch_pipeline(
     model_id_or_path: str,
     device: str = "cuda",
@@ -402,10 +388,12 @@ def load_pytorch_pipeline(
             # This function does not inherit the channels so we need to hack it like this
             in_channels = 9 if "inpaint" in model_id_or_path else 4
 
-            # TODO: investigate this - extract_ema is better for inference, but errors out if not present
-            # Maybe open a pr in diffusers?
+            cl = StableDiffusionPipeline
+            # I never knew this existed, but this is pretty handy :)
+            cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
             try:
                 pipe = download_from_original_stable_diffusion_ckpt(
+                    pipeline_class=cl,  # type: ignore
                     checkpoint_path=str(get_full_model_path(model_id_or_path)),
                     from_safetensors=use_safetensors,
                     extract_ema=True,
@@ -414,6 +402,7 @@ def load_pytorch_pipeline(
                 )
             except KeyError:
                 pipe = download_from_original_stable_diffusion_ckpt(
+                    pipeline_class=cl,  # type: ignore
                     checkpoint_path=str(get_full_model_path(model_id_or_path)),
                     from_safetensors=use_safetensors,
                     extract_ema=False,
@@ -438,12 +427,11 @@ def load_pytorch_pipeline(
 
     assert isinstance(pipe, StableDiffusionPipeline)
 
-    with HiddenPrints():
-        conf = pipe.text_encoder.config
-        conf.num_hidden_layers = 13 - config.api.clip_skip
-        pipe.text_encoder = CLIPTextModel.from_pretrained(
-            None, config=conf, state_dict=pipe.text_encoder.state_dict()
-        )
+    conf = pipe.text_encoder.config
+    conf.num_hidden_layers = 13 - config.api.clip_skip
+    pipe.text_encoder = CLIPTextModel.from_pretrained(
+        None, config=conf, state_dict=pipe.text_encoder.state_dict()
+    )
 
     if optimize:
         from core.optimizations import optimize_model
