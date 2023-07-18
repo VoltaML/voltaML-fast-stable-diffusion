@@ -26,7 +26,7 @@
             @click="resetSettings"
             >Reset Settings</NButton
           >
-          <NButton type="success" ghost @click="saveSettings"
+          <NButton type="success" ghost @click="saveSettings" :loading="saving"
             >Save Settings</NButton
           >
         </template>
@@ -36,6 +36,7 @@
 </template>
 
 <script lang="ts" setup>
+import { BurnerClock } from "@/clock";
 import APISettings from "@/components/settings/APISettings.vue";
 import BotSettings from "@/components/settings/BotSettings.vue";
 import ExtraSettings from "@/components/settings/ExtraSettings.vue";
@@ -52,10 +53,13 @@ import {
   useMessage,
   useNotification,
 } from "naive-ui";
+import { onUnmounted, ref } from "vue";
 
 const message = useMessage();
 const settings = useSettings();
 const notification = useNotification();
+
+const saving = ref(false);
 
 function resetSettings() {
   // Deepcopy and assign
@@ -70,7 +74,8 @@ function resetSettings() {
 }
 
 function saveSettings() {
-  console.log(settings.defaultSettings);
+  saving.value = true;
+
   fetch(`${serverUrl}/api/settings/save`, {
     method: "POST",
     headers: {
@@ -90,6 +95,22 @@ function saveSettings() {
         });
       });
     }
+
+    saving.value = false;
   });
 }
+
+const conf = useSettings();
+
+// Burner clock
+const burner = new BurnerClock(
+  conf.defaultSettings,
+  conf,
+  saveSettings,
+  3000,
+  false
+);
+onUnmounted(() => {
+  burner.cleanup();
+});
 </script>
