@@ -140,16 +140,14 @@ class APIConfig:
 
     # Device settings
     device_id: int = 0
-    device_type: Literal[
-        "cpu", "cuda", "mps", "directml", "intel", "vulkan", "iree"
-    ] = "cuda"
-    iree_target: Literal["cuda", "vulkan", "llvm", "interpreted"] = "vulkan"
+    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan"] = "cuda"
 
     # Critical
     enable_shutdown: bool = True
 
     # CLIP
     clip_skip: int = 1
+    clip_quantization: Literal["full", "int8", "int4"] = "full"
 
     # Autoload
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
@@ -187,22 +185,24 @@ class APIConfig:
 
     @property
     def device(self):
-        "Return the device string"
+        "Return the device"
 
+        string = "cpu"
         if self.device_type == "intel":
             from core.inference.functions import is_ipex_available
 
-            return "xpu" if is_ipex_available() else "cpu"
+            string = "xpu" if is_ipex_available() else "cpu"
         if self.device_type == "cpu":
-            return "cpu"
+            string = "cpu"
         if self.device_type == "vulkan":
-            return "vulkan"
+            string = "vulkan"
         if self.device_type == "directml":
             import torch_directml  # pylint: disable=import-error
 
             return torch_directml.device()
 
-        return f"{self.device_type}:{self.device_id}"
+        string = f"{self.device_type}:{self.device_id}"
+        return torch.device(string)
 
 
 @dataclass

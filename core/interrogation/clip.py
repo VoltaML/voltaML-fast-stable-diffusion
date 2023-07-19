@@ -12,6 +12,7 @@ from PIL import Image
 from safetensors.numpy import load_file, save_file
 from tqdm import tqdm
 from transformers.modeling_utils import PreTrainedModel
+from transformers.utils import is_bitsandbytes_available
 from transformers.models.auto.modeling_auto import AutoModelForCausalLM
 from transformers.models.auto.processing_auto import AutoProcessor
 from transformers.models.blip.modeling_blip import BlipForConditionalGeneration
@@ -19,7 +20,6 @@ from transformers.models.blip_2 import Blip2ForConditionalGeneration
 
 from core.config import config
 from core.files import get_full_model_path
-from core.inference.functions import is_bitsandbytes_available
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.optimizations import autocast
 from core.types import InterrogatorQueueEntry, Job
@@ -175,7 +175,7 @@ class CLIPInterrogator(InterrogationModel):
             similarity = text_features @ image_features.T
             if reverse:
                 similarity = -similarity
-        return text_array[similarity.argmax().item()]
+        return text_array[similarity.argmax().item()]  # type: ignore
 
     def load(self):
         # load captioner model (BLIP)

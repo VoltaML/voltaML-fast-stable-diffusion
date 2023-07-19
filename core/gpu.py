@@ -6,8 +6,9 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
 
-import torch
+from diffusers.utils import is_xformers_available
 from PIL import Image
+import torch
 
 from api import websocket_manager
 from api.websockets.notification import Notification
@@ -17,7 +18,7 @@ from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoade
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.esrgan.upscale import Upscaler
-from core.inference.functions import download_model
+from core.inference.functions import download_model, is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
@@ -37,6 +38,7 @@ from core.types import (
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
+    Capabilities,
 )
 from core.utils import convert_to_image, image_grid
 
@@ -60,6 +62,74 @@ class GPU:
                 "OnnxStableDiffusion",
             ],
         ] = {}
+        self.capabilities = self._get_capabilities()
+
+    def _get_capabilities(self) -> Capabilities:
+        "Returns all of the capabilities of this GPU."
+        cap = Capabilities()
+        if torch.cuda.is_available():
+            cap.supported_backends.append("cuda")
+        try:
+            import torch_directml  # pylint: disable=unused-import
+
+            cap.supported_backends.append("directml")
+        except ImportError:
+            pass
+        if torch.backends.mps.is_available():
+            cap.supported_backends.append("mps")
+        if torch.is_vulkan_available():
+            cap.supported_backends.append("vulkan")
+        if is_ipex_available():
+            cap.supported_backends.append("xpu")
+
+        test_suite = ["float16", "bfloat16"]
+        support_map: Dict[str, List[str]] = {}
+        for device in [torch.device("cpu"), config.api.device]:
+            support_map[device.type] = []
+            for dt in test_suite:
+                dtype = getattr(torch, dt)
+                a = torch.tensor([1.0], device=device, dtype=dtype)
+                b = torch.tensor([2.0], device=device, dtype=dtype)
+                try:
+                    torch.matmul(a, b)
+                    support_map[device.type].append(dt)
+                except RuntimeError:
+                    pass
+        for t, s in support_map.items():
+            if t == "cpu":
+                cap.supported_precisions_cpu = ["float32"] + s
+            else:
+                cap.supported_precisions_gpu = ["float32"] + s
+        try:
+            cap.supported_torch_compile_backends = (
+                torch._dynamo.list_backends()
+            )  # pylint: disable=protected-access
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
+        if torch.cuda.is_available():
+            try:
+                import bitsandbytes as bnb
+                import bitsandbytes.functional as F
+
+                a = torch.tensor([1.0]).cuda()
+                b, b_state = F.quantize_fp4(torch.tensor([2.0]).cuda())
+                bnb.matmul_4bit(a, b, quant_state=b_state)
+                cap.supports_int8 = True
+            except Exception:
+                pass
+        cap.supports_xformers = is_xformers_available()
+        if torch.cuda.is_available():
+            caps = torch.cuda.get_device_capability(self.gpu_id)
+            if caps[0] < 7:
+                cap.has_tensor_cores = False
+
+            if caps[0] == 8 and caps[1] >= 6:
+                cap.has_tensorfloat = True
+            elif caps[0] >= 9:
+                cap.has_tensorfloat = True
+
+        return cap
 
     def vram_free(self) -> float:
         "Returns the amount of free VRAM on the GPU in MB."

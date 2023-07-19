@@ -4,6 +4,7 @@ import torch
 from fastapi import APIRouter, HTTPException
 
 from core.shared import all_gpus, amd
+from core.shared_dependent import gpu as _gpu
 
 router = APIRouter(tags=["hardware"])
 
@@ -68,6 +69,13 @@ async def gpu_memory(gpu_id: int):
             raise HTTPException(  # pylint: disable=raise-missing-from
                 status_code=400, detail="GPU not found"
             )
+
+
+@router.get("/capabilities")
+async def capabilities():
+    "List of all the capabilities of this system"
+
+    return _gpu.capabilities
 
 
 @router.get("/gpus")

@@ -78,6 +78,7 @@ def optimize_model(
                     logger.info(
                         "Optimization: Enabled all reduced precision operations"
                     )
+                    torch.set_float32_matmul_precision("medium")
                 else:
                     logger.warning(
                         "Optimization: Device capability is not higher than 8.0, skipping most of reduction"
