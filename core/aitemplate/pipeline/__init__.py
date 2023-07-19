@@ -36,9 +36,8 @@ from transformers.models.clip import CLIPFeatureExtractor, CLIPTextModel, CLIPTo
 import numpy as np
 from PIL import Image
 
-from ..src.modeling import mapping as mapping
 from core.aitemplate.config import get_unet_in_channels
-from core.config import config
+from core.aitemplate.src.modeling import mapping
 from core.functions import init_ait_module
 
 logger = logging.getLogger(__name__)

@@ -100,17 +100,65 @@ def compile_diffusers(
 
     os.environ["NUM_BUILDERS"] = str(config.aitemplate.num_threads)
 
-    # UNet
     websocket_manager.broadcast_sync(
         Data(
             data_type="aitemplate_compile",
             data={
-                "unet": "process",
                 "clip": "wait",
+                "unet": "wait",
+                "controlnet_unet": "wait",
                 "vae": "wait",
                 "cleanup": "wait",
             },
         )
+    )
+
+    # CLIP
+    websocket_manager.broadcast_sync(
+        Data(data_type="aitemplate_compile", data={"clip": "process"})
+    )
+    with console.status("[bold green]Compiling CLIP..."):
+        try:
+            if (
+                invalidate_cache
+                or not Path(dump_dir).joinpath("CLIPTextModel/test.so").exists()
+            ):
+                compile_clip(
+                    pipe.text_encoder,  # type: ignore
+                    batch_size=batch_size,
+                    seqlen=pipe.text_encoder.config.max_position_embeddings,
+                    use_fp16_acc=use_fp16_acc,
+                    constants=True,
+                    convert_conv_to_gemm=convert_conv_to_gemm,
+                    depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
+                    num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
+                    dim=pipe.text_encoder.config.hidden_size,  # type: ignore
+                    act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
+                    work_dir=dump_dir,
+                )
+
+                websocket_manager.broadcast_sync(
+                    Data(data_type="aitemplate_compile", data={"clip": "finish"})
+                )
+            else:
+                logger.info("CLIP already compiled. Skipping...")
+
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(e)
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"clip": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="AITemplate",
+                    message=f"Error while compiling CLIP: {e}",
+                )
+            )
+
+    # UNet
+    websocket_manager.broadcast_sync(
+        Data(data_type="aitemplate_compile", data={"unet": "process"})
     )
     with console.status("[bold green]Compiling UNet..."):
         try:
@@ -180,7 +228,6 @@ def compile_diffusers(
                     message=f"Error while compiling UNet: {e}",
                 )
             )
-            raise e
 
     # ControlNet UNet
     websocket_manager.broadcast_sync(
@@ -233,7 +280,7 @@ def compile_diffusers(
 
             # Dump UNet config
             with open(
-                os.path.join(dump_dir, "UNet2DConditionModel", "config.json"),
+                os.path.join(dump_dir, "ControlNetUNet2DConditionModel", "config.json"),
                 "w",
                 encoding="utf-8",
             ) as f:
@@ -241,73 +288,26 @@ def compile_diffusers(
                 logger.info("UNet config saved")
 
             websocket_manager.broadcast_sync(
-                Data(data_type="aitemplate_compile", data={"unet": "finish"})
+                Data(data_type="aitemplate_compile", data={"controlnet_unet": "finish"})
             )
 
         except Exception as e:  # pylint: disable=broad-except
             logger.error(e)
             websocket_manager.broadcast_sync(
-                Data(data_type="aitemplate_compile", data={"unet": "error"})
+                Data(data_type="aitemplate_compile", data={"controlnet_unet": "error"})
             )
             websocket_manager.broadcast_sync(
                 Notification(
                     severity="error",
                     title="AITemplate",
-                    message=f"Error while compiling UNet: {e}",
+                    message=f"Error while compiling ControlNet UNet: {e}",
                 )
             )
-            raise e
-
-    # CLIP
-    websocket_manager.broadcast_sync(
-        Data(data_type="aitemplate_compile", data={"clip": "process"})
-    )
-
-    with console.status("[bold green]Compiling CLIP..."):
-        try:
-            if (
-                invalidate_cache
-                or not Path(dump_dir).joinpath("CLIPTextModel/test.so").exists()
-            ):
-                compile_clip(
-                    pipe.text_encoder,  # type: ignore
-                    batch_size=batch_size,
-                    seqlen=pipe.text_encoder.config.max_position_embeddings,
-                    use_fp16_acc=use_fp16_acc,
-                    constants=True,
-                    convert_conv_to_gemm=convert_conv_to_gemm,
-                    depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
-                    num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
-                    dim=pipe.text_encoder.config.hidden_size,  # type: ignore
-                    act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
-                    work_dir=dump_dir,
-                )
-
-                websocket_manager.broadcast_sync(
-                    Data(data_type="aitemplate_compile", data={"clip": "finish"})
-                )
-            else:
-                logger.info("CLIP already compiled. Skipping...")
-
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(e)
-            websocket_manager.broadcast_sync(
-                Data(data_type="aitemplate_compile", data={"clip": "error"})
-            )
-            websocket_manager.broadcast_sync(
-                Notification(
-                    severity="error",
-                    title="AITemplate",
-                    message=f"Error while compiling CLIP: {e}",
-                )
-            )
-            raise e
 
     # VAE
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"vae": "process"})
     )
-
     with console.status("[bold green]Compiling VAE..."):
         try:
             if (
@@ -365,13 +365,11 @@ def compile_diffusers(
                     message=f"Error while compiling VAE: {e}",
                 )
             )
-            raise e
 
     # Cleanup
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"cleanup": "process"})
     )
-
     with console.status("[bold green]Cleaning up..."):
         try:
             # Clean all files except test.so recursively
@@ -402,7 +400,6 @@ def compile_diffusers(
                     message=f"Error while cleaning up: {e}",
                 )
             )
-            raise e
 
     with console.status("[bold green]Releasing memory"):
         del pipe

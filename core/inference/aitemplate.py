@@ -78,7 +78,7 @@ class AITemplateStableDiffusion(InferenceModel):
         return os.path.join("data", "aitemplate", self.model_id)
 
     def load(self):
-        from core.aitemplate.pipelines.ait import StableDiffusionAITPipeline
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
 
         pipe = load_pytorch_pipeline(
             self.model_id,
@@ -256,7 +256,7 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Txt2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from text"
-        from core.aitemplate.pipelines.ait import StableDiffusionAITPipeline
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
 
         self.manage_optional_components()
 
@@ -327,7 +327,7 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
 
-        from core.aitemplate.pipelines.ait import StableDiffusionAITPipeline
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
 
         self.manage_optional_components()
 
@@ -403,7 +403,7 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
 
-        from core.aitemplate.pipelines.ait import StableDiffusionAITPipeline
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
 
         self.manage_optional_components(target_controlnet=job.data.controlnet)
 
