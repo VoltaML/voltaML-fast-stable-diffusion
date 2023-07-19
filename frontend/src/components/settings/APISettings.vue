@@ -26,13 +26,15 @@
         ]"
       />
     </NFormItem>
-    <NFormItem label="Image quality (JPEG/WebP only)">
+    <NFormItem
+      label="Image quality (JPEG/WebP only)"
+      v-if="settings.defaultSettings.api.image_extension != 'png'"
+    >
       <NInputNumber
         v-model:value="settings.defaultSettings.api.image_quality"
         :min="0"
         :max="100"
         :step="1"
-        v-if="settings.defaultSettings.api.image_extension != 'png'"
       />
     </NFormItem>
 

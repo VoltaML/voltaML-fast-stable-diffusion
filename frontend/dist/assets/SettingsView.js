@@ -1846,15 +1846,15 @@ const _hoisted_3 = /* @__PURE__ */ createBaseVNode("h2", null, "Autoload", -1);
 const _hoisted_4 = /* @__PURE__ */ createBaseVNode("h2", null, "Timings and Queue", -1);
 const _hoisted_5 = /* @__PURE__ */ createBaseVNode("h2", null, "Optimizations", -1);
 const _hoisted_6 = {
-  key: 0,
+  key: 1,
   class: "flex-container"
 };
 const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("h2", null, "Device", -1);
 const _hoisted_9 = /* @__PURE__ */ createBaseVNode("h2", null, "TomeSD", -1);
-const _hoisted_10 = { key: 2 };
+const _hoisted_10 = { key: 3 };
 const _hoisted_11 = /* @__PURE__ */ createBaseVNode("h2", null, "Torch Compile", -1);
-const _hoisted_12 = { key: 3 };
+const _hoisted_12 = { key: 4 };
 const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
@@ -1955,7 +1955,13 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
       ];
     });
     const availableQuantizations = computed(() => {
-      return [{ value: "full", label: "Full precision" }, ...capabilities.value.supports_int8 ? [{ value: "int8", label: "Quantized (int8)" }, { value: "int4", label: "Quantized (int4)" }] : []];
+      return [
+        { value: "full", label: "Full precision" },
+        ...capabilities.value.supports_int8 ? [
+          { value: "int8", label: "Quantized (int8)" },
+          { value: "int4", label: "Quantized (int4)" }
+        ] : []
+      ];
     });
     const textualInversions = computed(() => {
       return global.state.models.filter((model) => {
@@ -2015,19 +2021,21 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          createVNode(unref(NFormItem), { label: "Image quality (JPEG/WebP only)" }, {
+          unref(settings).defaultSettings.api.image_extension != "png" ? (openBlock(), createBlock(unref(NFormItem), {
+            key: 0,
+            label: "Image quality (JPEG/WebP only)"
+          }, {
             default: withCtx(() => [
-              unref(settings).defaultSettings.api.image_extension != "png" ? (openBlock(), createBlock(unref(NInputNumber), {
-                key: 0,
+              createVNode(unref(NInputNumber), {
                 value: unref(settings).defaultSettings.api.image_quality,
                 "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.image_quality = $event),
                 min: 0,
                 max: 100,
                 step: 1
-              }, null, 8, ["value"])) : createCommentVNode("", true)
+              }, null, 8, ["value"])
             ]),
             _: 1
-          }),
+          })) : createCommentVNode("", true),
           _hoisted_2,
           createVNode(unref(NFormItem), { label: "CLIP skip" }, {
             default: withCtx(() => [
@@ -2288,7 +2296,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
             _: 1
           }),
           unref(settings).defaultSettings.api.device_type != "cpu" ? (openBlock(), createBlock(unref(NFormItem), {
-            key: 1,
+            key: 2,
             label: "Device ID (GPU ID)"
           }, {
             default: withCtx(() => [
