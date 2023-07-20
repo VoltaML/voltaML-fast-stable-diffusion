@@ -20,6 +20,7 @@ class CachedModelList:
         self.onnx_path = Path("data/onnx")
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
+        self.lycoris_path = Path("data/lycoris")
         self.textual_inversion_path = Path("data/textual-inversion")
         self.vae_path = Path("data/vae")
 
@@ -54,7 +55,6 @@ class CachedModelList:
                         backend="PyTorch",
                         vae="default",
                         valid=is_valid_diffusers_model(get_full_model_path(name)),
-                        loras=[],
                         state="not loaded",
                     )
                 )
@@ -78,7 +78,6 @@ class CachedModelList:
                         valid=is_valid_diffusers_model(
                             self.checkpoint_converted_path.joinpath(model_name)
                         ),
-                        loras=[],
                         state="not loaded",
                     )
                 )
@@ -91,7 +90,6 @@ class CachedModelList:
                         backend="PyTorch",
                         vae="default",
                         valid=True,
-                        loras=[],
                         state="not loaded",
                     )
                 )
@@ -123,7 +121,6 @@ class CachedModelList:
                     valid=is_valid_aitemplate_model(
                         self.aitemplate_path.joinpath(model)
                     ),
-                    loras=[],
                     state="not loaded",
                 )
             )
@@ -145,7 +142,6 @@ class CachedModelList:
                     vae="default",
                     backend="ONNX",
                     valid=True,
-                    loras=[],
                     state="not loaded",
                 )
             )
@@ -160,7 +156,7 @@ class CachedModelList:
             logger.debug(f"Found LoRA {model}")
 
             # Skip if it is not a LoRA model
-            if not any(x in model for x in self.ext_whitelist):
+            if Path(model).suffix not in self.ext_whitelist:
                 continue
 
             model_name = self.model_path_to_name(model)
@@ -172,7 +168,33 @@ class CachedModelList:
                     vae="default",
                     backend="LoRA",
                     valid=True,
-                    loras=[],
+                    state="not loaded",
+                )
+            )
+
+        return models
+
+    def lycoris(self):
+        "List of LyCORIS models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.lycoris_path):
+            logger.debug(f"Found LyCORIS {model}")
+
+            # Skip if it is not a LyCORIS model
+            if Path(model).suffix not in self.ext_whitelist:
+                continue
+
+            model_name = self.model_path_to_name(model)
+
+            models.append(
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.lycoris_path, model),
+                    vae="default",
+                    backend="LyCORIS",
+                    valid=True,
                     state="not loaded",
                 )
             )
@@ -202,7 +224,6 @@ class CachedModelList:
                     backend="VAE",
                     valid=True,
                     vae="default",
-                    loras=[],
                     state="not loaded",
                 )
             )
@@ -218,7 +239,7 @@ class CachedModelList:
             logger.debug(f"Found textual inversion model {model}")
 
             # Skip if it is not a Texutal Inversion
-            if not any(x in model for x in self.ext_whitelist):
+            if Path(model).suffix not in self.ext_whitelist:
                 continue
 
             model_name = self.model_path_to_name(model)
@@ -230,7 +251,6 @@ class CachedModelList:
                     vae="default",
                     backend="Textual Inversion",
                     valid=True,
-                    loras=[],
                     state="not loaded",
                 )
             )
@@ -245,6 +265,7 @@ class CachedModelList:
             + self.aitemplate()
             + self.onnx()
             + self.lora()
+            + self.lycoris()
             + self.textual_inversion()
             + self.vae()
         )

@@ -7385,6 +7385,19 @@ function repeat(count, v) {
   }
   return ret;
 }
+function indexMap(count, createValue) {
+  const ret = [];
+  if (!createValue) {
+    for (let i = 0; i < count; ++i) {
+      ret.push(i);
+    }
+    return ret;
+  }
+  for (let i = 0; i < count; ++i) {
+    ret.push(createValue(i));
+  }
+  return ret;
+}
 function getSlot$1(instance, slotName = "default", fallback = []) {
   const slots = instance.$slots;
   const slot = slots[slotName];
@@ -40575,7 +40588,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-37b1913e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-56dc8f7d"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40595,7 +40608,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "2ac8c8e2": backgroundColor.value
+      "55d9d9b8": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40638,7 +40651,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           valid: true,
           state: "not loaded",
           vae: "default",
-          loras: [],
           textual_inversions: []
         },
         ...filteredModels.value.filter((model) => {
@@ -40730,7 +40742,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             }
             const autofillKeys = [];
             for (const model of global2.state.models) {
-              if (model.backend === "LoRA") {
+              if (model.backend === "LoRA" || model.backend === "LyCORIS") {
                 autofillKeys.push(`<lora:${model.name}:1.0>`);
               }
             }
@@ -41480,7 +41492,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_37b1913e_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_56dc8f7d_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41488,7 +41500,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-37b1913e"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-56dc8f7d"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -41611,12 +41623,12 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/clock.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
@@ -41641,12 +41653,12 @@ const router = createRouter({
     {
       path: "/test",
       name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/DescriptionsItem.js"] : void 0)
     },
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/clock.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -41667,7 +41679,7 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  cM as $,
+  iconSwitchTransition as $,
   pushScopeId as A,
   popScopeId as B,
   resolveComponent as C,
@@ -41677,36 +41689,36 @@ export {
   NIcon as G,
   NTabPane as H,
   NTabs as I,
-  watch as J,
-  upscalerOptions as K,
-  Fragment as L,
-  renderList as M,
+  upscalerOptions as J,
+  Fragment as K,
+  renderList as L,
+  NScrollbar as M,
   NGi as N,
-  NScrollbar as O,
-  replaceable as P,
-  useConfig as Q,
-  useFormItem as R,
-  useMergedState as S,
-  provide as T,
-  toRef as U,
-  createInjectionKey as V,
-  call as W,
-  c$1 as X,
-  cB as Y,
-  cE as Z,
+  replaceable as O,
+  useConfig as P,
+  useFormItem as Q,
+  useMergedState as R,
+  provide as S,
+  toRef as T,
+  createInjectionKey as U,
+  call as V,
+  c$1 as W,
+  cB as X,
+  cE as Y,
+  cM as Z,
   _export_sfc as _,
   useSettings as a,
   AddIcon as a$,
-  iconSwitchTransition as a0,
-  insideModal as a1,
-  insidePopover as a2,
-  inject as a3,
-  useMemo as a4,
-  useTheme as a5,
-  checkboxLight$1 as a6,
-  useRtl as a7,
-  createKey as a8,
-  useThemeClass as a9,
+  insideModal as a0,
+  insidePopover as a1,
+  inject as a2,
+  useMemo as a3,
+  useTheme as a4,
+  checkboxLight$1 as a5,
+  useRtl as a6,
+  createKey as a7,
+  useThemeClass as a8,
+  createId as a9,
   radioLight$1 as aA,
   resolveWrappedSlot as aB,
   flatten$2 as aC,
@@ -41724,9 +41736,9 @@ export {
   ChevronRightIcon as aO,
   VResizeObserver as aP,
   warn$2 as aQ,
-  VVirtualList as aR,
-  NEmpty as aS,
-  cssrAnchorMetaName as aT,
+  cssrAnchorMetaName as aR,
+  VVirtualList as aS,
+  NEmpty as aT,
   repeat as aU,
   beforeNextFrameOnce as aV,
   fadeInScaleUpTransition as aW,
@@ -41734,10 +41746,10 @@ export {
   dataTableLight$1 as aY,
   throwError as aZ,
   isBrowser$3 as a_,
-  createId as aa,
-  NIconSwitchTransition as ab,
-  on as ac,
-  popselectLight$1 as ad,
+  NIconSwitchTransition as aa,
+  on as ab,
+  popselectLight$1 as ac,
+  watch as ad,
   NInternalSelectMenu as ae,
   createTreeMate as af,
   happensIn as ag,
@@ -41771,43 +41783,55 @@ export {
   reactive as b7,
   huggingfaceModelsFile as b8,
   NModal as b9,
-  NAlert as bA,
-  inputNumberLight$1 as bB,
-  rgba as bC,
-  XButton as bD,
-  isSlotEmpty as bE,
-  switchLight$1 as bF,
-  onBeforeUpdate as bG,
-  VBinder as bH,
-  VTarget as bI,
-  VFollower as bJ,
-  sliderLight$1 as bK,
+  defaultSettings as bA,
+  useCssVars as bB,
+  urlFromPath as bC,
+  useRouter as bD,
+  fadeInTransition as bE,
+  imageLight as bF,
+  isMounted as bG,
+  LazyTeleport as bH,
+  zindexable$1 as bI,
+  kebabCase$1 as bJ,
+  useCompitable as bK,
+  descriptionsLight$1 as bL,
+  withModifiers as bM,
+  NAlert as bN,
+  inputNumberLight$1 as bO,
+  rgba as bP,
+  XButton as bQ,
+  isSlotEmpty as bR,
+  switchLight$1 as bS,
+  VBinder as bT,
+  VTarget as bU,
+  VFollower as bV,
+  sliderLight$1 as bW,
   NText as ba,
   stepsLight$1 as bb,
   FinishedIcon as bc,
   ErrorIcon$1 as bd,
-  getCurrentInstance as be,
-  formLight$1 as bf,
-  commonVariables$m as bg,
-  formItemInjectionKey as bh,
-  onMounted as bi,
-  useNotification as bj,
-  defaultSettings as bk,
-  useCssVars as bl,
-  urlFromPath as bm,
-  useCompitable as bn,
-  descriptionsLight$1 as bo,
-  useRouter as bp,
-  fadeInTransition as bq,
-  imageLight as br,
-  isMounted as bs,
-  LazyTeleport as bt,
-  withDirectives as bu,
-  zindexable$1 as bv,
-  vShow as bw,
-  normalizeStyle as bx,
-  kebabCase$1 as by,
-  withModifiers as bz,
+  upperFirst$1 as be,
+  toString as bf,
+  createCompounder as bg,
+  cloneVNode as bh,
+  onBeforeUpdate as bi,
+  indexMap as bj,
+  onMounted as bk,
+  onUpdated as bl,
+  resolveSlotWithProps as bm,
+  withDirectives as bn,
+  vShow as bo,
+  carouselLight$1 as bp,
+  normalizeStyle as bq,
+  getPreciseEventTarget as br,
+  rateLight as bs,
+  color2Class as bt,
+  NTag as bu,
+  getCurrentInstance as bv,
+  formLight$1 as bw,
+  commonVariables$m as bx,
+  formItemInjectionKey as by,
+  useNotification as bz,
   computed as c,
   defineComponent as d,
   openBlock as e,
