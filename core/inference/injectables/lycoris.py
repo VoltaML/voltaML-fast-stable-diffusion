@@ -4,8 +4,9 @@ import logging
 
 import torch
 
-from .utils import HookObject
 from core.config import config
+from .utils import HookObject
+
 
 logger = logging.getLogger(__name__)
 
@@ -427,7 +428,7 @@ class LyCORISManager(HookObject):
                     continue
 
                 if module is None:
-                    logging.warning(
+                    logging.debug(
                         f"Module {lyco_layer_name} could not be found. The models weights have somehow become tangled?"
                     )
                     continue
