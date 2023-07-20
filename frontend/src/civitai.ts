@@ -77,3 +77,14 @@ export interface ICivitAIModel {
   tags: string[];
   modelVersions: IModelVersion[];
 }
+
+export interface ICivitAIModels {
+  items: ICivitAIModel[];
+  metadata: {
+    totalItems: number;
+    currentPage: number;
+    pageSize: number;
+    totalPages: number;
+    nextPage: string;
+  };
+}
