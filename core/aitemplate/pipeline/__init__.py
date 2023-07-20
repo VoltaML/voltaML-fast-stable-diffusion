@@ -132,7 +132,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
         self.unet_in_channels = get_unet_in_channels(directory=Path(directory))
 
-    def unet_inference(
+    def unet_inference(  # pylint: disable=dangerous-default-value
         self,
         latent_model_input,
         timesteps,
@@ -349,24 +349,21 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             text_embeddings = prompt_embeds
 
         accepts_eta = "eta" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()
+            inspect.signature(self.scheduler.set_timesteps).parameters.keys()
         )
         extra_step_kwargs = {}
         if accepts_eta:
             extra_step_kwargs["eta"] = eta
         accepts_generator = "generator" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()
+            inspect.signature(self.scheduler.set_timesteps).parameters.keys()
         )
         if accepts_generator:
             extra_step_kwargs["generator"] = generator
 
-        img2img = False
         self.scheduler.set_timesteps(num_inference_steps, **extra_step_kwargs)
         if image is not None and self.controlnet is None:
             if isinstance(image, Image.Image):
                 init_image = preprocess(image)  # type: ignore
-
-            img2img = True
 
             # convert to correct dtype and push to right device
             init_image = init_image.to(self.device, dtype=self.vae.dtype)  # type: ignore
@@ -383,19 +380,12 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             )
 
             # get the original timestep using init_timestep
+            init_timestep = min(int(num_inference_steps * strength), num_inference_steps)  # type: ignore
+
+            t_start = max(num_inference_steps - init_timestep, 0)
+            timesteps = self.scheduler.timesteps[t_start * self.scheduler.order :]
             init_timestep = int(num_inference_steps * strength)  # type: ignore
-            init_timestep = min(init_timestep, num_inference_steps)
-            if isinstance(self.scheduler, LMSDiscreteScheduler):
-                timesteps = torch.tensor(
-                    [num_inference_steps - init_timestep] * num_images_per_prompt,
-                    device=self.device,
-                ).to(dtype=torch.long)
-            else:
-                timesteps = self.scheduler.timesteps[-init_timestep]
-                timesteps = torch.tensor(
-                    [timesteps] * num_images_per_prompt, device=self.device
-                ).to(dtype=torch.long)
-            latents = self.scheduler.add_noise(init_latents, noise, timesteps).to(  # type: ignore
+            latents = self.scheduler.add_noise(init_latents, noise, timesteps[:1].repeat(num_images_per_prompt)).to(  # type: ignore
                 device=self.device
             )
         else:
@@ -421,6 +411,8 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
             latents = latents * self.scheduler.init_noise_sigma  # type: ignore
 
+            timesteps = self.scheduler.timesteps
+
         if image is not None and self.controlnet is not None:
             ctrl_image = self.prepare_image(
                 image,
@@ -434,22 +426,14 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             if do_classifier_free_guidance:
                 ctrl_image = torch.cat([ctrl_image] * 2)
 
+        # Necessary for controlnet to function
         text_embeddings = text_embeddings.half()  # type: ignore
 
-        t_start = max(num_inference_steps - init_timestep, 0) if img2img else 0
-        for i, t in enumerate(self.progress_bar(self.scheduler.timesteps[t_start:])):
-            t_index = t_start + i
+        for i, t in enumerate(self.progress_bar(timesteps)):
             latent_model_input = (
-                torch.cat([latents] * 2) if do_classifier_free_guidance else latents
+                torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
             )
             latent_model_input = self.scheduler.scale_model_input(latent_model_input, t).half()  # type: ignore
-
-            if isinstance(self.scheduler, LMSDiscreteScheduler):
-                sigma = self.scheduler.sigmas[t_index]
-                # the model input needs to be scaled to match the continuous ODE formulation in K-LMS
-                latent_model_input = latent_model_input / ((sigma**2 + 1) ** 0.5)
-                latent_model_input = latent_model_input.to(self.vae.dtype)
-                t = t.to(self.vae.dtype)
 
             # predict the noise residual
             if self.controlnet is not None and ctrl_image is not None:  # type: ignore
@@ -485,14 +469,9 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     noise_pred_text - noise_pred_uncond
                 )
 
-            if isinstance(self.scheduler, LMSDiscreteScheduler):
-                latents = self.scheduler.step(
-                    noise_pred, t_index, latents, **extra_step_kwargs
-                ).prev_sample
-            else:
-                latents = self.scheduler.step(
-                    noise_pred, t, latents, **extra_step_kwargs
-                ).prev_sample
+            latents = self.scheduler.step(
+                noise_pred, t, latents, **extra_step_kwargs, return_dict=False  # type: ignore
+            )[0]
 
             if callback is not None:
                 callback(i, t, latents)  # type: ignore
