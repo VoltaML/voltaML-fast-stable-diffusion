@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Union, Optional
+from typing import List, Union, Optional, Dict
 
 import torch
 
@@ -73,7 +73,7 @@ class HookManager(object):
                         target_modules.append((lora_name, child_module))
         return target_modules
 
-    def _load_state_dict(self, file: Union[Path, str]):
+    def _load_state_dict(self, file: Union[Path, str]) -> Dict[str, torch.nn.Module]:
         if file is not Path:
             file = Path(file)
         if file.suffix == ".safetensors":  # type: ignore

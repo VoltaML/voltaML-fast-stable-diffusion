@@ -380,7 +380,8 @@ def get_weighted_text_embeddings(
                             pass
         if hasattr(pipe, "lora_injector"):
             remove_loras = pipe.unload_loras
-            remove_lycos = pipe.unload_lycoris
+            remove_lycoris = pipe.unload_lycoris
+            logger.debug(f"{loralist}")
             for ent in loralist:
                 lyco = len(ent) == 3
                 lora = ent[0]
@@ -388,25 +389,18 @@ def get_weighted_text_embeddings(
                 name = Path(lora).name
 
                 if lyco:
-                    if name not in []:
-                        logger.debug(f"{loralist}")
-                        if name not in remove_lycos:
-                            logger.debug(f"Adding LyCORIS {name} to the removal list")
-                            remove_lycos.append(name)
-                        logger.debug(f"Applying LyCORIS {name} with strength {alpha}")
-                        pipe.lora_injector.apply_lycoris(lora, alpha)
+                    if name not in remove_lycoris:
+                        logger.debug(f"Adding LyCORIS {name} to the removal list")
+                        remove_lycoris.append(name)
+                    logger.debug(f"Applying LyCORIS {name} with strength {alpha}")
+                    pipe.lora_injector.apply_lycoris(lora, alpha)
                 else:
-                    if name not in []:
-                        logger.debug(f"{pipe.loras}, {loralist}")
-                        if (
-                            lora not in map(lambda x: x[0], pipe.loras)
-                            and name not in remove_loras
-                        ):
-                            logger.debug(f"Adding LoRA {name} to the removal list")
-                            remove_loras.append(name)
-                        logger.debug(f"Applying LoRA {name} with strength {alpha}")
-                        pipe.lora_injector.apply_lora(lora, alpha)
-            pipe.unload_lycoris = remove_lycos
+                    if name not in remove_loras:
+                        logger.debug(f"Adding LoRA {name} to the removal list")
+                        remove_loras.append(name)
+                    logger.debug(f"Applying LoRA {name} with strength {alpha}")
+                    pipe.lora_injector.apply_lora(lora, alpha)
+            pipe.unload_lycoris = remove_lycoris
             pipe.unload_loras = remove_loras
 
     if not skip_parsing:
