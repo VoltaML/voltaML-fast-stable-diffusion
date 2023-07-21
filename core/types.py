@@ -15,9 +15,16 @@ from diffusers import (
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-InferenceBackend = Literal["PyTorch", "AITemplate", "ONNX"]
+InferenceBackend = Literal["PyTorch", "SDXL", "AITemplate", "ONNX"]
 Backend = Literal[
-    "PyTorch", "AITemplate", "unknown", "LoRA", "Textual Inversion", "ONNX", "VAE"
+    "PyTorch",
+    "SDXL",
+    "AITemplate",
+    "unknown",
+    "LoRA",
+    "Textual Inversion",
+    "ONNX",
+    "VAE",
 ]
 
 

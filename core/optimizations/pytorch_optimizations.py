@@ -65,6 +65,14 @@ def optimize_model(
             "mps",
         ] and (offload != "disabled" and offload is not None)
 
+        if hasattr(pipe, "text_encoder_2"):
+            from diffusers import AutoencoderKL
+
+            vae = AutoencoderKL.from_pretrained(
+                "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
+            )
+            pipe.vae = vae
+
         # Took me an hour to understand why CPU stopped working...
         # Turns out AMD just lacks support for BF16...
         # Not mad, not mad at all... to be fair, I'm just disappointed
@@ -146,12 +154,14 @@ def optimize_model(
 
                     for cpu_offloaded_model in [
                         pipe.text_encoder,
+                        pipe.text_encoder_2,
                         pipe.unet,
                         pipe.vae,
                     ]:
-                        _, hook = cpu_offload_with_hook(
-                            cpu_offloaded_model, device, prev_module_hook=hook
-                        )
+                        if cpu_offloaded_model is not None:
+                            _, hook = cpu_offload_with_hook(
+                                cpu_offloaded_model, device, prev_module_hook=hook
+                            )
                     pipe.final_offload_hook = hook
                     setattr(pipe.vae, "main_device", True)
                     setattr(pipe.unet, "main_device", True)

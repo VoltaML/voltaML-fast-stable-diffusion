@@ -69,6 +69,27 @@ class CachedModelList:
 
             if self.checkpoint_converted_path.joinpath(model_name).is_dir():
                 # Assuming that model is in Diffusers format
+                file = self.checkpoint_converted_path / model_name / "model_index.json"
+                try:
+                    with open(file, "r", encoding="UTF-8") as content:
+                        sdxl = "StableDiffusionXL" in content.readlines()[1]
+                        if sdxl:
+                            if not (file.parent / "sdxl.txt").exists():
+                                open(file.parent / "sdxl.txt", "x")
+                            models.append(
+                                ModelResponse(
+                                    name=model_name,
+                                    path=model_name,
+                                    backend="SDXL",
+                                    vae="default",
+                                    valid=True,
+                                    loras=[],
+                                    state="not loaded",
+                                )
+                            )
+                            continue
+                except Exception:  # pylint: disable=broad-except
+                    pass
                 models.append(
                     ModelResponse(
                         name=model_name,

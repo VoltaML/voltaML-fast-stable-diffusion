@@ -7385,6 +7385,19 @@ function repeat(count, v) {
   }
   return ret;
 }
+function indexMap(count, createValue) {
+  const ret = [];
+  if (!createValue) {
+    for (let i = 0; i < count; ++i) {
+      ret.push(i);
+    }
+    return ret;
+  }
+  for (let i = 0; i < count; ++i) {
+    ret.push(createValue(i));
+  }
+  return ret;
+}
 function getSlot$1(instance, slotName = "default", fallback = []) {
   const slots = instance.$slots;
   const slot = slots[slotName];
@@ -9811,7 +9824,7 @@ function getOffset(placement, offsetRect, targetRect, offsetTopToStandardPlaceme
       };
   }
 }
-const style$z = c([
+const style$A = c([
   c(".v-binder-follower-container", {
     position: "absolute",
     left: "0",
@@ -9893,7 +9906,7 @@ const VFollower = defineComponent({
       }
     });
     const ssrAdapter2 = useSsrAdapter();
-    style$z.mount({
+    style$A.mount({
       id: "vueuc/binder",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -11088,7 +11101,7 @@ const VXScroll = defineComponent({
   }
 });
 const hiddenAttr = "v-hidden";
-const style$y = c("[v-hidden]", {
+const style$z = c("[v-hidden]", {
   display: "none!important"
 });
 const VOverflow = defineComponent({
@@ -11178,7 +11191,7 @@ const VOverflow = defineComponent({
       }
     }
     const ssrAdapter2 = useSsrAdapter();
-    style$y.mount({
+    style$z.mount({
       id: "vueuc/overflow",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -14738,7 +14751,7 @@ const NFadeInExpandTransition = defineComponent({
     };
   }
 });
-const style$x = cB("base-icon", `
+const style$y = cB("base-icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -14773,13 +14786,13 @@ const NBaseIcon = defineComponent({
     onMouseup: Function
   },
   setup(props) {
-    useStyle("-base-icon", style$x, toRef(props, "clsPrefix"));
+    useStyle("-base-icon", style$y, toRef(props, "clsPrefix"));
   },
   render() {
     return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
   }
 });
-const style$w = cB("base-close", `
+const style$x = cB("base-close", `
  display: flex;
  align-items: center;
  justify-content: center;
@@ -14848,7 +14861,7 @@ const NBaseClose = defineComponent({
     absolute: Boolean
   },
   setup(props) {
-    useStyle("-base-close", style$w, toRef(props, "clsPrefix"));
+    useStyle("-base-close", style$x, toRef(props, "clsPrefix"));
     return () => {
       const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
       const Tag = isButtonTag ? "button" : "div";
@@ -14907,7 +14920,7 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$v = c$1([c$1("@keyframes loading-container-rotate", `
+const style$w = c$1([c$1("@keyframes loading-container-rotate", `
  to {
  -webkit-transform: rotate(360deg);
  transform: rotate(360deg);
@@ -15070,7 +15083,7 @@ const NBaseLoading = defineComponent({
     default: 100
   } }, exposedLoadingProps),
   setup(props) {
-    useStyle("-base-loading", style$v, toRef(props, "clsPrefix"));
+    useStyle("-base-loading", style$w, toRef(props, "clsPrefix"));
   },
   render() {
     const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
@@ -16100,7 +16113,7 @@ const emptyDark = {
   self: self$1d
 };
 const emptyDark$1 = emptyDark;
-const style$u = cB("empty", `
+const style$v = cB("empty", `
  display: flex;
  flex-direction: column;
  align-items: center;
@@ -16139,7 +16152,7 @@ const NEmpty = defineComponent({
   props: emptyProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Empty", "-empty", style$u, emptyLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Empty", "-empty", style$v, emptyLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
@@ -16230,7 +16243,7 @@ function fadeInTransition({
     opacity: 1
   })];
 }
-const style$t = cB("scrollbar", `
+const style$u = cB("scrollbar", `
  overflow: hidden;
  position: relative;
  z-index: auto;
@@ -16753,7 +16766,7 @@ const Scrollbar$1 = defineComponent({
       off("mousemove", window, handleYScrollMouseMove, true);
       off("mouseup", window, handleYScrollMouseUp, true);
     });
-    const themeRef = useTheme("Scrollbar", "-scrollbar", style$t, scrollbarLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Scrollbar", "-scrollbar", style$u, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
       return {
@@ -17099,7 +17112,7 @@ function fadeInScaleUpTransition({
     transform: `${originalTransform} scale(1)`
   })];
 }
-const style$s = cB("base-select-menu", `
+const style$t = cB("base-select-menu", `
  line-height: 1.5;
  outline: none;
  z-index: 0;
@@ -17268,7 +17281,7 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
-    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$s, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$t, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
     const scrollbarRef = ref(null);
@@ -17567,7 +17580,7 @@ const NInternalSelectMenu = defineComponent({
     );
   }
 });
-const style$r = cB("base-wave", `
+const style$s = cB("base-wave", `
  position: absolute;
  left: 0;
  right: 0;
@@ -17584,7 +17597,7 @@ const NBaseWave = defineComponent({
     }
   },
   setup(props) {
-    useStyle("-base-wave", style$r, toRef(props, "clsPrefix"));
+    useStyle("-base-wave", style$s, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const activeRef = ref(false);
     let animationTimerId = null;
@@ -17660,7 +17673,7 @@ const oppositePlacement = {
   right: "left"
 };
 const arrowSize = "var(--n-arrow-height) * 1.414";
-const style$q = c$1([cB("popover", `
+const style$r = c$1([cB("popover", `
  transition:
  box-shadow .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -17852,7 +17865,7 @@ const NPopoverBody = defineComponent({
   props: popoverBodyProps,
   setup(props, { slots, attrs }) {
     const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Popover", "-popover", style$q, popoverLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Popover", "-popover", style$r, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
     const bodyRef = ref(null);
@@ -18734,7 +18747,7 @@ const commonProps = {
     default: void 0
   }
 };
-const style$p = cB("tag", `
+const style$q = cB("tag", `
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -18837,7 +18850,7 @@ const NTag = defineComponent({
   setup(props) {
     const contentRef = ref(null);
     const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Tag", "-tag", style$p, tagLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tag", "-tag", style$q, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
@@ -18968,7 +18981,7 @@ const NTag = defineComponent({
     );
   }
 });
-const style$o = cB("base-clear", `
+const style$p = cB("base-clear", `
  flex-shrink: 0;
  height: 1em;
  width: 1em;
@@ -19008,7 +19021,7 @@ const NBaseClear = defineComponent({
     onClear: Function
   },
   setup(props) {
-    useStyle("-base-clear", style$o, toRef(props, "clsPrefix"));
+    useStyle("-base-clear", style$p, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
         e.preventDefault();
@@ -19228,7 +19241,7 @@ const internalSelectionDark = {
   }
 };
 const internalSelectionDark$1 = internalSelectionDark;
-const style$n = c$1([cB("base-selection", `
+const style$o = c$1([cB("base-selection", `
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -19468,7 +19481,7 @@ const NInternalSelection = defineComponent({
     const showTagsPopoverRef = ref(false);
     const patternInputFocusedRef = ref(false);
     const hoverRef = ref(false);
-    const themeRef = useTheme("InternalSelection", "-internal-selection", style$n, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelection", "-internal-selection", style$o, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
     const mergedClearableRef = computed(() => {
       return props.clearable && !props.disabled && (hoverRef.value || props.active);
     });
@@ -20273,7 +20286,7 @@ function fadeInHeightExpandTransition({
  ${originalTransition ? "," + originalTransition : ""}
  `)];
 }
-const style$m = cB("alert", `
+const style$n = cB("alert", `
  line-height: var(--n-line-height);
  border-radius: var(--n-border-radius);
  position: relative;
@@ -20372,7 +20385,7 @@ const NAlert = defineComponent({
   props: alertProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Alert", "-alert", style$m, alertLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Alert", "-alert", style$n, alertLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Alert", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -20839,7 +20852,7 @@ const WordCount = defineComponent({
     };
   }
 });
-const style$l = cB("input", `
+const style$m = cB("input", `
  max-width: 100%;
  cursor: text;
  line-height: 1.5;
@@ -21194,7 +21207,7 @@ const NInput = defineComponent({
   props: inputProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Input", "-input", style$l, inputLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Input", "-input", style$m, inputLight$1, props, mergedClsPrefixRef);
     if (isSafari) {
       useStyle("-input-safari", safariStyle, mergedClsPrefixRef);
     }
@@ -22039,7 +22052,7 @@ const NInput = defineComponent({
     );
   }
 });
-const style$k = cB("input-group", `
+const style$l = cB("input-group", `
  display: inline-flex;
  width: 100%;
  flex-wrap: nowrap;
@@ -22101,7 +22114,7 @@ const NInputGroup = defineComponent({
   props: inputGroupProps,
   setup(props) {
     const { mergedClsPrefixRef } = useConfig(props);
-    useStyle("-input-group", style$k, mergedClsPrefixRef);
+    useStyle("-input-group", style$l, mergedClsPrefixRef);
     return {
       mergedClsPrefix: mergedClsPrefixRef
     };
@@ -22511,7 +22524,7 @@ const buttonDark = {
   }
 };
 const buttonDark$1 = buttonDark;
-const style$j = c$1([cB("button", `
+const style$k = c$1([cB("button", `
  margin: 0;
  font-weight: var(--n-font-weight);
  line-height: 1;
@@ -22768,7 +22781,7 @@ const Button = defineComponent({
       enterPressedRef.value = false;
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Button", "-button", style$j, buttonLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Button", "-button", style$k, buttonLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Button", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const theme = themeRef.value;
@@ -23936,7 +23949,7 @@ const ColorPreview = defineComponent({
     );
   }
 });
-const style$i = c$1([cB("color-picker", `
+const style$j = c$1([cB("color-picker", `
  display: inline-block;
  box-sizing: border-box;
  height: var(--n-height);
@@ -24147,7 +24160,7 @@ const NColorPicker = defineComponent({
     const { mergedSizeRef, mergedDisabledRef } = formItem;
     const { localeRef } = useLocale("global");
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("ColorPicker", "-color-picker", style$i, colorPickerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("ColorPicker", "-color-picker", style$j, colorPickerLight$1, props, mergedClsPrefixRef);
     provide(colorPickerInjectionKey, {
       themeRef,
       renderLabelRef: toRef(props, "renderLabel"),
@@ -24605,7 +24618,7 @@ const cardDark = {
   }
 };
 const cardDark$1 = cardDark;
-const style$h = c$1([cB("card", `
+const style$i = c$1([cB("card", `
  font-size: var(--n-font-size);
  line-height: var(--n-line-height);
  display: flex;
@@ -24750,7 +24763,7 @@ const NCard = defineComponent({
         call(onClose);
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Card", "-card", style$h, cardLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Card", "-card", style$i, cardLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Card", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { size: size2 } = props;
@@ -25039,7 +25052,7 @@ const collapseDark = {
   self: self$S
 };
 const collapseDark$1 = collapseDark;
-const style$g = cB("collapse", "width: 100%;", [cB("collapse-item", `
+const style$h = cB("collapse", "width: 100%;", [cB("collapse-item", `
  font-size: var(--n-font-size);
  color: var(--n-text-color);
  transition:
@@ -25122,7 +25135,7 @@ const NCollapse = defineComponent({
     const uncontrolledExpandedNamesRef = ref(props.defaultExpandedNames);
     const controlledExpandedNamesRef = computed(() => props.expandedNames);
     const mergedExpandedNamesRef = useMergedState(controlledExpandedNamesRef, uncontrolledExpandedNamesRef);
-    const themeRef = useTheme("Collapse", "-collapse", style$g, collapseLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Collapse", "-collapse", style$h, collapseLight$1, props, mergedClsPrefixRef);
     function doUpdateExpandedNames(names) {
       const { "onUpdate:expandedNames": _onUpdateExpandedNames, onUpdateExpandedNames, onExpandedNamesChange } = props;
       if (onUpdateExpandedNames) {
@@ -25593,7 +25606,7 @@ const selectDark = {
   self: self$P
 };
 const selectDark$1 = selectDark;
-const style$f = c$1([cB("select", `
+const style$g = c$1([cB("select", `
  z-index: auto;
  outline: none;
  width: 100%;
@@ -25722,7 +25735,7 @@ const NSelect = defineComponent({
   props: selectProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Select", "-select", style$f, selectLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Select", "-select", style$g, selectLight$1, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -26800,7 +26813,7 @@ const iconDark$1 = {
   self: self$J
 };
 const iconDark$2 = iconDark$1;
-const style$e = cB("icon", `
+const style$f = cB("icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -26828,7 +26841,7 @@ const NIcon = defineComponent({
   props: iconProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Icon", "-icon", style$e, iconLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Icon", "-icon", style$f, iconLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { depth } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -27322,7 +27335,7 @@ const NDropdownMenu = defineComponent({
     );
   }
 });
-const style$d = cB("dropdown-menu", `
+const style$e = cB("dropdown-menu", `
  transform-origin: var(--v-transform-origin);
  background-color: var(--n-color);
  border-radius: var(--n-border-radius);
@@ -27550,7 +27563,7 @@ const NDropdown = defineComponent({
       }
     }, keyboardEnabledRef);
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Dropdown", "-dropdown", style$d, dropdownLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dropdown", "-dropdown", style$e, dropdownLight$1, props, mergedClsPrefixRef);
     provide(dropdownInjectionKey, {
       labelFieldRef: toRef(props, "labelField"),
       childrenFieldRef: toRef(props, "childrenField"),
@@ -28036,7 +28049,7 @@ const dialogProps = {
   onClose: Function
 };
 const dialogPropKeys = keysOf(dialogProps);
-const style$c = c$1([cB("dialog", `
+const style$d = c$1([cB("dialog", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: relative;
@@ -28144,7 +28157,7 @@ const NDialog = defineComponent({
       if (onClose)
         onClose();
     }
-    const themeRef = useTheme("Dialog", "-dialog", style$c, dialogLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dialog", "-dialog", style$d, dialogLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const iconPlacement = mergedIconPlacementRef.value;
@@ -28470,7 +28483,7 @@ const NModalBodyWrapper = defineComponent({
     ]) : null;
   }
 });
-const style$b = c$1([cB("modal-container", `
+const style$c = c$1([cB("modal-container", `
  position: fixed;
  left: 0;
  top: 0;
@@ -28562,7 +28575,7 @@ const NModal = defineComponent({
   setup(props) {
     const containerRef = ref(null);
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Modal", "-modal", style$b, modalLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Modal", "-modal", style$c, modalLight$1, props, mergedClsPrefixRef);
     const clickedRef = useClicked(64);
     const clickedPositionRef = useClickPosition();
     const isMountedRef = isMounted();
@@ -28752,7 +28765,7 @@ const dividerDark = {
   self: self$D
 };
 const dividerDark$1 = dividerDark;
-const style$a = cB("divider", `
+const style$b = cB("divider", `
  position: relative;
  display: flex;
  width: 100%;
@@ -28813,7 +28826,7 @@ const NDivider = defineComponent({
   props: dividerProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Divider", "-divider", style$a, dividerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Divider", "-divider", style$b, dividerLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { color, textColor, fontWeight } } = themeRef.value;
       return {
@@ -29209,7 +29222,7 @@ function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s"
     })
   ];
 }
-const style$9 = c$1([cB("drawer", `
+const style$a = c$1([cB("drawer", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: absolute;
@@ -29419,7 +29432,7 @@ const NDrawer = defineComponent({
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
     const isMountedRef = isMounted();
-    const themeRef = useTheme("Drawer", "-drawer", style$9, drawerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Drawer", "-drawer", style$a, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
     const uncontrolledHeightRef = ref(props.defaultHeight);
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
@@ -31623,7 +31636,7 @@ const positionProp = {
   type: String,
   default: "static"
 };
-const style$8 = cB("layout", `
+const style$9 = cB("layout", `
  color: var(--n-text-color);
  background-color: var(--n-color);
  box-sizing: border-box;
@@ -31674,7 +31687,7 @@ function createLayoutComponent(isContent) {
       const scrollableElRef = ref(null);
       const scrollbarInstRef = ref(null);
       const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-      const themeRef = useTheme("Layout", "-layout", style$8, layoutLight$1, props, mergedClsPrefixRef);
+      const themeRef = useTheme("Layout", "-layout", style$9, layoutLight$1, props, mergedClsPrefixRef);
       function scrollTo(options, y) {
         if (props.nativeScrollbar) {
           const { value: scrollableEl } = scrollableElRef;
@@ -31759,7 +31772,7 @@ function createLayoutComponent(isContent) {
   });
 }
 const NLayout = createLayoutComponent(false);
-const style$7 = cB("layout-sider", `
+const style$8 = cB("layout-sider", `
  flex-shrink: 0;
  box-sizing: border-box;
  position: relative;
@@ -32063,7 +32076,7 @@ const NLayoutSider = defineComponent({
       collapseModeRef: toRef(props, "collapseMode")
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Layout", "-layout-sider", style$7, layoutLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Layout", "-layout-sider", style$8, layoutLight$1, props, mergedClsPrefixRef);
     function handleTransitionend(e) {
       var _a2, _b;
       if (e.propertyName === "max-width") {
@@ -32245,6 +32258,298 @@ const transferLight = createTheme({
   self: self$3
 });
 const legacyTransferLight = transferLight;
+const loadingBarProviderInjectionKey = createInjectionKey("n-loading-bar");
+const loadingBarApiInjectionKey = createInjectionKey("n-loading-bar-api");
+const style$7 = cB("loading-bar-container", `
+ z-index: 5999;
+ position: fixed;
+ top: 0;
+ left: 0;
+ right: 0;
+ height: 2px;
+`, [fadeInTransition({
+  enterDuration: "0.3s",
+  leaveDuration: "0.8s"
+}), cB("loading-bar", `
+ width: 100%;
+ transition:
+ max-width 4s linear,
+ background .2s linear;
+ height: var(--n-height);
+ `, [cM("starting", `
+ background: var(--n-color-loading);
+ `), cM("finishing", `
+ background: var(--n-color-loading);
+ transition:
+ max-width .2s linear,
+ background .2s linear;
+ `), cM("error", `
+ background: var(--n-color-error);
+ transition:
+ max-width .2s linear,
+ background .2s linear;
+ `)])]);
+var __awaiter = globalThis && globalThis.__awaiter || function(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function(resolve2) {
+      resolve2(value);
+    });
+  }
+  return new (P || (P = Promise))(function(resolve2, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function step(result) {
+      result.done ? resolve2(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+function createClassName(status, clsPrefix) {
+  return `${clsPrefix}-loading-bar ${clsPrefix}-loading-bar--${status}`;
+}
+const NLoadingBar = defineComponent({
+  name: "LoadingBar",
+  props: {
+    containerStyle: [String, Object]
+  },
+  setup() {
+    const { inlineThemeDisabled } = useConfig();
+    const {
+      props: providerProps,
+      mergedClsPrefixRef
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    } = inject(loadingBarProviderInjectionKey);
+    const loadingBarRef = ref(null);
+    const enteringRef = ref(false);
+    const startedRef = ref(false);
+    const loadingRef = ref(false);
+    const transitionDisabledRef = ref(false);
+    let finishing = false;
+    const erroringRef = ref(false);
+    const mergedLoadingBarStyle = computed(() => {
+      const { loadingBarStyle } = providerProps;
+      if (!loadingBarStyle)
+        return "";
+      return loadingBarStyle[erroringRef.value ? "error" : "loading"];
+    });
+    function init2() {
+      return __awaiter(this, void 0, void 0, function* () {
+        enteringRef.value = false;
+        loadingRef.value = false;
+        finishing = false;
+        erroringRef.value = false;
+        transitionDisabledRef.value = true;
+        yield nextTick();
+        transitionDisabledRef.value = false;
+      });
+    }
+    function start(fromProgress = 0, toProgress = 80, status = "starting") {
+      return __awaiter(this, void 0, void 0, function* () {
+        yield init2();
+        loadingRef.value = true;
+        startedRef.value = true;
+        yield nextTick();
+        const el = loadingBarRef.value;
+        if (!el)
+          return;
+        el.style.maxWidth = `${fromProgress}%`;
+        el.style.transition = "none";
+        void el.offsetWidth;
+        el.className = createClassName(status, mergedClsPrefixRef.value);
+        el.style.transition = "";
+        el.style.maxWidth = `${toProgress}%`;
+      });
+    }
+    function finish() {
+      if (finishing || erroringRef.value || !loadingRef.value)
+        return;
+      finishing = true;
+      const el = loadingBarRef.value;
+      if (!el)
+        return;
+      el.className = createClassName("finishing", mergedClsPrefixRef.value);
+      el.style.maxWidth = "100%";
+      void el.offsetWidth;
+      loadingRef.value = false;
+    }
+    function error() {
+      if (finishing || erroringRef.value)
+        return;
+      if (!loadingRef.value) {
+        void start(100, 100, "error").then(() => {
+          erroringRef.value = true;
+          const el = loadingBarRef.value;
+          if (!el)
+            return;
+          el.className = createClassName("error", mergedClsPrefixRef.value);
+          void el.offsetWidth;
+          loadingRef.value = false;
+        });
+      } else {
+        erroringRef.value = true;
+        const el = loadingBarRef.value;
+        if (!el)
+          return;
+        el.className = createClassName("error", mergedClsPrefixRef.value);
+        el.style.maxWidth = "100%";
+        void el.offsetWidth;
+        loadingRef.value = false;
+      }
+    }
+    function handleEnter() {
+      enteringRef.value = true;
+    }
+    function handleAfterEnter() {
+      enteringRef.value = false;
+    }
+    function handleAfterLeave() {
+      return __awaiter(this, void 0, void 0, function* () {
+        yield init2();
+      });
+    }
+    const themeRef = useTheme("LoadingBar", "-loading-bar", style$7, loadingBarLight$1, providerProps, mergedClsPrefixRef);
+    const cssVarsRef = computed(() => {
+      const { self: { height, colorError, colorLoading } } = themeRef.value;
+      return {
+        "--n-height": height,
+        "--n-color-loading": colorLoading,
+        "--n-color-error": colorError
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("loading-bar", void 0, cssVarsRef, providerProps) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      loadingBarRef,
+      started: startedRef,
+      loading: loadingRef,
+      entering: enteringRef,
+      transitionDisabled: transitionDisabledRef,
+      start,
+      error,
+      finish,
+      handleEnter,
+      handleAfterEnter,
+      handleAfterLeave,
+      mergedLoadingBarStyle,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    if (!this.started)
+      return null;
+    const { mergedClsPrefix } = this;
+    return h(Transition, {
+      name: "fade-in-transition",
+      appear: true,
+      onEnter: this.handleEnter,
+      onAfterEnter: this.handleAfterEnter,
+      // eslint-disable-next-line @typescript-eslint/no-misused-promises
+      onAfterLeave: this.handleAfterLeave,
+      css: !this.transitionDisabled
+    }, {
+      default: () => {
+        var _a2;
+        (_a2 = this.onRender) === null || _a2 === void 0 ? void 0 : _a2.call(this);
+        return withDirectives(h(
+          "div",
+          { class: [
+            `${mergedClsPrefix}-loading-bar-container`,
+            this.themeClass
+          ], style: this.containerStyle },
+          h("div", { ref: "loadingBarRef", class: [`${mergedClsPrefix}-loading-bar`], style: [
+            this.cssVars,
+            this.mergedLoadingBarStyle
+          ] })
+        ), [[vShow, this.loading || !this.loading && this.entering]]);
+      }
+    });
+  }
+});
+const loadingBarProviderProps = Object.assign(Object.assign({}, useTheme.props), { to: {
+  type: [String, Object, Boolean],
+  default: void 0
+}, containerStyle: [String, Object], loadingBarStyle: {
+  type: Object
+} });
+const NLoadingBarProvider = defineComponent({
+  name: "LoadingBarProvider",
+  props: loadingBarProviderProps,
+  setup(props) {
+    const isMountedRef = isMounted();
+    const loadingBarRef = ref(null);
+    const methods = {
+      start() {
+        var _a2;
+        if (isMountedRef.value) {
+          (_a2 = loadingBarRef.value) === null || _a2 === void 0 ? void 0 : _a2.start();
+        } else {
+          void nextTick(() => {
+            var _a3;
+            (_a3 = loadingBarRef.value) === null || _a3 === void 0 ? void 0 : _a3.start();
+          });
+        }
+      },
+      error() {
+        var _a2;
+        if (isMountedRef.value) {
+          (_a2 = loadingBarRef.value) === null || _a2 === void 0 ? void 0 : _a2.error();
+        } else {
+          void nextTick(() => {
+            var _a3;
+            (_a3 = loadingBarRef.value) === null || _a3 === void 0 ? void 0 : _a3.error();
+          });
+        }
+      },
+      finish() {
+        var _a2;
+        if (isMountedRef.value) {
+          (_a2 = loadingBarRef.value) === null || _a2 === void 0 ? void 0 : _a2.finish();
+        } else {
+          void nextTick(() => {
+            var _a3;
+            (_a3 = loadingBarRef.value) === null || _a3 === void 0 ? void 0 : _a3.finish();
+          });
+        }
+      }
+    };
+    const { mergedClsPrefixRef } = useConfig(props);
+    provide(loadingBarApiInjectionKey, methods);
+    provide(loadingBarProviderInjectionKey, {
+      props,
+      mergedClsPrefixRef
+    });
+    return Object.assign(methods, {
+      loadingBarRef
+    });
+  },
+  render() {
+    var _a2, _b;
+    return h(
+      Fragment,
+      null,
+      h(
+        Teleport,
+        { disabled: this.to === false, to: this.to || "body" },
+        h(NLoadingBar, { ref: "loadingBarRef", containerStyle: this.containerStyle })
+      ),
+      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)
+    );
+  }
+});
 const menuInjectionKey = createInjectionKey("n-menu");
 const submenuInjectionKey = createInjectionKey("n-submenu");
 const menuItemGroupInjectionKey = createInjectionKey("n-menu-item-group");
@@ -40575,7 +40880,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-37b1913e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-18a00c0d"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40595,7 +40900,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "2ac8c8e2": backgroundColor.value
+      "7ea1c782": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40611,6 +40916,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const pyTorchModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "PyTorch" && model.valid === true;
+      }).sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      });
+    });
+    const sdxlModels = computed(() => {
+      return filteredModels.value.filter((model) => {
+        return model.backend === "SDXL";
       }).sort((a, b) => {
         return a.name.localeCompare(b.name);
       });
@@ -41358,6 +41670,56 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
+                      createVNode(unref(NTabPane), { name: "SDXL" }, {
+                        default: withCtx(() => [
+                          createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
+                            default: withCtx(() => [
+                              createVNode(unref(NCard), {
+                                title: "Models",
+                                style: { "height": "100%" }
+                              }, {
+                                default: withCtx(() => [
+                                  (openBlock(true), createElementBlock(Fragment, null, renderList(sdxlModels.value, (model) => {
+                                    return openBlock(), createElementBlock("div", {
+                                      style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                                      key: model.path
+                                    }, [
+                                      createBaseVNode("p", null, toDisplayString(model.name), 1),
+                                      createBaseVNode("div", null, [
+                                        model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
+                                          key: 0,
+                                          type: "error",
+                                          ghost: "",
+                                          onClick: ($event) => unloadModel(model)
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode("Unload ")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
+                                          key: 1,
+                                          type: "success",
+                                          ghost: "",
+                                          onClick: ($event) => loadModel(model),
+                                          loading: model.state === "loading"
+                                        }, {
+                                          default: withCtx(() => [
+                                            createTextVNode(" Load")
+                                          ]),
+                                          _: 2
+                                        }, 1032, ["onClick", "loading"]))
+                                      ])
+                                    ]);
+                                  }), 128))
+                                ]),
+                                _: 1
+                              })
+                            ]),
+                            _: 1
+                          })
+                        ]),
+                        _: 1
+                      }),
                       createVNode(unref(NTabPane), { name: "ONNX" }, {
                         default: withCtx(() => [
                           createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
@@ -41480,7 +41842,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_37b1913e_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_18a00c0d_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41488,7 +41850,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-37b1913e"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-18a00c0d"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -41499,11 +41861,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "1d19c67b": backgroundColor.value,
-      "12b62b62": theme.value.common.popoverColor,
-      "753630fc": theme.value.common.borderRadius,
-      "53c6c405": theme.value.common.pressedColor,
-      "e7594bd2": theme.value.common.primaryColorHover
+      "29cef8cc": backgroundColor.value,
+      "4a43647e": theme.value.common.popoverColor,
+      "e4e5ec3e": theme.value.common.borderRadius,
+      "1beee664": theme.value.common.pressedColor,
+      "440cdb18": theme.value.common.primaryColorHover
     }));
     const settings = useSettings();
     const theme = computed(() => {
@@ -41541,13 +41903,18 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             max: 3
           }, {
             default: withCtx(() => [
-              createVNode(unref(NMessageProvider), null, {
+              createVNode(unref(NLoadingBarProvider), null, {
                 default: withCtx(() => [
-                  createVNode(_sfc_main$3),
-                  createVNode(_sfc_main$5),
-                  createVNode(TopBarVue),
-                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
-                  createVNode(_sfc_main$4)
+                  createVNode(unref(NMessageProvider), null, {
+                    default: withCtx(() => [
+                      createVNode(_sfc_main$3),
+                      createVNode(_sfc_main$5),
+                      createVNode(TopBarVue),
+                      createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
+                      createVNode(_sfc_main$4)
+                    ]),
+                    _: 1
+                  })
                 ]),
                 _: 1
               })
@@ -41611,12 +41978,12 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/clock.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
@@ -41626,7 +41993,7 @@ const router = createRouter({
     {
       path: "/models",
       name: "models",
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Slider.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
     },
     {
       path: "/about",
@@ -41646,12 +42013,12 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/clock.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
     },
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/Slider.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/GridOutline.js","assets/TrashBin.js","assets/Slider.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
     },
     {
       path: "/tagger",
@@ -41667,7 +42034,7 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  cM as $,
+  onMounted as $,
   pushScopeId as A,
   popScopeId as B,
   resolveComponent as C,
@@ -41677,137 +42044,149 @@ export {
   NIcon as G,
   NTabPane as H,
   NTabs as I,
-  watch as J,
-  upscalerOptions as K,
-  Fragment as L,
-  renderList as M,
+  upscalerOptions as J,
+  Fragment as K,
+  renderList as L,
+  NScrollbar as M,
   NGi as N,
-  NScrollbar as O,
-  replaceable as P,
-  useConfig as Q,
-  useFormItem as R,
-  useMergedState as S,
+  upperFirst$1 as O,
+  toString as P,
+  createCompounder as Q,
+  replaceable as R,
+  cloneVNode as S,
   provide as T,
-  toRef as U,
-  createInjectionKey as V,
-  call as W,
-  c$1 as X,
-  cB as Y,
-  cE as Z,
+  createInjectionKey as U,
+  inject as V,
+  throwError as W,
+  useConfig as X,
+  onBeforeUpdate as Y,
+  indexMap as Z,
   _export_sfc as _,
   useSettings as a,
-  AddIcon as a$,
-  iconSwitchTransition as a0,
-  insideModal as a1,
-  insidePopover as a2,
-  inject as a3,
-  useMemo as a4,
-  useTheme as a5,
-  checkboxLight$1 as a6,
-  useRtl as a7,
-  createKey as a8,
-  useThemeClass as a9,
-  radioLight$1 as aA,
-  resolveWrappedSlot as aB,
-  flatten$2 as aC,
-  getSlot$1 as aD,
-  depx as aE,
-  formatLength as aF,
-  NScrollbar$1 as aG,
-  onBeforeUnmount as aH,
-  off as aI,
-  ChevronDownIcon as aJ,
-  NDropdown as aK,
-  pxfy as aL,
-  get as aM,
-  NBaseLoading as aN,
-  ChevronRightIcon as aO,
-  VResizeObserver as aP,
-  warn$2 as aQ,
-  VVirtualList as aR,
-  NEmpty as aS,
-  cssrAnchorMetaName as aT,
-  repeat as aU,
-  beforeNextFrameOnce as aV,
-  fadeInScaleUpTransition as aW,
-  Transition as aX,
-  dataTableLight$1 as aY,
-  throwError as aZ,
-  isBrowser$3 as a_,
-  createId as aa,
-  NIconSwitchTransition as ab,
-  on as ac,
-  popselectLight$1 as ad,
-  NInternalSelectMenu as ae,
-  createTreeMate as af,
-  happensIn as ag,
-  nextTick as ah,
-  keysOf as ai,
-  createTmOptions as aj,
-  keep as ak,
-  createRefSetter as al,
-  mergeEventHandlers as am,
-  omit as an,
-  NPopover as ao,
-  popoverBaseProps as ap,
-  cNotM as aq,
-  useLocale as ar,
-  watchEffect as as,
-  resolveSlot as at,
-  NBaseIcon as au,
-  useAdjustedTo as av,
-  paginationLight$1 as aw,
-  ellipsisLight$1 as ax,
-  onDeactivated as ay,
-  mergeProps as az,
+  NDropdown as a$,
+  onBeforeUnmount as a0,
+  cB as a1,
+  cE as a2,
+  c$1 as a3,
+  cM as a4,
+  useMergedState as a5,
+  toRef as a6,
+  watchEffect as a7,
+  onUpdated as a8,
+  watch as a9,
+  popselectLight$1 as aA,
+  NInternalSelectMenu as aB,
+  createTreeMate as aC,
+  happensIn as aD,
+  keysOf as aE,
+  createTmOptions as aF,
+  createRefSetter as aG,
+  mergeEventHandlers as aH,
+  omit as aI,
+  NPopover as aJ,
+  popoverBaseProps as aK,
+  cNotM as aL,
+  useLocale as aM,
+  resolveSlot as aN,
+  NBaseIcon as aO,
+  useAdjustedTo as aP,
+  paginationLight$1 as aQ,
+  ellipsisLight$1 as aR,
+  onDeactivated as aS,
+  mergeProps as aT,
+  radioLight$1 as aU,
+  resolveWrappedSlot as aV,
+  getSlot$1 as aW,
+  depx as aX,
+  formatLength as aY,
+  NScrollbar$1 as aZ,
+  ChevronDownIcon as a_,
+  useTheme as aa,
+  useThemeClass as ab,
+  flatten$2 as ac,
+  VResizeObserver as ad,
+  resolveSlotWithProps as ae,
+  withDirectives as af,
+  vShow as ag,
+  Transition as ah,
+  keep as ai,
+  off as aj,
+  carouselLight$1 as ak,
+  normalizeStyle as al,
+  getPreciseEventTarget as am,
+  on as an,
+  nextTick as ao,
+  useFormItem as ap,
+  call as aq,
+  iconSwitchTransition as ar,
+  insideModal as as,
+  insidePopover as at,
+  useMemo as au,
+  checkboxLight$1 as av,
+  useRtl as aw,
+  createKey as ax,
+  createId as ay,
+  NIconSwitchTransition as az,
   useMessage as b,
-  NProgress as b0,
-  NFadeInExpandTransition as b1,
-  EyeIcon as b2,
-  fadeInHeightExpandTransition as b3,
-  Teleport as b4,
-  uploadLight$1 as b5,
-  NResult as b6,
-  reactive as b7,
-  huggingfaceModelsFile as b8,
-  NModal as b9,
-  NAlert as bA,
-  inputNumberLight$1 as bB,
-  rgba as bC,
-  XButton as bD,
-  isSlotEmpty as bE,
-  switchLight$1 as bF,
-  onBeforeUpdate as bG,
-  VBinder as bH,
-  VTarget as bI,
-  VFollower as bJ,
-  sliderLight$1 as bK,
-  NText as ba,
-  stepsLight$1 as bb,
-  FinishedIcon as bc,
-  ErrorIcon$1 as bd,
-  getCurrentInstance as be,
-  formLight$1 as bf,
-  commonVariables$m as bg,
-  formItemInjectionKey as bh,
-  onMounted as bi,
-  useNotification as bj,
-  defaultSettings as bk,
-  useCssVars as bl,
-  urlFromPath as bm,
-  useCompitable as bn,
-  descriptionsLight$1 as bo,
-  useRouter as bp,
-  fadeInTransition as bq,
-  imageLight as br,
-  isMounted as bs,
-  LazyTeleport as bt,
-  withDirectives as bu,
-  zindexable$1 as bv,
-  vShow as bw,
-  normalizeStyle as bx,
-  kebabCase$1 as by,
-  withModifiers as bz,
+  pxfy as b0,
+  get as b1,
+  NBaseLoading as b2,
+  ChevronRightIcon as b3,
+  warn$2 as b4,
+  VVirtualList as b5,
+  NEmpty as b6,
+  cssrAnchorMetaName as b7,
+  repeat as b8,
+  beforeNextFrameOnce as b9,
+  useNotification as bA,
+  defaultSettings as bB,
+  urlFromPath as bC,
+  useRouter as bD,
+  useCompitable as bE,
+  descriptionsLight$1 as bF,
+  fadeInTransition as bG,
+  imageLight as bH,
+  isMounted as bI,
+  LazyTeleport as bJ,
+  zindexable$1 as bK,
+  kebabCase$1 as bL,
+  withModifiers as bM,
+  NAlert as bN,
+  inputNumberLight$1 as bO,
+  rgba as bP,
+  XButton as bQ,
+  isSlotEmpty as bR,
+  switchLight$1 as bS,
+  VBinder as bT,
+  VTarget as bU,
+  VFollower as bV,
+  sliderLight$1 as bW,
+  fadeInScaleUpTransition as ba,
+  dataTableLight$1 as bb,
+  loadingBarApiInjectionKey as bc,
+  rateLight as bd,
+  color2Class as be,
+  isBrowser$3 as bf,
+  AddIcon as bg,
+  NProgress as bh,
+  NFadeInExpandTransition as bi,
+  EyeIcon as bj,
+  fadeInHeightExpandTransition as bk,
+  Teleport as bl,
+  uploadLight$1 as bm,
+  reactive as bn,
+  NTag as bo,
+  NModal as bp,
+  useCssVars as bq,
+  huggingfaceModelsFile as br,
+  NText as bs,
+  stepsLight$1 as bt,
+  FinishedIcon as bu,
+  ErrorIcon$1 as bv,
+  getCurrentInstance as bw,
+  formLight$1 as bx,
+  commonVariables$m as by,
+  formItemInjectionKey as bz,
   computed as c,
   defineComponent as d,
   openBlock as e,

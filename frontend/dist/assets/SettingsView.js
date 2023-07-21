@@ -1,4 +1,5 @@
-import { a3 as inject, be as getCurrentInstance, J as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, T as provide, D as h, bf as formLight, ai as keysOf, c as computed, aF as formatLength, aM as get, bg as commonVariables, Z as cE, U as toRef, aa as createId, bh as formItemInjectionKey, bi as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, f as createElementBlock, x as createCommentVNode, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, b as useMessage, bj as useNotification, F as NButton, m as createTextVNode, bk as defaultSettings, s as serverUrl } from "./index.js";
+import { B as BurnerClock } from "./clock.js";
+import { V as inject, bw as getCurrentInstance, a9 as watch, a0 as onBeforeUnmount, a1 as cB, a4 as cM, a3 as c, U as createInjectionKey, d as defineComponent, X as useConfig, aa as useTheme, E as ref, T as provide, D as h, bx as formLight, aE as keysOf, c as computed, aY as formatLength, b1 as get, by as commonVariables, a2 as cE, a6 as toRef, ay as createId, bz as formItemInjectionKey, $ as onMounted, ab as useThemeClass, ah as Transition, aV as resolveWrappedSlot, ax as createKey, b4 as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, f as createElementBlock, x as createCommentVNode, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, b as useMessage, bA as useNotification, o as onUnmounted, s as serverUrl, F as NButton, m as createTextVNode, bB as defaultSettings } from "./index.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSlider } from "./Slider.js";
@@ -3188,6 +3189,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const message = useMessage();
     const settings = useSettings();
     const notification = useNotification();
+    const saving = ref(false);
     function resetSettings() {
       Object.assign(
         settings.defaultSettings,
@@ -3198,7 +3200,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       );
     }
     function saveSettings() {
-      console.log(settings.defaultSettings);
+      saving.value = true;
       fetch(`${serverUrl}/api/settings/save`, {
         method: "POST",
         headers: {
@@ -3218,8 +3220,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             });
           });
         }
+        saving.value = false;
       });
     }
+    const conf = useSettings();
+    const burner = new BurnerClock(
+      conf.defaultSettings,
+      conf,
+      saveSettings,
+      3e3,
+      false
+    );
+    onUnmounted(() => {
+      burner.cleanup();
+    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [
         createVNode(unref(NCard), null, {
@@ -3240,13 +3254,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NButton), {
                   type: "success",
                   ghost: "",
-                  onClick: saveSettings
+                  onClick: saveSettings,
+                  loading: saving.value
                 }, {
                   default: withCtx(() => [
                     createTextVNode("Save Settings")
                   ]),
                   _: 1
-                })
+                }, 8, ["loading"])
               ]),
               default: withCtx(() => [
                 createVNode(unref(NTabPane), { name: "Frontend" }, {

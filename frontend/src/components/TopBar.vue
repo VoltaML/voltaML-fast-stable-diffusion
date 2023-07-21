@@ -283,6 +283,43 @@
                 </NCard>
               </NScrollbar>
             </NTabPane>
+            <NTabPane name="SDXL">
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in sdxlModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload
+                      </NButton>
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                      >
+                        Load</NButton
+                      >
+                    </div>
+                  </div>
+                </NCard>
+              </NScrollbar>
+            </NTabPane>
             <NTabPane name="ONNX">
               <NScrollbar style="height: 70vh">
                 <NCard title="Models" style="height: 100%">
@@ -432,6 +469,16 @@ const pyTorchModels = computed(() => {
   return filteredModels.value
     .filter((model) => {
       return model.backend === "PyTorch" && model.valid === true;
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
+});
+
+const sdxlModels = computed(() => {
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "SDXL";
     })
     .sort((a, b) => {
       return a.name.localeCompare(b.name);

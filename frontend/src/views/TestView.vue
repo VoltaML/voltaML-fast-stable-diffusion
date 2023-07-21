@@ -1,7 +1,3 @@
-<template>
-  <ModelPopup :model="model" />
-</template>
-
 <script setup lang="ts">
 import ModelPopup from "@/components/models/ModelPopup.vue";
 import { ref } from "vue";

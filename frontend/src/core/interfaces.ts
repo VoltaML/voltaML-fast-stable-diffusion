@@ -20,6 +20,7 @@ export interface ModelEntry {
   path: string;
   backend:
     | "PyTorch"
+    | "SDXL"
     | "AITemplate"
     | "ONNX"
     | "unknown"

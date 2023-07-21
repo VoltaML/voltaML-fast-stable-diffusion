@@ -239,6 +239,7 @@ def get_unweighted_text_embeddings(
     it should be split into chunks and sent to the text encoder individually.
     """
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
+    hidden_states = None
 
     if max_embeddings_multiples > 1:
         text_embeddings = []
@@ -254,7 +255,9 @@ def get_unweighted_text_embeddings(
             if hasattr(pipe, "clip_inference"):
                 text_embedding = pipe.clip_inference(text_input_chunk)
             else:
-                text_embedding = pipe.text_encoder(text_input_chunk)[0]  # type: ignore
+                text_embedding = pipe.text_encoder(text_input_chunk, output_hidden_states=True)  # type: ignore
+                hidden_states = text_embedding.hidden_states[-2]
+                text_embedding = text_embedding[0]  # type: ignore
 
             if no_boseos_middle:
                 if i == 0:
@@ -273,7 +276,10 @@ def get_unweighted_text_embeddings(
         if hasattr(pipe, "clip_inference"):
             text_embeddings = pipe.clip_inference(text_input)
         else:
-            text_embeddings = pipe.text_encoder(text_input)[0]  # type: ignore
+            text_embeddings = pipe.text_encoder(text_input, output_hidden_states=True)  # type: ignore
+            hidden_states = text_embeddings.hidden_states[-2]
+            text_embeddings = text_embeddings[0]  # type: ignore
+    text_embeddings.hidden_states = hidden_states
     return text_embeddings
 
 
