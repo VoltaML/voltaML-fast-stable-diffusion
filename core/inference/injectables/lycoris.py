@@ -505,7 +505,7 @@ def _rebuild_weight(module, orig_weight: torch.Tensor, dyn_dim: int = None) -> t
             output_shape.reverse()
         else:
             module.w = module.w.reshape(-1, 1)
-        updown = orig_weight * module.w
+        updown = orig_weight * module.w.to(orig_weight.device, dtype=orig_weight.dtype)
 
     elif module.__class__.__name__ == "LycoKronModule":
         if module.w1 is not None:
