@@ -413,27 +413,16 @@ def load_pytorch_pipeline(
         with console.status(
             f"[bold green]Loading model from {'HuggingFace Hub' if '/' in model_id_or_path else 'HuggingFace model'}..."
         ):
-            if (get_full_model_path(model_id_or_path) / "sdxl.txt").exists():
-                from diffusers import StableDiffusionXLPipeline
+            from diffusers import DiffusionPipeline
 
-                pipe = StableDiffusionXLPipeline.from_pretrained(
-                    pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-                    torch_dtype=config.api.dtype,
-                    use_safetensors=True,
-                    safety_checker=None,
-                    requires_safety_checker=False,
-                    feature_extractor=None,
-                    low_cpu_mem_usage=True,
-                )
-            else:
-                pipe = StableDiffusionPipeline.from_pretrained(
-                    pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-                    torch_dtype=config.api.dtype,
-                    safety_checker=None,
-                    requires_safety_checker=False,
-                    feature_extractor=None,
-                    low_cpu_mem_usage=True,
-                )
+            pipe = DiffusionPipeline.from_pretrained(
+                pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
+                torch_dtype=config.api.dtype,
+                safety_checker=None,
+                requires_safety_checker=False,
+                feature_extractor=None,
+                low_cpu_mem_usage=True,
+            )
             # assert isinstance(pipe, StableDiffusionPipeline)
 
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
