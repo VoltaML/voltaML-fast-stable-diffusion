@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import torch
-from diffusers import StableDiffusionPipeline
+from diffusers import StableDiffusionPipeline, DiffusionPipeline
 
 from ...config import config
 from ...files import get_full_model_path
@@ -233,54 +233,88 @@ def get_unweighted_text_embeddings(
     text_input: torch.Tensor,
     chunk_length: int,
     no_boseos_middle: Optional[bool] = True,
-):
+) -> Tuple[torch.Tensor, torch.Tensor]:
     """
     When the length of tokens is a multiple of the capacity of the text encoder,
     it should be split into chunks and sent to the text encoder individually.
     """
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
-    hidden_states = None
+    if isinstance(pipe, DiffusionPipeline):
+        if max_embeddings_multiples > 1:
+            text_embeddings = []
+            for i in range(max_embeddings_multiples):
+                # extract the i-th chunk
+                text_input_chunk = text_input[
+                    :, i * (chunk_length - 2) : (i + 1) * (chunk_length - 2) + 2
+                ].clone()
 
-    if max_embeddings_multiples > 1:
-        text_embeddings = []
-        for i in range(max_embeddings_multiples):
-            # extract the i-th chunk
-            text_input_chunk = text_input[
-                :, i * (chunk_length - 2) : (i + 1) * (chunk_length - 2) + 2
-            ].clone()
-
-            # cover the head and the tail by the starting and the ending tokens
-            text_input_chunk[:, 0] = text_input[0, 0]
-            text_input_chunk[:, -1] = text_input[0, -1]
-            if hasattr(pipe, "clip_inference"):
-                text_embedding = pipe.clip_inference(text_input_chunk)
-            else:
-                text_embedding = pipe.text_encoder(text_input_chunk, output_hidden_states=True)  # type: ignore
-                hidden_states = text_embedding.hidden_states[-2]
-                text_embedding = text_embedding[0]  # type: ignore
-
-            if no_boseos_middle:
-                if i == 0:
-                    # discard the ending token
-                    text_embedding = text_embedding[:, :-1]
-                elif i == max_embeddings_multiples - 1:
-                    # discard the starting token
-                    text_embedding = text_embedding[:, 1:]
+                # cover the head and the tail by the starting and the ending tokens
+                text_input_chunk[:, 0] = text_input[0, 0]
+                text_input_chunk[:, -1] = text_input[0, -1]
+                if hasattr(pipe, "clip_inference"):
+                    text_embedding = pipe.clip_inference(text_input_chunk)
                 else:
-                    # discard both starting and ending tokens
-                    text_embedding = text_embedding[:, 1:-1]
+                    text_embedding = pipe.text_encoder(text_input_chunk)[0]  # type: ignore
 
-            text_embeddings.append(text_embedding)
-        text_embeddings = torch.concat(text_embeddings, axis=1)  # type: ignore
-    else:
-        if hasattr(pipe, "clip_inference"):
-            text_embeddings = pipe.clip_inference(text_input)
+                if no_boseos_middle:
+                    if i == 0:
+                        # discard the ending token
+                        text_embedding = text_embedding[:, :-1]
+                    elif i == max_embeddings_multiples - 1:
+                        # discard the starting token
+                        text_embedding = text_embedding[:, 1:]
+                    else:
+                        # discard both starting and ending tokens
+                        text_embedding = text_embedding[:, 1:-1]
+
+                text_embeddings.append(text_embedding)
+            text_embeddings = torch.concat(text_embeddings, axis=1)  # type: ignore
         else:
-            text_embeddings = pipe.text_encoder(text_input, output_hidden_states=True)  # type: ignore
-            hidden_states = text_embeddings.hidden_states[-2]
-            text_embeddings = text_embeddings[0]  # type: ignore
-    text_embeddings.hidden_states = hidden_states
-    return text_embeddings
+            if hasattr(pipe, "clip_inference"):
+                text_embeddings = pipe.clip_inference(text_input)
+            else:
+                text_embeddings = pipe.text_encoder(text_input)[0]  # type: ignore
+        return text_embeddings, None  # type: ignore
+    else:
+        if max_embeddings_multiples > 1:
+            text_embeddings = []
+            hidden_states = []
+            for i in range(max_embeddings_multiples):
+                text_input_chunk = text_input[
+                    :, i * (chunk_length - 2) : (i + 1) * (chunk_length - 2) + 2
+                ].clone()
+
+                text_input_chunk[:, 0] = text_input[0, 0]
+                text_input_chunk[:, -1] = text_input[0, -1]
+                text_embedding = pipe.text_encoder(
+                    text_input_chunk, output_hidden_states=True
+                )
+
+                if no_boseos_middle:
+                    if i == 0:
+                        text_embedding.hidden_states[-2] = text_embedding.hidden_states[
+                            -2
+                        ][:, :-1]
+                    elif i == max_embeddings_multiples - 1:
+                        text_embedding.hidden_states[-2] = text_embedding.hidden_states[
+                            -2
+                        ][:, 1:]
+                    else:
+                        text_embedding.hidden_states[-2] = text_embedding.hidden_states[
+                            -2
+                        ][:, 1:-1]
+                text_embeddings.append(text_embedding)
+            text_embeddings = torch.concat([x.hidden_states[-2] for x in text_embeddings], axis=1)  # type: ignore
+            # Temporary, but hey, at least it works :)
+            # TODO: try and fix this monstrosity :/
+            hidden_states = text_embeddings[-1][0].unsqueeze(0)  # type: ignore
+            # text_embeddings = torch.Tensor(hidden_states.shape[0])
+        else:
+            text_embeddings = pipe.text_encoder(text_input, output_hidden_states=True)
+            hidden_states = text_embeddings[0]
+            text_embeddings = text_embeddings.hidden_states[-2]
+        print(hidden_states.shape, text_embeddings.shape)
+        return text_embeddings, hidden_states
 
 
 def get_weighted_text_embeddings(
@@ -481,7 +515,7 @@ def get_weighted_text_embeddings(
         )
 
     # get the embeddings
-    text_embeddings = get_unweighted_text_embeddings(
+    text_embeddings, hidden_states = get_unweighted_text_embeddings(
         pipe,
         prompt_tokens,
         pipe.tokenizer.model_max_length,  # type: ignore
@@ -491,7 +525,7 @@ def get_weighted_text_embeddings(
         prompt_weights, dtype=text_embeddings.dtype, device=pipe.device if hasattr(pipe, "clip_inference") else pipe.text_encoder.device  # type: ignore
     )
     if uncond_prompt is not None:
-        uncond_embeddings = get_unweighted_text_embeddings(
+        uncond_embeddings, uncond_hidden_states = get_unweighted_text_embeddings(
             pipe,
             uncond_tokens,  # type: ignore
             pipe.tokenizer.model_max_length,  # type: ignore
@@ -504,11 +538,11 @@ def get_weighted_text_embeddings(
     # assign weights to the prompts and normalize in the sense of mean
     if (not skip_parsing) and (not skip_weighting):
         previous_mean = (
-            text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)
+            text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)  # type: ignore
         )
         text_embeddings *= prompt_weights.unsqueeze(-1)
         current_mean = (
-            text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)
+            text_embeddings.float().mean(axis=[-2, -1]).to(text_embeddings.dtype)  # type: ignore
         )
         text_embeddings *= (previous_mean / current_mean).unsqueeze(-1).unsqueeze(-1)
         if uncond_prompt is not None:
@@ -528,5 +562,5 @@ def get_weighted_text_embeddings(
             )
 
     if uncond_prompt is not None:
-        return text_embeddings, uncond_embeddings  # type: ignore
-    return text_embeddings, None
+        return text_embeddings, hidden_states, uncond_embeddings, uncond_hidden_states  # type: ignore
+    return text_embeddings, hidden_states, None, None

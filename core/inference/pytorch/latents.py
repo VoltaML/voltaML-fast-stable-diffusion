@@ -9,6 +9,7 @@ from diffusers import StableDiffusionPipeline
 
 from core.config import config
 from core.flags import LatentScaleModel
+from core.optimizations import upcast_vae
 
 logger = logging.getLogger(__name__)
 
@@ -54,6 +55,9 @@ def prepare_latents(
         latents = latents * pipe.scheduler.init_noise_sigma  # type: ignore
         return latents, None, None
     else:
+        if pipe.vae.config.force_upcast or config.api.upcast_vae:
+            upcast_vae(pipe.vae)
+
         if image.shape[1] != 4:
             init_latent_dist = pipe.vae.encode(image.to(config.api.device)).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)

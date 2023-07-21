@@ -65,13 +65,14 @@ def optimize_model(
             "mps",
         ] and (offload != "disabled" and offload is not None)
 
-        if hasattr(pipe, "text_encoder_2"):
-            from diffusers import AutoencoderKL
+        if hasattr(pipe, "text_encoder_2") and not config.api.upcast_vae:
+            if not hasattr(pipe.vae.config, "force_upcast") or pipe.vae.config.force_upcast:  # type: ignore
+                from diffusers import AutoencoderKL
 
-            vae = AutoencoderKL.from_pretrained(
-                "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
-            )
-            pipe.vae = vae
+                vae = AutoencoderKL.from_pretrained(
+                    "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
+                )
+                pipe.vae = vae
 
         # Took me an hour to understand why CPU stopped working...
         # Turns out AMD just lacks support for BF16...

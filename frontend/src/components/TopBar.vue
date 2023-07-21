@@ -586,6 +586,7 @@ function refreshModels() {
               ...loadedPyTorchModels.value,
               ...loadedAitModels.value,
               ...loadedOnnxModels.value,
+              ...loadedSdxlModels.value,
               ...loadedExtraModels.value,
             ];
 
@@ -810,6 +811,11 @@ const loadedAitModels = computed(() => {
 const loadedOnnxModels = computed(() => {
   return global.state.models.filter((model) => {
     return model.backend === "ONNX" && model.state === "loaded";
+  });
+});
+const loadedSdxlModels = computed(() => {
+  return global.state.models.filter((model) => {
+    return model.backend === "SDXL" && model.state === "loaded";
   });
 });
 const loadedExtraModels = computed(() => {

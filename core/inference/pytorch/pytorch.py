@@ -9,7 +9,6 @@ from diffusers import (
     StableDiffusionControlNetPipeline,
     StableDiffusionInpaintPipeline,
     StableDiffusionPipeline,
-    StableDiffusionXLPipeline,
     UNet2DConditionModel,
 )
 from PIL import Image, ImageOps
@@ -102,17 +101,11 @@ class PyTorchStableDiffusion(InferenceModel):
         self.vae = pipe.vae  # type: ignore
         self.unet = pipe.unet  # type: ignore
         self.text_encoder = pipe.text_encoder  # type: ignore
-        if hasattr(pipe, "text_encoder_2"):
-            self.text_encoder_2 = pipe.text_encoder_2  # type: ignore
         self.tokenizer = pipe.tokenizer  # type: ignore
-        if hasattr(pipe, "tokenizer_2"):
-            self.tokenizer_2 = pipe.tokenizer_2  # type: ignore
         self.scheduler = pipe.scheduler  # type: ignore
-        if hasattr(pipe, "feature_extractor"):
-            self.feature_extractor = pipe.feature_extractor  # type: ignore
+        self.feature_extractor = pipe.feature_extractor  # type: ignore
         self.requires_safety_checker = False  # type: ignore
-        if hasattr(pipe, "safety_checker"):
-            self.safety_checker = pipe.safety_checker  # type: ignore
+        self.safety_checker = pipe.safety_checker  # type: ignore
 
         if not self.bare:
             # Autoload textual inversions
@@ -252,111 +245,77 @@ class PyTorchStableDiffusion(InferenceModel):
         else:
             generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
-        if self.text_encoder_2 is None:
-            pipe = StableDiffusionLongPromptWeightingPipeline(
-                parent=self,
-                vae=self.vae,
-                unet=self.unet,  # type: ignore
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                feature_extractor=self.feature_extractor,
-                safety_checker=self.safety_checker,
+        pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
+            vae=self.vae,
+            unet=self.unet,  # type: ignore
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            feature_extractor=self.feature_extractor,
+            safety_checker=self.safety_checker,
+        )
+
+        if job.data.scheduler:
+            change_scheduler(
+                model=pipe,
+                scheduler=job.data.scheduler,
+                use_karras_sigmas=job.data.use_karras_sigmas,
             )
 
-            if job.data.scheduler:
-                change_scheduler(
-                    model=pipe,
-                    scheduler=job.data.scheduler,
-                    use_karras_sigmas=job.data.use_karras_sigmas,
+        for _ in range(job.data.batch_count):
+            output_type = "pil"
+
+            if "highres_fix" in job.flags:
+                output_type = "latent"
+
+            data = pipe.text2img(
+                prompt=job.data.prompt,
+                height=job.data.height,
+                width=job.data.width,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                self_attention_scale=job.data.self_attention_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type=output_type,
+                generator=generator,
+                callback=txt2img_callback,
+                num_images_per_prompt=job.data.batch_size,
+            )
+
+            if output_type == "latent":
+                latents = data[0]  # type: ignore
+                assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
+
+                flag = job.flags["highres_fix"]
+                flag = HighResFixFlag.from_dict(flag)
+
+                latents = scale_latents(
+                    latents=latents,
+                    scale=flag.scale,
+                    latent_scale_mode=flag.latent_scale_mode,
                 )
 
-            for _ in range(job.data.batch_count):
-                output_type = "pil"
+                self.memory_cleanup()
 
-                if "highres_fix" in job.flags:
-                    output_type = "latent"
-
-                data = pipe.text2img(
+                data = pipe.img2img(
                     prompt=job.data.prompt,
-                    height=job.data.height,
-                    width=job.data.width,
-                    num_inference_steps=job.data.steps,
+                    image=latents,
+                    num_inference_steps=flag.steps,
                     guidance_scale=job.data.guidance_scale,
                     self_attention_scale=job.data.self_attention_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type=output_type,
-                    generator=generator,
-                    callback=txt2img_callback,
-                    num_images_per_prompt=job.data.batch_size,
-                )
-
-                if output_type == "latent":
-                    latents = data[0]  # type: ignore
-                    assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
-
-                    flag = job.flags["highres_fix"]
-                    flag = HighResFixFlag.from_dict(flag)
-
-                    latents = scale_latents(
-                        latents=latents,
-                        scale=flag.scale,
-                        latent_scale_mode=flag.latent_scale_mode,
-                    )
-
-                    self.memory_cleanup()
-
-                    data = pipe.img2img(
-                        prompt=job.data.prompt,
-                        image=latents,
-                        num_inference_steps=flag.steps,
-                        guidance_scale=job.data.guidance_scale,
-                        self_attention_scale=job.data.self_attention_scale,
-                        negative_prompt=job.data.negative_prompt,
-                        output_type="pil",
-                        generator=generator,
-                        callback=txt2img_callback,
-                        strength=flag.strength,
-                        return_dict=False,
-                        num_images_per_prompt=job.data.batch_size,
-                    )
-
-                images: list[Image.Image] = data[0]  # type: ignore
-
-                total_images.extend(images)
-        else:
-            pipe = StableDiffusionXLPipeline(
-                vae=self.vae,
-                text_encoder=self.text_encoder,
-                text_encoder_2=self.text_encoder_2,
-                tokenizer=self.tokenizer,
-                tokenizer_2=self.tokenizer_2,
-                unet=self.unet,
-                scheduler=self.scheduler,
-            )
-            if job.data.scheduler:
-                change_scheduler(
-                    model=pipe,
-                    scheduler=job.data.scheduler,
-                    use_karras_sigmas=job.data.use_karras_sigmas,
-                )
-            for _ in range(job.data.batch_count):
-                data = pipe(
-                    prompt=job.data.prompt,
-                    height=job.data.height,
-                    width=job.data.width,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
                     negative_prompt=job.data.negative_prompt,
                     output_type="pil",
                     generator=generator,
                     callback=txt2img_callback,
-                    num_images_per_prompt=job.data.batch_size,
+                    strength=flag.strength,
                     return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
                 )
 
-                images: list[Image.Image] = data[0]  # type: ignore
-                total_images.extend(images)
+            images: list[Image.Image] = data[0]  # type: ignore
+
+            total_images.extend(images)
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -502,7 +461,12 @@ class PyTorchStableDiffusion(InferenceModel):
 
         for _ in range(job.data.batch_count):
             if isinstance(pipe, StableDiffusionInpaintPipeline):
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                (
+                    prompt_embeds,
+                    _,
+                    negative_prompt_embeds,
+                    _,
+                ) = get_weighted_text_embeddings(
                     pipe=self,  # type: ignore
                     prompt=job.data.prompt,
                     uncond_prompt=job.data.negative_prompt,
@@ -617,7 +581,7 @@ class PyTorchStableDiffusion(InferenceModel):
             logger.debug(f"Preprocessed image size: {input_image.size}")
 
         # Preprocess the prompt
-        prompt_embeds, negative_embeds = get_weighted_text_embeddings(
+        prompt_embeds, _, negative_embeds, _ = get_weighted_text_embeddings(
             pipe=self,  # type: ignore # implements same protocol, but doesn't inherit
             prompt=job.data.prompt,
             uncond_prompt=job.data.negative_prompt,

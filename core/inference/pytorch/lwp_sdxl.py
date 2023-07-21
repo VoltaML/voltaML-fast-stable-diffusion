@@ -2,19 +2,22 @@
 
 import inspect
 from contextlib import ExitStack
-from typing import Callable, List, Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union
 
 import numpy as np
 import PIL
 import torch
-from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipeline
+from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionXLPipeline
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
-    StableDiffusionSafetyChecker,
 )
 from diffusers.utils import PIL_INTERPOLATION, logging
-from transformers.models.clip import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+from transformers.models.clip import (
+    CLIPTextModel,
+    CLIPTokenizer,
+    CLIPTextModelWithProjection,
+)
 
 from core.config import config
 from core.inference.pytorch.latents import prepare_latents
@@ -25,11 +28,17 @@ from core.inference.pytorch.sag import (
     pred_x0,
     sag_masking,
 )
-from core.optimizations import autocast
+from core.optimizations import autocast, upcast_vae
 
 # ------------------------------------------------------------------------------
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
+
+
+class Placebo:
+    text_encoder: CLIPTextModel
+    tokenizer: CLIPTokenizer
+    loras: list
 
 
 def preprocess_image(image):
@@ -57,7 +66,7 @@ def preprocess_mask(mask, scale_factor=8):
     return mask
 
 
-class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
+class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
     r"""
     Pipeline for text-to-image generation using Stable Diffusion without tokens length limit, and support parsing
     weighting in prompt.
@@ -91,34 +100,31 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         parent,
         vae: AutoencoderKL,
         text_encoder: CLIPTextModel,
+        text_encoder_2: CLIPTextModelWithProjection,
         tokenizer: CLIPTokenizer,
+        tokenizer_2: CLIPTokenizer,
         unet: UNet2DConditionModel,
         scheduler: SchedulerMixin,
-        safety_checker: StableDiffusionSafetyChecker,
-        feature_extractor: CLIPFeatureExtractor,
-        requires_safety_checker: bool = False,
     ):
         super().__init__(
             vae=vae,
             text_encoder=text_encoder,
+            text_encoder_2=text_encoder_2,
             tokenizer=tokenizer,
+            tokenizer_2=tokenizer_2,
             unet=unet,
             scheduler=scheduler,  # type: ignore
-            safety_checker=safety_checker,
-            feature_extractor=feature_extractor,
-            requires_safety_checker=requires_safety_checker,
         )
         self.__init__additional__()
 
         self.parent = parent
         self.vae: AutoencoderKL
         self.text_encoder: CLIPTextModel
+        self.text_encoder_2: CLIPTextModelWithProjection
         self.tokenizer: CLIPTokenizer
+        self.tokenizer_2: CLIPTokenizer
         self.unet: UNet2DConditionModel
         self.scheduler: LMSDiscreteScheduler
-        self.safety_checker: StableDiffusionSafetyChecker
-        self.feature_extractor: CLIPFeatureExtractor
-        self.requires_safety_checker: bool
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
@@ -152,28 +158,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 )
         return self.device
 
-    def upcast_vae(self):
-        from diffusers.models.attention_processor import (
-            XFormersAttnProcessor,
-            AttnProcessor2_0,
-        )
-
-        dtype = self.vae.dtype
-        self.vae.to(dtype=torch.float32)
-        use_torch_2_0_or_xformers = isinstance(
-            self.vae.decoder.mid_block.attentions[0].processor,  # type: ignore
-            (
-                AttnProcessor2_0,
-                XFormersAttnProcessor,
-            ),
-        )
-        # if xformers or torch_2_0 is used attention block does not need
-        # to be in float32 which can save lots of memory
-        if use_torch_2_0_or_xformers:
-            self.vae.post_quant_conv.to(dtype)
-            self.vae.decoder.conv_in.to(dtype)
-            self.vae.decoder.mid_block.to(dtype)  # type: ignore
-
     def _encode_prompt(
         self,
         prompt,
@@ -202,38 +186,50 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         for prompt, negative_prompt, tokenizer, text_encoder in zip(
             prompts, negative_prompts, tokenizers, text_encoders
         ):
-            prompt = self.maybe_convert_prompt(prompt, tokenizer)
             logger.debug(f"Post textual prompt: {prompt}")
 
             if negative_prompt is not None:
-                negative_prompt = self.maybe_convert_prompt(negative_prompt, tokenizer)
                 logger.debug(f"Post textual negative_prompt: {negative_prompt}")
 
-            obj = object()
-            obj.text_encoder = text_encoder  # type: ignore
-            obj.tokenizer = tokenizer  # type: ignore
-            obj.loras = []  # type: ignore
+            obj = Placebo()
+            setattr(obj, "text_encoder", text_encoder)
+            setattr(obj, "tokenizer", tokenizer)
+            setattr(obj, "loras", [])
 
-            text_embeddings, uncond_embeddings = get_weighted_text_embeddings(
+            (
+                text_embeddings,
+                pooled_embeddings,
+                uncond_embeddings,
+                uncond_pooled_embeddings,
+            ) = get_weighted_text_embeddings(
                 pipe=obj,  # type: ignore
                 prompt=prompt,
                 uncond_prompt=None if negative_prompt is None else [negative_prompt] * batch_size,  # type: ignore
                 max_embeddings_multiples=max_embeddings_multiples,
             )
-            pooled_embeddings = text_embeddings.hidden_states
-            if negative_prompt is None:
+            if uncond_embeddings is None:
                 uncond_embeddings = torch.zeros_like(text_embeddings)
                 uncond_pooled_embeddings = torch.zeros_like(pooled_embeddings)
-            else:
-                uncond_pooled_embeddings = uncond_embeddings.hidden_states  # type: ignore
-            prompt_embeds_list.append(pooled_embeddings)
-            uncond_embeds_list.append(uncond_pooled_embeddings)
+            bs_embed, seq_len, _ = text_embeddings.shape
+            text_embeddings = text_embeddings.repeat(1, num_images_per_prompt, 1)
+            text_embeddings = text_embeddings.view(
+                bs_embed * num_images_per_prompt, seq_len, -1
+            )
 
-        pooled_embeddings = torch.concat(prompt_embeds_list, dim=-1)
-        uncond_pooled_embeddings = torch.concat(uncond_embeds_list, dim=-1)
+            bs_embed, seq_len, _ = uncond_embeddings.shape
+            uncond_embeddings = uncond_embeddings.repeat(1, num_images_per_prompt, 1)
+            uncond_embeddings = uncond_embeddings.view(
+                bs_embed * num_images_per_prompt, seq_len, -1
+            )
 
-        bs_embed = pooled_embeddings.shape[0]
-        pooled_embeddings = pooled_embeddings.repeat(1, num_images_per_prompt)
+            prompt_embeds_list.append(text_embeddings)
+            uncond_embeds_list.append(uncond_embeddings)
+
+        prompt_embeds = torch.concat(prompt_embeds_list, dim=-1)
+        uncond_embeds = torch.concat(uncond_embeds_list, dim=-1)
+
+        bs_embed = pooled_embeddings.shape[0]  # type: ignore
+        pooled_embeddings = pooled_embeddings.repeat(1, num_images_per_prompt)  # type: ignore
         pooled_embeddings = pooled_embeddings.view(bs_embed * num_images_per_prompt, -1)
 
         bs_embed = uncond_pooled_embeddings.shape[0]  # type: ignore
@@ -243,7 +239,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         )
 
         # Only the last one is necessary
-        return pooled_embeddings.to(device), uncond_pooled_embeddings.to(device), text_embeddings.to(device), uncond_embeddings.to(device)  # type: ignore
+        return prompt_embeds.to(device), uncond_embeds.to(device), pooled_embeddings.to(device), uncond_pooled_embeddings.to(device)  # type: ignore
 
     def check_inputs(self, prompt, height, width, strength, callback_steps):
         if not isinstance(prompt, str) and not isinstance(prompt, list):
@@ -302,6 +298,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         return add_time_ids
 
     def decode_latents(self, latents):
+        if self.vae.config.force_upcast or config.api.upcast_vae:  # type: ignore
+            upcast_vae(self.vae)
+            latents = latents.float()  # type: ignore
+
         latents = 1 / 0.18215 * latents
         image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
@@ -419,7 +419,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 6. Prepare latent variables
             latents, init_latents_orig, noise = prepare_latents(
-                self,
+                self,  # type: ignore
                 image,
                 latent_timestep,
                 batch_size * num_images_per_prompt,  # type: ignore
@@ -433,6 +433,23 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
             extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
+
+            add_text_embeds = pooled_prompt_embeds
+            add_time_ids = self._get_add_time_ids(
+                (height, width), (0, 0), (height, width), dtype
+            )
+
+            if do_classifier_free_guidance:
+                prompt_embeds = torch.cat(
+                    [negative_prompt_embeds, prompt_embeds], dim=0
+                )
+                add_text_embeds = torch.cat(
+                    [negative_pooled_prompt_embeds, add_text_embeds], dim=0
+                )
+                add_time_ids = torch.cat([add_time_ids, add_time_ids], dim=0)
+            prompt_embeds = prompt_embeds.to(device)
+            add_text_embeds = add_text_embeds.to(device)
+            add_time_ids = add_time_ids.to(device).repeat(batch_size * num_images_per_prompt, 1)  # type: ignore
 
             if do_self_attention_guidance:
                 store_processor = CrossAttnStoreProcessor()
@@ -459,8 +476,15 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
                     # predict the noise residual
+                    added_cond_kwargs = {
+                        "text_embeds": add_text_embeds,
+                        "time_ids": add_time_ids,
+                    }
                     noise_pred = self.unet(  # type: ignore
-                        latent_model_input, t, encoder_hidden_states=text_embeddings
+                        latent_model_input,
+                        t,
+                        encoder_hidden_states=prompt_embeds,
+                        added_cond_kwargs=added_cond_kwargs,
                     ).sample
 
                     # perform guidance
@@ -477,13 +501,14 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             degraded_latents = sag_masking(
                                 self, pred, uncond_attn, map_size, t, pred_epsilon(self, latents, noise_pred_uncond, t)  # type: ignore
                             )
-                            uncond_emb, _ = text_embeddings.chunk(2)
+                            uncond_emb, _ = prompt_embeds.chunk(2)
                             # predict the noise residual
                             # this probably could have been done better but honestly fuck this
                             degraded_prep = self.unet(  # type: ignore
                                 degraded_latents,
                                 t,
                                 encoder_hidden_states=uncond_emb,
+                                added_cond_kwargs=added_cond_kwargs,
                             ).sample
                             noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
                         else:
@@ -501,7 +526,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             degraded_prep = self.unet(  # type: ignore
                                 degraded_latents,
                                 t,
-                                encoder_hidden_states=text_embeddings,
+                                encoder_hidden_states=prompt_embeds,
+                                added_cond_kwargs=added_cond_kwargs,
                             ).sample
                             noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
 
@@ -533,11 +559,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             image = self.decode_latents(latents)
 
-            # 10. Run safety checker
-            image, has_nsfw_concept = self.run_safety_checker(
-                image, device, text_embeddings.dtype
-            )
-
             # 11. Convert to PIL
             if output_type == "pil":
                 image = self.numpy_to_pil(image)
@@ -546,16 +567,16 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 self.final_offload_hook.offload()  # type: ignore
 
             if not return_dict:
-                return image, has_nsfw_concept
+                return image, False
 
             return StableDiffusionPipelineOutput(
-                images=image, nsfw_content_detected=has_nsfw_concept  # type: ignore
+                images=image, nsfw_content_detected=False  # type: ignore
             )
 
     def text2img(
         self,
-        prompt: Union[str, List[str]],
-        negative_prompt: Optional[Union[str, List[str]]] = None,
+        prompt: str,
+        negative_prompt: Optional[str] = None,
         height: int = 512,
         width: int = 512,
         num_inference_steps: int = 50,
@@ -595,8 +616,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def img2img(
         self,
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
-        prompt: Union[str, List[str]],
-        negative_prompt: Optional[Union[str, List[str]]] = None,
+        prompt: str,
+        negative_prompt: Optional[str] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,
@@ -634,8 +655,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self,
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
-        prompt: Union[str, List[str]],
-        negative_prompt: Optional[Union[str, List[str]]] = None,
+        prompt: str,
+        negative_prompt: Optional[str] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,

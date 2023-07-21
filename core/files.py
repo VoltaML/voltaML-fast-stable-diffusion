@@ -47,6 +47,25 @@ class CachedModelList:
 
             name: str = "/".join(model_name.split("--")[1:3])
             try:
+                file = get_full_model_path(name) / "model_index.json"
+                with open(file, "r", encoding="UTF-8") as content:
+                    sdxl = "StableDiffusionXL" in content.readlines()[1]
+                    if sdxl:
+                        models.append(
+                            ModelResponse(
+                                name=model_name,
+                                path=model_name,
+                                backend="SDXL",
+                                vae="default",
+                                valid=True,
+                                loras=[],
+                                state="not loaded",
+                            )
+                        )
+                        continue
+            except Exception:  # pylint: disable=broad-except
+                pass
+            try:
                 models.append(
                     ModelResponse(
                         name=name,
@@ -74,8 +93,6 @@ class CachedModelList:
                     with open(file, "r", encoding="UTF-8") as content:
                         sdxl = "StableDiffusionXL" in content.readlines()[1]
                         if sdxl:
-                            if not (file.parent / "sdxl.txt").exists():
-                                open(file.parent / "sdxl.txt", "x")
                             models.append(
                                 ModelResponse(
                                     name=model_name,

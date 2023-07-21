@@ -148,6 +148,9 @@ class APIConfig:
     # Critical
     enable_shutdown: bool = True
 
+    # VAE
+    upcast_vae: bool = False
+
     # CLIP
     clip_skip: int = 1
 

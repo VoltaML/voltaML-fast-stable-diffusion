@@ -19,6 +19,7 @@ from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.esrgan.upscale import Upscaler
 from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
+from core.inference.pytorch.sdxl import SDXLStableDiffusion
 from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
@@ -88,6 +89,7 @@ class GPU:
                 model: Union[
                     PyTorchStableDiffusion,
                     AITemplateStableDiffusion,
+                    SDXLStableDiffusion,
                     "OnnxStableDiffusion",
                 ] = self.loaded_models[job.model]
             except KeyError as err:
@@ -132,6 +134,9 @@ class GPU:
 
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
+                images: List[Image.Image] = model.generate(job)
+            elif isinstance(model, SDXLStableDiffusion):
+                logger.debug("Generating with SDXL (PyTorch)")
                 images: List[Image.Image] = model.generate(job)
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
@@ -305,6 +310,22 @@ class GPU:
 
                 pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
+            elif backend == "SDXL":
+                logger.debug("Selecting SDXL")
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "info",
+                        "SDXL",
+                        f"Loading {model} into memory, this may take a while",
+                    )
+                )
+
+                sdxl_model = SDXLStableDiffusion(
+                    model_id=model,
+                    device=config.api.device,
+                )
+                self.loaded_models[model] = sdxl_model
             else:
                 logger.debug("Selecting PyTorch")
 

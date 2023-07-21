@@ -338,7 +338,12 @@ class AITemplateStableDiffusion(InferenceModel):
 
         for _ in range(job.data.batch_count):
             if lwp:
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                (
+                    prompt_embeds,
+                    _,
+                    negative_prompt_embeds,
+                    _,
+                ) = get_weighted_text_embeddings(
                     pipe, job.data.prompt, job.data.negative_prompt
                 )
                 data = pipe(
@@ -440,7 +445,12 @@ class AITemplateStableDiffusion(InferenceModel):
 
         for _ in range(job.data.batch_count):
             if lwp:
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                (
+                    prompt_embeds,
+                    _,
+                    negative_prompt_embeds,
+                    _,
+                ) = get_weighted_text_embeddings(
                     pipe, job.data.prompt, job.data.negative_prompt
                 )
                 data = pipe(

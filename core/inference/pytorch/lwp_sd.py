@@ -25,7 +25,7 @@ from core.inference.pytorch.sag import (
     pred_x0,
     sag_masking,
 )
-from core.optimizations import autocast
+from core.optimizations import autocast, upcast_vae
 
 # ------------------------------------------------------------------------------
 
@@ -198,7 +198,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 " the batch size of `prompt`."
             )
 
-        text_embeddings, uncond_embeddings = get_weighted_text_embeddings(
+        text_embeddings, _, uncond_embeddings, _ = get_weighted_text_embeddings(
             pipe=self.parent,
             prompt=prompt,
             uncond_prompt=negative_prompt if do_classifier_free_guidance else None,
@@ -271,6 +271,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         return image, has_nsfw_concept
 
     def decode_latents(self, latents):
+        if config.api.upcast_vae:
+            upcast_vae(self.vae)
+            latents = latents.float()  # type: ignore
+
         latents = 1 / 0.18215 * latents
         image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
