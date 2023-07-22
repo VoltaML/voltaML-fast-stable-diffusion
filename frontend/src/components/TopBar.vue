@@ -467,7 +467,6 @@ const vaeModels = computed(() => {
       valid: true,
       state: "not loaded",
       vae: "default",
-      loras: [],
       textual_inversions: [],
     } as ModelEntry,
     ...filteredModels.value
@@ -589,7 +588,7 @@ function refreshModels() {
 
           const autofillKeys = [];
           for (const model of global.state.models) {
-            if (model.backend === "LoRA") {
+            if (model.backend === "LoRA" || model.backend === "LyCORIS") {
               autofillKeys.push(`<lora:${model.name}:1.0>`);
             }
             /*else if (model.backend === "Textual Inversion") {

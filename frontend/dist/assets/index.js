@@ -40880,7 +40880,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-bb3362c2"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-2cf1de9c"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40900,7 +40900,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "6ce60834": backgroundColor.value
+      "67e22a10": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40943,7 +40943,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           valid: true,
           state: "not loaded",
           vae: "default",
-          loras: [],
           textual_inversions: []
         },
         ...filteredModels.value.filter((model) => {
@@ -41040,7 +41039,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             }
             const autofillKeys = [];
             for (const model of global2.state.models) {
-              if (model.backend === "LoRA") {
+              if (model.backend === "LoRA" || model.backend === "LyCORIS") {
                 autofillKeys.push(`<lora:${model.name}:1.0>`);
               }
             }
@@ -41794,7 +41793,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_bb3362c2_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_2cf1de9c_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41802,7 +41801,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-bb3362c2"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2cf1de9c"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
