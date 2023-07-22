@@ -86,70 +86,7 @@
             </div>
 
             <!-- Dimensions -->
-            <div class="flex-container" v-if="conf.data.settings.aitDim.width">
-              <p class="slider-label">Width</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Width</p>
-              <NSlider
-                v-model:value="conf.data.settings.txt2img.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.txt2img.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-              />
-            </div>
-            <div class="flex-container" v-if="conf.data.settings.aitDim.height">
-              <p class="slider-label">Height</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Height</p>
-              <NSlider
-                v-model:value="conf.data.settings.txt2img.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.txt2img.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-              />
-            </div>
+            <DimensionsInput :dimensions-object="conf.data.settings.txt2img" />
 
             <!-- Steps -->
             <div class="flex-container">
@@ -255,47 +192,8 @@
                 style="min-width: 96px; width: 96px"
               />
             </div>
-            <div
-              class="flex-container"
-              v-if="conf.data.settings.aitDim.batch_size"
-            >
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Batch Size</p>
-                </template>
-                Number of images to generate in paralel.
-              </NTooltip>
-              <NSlider
-                :value="conf.data.settings.aitDim.batch_size"
-                :min="1"
-                :max="9"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.batch_size"
-                size="small"
-                style="min-width: 96px; width: 96px"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Batch Size</p>
-                </template>
-                Number of images to generate in paralel.
-              </NTooltip>
-              <NSlider
-                v-model:value="conf.data.settings.txt2img.batch_size"
-                :min="1"
-                :max="9"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.txt2img.batch_size"
-                size="small"
-                style="min-width: 96px; width: 96px"
-              />
-            </div>
+
+            <BatchSizeInput :batch-size-object="conf.data.settings.txt2img" />
 
             <!-- Seed -->
             <div class="flex-container">
@@ -463,6 +361,8 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
+import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
+import DimensionsInput from "@/components/generate/DimensionsInput.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -529,18 +429,12 @@ const generate = () => {
         id: uuidv4(),
         prompt: conf.data.settings.txt2img.prompt,
         negative_prompt: conf.data.settings.txt2img.negative_prompt,
-        width: conf.data.settings.aitDim.width
-          ? conf.data.settings.aitDim.width
-          : conf.data.settings.txt2img.width,
-        height: conf.data.settings.aitDim.height
-          ? conf.data.settings.aitDim.height
-          : conf.data.settings.txt2img.height,
+        width: conf.data.settings.txt2img.width,
+        height: conf.data.settings.txt2img.height,
         steps: conf.data.settings.txt2img.steps,
         guidance_scale: conf.data.settings.txt2img.cfg_scale,
         seed: seed,
-        batch_size: conf.data.settings.aitDim.batch_size
-          ? conf.data.settings.aitDim.batch_size
-          : conf.data.settings.txt2img.batch_size,
+        batch_size: conf.data.settings.txt2img.batch_size,
         batch_count: conf.data.settings.txt2img.batch_count,
         scheduler: conf.data.settings.txt2img.sampler,
         self_attention_scale: conf.data.settings.txt2img.self_attention_scale,

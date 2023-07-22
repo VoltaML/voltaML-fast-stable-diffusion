@@ -424,7 +424,7 @@ class GPU:
                 config.aitemplate.num_threads = request.threads
 
         def ait_build_thread_call():
-            from core.aitemplate.dynamic_compile import compile_diffusers
+            from core.aitemplate.compile import compile_diffusers
 
             compile_diffusers(
                 batch_size=request.batch_size,

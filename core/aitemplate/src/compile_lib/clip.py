@@ -12,39 +12,18 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-
 from aitemplate.compiler import compile_model
 from aitemplate.frontend import IntVar, Tensor
 from aitemplate.testing import detect_target
 
-from ..modeling_dynamic.clip import CLIPTextTransformer as ait_CLIPTextTransformer
-from .util import mark_output
+from ..modeling.clip import CLIPTextTransformer as ait_CLIPTextTransformer
+from ..common import mark_output
 
-
-def map_clip_params(pt_mod, batch_size=1, seqlen=77, depth=12):
-    params_ait = {}
-    pt_params = dict(pt_mod.named_parameters())
-    for key, arr in pt_params.items():
-        name = key.replace("text_model.", "")
-        ait_name = name.replace(".", "_")
-        if name.endswith("out_proj.weight"):
-            ait_name = ait_name.replace("out_proj", "proj")
-        elif name.endswith("out_proj.bias"):
-            ait_name = ait_name.replace("out_proj", "proj")
-        elif "q_proj" in name:
-            ait_name = ait_name.replace("q_proj", "proj_q")
-        elif "k_proj" in name:
-            ait_name = ait_name.replace("k_proj", "proj_k")
-        elif "v_proj" in name:
-            ait_name = ait_name.replace("v_proj", "proj_v")
-        params_ait[ait_name] = arr
-
-    return params_ait
+from ..modeling.mapping import map_clip
 
 
 def compile_clip(
     pt_mod,
-    dump_dir: str = "./tmp",
     batch_size=(1, 8),
     seqlen=64,
     dim=768,
@@ -54,6 +33,8 @@ def compile_clip(
     convert_conv_to_gemm=False,
     act_layer="gelu",
     constants=True,
+    model_name="CLIPTextModel",
+    work_dir="./tmp",
 ):
     mask_seq = 0
     causal = True
@@ -71,8 +52,13 @@ def compile_clip(
     ait_mod.name_parameter_tensor()
 
     pt_mod = pt_mod.eval()
-    params_ait = map_clip_params(pt_mod, batch_size, seqlen, depth)
-    batch_size = IntVar(values=list(batch_size), name="batch_size")
+    params_ait = map_clip(pt_mod)
+
+    static_shape = batch_size[0] == batch_size[1]
+    if static_shape:
+        batch_size = batch_size[0]
+    else:
+        batch_size = IntVar(values=list(batch_size), name="batch_size")
 
     input_ids_ait = Tensor(
         [batch_size, seqlen], name="input0", dtype="int64", is_input=True  # type: ignore
@@ -87,9 +73,5 @@ def compile_clip(
         use_fp16_acc=use_fp16_acc, convert_conv_to_gemm=convert_conv_to_gemm
     )
     compile_model(
-        Y,
-        target,
-        dump_dir,
-        "CLIPTextModel",
-        constants=params_ait if constants else None,
+        Y, target, work_dir, model_name, constants=params_ait if constants else None
     )
