@@ -3,6 +3,7 @@ from typing import Dict, Union
 import torch
 
 from core.config import config
+
 from .utils import HookObject
 
 
@@ -62,9 +63,9 @@ class LoRAManager(HookObject):
                 lora_module.alpha = v.item()  # type: ignore
                 continue
             if isinstance(module, torch.nn.Linear):
-                module = torch.nn.Linear(v.shape[1], v.shape[0], bias=False)
+                module = torch.nn.Linear(v.shape[1], v.shape[0], bias=False)  # type: ignore
             else:
-                module = torch.nn.Conv2d(v.shape[1], v.shape[0], (1, 1), bias=False)
+                module = torch.nn.Conv2d(v.shape[1], v.shape[0], (1, 1), bias=False)  # type: ignore
 
             with torch.no_grad():
                 module.weight.copy_(v)  # type: ignore

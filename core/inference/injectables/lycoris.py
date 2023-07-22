@@ -1,12 +1,12 @@
 # pylint: disable=attribute-defined-outside-init
-from typing import Any, Dict, Sized
 import logging
+from typing import Any, Dict, Sized
 
 import torch
 
 from core.config import config
-from .utils import HookObject
 
+from .utils import HookObject
 
 logger = logging.getLogger(__name__)
 
@@ -172,10 +172,10 @@ class LyCORISManager(HookObject):
                 lyco_module = LycoUpDownModule()
                 lyco.modules[key] = lyco_module
             if lyco_key == "alpha":
-                lyco_module.alpha = v.item()
+                lyco_module.alpha = v.item()  # type: ignore
                 continue
             if lyco_key == "scale":
-                lyco_module.scale = v.item()
+                lyco_module.scale = v.item()  # type: ignore
                 continue
             if lyco_key == "diff":
                 v = v.to(device=torch.device("cpu"), dtype=config.api.dtype)
@@ -212,16 +212,16 @@ class LyCORISManager(HookObject):
                         torch.nn.MultiheadAttention,
                     ),
                 ):
-                    v = v.reshape(v.shape[0], -1)
+                    v = v.reshape(v.shape[0], -1)  # type: ignore
                     module = torch.nn.Linear(v.shape[1], v.shape[0], bias=False)
                 elif isinstance(sd_module, torch.nn.Conv2d):
                     if lyco_key == "lora_down.weight" or lyco_key == "dyn_up":
-                        if len(v.shape) == 2:
-                            v = v.reshape(v.shape[0], -1, 1, 1)
-                        if v.shape[2] != 1 or v.shape[3] != 1:
+                        if len(v.shape) == 2:  # type: ignore
+                            v = v.reshape(v.shape[0], -1, 1, 1)  # type: ignore
+                        if v.shape[2] != 1 or v.shape[3] != 1:  # type: ignore
                             module = torch.nn.Conv2d(
-                                v.shape[1],
-                                v.shape[0],
+                                v.shape[1],  # type: ignore
+                                v.shape[0],  # type: ignore
                                 sd_module.kernel_size,
                                 sd_module.stride,
                                 sd_module.padding,
@@ -229,12 +229,12 @@ class LyCORISManager(HookObject):
                             )
                         else:
                             module = torch.nn.Conv2d(
-                                v.shape[1], v.shape[0], (1, 1), bias=False
+                                v.shape[1], v.shape[0], (1, 1), bias=False  # type: ignore
                             )
                     elif lyco_key == "lora_mid.weight":
                         module = torch.nn.Conv2d(
-                            v.shape[1],
-                            v.shape[0],
+                            v.shape[1],  # type: ignore
+                            v.shape[0],  # type: ignore
                             sd_module.kernel_size,
                             sd_module.stride,
                             sd_module.padding,
@@ -242,11 +242,11 @@ class LyCORISManager(HookObject):
                         )
                     elif lyco_key == "lora_up.weight" or lyco_key == "dyn_down":
                         module = torch.nn.Conv2d(
-                            v.shape[1], v.shape[0], (1, 1), bias=False
+                            v.shape[1], v.shape[0], (1, 1), bias=False  # type: ignore
                         )
 
                 if hasattr(sd_module, "weight"):
-                    lyco_module.shape = sd_module.weight.shape
+                    lyco_module.shape = sd_module.weight.shape  # type: ignore
                 with torch.no_grad():
                     if v.shape != module.weight.shape:  # type: ignore
                         v = v.reshape(module.weight.shape)  # type: ignore
@@ -261,7 +261,7 @@ class LyCORISManager(HookObject):
                     lyco_module.mid_module = module  # type: ignore
                 elif lyco_key == "lora_down.weight" or lyco_key == "dyn_down":
                     lyco_module.down_module = module  # type: ignore
-                    lyco_module.dim = v.shape[0]
+                    lyco_module.dim = v.shape[0]  # type: ignore
                 else:
                     logger.debug(f"invalid key {lyco_key}")
             elif lyco_key in HADA_KEY:
@@ -273,7 +273,7 @@ class LyCORISManager(HookObject):
                     lyco_module.bias = bias
                     lyco.modules[key] = lyco_module
                 if hasattr(sd_module, "weight"):
-                    lyco_module.shape = sd_module.weight.shape
+                    lyco_module.shape = sd_module.weight.shape  # type: ignore
 
                 v = v.to(device=torch.device("cpu"), dtype=config.api.dtype)
                 v.requires_grad_(False)
@@ -282,12 +282,12 @@ class LyCORISManager(HookObject):
                     lyco_module.w1a = v  # type: ignore
                 elif lyco_key == "hada_w1_b":
                     lyco_module.w1b = v  # type: ignore
-                    lyco_module.dim = v.shape[0]
+                    lyco_module.dim = v.shape[0]  # type: ignore
                 elif lyco_key == "hada_w2_a":
                     lyco_module.w2a = v  # type: ignore
                 elif lyco_key == "hada_w2_b":
                     lyco_module.w2b = v  # type: ignore
-                    lyco_module.dim = v.shape[0]
+                    lyco_module.dim = v.shape[0]  # type: ignore
                 elif lyco_key == "hada_t1":
                     lyco_module.t1 = v  # type: ignore
                 elif lyco_key == "hada_t2":
@@ -311,7 +311,7 @@ class LyCORISManager(HookObject):
                     lyco_module.bias = bias  # type: ignore
                     lyco.modules[key] = lyco_module
                 if hasattr(sd_module, "weight"):
-                    lyco_module.shape = sd_module.weight.shape
+                    lyco_module.shape = sd_module.weight.shape  # type: ignore
 
                 v = v.to(device=torch.device("cpu"), dtype=config.api.dtype)
                 v.requires_grad_(False)
@@ -372,7 +372,7 @@ class LyCORISManager(HookObject):
                     p.out_proj.weight.to(torch.device("cpu"), copy=True),
                 )
             else:
-                weights_backup = p.weight.to(torch.device("cpu"), copy=True)
+                weights_backup = p.weight.to(torch.device("cpu"), copy=True)  # type: ignore
             p.lyco_weights_backup = weights_backup  # type: ignore
         elif len(self.containers) == 0:
             # when we unload all the lycos and have no weights to backup
@@ -392,7 +392,7 @@ class LyCORISManager(HookObject):
                 multiplier = lyco.alpha
                 if module is not None and hasattr(p, "weight"):
                     updown = _lyco_calc_updown(lyco, module, p.weight, multiplier)
-                    if len(p.weight.shape) == 4 and p.weight.shape[1] == 9:
+                    if len(p.weight.shape) == 4 and p.weight.shape[1] == 9:  # type: ignore
                         # inpainting model. zero pad updown to make channel[1]  4 to 9
                         updown = torch.nn.functional.pad(updown, (0, 0, 0, 0, 0, 5))
                     p.weight += updown

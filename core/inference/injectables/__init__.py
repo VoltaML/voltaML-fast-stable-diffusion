@@ -1,12 +1,12 @@
 from pathlib import Path
-from typing import List, Union, Optional, Dict
+from typing import Dict, List, Optional, Union
 
 import torch
 
-from .utils import HookObject
+from ...config import config
 from .lora import LoRAManager
 from .lycoris import LyCORISManager
-from ...config import config
+from .utils import HookObject
 
 torch.nn.Linear.old_forward = torch.nn.Linear.forward  # type: ignore
 torch.nn.Conv2d.old_forward = torch.nn.Conv2d.forward  # type: ignore
@@ -82,7 +82,7 @@ class HookManager(object):
             state_dict = load_file(file)
         else:
             state_dict = torch.load(file)  # .bin, .pt, .ckpt...
-        return state_dict
+        return state_dict  # type: ignore
 
     @torch.no_grad()
     def apply_weights(self, p) -> None:
