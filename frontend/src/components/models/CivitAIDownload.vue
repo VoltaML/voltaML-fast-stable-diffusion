@@ -36,7 +36,7 @@
     >
     </NSlider>
   </div>
-  <div class="main-container" style="margin: 12px; margin-top: 52px">
+  <div class="main-container" style="margin: 12px; margin-top: 0px">
     <div ref="scrollComponent">
       <div class="image-grid">
         <div
