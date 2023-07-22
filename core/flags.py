@@ -28,3 +28,12 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
     strength: float = 0.7
     steps: int = 50
     antialiased: bool = False
+
+
+@dataclass
+class RefinerFlag(Flag, DataClassJsonMixin):
+    "Flag for SDXL refiners"
+
+    steps: int = 50
+    strength: float = 0.3
+    model: str = ""

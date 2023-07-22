@@ -43,6 +43,11 @@ export interface ISettings {
       steps: 50;
       antialiased: boolean;
     };
+    refiner: {
+      model: string | undefined;
+      steps: 50;
+      strength: number;
+    };
   };
   aitDim: {
     width: number | undefined;
@@ -213,6 +218,11 @@ export const defaultSettings: ISettings = {
       strength: 0.7,
       steps: 50,
       antialiased: false,
+    },
+    refiner: {
+      model: undefined,
+      steps: 50,
+      strength: 0.3,
     },
   },
   aitDim: {

@@ -2,7 +2,7 @@
 
 import inspect
 from contextlib import ExitStack
-from typing import Callable, Literal, Optional, Union
+from typing import Callable, Literal, Optional, Union, Any
 
 import numpy as np
 import PIL
@@ -61,34 +61,6 @@ def preprocess_mask(mask, scale_factor=8):
 
 
 class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
-    r"""
-    Pipeline for text-to-image generation using Stable Diffusion without tokens length limit, and support parsing
-    weighting in prompt.
-
-    This model inherits from [`DiffusionPipeline`]. Check the superclass documentation for the generic methods the
-    library implements for all the pipelines (such as downloading or saving, running on a particular device, etc.)
-
-    Args:
-        vae ([`AutoencoderKL`]):
-            Variational Auto-Encoder (VAE) Model to encode and decode images to and from latent representations.
-        text_encoder ([`CLIPTextModel`]):
-            Frozen text-encoder. Stable Diffusion uses the text portion of
-            [CLIP](https://huggingface.co/docs/transformers/model_doc/clip#transformers.CLIPTextModel), specifically
-            the [clip-vit-large-patch14](https://huggingface.co/openai/clip-vit-large-patch14) variant.
-        tokenizer (`CLIPTokenizer`):
-            Tokenizer of class
-            [CLIPTokenizer](https://huggingface.co/docs/transformers/v4.21.0/en/model_doc/clip#transformers.CLIPTokenizer).
-        unet ([`UNet2DConditionModel`]): Conditional U-Net architecture to denoise the encoded image latents.
-        scheduler ([`SchedulerMixin`]):
-            A scheduler to be used in combination with `unet` to denoise the encoded image latents. Can be one of
-            [`DDIMScheduler`], [`LMSDiscreteScheduler`], or [`PNDMScheduler`].
-        safety_checker ([`StableDiffusionSafetyChecker`]):
-            Classification module that estimates whether generated images could be considered offensive or harmful.
-            Please, refer to the [model card](https://huggingface.co/CompVis/stable-diffusion-v1-4) for details.
-        feature_extractor ([`CLIPFeatureExtractor`]):
-            Model that extracts features from generated images to be used as inputs for the `safety_checker`.
-    """
-
     def __init__(
         self,
         parent,
@@ -101,6 +73,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         scheduler: SchedulerMixin,
         aesthetic_score: bool,
         force_zeros: bool,
+        final_offload_hook: Any,
     ):
         super().__init__(
             vae=vae,
@@ -123,6 +96,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         self.tokenizer_2: CLIPTokenizer
         self.unet: UNet2DConditionModel
         self.scheduler: LMSDiscreteScheduler
+        if final_offload_hook is not None:
+            self.final_offload_hook = final_offload_hook
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
@@ -595,6 +570,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
             # 9. Post-processing
             if output_type == "latent":
+                if hasattr(self, "final_offload_hook"):
+                    logger.debug("Offloading UNET")
+                    self.unet.to("cpu")
                 return latents, False
 
             image = self.decode_latents(latents)

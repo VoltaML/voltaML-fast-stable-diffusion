@@ -2,7 +2,7 @@
 
 import inspect
 from contextlib import ExitStack
-from typing import Callable, List, Literal, Optional, Union
+from typing import Callable, List, Literal, Optional, Union, Any
 
 import numpy as np
 import PIL
@@ -97,6 +97,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         safety_checker: StableDiffusionSafetyChecker,
         feature_extractor: CLIPFeatureExtractor,
         requires_safety_checker: bool = False,
+        final_offload_hook: Any = None,
     ):
         super().__init__(
             vae=vae,
@@ -119,6 +120,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self.safety_checker: StableDiffusionSafetyChecker
         self.feature_extractor: CLIPFeatureExtractor
         self.requires_safety_checker: bool
+        if final_offload_hook is not None:
+            self.final_offload_hook = final_offload_hook
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):

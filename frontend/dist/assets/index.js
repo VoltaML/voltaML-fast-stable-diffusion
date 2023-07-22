@@ -39549,6 +39549,7 @@ const useState = defineStore("state", () => {
     txt2img: {
       images: [],
       highres: false,
+      refiner: false,
       currentImage: "",
       genData: {
         time_taken: null,
@@ -40509,6 +40510,11 @@ const defaultSettings = {
       strength: 0.7,
       steps: 50,
       antialiased: false
+    },
+    refiner: {
+      model: void 0,
+      steps: 50,
+      strength: 0.3
     }
   },
   aitDim: {

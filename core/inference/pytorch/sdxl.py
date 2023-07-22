@@ -1,3 +1,4 @@
+import asyncio
 import logging
 from pathlib import Path
 from typing import Any, List
@@ -19,6 +20,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from core.config import config
+from core.flags import RefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.pytorch.lwp import get_weighted_text_embeddings
@@ -66,6 +68,7 @@ class SDXLStableDiffusion(InferenceModel):
         self.force_zeros: bool
         self.aesthetic_score: bool
         self.scheduler: Any
+        self.final_offload_hook: Any = None
         self.image_encoder: Any
 
         self.vae_path: str = "default"
@@ -91,8 +94,13 @@ class SDXLStableDiffusion(InferenceModel):
         self.tokenizer = pipe.tokenizer  # type: ignore
         self.tokenizer_2 = pipe.tokenizer_2  # type: ignore
         self.scheduler = pipe.scheduler  # type: ignore
-        self.aesthetic_score = pipe.config.requires_aesthetics_score  # type: ignore
+        if hasattr(pipe.config, "requires_aesthetics_score"):
+            self.aesthetic_score = pipe.config.requires_aesthetics_score  # type: ignore
+        else:
+            self.aesthetic_score = False
         self.force_zeros = pipe.config.force_zeros_for_empty_prompt  # type: ignore
+        if hasattr(pipe, "final_offload_hook"):
+            self.final_offload_hook = pipe.final_offload_hook
 
         # Free up memory
         del pipe
@@ -147,18 +155,7 @@ class SDXLStableDiffusion(InferenceModel):
         else:
             generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
-        pipe = StableDiffusionXLLongPromptWeightingPipeline(
-            parent=self,
-            vae=self.vae,
-            unet=self.unet,  # type: ignore
-            text_encoder=self.text_encoder,
-            text_encoder_2=self.text_encoder_2,
-            tokenizer=self.tokenizer,
-            tokenizer_2=self.tokenizer_2,
-            scheduler=self.scheduler,
-            force_zeros=self.force_zeros,
-            aesthetic_score=self.aesthetic_score,
-        )
+        pipe = self.create_pipe()
 
         if job.data.scheduler:
             change_scheduler(
@@ -169,6 +166,9 @@ class SDXLStableDiffusion(InferenceModel):
 
         for _ in range(job.data.batch_count):
             output_type = "pil"
+
+            if "refiner" in job.flags:
+                output_type = "latent"
 
             data = pipe.text2img(
                 prompt=job.data.prompt,
@@ -182,8 +182,42 @@ class SDXLStableDiffusion(InferenceModel):
                 generator=generator,
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
+                return_dict=False,
             )
 
+            if output_type == "latent":
+                latents: torch.FloatTensor = data[0]  # type: ignore
+                flags = RefinerFlag.from_dict(job.flags["refiner"])
+
+                from core.shared_dependent import gpu
+
+                unload = False
+                if flags.model not in gpu.loaded_models:
+                    asyncio.run(gpu.load_model(flags.model, "SDXL"))
+                    unload = True
+                model: SDXLStableDiffusion = gpu.loaded_models[flags.model]  # type: ignore
+                if config.api.clear_memory_policy == "always":
+                    self.memory_cleanup()
+                pipe = model.create_pipe()
+                data = pipe(
+                    image=latents,
+                    prompt=job.data.prompt,
+                    height=job.data.height,
+                    width=job.data.width,
+                    strength=flags.strength,
+                    num_inference_steps=flags.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    generator=generator,
+                    callback=txt2img_callback,
+                    num_images_per_prompt=job.data.batch_size,
+                    return_dict=False,
+                    output_type="pil",
+                )
+                del model
+                if unload:
+                    asyncio.run(gpu.unload(flags.model))
             images: list[Image.Image] = data[0]  # type: ignore
             total_images.extend(images)
 
@@ -203,10 +237,10 @@ class SDXLStableDiffusion(InferenceModel):
 
         return total_images
 
-    def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
-        "Generate an image from an image"
+    def create_pipe(self) -> StableDiffusionXLLongPromptWeightingPipeline:
+        "Create an LWP-XL pipeline"
 
-        pipe = StableDiffusionXLLongPromptWeightingPipeline(
+        return StableDiffusionXLLongPromptWeightingPipeline(
             parent=self,
             vae=self.vae,
             unet=self.unet,  # type: ignore
@@ -217,7 +251,13 @@ class SDXLStableDiffusion(InferenceModel):
             scheduler=self.scheduler,
             force_zeros=self.force_zeros,
             aesthetic_score=self.aesthetic_score,
+            final_offload_hook=self.final_offload_hook,
         )
+
+    def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
+        "Generate an image from an image"
+
+        pipe = self.create_pipe()
 
         if config.api.device_type == "directml":
             generator = torch.Generator().manual_seed(job.data.seed)
@@ -279,18 +319,7 @@ class SDXLStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        pipe = StableDiffusionXLLongPromptWeightingPipeline(
-            parent=self,
-            vae=self.vae,
-            unet=self.unet,  # type: ignore
-            text_encoder=self.text_encoder,
-            text_encoder_2=self.text_encoder_2,
-            tokenizer=self.tokenizer,
-            tokenizer_2=self.tokenizer_2,
-            scheduler=self.scheduler,
-            force_zeros=self.force_zeros,
-            aesthetic_score=self.aesthetic_score,
-        )
+        pipe = self.create_pipe()
 
         if config.api.device_type == "directml":
             generator = torch.Generator().manual_seed(job.data.seed)

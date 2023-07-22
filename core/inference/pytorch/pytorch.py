@@ -75,6 +75,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.requires_safety_checker: bool
         self.safety_checker: Any = None
         self.image_encoder: Any
+        self.final_offload_hook: Any = None
         self.controlnet: Optional[ControlNetModel]
 
         self.current_controlnet: str = ""
@@ -86,6 +87,19 @@ class PyTorchStableDiffusion(InferenceModel):
 
         if autoload:
             self.load()
+
+    def create_pipe(self) -> StableDiffusionLongPromptWeightingPipeline:
+        return StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
+            vae=self.vae,
+            unet=self.unet,  # type: ignore
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            feature_extractor=self.feature_extractor,
+            safety_checker=self.safety_checker,
+            final_offload_hook=self.final_offload_hook,
+        )
 
     def load(self):
         "Load the model from HuggingFace"
@@ -106,6 +120,8 @@ class PyTorchStableDiffusion(InferenceModel):
         self.feature_extractor = pipe.feature_extractor  # type: ignore
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
+        if hasattr(pipe, "final_offload_hook"):
+            self.final_offload_hook = pipe.final_offload_hook
 
         if not self.bare:
             # Autoload textual inversions
@@ -245,16 +261,7 @@ class PyTorchStableDiffusion(InferenceModel):
         else:
             generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
 
-        pipe = StableDiffusionLongPromptWeightingPipeline(
-            parent=self,
-            vae=self.vae,
-            unet=self.unet,  # type: ignore
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            safety_checker=self.safety_checker,
-        )
+        pipe = self.create_pipe()
 
         if job.data.scheduler:
             change_scheduler(
@@ -338,16 +345,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         self.manage_optional_components()
 
-        pipe = StableDiffusionLongPromptWeightingPipeline(
-            parent=self,
-            vae=self.vae,
-            unet=self.unet,  # type: ignore
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            safety_checker=self.safety_checker,
-        )
+        pipe = self.create_pipe()
 
         if config.api.device_type == "directml":
             generator = torch.Generator().manual_seed(job.data.seed)
@@ -423,16 +421,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 requires_safety_checker=False,
             )
         elif self.unet.config["in_channels"] == 4:
-            pipe = StableDiffusionLongPromptWeightingPipeline(
-                parent=self,
-                vae=self.vae,
-                unet=self.unet,  # type: ignore
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                feature_extractor=self.feature_extractor,
-                safety_checker=self.safety_checker,
-            )
+            pipe = self.create_pipe()
         else:
             raise ValueError(
                 f"Invalid in_channels: {self.unet.in_channels}, expected 4 or 9"

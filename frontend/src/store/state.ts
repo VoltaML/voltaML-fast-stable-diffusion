@@ -42,6 +42,7 @@ export interface StateInterface {
   txt2img: {
     currentImage: string;
     highres: boolean;
+    refiner: boolean;
     images: string[];
     genData: GenerationData;
   };
@@ -120,6 +121,7 @@ export const useState = defineStore("state", () => {
     txt2img: {
       images: [],
       highres: false,
+      refiner: false,
       currentImage: "",
       genData: {
         time_taken: null,
