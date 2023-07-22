@@ -5,6 +5,7 @@ from typing import Dict, List, Literal, Optional, Tuple, Union
 
 import torch
 from diffusers import StableDiffusionPipeline, DiffusionPipeline
+from transformers import CLIPTextModel, CLIPTokenizer
 
 from ...config import config
 from ...files import get_full_model_path
@@ -29,6 +30,13 @@ re_attention = re.compile(
 """,
     re.X,
 )
+
+
+class Placebo:
+    text_encoder: CLIPTextModel
+    tokenizer: CLIPTokenizer
+    loras: list
+
 
 special_parser = re.compile(
     r"\<(lora|ti):([^\:\(\)\<\>\[\]]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>"
@@ -239,7 +247,8 @@ def get_unweighted_text_embeddings(
     it should be split into chunks and sent to the text encoder individually.
     """
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
-    if isinstance(pipe, DiffusionPipeline):
+
+    if not isinstance(pipe, Placebo):
         if max_embeddings_multiples > 1:
             text_embeddings = []
             for i in range(max_embeddings_multiples):
@@ -313,7 +322,7 @@ def get_unweighted_text_embeddings(
             text_embeddings = pipe.text_encoder(text_input, output_hidden_states=True)
             hidden_states = text_embeddings[0]
             text_embeddings = text_embeddings.hidden_states[-2]
-        print(hidden_states.shape, text_embeddings.shape)
+        logger.debug(f"{hidden_states.shape} {text_embeddings.shape}")
         return text_embeddings, hidden_states
 
 

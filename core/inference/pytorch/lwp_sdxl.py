@@ -21,7 +21,7 @@ from transformers.models.clip import (
 
 from core.config import config
 from core.inference.pytorch.latents import prepare_latents
-from core.inference.pytorch.lwp import get_weighted_text_embeddings
+from core.inference.pytorch.lwp import get_weighted_text_embeddings, Placebo
 from core.inference.pytorch.sag import (
     CrossAttnStoreProcessor,
     pred_epsilon,
@@ -33,12 +33,6 @@ from core.optimizations import autocast, upcast_vae
 # ------------------------------------------------------------------------------
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
-
-
-class Placebo:
-    text_encoder: CLIPTextModel
-    tokenizer: CLIPTokenizer
-    loras: list
 
 
 def preprocess_image(image):

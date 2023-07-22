@@ -79,6 +79,8 @@ def optimize_model(
         # Not mad, not mad at all... to be fair, I'm just disappointed
         if not can_offload and not is_for_aitemplate:
             pipe.to(device, torch_dtype=config.api.dtype)
+        else:
+            pipe.to(torch_dtype=config.api.dtype)
 
         if config.api.device_type == "cuda" and not is_for_aitemplate:
             supports_tf = supports_tf32(device)
@@ -155,7 +157,7 @@ def optimize_model(
 
                     for cpu_offloaded_model in [
                         pipe.text_encoder,
-                        pipe.text_encoder_2,
+                        getattr(pipe, "text_encoder_2", None),
                         pipe.unet,
                         pipe.vae,
                     ]:
@@ -175,49 +177,36 @@ def optimize_model(
                     for m in [
                         pipe.vae,
                         pipe.unet,
+                        pipe.text_encoder,
+                        getattr(pipe, "text_encoder_2", None),
                     ]:
-                        if USE_DISK_OFFLOAD:
-                            # If USE_DISK_OFFLOAD toggle set (idk why anyone would do this, but it's nice to support stuff
-                            # like this in case anyone wants to try running this on fuck knows what)
-                            # then offload to disk.
-                            disk_offload(
-                                m,
-                                str(
-                                    get_full_model_path(
-                                        "offload-dir", model_folder="temp"
-                                    )
-                                    / m.__name__
-                                ),
-                                device,
-                                offload_buffers=True,
-                            )
-                        else:
-                            cpu_offload(m, device, offload_buffers=True)
+                        if m is not None:
+                            if USE_DISK_OFFLOAD:
+                                # If USE_DISK_OFFLOAD toggle set (idk why anyone would do this, but it's nice to support stuff
+                                # like this in case anyone wants to try running this on fuck knows what)
+                                # then offload to disk.
+                                disk_offload(
+                                    m,
+                                    str(
+                                        get_full_model_path(
+                                            "offload-dir", model_folder="temp"
+                                        )
+                                        / m.__name__
+                                    ),
+                                    device,
+                                    offload_buffers=True,
+                                )
+                            else:
+                                cpu_offload(m, device, offload_buffers=True)
 
                     logger.info("Optimization: Enabled sequential offload")
 
         if config.api.vae_slicing:
-            if not (
-                issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
-                or isinstance(pipe, StableDiffusionUpscalePipeline)
-            ):
-                pipe.enable_vae_slicing()
-                logger.info("Optimization: Enabled VAE slicing")
-            else:
-                logger.debug(
-                    "Optimization: VAE slicing is not available for upscale models"
-                )
+            pipe.vae.enable_slicing()  # type: ignore
+            logger.info("Optimization: Enabled VAE slicing")
         if config.api.vae_tiling:
-            if not (
-                issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
-                or isinstance(pipe, StableDiffusionUpscalePipeline)
-            ):
-                pipe.enable_vae_tiling()
-                logger.info("Optimization: Enabled VAE tiling")
-            else:
-                logger.debug(
-                    "Optimization: VAE tiling is not available for upscale models"
-                )
+            pipe.vae.enable_tiling()  # type: ignore
+            logger.info("Optimization: Enabled VAE tiling")
 
         if config.api.use_tomesd and not is_for_aitemplate:
             try:

@@ -8,7 +8,12 @@ from functools import partialmethod
 
 import torch
 from omegaconf import OmegaConf
-from diffusers import StableDiffusionPipeline, AutoencoderKL
+from diffusers import (
+    StableDiffusionPipeline,
+    StableDiffusionXLPipeline,
+    DiffusionPipeline,
+    AutoencoderKL,
+)
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     download_from_original_stable_diffusion_ckpt,
     assign_to_checkpoint,
@@ -25,9 +30,9 @@ from diffusers.utils.constants import (
     ONNX_WEIGHTS_NAME,
     WEIGHTS_NAME,
 )
-from transformers import CLIPTextModel
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
 from diffusers.utils.import_utils import is_safetensors_available
+from transformers import CLIPTextModel, CLIPTextModelWithProjection
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download
@@ -388,12 +393,10 @@ def load_pytorch_pipeline(
             # This function does not inherit the channels so we need to hack it like this
             in_channels = 9 if "inpaint" in model_id_or_path else 4
 
-            cl = StableDiffusionPipeline
             # I never knew this existed, but this is pretty handy :)
             cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
             try:
                 pipe = download_from_original_stable_diffusion_ckpt(
-                    pipeline_class=cl,  # type: ignore
                     checkpoint_path=str(get_full_model_path(model_id_or_path)),
                     from_safetensors=use_safetensors,
                     extract_ema=True,
@@ -402,7 +405,6 @@ def load_pytorch_pipeline(
                 )
             except KeyError:
                 pipe = download_from_original_stable_diffusion_ckpt(
-                    pipeline_class=cl,  # type: ignore
                     checkpoint_path=str(get_full_model_path(model_id_or_path)),
                     from_safetensors=use_safetensors,
                     extract_ema=False,
@@ -413,8 +415,6 @@ def load_pytorch_pipeline(
         with console.status(
             f"[bold green]Loading model from {'HuggingFace Hub' if '/' in model_id_or_path else 'HuggingFace model'}..."
         ):
-            from diffusers import DiffusionPipeline
-
             pipe = DiffusionPipeline.from_pretrained(
                 pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
                 torch_dtype=config.api.dtype,
@@ -423,30 +423,39 @@ def load_pytorch_pipeline(
                 feature_extractor=None,
                 low_cpu_mem_usage=True,
             )
-            # assert isinstance(pipe, StableDiffusionPipeline)
 
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
-    # assert isinstance(pipe, StableDiffusionPipeline)
+    assert isinstance(pipe, (StableDiffusionPipeline, StableDiffusionXLPipeline))
 
-    conf = pipe.text_encoder.config
-    conf.num_hidden_layers = 13 - config.api.clip_skip
-    pipe.text_encoder = CLIPTextModel.from_pretrained(
-        None, config=conf, state_dict=pipe.text_encoder.state_dict()
-    )
+    for name, text_encoder in [x for x in vars(pipe).items() if "text_encoder" in x[0]]:
+        text_encoder: CLIPTextModel
+        conf = text_encoder.config
+        conf.num_hidden_layers = conf.num_hidden_layers - (
+            config.api.clip_skip
+            * (2 if text_encoder is CLIPTextModelWithProjection else 1)
+        )
+        logger.debug(f"Replacing {name}s layers to {conf.num_hidden_layers}.")
+        setattr(
+            pipe,
+            name,
+            text_encoder.__class__.from_pretrained(
+                None, config=conf, state_dict=text_encoder.state_dict()
+            ),
+        )
 
     if optimize:
         from core.optimizations import optimize_model
 
         optimize_model(
-            pipe=pipe,
+            pipe=pipe,  # type: ignore
             device=device,
             is_for_aitemplate=is_for_aitemplate,
         )
     else:
         pipe.to(device, config.api.dtype)
 
-    return pipe
+    return pipe  # type: ignore
 
 
 def _custom_convert_ldm_vae_checkpoint(checkpoint, conf):
