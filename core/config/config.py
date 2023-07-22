@@ -187,22 +187,23 @@ class APIConfig:
     def device(self):
         "Return the device"
 
-        string = "cpu"
         if self.device_type == "intel":
             from core.inference.functions import is_ipex_available
 
-            string = "xpu" if is_ipex_available() else "cpu"
-        if self.device_type == "cpu":
-            string = "cpu"
-        if self.device_type == "vulkan":
-            string = "vulkan"
+            return torch.device("xpu" if is_ipex_available() else "cpu")
+
+        if self.device_type in ["cpu", "mps"]:
+            return torch.device(self.device_type)
+
+        if self.device_type in ["vulkan", "cuda"]:
+            return torch.device(f"{self.device_type}:{self.device_id}")
+
         if self.device_type == "directml":
             import torch_directml  # pylint: disable=import-error
 
             return torch_directml.device()
-
-        string = f"{self.device_type}:{self.device_id}"
-        return torch.device(string)
+        else:
+            raise ValueError(f"Device type {self.device_type} not supported")
 
 
 @dataclass
