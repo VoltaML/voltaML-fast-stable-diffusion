@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-37b1913e] {
+.progress-container[data-v-bb3362c2] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-37b1913e] {
+.top-bar[data-v-bb3362c2] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,15 +23,15 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--2ac8c8e2);
+  background-color: var(--6ce60834);
 }
-.logo[data-v-37b1913e] {
+.logo[data-v-bb3362c2] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
 .main {
-  background-color: var(--1d19c67b);
+  background-color: var(--29cef8cc);
 }
 .autocomplete {
   position: relative;
@@ -40,18 +40,18 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--12b62b62);
-  border-radius: var(--753630fc);
+  background-color: var(--4a43647e);
+  border-radius: var(--e4e5ec3e);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--753630fc);
+  border-radius: var(--e4e5ec3e);
 }
 .autocomplete-active {
-  background-color: var(--53c6c405) !important;
-  color: var(--e7594bd2) !important;
+  background-color: var(--1beee664) !important;
+  color: var(--440cdb18) !important;
 }
 body {
   min-height: 100vh;
