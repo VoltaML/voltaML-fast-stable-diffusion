@@ -394,7 +394,7 @@ def load_pytorch_pipeline(
             in_channels = 9 if "inpaint" in model_id_or_path else 4
 
             # I never knew this existed, but this is pretty handy :)
-            cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
+            # cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
             try:
                 pipe = download_from_original_stable_diffusion_ckpt(
                     checkpoint_path=str(get_full_model_path(model_id_or_path)),
