@@ -126,7 +126,9 @@ class CachedModelList:
                     ModelResponse(
                         name=model_name,
                         path=model_name,
-                        backend="PyTorch",
+                        backend="PyTorch"
+                        if "xl" not in model_name.casefold()
+                        else "SDXL",
                         vae="default",
                         valid=True,
                         loras=[],
