@@ -110,79 +110,9 @@
               />
             </div>
 
-            <!-- Dimensions -->
-            <div class="flex-container" v-if="conf.data.settings.aitDim.width">
-              <p class="slider-label">Width</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Width</p>
-              <NSlider
-                v-model:value="conf.data.settings.controlnet.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.controlnet.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-if="conf.data.settings.aitDim.height">
-              <p class="slider-label">Height</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Height</p>
-              <NSlider
-                v-model:value="conf.data.settings.controlnet.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.controlnet.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
+            <DimensionsInput
+              :dimensions-object="conf.data.settings.controlnet"
+            />
 
             <!-- Steps -->
             <div class="flex-container">
@@ -266,27 +196,10 @@
                 :max="9"
               />
             </div>
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Batch Size</p>
-                </template>
-                Number of images to generate in paralel.
-              </NTooltip>
-              <NSlider
-                v-model:value="conf.data.settings.controlnet.batch_size"
-                :min="1"
-                :max="9"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.controlnet.batch_size"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
-              />
-            </div>
+
+            <BatchSizeInput
+              :batch-size-object="conf.data.settings.controlnet"
+            />
 
             <!-- ControlNet Conditioning Scale -->
             <div class="flex-container">
@@ -425,6 +338,8 @@ import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
+import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
+import DimensionsInput from "@/components/generate/DimensionsInput.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -495,12 +410,8 @@ const generate = () => {
         image: conf.data.settings.controlnet.image,
         id: uuidv4(),
         negative_prompt: conf.data.settings.controlnet.negative_prompt,
-        width: conf.data.settings.aitDim.width
-          ? conf.data.settings.aitDim.width
-          : conf.data.settings.controlnet.width,
-        height: conf.data.settings.aitDim.height
-          ? conf.data.settings.aitDim.height
-          : conf.data.settings.controlnet.height,
+        width: conf.data.settings.controlnet.width,
+        height: conf.data.settings.controlnet.height,
         steps: conf.data.settings.controlnet.steps,
         guidance_scale: conf.data.settings.controlnet.cfg_scale,
         seed: seed,
