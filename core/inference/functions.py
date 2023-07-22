@@ -417,43 +417,45 @@ def load_pytorch_pipeline(
 
     assert isinstance(pipe, StableDiffusionPipeline)
 
-    conf = pipe.text_encoder.config
-    conf.num_hidden_layers = 13 - config.api.clip_skip
-    pipe.text_encoder = CLIPTextModel.from_pretrained(
-        None, config=conf, state_dict=pipe.text_encoder.state_dict()
-    )
-    if config.api.clip_quantization != "full":
-        from transformers import BitsAndBytesConfig
-        from transformers.utils.bitsandbytes import (
-            get_keys_to_not_convert,
-            replace_with_bnb_linear,
-            set_module_quantized_tensor_to_device,
+    # AIT freaks out if any of these are lost
+    if not is_for_aitemplate:
+        conf = pipe.text_encoder.config
+        conf.num_hidden_layers = 13 - config.api.clip_skip
+        pipe.text_encoder = CLIPTextModel.from_pretrained(
+            None, config=conf, state_dict=pipe.text_encoder.state_dict()
         )
-
-        state_dict = pipe.text_encoder.state_dict()  # type: ignore
-        bnbconfig = BitsAndBytesConfig(
-            load_in_8bit=config.api.clip_quantization == "int8",
-            load_in_4bit=config.api.clip_quantization == "int4",
-        )
-
-        dont_convert = get_keys_to_not_convert(pipe.text_encoder)
-        pipe.text_encoder = replace_with_bnb_linear(
-            pipe.text_encoder.to(config.api.device, config.api.dtype),  # type: ignore
-            dont_convert,
-            quantization_config=bnbconfig,
-        )
-
-        pipe.text_encoder.is_loaded_in_8bit = True
-        pipe.text_encoder.is_quantized = True
-
-        # This shouldn't even be needed, but diffusers likes meta tensors a bit too much
-        # Not that I don't see their purpose, it's just less general
-        for k, v in state_dict.items():
-            set_module_quantized_tensor_to_device(
-                pipe.text_encoder, k, config.api.device, v
+        if config.api.clip_quantization != "full":
+            from transformers import BitsAndBytesConfig
+            from transformers.utils.bitsandbytes import (
+                get_keys_to_not_convert,
+                replace_with_bnb_linear,
+                set_module_quantized_tensor_to_device,
             )
-        del state_dict, dont_convert
-    del conf
+
+            state_dict = pipe.text_encoder.state_dict()  # type: ignore
+            bnbconfig = BitsAndBytesConfig(
+                load_in_8bit=config.api.clip_quantization == "int8",
+                load_in_4bit=config.api.clip_quantization == "int4",
+            )
+
+            dont_convert = get_keys_to_not_convert(pipe.text_encoder)
+            pipe.text_encoder = replace_with_bnb_linear(
+                pipe.text_encoder.to(config.api.device, config.api.dtype),  # type: ignore
+                dont_convert,
+                quantization_config=bnbconfig,
+            )
+
+            pipe.text_encoder.is_loaded_in_8bit = True
+            pipe.text_encoder.is_quantized = True
+
+            # This shouldn't even be needed, but diffusers likes meta tensors a bit too much
+            # Not that I don't see their purpose, it's just less general
+            for k, v in state_dict.items():
+                set_module_quantized_tensor_to_device(
+                    pipe.text_encoder, k, config.api.device, v
+                )
+            del state_dict, dont_convert
+        del conf
 
     if optimize:
         from core.optimizations import optimize_model
