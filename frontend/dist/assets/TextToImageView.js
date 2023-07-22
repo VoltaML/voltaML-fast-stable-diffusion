@@ -1,14 +1,15 @@
-import "./DescriptionsItem.js";
-import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$2 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$3 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$4 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$1, a as _sfc_main$2, b as _sfc_main$5 } from "./DimensionsInput.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as createBlock, x as createCommentVNode, y as NGrid, z as spaceRegex } from "./index.js";
+import { B as BurnerClock } from "./clock.js";
+import { v as v4 } from "./v4.js";
+import { N as NSwitch } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { N as NSlider } from "./Slider.js";
-import { N as NSwitch } from "./Switch.js";
 import "./TrashBin.js";
-import { B as BurnerClock, _ as _sfc_main$3 } from "./clock.js";
-import { i as NCard, N as NGi, y as NGrid, k as NInput, r as NSelect, j as NSpace, q as NTooltip, c as computed, n as createBaseVNode, v as createBlock, x as createCommentVNode, f as createElementBlock, m as createTextVNode, g as createVNode, d as defineComponent, o as onUnmounted, e as openBlock, l as promptHandleKeyDown, p as promptHandleKeyUp, s as serverUrl, z as spaceRegex, t as toDisplayString, h as unref, b as useMessage, a as useSettings, u as useState, w as withCtx } from "./index.js";
-import { v as v4 } from "./v4.js";
+import "./DescriptionsItem.js";
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "100px" } }, "Sampler", -1);
@@ -508,5 +509,5 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-_sfc_main as default
+  _sfc_main as default
 };
