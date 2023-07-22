@@ -426,23 +426,22 @@ def load_pytorch_pipeline(
 
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
-    assert isinstance(pipe, (StableDiffusionPipeline, StableDiffusionXLPipeline))
-
     for name, text_encoder in [x for x in vars(pipe).items() if "text_encoder" in x[0]]:
         text_encoder: CLIPTextModel
-        conf = text_encoder.config
-        conf.num_hidden_layers = conf.num_hidden_layers - (
-            config.api.clip_skip
-            * (2 if text_encoder is CLIPTextModelWithProjection else 1)
-        )
-        logger.debug(f"Replacing {name}s layers to {conf.num_hidden_layers}.")
-        setattr(
-            pipe,
-            name,
-            text_encoder.__class__.from_pretrained(
-                None, config=conf, state_dict=text_encoder.state_dict()
-            ),
-        )
+        if text_encoder is not None:
+            conf = text_encoder.config
+            conf.num_hidden_layers = conf.num_hidden_layers - (
+                config.api.clip_skip
+                * (2 if text_encoder is CLIPTextModelWithProjection else 1)
+            )
+            logger.debug(f"Replacing {name}s layers to {conf.num_hidden_layers}.")
+            setattr(
+                pipe,
+                name,
+                text_encoder.__class__.from_pretrained(
+                    None, config=conf, state_dict=text_encoder.state_dict()
+                ),
+            )
 
     if optimize:
         from core.optimizations import optimize_model

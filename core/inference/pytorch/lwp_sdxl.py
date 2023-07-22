@@ -99,6 +99,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         tokenizer_2: CLIPTokenizer,
         unet: UNet2DConditionModel,
         scheduler: SchedulerMixin,
+        aesthetic_score: bool,
+        force_zeros: bool,
     ):
         super().__init__(
             vae=vae,
@@ -112,6 +114,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         self.__init__additional__()
 
         self.parent = parent
+        self.aesthetic_score: bool = aesthetic_score
+        self.force_zeros: bool = force_zeros
         self.vae: AutoencoderKL
         self.text_encoder: CLIPTextModel
         self.text_encoder_2: CLIPTextModelWithProjection
@@ -160,6 +164,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         negative_prompt,
         max_embeddings_multiples,
     ):
+        if negative_prompt == "":
+            negative_prompt = None
+
         batch_size = len(prompt) if isinstance(prompt, list) else 1
 
         prompts = [prompt, prompt]
@@ -198,10 +205,10 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             ) = get_weighted_text_embeddings(
                 pipe=obj,  # type: ignore
                 prompt=prompt,
-                uncond_prompt=None if negative_prompt is None else [negative_prompt] * batch_size,  # type: ignore
+                uncond_prompt=[""] * batch_size if negative_prompt is None and not self.force_zeros else [negative_prompt] * batch_size,  # type: ignore
                 max_embeddings_multiples=max_embeddings_multiples,
             )
-            if uncond_embeddings is None:
+            if negative_prompt is None and self.force_zeros:
                 uncond_embeddings = torch.zeros_like(text_embeddings)
                 uncond_pooled_embeddings = torch.zeros_like(pooled_embeddings)
             bs_embed, seq_len, _ = text_embeddings.shape
@@ -210,8 +217,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 bs_embed * num_images_per_prompt, seq_len, -1
             )
 
-            bs_embed, seq_len, _ = uncond_embeddings.shape
-            uncond_embeddings = uncond_embeddings.repeat(1, num_images_per_prompt, 1)
+            bs_embed, seq_len, _ = uncond_embeddings.shape  # type: ignore
+            uncond_embeddings = uncond_embeddings.repeat(1, num_images_per_prompt, 1)  # type: ignore
             uncond_embeddings = uncond_embeddings.view(
                 bs_embed * num_images_per_prompt, seq_len, -1
             )
@@ -274,22 +281,53 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             return timesteps, num_inference_steps - t_start
 
     def _get_add_time_ids(
-        self, original_size, crops_coords_top_left, target_size, dtype
+        self,
+        original_size,
+        crops_coords_top_left,
+        target_size,
+        aesthetic_score,
+        negative_aesthetic_score,
+        dtype,
     ):
-        add_time_ids = list(original_size + crops_coords_top_left + target_size)
+        if self.aesthetic_score:
+            add_time_ids = list(
+                original_size + crops_coords_top_left + (aesthetic_score,)
+            )
+            add_neg_time_ids = list(
+                original_size + crops_coords_top_left + (negative_aesthetic_score,)
+            )
+        else:
+            add_time_ids = list(original_size + crops_coords_top_left + target_size)
+            add_neg_time_ids = list(original_size + crops_coords_top_left + target_size)
 
         passed_add_embed_dim = (
             self.unet.config.addition_time_embed_dim * len(add_time_ids) + self.text_encoder_2.config.projection_dim  # type: ignore
         )
         expected_add_embed_dim = self.unet.add_embedding.linear_1.in_features  # type: ignore
 
-        if expected_add_embed_dim != passed_add_embed_dim:
+        if (
+            expected_add_embed_dim > passed_add_embed_dim
+            and (expected_add_embed_dim - passed_add_embed_dim) == self.unet.config.addition_time_embed_dim  # type: ignore
+        ):
+            raise ValueError(
+                f"Model expects an added time embedding vector of length {expected_add_embed_dim}, but a vector of {passed_add_embed_dim} was created. Please make sure to enable `requires_aesthetics_score` with `pipe.register_to_config(requires_aesthetics_score=True)` to make sure `aesthetic_score` {aesthetic_score} and `negative_aesthetic_score` {negative_aesthetic_score} is correctly used by the model."
+            )
+        elif (
+            expected_add_embed_dim < passed_add_embed_dim
+            and (passed_add_embed_dim - expected_add_embed_dim) == self.unet.config.addition_time_embed_dim  # type: ignore
+        ):
+            raise ValueError(
+                f"Model expects an added time embedding vector of length {expected_add_embed_dim}, but a vector of {passed_add_embed_dim} was created. Please make sure to disable `requires_aesthetics_score` with `pipe.register_to_config(requires_aesthetics_score=False)` to make sure `target_size` {target_size} is correctly used by the model."
+            )
+        elif expected_add_embed_dim != passed_add_embed_dim:
             raise ValueError(
                 f"Model expects an added time embedding vector of length {expected_add_embed_dim}, but a vector of {passed_add_embed_dim} was created. The model has an incorrect config. Please check `unet.config.time_embedding_type` and `text_encoder_2.config.projection_dim`."
             )
 
         add_time_ids = torch.tensor([add_time_ids], dtype=dtype)
-        return add_time_ids
+        add_neg_time_ids = torch.tensor([add_neg_time_ids], dtype=dtype)
+
+        return add_time_ids, add_neg_time_ids
 
     def decode_latents(self, latents):
         if self.vae.config.force_upcast or config.api.upcast_vae:  # type: ignore
@@ -348,6 +386,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
     ):
+        aesthetic_score = 6.0
+        negative_aesthetic_score = 2.5
+
         if config.api.torch_compile:
             self.unet = torch.compile(
                 self.unet,
@@ -429,8 +470,13 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
 
             add_text_embeds = pooled_prompt_embeds
-            add_time_ids = self._get_add_time_ids(
-                (height, width), (0, 0), (height, width), dtype
+            add_time_ids, add_neg_time_ids = self._get_add_time_ids(
+                (height, width),
+                (0, 0),
+                (height, width),
+                aesthetic_score,
+                negative_aesthetic_score,
+                dtype,
             )
 
             if do_classifier_free_guidance:
@@ -440,7 +486,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 add_text_embeds = torch.cat(
                     [negative_pooled_prompt_embeds, add_text_embeds], dim=0
                 )
-                add_time_ids = torch.cat([add_time_ids, add_time_ids], dim=0)
+                add_time_ids = torch.cat([add_neg_time_ids, add_time_ids], dim=0)
             prompt_embeds = prompt_embeds.to(device)
             add_text_embeds = add_text_embeds.to(device)
             add_time_ids = add_time_ids.to(device).repeat(batch_size * num_images_per_prompt, 1)  # type: ignore

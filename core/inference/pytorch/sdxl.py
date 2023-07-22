@@ -63,6 +63,8 @@ class SDXLStableDiffusion(InferenceModel):
         self.text_encoder_2: CLIPTextModelWithProjection
         self.tokenizer: CLIPTokenizer
         self.tokenizer_2: CLIPTokenizer
+        self.force_zeros: bool
+        self.aesthetic_score: bool
         self.scheduler: Any
         self.image_encoder: Any
 
@@ -89,6 +91,8 @@ class SDXLStableDiffusion(InferenceModel):
         self.tokenizer = pipe.tokenizer  # type: ignore
         self.tokenizer_2 = pipe.tokenizer_2  # type: ignore
         self.scheduler = pipe.scheduler  # type: ignore
+        self.aesthetic_score = pipe.config.requires_aesthetics_score  # type: ignore
+        self.force_zeros = pipe.config.force_zeros_for_empty_prompt  # type: ignore
 
         # Free up memory
         del pipe
@@ -104,8 +108,6 @@ class SDXLStableDiffusion(InferenceModel):
         if vae == "default":
             self.vae = old_vae
         else:
-            # Why the fuck do you think that's constant pylint?
-            # Are you mentally insane?
             if Path(vae).is_dir():
                 self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
             else:
@@ -126,6 +128,8 @@ class SDXLStableDiffusion(InferenceModel):
             self.tokenizer,
             self.tokenizer_2,
             self.scheduler,
+            self.aesthetic_score,
+            self.force_zeros,
         )
 
         if hasattr(self, "original_vae"):
@@ -152,6 +156,8 @@ class SDXLStableDiffusion(InferenceModel):
             tokenizer=self.tokenizer,
             tokenizer_2=self.tokenizer_2,
             scheduler=self.scheduler,
+            force_zeros=self.force_zeros,
+            aesthetic_score=self.aesthetic_score,
         )
 
         if job.data.scheduler:
@@ -209,6 +215,8 @@ class SDXLStableDiffusion(InferenceModel):
             tokenizer=self.tokenizer,
             tokenizer_2=self.tokenizer_2,
             scheduler=self.scheduler,
+            force_zeros=self.force_zeros,
+            aesthetic_score=self.aesthetic_score,
         )
 
         if config.api.device_type == "directml":
@@ -280,6 +288,8 @@ class SDXLStableDiffusion(InferenceModel):
             tokenizer=self.tokenizer,
             tokenizer_2=self.tokenizer_2,
             scheduler=self.scheduler,
+            force_zeros=self.force_zeros,
+            aesthetic_score=self.aesthetic_score,
         )
 
         if config.api.device_type == "directml":
@@ -305,19 +315,25 @@ class SDXLStableDiffusion(InferenceModel):
 
         for _ in range(job.data.batch_count):
             if isinstance(pipe, StableDiffusionInpaintPipeline):
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                (
+                    prompt_embeds,
+                    _,
+                    negative_prompt_embeds,
+                    _,
+                ) = get_weighted_text_embeddings(
                     pipe=self,  # type: ignore
                     prompt=job.data.prompt,
                     uncond_prompt=job.data.negative_prompt,
                 )
 
                 data = pipe(
-                    prompt_embeds=prompt_embeds,
+                    prompt=None,
+                    prompt_embeds=prompt_embeds,  # type: ignore
                     image=input_image,
                     mask_image=input_mask_image,
                     num_inference_steps=job.data.steps,
                     guidance_scale=job.data.guidance_scale,
-                    negative_prompt_embeds=negative_prompt_embeds,
+                    negative_prompt_embeds=negative_prompt_embeds,  # type: ignore
                     output_type="pil",
                     generator=generator,
                     callback=inpaint_callback,
