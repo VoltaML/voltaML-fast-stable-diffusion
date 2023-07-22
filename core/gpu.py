@@ -114,10 +114,12 @@ class GPU:
 
                 a = torch.tensor([1.0]).cuda()
                 b, b_state = F.quantize_fp4(torch.tensor([2.0]).cuda())
-                bnb.matmul_4bit(a, b, quant_state=b_state)
+                bnb.matmul_4bit(a, b, quant_state=b_state)  # type: ignore
                 cap.supports_int8 = True
+                logger.debug("GPU supports int8")
             except Exception:  # pylint: disable=broad-except
-                pass
+                logger.debug("GPU does not support int8")
+
         cap.supports_xformers = is_xformers_available()
         if torch.cuda.is_available():
             caps = torch.cuda.get_device_capability(self.gpu_id)
