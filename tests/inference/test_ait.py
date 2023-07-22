@@ -12,63 +12,66 @@ from core.types import (
 from tests.functions import generate_random_image_base64
 
 try:
-    from core.aitemplate.compile import compile_diffusers
     from core.inference.aitemplate import AITemplateStableDiffusion
 except ModuleNotFoundError:
     pytest.skip("Skipping aitemplate tests, ait not installed", allow_module_level=True)
 
-
-@pytest.mark.slow
-def test_compile_aitemplate_models():
-    compile_diffusers(
-        local_dir_or_id="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
-    )
+model = "Azher--Anything-v4.5-vae-fp16-diffuser__512-1024x512-1024x1-1"
 
 
 @pytest.fixture(name="pipe")
 def pipe_fixture():
     return AITemplateStableDiffusion(
-        "Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1"
+        model_id=model,
     )
 
 
-def test_aitemplate_txt2img(pipe: AITemplateStableDiffusion):
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+def test_aitemplate_txt2img(
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
+):
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
             prompt="This is a test",
-            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            scheduler=scheduler,
             id="test",
         ),
-        model="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
+        model=model,
     )
 
     pipe.generate(job)
 
 
-def test_aitemplate_img2img(pipe: AITemplateStableDiffusion):
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+def test_aitemplate_img2img(
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
+):
     job = Img2ImgQueueEntry(
         data=Img2imgData(
             prompt="test",
             image=generate_random_image_base64(),
-            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            scheduler=scheduler,
             id="test",
         ),
-        model="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
+        model=model,
     )
 
     pipe.generate(job)
 
 
-def test_aitemplate_controlnet(pipe: AITemplateStableDiffusion):
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+def test_aitemplate_controlnet(
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
+):
     job = ControlNetQueueEntry(
         data=ControlNetData(
             prompt="test",
             image=generate_random_image_base64(),
-            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            scheduler=scheduler,
             controlnet="lllyasviel/sd-controlnet-canny",
             id="test",
         ),
-        model="Azher--Anything-v4.5-vae-fp16-diffuser__512x512x1",
+        model=model,
     )
 
     pipe.generate(job)
