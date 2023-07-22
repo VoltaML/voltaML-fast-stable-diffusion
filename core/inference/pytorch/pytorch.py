@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Union
 
 import torch
 from diffusers import (
@@ -51,7 +51,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
         autoload: bool = True,
         bare: bool = False,
     ) -> None:

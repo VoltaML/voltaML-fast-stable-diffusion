@@ -6,9 +6,9 @@ import time
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
 
+import torch
 from diffusers.utils import is_xformers_available
 from PIL import Image
-import torch
 
 from api import websocket_manager
 from api.websockets.notification import Notification
@@ -27,18 +27,18 @@ from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
     AITemplateDynamicBuildRequest,
+    Capabilities,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
-    VaeLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
-    Capabilities,
+    VaeLoadRequest,
 )
 from core.utils import convert_to_image, image_grid
 
@@ -75,7 +75,7 @@ class GPU:
             cap.supported_backends.append("directml")
         except ImportError:
             pass
-        if torch.backends.mps.is_available():
+        if torch.backends.mps.is_available():  # type: ignore
             cap.supported_backends.append("mps")
         if torch.is_vulkan_available():
             cap.supported_backends.append("vulkan")
@@ -102,21 +102,21 @@ class GPU:
                 cap.supported_precisions_gpu = ["float32"] + s
         try:
             cap.supported_torch_compile_backends = (
-                torch._dynamo.list_backends()
-            )  # pylint: disable=protected-access
+                torch._dynamo.list_backends()  # type: ignore # pylint: disable=protected-access
+            )
         except Exception:  # pylint: disable=broad-exception-caught
             pass
 
         if torch.cuda.is_available():
             try:
-                import bitsandbytes as bnb
-                import bitsandbytes.functional as F
+                import bitsandbytes as bnb  # pylint: disable=import-error
+                import bitsandbytes.functional as F  # pylint: disable=import-error
 
                 a = torch.tensor([1.0]).cuda()
                 b, b_state = F.quantize_fp4(torch.tensor([2.0]).cuda())
                 bnb.matmul_4bit(a, b, quant_state=b_state)
                 cap.supports_int8 = True
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 pass
         cap.supports_xformers = is_xformers_available()
         if torch.cuda.is_available():

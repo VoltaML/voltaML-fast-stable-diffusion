@@ -1,19 +1,19 @@
+import io
 import json
 import logging
-import io
 import os
+from functools import partialmethod
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
-from functools import partialmethod
 
+import requests
 import torch
-from omegaconf import OmegaConf
-from diffusers import StableDiffusionPipeline, AutoencoderKL
+from diffusers import AutoencoderKL, StableDiffusionPipeline
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
-    download_from_original_stable_diffusion_ckpt,
     assign_to_checkpoint,
     conv_attn_to_linear,
     create_vae_diffusers_config,
+    download_from_original_stable_diffusion_ckpt,
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
 )
@@ -25,7 +25,6 @@ from diffusers.utils.constants import (
     ONNX_WEIGHTS_NAME,
     WEIGHTS_NAME,
 )
-from transformers import CLIPTextModel
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
 from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
@@ -37,10 +36,11 @@ from huggingface_hub.utils._errors import (
     RepositoryNotFoundError,
     RevisionNotFoundError,
 )
+from omegaconf import OmegaConf
 from packaging import version
-import requests
 from requests import HTTPError
 from rich.console import Console
+from transformers import CLIPTextModel
 
 from core.config import config
 from core.files import get_full_model_path
@@ -359,7 +359,7 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
 
 def load_pytorch_pipeline(
     model_id_or_path: str,
-    device: str = "cuda",
+    device: Union[str, torch.device] = "cuda",
     optimize: bool = True,
     is_for_aitemplate: bool = False,
 ) -> StableDiffusionPipeline:

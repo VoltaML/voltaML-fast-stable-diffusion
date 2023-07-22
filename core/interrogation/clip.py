@@ -12,11 +12,11 @@ from PIL import Image
 from safetensors.numpy import load_file, save_file
 from tqdm import tqdm
 from transformers.modeling_utils import PreTrainedModel
-from transformers.utils import is_bitsandbytes_available
 from transformers.models.auto.modeling_auto import AutoModelForCausalLM
 from transformers.models.auto.processing_auto import AutoProcessor
 from transformers.models.blip.modeling_blip import BlipForConditionalGeneration
 from transformers.models.blip_2 import Blip2ForConditionalGeneration
+from transformers.utils import is_bitsandbytes_available
 
 from core.config import config
 from core.files import get_full_model_path
@@ -32,7 +32,9 @@ CACHE_URL = "https://huggingface.co/pharma/ci-preprocess/resolve/main/"
 class CLIPInterrogator(InterrogationModel):
     "internal"
 
-    def __init__(self, device: str = "cuda", autoload: bool = False):
+    def __init__(
+        self, device: Union[str, torch.device] = "cuda", autoload: bool = False
+    ):
         super().__init__(device)
 
         self.device = device
