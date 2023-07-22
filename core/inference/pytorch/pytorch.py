@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional
 
 import torch
 from diffusers import (
@@ -75,8 +75,8 @@ class PyTorchStableDiffusion(InferenceModel):
         self.current_controlnet: str = ""
 
         self.vae_path: str = "default"
-        self.loras: List[Tuple[str, float]] = []
         self.unload_loras: List[str] = []
+        self.unload_lycoris: List[str] = []
         self.textual_inversions: List[str] = []
 
         if autoload:
@@ -170,7 +170,7 @@ class PyTorchStableDiffusion(InferenceModel):
             del self.original_vae  # type: ignore
 
         if hasattr(self, "lora_injector"):
-            from ..lora import uninstall_lora_hook
+            from ..injectables import uninstall_lora_hook
 
             uninstall_lora_hook(self)
 
@@ -184,7 +184,7 @@ class PyTorchStableDiffusion(InferenceModel):
     ) -> None:
         "Cleanup old components"
 
-        from ..lora import load_lora_utilities
+        from ..injectables import load_lora_utilities
 
         load_lora_utilities(self)
 
@@ -644,11 +644,18 @@ class PyTorchStableDiffusion(InferenceModel):
         if len(self.unload_loras) != 0:
             for l in self.unload_loras:
                 try:
-                    self.remove_lora(l)  # type: ignore
+                    self.lora_injector.remove_lora(l)  # type: ignore
                     logger.debug(f"Unloading LoRA: {l}")
                 except KeyError:
                     pass
             self.unload_loras.clear()
+        if len(self.unload_lycoris) != 0:  # type: ignore
+            for l in self.unload_lycoris:  # type: ignore
+                try:
+                    self.lora_injector.remove_lycoris(l)  # type: ignore
+                    logger.debug(f"Unloading LyCORIS: {l}")
+                except KeyError:
+                    pass
 
         # Clean memory and return images
         self.memory_cleanup()

@@ -1,7 +1,7 @@
 import logging
 import re
 from pathlib import Path
-from typing import Dict, List, Literal, Optional, Tuple, Union
+from typing import Dict, List, Optional, Tuple, Union
 
 import torch
 from diffusers import StableDiffusionPipeline
@@ -37,7 +37,7 @@ special_parser = re.compile(
 
 def parse_prompt_special(
     text: str,
-) -> Tuple[str, Dict[Literal["ti", "lora"], List[Union[str, Tuple[str, float]]]]]:
+) -> Tuple[str, Dict[str, List[Union[str, Tuple[str, float]]]]]:
     """
     Replaces special tokens like <lora:more_details:0.7> with their correct format and outputs then into a dict.
 
@@ -50,17 +50,16 @@ def parse_prompt_special(
     load_map = {}
 
     def replace(match):
-        type_: Literal["ti", "lora"] = match.group(1)  # type: ignore
+        type_: str = match.group(1)  # type: ignore
         name = match.group(2)
         strength = match.group(3)
 
+        load_map[type_] = load_map.get(type_, list())
         if type_ == "ti":
-            load_map["ti"] = load_map.get("ti", list())
-            load_map["ti"].append(name)
+            load_map[type_].append(name)
             return f"({name}:{strength if strength else '1.0'})"
         # LoRAs don't really have trigger words, they all modify the UNet at least a bit
-        load_map["lora"] = load_map.get("lora", list())
-        load_map["lora"].append((name, float(strength) if strength else 1.0))
+        load_map[type_].append((name, float(strength) if strength else 1.0))
         return "" if not config.api.huggingface_style_parsing else name
 
     parsed = special_parser.sub(replace, text)
@@ -317,26 +316,14 @@ def get_weighted_text_embeddings(
 
     if not hasattr(pipe, "clip_inference"):
         loralist = []
-        for l in pipe.loras:
-            loralist.append(l)
         for i, prompt_ in enumerate(prompt):
             prompt[i], load_map = parse_prompt_special(prompt_)
             if len(load_map.keys()) != 0:
                 logger.debug(load_map)
                 if "lora" in load_map:
-                    from ..lora import install_lora_hook
+                    from ..injectables import install_lora_hook
 
                     install_lora_hook(pipe)
-
-                    if not hasattr(pipe.lora_injector, "old_containers"):
-                        pipe.lora_injector.old_containers = None
-                    if pipe.lora_injector.old_containers is None:
-                        pipe.lora_injector.old_containers = (
-                            pipe.lora_injector.containers
-                        )
-                        logger.debug(
-                            f"Old containers: {pipe.lora_injector.old_containers}"
-                        )
 
                     for lora, alpha in load_map["lora"]:
                         correct_path = get_full_model_path(
@@ -349,27 +336,30 @@ def get_weighted_text_embeddings(
                             if path.exists():
                                 correct_path = path
                                 break
-                        loralist.append((correct_path, alpha))
-                elif "ti" in load_map:
+                        if not correct_path.exists():
+                            correct_path = get_full_model_path(
+                                lora, model_folder="lycoris", force=True
+                            )
+                            for ext in [".safetensors", ".ckpt", ".bin", ".pt", ".pth"]:
+                                path = get_full_model_path(
+                                    lora + ext, model_folder="lycoris", force=True
+                                )
+                                if path.exists():
+                                    correct_path = path
+                                    break
+                            if correct_path.exists():
+                                loralist.append((correct_path, alpha, "lycoris"))
+                            else:
+                                logger.error(
+                                    f"Could not find any lora with the name {lora}"
+                                )
+                        else:
+                            loralist.append((correct_path, alpha))
+                if "ti" in load_map:
                     # Disable TI for now as there's no reliable way to unload them
                     logger.info(
                         "Textual inversion via prompts is temporarily disabled."
                     )
-                    continue
-                    for ti in load_map["ti"]:  # type: ignore
-                        ti: str
-                        correct_path = get_full_model_path(
-                            ti, model_folder="textual-inversion", force=True
-                        )
-                        for ext in [".safetensors", ".ckpt", ".bin", ".pt", ".pth"]:
-                            path = get_full_model_path(
-                                ti + ext, model_folder="textual-inversion", force=True
-                            )
-                            if path.exists():
-                                correct_path = path
-                                break
-                        logger.debug(f"Applying textual inversion {correct_path.name}")
-                        pipe.load_textual_inversion(correct_path.absolute().as_posix())
 
         if config.api.huggingface_style_parsing and hasattr(pipe, "lora_injector"):
             for prompt_ in prompt:
@@ -389,20 +379,29 @@ def get_weighted_text_embeddings(
                         except KeyError:
                             pass
         if hasattr(pipe, "lora_injector"):
-            remove = pipe.unload_loras
-            for lora, alpha in loralist:
+            remove_loras = pipe.unload_loras
+            remove_lycoris = pipe.unload_lycoris
+            logger.debug(f"{loralist}")
+            for ent in loralist:
+                lyco = len(ent) == 3
+                lora = ent[0]
+                alpha = ent[1]
                 name = Path(lora).name
-                if name not in pipe.lora_injector.containers:
-                    logger.debug(f"{pipe.loras}, {loralist}")
-                    if (
-                        lora not in map(lambda x: x[0], pipe.loras)
-                        and name not in remove
-                    ):
+
+                if lyco:
+                    if name not in remove_lycoris:
+                        logger.debug(f"Adding LyCORIS {name} to the removal list")
+                        remove_lycoris.append(name)
+                    logger.debug(f"Applying LyCORIS {name} with strength {alpha}")
+                    pipe.lora_injector.apply_lycoris(lora, alpha)
+                else:
+                    if name not in remove_loras:
                         logger.debug(f"Adding LoRA {name} to the removal list")
-                        remove.append(name)
+                        remove_loras.append(name)
                     logger.debug(f"Applying LoRA {name} with strength {alpha}")
-                    pipe.apply_lora(lora, alpha)
-            pipe.unload_loras = remove
+                    pipe.lora_injector.apply_lora(lora, alpha)
+            pipe.unload_lycoris = remove_lycoris
+            pipe.unload_loras = remove_loras
 
     if not skip_parsing:
         prompt_tokens, prompt_weights = get_prompts_with_weights(

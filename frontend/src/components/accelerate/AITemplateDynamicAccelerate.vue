@@ -5,12 +5,15 @@
         <NSteps>
           <NStep title="CLIP" :status="global.state.aitBuildStep.clip" />
           <NStep title="UNet" :status="global.state.aitBuildStep.unet" />
-          <NStep title="VAE" :status="global.state.aitBuildStep.vae" />
           <NStep
-            title="Cleanup"
-            :status="global.state.aitBuildStep.cleanup"
-          /> </NSteps></NSpace
-    ></NCard>
+            title="ControlNet UNet"
+            :status="global.state.aitBuildStep.controlnet_unet"
+          />
+          <NStep title="VAE" :status="global.state.aitBuildStep.vae" />
+          <NStep title="Cleanup" :status="global.state.aitBuildStep.cleanup" />
+        </NSteps>
+      </NSpace>
+    </NCard>
 
     <NCard style="margin-top: 16px">
       <!-- Width -->

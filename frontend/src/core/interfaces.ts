@@ -24,12 +24,12 @@ export interface ModelEntry {
     | "ONNX"
     | "unknown"
     | "LoRA"
+    | "LyCORIS"
     | "VAE"
     | "Textual Inversion";
   valid: boolean;
   vae: string;
   state: "loading" | "loaded" | "not loaded";
-  loras: string[];
   textual_inversions: string[];
 }
 

@@ -52,13 +52,6 @@ class WebSocketManager:
                 all_gpus = [
                     pyamdgpuinfo.get_gpu(x) for x in range(pyamdgpuinfo.detect_gpus())
                 ]
-                for stat in all_gpus:
-                    # More sane values, I guess... I mean, who needs 100 updates a second...
-                    precision = 16
-                    stat.start_utilisation_polling(
-                        ticks_per_second=precision,
-                        buffer_size_in_ticks=precision * 5,
-                    )
                 amd = True
             except Exception:  # pylint: disable=broad-except
                 logger.warning(

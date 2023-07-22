@@ -1,9 +1,14 @@
 <template>
   <NModal
-    v-model:show="show"
-    :title="model?.name as string + ' (by ' + model?.creator.username as string + ')' || 'Loading...'"
+    :show="showModal"
+    :title="
+      (((model?.name as string) +
+        ' (by ' +
+        model?.creator.username) as string) + ')' || 'Loading...'
+    "
     preset="card"
     style="width: 90vw"
+    @update:show="emit('update:showModal', $event)"
   >
     <NTabs justify-content="start" type="bar" v-model:value="tabValue" animated>
       <NTabPane
@@ -12,7 +17,7 @@
         :key="subModel.id"
         style="display: flex; flex-direction: column"
       >
-        <NGrid cols="2">
+        <NGrid cols="1 850:2">
           <NGi>
             <!-- Gallery -->
             <NCarousel
@@ -21,6 +26,9 @@
               :slides-per-view="2"
               effect="card"
               dot-type="line"
+              centered-slides
+              keyboard
+              mousewheel
             >
               <div
                 v-for="image in subModel.images"
@@ -31,7 +39,7 @@
                   :src="image.url"
                   :style="{
                     width: '100%',
-                    filter: image.nsfw !== 'None' ? 'blur(12px)' : 'none',
+                    // filter: image.nsfw !== 'None' ? 'blur(4px)' : 'none',
                   }"
                 />
               </div>
@@ -102,8 +110,21 @@
                   margin-top: 8px;
                 "
               >
-                <NSelect :options="generateDownloadOptions(subModel.files)" />
-                <NButton style="margin-left: 4px" type="primary" ghost>
+                <NSelect
+                  :options="generateDownloadOptions(subModel.files)"
+                  @update-value="
+                    (value) => selectedModel.set(subModel.name, value)
+                  "
+                />
+                <NButton
+                  style="margin-left: 4px"
+                  type="primary"
+                  ghost
+                  :disabled="!selectedModel.get(subModel.name)"
+                  @click="
+                    message.success('Test: ' + selectedModel.get(subModel.name))
+                  "
+                >
                   Download
                 </NButton>
               </div>
@@ -131,19 +152,24 @@ import {
   NTabPane,
   NTabs,
   NTag,
+  useMessage,
   type TabsInst,
 } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
-import { nextTick, ref, watch } from "vue";
+import { nextTick, reactive, ref, watch } from "vue";
 
-const show = ref(true);
+const message = useMessage();
 
 const props = defineProps<{
   model: ICivitAIModel | null;
+  showModal: boolean;
 }>();
+
+const emit = defineEmits(["update:showModal"]);
 
 const tabValue = ref<string | number>("");
 const tabsInstRef = ref<TabsInst | null>(null);
+const selectedModel = reactive<Map<string, string>>(new Map());
 
 const dateFormat = new Intl.DateTimeFormat(navigator.language, {
   year: "numeric",
@@ -164,7 +190,9 @@ watch(props, (newProps) => {
 
 function generateDownloadOptions(submodel: IFile[]): SelectMixedOption[] {
   return submodel.map((file) => ({
-    label: file.name,
+    label: `${file.metadata.format} ${file.metadata.size} ${
+      file.metadata.fp
+    } [${(file.sizeKB / 1024 / 1024).toFixed(2)} GB]`,
     value: file.downloadUrl,
   }));
 }

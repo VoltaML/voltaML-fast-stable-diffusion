@@ -45,9 +45,9 @@ export interface ISettings {
     };
   };
   aitDim: {
-    width: number | undefined;
-    height: number | undefined;
-    batch_size: number | undefined;
+    width: number[] | undefined;
+    height: number[] | undefined;
+    batch_size: number[] | undefined;
   };
   txt2img: {
     prompt: string;

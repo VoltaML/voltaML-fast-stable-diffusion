@@ -467,7 +467,6 @@ const vaeModels = computed(() => {
       valid: true,
       state: "not loaded",
       vae: "default",
-      loras: [],
       textual_inversions: [],
     } as ModelEntry,
     ...filteredModels.value
@@ -555,23 +554,33 @@ function refreshModels() {
               conf.data.settings.model = null;
             }
           }
-          if (conf.data.settings.model) {
-            const spl = conf.data.settings.model.name.split("__")[1];
-            if (spl) {
-              const xspl = spl.split("x");
-              const width = parseInt(xspl[0]);
-              const height = parseInt(xspl[1]);
-              const batch_size = parseInt(xspl[2]);
+          try {
+            if (conf.data.settings.model) {
+              const spl = conf.data.settings.model.name.split("__")[1];
 
-              conf.data.settings.aitDim.width = width;
-              conf.data.settings.aitDim.height = height;
-              conf.data.settings.aitDim.batch_size = batch_size;
+              const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
+              const matches = regex.exec(spl);
+
+              console.log("Match: ", matches);
+
+              if (matches) {
+                const width = matches[1].split("-").map((x) => parseInt(x));
+                const height = matches[2].split("-").map((x) => parseInt(x));
+                const batch_size = matches[3]
+                  .split("-")
+                  .map((x) => parseInt(x));
+
+                conf.data.settings.aitDim.width = width;
+                conf.data.settings.aitDim.height = height;
+                conf.data.settings.aitDim.batch_size = batch_size;
+              } else {
+                throw new Error("Invalid model name for AIT dimensions parser");
+              }
             } else {
-              conf.data.settings.aitDim.width = undefined;
-              conf.data.settings.aitDim.height = undefined;
-              conf.data.settings.aitDim.batch_size = undefined;
+              throw new Error("No model, cannot parse AIT dimensions");
             }
-          } else {
+          } catch (e) {
+            console.warn(e);
             conf.data.settings.aitDim.width = undefined;
             conf.data.settings.aitDim.height = undefined;
             conf.data.settings.aitDim.batch_size = undefined;
@@ -579,7 +588,7 @@ function refreshModels() {
 
           const autofillKeys = [];
           for (const model of global.state.models) {
-            if (model.backend === "LoRA") {
+            if (model.backend === "LoRA" || model.backend === "LyCORIS") {
               autofillKeys.push(`<lora:${model.name}:1.0>`);
             }
             /*else if (model.backend === "Textual Inversion") {
@@ -701,23 +710,29 @@ async function onModelChange(modelStr: string) {
     message.error("Model not found");
   }
 
-  if (conf.data.settings.model) {
-    const spl = conf.data.settings.model.name.split("__")[1];
-    if (spl) {
-      const xspl = spl.split("x");
-      const width = parseInt(xspl[0]);
-      const height = parseInt(xspl[1]);
-      const batch_size = parseInt(xspl[2]);
+  try {
+    if (conf.data.settings.model) {
+      const spl = conf.data.settings.model.name.split("__")[1];
 
-      conf.data.settings.aitDim.width = width;
-      conf.data.settings.aitDim.height = height;
-      conf.data.settings.aitDim.batch_size = batch_size;
+      const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
+      const match = spl.match(regex);
+
+      if (match) {
+        const width = match[0].split("-").map((x) => parseInt(x));
+        const height = match[1].split("-").map((x) => parseInt(x));
+        const batch_size = match[2].split("-").map((x) => parseInt(x));
+
+        conf.data.settings.aitDim.width = width;
+        conf.data.settings.aitDim.height = height;
+        conf.data.settings.aitDim.batch_size = batch_size;
+      } else {
+        throw new Error("Invalid model name for AIT dimensions parser");
+      }
     } else {
-      conf.data.settings.aitDim.width = undefined;
-      conf.data.settings.aitDim.height = undefined;
-      conf.data.settings.aitDim.batch_size = undefined;
+      throw new Error("No model, cannot parse AIT dimensions");
     }
-  } else {
+  } catch (e) {
+    console.warn(e);
     conf.data.settings.aitDim.width = undefined;
     conf.data.settings.aitDim.height = undefined;
     conf.data.settings.aitDim.batch_size = undefined;
