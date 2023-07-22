@@ -2,13 +2,15 @@
   <NConfigProvider :theme="theme" :theme-overrides="overrides" class="main">
     <NThemeEditor v-if="settings.data.settings.frontend.enable_theme_editor" />
     <NNotificationProvider placement="bottom-right" :max="3">
-      <NMessageProvider>
-        <SecretsHandlerVue />
-        <CollapsileNavbarVue />
-        <TopBarVue />
-        <routerContainerVue style="margin-top: 52px" />
-        <PerformanceDrawer />
-      </NMessageProvider>
+      <NLoadingBarProvider>
+        <NMessageProvider>
+          <SecretsHandlerVue />
+          <CollapsileNavbarVue />
+          <TopBarVue />
+          <routerContainerVue style="margin-top: 52px" />
+          <PerformanceDrawer />
+        </NMessageProvider>
+      </NLoadingBarProvider>
     </NNotificationProvider>
   </NConfigProvider>
 </template>
@@ -16,6 +18,7 @@
 <script setup lang="ts">
 import {
   NConfigProvider,
+  NLoadingBarProvider,
   NMessageProvider,
   NNotificationProvider,
   NThemeEditor,

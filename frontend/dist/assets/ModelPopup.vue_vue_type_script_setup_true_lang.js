@@ -1,5 +1,5 @@
+import { bh as upperFirst, bi as toString, bj as createCompounder, bk as cloneVNode, S as provide, U as createInjectionKey, a2 as inject, a_ as throwError, d as defineComponent, P as useConfig, E as ref, bl as onBeforeUpdate, D as h, bm as indexMap, c as computed, b9 as onMounted, aH as onBeforeUnmount, X as cB, Y as cE, W as c, Z as cM, R as useMergedState, T as toRef, as as watchEffect, bn as onUpdated, ad as watch, a4 as useTheme, a8 as useThemeClass, aC as flatten, aP as VResizeObserver, bo as resolveSlotWithProps, bp as withDirectives, bq as vShow, aX as Transition, ak as keep, aI as off, ah as nextTick, br as carouselLight, ba as normalizeStyle, bs as getPreciseEventTarget, ab as on, aq as cNotM, Q as useFormItem, L as renderList, au as NBaseIcon, bt as rateLight, a7 as createKey, bu as color2Class, V as call, b as useMessage, b8 as reactive, e as openBlock, v as createBlock, w as withCtx, h as unref, g as createVNode, f as createElementBlock, H as NTabPane, y as NGrid, N as NGi, J as Fragment, n as createBaseVNode, i as NCard, bv as NTag, m as createTextVNode, t as toDisplayString, r as NSelect, F as NButton, I as NTabs, bc as NModal } from "./index.js";
 import { a as NDescriptions, N as NDescriptionsItem } from "./DescriptionsItem.js";
-import { K as Fragment, au as NBaseIcon, F as NButton, i as NCard, N as NGi, y as NGrid, b9 as NModal, r as NSelect, H as NTabPane, I as NTabs, bu as NTag, aX as Transition, aP as VResizeObserver, W as c, X as cB, Y as cE, Z as cM, aq as cNotM, V as call, bp as carouselLight, bh as cloneVNode, bt as color2Class, c as computed, n as createBaseVNode, v as createBlock, bg as createCompounder, f as createElementBlock, U as createInjectionKey, a7 as createKey, m as createTextVNode, g as createVNode, d as defineComponent, aC as flatten, br as getPreciseEventTarget, D as h, bj as indexMap, a2 as inject, ak as keep, ah as nextTick, bq as normalizeStyle, aI as off, ab as on, aH as onBeforeUnmount, bi as onBeforeUpdate, bk as onMounted, bl as onUpdated, e as openBlock, S as provide, bs as rateLight, E as ref, L as renderList, bm as resolveSlotWithProps, aZ as throwError, t as toDisplayString, T as toRef, bf as toString, h as unref, be as upperFirst, P as useConfig, Q as useFormItem, R as useMergedState, a4 as useTheme, a8 as useThemeClass, bo as vShow, ad as watch, as as watchEffect, w as withCtx, bn as withDirectives } from "./index.js";
 function capitalize(string) {
   return upperFirst(toString(string).toLowerCase());
 }
@@ -1442,16 +1442,19 @@ const _hoisted_2 = /* @__PURE__ */ createBaseVNode("i", null, [
 const _hoisted_3 = { style: { "height": "90%" } };
 const _hoisted_4 = { style: { "line-height": "32px" } };
 const _hoisted_5 = { style: { "width": "100%", "display": "inline-flex", "height": "40px", "align-items": "center", "margin-top": "8px" } };
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ModelPopup",
   props: {
-    model: {}
+    model: {},
+    showModal: { type: Boolean }
   },
-  setup(__props) {
+  emits: ["update:showModal"],
+  setup(__props, { emit }) {
     const props = __props;
-    const show = ref(true);
+    const message = useMessage();
     const tabValue = ref("");
     const tabsInstRef = ref(null);
+    const selectedModel = reactive(/* @__PURE__ */ new Map());
     const dateFormat = new Intl.DateTimeFormat(navigator.language, {
       year: "numeric",
       month: "long",
@@ -1470,18 +1473,18 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     });
     function generateDownloadOptions(submodel) {
       return submodel.map((file) => ({
-        label: file.name,
+        label: `${file.metadata.format} ${file.metadata.size} ${file.metadata.fp} [${(file.sizeKB / 1024 / 1024).toFixed(2)} GB]`,
         value: file.downloadUrl
       }));
     }
     return (_ctx, _cache) => {
       var _a, _b;
       return openBlock(), createBlock(unref(NModal), {
-        show: show.value,
-        "onUpdate:show": _cache[1] || (_cache[1] = ($event) => show.value = $event),
+        show: _ctx.showModal,
         title: ((_a = _ctx.model) == null ? void 0 : _a.name) + " (by " + ((_b = _ctx.model) == null ? void 0 : _b.creator.username) + ")" || "Loading...",
         preset: "card",
-        style: { "width": "90vw" }
+        style: { "width": "90vw" },
+        "onUpdate:show": _cache[1] || (_cache[1] = ($event) => emit("update:showModal", $event))
       }, {
         default: withCtx(() => [
           createVNode(unref(NTabs), {
@@ -1501,7 +1504,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     style: { "display": "flex", "flex-direction": "column" }
                   }, {
                     default: withCtx(() => [
-                      createVNode(unref(NGrid), { cols: "2" }, {
+                      createVNode(unref(NGrid), { cols: "1 850:2" }, {
                         default: withCtx(() => [
                           createVNode(unref(NGi), null, {
                             default: withCtx(() => [
@@ -1510,7 +1513,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                 draggable: "",
                                 "slides-per-view": 2,
                                 effect: "card",
-                                "dot-type": "line"
+                                "dot-type": "line",
+                                "centered-slides": "",
+                                keyboard: "",
+                                mousewheel: ""
                               }, {
                                 default: withCtx(() => [
                                   (openBlock(true), createElementBlock(Fragment, null, renderList(subModel.images, (image) => {
@@ -1521,8 +1527,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                       createBaseVNode("img", {
                                         src: image.url,
                                         style: normalizeStyle({
-                                          width: "100%",
-                                          filter: image.nsfw !== "None" ? "blur(12px)" : "none"
+                                          width: "100%"
+                                          // filter: image.nsfw !== 'None' ? 'blur(4px)' : 'none',
                                         })
                                       }, null, 12, _hoisted_1)
                                     ]);
@@ -1613,18 +1619,21 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                                     ]),
                                     createBaseVNode("div", _hoisted_5, [
                                       createVNode(unref(NSelect), {
-                                        options: generateDownloadOptions(subModel.files)
-                                      }, null, 8, ["options"]),
+                                        options: generateDownloadOptions(subModel.files),
+                                        onUpdateValue: (value) => selectedModel.set(subModel.name, value)
+                                      }, null, 8, ["options", "onUpdateValue"]),
                                       createVNode(unref(NButton), {
                                         style: { "margin-left": "4px" },
                                         type: "primary",
-                                        ghost: ""
+                                        ghost: "",
+                                        disabled: !selectedModel.get(subModel.name),
+                                        onClick: ($event) => unref(message).success("Test: " + selectedModel.get(subModel.name))
                                       }, {
                                         default: withCtx(() => [
                                           createTextVNode(" Download ")
                                         ]),
-                                        _: 1
-                                      })
+                                        _: 2
+                                      }, 1032, ["disabled", "onClick"])
                                     ])
                                   ];
                                 }),
@@ -1650,20 +1659,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "TestView",
-  setup(__props) {
-    const model = ref(null);
-    fetch("https://civitai.com/api/v1/models/7240").then((res) => {
-      res.json().then((data) => {
-        model.value = data;
-      });
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(_sfc_main$1, { model: model.value }, null, 8, ["model"]);
-    };
-  }
-});
 export {
-_sfc_main as default
+  _sfc_main as _
 };

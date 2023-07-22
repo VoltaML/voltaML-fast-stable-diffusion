@@ -1,96 +1,9 @@
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, bB as useCssVars, u as useState, a as useSettings, E as ref, c as computed, b7 as reactive, bk as onMounted, o as onUnmounted, g as createVNode, h as unref, w as withCtx, K as Fragment, L as renderList, s as serverUrl, k as NInput, G as NIcon, b9 as NModal, y as NGrid, N as NGi, F as NButton, m as createTextVNode, M as NScrollbar, v as createBlock, t as toDisplayString, x as createCommentVNode, bC as urlFromPath, _ as _export_sfc } from "./index.js";
+import { a as NDescriptions, N as NDescriptionsItem } from "./DescriptionsItem.js";
+import { G as GridOutline } from "./GridOutline.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { N as NImage, T as TrashBin } from "./TrashBin.js";
 import { N as NSlider } from "./Slider.js";
-import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-const _hoisted_1$1 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "48",
-    y: "48",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "288",
-    y: "48",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "48",
-    y: "288",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "288",
-    y: "288",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_6 = [_hoisted_2$1, _hoisted_3$1, _hoisted_4$1, _hoisted_5];
-const GridOutline = defineComponent({
-  name: "GridOutline",
-  render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_6);
-  }
-});
+import { N as NImage, T as TrashBin } from "./TrashBin.js";
+import { J as Fragment, F as NButton, N as NGi, y as NGrid, G as NIcon, k as NInput, bc as NModal, M as NScrollbar, _ as _export_sfc, c as computed, n as createBaseVNode, v as createBlock, x as createCommentVNode, f as createElementBlock, m as createTextVNode, g as createVNode, d as defineComponent, b9 as onMounted, o as onUnmounted, e as openBlock, b8 as reactive, E as ref, L as renderList, s as serverUrl, t as toDisplayString, h as unref, bC as urlFromPath, b7 as useCssVars, a as useSettings, u as useState, w as withCtx } from "./index.js";
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "53px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
   class: "top-bar"
@@ -517,5 +430,5 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
 const ImageBrowserView_vue_vue_type_style_index_0_scoped_c0900653_lang = "";
 const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c0900653"]]);
 export {
-  ImageBrowserView as default
+ImageBrowserView as default
 };

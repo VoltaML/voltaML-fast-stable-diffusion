@@ -69,10 +69,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self.controlnet: Optional[ControlNetModel] = None
         self.current_controlnet: str = ""
 
-        if "__dynamic" in self.model_id:
-            self.load_dynamic()
-        else:
-            self.load()
+        self.load()
 
     @property
     def directory(self) -> str:
@@ -81,7 +78,7 @@ class AITemplateStableDiffusion(InferenceModel):
         return os.path.join("data", "aitemplate", self.model_id)
 
     def load(self):
-        from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
 
         pipe = load_pytorch_pipeline(
             self.model_id,
@@ -90,14 +87,13 @@ class AITemplateStableDiffusion(InferenceModel):
         )
 
         pipe.to(self.device)
-
-        pipe.unet = None  # type: ignore
         self.memory_cleanup()
 
         with console.status("[bold green]Loading AITemplate model..."):
             pipe = StableDiffusionAITPipeline(
                 unet=pipe.unet,  # type: ignore
                 vae=pipe.vae,  # type: ignore
+                controlnet=self.controlnet,
                 text_encoder=pipe.text_encoder,  # type: ignore
                 tokenizer=pipe.tokenizer,  # type: ignore
                 scheduler=pipe.scheduler,  # type: ignore
@@ -105,75 +101,23 @@ class AITemplateStableDiffusion(InferenceModel):
                 clip_ait_exe=None,
                 unet_ait_exe=None,
                 vae_ait_exe=None,
-                requires_safety_checker=False,
-                safety_checker=None,  # type: ignore
-                feature_extractor=None,  # type: ignore
             )
         assert isinstance(pipe, StableDiffusionAITPipeline)
 
         self.unet = pipe.unet  # type: ignore
+        # self.unet.cpu()
         self.vae = pipe.vae
         self.text_encoder = pipe.text_encoder
+        # self.text_encoder.cpu()
         self.tokenizer = pipe.tokenizer
         self.scheduler = pipe.scheduler
         self.requires_safety_checker = False
-        self.safety_checker = pipe.safety_checker
-        self.feature_extractor = pipe.feature_extractor
-
         self.clip_ait_exe = pipe.clip_ait_exe
         self.unet_ait_exe = pipe.unet_ait_exe
         self.vae_ait_exe = pipe.vae_ait_exe
 
         self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
-        self.type: Literal["static", "dynamic"] = "static"
-
-    def load_dynamic(self):
-        from core.aitemplate.src.dynamic_ait_txt2img import (
-            StableDiffusionDynamicAITPipeline,
-        )
-
-        pipe = load_pytorch_pipeline(
-            self.model_id,
-            device=self.device,
-            is_for_aitemplate=True,
-        )
-
-        pipe.to(self.device)
-
         self.memory_cleanup()
-
-        with console.status("[bold green]Loading AITemplate model..."):
-            pipe = StableDiffusionDynamicAITPipeline(
-                vae=pipe.vae,  # type: ignore
-                text_encoder=pipe.text_encoder,  # type: ignore
-                tokenizer=pipe.tokenizer,  # type: ignore
-                scheduler=pipe.scheduler,  # type: ignore
-                unet=pipe.unet,  # type: ignore
-                directory=self.directory,
-                clip_ait_exe=None,
-                unet_ait_exe=None,
-                vae_ait_exe=None,
-                requires_safety_checker=False,
-                safety_checker=None,  # type: ignore
-                feature_extractor=None,  # type: ignore
-            )
-        assert isinstance(pipe, StableDiffusionDynamicAITPipeline)
-
-        self.vae = pipe.vae  # type: ignore
-        self.text_encoder = pipe.text_encoder  # type: ignore
-        self.unet = pipe.unet  # type: ignore
-        self.tokenizer = pipe.tokenizer
-        self.scheduler = pipe.scheduler
-        self.requires_safety_checker = False
-        self.safety_checker = pipe.safety_checker  # type: ignore
-        self.feature_extractor = pipe.feature_extractor  # type: ignore
-
-        self.clip_ait_exe = pipe.clip_ait_exe
-        self.unet_ait_exe = pipe.unet_ait_exe
-        self.vae_ait_exe = pipe.vae_ait_exe
-
-        self.current_unet: Literal["unet", "controlnet_unet"] = "unet"
-        self.type = "dynamic"
 
     def unload(self):
         for property_ in (
@@ -218,13 +162,22 @@ class AITemplateStableDiffusion(InferenceModel):
                     del self.unet_ait_exe
 
                     self.memory_cleanup()
+                    # self.unet.to(config.api.device)
 
                     self.unet_ait_exe = init_ait_module(
                         model_name="UNet2DConditionModel", workdir=self.directory
                     )
+                    from ..aitemplate.src.modeling import mapping
+
+                    self.unet_ait_exe.set_many_constants_with_tensors(
+                        mapping.map_unet(self.unet)
+                    )
+                    self.unet_ait_exe.fold_constants()
                     self.current_unet = (  # pylint: disable=attribute-defined-outside-init
                         "unet"
                     )
+
+                    # self.unet.cpu()
 
                     logger.info("Done loading basic unet")
 
@@ -239,14 +192,23 @@ class AITemplateStableDiffusion(InferenceModel):
                     del self.unet_ait_exe
 
                     self.memory_cleanup()
+                    # self.unet.to(config.api.device, config.api.dtype)
 
                     self.unet_ait_exe = init_ait_module(
                         model_name="ControlNetUNet2DConditionModel",
                         workdir=self.directory,
                     )
+                    from ..aitemplate.src.modeling import mapping
+
+                    self.unet_ait_exe.set_many_constants_with_tensors(
+                        mapping.map_unet(self.unet)
+                    )
+                    self.unet_ait_exe.fold_constants()
                     self.current_unet = (  # pylint: disable=attribute-defined-outside-init
                         "controlnet_unet"
                     )
+
+                    # self.unet.cpu()
 
                     logger.info("Done loading controlnet unet")
 
@@ -266,7 +228,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     "Optimization: xformers not available, enabling attention slicing instead"
                 )
 
-            cn.to(self.device)
+            cn.to(device=torch.device(self.device), dtype=config.api.dtype)
             self.controlnet = cn
             self.current_controlnet = target_controlnet
 
@@ -294,32 +256,18 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Txt2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from text"
-
-        lwp = False
-        if self.type == "static":
-            from core.aitemplate.src.ait_txt2img import StableDiffusionAITPipeline
-
-            cls = StableDiffusionAITPipeline
-        else:
-            from core.aitemplate.src.dynamic_ait_txt2img import (
-                StableDiffusionDynamicAITPipeline,
-            )
-
-            cls = StableDiffusionDynamicAITPipeline
-            lwp = True
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
 
         self.manage_optional_components()
 
-        pipe = cls(
+        pipe = StableDiffusionAITPipeline(
             unet=self.unet,
             vae=self.vae,
             directory=self.directory,
+            controlnet=self.controlnet,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            safety_checker=self.safety_checker,
-            requires_safety_checker=self.requires_safety_checker,
-            feature_extractor=self.feature_extractor,
             clip_ait_exe=self.clip_ait_exe,
             unet_ait_exe=self.unet_ait_exe,
             vae_ait_exe=self.vae_ait_exe,
@@ -337,36 +285,22 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            if lwp:
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                    pipe, job.data.prompt, job.data.negative_prompt
-                )
-                data = pipe(
-                    prompt_embeds=prompt_embeds,
-                    negative_prompt_embeds=negative_prompt_embeds,
-                    height=job.data.height,
-                    width=job.data.width,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=txt2img_callback,
-                    num_images_per_prompt=job.data.batch_size,
-                )
-            else:
-                data = pipe(
-                    prompt=job.data.prompt,
-                    height=job.data.height,
-                    width=job.data.width,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=txt2img_callback,
-                    num_images_per_prompt=job.data.batch_size,
-                )
+            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                pipe, job.data.prompt, job.data.negative_prompt
+            )
+            data = pipe(
+                prompt_embeds=prompt_embeds,
+                negative_prompt_embeds=negative_prompt_embeds,
+                height=job.data.height,
+                width=job.data.width,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=txt2img_callback,
+                num_images_per_prompt=job.data.batch_size,
+            )
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
@@ -393,33 +327,18 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
 
-        lwp = False
-        if self.type == "static":
-            from core.aitemplate.src.ait_img2img import (
-                StableDiffusionImg2ImgAITPipeline,
-            )
-
-            cls = StableDiffusionImg2ImgAITPipeline
-        else:
-            from core.aitemplate.src.dynamic_ait_img2img import (
-                StableDiffusionDynamicAITPipeline,
-            )
-
-            cls = StableDiffusionDynamicAITPipeline
-            lwp = True
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
 
         self.manage_optional_components()
 
-        pipe = cls(
+        pipe = StableDiffusionAITPipeline(
             unet=self.unet,
             vae=self.vae,
             directory=self.directory,
+            controlnet=self.controlnet,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            safety_checker=self.safety_checker,
-            requires_safety_checker=self.requires_safety_checker,
-            feature_extractor=self.feature_extractor,
             clip_ait_exe=self.clip_ait_exe,
             unet_ait_exe=self.unet_ait_exe,
             vae_ait_exe=self.vae_ait_exe,
@@ -439,38 +358,23 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            if lwp:
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                    pipe, job.data.prompt, job.data.negative_prompt
-                )
-                data = pipe(
-                    prompt_embeds=prompt_embeds,
-                    negative_prompt_embeds=negative_prompt_embeds,
-                    init_image=input_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=img2img_callback,
-                    strength=job.data.strength,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                )
-            else:
-                data = pipe(
-                    prompt=job.data.prompt,
-                    init_image=input_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=img2img_callback,
-                    strength=job.data.strength,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                )
+            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                pipe, job.data.prompt, job.data.negative_prompt
+            )
+            data = pipe(
+                prompt_embeds=prompt_embeds,
+                negative_prompt_embeds=negative_prompt_embeds,
+                image=input_image,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=img2img_callback,
+                strength=job.data.strength,
+                return_dict=False,
+                num_images_per_prompt=job.data.batch_size,
+            )
 
             images = data[0]
             assert isinstance(images, List)
@@ -499,25 +403,18 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
 
+        from core.aitemplate.pipeline import StableDiffusionAITPipeline
+
         self.manage_optional_components(target_controlnet=job.data.controlnet)
 
-        assert self.controlnet is not None
-
-        from core.aitemplate.src.ait_controlnet import (
-            StableDiffusionControlNetAITPipeline,
-        )
-
-        pipe = StableDiffusionControlNetAITPipeline(
+        pipe = StableDiffusionAITPipeline(
             unet=self.unet,
             vae=self.vae,
             directory=self.directory,
+            controlnet=self.controlnet,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            safety_checker=self.safety_checker,
-            requires_safety_checker=self.requires_safety_checker,
-            controlnet=self.controlnet,
-            feature_extractor=self.feature_extractor,
             clip_ait_exe=self.clip_ait_exe,
             unet_ait_exe=self.unet_ait_exe,
             vae_ait_exe=self.vae_ait_exe,
@@ -543,8 +440,12 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = [input_image]
 
         for _ in range(job.data.batch_count):
+            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+                pipe, job.data.prompt, job.data.negative_prompt
+            )
             data = pipe(
-                prompt=job.data.prompt,
+                prompt_embeds=prompt_embeds,
+                negative_prompt_embeds=negative_prompt_embeds,
                 image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,

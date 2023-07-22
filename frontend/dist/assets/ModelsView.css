@@ -1,4 +1,25 @@
 
+.img-slider[data-v-06428fb3] {
+  aspect-ratio: 1/1;
+  height: 182px;
+  width: auto;
+}
+.image-grid[data-v-06428fb3] {
+  display: grid;
+  grid-template-columns: repeat(
+    var(--3bc62444),
+    1fr
+  );
+  grid-gap: 8px;
+}
+.top-bar[data-v-06428fb3] {
+  background-color: var(--0f0fd6fc);
+}
+.image-column[data-v-06428fb3] {
+  display: flex;
+  flex-direction: column;
+}
+
 .install[data-v-6a6fb4b4] {
   width: 100%;
   padding: 10px 0px;

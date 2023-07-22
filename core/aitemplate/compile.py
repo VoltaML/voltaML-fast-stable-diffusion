@@ -18,21 +18,21 @@ import logging
 import os
 import shutil
 import time
+from typing import Union, Tuple
 from pathlib import Path
 
 import torch
 from aitemplate.testing import detect_target
 from rich.console import Console
 
+from core.config import config
 from api import websocket_manager
 from api.websockets import Data, Notification
-from core.config import config
 from core.inference.functions import load_pytorch_pipeline
 
-from .src.compile_lib.compile_clip import compile_clip
-from .src.compile_lib.compile_controlnet_unet import compile_controlnet_unet
-from .src.compile_lib.compile_unet import compile_unet
-from .src.compile_lib.compile_vae import compile_vae
+from .src.compile_lib.clip import compile_clip
+from .src.compile_lib.unet import compile_unet
+from .src.compile_lib.vae import compile_vae
 
 logger = logging.getLogger(__name__)
 console = Console()
@@ -40,9 +40,10 @@ console = Console()
 
 def compile_diffusers(
     local_dir_or_id: str,
-    width: int = 512,
-    height: int = 512,
-    batch_size: int = 1,
+    width: Union[int, Tuple[int, int]] = 512,
+    height: Union[int, Tuple[int, int]] = 512,
+    batch_size: Union[int, Tuple[int, int]] = 1,
+    clip_chunks: int = 6,
     convert_conv_to_gemm=True,
     invalidate_cache=False,
     device: str = "cuda",
@@ -68,17 +69,25 @@ def compile_diffusers(
         device=device,
     )
 
-    assert (
-        height % 64 == 0 and width % 64 == 0
-    ), f"Height and Width must be multiples of 64, otherwise, the compilation process will fail. Got {height=} {width=}"
+    if isinstance(width, int):
+        width = (width, width)
+    if isinstance(height, int):
+        height = (height, height)
+    if isinstance(batch_size, int):
+        batch_size = (batch_size, batch_size)
 
-    ww = width // 8
-    hh = height // 8
+    assert (
+        height[0] % 64 == 0
+        and height[1] % 64 == 0
+        and width[0] % 64 == 0
+        and width[1] % 64 == 0
+    ), f"Height and Width must be multiples of 64, otherwise, the compilation process will fail. Got {height=} {width=}"
 
     dump_dir = os.path.join(
         "data",
         "aitemplate",
-        local_dir_or_id.replace("/", "--") + f"__{width}x{height}x{batch_size}",
+        local_dir_or_id.replace("/", "--")
+        + f"__{width[0]}-{width[1]}x{height[0]}-{height[1]}x{batch_size[0]}-{batch_size[1]}",
     )
 
     websocket_manager.broadcast_sync(
@@ -91,18 +100,65 @@ def compile_diffusers(
 
     os.environ["NUM_BUILDERS"] = str(config.aitemplate.num_threads)
 
-    # UNet
     websocket_manager.broadcast_sync(
         Data(
             data_type="aitemplate_compile",
             data={
-                "unet": "process",
-                "controlnet_unet": "wait",
                 "clip": "wait",
+                "unet": "wait",
+                "controlnet_unet": "wait",
                 "vae": "wait",
                 "cleanup": "wait",
             },
         )
+    )
+
+    # CLIP
+    websocket_manager.broadcast_sync(
+        Data(data_type="aitemplate_compile", data={"clip": "process"})
+    )
+    with console.status("[bold green]Compiling CLIP..."):
+        try:
+            if (
+                invalidate_cache
+                or not Path(dump_dir).joinpath("CLIPTextModel/test.so").exists()
+            ):
+                compile_clip(
+                    pipe.text_encoder,  # type: ignore
+                    batch_size=batch_size,
+                    seqlen=pipe.text_encoder.config.max_position_embeddings,
+                    use_fp16_acc=use_fp16_acc,
+                    constants=True,
+                    convert_conv_to_gemm=convert_conv_to_gemm,
+                    depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
+                    num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
+                    dim=pipe.text_encoder.config.hidden_size,  # type: ignore
+                    act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
+                    work_dir=dump_dir,
+                )
+
+                websocket_manager.broadcast_sync(
+                    Data(data_type="aitemplate_compile", data={"clip": "finish"})
+                )
+            else:
+                logger.info("CLIP already compiled. Skipping...")
+
+        except Exception as e:  # pylint: disable=broad-except
+            logger.error(e)
+            websocket_manager.broadcast_sync(
+                Data(data_type="aitemplate_compile", data={"clip": "error"})
+            )
+            websocket_manager.broadcast_sync(
+                Notification(
+                    severity="error",
+                    title="AITemplate",
+                    message=f"Error while compiling CLIP: {e}",
+                )
+            )
+
+    # UNet
+    websocket_manager.broadcast_sync(
+        Data(data_type="aitemplate_compile", data={"unet": "process"})
     )
     with console.status("[bold green]Compiling UNet..."):
         try:
@@ -112,14 +168,37 @@ def compile_diffusers(
             ):
                 compile_unet(
                     pipe.unet,  # type: ignore
-                    batch_size=batch_size * 2,
-                    width=ww,
-                    height=hh,
+                    batch_size=batch_size,
+                    width=width,
+                    height=height,
                     use_fp16_acc=use_fp16_acc,
+                    work_dir=dump_dir,
                     convert_conv_to_gemm=convert_conv_to_gemm,
-                    hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
-                    attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
-                    dump_dir=dump_dir,
+                    hidden_dim=pipe.unet.config.cross_attention_dim,
+                    attention_head_dim=pipe.unet.config.attention_head_dim,
+                    use_linear_projection=pipe.unet.config.get(
+                        "use_linear_projection", False
+                    ),
+                    block_out_channels=pipe.unet.config.block_out_channels,
+                    down_block_types=pipe.unet.config.down_block_types,
+                    up_block_types=pipe.unet.config.up_block_types,
+                    in_channels=pipe.unet.config.in_channels,
+                    out_channels=pipe.unet.config.out_channels,
+                    class_embed_type=pipe.unet.config.class_embed_type,
+                    num_class_embeds=pipe.unet.config.num_class_embeds,
+                    only_cross_attention=pipe.unet.config.only_cross_attention,
+                    sample_size=pipe.unet.config.sample_size,
+                    dim=pipe.unet.config.block_out_channels[0],
+                    time_embedding_dim=None,
+                    down_factor=8,
+                    clip_chunks=clip_chunks,
+                    constants=True,
+                    controlnet=False,
+                    conv_in_kernel=pipe.unet.config.conv_in_kernel,
+                    projection_class_embeddings_input_dim=pipe.unet.config.projection_class_embeddings_input_dim,
+                    addition_embed_type=pipe.unet.config.addition_embed_type,
+                    addition_time_embed_dim=pipe.unet.config.addition_time_embed_dim,
+                    transformer_layers_per_block=pipe.unet.config.transformer_layers_per_block,
                 )
             else:
                 logger.info("UNet already compiled. Skipping...")
@@ -149,13 +228,11 @@ def compile_diffusers(
                     message=f"Error while compiling UNet: {e}",
                 )
             )
-            raise e
 
     # ControlNet UNet
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"controlnet_unet": "process"})
     )
-
     with console.status("[bold green]Compiling ControlNet UNet..."):
         try:
             if (
@@ -164,19 +241,51 @@ def compile_diffusers(
                 .joinpath("ControlNetUNet2DConditionModel/test.so")
                 .exists()
             ):
-                compile_controlnet_unet(
+                compile_unet(
                     pipe.unet,  # type: ignore
-                    batch_size=batch_size * 2,
-                    width=ww,
-                    height=hh,
+                    model_name="ControlNetUNet2DConditionModel",
+                    batch_size=batch_size,
+                    width=width,
+                    height=height,
                     use_fp16_acc=use_fp16_acc,
+                    work_dir=dump_dir,
                     convert_conv_to_gemm=convert_conv_to_gemm,
-                    hidden_dim=pipe.unet.config.cross_attention_dim,  # type: ignore
-                    attention_head_dim=pipe.unet.config.attention_head_dim,  # type: ignore
-                    dump_dir=dump_dir,
+                    hidden_dim=pipe.unet.config.cross_attention_dim,
+                    attention_head_dim=pipe.unet.config.attention_head_dim,
+                    use_linear_projection=pipe.unet.config.get(
+                        "use_linear_projection", False
+                    ),
+                    block_out_channels=pipe.unet.config.block_out_channels,
+                    down_block_types=pipe.unet.config.down_block_types,
+                    up_block_types=pipe.unet.config.up_block_types,
+                    in_channels=pipe.unet.config.in_channels,
+                    out_channels=pipe.unet.config.out_channels,
+                    class_embed_type=pipe.unet.config.class_embed_type,
+                    num_class_embeds=pipe.unet.config.num_class_embeds,
+                    only_cross_attention=pipe.unet.config.only_cross_attention,
+                    sample_size=pipe.unet.config.sample_size,
+                    dim=pipe.unet.config.block_out_channels[0],
+                    time_embedding_dim=None,
+                    down_factor=8,
+                    constants=True,
+                    controlnet=True,
+                    conv_in_kernel=pipe.unet.config.conv_in_kernel,
+                    projection_class_embeddings_input_dim=pipe.unet.config.projection_class_embeddings_input_dim,
+                    addition_embed_type=pipe.unet.config.addition_embed_type,
+                    addition_time_embed_dim=pipe.unet.config.addition_time_embed_dim,
+                    transformer_layers_per_block=pipe.unet.config.transformer_layers_per_block,
                 )
             else:
-                logger.info("ControlNet UNet already compiled. Skipping...")
+                logger.info("UNet already compiled. Skipping...")
+
+            # Dump UNet config
+            with open(
+                os.path.join(dump_dir, "ControlNetUNet2DConditionModel", "config.json"),
+                "w",
+                encoding="utf-8",
+            ) as f:
+                json.dump(pipe.unet.config, f, indent=4, ensure_ascii=False)  # type: ignore
+                logger.info("UNet config saved")
 
             websocket_manager.broadcast_sync(
                 Data(data_type="aitemplate_compile", data={"controlnet_unet": "finish"})
@@ -195,54 +304,10 @@ def compile_diffusers(
                 )
             )
 
-    # CLIP
-    websocket_manager.broadcast_sync(
-        Data(data_type="aitemplate_compile", data={"clip": "process"})
-    )
-
-    with console.status("[bold green]Compiling CLIP..."):
-        try:
-            if (
-                invalidate_cache
-                or not Path(dump_dir).joinpath("CLIPTextModel/test.so").exists()
-            ):
-                compile_clip(
-                    pipe.text_encoder,  # type: ignore
-                    batch_size=batch_size,
-                    use_fp16_acc=use_fp16_acc,
-                    convert_conv_to_gemm=convert_conv_to_gemm,
-                    depth=pipe.text_encoder.config.num_hidden_layers,  # type: ignore
-                    num_heads=pipe.text_encoder.config.num_attention_heads,  # type: ignore
-                    dim=pipe.text_encoder.config.hidden_size,  # type: ignore
-                    act_layer=pipe.text_encoder.config.hidden_act,  # type: ignore
-                    dump_dir=dump_dir,
-                )
-
-                websocket_manager.broadcast_sync(
-                    Data(data_type="aitemplate_compile", data={"clip": "finish"})
-                )
-            else:
-                logger.info("CLIP already compiled. Skipping...")
-
-        except Exception as e:  # pylint: disable=broad-except
-            logger.error(e)
-            websocket_manager.broadcast_sync(
-                Data(data_type="aitemplate_compile", data={"clip": "error"})
-            )
-            websocket_manager.broadcast_sync(
-                Notification(
-                    severity="error",
-                    title="AITemplate",
-                    message=f"Error while compiling CLIP: {e}",
-                )
-            )
-            raise e
-
     # VAE
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"vae": "process"})
     )
-
     with console.status("[bold green]Compiling VAE..."):
         try:
             if (
@@ -252,11 +317,25 @@ def compile_diffusers(
                 compile_vae(
                     pipe.vae,  # type: ignore
                     batch_size=batch_size,
-                    width=ww,
-                    height=hh,
+                    width=width,
+                    height=height,
                     use_fp16_acc=use_fp16_acc,
                     convert_conv_to_gemm=convert_conv_to_gemm,
-                    dump_dir=dump_dir,
+                    block_out_channels=pipe.vae.config.block_out_channels,
+                    layers_per_block=pipe.vae.config.layers_per_block,
+                    act_fn=pipe.vae.config.act_fn,
+                    latent_channels=pipe.vae.config.latent_channels,
+                    in_channels=pipe.vae.config.in_channels,
+                    out_channels=pipe.vae.config.out_channels,
+                    down_block_types=pipe.vae.config.down_block_types,
+                    up_block_types=pipe.vae.config.up_block_types,
+                    sample_size=pipe.vae.config.sample_size,
+                    input_size=(64, 64),
+                    down_factor=8,
+                    vae_encode=False,
+                    constants=True,
+                    work_dir=dump_dir,
+                    dtype="float16" if use_fp16_acc else "float32",
                 )
             else:
                 logger.info("VAE already compiled. Skipping...")
@@ -286,13 +365,11 @@ def compile_diffusers(
                     message=f"Error while compiling VAE: {e}",
                 )
             )
-            raise e
 
     # Cleanup
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"cleanup": "process"})
     )
-
     with console.status("[bold green]Cleaning up..."):
         try:
             # Clean all files except test.so recursively
@@ -323,7 +400,6 @@ def compile_diffusers(
                     message=f"Error while cleaning up: {e}",
                 )
             )
-            raise e
 
     with console.status("[bold green]Releasing memory"):
         del pipe
