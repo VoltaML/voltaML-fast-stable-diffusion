@@ -4,7 +4,7 @@ import shutil
 import traceback
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import List
+from typing import List, Literal
 
 import torch
 from fastapi import APIRouter, HTTPException, Request, UploadFile
@@ -13,14 +13,15 @@ from streaming_form_data.targets import FileTarget
 
 from api import websocket_manager
 from api.websockets.data import Data
+from core.civitai.download import download_model as _download_checkpoint
 from core.files import get_full_model_path
 from core.shared_dependent import cached_model_list, gpu
 from core.types import (
     DeleteModelRequest,
     InferenceBackend,
-    VaeLoadRequest,
     ModelResponse,
     TextualInversionLoadRequest,
+    VaeLoadRequest,
 )
 
 router = APIRouter(tags=["models"])
@@ -235,3 +236,12 @@ async def delete_model(req: DeleteModelRequest):
 
     await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model deleted"}
+
+
+@router.post("/download-model")
+def download_checkpoint(
+    link: str, model_type: Literal["Checkpoint", "TextualInversion", "LORA"]
+) -> str:
+    "Download a model from a link and return the path to the downloaded file."
+
+    return _download_checkpoint(link, model_type).as_posix()
