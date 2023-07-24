@@ -9,8 +9,6 @@ import warnings
 from argparse import ArgumentParser
 from pathlib import Path
 
-from transformers import logging as transformers_logging
-
 from core.install_requirements import (  # pylint: disable=wrong-import-position
     commit_hash,
     create_environment,
@@ -219,6 +217,8 @@ def checks():
     args_with_extras = parser.parse_args(args=app_args)
 
     if args_with_extras.log_level == "INFO":
+        from transformers import logging as transformers_logging
+
         transformers_logging.set_verbosity_error()
 
     # Inject better logger
