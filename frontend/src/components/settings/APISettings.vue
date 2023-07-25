@@ -333,7 +333,7 @@
 </template>
 
 <script lang="ts" setup>
-import { serverUrl } from "../../env";
+import type { Capabilities } from "@/core/interfaces";
 import {
   NForm,
   NFormItem,
@@ -344,10 +344,9 @@ import {
   NSwitch,
 } from "naive-ui";
 import { computed } from "vue";
+import { serverUrl } from "../../env";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
-import type { Capabilities } from "@/core/interfaces";
-import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 
 const settings = useSettings();
 const global = useState();
