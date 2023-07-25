@@ -149,8 +149,6 @@ class GPU:
             return images
 
         try:
-            # Check width and height passed by the user
-
             # Wait for turn in the queue
             await self.queue.wait_for_turn(job.data.id)
 
