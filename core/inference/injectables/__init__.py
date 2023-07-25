@@ -32,7 +32,6 @@ def install_lora_hook(pipe):
 
 def uninstall_lora_hook(pipe):
     "Remove LoRAHook from the pipe"
-    pipe.lora_injector.uninstall_hooks()
     del pipe.lora_injector
 
 
@@ -129,10 +128,6 @@ class HookManager(object):
 
         self.device = config.api.device  # type: ignore
         self.dtype = pipe.unet.dtype
-
-    def uninstall_hooks(self):
-        """Uninstall LoRAHook from the pipe."""
-        # self.modules = {} # This does not actually uninstall it from the pipe lmao
 
     # Temporary, TODO: replace this with something sensible
     def apply_lycoris(

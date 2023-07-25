@@ -2772,7 +2772,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.img2img.height,
                     "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.img2img.height = $event),
-                    step: 8
+                    step: 1
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2782,7 +2782,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.img2img.width,
                     "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).defaultSettings.img2img.width = $event),
-                    step: 8
+                    step: 1
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -3008,7 +3008,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.txt2img.height,
                     "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.txt2img.height = $event),
-                    step: 8
+                    step: 1
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -3018,7 +3018,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.txt2img.width,
                     "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).defaultSettings.txt2img.width = $event),
-                    step: 8
+                    step: 1
                   }, null, 8, ["value"])
                 ]),
                 _: 1

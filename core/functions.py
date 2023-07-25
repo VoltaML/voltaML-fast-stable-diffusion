@@ -37,16 +37,6 @@ def image_meta_from_file(path: Path) -> Dict[str, str]:
         return meta
 
 
-def init_ait_module(
-    model_name,
-    workdir,
-):
-    from aitemplate.compiler import Model
-
-    mod = Model(os.path.join(workdir, model_name, "test.so"))
-    return mod
-
-
 def inject_var_into_dotenv(key: str, value: str) -> None:
     """
     Injects the HuggingFace token into the .env file

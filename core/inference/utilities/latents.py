@@ -3,14 +3,99 @@ import math
 from time import time
 from typing import Optional, Union
 
+import numpy as np
+from PIL import Image
 import torch
 import torch.nn.functional as F
 from diffusers import StableDiffusionPipeline
+from diffusers.utils import PIL_INTERPOLATION
 
 from core.config import config
 from core.flags import LatentScaleModel
 
 logger = logging.getLogger(__name__)
+
+
+def pad_tensor(tensor: torch.Tensor, multiple: int) -> torch.Tensor:
+    batch_size, channels, height, width = tensor.shape
+    new_height = math.ceil(height / multiple) * multiple
+    new_width = math.ceil(width / multiple) * multiple
+    if new_width != width or new_height != height:
+        nt = torch.zeros(
+            batch_size,
+            channels,
+            new_height,
+            new_width,
+            dtype=tensor.dtype,
+            device=tensor.device,
+        )
+        nt[:, :, :height, :width] = tensor
+        return nt
+    else:
+        return tensor
+
+
+def preprocess_image(image):
+    # w, h = image.size
+    # w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    # image = image.resize((w, h), resample=Image.LANCZOS)
+    image = np.array(image).astype(np.float32) / 255.0
+    image = image[None].transpose(0, 3, 1, 2)
+    image = torch.from_numpy(image)
+    return 2.0 * image - 1.0
+
+
+def prepare_image(
+    image, width, height, batch_size, num_images_per_prompt, device, dtype
+):
+    "Prepare an image for controlnet 'consumption.'"
+    if not isinstance(image, torch.Tensor):
+        if isinstance(image, Image.Image):
+            image = [image]
+
+        if isinstance(image[0], Image.Image):
+            image = [
+                np.array(
+                    i.resize((width, height), resample=PIL_INTERPOLATION["lanczos"])
+                )[None, :]
+                for i in image
+            ]
+            image = np.concatenate(image, axis=0)
+            image = np.array(image).astype(np.float32) / 255.0
+            image = image.transpose(0, 3, 1, 2)
+            image = torch.from_numpy(image)
+        elif isinstance(image[0], torch.Tensor):
+            image = torch.cat(image, dim=0)  # type: ignore
+
+    image_batch_size = image.shape[0]  # type: ignore
+
+    if image_batch_size == 1:
+        repeat_by = batch_size
+    else:
+        # image batch size is the same as prompt batch size
+        repeat_by = num_images_per_prompt
+
+    image = image.repeat_interleave(repeat_by, dim=0)  # type: ignore
+
+    image = image.to(device=device, dtype=dtype)
+
+    return image
+
+
+def preprocess_mask(mask):  # pylint: disable=unused-argument
+    mask = mask.convert("L")
+    # w, h = mask.size
+    # w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
+    # mask = mask.resize(
+    #     (w // scale_factor, h // scale_factor), resample=PIL_INTERPOLATION["nearest"]
+    # )
+    mask = np.array(mask).astype(np.float32) / 255.0
+    mask = np.tile(mask, (4, 1, 1))
+    # Gabe: same as mask.unsqueeze(0)
+    mask = mask[None].transpose(0, 1, 2, 3)  # what does this step do?
+    mask = 1 - mask  # repaint white, keep black
+    mask = torch.from_numpy(mask)
+    return mask
 
 
 def prepare_latents(
@@ -24,13 +109,14 @@ def prepare_latents(
     device: torch.device,
     generator: Optional[torch.Generator],
     latents=None,
+    align_to: int = 1,
 ):
     if image is None:
         shape = (
             batch_size,
             pipe.unet.config.in_channels,  # type: ignore
-            height // pipe.vae_scale_factor,
-            width // pipe.vae_scale_factor,
+            (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
         )
 
         if latents is None:
@@ -55,7 +141,8 @@ def prepare_latents(
         return latents, None, None
     else:
         if image.shape[1] != 4:
-            init_latent_dist = pipe.vae.encode(image.to(config.api.device)).latent_dist  # type: ignore
+            image = pad_tensor(image, pipe.vae_scale_factor)
+            init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)

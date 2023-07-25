@@ -173,7 +173,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[2] || (_cache[2] = ($event) => props.dimensionsObject.width = $event),
             min: 128,
             max: 2048,
-            step: 8,
+            step: 1,
             style: { "margin-right": "12px" }
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
@@ -181,7 +181,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[3] || (_cache[3] = ($event) => props.dimensionsObject.width = $event),
             size: "small",
             style: { "min-width": "96px", "width": "96px" },
-            step: 8
+            step: 1
           }, null, 8, ["value"])
         ])),
         unref(conf).data.settings.aitDim.height ? (openBlock(), createElementBlock("div", _hoisted_5, [
@@ -210,7 +210,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[6] || (_cache[6] = ($event) => props.dimensionsObject.height = $event),
             min: 128,
             max: 2048,
-            step: 8,
+            step: 1,
             style: { "margin-right": "12px" }
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
@@ -218,7 +218,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[7] || (_cache[7] = ($event) => props.dimensionsObject.height = $event),
             size: "small",
             style: { "min-width": "96px", "width": "96px" },
-            step: 8
+            step: 1
           }, null, 8, ["value"])
         ]))
       ], 64);

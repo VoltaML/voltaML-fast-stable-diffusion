@@ -475,7 +475,7 @@ def get_weighted_text_embeddings(
 
     # get the embeddings
     text_embeddings = get_unweighted_text_embeddings(
-        pipe,
+        pipe,  # type: ignore
         prompt_tokens,
         pipe.tokenizer.model_max_length,  # type: ignore
         no_boseos_middle=no_boseos_middle,
@@ -485,7 +485,7 @@ def get_weighted_text_embeddings(
     )
     if uncond_prompt is not None:
         uncond_embeddings = get_unweighted_text_embeddings(
-            pipe,
+            pipe,  # type: ignore
             uncond_tokens,  # type: ignore
             pipe.tokenizer.model_max_length,  # type: ignore
             no_boseos_middle=no_boseos_middle,

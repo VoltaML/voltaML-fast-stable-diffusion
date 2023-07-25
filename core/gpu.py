@@ -13,7 +13,7 @@ from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
+from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
 from core.inference.aitemplate import AITemplateStableDiffusion
 from core.inference.esrgan.upscale import Upscaler
@@ -150,8 +150,6 @@ class GPU:
 
         try:
             # Check width and height passed by the user
-            if job.data.width % 8 != 0 or job.data.height % 8 != 0:
-                raise DimensionError("Width and height must be divisible by 8")
 
             # Wait for turn in the queue
             await self.queue.wait_for_turn(job.data.id)
