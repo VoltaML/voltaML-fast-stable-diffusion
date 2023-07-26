@@ -216,11 +216,6 @@ def checks():
 
     args_with_extras = parser.parse_args(args=app_args)
 
-    if args_with_extras.log_level == "INFO":
-        from transformers import logging as transformers_logging
-
-        transformers_logging.set_verbosity_error()
-
     # Inject better logger
     from rich.logging import RichHandler
 
