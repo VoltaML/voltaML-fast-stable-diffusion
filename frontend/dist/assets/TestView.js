@@ -1,6 +1,6 @@
-import "./DescriptionsItem.js";
 import { _ as _sfc_main$1 } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
-import { v as createBlock, d as defineComponent, e as openBlock, E as ref } from "./index.js";
+import { d as defineComponent, E as ref, e as openBlock, v as createBlock } from "./index.js";
+import "./DescriptionsItem.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "TestView",
   setup(__props) {
@@ -21,5 +21,5 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-_sfc_main as default
+  _sfc_main as default
 };

@@ -39528,6 +39528,40 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   }
 });
 const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+  new_uri = "wss:";
+} else {
+  new_uri = "ws:";
+}
+const serverUrl = loc.protocol + "//" + loc.host;
+const webSocketUrl = new_uri + "//" + loc.host;
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
+const defaultCapabilities = {
+  supported_backends: ["cpu"],
+  supported_precisions_cpu: ["float32"],
+  supported_precisions_gpu: ["float32"],
+  supported_torch_compile_backends: ["inductor"],
+  has_tensorfloat: false,
+  has_tensor_cores: false,
+  supports_xformers: false,
+  supports_int8: false
+};
+async function getCapabilities() {
+  try {
+    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
+    if (response.status !== 200) {
+      console.error("Server is not responding");
+      return defaultCapabilities;
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return defaultCapabilities;
+  }
+}
 const useState = defineStore("state", () => {
   const state = reactive({
     progress: 0,
@@ -39625,9 +39659,14 @@ const useState = defineStore("state", () => {
     secrets: {
       huggingface: "ok"
     },
-    autofill: []
+    autofill: [],
+    capabilities: defaultCapabilities
+    // Should get replaced at runtime
   });
-  return { state };
+  async function fetchCapabilites() {
+    state.capabilities = await getCapabilities();
+  }
+  return { state, fetchCapabilites };
 });
 const _hoisted_1$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
@@ -39704,16 +39743,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const loc = window.location;
-let new_uri;
-if (loc.protocol === "https:") {
-  new_uri = "wss:";
-} else {
-  new_uri = "ws:";
-}
-const serverUrl = loc.protocol + "//" + loc.host;
-const webSocketUrl = new_uri + "//" + loc.host;
-const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
 const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://huggingface.co/settings/tokens"
@@ -39890,6 +39919,14 @@ function processWebSocket(message, global2, notificationProvider) {
       if (message.data.huggingface === "missing") {
         global2.state.secrets.huggingface = "missing";
       }
+      break;
+    }
+    case "refresh_capabilities": {
+      global2.fetchCapabilites().then(() => {
+        console.log("Capabilities refreshed");
+      }).catch((error) => {
+        console.error(error);
+      });
       break;
     }
     default: {
@@ -41813,13 +41850,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "29cef8cc": backgroundColor.value,
-      "4a43647e": theme.value.common.popoverColor,
-      "e4e5ec3e": theme.value.common.borderRadius,
-      "1beee664": theme.value.common.pressedColor,
-      "440cdb18": theme.value.common.primaryColorHover
+      "16223ad6": backgroundColor.value,
+      "1fedac06": theme.value.common.popoverColor,
+      "ba9033c6": theme.value.common.borderRadius,
+      "3119c2a0": theme.value.common.pressedColor,
+      "aca37748": theme.value.common.primaryColorHover
     }));
     const settings = useSettings();
+    const global2 = useState();
+    global2.fetchCapabilites().then(() => {
+      console.log("Capabilities successfully fetched from the server");
+    });
     const theme = computed(() => {
       if (settings.data.settings.frontend.theme === "dark") {
         document.body.style.backgroundColor = "#121215";
@@ -41986,181 +42027,181 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-iconSwitchTransition as $,
-pushScopeId as A,
-popScopeId as B,
-resolveComponent as C,
-h as D,
-ref as E,
-NButton as F,
-NIcon as G,
-NTabPane as H,
-NTabs as I,
-Fragment as J,
-upscalerOptions as K,
-renderList as L,
-NScrollbar as M,
-NGi as N,
-replaceable as O,
-useConfig as P,
-useFormItem as Q,
-useMergedState as R,
-provide as S,
-toRef as T,
-createInjectionKey as U,
-call as V,
-c$1 as W,
-cB as X,
-cE as Y,
-cM as Z,
-_export_sfc as _,
-useSettings as a,
-isBrowser$3 as a$,
-insideModal as a0,
-insidePopover as a1,
-inject as a2,
-useMemo as a3,
-useTheme as a4,
-checkboxLight$1 as a5,
-useRtl as a6,
-createKey as a7,
-useThemeClass as a8,
-createId as a9,
-radioLight$1 as aA,
-resolveWrappedSlot as aB,
-flatten$2 as aC,
-getSlot$1 as aD,
-depx as aE,
-formatLength as aF,
-NScrollbar$1 as aG,
-onBeforeUnmount as aH,
-off as aI,
-ChevronDownIcon as aJ,
-NDropdown as aK,
-pxfy as aL,
-get as aM,
-NBaseLoading as aN,
-ChevronRightIcon as aO,
-VResizeObserver as aP,
-warn$2 as aQ,
-cssrAnchorMetaName as aR,
-VVirtualList as aS,
-NEmpty as aT,
-repeat as aU,
-beforeNextFrameOnce as aV,
-fadeInScaleUpTransition as aW,
-Transition as aX,
-dataTableLight$1 as aY,
-loadingBarApiInjectionKey as aZ,
-throwError as a_,
-NIconSwitchTransition as aa,
-on as ab,
-popselectLight$1 as ac,
-watch as ad,
-NInternalSelectMenu as ae,
-createTreeMate as af,
-happensIn as ag,
-nextTick as ah,
-keysOf as ai,
-createTmOptions as aj,
-keep as ak,
-createRefSetter as al,
-mergeEventHandlers as am,
-omit as an,
-NPopover as ao,
-popoverBaseProps as ap,
-cNotM as aq,
-useLocale as ar,
-watchEffect as as,
-resolveSlot as at,
-NBaseIcon as au,
-useAdjustedTo as av,
-paginationLight$1 as aw,
-ellipsisLight$1 as ax,
-onDeactivated as ay,
-mergeProps as az,
-useMessage as b,
-AddIcon as b0,
-NProgress as b1,
-NFadeInExpandTransition as b2,
-EyeIcon as b3,
-fadeInHeightExpandTransition as b4,
-Teleport as b5,
-uploadLight$1 as b6,
-useCssVars as b7,
-reactive as b8,
-onMounted as b9,
-useNotification as bA,
-defaultSettings as bB,
-urlFromPath as bC,
-useRouter as bD,
-fadeInTransition as bE,
-imageLight as bF,
-isMounted as bG,
-LazyTeleport as bH,
-zindexable$1 as bI,
-kebabCase$1 as bJ,
-useCompitable as bK,
-descriptionsLight$1 as bL,
-withModifiers as bM,
-NAlert as bN,
-inputNumberLight$1 as bO,
-rgba as bP,
-XButton as bQ,
-isSlotEmpty as bR,
-switchLight$1 as bS,
-VBinder as bT,
-VTarget as bU,
-VFollower as bV,
-sliderLight$1 as bW,
-normalizeStyle as ba,
-huggingfaceModelsFile as bb,
-NModal as bc,
-NText as bd,
-stepsLight$1 as be,
-FinishedIcon as bf,
-ErrorIcon$1 as bg,
-upperFirst$1 as bh,
-toString as bi,
-createCompounder as bj,
-cloneVNode as bk,
-onBeforeUpdate as bl,
-indexMap as bm,
-onUpdated as bn,
-resolveSlotWithProps as bo,
-withDirectives as bp,
-vShow as bq,
-carouselLight$1 as br,
-getPreciseEventTarget as bs,
-rateLight as bt,
-color2Class as bu,
-NTag as bv,
-getCurrentInstance as bw,
-formLight$1 as bx,
-commonVariables$m as by,
-formItemInjectionKey as bz,
-computed as c,
-defineComponent as d,
-openBlock as e,
-createElementBlock as f,
-createVNode as g,
-unref as h,
-NCard as i,
-NSpace as j,
-NInput as k,
-promptHandleKeyDown as l,
-createTextVNode as m,
-createBaseVNode as n,
-onUnmounted as o,
-promptHandleKeyUp as p,
-NTooltip as q,
-NSelect as r,
-serverUrl as s,
-toDisplayString as t,
-useState as u,
-createBlock as v,
-withCtx as w,
-createCommentVNode as x,
-NGrid as y,
-spaceRegex as z
+  iconSwitchTransition as $,
+  pushScopeId as A,
+  popScopeId as B,
+  resolveComponent as C,
+  h as D,
+  ref as E,
+  NButton as F,
+  NIcon as G,
+  NTabPane as H,
+  NTabs as I,
+  Fragment as J,
+  upscalerOptions as K,
+  renderList as L,
+  NScrollbar as M,
+  NGi as N,
+  replaceable as O,
+  useConfig as P,
+  useFormItem as Q,
+  useMergedState as R,
+  provide as S,
+  toRef as T,
+  createInjectionKey as U,
+  call as V,
+  c$1 as W,
+  cB as X,
+  cE as Y,
+  cM as Z,
+  _export_sfc as _,
+  useSettings as a,
+  isBrowser$3 as a$,
+  insideModal as a0,
+  insidePopover as a1,
+  inject as a2,
+  useMemo as a3,
+  useTheme as a4,
+  checkboxLight$1 as a5,
+  useRtl as a6,
+  createKey as a7,
+  useThemeClass as a8,
+  createId as a9,
+  radioLight$1 as aA,
+  resolveWrappedSlot as aB,
+  flatten$2 as aC,
+  getSlot$1 as aD,
+  depx as aE,
+  formatLength as aF,
+  NScrollbar$1 as aG,
+  onBeforeUnmount as aH,
+  off as aI,
+  ChevronDownIcon as aJ,
+  NDropdown as aK,
+  pxfy as aL,
+  get as aM,
+  NBaseLoading as aN,
+  ChevronRightIcon as aO,
+  VResizeObserver as aP,
+  warn$2 as aQ,
+  cssrAnchorMetaName as aR,
+  VVirtualList as aS,
+  NEmpty as aT,
+  repeat as aU,
+  beforeNextFrameOnce as aV,
+  fadeInScaleUpTransition as aW,
+  Transition as aX,
+  dataTableLight$1 as aY,
+  loadingBarApiInjectionKey as aZ,
+  throwError as a_,
+  NIconSwitchTransition as aa,
+  on as ab,
+  popselectLight$1 as ac,
+  watch as ad,
+  NInternalSelectMenu as ae,
+  createTreeMate as af,
+  happensIn as ag,
+  nextTick as ah,
+  keysOf as ai,
+  createTmOptions as aj,
+  keep as ak,
+  createRefSetter as al,
+  mergeEventHandlers as am,
+  omit as an,
+  NPopover as ao,
+  popoverBaseProps as ap,
+  cNotM as aq,
+  useLocale as ar,
+  watchEffect as as,
+  resolveSlot as at,
+  NBaseIcon as au,
+  useAdjustedTo as av,
+  paginationLight$1 as aw,
+  ellipsisLight$1 as ax,
+  onDeactivated as ay,
+  mergeProps as az,
+  useMessage as b,
+  AddIcon as b0,
+  NProgress as b1,
+  NFadeInExpandTransition as b2,
+  EyeIcon as b3,
+  fadeInHeightExpandTransition as b4,
+  Teleport as b5,
+  uploadLight$1 as b6,
+  useCssVars as b7,
+  reactive as b8,
+  onMounted as b9,
+  useNotification as bA,
+  defaultSettings as bB,
+  urlFromPath as bC,
+  useRouter as bD,
+  fadeInTransition as bE,
+  imageLight as bF,
+  isMounted as bG,
+  LazyTeleport as bH,
+  zindexable$1 as bI,
+  kebabCase$1 as bJ,
+  useCompitable as bK,
+  descriptionsLight$1 as bL,
+  withModifiers as bM,
+  NAlert as bN,
+  inputNumberLight$1 as bO,
+  rgba as bP,
+  XButton as bQ,
+  isSlotEmpty as bR,
+  switchLight$1 as bS,
+  VBinder as bT,
+  VTarget as bU,
+  VFollower as bV,
+  sliderLight$1 as bW,
+  normalizeStyle as ba,
+  huggingfaceModelsFile as bb,
+  NModal as bc,
+  NText as bd,
+  stepsLight$1 as be,
+  FinishedIcon as bf,
+  ErrorIcon$1 as bg,
+  upperFirst$1 as bh,
+  toString as bi,
+  createCompounder as bj,
+  cloneVNode as bk,
+  onBeforeUpdate as bl,
+  indexMap as bm,
+  onUpdated as bn,
+  resolveSlotWithProps as bo,
+  withDirectives as bp,
+  vShow as bq,
+  carouselLight$1 as br,
+  getPreciseEventTarget as bs,
+  rateLight as bt,
+  color2Class as bu,
+  NTag as bv,
+  getCurrentInstance as bw,
+  formLight$1 as bx,
+  commonVariables$m as by,
+  formItemInjectionKey as bz,
+  computed as c,
+  defineComponent as d,
+  openBlock as e,
+  createElementBlock as f,
+  createVNode as g,
+  unref as h,
+  NCard as i,
+  NSpace as j,
+  NInput as k,
+  promptHandleKeyDown as l,
+  createTextVNode as m,
+  createBaseVNode as n,
+  onUnmounted as o,
+  promptHandleKeyUp as p,
+  NTooltip as q,
+  NSelect as r,
+  serverUrl as s,
+  toDisplayString as t,
+  useState as u,
+  createBlock as v,
+  withCtx as w,
+  createCommentVNode as x,
+  NGrid as y,
+  spaceRegex as z
 };

@@ -79,29 +79,7 @@ function currentStepForward(
 
 export function processWebSocket(
   message: WebSocketMessage,
-  global: Store<
-    "state",
-    _UnwrapAll<
-      Pick<
-        {
-          state: StateInterface;
-        },
-        "state"
-      >
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >
-  >,
+  global: ReturnType<typeof import("@/store/state")["useState"]>,
   notificationProvider: NotificationApiInjection
 ): void {
   switch (message.type) {
@@ -193,6 +171,17 @@ export function processWebSocket(
       if (message.data.huggingface === "missing") {
         global.state.secrets.huggingface = "missing";
       }
+      break;
+    }
+    case "refresh_capabilities": {
+      global
+        .fetchCapabilites()
+        .then(() => {
+          console.log("Capabilities refreshed");
+        })
+        .catch((error) => {
+          console.error(error);
+        });
       break;
     }
     default: {

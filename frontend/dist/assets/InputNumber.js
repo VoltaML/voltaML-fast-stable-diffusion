@@ -1,4 +1,4 @@
-import { b0 as AddIcon, au as NBaseIcon, k as NInput, bQ as XButton, W as c, X as cB, V as call, c as computed, d as defineComponent, D as h, bO as inputNumberLight, ah as nextTick, ab as on, E as ref, at as resolveSlot, aB as resolveWrappedSlot, bP as rgba, T as toRef, P as useConfig, Q as useFormItem, ar as useLocale, a3 as useMemo, R as useMergedState, a6 as useRtl, a4 as useTheme, ad as watch } from "./index.js";
+import { d as defineComponent, D as h, W as c, X as cB, P as useConfig, a4 as useTheme, ar as useLocale, Q as useFormItem, E as ref, T as toRef, R as useMergedState, a3 as useMemo, ad as watch, a6 as useRtl, c as computed, k as NInput, aB as resolveWrappedSlot, bO as inputNumberLight, ab as on, bP as rgba, at as resolveSlot, au as NBaseIcon, bQ as XButton, b0 as AddIcon, V as call, ah as nextTick } from "./index.js";
 const RemoveIcon = defineComponent({
   name: "Remove",
   render() {
@@ -623,5 +623,5 @@ const NInputNumber = defineComponent({
   }
 });
 export {
-NInputNumber as N
+  NInputNumber as N
 };

@@ -1,4 +1,4 @@
-import { aX as Transition, bT as VBinder, bV as VFollower, bU as VTarget, W as c, X as cB, Y as cE, Z as cM, V as call, c as computed, d as defineComponent, aW as fadeInScaleUpTransition, D as h, a0 as insideModal, a1 as insidePopover, bG as isMounted, ah as nextTick, aI as off, ab as on, aH as onBeforeUnmount, bl as onBeforeUpdate, E as ref, at as resolveSlot, bW as sliderLight, T as toRef, av as useAdjustedTo, P as useConfig, Q as useFormItem, R as useMergedState, a4 as useTheme, a8 as useThemeClass, ad as watch } from "./index.js";
+import { E as ref, bl as onBeforeUpdate, W as c, X as cB, Z as cM, Y as cE, aW as fadeInScaleUpTransition, a0 as insideModal, a1 as insidePopover, d as defineComponent, P as useConfig, a4 as useTheme, Q as useFormItem, c as computed, T as toRef, R as useMergedState, ad as watch, aH as onBeforeUnmount, a8 as useThemeClass, bG as isMounted, av as useAdjustedTo, D as h, bT as VBinder, bU as VTarget, at as resolveSlot, bV as VFollower, aX as Transition, bW as sliderLight, ab as on, aI as off, ah as nextTick, V as call } from "./index.js";
 function isTouchEvent(e) {
   return window.TouchEvent && e instanceof window.TouchEvent;
 }
@@ -723,5 +723,5 @@ const NSlider = defineComponent({
   }
 });
 export {
-NSlider as N
+  NSlider as N
 };

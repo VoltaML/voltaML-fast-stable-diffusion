@@ -1,6 +1,6 @@
-import { c as computed, n as createBaseVNode, v as createBlock, x as createCommentVNode, f as createElementBlock, m as createTextVNode, g as createVNode, d as defineComponent, J as Fragment, F as NButton, i as NCard, N as NGi, y as NGrid, G as NIcon, M as NScrollbar, e as openBlock, E as ref, L as renderList, h as unref, u as useState, w as withCtx } from "./index.js";
-import { _ as _sfc_main$2, D as Download } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { N as NImage, T as TrashBin } from "./TrashBin.js";
+import { d as defineComponent, E as ref, u as useState, e as openBlock, v as createBlock, w as withCtx, h as unref, N as NGi, g as createVNode, G as NIcon, m as createTextVNode, F as NButton, x as createCommentVNode, y as NGrid, c as computed, n as createBaseVNode, f as createElementBlock, J as Fragment, L as renderList, M as NScrollbar, i as NCard } from "./index.js";
+import { D as Download, _ as _sfc_main$2 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import { T as TrashBin, N as NImage } from "./TrashBin.js";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "DownloadDelete",
   props: {
@@ -174,5 +174,5 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-_sfc_main as _
+  _sfc_main as _
 };

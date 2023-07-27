@@ -51,7 +51,7 @@
       <NSelect
         v-model:value="settings.defaultSettings.api.clip_quantization"
         :options="availableQuantizations"
-        :disabled="!capabilities.supports_int8"
+        :disabled="!global.state.capabilities.supports_int8"
       />
     </NFormItem>
 
@@ -165,7 +165,7 @@
     <NFormItem label="Reduced Precision (RTX 30xx and newer cards)">
       <NSwitch
         v-model:value="settings.defaultSettings.api.reduced_precision"
-        :disabled="!capabilities.has_tensorfloat"
+        :disabled="!global.state.capabilities.has_tensorfloat"
       />
     </NFormItem>
 
@@ -333,7 +333,6 @@
 </template>
 
 <script lang="ts" setup>
-import type { Capabilities } from "@/core/interfaces";
 import {
   NForm,
   NFormItem,
@@ -344,38 +343,15 @@ import {
   NSwitch,
 } from "naive-ui";
 import { computed } from "vue";
-import { serverUrl } from "../../env";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const settings = useSettings();
 const global = useState();
 
-const capabilities = computed(() => {
-  try {
-    const req = new XMLHttpRequest();
-    req.open("GET", `${serverUrl}/api/hardware/capabilities`, false);
-    req.send();
-
-    return JSON.parse(req.responseText) as Capabilities;
-  } catch (e) {
-    console.error(e);
-    return {
-      supported_backends: ["cpu"],
-      supported_precisions_cpu: ["float32"],
-      supported_precisions_gpu: ["float32"],
-      supported_torch_compile_backends: ["inductor"],
-      has_tensorfloat: false,
-      has_tensor_cores: false,
-      supports_xformers: false,
-      supports_int8: false,
-    } as Capabilities;
-  }
-});
-
 const availableDtypes = computed(() => {
   if (settings.defaultSettings.api.device_type == "cpu") {
-    return capabilities.value.supported_precisions_cpu.map((value) => {
+    return global.state.capabilities.supported_precisions_cpu.map((value) => {
       var description = "";
       switch (value) {
         case "float32":
@@ -390,7 +366,7 @@ const availableDtypes = computed(() => {
       return { value: value, label: description };
     });
   }
-  return capabilities.value.supported_precisions_gpu.map((value) => {
+  return global.state.capabilities.supported_precisions_gpu.map((value) => {
     var description = "";
     switch (value) {
       case "float32":
@@ -407,7 +383,7 @@ const availableDtypes = computed(() => {
 });
 
 const availableBackends = computed(() => {
-  return capabilities.value.supported_backends.map((value) => {
+  return global.state.capabilities.supported_backends.map((value) => {
     switch (value) {
       case "cuda":
         return { value: "cuda", label: "CUDA/ROCm" };
@@ -424,14 +400,16 @@ const availableBackends = computed(() => {
 });
 
 const availableTorchCompileBackends = computed(() => {
-  return capabilities.value.supported_torch_compile_backends.map((value) => {
-    return { value: value, label: value };
-  });
+  return global.state.capabilities.supported_torch_compile_backends.map(
+    (value) => {
+      return { value: value, label: value };
+    }
+  );
 });
 
 const availableAttentions = computed(() => {
   return [
-    ...(capabilities.value.supports_xformers
+    ...(global.state.capabilities.supports_xformers
       ? [{ value: "xformers", label: "xFormers" }]
       : []),
     {
@@ -456,7 +434,7 @@ const availableAttentions = computed(() => {
 const availableQuantizations = computed(() => {
   return [
     { value: "full", label: "Full precision" },
-    ...(capabilities.value.supports_int8
+    ...(global.state.capabilities.supports_int8
       ? [
           { value: "int8", label: "Quantized (int8)" },
           { value: "int4", label: "Quantized (int4)" },
