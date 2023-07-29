@@ -3,7 +3,7 @@ import os
 from typing import Any, List, Literal, Optional, Tuple
 
 import torch
-from diffusers.models import UNet2DConditionModel, AutoencoderKL, ControlNetModel
+from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
 from diffusers.pipelines import StableDiffusionPipeline
 from PIL import Image
 from rich.console import Console
@@ -16,12 +16,6 @@ from api.websockets.data import Data
 from core.config import config
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
-from core.inference.utilities import (
-    get_weighted_text_embeddings,
-    init_ait_module,
-    change_scheduler,
-    image_to_controlnet_input,
-)
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
@@ -35,6 +29,11 @@ from core.types import (
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
+
+from ..utilities.aitemplate import init_ait_module
+from ..utilities.controlnet import image_to_controlnet_input
+from ..utilities.lwp import get_weighted_text_embeddings
+from ..utilities.scheduling import change_scheduler
 
 logger = logging.getLogger(__name__)
 console = Console()

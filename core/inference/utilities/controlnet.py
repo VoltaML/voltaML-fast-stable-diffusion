@@ -8,7 +8,6 @@ from PIL import Image
 from transformers.models.auto.image_processing_auto import AutoImageProcessor
 from transformers.models.upernet import UperNetForSemanticSegmentation
 
-from core import shared_dependent
 from core.config import config
 from core.types import ControlNetData
 
@@ -34,6 +33,8 @@ except ImportError:
 def _wipe_old():
     "Wipes old controlnet preprocessor from memory"
 
+    from core import shared_dependent
+
     logger.debug("Did not find this controlnet preprocessor cached, wiping old ones")
     shared_dependent.cached_controlnet_preprocessor = None
 
@@ -45,6 +46,8 @@ def _wipe_old():
 
 def _cache_preprocessor(preprocessor: Any):
     "Caches controlnet preprocessor"
+
+    from core import shared_dependent
 
     logger.debug(
         f"Caching {preprocessor.__class__.__name__ if not isinstance(preprocessor, tuple) else preprocessor[0].__class__.__name__ + ' + ' + preprocessor[1].__class__.__name__} preprocessor"
@@ -98,6 +101,8 @@ def _canny(
 ) -> Image.Image:
     "Applies canny edge detection to an image"
 
+    from core import shared_dependent
+
     if isinstance(shared_dependent.cached_controlnet_preprocessor, CannyDetector):
         detector = shared_dependent.cached_controlnet_preprocessor
     else:
@@ -114,6 +119,8 @@ def _canny(
 
 def _midas(input_image: Image.Image) -> Image.Image:
     "Applies depth estimation to an image"
+
+    from core import shared_dependent
 
     if isinstance(shared_dependent.cached_controlnet_preprocessor, MidasDetector):
         midas_detector = shared_dependent.cached_controlnet_preprocessor
@@ -134,6 +141,8 @@ def _hed(
     input_image: Image.Image, detect_resolution=512, image_resolution=512
 ) -> Image.Image:
     "Applies hed edge detection to an image"
+
+    from core import shared_dependent
 
     if isinstance(shared_dependent.cached_controlnet_preprocessor, HEDdetector):
         hed_detector = shared_dependent.cached_controlnet_preprocessor
@@ -160,6 +169,8 @@ def _mlsd(
 ) -> Image.Image:
     "Applies M-LSD edge detection to an image"
 
+    from core import shared_dependent
+
     if isinstance(shared_dependent.cached_controlnet_preprocessor, MLSDdetector):
         mlsd_detector = shared_dependent.cached_controlnet_preprocessor
     else:
@@ -182,6 +193,8 @@ def _mlsd(
 def _normal_bae(input_image: Image.Image) -> Image.Image:
     "Applies normal estimation to an image"
 
+    from core import shared_dependent
+
     if isinstance(shared_dependent.cached_controlnet_preprocessor, NormalBaeDetector):
         normal_bae_detector = shared_dependent.cached_controlnet_preprocessor
     else:
@@ -196,6 +209,8 @@ def _normal_bae(input_image: Image.Image) -> Image.Image:
 
 def _openpose(input_image: Image.Image) -> Image.Image:
     "Applies openpose to an image"
+
+    from core import shared_dependent
 
     if isinstance(shared_dependent.cached_controlnet_preprocessor, OpenposeDetector):
         op_detector = shared_dependent.cached_controlnet_preprocessor
@@ -212,6 +227,8 @@ def _openpose(input_image: Image.Image) -> Image.Image:
 
 def _segmentation(input_image: Image.Image) -> Image.Image:
     "Applies segmentation to an image"
+
+    from core import shared_dependent
 
     if isinstance(shared_dependent.cached_controlnet_preprocessor, Tuple):
         (  # pylint: disable=unpacking-non-sequence
@@ -256,6 +273,8 @@ def _segmentation(input_image: Image.Image) -> Image.Image:
 def _lineart(input_image: Image.Image) -> Image.Image:
     "Applies lineart to an image"
 
+    from core import shared_dependent
+
     if isinstance(shared_dependent.cached_controlnet_preprocessor, LineartDetector):
         op_detector = shared_dependent.cached_controlnet_preprocessor
     else:
@@ -271,6 +290,8 @@ def _lineart(input_image: Image.Image) -> Image.Image:
 
 def _lineart_anime(input_image: Image.Image) -> Image.Image:
     "Applies lineart_anime to an image"
+
+    from core import shared_dependent
 
     if isinstance(
         shared_dependent.cached_controlnet_preprocessor, LineartAnimeDetector
