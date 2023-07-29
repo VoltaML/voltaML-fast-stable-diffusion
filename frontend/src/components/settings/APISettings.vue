@@ -26,7 +26,10 @@
         ]"
       />
     </NFormItem>
-    <NFormItem label="Image quality (JPEG/WebP only)">
+    <NFormItem
+      label="Image quality (JPEG/WebP only)"
+      v-if="settings.defaultSettings.api.image_extension != 'png'"
+    >
       <NInputNumber
         v-model:value="settings.defaultSettings.api.image_quality"
         :min="0"
@@ -42,6 +45,13 @@
         :min="1"
         :max="11"
         :step="1"
+      />
+    </NFormItem>
+    <NFormItem label="Precision">
+      <NSelect
+        v-model:value="settings.defaultSettings.api.clip_quantization"
+        :options="availableQuantizations"
+        :disabled="!global.state.capabilities.supports_int8"
       />
     </NFormItem>
 
@@ -88,33 +98,15 @@
     <h2>Optimizations</h2>
 
     <NFormItem label="Autocast">
-      <NSwitch v-model:value="settings.defaultSettings.api.autocast" />
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.autocast"
+        :disabled="availableDtypes.length < 2"
+      />
     </NFormItem>
 
     <NFormItem label="Attention Processor">
       <NSelect
-        :options="[
-          {
-            value: 'xformers',
-            label: 'xFormers (less memory hungry)',
-          },
-          {
-            value: 'sdpa',
-            label: 'SDP Attention',
-          },
-          {
-            value: 'cross-attention',
-            label: 'Cross-Attention',
-          },
-          {
-            value: 'subquadratic',
-            label: 'Sub-quadratic Attention',
-          },
-          {
-            value: 'multihead',
-            label: 'Multihead attention',
-          },
-        ]"
+        :options="availableAttentions"
         v-model:value="settings.defaultSettings.api.attention_processor"
       >
       </NSelect>
@@ -171,7 +163,10 @@
     </NFormItem>
 
     <NFormItem label="Reduced Precision (RTX 30xx and newer cards)">
-      <NSwitch v-model:value="settings.defaultSettings.api.reduced_precision" />
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.reduced_precision"
+        :disabled="!global.state.capabilities.has_tensorfloat"
+      />
     </NFormItem>
 
     <NFormItem
@@ -238,60 +233,21 @@
 
     <NFormItem label="Device Type">
       <NSelect
-        :options="[
-          {
-            value: 'cpu',
-            label: 'CPU',
-          },
-          {
-            value: 'cuda',
-            label: 'CUDA (NVIDIA) or ROCm (AMD)',
-          },
-          {
-            value: 'mps',
-            label: 'MPS (Apple)',
-          },
-          {
-            value: 'directml',
-            label: 'DirectML',
-          },
-          {
-            value: 'intel',
-            label: 'Intel',
-          },
-          {
-            value: 'vulkan',
-            label: 'Vulkan (Not Implemented)',
-          },
-          {
-            value: 'iree',
-            label: 'IREE (Not Implemented)',
-          },
-        ]"
+        :options="availableBackends"
         v-model:value="settings.defaultSettings.api.device_type"
       />
     </NFormItem>
 
-    <NFormItem label="Device ID (GPU ID)">
+    <NFormItem
+      label="Device ID (GPU ID)"
+      v-if="settings.defaultSettings.api.device_type != 'cpu'"
+    >
       <NInputNumber v-model:value="settings.defaultSettings.api.device_id" />
     </NFormItem>
 
     <NFormItem label="Precision">
       <NSelect
-        :options="[
-          {
-            value: 'float16',
-            label: '16-bit float',
-          },
-          {
-            value: 'float32',
-            label: '32-bit float',
-          },
-          {
-            value: 'bfloat16',
-            label: '16-bit bfloat (CPU and Ampere+)',
-          },
-        ]"
+        :options="availableDtypes"
         v-model:value="settings.defaultSettings.api.data_type"
       />
     </NFormItem>
@@ -301,37 +257,39 @@
       <NSwitch v-model:value="settings.defaultSettings.api.use_tomesd" />
     </NFormItem>
 
-    <NFormItem label="TomeSD Ratio">
-      <NInputNumber
-        v-model:value="settings.defaultSettings.api.tomesd_ratio"
-        :min="0.1"
-        :max="1.0"
-      />
-    </NFormItem>
+    <div v-if="settings.defaultSettings.api.use_tomesd">
+      <NFormItem label="TomeSD Ratio">
+        <NInputNumber
+          v-model:value="settings.defaultSettings.api.tomesd_ratio"
+          :min="0.1"
+          :max="1.0"
+        />
+      </NFormItem>
 
-    <NFormItem label="TomeSD Downsample layers">
-      <NSelect
-        :options="[
-          {
-            value: 1,
-            label: '1',
-          },
-          {
-            value: 2,
-            label: '2',
-          },
-          {
-            value: 4,
-            label: '4',
-          },
-          {
-            value: 8,
-            label: '8',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.tomesd_downsample_layers"
-      />
-    </NFormItem>
+      <NFormItem label="TomeSD Downsample layers">
+        <NSelect
+          :options="[
+            {
+              value: 1,
+              label: '1',
+            },
+            {
+              value: 2,
+              label: '2',
+            },
+            {
+              value: 4,
+              label: '4',
+            },
+            {
+              value: 8,
+              label: '8',
+            },
+          ]"
+          v-model:value="settings.defaultSettings.api.tomesd_downsample_layers"
+        />
+      </NFormItem>
+    </div>
 
     <h2>Torch Compile</h2>
     <NFormItem label="Torch Compile">
@@ -356,12 +314,7 @@
           v-model:value="settings.defaultSettings.api.torch_compile_backend"
           tag
           filterable
-          :options="[
-            {
-              value: 'inductor',
-              label: 'Inductor',
-            },
-          ]"
+          :options="availableTorchCompileBackends"
         />
       </NFormItem>
 
@@ -395,6 +348,100 @@ import { useState } from "../../store/state";
 
 const settings = useSettings();
 const global = useState();
+
+const availableDtypes = computed(() => {
+  if (settings.defaultSettings.api.device_type == "cpu") {
+    return global.state.capabilities.supported_precisions_cpu.map((value) => {
+      var description = "";
+      switch (value) {
+        case "float32":
+          description = "32-bit float";
+          break;
+        case "float16":
+          description = "16-bit float";
+          break;
+        default:
+          description = "16-bit bfloat";
+      }
+      return { value: value, label: description };
+    });
+  }
+  return global.state.capabilities.supported_precisions_gpu.map((value) => {
+    var description = "";
+    switch (value) {
+      case "float32":
+        description = "32-bit float";
+        break;
+      case "float16":
+        description = "16-bit float";
+        break;
+      default:
+        description = "16-bit bfloat";
+    }
+    return { value: value, label: description };
+  });
+});
+
+const availableBackends = computed(() => {
+  return global.state.capabilities.supported_backends.map((value) => {
+    switch (value) {
+      case "cuda":
+        return { value: "cuda", label: "CUDA/ROCm" };
+      case "mps":
+        return { value: "mps", label: "MPS (Apple)" };
+      case "xpu":
+        return { value: "intel", label: "Intel" };
+      case "directml":
+        return { value: "directml", label: "DirectML" };
+      default:
+        return { value: "cpu", label: "CPU" };
+    }
+  });
+});
+
+const availableTorchCompileBackends = computed(() => {
+  return global.state.capabilities.supported_torch_compile_backends.map(
+    (value) => {
+      return { value: value, label: value };
+    }
+  );
+});
+
+const availableAttentions = computed(() => {
+  return [
+    ...(global.state.capabilities.supports_xformers
+      ? [{ value: "xformers", label: "xFormers" }]
+      : []),
+    {
+      value: "sdpa",
+      label: "SDP Attention",
+    },
+    {
+      value: "cross-attention",
+      label: "Cross-Attention",
+    },
+    {
+      value: "subquadratic",
+      label: "Sub-quadratic Attention",
+    },
+    {
+      value: "multihead",
+      label: "Multihead attention",
+    },
+  ];
+});
+
+const availableQuantizations = computed(() => {
+  return [
+    { value: "full", label: "Full precision" },
+    ...(global.state.capabilities.supports_int8
+      ? [
+          { value: "int8", label: "Quantized (int8)" },
+          { value: "int4", label: "Quantized (int4)" },
+        ]
+      : []),
+  ];
+});
 
 const textualInversions = computed(() => {
   return global.state.models.filter((model) => {

@@ -16,10 +16,10 @@ from transformers.models.auto.modeling_auto import AutoModelForCausalLM
 from transformers.models.auto.processing_auto import AutoProcessor
 from transformers.models.blip.modeling_blip import BlipForConditionalGeneration
 from transformers.models.blip_2 import Blip2ForConditionalGeneration
+from transformers.utils import is_bitsandbytes_available
 
 from core.config import config
 from core.files import get_full_model_path
-from core.inference.functions import is_bitsandbytes_available
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.optimizations import autocast
 from core.types import InterrogatorQueueEntry, Job
@@ -32,7 +32,9 @@ CACHE_URL = "https://huggingface.co/pharma/ci-preprocess/resolve/main/"
 class CLIPInterrogator(InterrogationModel):
     "internal"
 
-    def __init__(self, device: str = "cuda", autoload: bool = False):
+    def __init__(
+        self, device: Union[str, torch.device] = "cuda", autoload: bool = False
+    ):
         super().__init__(device)
 
         self.device = device
@@ -175,7 +177,7 @@ class CLIPInterrogator(InterrogationModel):
             similarity = text_features @ image_features.T
             if reverse:
                 similarity = -similarity
-        return text_array[similarity.argmax().item()]
+        return text_array[similarity.argmax().item()]  # type: ignore
 
     def load(self):
         # load captioner model (BLIP)

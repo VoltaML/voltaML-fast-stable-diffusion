@@ -1,4 +1,4 @@
-from typing import Optional
+from typing import Optional, Union
 
 import torch
 from flamingo_mini import FlamingoModel, FlamingoProcessor
@@ -6,7 +6,6 @@ from PIL import Image
 
 from core.config import config
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
-from core.interrogation.clip import is_cpu
 from core.types import InterrogatorQueueEntry, Job
 from core.utils import convert_to_image
 
@@ -14,7 +13,7 @@ from core.utils import convert_to_image
 class FlamingoInterrogator(InterrogationModel):
     "Model that uses Flamingo Mini to generate image captions."
 
-    def __init__(self, device: str = "cuda"):
+    def __init__(self, device: Union[str, torch.device] = "cuda"):
         super().__init__(device)
 
         self.device = device

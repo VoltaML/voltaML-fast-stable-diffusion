@@ -31,7 +31,7 @@
 }
 
 .main {
-  background-color: var(--29cef8cc);
+  background-color: var(--16223ad6);
 }
 .autocomplete {
   position: relative;
@@ -40,18 +40,18 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--4a43647e);
-  border-radius: var(--e4e5ec3e);
+  background-color: var(--1fedac06);
+  border-radius: var(--ba9033c6);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--e4e5ec3e);
+  border-radius: var(--ba9033c6);
 }
 .autocomplete-active {
-  background-color: var(--1beee664) !important;
-  color: var(--440cdb18) !important;
+  background-color: var(--3119c2a0) !important;
+  color: var(--aca37748) !important;
 }
 body {
   min-height: 100vh;

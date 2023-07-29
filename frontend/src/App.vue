@@ -33,8 +33,14 @@ import SecretsHandlerVue from "./components/SecretsHandler.vue";
 import TopBarVue from "./components/TopBar.vue";
 import routerContainerVue from "./router/router-container.vue";
 import { useSettings } from "./store/settings";
+import { useState } from "./store/state";
 
 const settings = useSettings();
+const global = useState();
+
+global.fetchCapabilites().then(() => {
+  console.log("Capabilities successfully fetched from the server");
+});
 
 const theme = computed(() => {
   if (settings.data.settings.frontend.theme === "dark") {

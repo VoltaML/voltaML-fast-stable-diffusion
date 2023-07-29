@@ -1,6 +1,6 @@
 import logging
 import os
-from typing import Any, List, Literal, Optional
+from typing import Any, List, Literal, Optional, Union
 
 import torch
 from diffusers import ControlNetModel
@@ -45,7 +45,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
     ):
         super().__init__(model_id, device)
 

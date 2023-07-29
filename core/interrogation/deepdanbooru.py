@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 import torch
@@ -30,7 +30,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
 
     def __init__(
         self,
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
         quantized: bool = False,
         autoload: bool = False,
     ):

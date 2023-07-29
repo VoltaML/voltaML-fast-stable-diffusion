@@ -218,7 +218,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             )
             text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
 
-        return text_embeddings
+        return text_embeddings.to(dtype=config.api.dtype)
 
     def check_inputs(self, prompt, height, width, strength, callback_steps):
         if not isinstance(prompt, str) and not isinstance(prompt, list):

@@ -95,29 +95,6 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                 sys.exit(1)
 
 
-def install_iree():
-    "Install components necessary for IREE compilation and inference"
-
-    if (
-        not is_installed("iree-compiler")
-        or not is_installed("iree-runtime")
-        or not is_installed("torch-mlir")
-    ):
-        subprocess.check_call(
-            [
-                sys.executable,
-                "-m",
-                "pip",
-                "install",
-                "iree-compiler",
-                "iree-runtime",
-                "git+https://github.com/llvm/torch-mlir.git",
-                "-f",
-                "https://nod-ai.github.io/SHARK-Runtime/pip-release-links.html",
-            ]
-        )
-
-
 @dataclass
 class PytorchDistribution:
     "Dataclass that holds information about a pytorch distribution"

@@ -39528,6 +39528,40 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   }
 });
 const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+  new_uri = "wss:";
+} else {
+  new_uri = "ws:";
+}
+const serverUrl = loc.protocol + "//" + loc.host;
+const webSocketUrl = new_uri + "//" + loc.host;
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
+const defaultCapabilities = {
+  supported_backends: ["cpu"],
+  supported_precisions_cpu: ["float32"],
+  supported_precisions_gpu: ["float32"],
+  supported_torch_compile_backends: ["inductor"],
+  has_tensorfloat: false,
+  has_tensor_cores: false,
+  supports_xformers: false,
+  supports_int8: false
+};
+async function getCapabilities() {
+  try {
+    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
+    if (response.status !== 200) {
+      console.error("Server is not responding");
+      return defaultCapabilities;
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return defaultCapabilities;
+  }
+}
 const useState = defineStore("state", () => {
   const state = reactive({
     progress: 0,
@@ -39625,9 +39659,14 @@ const useState = defineStore("state", () => {
     secrets: {
       huggingface: "ok"
     },
-    autofill: []
+    autofill: [],
+    capabilities: defaultCapabilities
+    // Should get replaced at runtime
   });
-  return { state };
+  async function fetchCapabilites() {
+    state.capabilities = await getCapabilities();
+  }
+  return { state, fetchCapabilites };
 });
 const _hoisted_1$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
@@ -39704,16 +39743,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const loc = window.location;
-let new_uri;
-if (loc.protocol === "https:") {
-  new_uri = "wss:";
-} else {
-  new_uri = "ws:";
-}
-const serverUrl = loc.protocol + "//" + loc.host;
-const webSocketUrl = new_uri + "//" + loc.host;
-const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
 const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://huggingface.co/settings/tokens"
@@ -39890,6 +39919,14 @@ function processWebSocket(message, global2, notificationProvider) {
       if (message.data.huggingface === "missing") {
         global2.state.secrets.huggingface = "missing";
       }
+      break;
+    }
+    case "refresh_capabilities": {
+      global2.fetchCapabilites().then(() => {
+        console.log("Capabilities refreshed");
+      }).catch((error) => {
+        console.error(error);
+      });
       break;
     }
     default: {
@@ -40599,6 +40636,7 @@ const defaultSettings = {
     websocket_perf_interval: 1,
     image_preview_delay: 2,
     clip_skip: 1,
+    clip_quantization: "full",
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
@@ -41812,13 +41850,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "29cef8cc": backgroundColor.value,
-      "4a43647e": theme.value.common.popoverColor,
-      "e4e5ec3e": theme.value.common.borderRadius,
-      "1beee664": theme.value.common.pressedColor,
-      "440cdb18": theme.value.common.primaryColorHover
+      "16223ad6": backgroundColor.value,
+      "1fedac06": theme.value.common.popoverColor,
+      "ba9033c6": theme.value.common.borderRadius,
+      "3119c2a0": theme.value.common.pressedColor,
+      "aca37748": theme.value.common.primaryColorHover
     }));
     const settings = useSettings();
+    const global2 = useState();
+    global2.fetchCapabilites().then(() => {
+      console.log("Capabilities successfully fetched from the server");
+    });
     const theme = computed(() => {
       if (settings.data.settings.frontend.theme === "dark") {
         document.body.style.backgroundColor = "#121215";

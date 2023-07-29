@@ -15,7 +15,6 @@ from core.config import config
 from core.files import get_full_model_path
 
 from .attn import set_attention_processor
-from .iree import convert_pipe_state_to_iree
 from .trace_utils import generate_inputs, trace_model
 
 logger = logging.getLogger(__name__)
@@ -60,7 +59,6 @@ def optimize_model(
         )
         can_offload = config.api.device_type not in [
             "cpu",
-            "iree",
             "vulkan",
             "mps",
         ] and (offload != "disabled" and offload is not None)
@@ -78,6 +76,7 @@ def optimize_model(
                     logger.info(
                         "Optimization: Enabled all reduced precision operations"
                     )
+                    torch.set_float32_matmul_precision("medium")
                 else:
                     logger.warning(
                         "Optimization: Device capability is not higher than 8.0, skipping most of reduction"
@@ -251,9 +250,6 @@ def optimize_model(
                     sample_input=generate_inputs(config.api.dtype, device),
                 )
                 ipexed = True
-
-        if config.api.device_type == "iree":
-            convert_pipe_state_to_iree(pipe)  # type: ignore
 
         if config.api.trace_model and not ipexed and not is_for_aitemplate:
             logger.info("Optimization: Tracing model.")
