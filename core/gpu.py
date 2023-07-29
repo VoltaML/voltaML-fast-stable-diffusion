@@ -15,7 +15,7 @@ from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
-from core.inference.aitemplate import AITemplateStableDiffusion
+from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan.upscale import Upscaler
 from core.inference.functions import download_model
 from core.inference.pytorch import PyTorchStableDiffusion
@@ -32,11 +32,11 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
-    VaeLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
+    VaeLoadRequest,
 )
 from core.utils import convert_to_image, image_grid
 
