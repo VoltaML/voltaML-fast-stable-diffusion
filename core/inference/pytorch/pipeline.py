@@ -6,32 +6,25 @@ from typing import Callable, List, Literal, Optional, Union
 import PIL
 import torch
 from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipeline
-from diffusers.models import AutoencoderKL, UNet2DConditionModel, ControlNetModel
-from diffusers.pipelines.stable_diffusion import (
-    StableDiffusionPipelineOutput,
-)
+from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.utils import logging
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.config import config
 from core.inference.utilities import (
-    prepare_latents,
+    get_timesteps,
+    get_weighted_text_embeddings,
+    prepare_extra_step_kwargs,
     prepare_image,
-    preprocess_image,
+    prepare_latents,
     prepare_mask_and_masked_image,
     prepare_mask_latents,
-    get_weighted_text_embeddings,
-    get_timesteps,
-    prepare_extra_step_kwargs,
+    preprocess_image,
 )
 from core.optimizations import autocast
 
-from .sag import (
-    CrossAttnStoreProcessor,
-    pred_epsilon,
-    pred_x0,
-    sag_masking,
-)
+from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
 # ------------------------------------------------------------------------------
 
@@ -231,6 +224,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
@@ -244,7 +238,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         strength: float = 0.8,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
-        generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
@@ -610,6 +603,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def text2img(
         self,
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         height: int = 512,
         width: int = 512,
@@ -618,7 +612,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
-        generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
@@ -708,6 +701,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self,
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
@@ -715,7 +709,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
-        generator: Optional[torch.Generator] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,
@@ -805,6 +798,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
@@ -812,7 +806,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
-        generator: Optional[torch.Generator] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,

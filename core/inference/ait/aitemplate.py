@@ -1,10 +1,9 @@
 import logging
 import os
-from typing import Any, List, Literal, Optional, Tuple
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Tuple, Union
 
 import torch
 from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
-from diffusers.pipelines import StableDiffusionPipeline
 from PIL import Image
 from rich.console import Console
 from transformers.models.clip import CLIPFeatureExtractor
@@ -14,6 +13,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets.data import Data
 from core.config import config
+from core.inference.ait.pipeline import StableDiffusionAITPipeline
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
 from core.inference_callbacks import (
@@ -35,6 +35,10 @@ from ..utilities.controlnet import image_to_controlnet_input
 from ..utilities.lwp import get_weighted_text_embeddings
 from ..utilities.scheduling import change_scheduler
 
+if TYPE_CHECKING:
+    from diffusers.pipelines import StableDiffusionPipeline
+
+
 logger = logging.getLogger(__name__)
 console = Console()
 
@@ -45,7 +49,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
     ):
         super().__init__(model_id, device)
 
@@ -78,6 +82,7 @@ class AITemplateStableDiffusion(InferenceModel):
         return os.path.join("data", "aitemplate", self.model_id)
 
     def load(self):
+        # pylint: disable=redefined-outer-name,reimported
         from .pipeline import StableDiffusionAITPipeline
 
         pipe = load_pytorch_pipeline(
@@ -240,11 +245,12 @@ class AITemplateStableDiffusion(InferenceModel):
         controlnet: str = "",
         seed: int = -1,
         scheduler: Optional[Tuple[Any, bool]] = None,
-    ) -> Tuple[StableDiffusionPipeline, torch.Generator]:
+    ) -> Tuple["StableDiffusionAITPipeline", torch.Generator]:
         "Centralized way to create new pipelines."
 
         self.manage_optional_components(target_controlnet=controlnet)
 
+        # pylint: disable=redefined-outer-name,reimported
         from .pipeline import StableDiffusionAITPipeline
 
         pipe = StableDiffusionAITPipeline(
