@@ -122,6 +122,9 @@ def save_images(
             .replace(";", "")
             .replace("'", "")
             .replace('"', "")
+            .replace(" ", "_")
+            .replace("<", "")
+            .replace(">", "")
         )
     else:
         prompt = ""

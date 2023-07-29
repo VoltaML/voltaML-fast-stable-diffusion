@@ -1,7 +1,7 @@
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, K as upscalerOptions, q as NTooltip, m as createTextVNode, y as NGrid, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, L as upscalerOptions, q as NTooltip, m as createTextVNode, y as NGrid, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
