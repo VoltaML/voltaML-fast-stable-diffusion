@@ -26,7 +26,8 @@ export interface ModelEntry {
     | "LoRA"
     | "LyCORIS"
     | "VAE"
-    | "Textual Inversion";
+    | "Textual Inversion"
+    | "Upscaler";
   valid: boolean;
   vae: string;
   state: "loading" | "loaded" | "not loaded";

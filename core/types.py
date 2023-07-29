@@ -25,6 +25,7 @@ Backend = Literal[
     "Textual Inversion",
     "ONNX",
     "VAE",
+    "Upscaler",
 ]
 
 

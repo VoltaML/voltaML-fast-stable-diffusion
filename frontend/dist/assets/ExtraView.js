@@ -1,13 +1,13 @@
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, L as upscalerOptions, q as NTooltip, m as createTextVNode, y as NGrid, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, q as NTooltip, m as createTextVNode, y as NGrid, L as upscalerOptions, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-45b49aa5"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-2a772a2b"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
@@ -18,7 +18,7 @@ const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBase
 const _hoisted_8 = { class: "flex-container" };
 const _hoisted_9 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Tile Padding", -1));
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
-  __name: "RealESRGAN",
+  __name: "Upscale",
   setup(__props) {
     const global = useState();
     const conf = useSettings();
@@ -26,6 +26,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const imageSelectCallback = (base64Image) => {
       conf.data.settings.upscale.image = base64Image;
     };
+    const upscalerOptionsFull = computed(() => {
+      const localModels = global.state.models.filter(
+        (model) => model.backend === "Upscaler" && !(upscalerOptions.map((option) => option.label).indexOf(model.name) !== -1)
+      ).map((model) => ({
+        label: model.name,
+        value: model.path
+      }));
+      return [...upscalerOptions, ...localModels];
+    });
     const generate = () => {
       global.state.generating = true;
       fetch(`${serverUrl}/api/generate/upscale`, {
@@ -92,7 +101,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             style: { "margin-right": "12px" },
                             filterable: "",
                             tag: "",
-                            options: unref(upscalerOptions)
+                            options: upscalerOptionsFull.value
                           }, null, 8, ["value", "options"])
                         ]),
                         createBaseVNode("div", _hoisted_4, [
@@ -201,8 +210,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const RealESRGAN_vue_vue_type_style_index_0_scoped_45b49aa5_lang = "";
-const RealESRGAN = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-45b49aa5"]]);
+const Upscale_vue_vue_type_style_index_0_scoped_2a772a2b_lang = "";
+const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2a772a2b"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {
@@ -216,7 +225,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           createVNode(unref(NTabPane), { name: "Upscale" }, {
             default: withCtx(() => [
-              createVNode(RealESRGAN)
+              createVNode(Upscale)
             ]),
             _: 1
           })

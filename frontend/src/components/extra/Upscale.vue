@@ -20,7 +20,7 @@
                 style="margin-right: 12px"
                 filterable
                 tag
-                :options="upscalerOptions"
+                :options="upscalerOptionsFull"
               />
             </div>
 
@@ -129,6 +129,8 @@ import {
   NTooltip,
   useMessage,
 } from "naive-ui";
+import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
+import { computed } from "vue";
 import { upscalerOptions, useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
@@ -139,6 +141,25 @@ const messageHandler = useMessage();
 const imageSelectCallback = (base64Image: string) => {
   conf.data.settings.upscale.image = base64Image;
 };
+
+const upscalerOptionsFull = computed<SelectMixedOption[]>(() => {
+  const localModels = global.state.models
+    .filter(
+      (model) =>
+        model.backend === "Upscaler" &&
+        !(
+          upscalerOptions
+            .map((option: SelectMixedOption) => option.label)
+            .indexOf(model.name) !== -1
+        )
+    )
+    .map((model) => ({
+      label: model.name,
+      value: model.path,
+    }));
+
+  return [...upscalerOptions, ...localModels];
+});
 
 const generate = () => {
   global.state.generating = true;
