@@ -70,6 +70,15 @@ async def gpu_memory(gpu_id: int):
             )
 
 
+@router.get("/capabilities")
+async def capabilities():
+    "List of all the capabilities of this system"
+
+    from core.shared_dependent import gpu as _gpu
+
+    return _gpu.capabilities
+
+
 @router.get("/gpus")
 async def gpus():
     "List all available GPUs"

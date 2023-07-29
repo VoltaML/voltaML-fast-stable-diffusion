@@ -1,19 +1,17 @@
 # xFormers
 
-Xformers library is an optional way to speedup your image generation.
+Xformers library is an optional way to save some of your VRAM.
 
-As of now, xFormers isn't available on standard PyPI, but there is a pre-release version available.
+## Downsides
+
+Images are no longer determinisic. This means that you can't use the same seed to get the same results.
 
 ## Installation
-
-::: tip
-Docker images already include xFormers. There is no need to install it manually.
-:::
 
 Users need to install manually if they use local installation of volta.
 
 ```bash
-pip install -U --pre xformers
+pip install xformers
 ```
 
 ## Usage

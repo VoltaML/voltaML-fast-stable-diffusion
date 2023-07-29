@@ -141,6 +141,7 @@ export interface ISettings {
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
 
     clip_skip: number;
+    clip_quantization: "full" | "int4" | "int8";
 
     autocast: boolean;
     attention_processor:
@@ -304,6 +305,7 @@ export const defaultSettings: ISettings = {
     image_preview_delay: 2.0,
 
     clip_skip: 1,
+    clip_quantization: "full",
 
     autocast: true,
     attention_processor: "xformers",

@@ -1,6 +1,6 @@
 import gc
 from abc import ABC, abstractmethod
-from typing import List
+from typing import List, Union
 
 import torch
 from PIL import Image
@@ -12,7 +12,7 @@ from core.types import Backend, Job
 class InferenceModel(ABC):
     "Base class for all inference models that will be used in the API"
 
-    def __init__(self, model_id: str, device: str = "cuda"):
+    def __init__(self, model_id: str, device: Union[str, torch.device] = "cuda"):
         self.model_id = model_id
         self.device = device
         self.backend: Backend = "unknown"

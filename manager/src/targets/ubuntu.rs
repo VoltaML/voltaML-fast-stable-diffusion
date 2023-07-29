@@ -131,54 +131,84 @@ pub fn install(wsl: bool, experimental: bool) {
     );
 }
 
-fn nvidia(_wsl: bool) -> Result<(), Box<dyn Error>> {
-    // Check if nvidia repository is added to apt
-    if !crate::utils::nvidia::is_nvidia_repo_added() {
-        crate::utils::nvidia::add_nvidia_repo()?;
-    }
-
-    // Install CUDA if not installed
-    let cuda_installed = crate::utils::nvidia::is_cuda_installed();
-    if cuda_installed.is_ok() {
-        if !cuda_installed.unwrap() {
-            crate::apt::install("cuda")?;
+fn nvidia(wsl: bool) -> Result<(), Box<dyn Error>> {
+    if wsl {
+        // Check if nvidia repository is added to apt
+        if !crate::utils::nvidia::is_nvidia_repo_added() {
+            crate::utils::nvidia::add_nvidia_repo()?;
         }
-    } else {
-        println!(
-            "{} {}",
-            style("[ERROR]").red(),
-            "Could not check if CUDA is installed, exiting"
-        );
-        return Err(cuda_installed.err().unwrap());
-    }
 
-    let export_check = crate::environ::check_cuda_exports();
-    if export_check.is_ok() {
-        if !export_check.unwrap() {
+        // Install CUDA if not installed
+        let cuda_installed = crate::utils::nvidia::is_cuda_installed();
+        if cuda_installed.is_ok() {
+            if !cuda_installed.unwrap() {
+                crate::apt::install("cuda")?;
+            }
+        } else {
+            println!(
+                "{} {}",
+                style("[ERROR]").red(),
+                "Could not check if CUDA is installed, exiting"
+            );
+            return Err(cuda_installed.err().unwrap());
+        }
+
+        let export_check = crate::environ::check_cuda_exports();
+        if export_check.is_ok() {
+            if !export_check.unwrap() {
+                println!(
+                    "{} {}",
+                    style("[OK]").green(),
+                    "CUDA exports are not present, adding them"
+                );
+                crate::environ::insert_cuda_exports()?;
+                println!(
+                    "{} {}",
+                    style("[OK]").green(),
+                    "CUDA exports added to ~/.bashrc"
+                );
+            }
             println!(
                 "{} {}",
                 style("[OK]").green(),
-                "CUDA exports are not present, adding them"
+                "CUDA exports are already present, continuing"
             );
-            crate::environ::insert_cuda_exports()?;
+            Ok(())
+        } else {
             println!(
                 "{} {}",
-                style("[OK]").green(),
-                "CUDA exports added to ~/.bashrc"
+                style("[ERROR]").red(),
+                "Could not check if CUDA exports are present, exiting"
             );
+            Err(export_check.err().unwrap())
         }
-        println!(
-            "{} {}",
-            style("[OK]").green(),
-            "CUDA exports are already present, continuing"
-        );
-        Ok(())
     } else {
-        println!(
-            "{} {}",
-            style("[ERROR]").red(),
-            "Could not check if CUDA exports are present, exiting"
-        );
-        Err(export_check.err().unwrap())
+        // Check CUDA
+        let cuda_installed = crate::utils::nvidia::is_cuda_installed();
+        if cuda_installed.is_ok() {
+            let val = cuda_installed.unwrap();
+            if !val {
+                println!(
+                    "{} {}",
+                    style("[ERROR]").red(),
+                    "CUDA is not installed, exiting, please install CUDA on your system and try again (https://developer.nvidia.com/cuda-downloads)"
+                );
+                return Err("CUDA is not installed".into());
+            } else {
+                println!(
+                    "{} {}",
+                    style("[OK]").green(),
+                    "CUDA is installed, continuing"
+                );
+                Ok(())
+            }
+        } else {
+            println!(
+                "{} {}",
+                style("[ERROR]").red(),
+                "Could not check if CUDA is installed, exiting"
+            );
+            return Err(cuda_installed.err().unwrap());
+        }
     }
 }

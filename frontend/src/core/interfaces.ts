@@ -26,11 +26,23 @@ export interface ModelEntry {
     | "LoRA"
     | "LyCORIS"
     | "VAE"
-    | "Textual Inversion";
+    | "Textual Inversion"
+    | "Upscaler";
   valid: boolean;
   vae: string;
   state: "loading" | "loaded" | "not loaded";
   textual_inversions: string[];
+}
+
+export interface Capabilities {
+  supported_backends: string[];
+  supported_precisions_gpu: string[];
+  supported_precisions_cpu: string[];
+  supported_torch_compile_backends: string[];
+  supports_xformers: boolean;
+  supports_int8: boolean;
+  has_tensor_cores: boolean;
+  has_tensorfloat: boolean;
 }
 
 export enum ControlNetType {

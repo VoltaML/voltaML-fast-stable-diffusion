@@ -31,7 +31,9 @@
               mousewheel
             >
               <div
-                v-for="image in subModel.images"
+                v-for="image in subModel.images.length > 1
+                  ? subModel.images
+                  : [subModel.images[0], subModel.images[0]]"
                 :key="image.hash"
                 style="border-radius: 20px; overflow: hidden"
               >
@@ -63,7 +65,19 @@
                 >
               </template>
               <div style="height: 90%">
-                <NRate :value="subModel.stats.rating" allow-half readonly />
+                <div
+                  style="
+                    display: inline-flex;
+                    justify-content: center;
+                    align-items: center;
+                  "
+                >
+                  <NRate :value="subModel.stats.rating" allow-half readonly />
+                  <p style="margin-top: 0; margin-bottom: 0">
+                    (<i>{{ subModel.stats.ratingCount }}</i
+                    >)
+                  </p>
+                </div>
                 <div style="line-height: 32px">
                   <NTag
                     v-for="tag in model?.tags"
@@ -89,7 +103,7 @@
                   <NDescriptionsItem label="Keywords">
                     {{
                       subModel.trainedWords.length !== 0
-                        ? subModel.trainedWords
+                        ? subModel.trainedWords.join(", ")
                         : "No keywords"
                     }}
                   </NDescriptionsItem>
@@ -121,9 +135,7 @@
                   type="primary"
                   ghost
                   :disabled="!selectedModel.get(subModel.name)"
-                  @click="
-                    message.success('Test: ' + selectedModel.get(subModel.name))
-                  "
+                  @click="() => downloadModel(subModel)"
                 >
                   Download
                 </NButton>
@@ -138,6 +150,7 @@
 
 <script setup lang="ts">
 import type { ICivitAIModel, IFile } from "@/civitai";
+import { serverUrl } from "@/env";
 import {
   NButton,
   NCard,
@@ -157,6 +170,7 @@ import {
 } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { nextTick, reactive, ref, watch } from "vue";
+import type { IModelVersion } from "../../civitai";
 
 const message = useMessage();
 
@@ -195,5 +209,23 @@ function generateDownloadOptions(submodel: IFile[]): SelectMixedOption[] {
     } [${(file.sizeKB / 1024 / 1024).toFixed(2)} GB]`,
     value: file.downloadUrl,
   }));
+}
+
+function downloadModel(model: IModelVersion) {
+  message.success("Download started");
+  const url = new URL(`${serverUrl}/api/models/download-model`);
+  url.searchParams.append("link", model.downloadUrl);
+  url.searchParams.append("model_type", props.model?.type as string);
+  fetch(url, { method: "POST" })
+    .then((res) => {
+      if (res.ok) {
+        message.success("Download finished");
+      } else {
+        message.error(`Download failed: ${res.status}`);
+      }
+    })
+    .catch((e) => {
+      message.error(`Download failed: ${e}`);
+    });
 }
 </script>

@@ -1,6 +1,6 @@
 import logging
 from pathlib import Path
-from typing import Any, List, Optional, Tuple
+from typing import Any, List, Optional, Union
 
 import torch
 from diffusers import (
@@ -20,12 +20,12 @@ from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
+from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
 from core.inference.utilities import (
-    scale_latents,
     change_scheduler,
     image_to_controlnet_input,
+    scale_latents,
 )
-from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
@@ -51,7 +51,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
         autoload: bool = True,
         bare: bool = False,
     ) -> None:

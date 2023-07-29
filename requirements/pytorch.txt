@@ -13,7 +13,7 @@ pynvml==11.5.0
 k-diffusion==0.0.15
 safetensors==0.3.1
 pytorch-lightning==2.0.3
-gpustat==1.0.0
+gpustat==1.1
 opencv-contrib-python-headless==4.7.0.72
 controlnet-aux==0.0.5
 realesrgan==0.3.0

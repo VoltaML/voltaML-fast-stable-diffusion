@@ -1,6 +1,8 @@
+import { getCapabilities } from "@/helper/capabilities";
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
-import type { ModelEntry, imgData } from "../core/interfaces";
+import type { Capabilities, ModelEntry, imgData } from "../core/interfaces";
+import { defaultCapabilities } from "../helper/capabilities";
 type StepProgress = "error" | "process" | "wait" | "finish";
 
 export interface GPU {
@@ -97,6 +99,7 @@ export interface StateInterface {
     huggingface: "missing" | "ok";
   };
   autofill: Array<string>;
+  capabilities: Capabilities;
 }
 
 export const useState = defineStore("state", () => {
@@ -197,6 +200,12 @@ export const useState = defineStore("state", () => {
       huggingface: "ok",
     },
     autofill: [],
+    capabilities: defaultCapabilities, // Should get replaced at runtime
   });
-  return { state };
+
+  async function fetchCapabilites() {
+    state.capabilities = await getCapabilities();
+  }
+
+  return { state, fetchCapabilites };
 });

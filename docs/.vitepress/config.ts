@@ -73,6 +73,7 @@ export default defineConfig({
 					{ text: "WSL", link: "/installation/wsl" },
 					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Old", link: "/installation/old" },
+					{ text: "xFormers", link: "/installation/xformers" },
 				],
 				collapsed: false,
 			},
@@ -116,11 +117,12 @@ export default defineConfig({
 				collapsed: false,
 			},
 			{
+				text: "Settings",
+				items: [{ text: "Settings", link: "/settings/settings" }],
+			},
+			{
 				text: "Experimental",
-				items: [
-					{ text: "xFormers", link: "/experimental/xformers" },
-					{ text: "Settings", link: "/experimental/settings" },
-				],
+				items: [{ text: "Model browser", link: "/experimental/model-browser" }],
 				collapsed: false,
 			},
 			{

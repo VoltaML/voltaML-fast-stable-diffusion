@@ -39,11 +39,13 @@ class WebSocketManager:
             from gpustat.core import GPUStatCollection
 
             all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
-        except Exception:  # pylint: disable=broad-except
-            logger.info("GPUStat failed to initialize - probably not an NVIDIA GPU")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.info(
+                f"GPUStat failed to initialize - probably not an NVIDIA GPU: {e}"
+            )
             logger.debug("Trying pyamdgpuinfo...")
             try:
-                import pyamdgpuinfo
+                import pyamdgpuinfo  # pylint: disable=import-error
 
                 if pyamdgpuinfo.detect_gpus() == 0:
                     raise ImportError(  # pylint: disable=raise-missing-from

@@ -39528,6 +39528,40 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   }
 });
 const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+  new_uri = "wss:";
+} else {
+  new_uri = "ws:";
+}
+const serverUrl = loc.protocol + "//" + loc.host;
+const webSocketUrl = new_uri + "//" + loc.host;
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
+const defaultCapabilities = {
+  supported_backends: ["cpu"],
+  supported_precisions_cpu: ["float32"],
+  supported_precisions_gpu: ["float32"],
+  supported_torch_compile_backends: ["inductor"],
+  has_tensorfloat: false,
+  has_tensor_cores: false,
+  supports_xformers: false,
+  supports_int8: false
+};
+async function getCapabilities() {
+  try {
+    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
+    if (response.status !== 200) {
+      console.error("Server is not responding");
+      return defaultCapabilities;
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return defaultCapabilities;
+  }
+}
 const useState = defineStore("state", () => {
   const state = reactive({
     progress: 0,
@@ -39625,9 +39659,14 @@ const useState = defineStore("state", () => {
     secrets: {
       huggingface: "ok"
     },
-    autofill: []
+    autofill: [],
+    capabilities: defaultCapabilities
+    // Should get replaced at runtime
   });
-  return { state };
+  async function fetchCapabilites() {
+    state.capabilities = await getCapabilities();
+  }
+  return { state, fetchCapabilites };
 });
 const _hoisted_1$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
@@ -39704,16 +39743,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const loc = window.location;
-let new_uri;
-if (loc.protocol === "https:") {
-  new_uri = "wss:";
-} else {
-  new_uri = "ws:";
-}
-const serverUrl = loc.protocol + "//" + loc.host;
-const webSocketUrl = new_uri + "//" + loc.host;
-const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
 const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://huggingface.co/settings/tokens"
@@ -39890,6 +39919,14 @@ function processWebSocket(message, global2, notificationProvider) {
       if (message.data.huggingface === "missing") {
         global2.state.secrets.huggingface = "missing";
       }
+      break;
+    }
+    case "refresh_capabilities": {
+      global2.fetchCapabilites().then(() => {
+        console.log("Capabilities refreshed");
+      }).catch((error) => {
+        console.error(error);
+      });
       break;
     }
     default: {
@@ -40599,6 +40636,7 @@ const defaultSettings = {
     websocket_perf_interval: 1,
     image_preview_delay: 2,
     clip_skip: 1,
+    clip_quantization: "full",
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
@@ -41812,13 +41850,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "29cef8cc": backgroundColor.value,
-      "4a43647e": theme.value.common.popoverColor,
-      "e4e5ec3e": theme.value.common.borderRadius,
-      "1beee664": theme.value.common.pressedColor,
-      "440cdb18": theme.value.common.primaryColorHover
+      "16223ad6": backgroundColor.value,
+      "1fedac06": theme.value.common.popoverColor,
+      "ba9033c6": theme.value.common.borderRadius,
+      "3119c2a0": theme.value.common.pressedColor,
+      "aca37748": theme.value.common.primaryColorHover
     }));
     const settings = useSettings();
+    const global2 = useState();
+    global2.fetchCapabilites().then(() => {
+      console.log("Capabilities successfully fetched from the server");
+    });
     const theme = computed(() => {
       if (settings.data.settings.frontend.theme === "dark") {
         document.body.style.backgroundColor = "#121215";
@@ -41929,12 +41971,12 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/DimensionsInput.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/clock.js","assets/v4.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/v4.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/image2image",
       name: "image2image",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/DimensionsInput.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/v4.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
@@ -41964,7 +42006,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/clock.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -41985,7 +42027,7 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  iconSwitchTransition as $,
+  cM as $,
   pushScopeId as A,
   popScopeId as B,
   resolveComponent as C,
@@ -41996,35 +42038,35 @@ export {
   NTabPane as H,
   NTabs as I,
   Fragment as J,
-  upscalerOptions as K,
-  renderList as L,
-  NScrollbar as M,
+  watch as K,
+  upscalerOptions as L,
+  renderList as M,
   NGi as N,
-  replaceable as O,
-  useConfig as P,
-  useFormItem as Q,
-  useMergedState as R,
-  provide as S,
-  toRef as T,
-  createInjectionKey as U,
-  call as V,
-  c$1 as W,
-  cB as X,
-  cE as Y,
-  cM as Z,
+  NScrollbar as O,
+  replaceable as P,
+  useConfig as Q,
+  useFormItem as R,
+  useMergedState as S,
+  provide as T,
+  toRef as U,
+  createInjectionKey as V,
+  call as W,
+  c$1 as X,
+  cB as Y,
+  cE as Z,
   _export_sfc as _,
   useSettings as a,
   isBrowser$3 as a$,
-  insideModal as a0,
-  insidePopover as a1,
-  inject as a2,
-  useMemo as a3,
-  useTheme as a4,
-  checkboxLight$1 as a5,
-  useRtl as a6,
-  createKey as a7,
-  useThemeClass as a8,
-  createId as a9,
+  iconSwitchTransition as a0,
+  insideModal as a1,
+  insidePopover as a2,
+  inject as a3,
+  useMemo as a4,
+  useTheme as a5,
+  checkboxLight$1 as a6,
+  useRtl as a7,
+  createKey as a8,
+  useThemeClass as a9,
   radioLight$1 as aA,
   resolveWrappedSlot as aB,
   flatten$2 as aC,
@@ -42052,10 +42094,10 @@ export {
   dataTableLight$1 as aY,
   loadingBarApiInjectionKey as aZ,
   throwError as a_,
-  NIconSwitchTransition as aa,
-  on as ab,
-  popselectLight$1 as ac,
-  watch as ad,
+  createId as aa,
+  NIconSwitchTransition as ab,
+  on as ac,
+  popselectLight$1 as ad,
   NInternalSelectMenu as ae,
   createTreeMate as af,
   happensIn as ag,
@@ -42113,9 +42155,9 @@ export {
   VFollower as bV,
   sliderLight$1 as bW,
   normalizeStyle as ba,
-  huggingfaceModelsFile as bb,
-  NModal as bc,
-  NText as bd,
+  NText as bb,
+  huggingfaceModelsFile as bc,
+  NModal as bd,
   stepsLight$1 as be,
   FinishedIcon as bf,
   ErrorIcon$1 as bg,

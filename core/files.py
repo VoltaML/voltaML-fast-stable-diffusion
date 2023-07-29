@@ -23,6 +23,7 @@ class CachedModelList:
         self.lycoris_path = Path("data/lycoris")
         self.textual_inversion_path = Path("data/textual-inversion")
         self.vae_path = Path("data/vae")
+        self.upscaler_path = Path("data/upscaler")
 
         self.ext_whitelist = [".safetensors", ".ckpt", ".pth", ".pt", ".bin"]
 
@@ -257,6 +258,33 @@ class CachedModelList:
 
         return models
 
+    def upscaler(self):
+        "List of upscaler models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.upscaler_path):
+            logger.debug(f"Found upscaler model {model}")
+
+            # Skip if it is not an upscaler
+            if Path(model).suffix not in self.ext_whitelist:
+                continue
+
+            model_name = self.model_path_to_name(model)
+
+            models.append(
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.upscaler_path, model),
+                    vae="default",
+                    backend="Upscaler",
+                    valid=True,
+                    state="not loaded",
+                )
+            )
+
+        return models
+
     def all(self):
         "List all models"
 
@@ -268,6 +296,7 @@ class CachedModelList:
             + self.lycoris()
             + self.textual_inversion()
             + self.vae()
+            + self.upscaler()
         )
 
 

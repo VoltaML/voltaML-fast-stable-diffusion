@@ -1,4 +1,4 @@
-import { bh as upperFirst, bi as toString, bj as createCompounder, bk as cloneVNode, S as provide, U as createInjectionKey, a2 as inject, a_ as throwError, d as defineComponent, P as useConfig, E as ref, bl as onBeforeUpdate, D as h, bm as indexMap, c as computed, b9 as onMounted, aH as onBeforeUnmount, X as cB, Y as cE, W as c, Z as cM, R as useMergedState, T as toRef, as as watchEffect, bn as onUpdated, ad as watch, a4 as useTheme, a8 as useThemeClass, aC as flatten, aP as VResizeObserver, bo as resolveSlotWithProps, bp as withDirectives, bq as vShow, aX as Transition, ak as keep, aI as off, ah as nextTick, br as carouselLight, ba as normalizeStyle, bs as getPreciseEventTarget, ab as on, aq as cNotM, Q as useFormItem, L as renderList, au as NBaseIcon, bt as rateLight, a7 as createKey, bu as color2Class, V as call, b as useMessage, b8 as reactive, e as openBlock, v as createBlock, w as withCtx, h as unref, g as createVNode, f as createElementBlock, H as NTabPane, y as NGrid, N as NGi, J as Fragment, n as createBaseVNode, i as NCard, bv as NTag, m as createTextVNode, t as toDisplayString, r as NSelect, F as NButton, I as NTabs, bc as NModal } from "./index.js";
+import { bh as upperFirst, bi as toString, bj as createCompounder, bk as cloneVNode, T as provide, V as createInjectionKey, a3 as inject, a_ as throwError, d as defineComponent, Q as useConfig, E as ref, bl as onBeforeUpdate, D as h, bm as indexMap, c as computed, b9 as onMounted, aH as onBeforeUnmount, Y as cB, Z as cE, X as c, $ as cM, S as useMergedState, U as toRef, as as watchEffect, bn as onUpdated, K as watch, a5 as useTheme, a9 as useThemeClass, aC as flatten, aP as VResizeObserver, bo as resolveSlotWithProps, bp as withDirectives, bq as vShow, aX as Transition, ak as keep, aI as off, ah as nextTick, br as carouselLight, ba as normalizeStyle, bs as getPreciseEventTarget, ac as on, aq as cNotM, R as useFormItem, M as renderList, au as NBaseIcon, bt as rateLight, a8 as createKey, bu as color2Class, W as call, b as useMessage, b8 as reactive, e as openBlock, v as createBlock, w as withCtx, h as unref, g as createVNode, f as createElementBlock, H as NTabPane, y as NGrid, N as NGi, J as Fragment, n as createBaseVNode, i as NCard, m as createTextVNode, t as toDisplayString, bv as NTag, r as NSelect, F as NButton, I as NTabs, bd as NModal, s as serverUrl } from "./index.js";
 import { a as NDescriptions, N as NDescriptionsItem } from "./DescriptionsItem.js";
 function capitalize(string) {
   return upperFirst(toString(string).toLowerCase());
@@ -1440,8 +1440,10 @@ const _hoisted_2 = /* @__PURE__ */ createBaseVNode("i", null, [
   /* @__PURE__ */ createTextVNode(", go and support them")
 ], -1);
 const _hoisted_3 = { style: { "height": "90%" } };
-const _hoisted_4 = { style: { "line-height": "32px" } };
-const _hoisted_5 = { style: { "width": "100%", "display": "inline-flex", "height": "40px", "align-items": "center", "margin-top": "8px" } };
+const _hoisted_4 = { style: { "display": "inline-flex", "justify-content": "center", "align-items": "center" } };
+const _hoisted_5 = { style: { "margin-top": "0", "margin-bottom": "0" } };
+const _hoisted_6 = { style: { "line-height": "32px" } };
+const _hoisted_7 = { style: { "width": "100%", "display": "inline-flex", "height": "40px", "align-items": "center", "margin-top": "8px" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ModelPopup",
   props: {
@@ -1476,6 +1478,22 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         label: `${file.metadata.format} ${file.metadata.size} ${file.metadata.fp} [${(file.sizeKB / 1024 / 1024).toFixed(2)} GB]`,
         value: file.downloadUrl
       }));
+    }
+    function downloadModel(model) {
+      var _a;
+      message.success("Download started");
+      const url = new URL(`${serverUrl}/api/models/download-model`);
+      url.searchParams.append("link", model.downloadUrl);
+      url.searchParams.append("model_type", (_a = props.model) == null ? void 0 : _a.type);
+      fetch(url, { method: "POST" }).then((res) => {
+        if (res.ok) {
+          message.success("Download finished");
+        } else {
+          message.error(`Download failed: ${res.status}`);
+        }
+      }).catch((e) => {
+        message.error(`Download failed: ${e}`);
+      });
     }
     return (_ctx, _cache) => {
       var _a, _b;
@@ -1519,7 +1537,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 mousewheel: ""
                               }, {
                                 default: withCtx(() => [
-                                  (openBlock(true), createElementBlock(Fragment, null, renderList(subModel.images, (image) => {
+                                  (openBlock(true), createElementBlock(Fragment, null, renderList(subModel.images.length > 1 ? subModel.images : [subModel.images[0], subModel.images[0]], (image) => {
                                     return openBlock(), createElementBlock("div", {
                                       key: image.hash,
                                       style: { "border-radius": "20px", "overflow": "hidden" }
@@ -1557,12 +1575,19 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   var _a3;
                                   return [
                                     createBaseVNode("div", _hoisted_3, [
-                                      createVNode(unref(NRate), {
-                                        value: subModel.stats.rating,
-                                        "allow-half": "",
-                                        readonly: ""
-                                      }, null, 8, ["value"]),
                                       createBaseVNode("div", _hoisted_4, [
+                                        createVNode(unref(NRate), {
+                                          value: subModel.stats.rating,
+                                          "allow-half": "",
+                                          readonly: ""
+                                        }, null, 8, ["value"]),
+                                        createBaseVNode("p", _hoisted_5, [
+                                          createTextVNode(" ("),
+                                          createBaseVNode("i", null, toDisplayString(subModel.stats.ratingCount), 1),
+                                          createTextVNode(") ")
+                                        ])
+                                      ]),
+                                      createBaseVNode("div", _hoisted_6, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList((_a3 = _ctx.model) == null ? void 0 : _a3.tags, (tag) => {
                                           return openBlock(), createBlock(unref(NTag), {
                                             key: tag,
@@ -1597,7 +1622,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                           }, 1024),
                                           createVNode(unref(NDescriptionsItem), { label: "Keywords" }, {
                                             default: withCtx(() => [
-                                              createTextVNode(toDisplayString(subModel.trainedWords.length !== 0 ? subModel.trainedWords : "No keywords"), 1)
+                                              createTextVNode(toDisplayString(subModel.trainedWords.length !== 0 ? subModel.trainedWords.join(", ") : "No keywords"), 1)
                                             ]),
                                             _: 2
                                           }, 1024),
@@ -1617,7 +1642,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                         _: 2
                                       }, 1024)
                                     ]),
-                                    createBaseVNode("div", _hoisted_5, [
+                                    createBaseVNode("div", _hoisted_7, [
                                       createVNode(unref(NSelect), {
                                         options: generateDownloadOptions(subModel.files),
                                         onUpdateValue: (value) => selectedModel.set(subModel.name, value)
@@ -1627,7 +1652,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                         type: "primary",
                                         ghost: "",
                                         disabled: !selectedModel.get(subModel.name),
-                                        onClick: ($event) => unref(message).success("Test: " + selectedModel.get(subModel.name))
+                                        onClick: () => downloadModel(subModel)
                                       }, {
                                         default: withCtx(() => [
                                           createTextVNode(" Download ")
