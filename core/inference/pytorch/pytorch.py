@@ -6,7 +6,6 @@ import torch
 from diffusers import (
     AutoencoderKL,
     ControlNetModel,
-    StableDiffusionInpaintPipeline,
     StableDiffusionPipeline,
     UNet2DConditionModel,
 )
@@ -23,7 +22,6 @@ from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import (
     scale_latents,
-    get_weighted_text_embeddings,
     change_scheduler,
     image_to_controlnet_input,
 )
@@ -400,43 +398,9 @@ class PyTorchStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        self.manage_optional_components()
-
-        if self.unet.config["in_channels"] == 9:
-            pipe = StableDiffusionInpaintPipeline(
-                vae=self.vae,
-                unet=self.unet,  # type: ignore
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                feature_extractor=self.feature_extractor,
-                safety_checker=self.safety_checker,
-                requires_safety_checker=False,
-            )
-        elif self.unet.config["in_channels"] == 4:
-            pipe = StableDiffusionLongPromptWeightingPipeline(
-                parent=self,
-                vae=self.vae,
-                unet=self.unet,  # type: ignore
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                controlnet=self.controlnet,
-            )
-        else:
-            raise ValueError(
-                f"Invalid in_channels: {self.unet.in_channels}, expected 4 or 9"
-            )
-
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
-
-        change_scheduler(
-            model=pipe,
-            scheduler=job.data.scheduler,
-            use_karras_sigmas=job.data.use_karras_sigmas,
+        pipe, generator = self.create_pipe(
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
 
         # Preprocess images
@@ -450,45 +414,22 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            if isinstance(pipe, StableDiffusionInpaintPipeline):
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                    pipe=self,  # type: ignore
-                    prompt=job.data.prompt,
-                    uncond_prompt=job.data.negative_prompt,
-                )
-
-                data = pipe(
-                    prompt_embeds=prompt_embeds,
-                    image=input_image,
-                    mask_image=input_mask_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt_embeds=negative_prompt_embeds,
-                    output_type="pil",
-                    generator=generator,
-                    callback=inpaint_callback,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                    width=job.data.width,
-                    height=job.data.height,
-                )
-            else:
-                data = pipe.inpaint(
-                    prompt=job.data.prompt,
-                    image=input_image,
-                    mask_image=input_mask_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    self_attention_scale=job.data.self_attention_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=inpaint_callback,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                    width=job.data.width,
-                    height=job.data.height,
-                )
+            data = pipe.inpaint(
+                prompt=job.data.prompt,
+                image=input_image,
+                mask_image=input_mask_image,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                self_attention_scale=job.data.self_attention_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=inpaint_callback,
+                return_dict=False,
+                num_images_per_prompt=job.data.batch_size,
+                width=job.data.width,
+                height=job.data.height,
+            )
 
             if not data:
                 raise ValueError("No data returned from pipeline")

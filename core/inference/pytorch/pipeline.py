@@ -18,7 +18,8 @@ from core.inference.utilities import (
     prepare_latents,
     prepare_image,
     preprocess_image,
-    preprocess_mask,
+    prepare_mask_and_masked_image,
+    prepare_mask_latents,
     get_weighted_text_embeddings,
     get_timesteps,
     prepare_extra_step_kwargs,
@@ -345,6 +346,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 global_pool_conditions = self.controlnet.config.global_pool_conditions  # type: ignore
                 guess_mode = guess_mode or global_pool_conditions
 
+            num_channels_unet = self.unet.config.in_channels  # type: ignore
+
             # 2. Define call parameters
             batch_size = 1 if isinstance(prompt, str) else len(prompt)
             device = self._execution_device
@@ -383,11 +386,24 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     )
             if image is not None:
                 image = image.to(device=self.device, dtype=dtype)
-            if isinstance(mask_image, PIL.Image.Image):  # type: ignore
-                mask_image = preprocess_mask(mask_image)
             if mask_image is not None:
-                mask = mask_image.to(device=self.device, dtype=dtype)
-                mask = torch.cat([mask] * batch_size * num_images_per_prompt)  # type: ignore
+                mask, masked_image, image = prepare_mask_and_masked_image(
+                    image, mask_image, height, width
+                )
+                mask, masked_image_latents = prepare_mask_latents(
+                    mask,
+                    masked_image,
+                    batch_size * num_images_per_prompt,  # type: ignore
+                    height,
+                    width,
+                    dtype,
+                    device,
+                    generator,
+                    do_classifier_free_guidance,
+                    self.vae,
+                    self.vae_scale_factor,
+                    self.vae.config.scaling_factor,  # type: ignore
+                )
             else:
                 mask = None
 
@@ -452,6 +468,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
                     )
                     latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+
+                    if num_channels_unet == 9:
+                        latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
 
                     # predict the noise residual
                     if self.controlnet is None:
@@ -550,7 +569,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         noise_pred, t.to(noise_pred.device), latents.to(noise_pred.device), **extra_step_kwargs  # type: ignore
                     ).prev_sample  # type: ignore
 
-                    if mask is not None:
+                    if mask is not None and num_channels_unet == 4:
                         # masking
                         init_latents_proper = self.scheduler.add_noise(  # type: ignore
                             init_latents_orig, noise, torch.tensor([t])  # type: ignore
@@ -571,6 +590,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             if output_type == "latent":
                 return latents, False
 
+            # TODO: maybe implement asymmetric vqgan?
             image = self._decode_latents(latents, height=height, width=width)
 
             # 11. Convert to PIL

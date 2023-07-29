@@ -1,7 +1,7 @@
 import logging
 import math
 from time import time
-from typing import Optional, Union
+from typing import Optional, Union, Tuple
 
 import numpy as np
 from PIL import Image
@@ -17,6 +17,7 @@ logger = logging.getLogger(__name__)
 
 
 def pad_tensor(tensor: torch.Tensor, multiple: int) -> torch.Tensor:
+    "Pad a tensors (NCHW) H and W dimension to the ceil(x / multiple)"
     batch_size, channels, height, width = tensor.shape
     new_height = math.ceil(height / multiple) * multiple
     new_width = math.ceil(width / multiple) * multiple
@@ -33,6 +34,84 @@ def pad_tensor(tensor: torch.Tensor, multiple: int) -> torch.Tensor:
         return nt
     else:
         return tensor
+
+
+def prepare_mask_and_masked_image(
+    image, mask, height: int, width: int, return_image: bool = True
+) -> Tuple[torch.Tensor, torch.Tensor, Optional[torch.Tensor]]:
+    """The function resizes and converts input image and mask to PyTorch tensors,
+    applies thresholding to mask tensor, obtains masked image tensor by multiplying image and mask tensors,
+    and returns the resulting mask tensor, masked image tensor, and optionally the original image tensor.
+    """
+    image = [image]
+    mask = [mask]
+
+    image = [i.resize((width, height), resample=Image.LANCZOS) for i in image]
+    mask = [i.resize((width, height), resample=Image.LANCZOS) for i in mask]
+
+    image = [np.array(i.convert("RGB"))[None, :] for i in image]
+    mask = np.concatenate(
+        [np.array(i.convert("L"))[None, None, :] for i in mask], axis=0
+    )
+
+    image = np.concatenate(image, axis=0)
+    mask = mask.astype(np.float32) / 255.0
+
+    image = image.transpose(0, 3, 1, 2)
+    image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
+
+    mask[mask < 0.5] = 0
+    mask[mask >= 0.5] = 1
+    mask = torch.from_numpy(mask)
+
+    masked_image = image * (mask < 0.5)
+    if return_image:
+        return mask, masked_image, image
+    return mask, masked_image, None
+
+
+def prepare_mask_latents(
+    mask,
+    masked_image,
+    batch_size: int,
+    height: int,
+    width: int,
+    dtype: torch.dtype,
+    device: torch.device,
+    generator: torch.Generator,
+    do_classifier_free_guidance: bool,
+    vae,
+    vae_scale_factor: float,
+    vae_scaling_factor: float,
+) -> Tuple[torch.Tensor, torch.Tensor]:
+    """This function resizes and converts the input mask to a PyTorch tensor,
+    encodes the input masked image to its latent representation,
+    repeats the mask and masked image latents to match the batch size,
+    concatenates the mask tensor if classifier-free guidance is enabled,
+    and returns the resulting mask tensor and masked image latents."""
+    mask = torch.nn.functional.interpolate(
+        mask, size=(height // vae_scale_factor, width // vae_scale_factor)
+    )
+    mask = mask.to(device=device, dtype=dtype)
+
+    masked_image = masked_image.to(device=device, dtype=dtype)
+    masked_image_latents = vae_scaling_factor * vae.encode(
+        masked_image
+    ).latent_dist.sample(generator=generator)
+    if mask.shape[0] < batch_size:
+        mask = mask.repeat(batch_size // mask.shape[0], 1, 1, 1)
+    if masked_image_latents.shape[0] < batch_size:
+        masked_image_latents = masked_image_latents.repeat(
+            batch_size // masked_image_latents.shape[0], 1, 1, 1
+        )
+    mask = torch.cat([mask] * 2) if do_classifier_free_guidance else mask
+    masked_image_latents = (
+        torch.cat([masked_image_latents] * 2)
+        if do_classifier_free_guidance
+        else masked_image_latents
+    )
+    masked_image_latents = masked_image_latents.to(device=device, dtype=dtype)
+    return mask, masked_image_latents
 
 
 def preprocess_image(image):
