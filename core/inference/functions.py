@@ -39,13 +39,12 @@ from huggingface_hub.utils._errors import (
 from omegaconf import OmegaConf
 from packaging import version
 from requests import HTTPError
-from rich.console import Console
+from rich import get_console
 from transformers import CLIPTextModel
 
 from core.config import config
 from core.files import get_full_model_path
 
-console = Console()
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
@@ -368,7 +367,7 @@ def load_pytorch_pipeline(
     logger.info(f"Loading {model_id_or_path} with {config.api.data_type}")
 
     if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
-        with console.status("[bold green]Loading model from checkpoint..."):
+        with get_console().status("[bold green]Loading model from checkpoint..."):
             use_safetensors = ".safetensors" in model_id_or_path
             if use_safetensors:
                 logger.info("Loading model as safetensors")
@@ -400,7 +399,7 @@ def load_pytorch_pipeline(
                     num_in_channels=in_channels,
                 )
     else:
-        with console.status(
+        with get_console().status(
             f"[bold green]Loading model from {'HuggingFace Hub' if '/' in model_id_or_path else 'HuggingFace model'}..."
         ):
             pipe = StableDiffusionPipeline.from_pretrained(

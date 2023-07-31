@@ -9,7 +9,7 @@ from diffusers import (
     StableDiffusionUpscalePipeline,
 )
 from diffusers.utils import is_accelerate_available
-from rich.console import Console
+from rich import get_console
 
 from core.config import config
 from core.files import get_full_model_path
@@ -18,7 +18,6 @@ from .attn import set_attention_processor
 from .trace_utils import generate_inputs, trace_model
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 USE_DISK_OFFLOAD = False
@@ -33,7 +32,7 @@ def optimize_model(
 
     from core.inference.functions import is_ipex_available
 
-    with console.status("[bold green]Optimizing model..."):
+    with get_console().status("[bold green]Optimizing model..."):
         # Tuple[Supported, Enabled by default, Enabled]
         hardware_scheduling = experimental_check_hardware_scheduling()
 

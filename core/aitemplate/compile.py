@@ -23,7 +23,7 @@ from pathlib import Path
 
 import torch
 from aitemplate.testing import detect_target
-from rich.console import Console
+from rich import get_console
 
 from core.config import config
 from api import websocket_manager
@@ -35,7 +35,6 @@ from .src.compile_lib.unet import compile_unet
 from .src.compile_lib.vae import compile_vae
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 def compile_diffusers(
@@ -117,7 +116,7 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"clip": "process"})
     )
-    with console.status("[bold green]Compiling CLIP..."):
+    with get_console().status("[bold green]Compiling CLIP..."):
         try:
             if (
                 invalidate_cache
@@ -160,7 +159,7 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"unet": "process"})
     )
-    with console.status("[bold green]Compiling UNet..."):
+    with get_console().status("[bold green]Compiling UNet..."):
         try:
             if (
                 invalidate_cache
@@ -233,7 +232,7 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"controlnet_unet": "process"})
     )
-    with console.status("[bold green]Compiling ControlNet UNet..."):
+    with get_console().status("[bold green]Compiling ControlNet UNet..."):
         try:
             if (
                 invalidate_cache
@@ -308,7 +307,7 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"vae": "process"})
     )
-    with console.status("[bold green]Compiling VAE..."):
+    with get_console().status("[bold green]Compiling VAE..."):
         try:
             if (
                 invalidate_cache
@@ -370,7 +369,7 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"cleanup": "process"})
     )
-    with console.status("[bold green]Cleaning up..."):
+    with get_console().status("[bold green]Cleaning up..."):
         try:
             # Clean all files except test.so recursively
             for root, _dirs, files in os.walk(dump_dir):
@@ -401,7 +400,7 @@ def compile_diffusers(
                 )
             )
 
-    with console.status("[bold green]Releasing memory"):
+    with get_console().status("[bold green]Releasing memory"):
         del pipe
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
