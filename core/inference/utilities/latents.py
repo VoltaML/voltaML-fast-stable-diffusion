@@ -16,17 +16,20 @@ from core.flags import LatentScaleModel
 logger = logging.getLogger(__name__)
 
 
-def pad_tensor(tensor: torch.Tensor, multiple: int) -> torch.Tensor:
+def pad_tensor(
+    tensor: torch.Tensor, multiple: int, size: Optional[Tuple[int, int]] = None
+) -> torch.Tensor:
     "Pad a tensors (NCHW) H and W dimension to the ceil(x / multiple)"
     batch_size, channels, height, width = tensor.shape
     new_height = math.ceil(height / multiple) * multiple
     new_width = math.ceil(width / multiple) * multiple
-    if new_width != width or new_height != height:
+    hw = size or (new_height, new_width)
+    if size or (new_width != width or new_height != height):
         nt = torch.zeros(
             batch_size,
             channels,
-            new_height,
-            new_width,
+            hw[0],
+            hw[1],
             dtype=tensor.dtype,
             device=tensor.device,
         )
@@ -43,26 +46,58 @@ def prepare_mask_and_masked_image(
     applies thresholding to mask tensor, obtains masked image tensor by multiplying image and mask tensors,
     and returns the resulting mask tensor, masked image tensor, and optionally the original image tensor.
     """
-    image = [image]
-    mask = [mask]
+    if isinstance(image, torch.Tensor):
+        if not isinstance(mask, torch.Tensor):
+            mask = [mask]
+            mask = [i.resize((width, height), resample=Image.LANCZOS) for i in mask]
+            mask = np.concatenate(
+                [np.array(i.convert("L"))[None, None, :] for i in mask], axis=0
+            )
+            mask = torch.from_numpy(mask).to(device=image.device, dtype=image.dtype)
+            mask = pad_tensor(mask, 8)
 
-    image = [i.resize((width, height), resample=Image.LANCZOS) for i in image]
-    mask = [i.resize((width, height), resample=Image.LANCZOS) for i in mask]
+        if image.ndim == 3:
+            image = image.unsqueeze(0)
 
-    image = [np.array(i.convert("RGB"))[None, :] for i in image]
-    mask = np.concatenate(
-        [np.array(i.convert("L"))[None, None, :] for i in mask], axis=0
-    )
+        if mask.ndim == 2:
+            mask = mask.unsqueeze(0).unsqueeze(0)
 
-    image = np.concatenate(image, axis=0)
-    mask = mask.astype(np.float32) / 255.0
+        if mask.ndim == 3:
+            if mask.shape[0] == 1:
+                mask = mask.unsqueeze(0)
 
-    image = image.transpose(0, 3, 1, 2)
-    image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
+            else:
+                mask = mask.unsqueeze(1)
 
-    mask[mask < 0.5] = 0
-    mask[mask >= 0.5] = 1
-    mask = torch.from_numpy(mask)
+        mask[mask < 0.5] = 0
+        mask[mask >= 0.5] = 1
+
+        # Image as float32
+        image = image.to(dtype=torch.float32)
+        image = pad_tensor(image, 8)
+    else:
+        image = [image]
+        mask = [mask]
+
+        image = [i.resize((width, height), resample=Image.LANCZOS) for i in image]
+        mask = [i.resize((width, height), resample=Image.LANCZOS) for i in mask]
+
+        image = [np.array(i.convert("RGB"))[None, :] for i in image]
+        mask = np.concatenate(
+            [np.array(i.convert("L"))[None, None, :] for i in mask], axis=0
+        )
+
+        image = np.concatenate(image, axis=0)
+        mask = mask.astype(np.float32) / 255.0
+
+        image = image.transpose(0, 3, 1, 2)
+        image = torch.from_numpy(image).to(dtype=torch.float32) / 127.5 - 1.0
+        image = pad_tensor(image, 8)
+
+        mask[mask < 0.5] = 0
+        mask[mask >= 0.5] = 1
+        mask = torch.from_numpy(mask)
+        mask = pad_tensor(mask, 8)
 
     masked_image = image * (mask < 0.5)
     if return_image:
@@ -191,12 +226,20 @@ def prepare_latents(
     align_to: int = 1,
 ):
     if image is None:
-        shape = (
-            batch_size,
-            pipe.unet.config.in_channels,  # type: ignore
-            (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-            (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-        )
+        if align_to == 1:
+            shape = (
+                batch_size,
+                pipe.unet.config.in_channels,  # type: ignore
+                height,
+                width,
+            )
+        else:
+            shape = (
+                batch_size,
+                pipe.unet.config.in_channels,  # type: ignore
+                (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+                (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            )
 
         if latents is None:
             if device.type == "mps" or config.api.device_type == "directml":

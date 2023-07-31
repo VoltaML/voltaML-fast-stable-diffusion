@@ -2,6 +2,7 @@
 
 from contextlib import ExitStack
 from typing import Callable, List, Literal, Optional, Union
+import math
 
 import PIL
 import torch
@@ -15,6 +16,7 @@ from core.config import config
 from core.inference.utilities import (
     get_timesteps,
     get_weighted_text_embeddings,
+    pad_tensor,
     prepare_extra_step_kwargs,
     prepare_image,
     prepare_latents,
@@ -381,7 +383,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             if image is not None:
                 image = image.to(device=self.device, dtype=dtype)
             if mask_image is not None:
-                mask, masked_image, image = prepare_mask_and_masked_image(
+                mask, masked_image, _ = prepare_mask_and_masked_image(
                     image, mask_image, height, width
                 )
                 mask, masked_image_latents = prepare_mask_latents(
@@ -413,7 +415,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)  # type: ignore
 
             # 6. Prepare latent variables
-            latents, init_latents_orig, noise = prepare_latents(
+            latents, image_latents, noise = prepare_latents(
                 self,
                 image if self.controlnet is None else None,
                 latent_timestep,
@@ -570,10 +572,19 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                     if mask is not None and num_channels_unet == 4:
                         # masking
-                        init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                            init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                        init_latents_proper = image_latents[:1]  # type: ignore
+                        init_mask = mask[:1]
+                        init_mask = pad_tensor(
+                            init_mask, 8, (latents.shape[2], latents.shape[3])
                         )
-                        latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
+
+                        if i < len(timesteps) - 1:
+                            noise_timestep = timesteps[i + 1]
+                            init_latents_proper = self.scheduler.add_noise(
+                                init_latents_proper, noise, torch.tensor([noise_timestep])  # type: ignore
+                            )
+
+                        latents = (1 - init_mask) * init_latents_proper + init_mask * latents  # type: ignore
 
                     # call the callback, if provided
                     if i % callback_steps == 0:

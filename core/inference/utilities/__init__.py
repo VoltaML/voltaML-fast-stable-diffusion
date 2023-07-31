@@ -1,6 +1,7 @@
 from .aitemplate import init_ait_module
 from .controlnet import image_to_controlnet_input
 from .latents import (
+    pad_tensor,
     prepare_image,
     prepare_latents,
     prepare_mask_and_masked_image,
