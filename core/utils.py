@@ -13,7 +13,7 @@ import requests
 from requests.adapters import HTTPAdapter, Retry
 from PIL import Image
 
-from core.inference.utilities import progress_bar
+from core.inference.utilities import new_progress
 from core.thread import ThreadWithReturnValue
 
 logger = logging.getLogger(__name__)
@@ -189,7 +189,7 @@ def download_file(url: str, file: Path, add_filename: bool = False):
             file = file / file_name
         cl = int(r.headers["Content-Length"])
         logger.info(f"Downloading {file_name} into {file.as_posix()}")
-        with progress_bar(file=True) as p:
+        with new_progress(file=True) as p:
             pb = p.add_task(description="Downloading", total=cl)
             # AFAIK Windows doesn't like big buffers
             s = (64 if os.name == "nt" else 1024) * 1024

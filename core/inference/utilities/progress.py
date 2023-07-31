@@ -1,5 +1,7 @@
-from rich.table import Column
+from typing import Iterable
+from operator import length_hint
 
+from rich.table import Column
 from rich.text import Text
 from rich.progress import (
     BarColumn,
@@ -49,7 +51,27 @@ class _SpeedColumn(ProgressColumn):
         return Text(f"{speed:.02f}{unit}", style="progress.percentage")
 
 
-def progress_bar(file: bool = False) -> Progress:
+def progress_bar(iterable: Iterable) -> Iterable:
+    "Create and start the Progress thread and then stop after iterating"
+
+    p = new_progress()
+    p.start()
+
+    def track() -> Iterable:
+        total = length_hint(iterable)
+        task_id = p.add_task("Working...", total=total)
+        for v in iterable:
+            yield v
+            p.advance(task_id, 1)
+            p.refresh()
+        p.stop()
+
+    return track()
+
+
+def new_progress(file: bool = False) -> Progress:
+    "Create a new Progress object"
+
     if file:
         return Progress(
             TaskProgressColumn(),

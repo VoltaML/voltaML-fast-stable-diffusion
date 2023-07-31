@@ -48,9 +48,8 @@ def warmup(
 
     model.eval()
     with torch.inference_mode():
-        with progress_bar() as p:
-            for _ in p.track(range(amount)):
-                model(*generate_inputs(dtype, device))
+        for _ in progress_bar(range(amount)):
+            model(*generate_inputs(dtype, device))
 
 
 def trace_model(

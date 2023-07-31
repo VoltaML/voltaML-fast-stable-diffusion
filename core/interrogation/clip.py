@@ -135,19 +135,18 @@ class CLIPInterrogator(InterrogationModel):
                     return True
                 return False
 
-            with progress_bar() as p:
-                for idx in p.track(range(max_count)):
-                    best = self._rank_top(
-                        image_features,
-                        [f"{curr_prompt, {f}}" for f in phrases],
-                        reverse=reverse,
-                    )
-                    flave = best[len(curr_prompt) + 2 :]
-                    if not check(flave, idx):
-                        break
-                    if self.tokenize([curr_prompt])[0][-1] != 0:
-                        break
-                    phrases.remove(flave)
+            for idx in progress_bar(range(max_count)):
+                best = self._rank_top(
+                    image_features,
+                    [f"{curr_prompt, {f}}" for f in phrases],
+                    reverse=reverse,
+                )
+                flave = best[len(curr_prompt) + 2 :]
+                if not check(flave, idx):
+                    break
+                if self.tokenize([curr_prompt])[0][-1] != 0:
+                    break
+                phrases.remove(flave)
             return best_prompt
 
         image_features = self._image_to_features(image)
@@ -284,16 +283,15 @@ class LabelTable:
         if len(self.labels) != len(self.embeds):
             self.embeds = []
             chunks = np.array_split(self.labels, max(1, len(self.labels) / self.chunk_size))  # type: ignore
-            with progress_bar() as p:
-                for chunk in p.track(chunks):
-                    text_tokens = self.tokenize(chunk).to(self.device)
-                    with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
-                        text_features = interrogator.clip_model.encode_text(text_tokens)
-                        text_features /= text_features.norm(dim=-1, keepdim=True)
-                        # if no workie, put a half() before the cpu()
-                        text_features = text_features.cpu().numpy()
-                    for i in range(text_features.shape[0]):
-                        self.embeds.append(text_features[i])
+            for chunk in progress_bar(chunks):
+                text_tokens = self.tokenize(chunk).to(self.device)
+                with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
+                    text_features = interrogator.clip_model.encode_text(text_tokens)
+                    text_features /= text_features.norm(dim=-1, keepdim=True)
+                    # if no workie, put a half() before the cpu()
+                    text_features = text_features.cpu().numpy()
+                for i in range(text_features.shape[0]):
+                    self.embeds.append(text_features[i])
 
             if descriptor and self.cache_path:
                 self.cache_path.mkdir(parents=True, exist_ok=True)
@@ -359,13 +357,12 @@ class LabelTable:
         keep_per_chunk = int(self.chunk_size / num_chunks)
 
         top_labels, top_embeds = [], []
-        with progress_bar() as p:
-            for chunk_idx in p.track(range(num_chunks)):
-                start = chunk_idx * self.chunk_size
-                stop = min(start + self.chunk_size, len(self.embeds))
-                tops = self._rank(image_features, self.embeds[start:stop], top_count=keep_per_chunk, reverse=reverse)  # type: ignore
-                top_labels.extend([self.labels[start + i] for i in tops])  # type: ignore
-                top_embeds.extend([self.embeds[start + i] for i in tops])  # type: ignore
+        for chunk_idx in progress_bar(range(num_chunks)):
+            start = chunk_idx * self.chunk_size
+            stop = min(start + self.chunk_size, len(self.embeds))
+            tops = self._rank(image_features, self.embeds[start:stop], top_count=keep_per_chunk, reverse=reverse)  # type: ignore
+            top_labels.extend([self.labels[start + i] for i in tops])  # type: ignore
+            top_embeds.extend([self.embeds[start + i] for i in tops])  # type: ignore
 
         tops = self._rank(image_features, top_embeds, top_count=top_count)  # type: ignore
         return [top_labels[i] for i in tops]  # type: ignore

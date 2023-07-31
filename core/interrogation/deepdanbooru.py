@@ -68,9 +68,8 @@ class DeepdanbooruInterrogator(InterrogationModel):
                 qconfig_dict,
                 (torch.randn(1, 512, 512, 3),),  # great syntax pytorch :)
             )
-            with progress_bar() as p:
-                for _ in p.track(range(25)):
-                    prepared(torch.randn(1, 512, 512, 3))
+            for _ in progress_bar(range(25)):
+                prepared(torch.randn(1, 512, 512, 3))
 
             if is_cpu(self.device):
                 self.model = convert_fx(prepared)  # type: ignore

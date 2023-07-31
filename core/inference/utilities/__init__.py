@@ -11,4 +11,4 @@ from .latents import (
 )
 from .lwp import get_weighted_text_embeddings
 from .scheduling import change_scheduler, get_timesteps, prepare_extra_step_kwargs
-from .progress import progress_bar
+from .progress import new_progress, progress_bar

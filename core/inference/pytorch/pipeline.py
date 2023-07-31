@@ -452,141 +452,138 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 ]  # output.sample.shape[-2:] in older diffusers
 
             # 8. Denoising loop
-            with progress_bar() as p:
-                with ExitStack() as gs:
-                    if do_self_attention_guidance:
-                        gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
+            with ExitStack() as gs:
+                if do_self_attention_guidance:
+                    gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                    for i, t in enumerate(p.track(timesteps)):
-                        # expand the latents if we are doing classifier free guidance
-                        latent_model_input = (
-                            torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
+                for i, t in enumerate(progress_bar(timesteps)):
+                    # expand the latents if we are doing classifier free guidance
+                    latent_model_input = (
+                        torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
+                    )
+                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+
+                    if num_channels_unet == 9:
+                        latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+
+                    # predict the noise residual
+                    if self.controlnet is None:
+                        noise_pred = self.unet(  # type: ignore
+                            latent_model_input,
+                            t,
+                            encoder_hidden_states=text_embeddings,
+                        ).sample
+                    else:
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infer ControlNet only for the conditional batch.
+                            control_model_input = latents
+                            control_model_input = self.scheduler.scale_model_input(control_model_input, t)  # type: ignore
+                            controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
+                        else:
+                            control_model_input = latent_model_input
+                            controlnet_prompt_embeds = text_embeddings
+
+                        cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
+
+                        (
+                            down_block_res_samples,
+                            mid_block_res_sample,
+                        ) = self.controlnet(
+                            control_model_input,
+                            t,
+                            encoder_hidden_states=controlnet_prompt_embeds,
+                            controlnet_cond=image,
+                            conditioning_scale=cond_scale,
+                            guess_mode=guess_mode,
+                            return_dict=False,
                         )
-                        latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
-                        if num_channels_unet == 9:
-                            latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infered ControlNet only for the conditional batch.
+                            # To apply the output of ControlNet to both the unconditional and conditional batches,
+                            # add 0 to the unconditional batch to keep it unchanged.
+                            down_block_res_samples = [
+                                torch.cat([torch.zeros_like(d), d])
+                                for d in down_block_res_samples
+                            ]
+                            mid_block_res_sample = torch.cat(
+                                [
+                                    torch.zeros_like(mid_block_res_sample),
+                                    mid_block_res_sample,
+                                ]
+                            )
+                        noise_pred = self.unet(  # type: ignore
+                            latent_model_input,
+                            t,
+                            encoder_hidden_states=text_embeddings,
+                            down_block_additional_residuals=down_block_res_samples,
+                            mid_block_additional_residual=mid_block_res_sample,
+                            return_dict=False,
+                        )[0]
 
-                        # predict the noise residual
-                        if self.controlnet is None:
-                            noise_pred = self.unet(  # type: ignore
-                                latent_model_input,
+                    # perform guidance
+                    if do_classifier_free_guidance:
+                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                        noise_pred = noise_pred_uncond + guidance_scale * (
+                            noise_pred_text - noise_pred_uncond
+                        )
+
+                    if do_self_attention_guidance:
+                        if do_classifier_free_guidance:
+                            pred = pred_x0(self, latents, noise_pred_uncond, t)  # type: ignore
+                            uncond_attn, cond_attn = store_processor.attention_probs.chunk(2)  # type: ignore
+                            degraded_latents = sag_masking(
+                                self, pred, uncond_attn, map_size, t, pred_epsilon(self, latents, noise_pred_uncond, t)  # type: ignore
+                            )
+                            uncond_emb, _ = text_embeddings.chunk(2)
+                            # predict the noise residual
+                            # this probably could have been done better but honestly fuck this
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents,
+                                t,
+                                encoder_hidden_states=uncond_emb,
+                            ).sample
+                            noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
+                        else:
+                            pred = pred_x0(self, latents, noise_pred, t)
+                            cond_attn = store_processor.attention_probs  # type: ignore
+                            degraded_latents = sag_masking(
+                                self,
+                                pred,
+                                cond_attn,
+                                map_size,
+                                t,
+                                pred_epsilon(self, latents, noise_pred, t),
+                            )
+                            # predict the noise residual
+                            degraded_prep = self.unet(  # type: ignore
+                                degraded_latents,
                                 t,
                                 encoder_hidden_states=text_embeddings,
                             ).sample
-                        else:
-                            if guess_mode and do_classifier_free_guidance:
-                                # Infer ControlNet only for the conditional batch.
-                                control_model_input = latents
-                                control_model_input = self.scheduler.scale_model_input(control_model_input, t)  # type: ignore
-                                controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
-                            else:
-                                control_model_input = latent_model_input
-                                controlnet_prompt_embeds = text_embeddings
+                            noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
 
-                            cond_scale = (
-                                controlnet_conditioning_scale * controlnet_keep[i]
-                            )
+                    # compute the previous noisy sample x_t -> x_t-1
+                    latents = self.scheduler.step(  # type: ignore
+                        noise_pred, t.to(noise_pred.device), latents.to(noise_pred.device), **extra_step_kwargs  # type: ignore
+                    ).prev_sample  # type: ignore
 
-                            (
-                                down_block_res_samples,
-                                mid_block_res_sample,
-                            ) = self.controlnet(
-                                control_model_input,
-                                t,
-                                encoder_hidden_states=controlnet_prompt_embeds,
-                                controlnet_cond=image,
-                                conditioning_scale=cond_scale,
-                                guess_mode=guess_mode,
-                                return_dict=False,
-                            )
+                    if mask is not None and num_channels_unet == 4:
+                        # masking
+                        init_latents_proper = self.scheduler.add_noise(  # type: ignore
+                            init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                        )
+                        latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
 
-                            if guess_mode and do_classifier_free_guidance:
-                                # Infered ControlNet only for the conditional batch.
-                                # To apply the output of ControlNet to both the unconditional and conditional batches,
-                                # add 0 to the unconditional batch to keep it unchanged.
-                                down_block_res_samples = [
-                                    torch.cat([torch.zeros_like(d), d])
-                                    for d in down_block_res_samples
-                                ]
-                                mid_block_res_sample = torch.cat(
-                                    [
-                                        torch.zeros_like(mid_block_res_sample),
-                                        mid_block_res_sample,
-                                    ]
-                                )
-                            noise_pred = self.unet(  # type: ignore
-                                latent_model_input,
-                                t,
-                                encoder_hidden_states=text_embeddings,
-                                down_block_additional_residuals=down_block_res_samples,
-                                mid_block_additional_residual=mid_block_res_sample,
-                                return_dict=False,
-                            )[0]
-
-                        # perform guidance
-                        if do_classifier_free_guidance:
-                            noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                            noise_pred = noise_pred_uncond + guidance_scale * (
-                                noise_pred_text - noise_pred_uncond
-                            )
-
-                        if do_self_attention_guidance:
-                            if do_classifier_free_guidance:
-                                pred = pred_x0(self, latents, noise_pred_uncond, t)  # type: ignore
-                                uncond_attn, cond_attn = store_processor.attention_probs.chunk(2)  # type: ignore
-                                degraded_latents = sag_masking(
-                                    self, pred, uncond_attn, map_size, t, pred_epsilon(self, latents, noise_pred_uncond, t)  # type: ignore
-                                )
-                                uncond_emb, _ = text_embeddings.chunk(2)
-                                # predict the noise residual
-                                # this probably could have been done better but honestly fuck this
-                                degraded_prep = self.unet(  # type: ignore
-                                    degraded_latents,
-                                    t,
-                                    encoder_hidden_states=uncond_emb,
-                                ).sample
-                                noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
-                            else:
-                                pred = pred_x0(self, latents, noise_pred, t)
-                                cond_attn = store_processor.attention_probs  # type: ignore
-                                degraded_latents = sag_masking(
-                                    self,
-                                    pred,
-                                    cond_attn,
-                                    map_size,
-                                    t,
-                                    pred_epsilon(self, latents, noise_pred, t),
-                                )
-                                # predict the noise residual
-                                degraded_prep = self.unet(  # type: ignore
-                                    degraded_latents,
-                                    t,
-                                    encoder_hidden_states=text_embeddings,
-                                ).sample
-                                noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
-
-                        # compute the previous noisy sample x_t -> x_t-1
-                        latents = self.scheduler.step(  # type: ignore
-                            noise_pred, t.to(noise_pred.device), latents.to(noise_pred.device), **extra_step_kwargs  # type: ignore
-                        ).prev_sample  # type: ignore
-
-                        if mask is not None and num_channels_unet == 4:
-                            # masking
-                            init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                                init_latents_orig, noise, torch.tensor([t])  # type: ignore
-                            )
-                            latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
-
-                        # call the callback, if provided
-                        if i % callback_steps == 0:
-                            if callback is not None:
-                                callback(i, t, latents)  # type: ignore
-                            if (
-                                is_cancelled_callback is not None
-                                and is_cancelled_callback()
-                            ):
-                                return None
+                    # call the callback, if provided
+                    if i % callback_steps == 0:
+                        if callback is not None:
+                            callback(i, t, latents)  # type: ignore
+                        if (
+                            is_cancelled_callback is not None
+                            and is_cancelled_callback()
+                        ):
+                            return None
 
             # 9. Post-processing
             if output_type == "latent":
