@@ -17,10 +17,9 @@ from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
 from core.inference.ait import AITemplateStableDiffusion
-from core.inference.esrgan.upscale import Upscaler
 from core.inference.functions import download_model, is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
-from core.inference.real_esrgan import RealESRGAN
+from core.inference.esrgan import RealESRGAN, Upscaler
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue
@@ -43,7 +42,7 @@ from core.types import (
 from core.utils import convert_to_image, image_grid
 
 if TYPE_CHECKING:
-    from core.inference.onnx_sd import OnnxStableDiffusion
+    from core.inference.onnx import OnnxStableDiffusion
 
 logger = logging.getLogger(__name__)
 
@@ -209,7 +208,7 @@ class GPU:
                 logger.debug("Generating with AITemplate")
                 images: List[Image.Image] = model.generate(job)
             else:
-                from core.inference.onnx_sd import OnnxStableDiffusion
+                from core.inference.onnx import OnnxStableDiffusion
 
                 if isinstance(model, OnnxStableDiffusion):
                     logger.debug("Generating with ONNX")
@@ -369,7 +368,7 @@ class GPU:
                     )
                 )
 
-                from core.inference.onnx_sd import OnnxStableDiffusion
+                from core.inference.onnx import OnnxStableDiffusion
 
                 pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
@@ -513,7 +512,7 @@ class GPU:
     async def build_onnx_engine(self, request: ONNXBuildRequest):
         "Convert a model to a ONNX engine"
 
-        from core.inference.onnx_sd import OnnxStableDiffusion
+        from core.inference.onnx import OnnxStableDiffusion
 
         logger.debug(f"Building ONNX for {request.model_id}...")
 

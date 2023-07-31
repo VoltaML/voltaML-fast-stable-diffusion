@@ -3,14 +3,17 @@ import base64
 import logging
 import math
 import re
+import os
+from pathlib import Path
 from enum import Enum
 from io import BytesIO
 from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
 
 import requests
+from requests.adapters import HTTPAdapter, Retry
 from PIL import Image
-from tqdm import tqdm
 
+from core.inference.utilities import progress_bar
 from core.thread import ThreadWithReturnValue
 
 logger = logging.getLogger(__name__)
@@ -171,22 +174,27 @@ def convert_bytes_to_image_stream(data: bytes) -> str:
     return img
 
 
-def download_file(
-    url: str, filepath, chunk_size: int = 2 * 1024 * 1024, quiet: bool = False
-):
-    "Download a file from the given url in chunks and display progress using tqdm"
-    r = requests.get(url, stream=True)  # pylint: disable=missing-timeout
-    if r.status_code != 200:
-        return
+def download_file(url: str, file: Path, add_filename: bool = False):
+    """Download a file to the specified path, or to a child of the provided file
+    with the name provided in the Content-Disposition header"""
 
-    file_size = int(r.headers.get("Content-Length", 0))
-    filename = url.split("/")[-1]
-    progress = tqdm(
-        total=file_size, unit="B", unit_scale=True, desc=filename, disable=quiet
-    )
-    with open(filepath, "wb") as f:
-        for chunk in r.iter_content(chunk_size=chunk_size):
-            if chunk:
-                f.write(chunk)
-                progress.update(len(chunk))
-    progress.close()
+    session = requests.Session()
+    retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
+    session.mount("http://", HTTPAdapter(max_retries=retries))
+    session.mount("https://", HTTPAdapter(max_retries=retries))
+
+    with session.get(url, stream=True, timeout=30) as r:
+        file_name = r.headers["Content-Disposition"].split('"')[1]
+        if add_filename:
+            file = file / file_name
+        cl = int(r.headers["Content-Length"])
+        logger.info(f"Downloading {file_name} into {file.as_posix()}")
+        with progress_bar(file=True) as p:
+            pb = p.add_task(description="Downloading", total=cl)
+            # AFAIK Windows doesn't like big buffers
+            s = (64 if os.name == "nt" else 1024) * 1024
+            with open(file, mode="wb+") as f:
+                for data in r.iter_content(s):
+                    p.update(pb, advance=len(data))
+                    f.write(data)
+    return file

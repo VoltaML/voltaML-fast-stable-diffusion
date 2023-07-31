@@ -43,6 +43,7 @@ from core.inference.utilities import (
     prepare_image,
     preprocess_image,
     prepare_extra_step_kwargs,
+    progress_bar,
 )
 
 logger = logging.getLogger(__name__)
@@ -327,78 +328,82 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     - float(i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0)
                 )
 
-        for i, t in enumerate(self.progress_bar(timesteps)):
-            latent_model_input = (
-                torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
-            )
-            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t).half()  # type: ignore
-
-            # predict the noise residual
-            if self.controlnet is not None and ctrl_image is not None:  # type: ignore
-                if guess_mode and do_classifier_free_guidance:
-                    # Infer ControlNet only for the conditional batch.
-                    control_model_input = latents
-                    control_model_input = self.scheduler.scale_model_input(
-                        control_model_input, t
-                    ).half()
-                    controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
-                else:
-                    control_model_input = latent_model_input
-                    controlnet_prompt_embeds = text_embeddings
-
-                cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
-                down_block_res_samples, mid_block_res_sample = self.controlnet(
-                    control_model_input,
-                    t,
-                    encoder_hidden_states=controlnet_prompt_embeds.half(),
-                    controlnet_cond=ctrl_image,  # type: ignore
-                    conditioning_scale=cond_scale,
-                    guess_mode=guess_mode,
-                    return_dict=False,
+        with progress_bar() as p:
+            for i, t in enumerate(p.track(timesteps)):
+                latent_model_input = (
+                    torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
                 )
+                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t).half()  # type: ignore
 
-                if guess_mode and do_classifier_free_guidance:
-                    # Infered ControlNet only for the conditional batch.
-                    # To apply the output of ControlNet to both the unconditional and conditional batches,
-                    # add 0 to the unconditional batch to keep it unchanged.
-                    down_block_res_samples = [
-                        torch.cat([torch.zeros_like(d), d])
-                        for d in down_block_res_samples
-                    ]
-                    mid_block_res_sample = torch.cat(
-                        [torch.zeros_like(mid_block_res_sample), mid_block_res_sample]
+                # predict the noise residual
+                if self.controlnet is not None and ctrl_image is not None:  # type: ignore
+                    if guess_mode and do_classifier_free_guidance:
+                        # Infer ControlNet only for the conditional batch.
+                        control_model_input = latents
+                        control_model_input = self.scheduler.scale_model_input(
+                            control_model_input, t
+                        ).half()
+                        controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
+                    else:
+                        control_model_input = latent_model_input
+                        controlnet_prompt_embeds = text_embeddings
+
+                    cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
+                    down_block_res_samples, mid_block_res_sample = self.controlnet(
+                        control_model_input,
+                        t,
+                        encoder_hidden_states=controlnet_prompt_embeds.half(),
+                        controlnet_cond=ctrl_image,  # type: ignore
+                        conditioning_scale=cond_scale,
+                        guess_mode=guess_mode,
+                        return_dict=False,
                     )
 
-                noise_pred = self.unet_inference(
-                    latent_model_input,
-                    t,
-                    encoder_hidden_states=text_embeddings,
-                    height=height,
-                    width=width,
-                    down_block=down_block_res_samples,
-                    mid_block=mid_block_res_sample,
-                )
-            else:
-                noise_pred = self.unet_inference(
-                    latent_model_input,
-                    t,
-                    encoder_hidden_states=text_embeddings,
-                    height=height,
-                    width=width,
-                )
+                    if guess_mode and do_classifier_free_guidance:
+                        # Infered ControlNet only for the conditional batch.
+                        # To apply the output of ControlNet to both the unconditional and conditional batches,
+                        # add 0 to the unconditional batch to keep it unchanged.
+                        down_block_res_samples = [
+                            torch.cat([torch.zeros_like(d), d])
+                            for d in down_block_res_samples
+                        ]
+                        mid_block_res_sample = torch.cat(
+                            [
+                                torch.zeros_like(mid_block_res_sample),
+                                mid_block_res_sample,
+                            ]
+                        )
 
-            if do_classifier_free_guidance:
-                noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                noise_pred = noise_pred_uncond + guidance_scale * (
-                    noise_pred_text - noise_pred_uncond
-                )
+                    noise_pred = self.unet_inference(
+                        latent_model_input,
+                        t,
+                        encoder_hidden_states=text_embeddings,
+                        height=height,
+                        width=width,
+                        down_block=down_block_res_samples,
+                        mid_block=mid_block_res_sample,
+                    )
+                else:
+                    noise_pred = self.unet_inference(
+                        latent_model_input,
+                        t,
+                        encoder_hidden_states=text_embeddings,
+                        height=height,
+                        width=width,
+                    )
 
-            latents = self.scheduler.step(
-                noise_pred, t, latents, **extra_step_kwargs, return_dict=False  # type: ignore
-            )[0]
+                if do_classifier_free_guidance:
+                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                    noise_pred = noise_pred_uncond + guidance_scale * (
+                        noise_pred_text - noise_pred_uncond
+                    )
 
-            if callback is not None:
-                callback(i, t, latents)  # type: ignore
+                latents = self.scheduler.step(
+                    noise_pred, t, latents, **extra_step_kwargs, return_dict=False  # type: ignore
+                )[0]
+
+                if callback is not None:
+                    callback(i, t, latents)  # type: ignore
 
         latents = 1 / 0.18215 * latents  # type: ignore
         image: torch.Tensor = self.vae_inference(latents, height=height, width=width)

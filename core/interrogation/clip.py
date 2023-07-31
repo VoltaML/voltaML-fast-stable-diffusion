@@ -10,7 +10,6 @@ import torch
 from diffusers.utils import is_accelerate_available
 from PIL import Image
 from safetensors.numpy import load_file, save_file
-from tqdm import tqdm
 from transformers.modeling_utils import PreTrainedModel
 from transformers.models.auto.modeling_auto import AutoModelForCausalLM
 from transformers.models.auto.processing_auto import AutoProcessor
@@ -20,6 +19,7 @@ from transformers.utils import is_bitsandbytes_available
 
 from core.config import config
 from core.files import get_full_model_path
+from core.inference.utilities import progress_bar
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.optimizations import autocast
 from core.types import InterrogatorQueueEntry, Job
@@ -101,7 +101,6 @@ class CLIPInterrogator(InterrogationModel):
             best_sim: float = 0,
             min_count: int = 8,
             max_count: int = 32,
-            descriptor="Chaining",
             reverse: bool = False,
         ) -> str:
             def _similarity(image_features: torch.Tensor, text: str) -> float:
@@ -136,18 +135,19 @@ class CLIPInterrogator(InterrogationModel):
                     return True
                 return False
 
-            for idx in tqdm(range(max_count), desc=descriptor):
-                best = self._rank_top(
-                    image_features,
-                    [f"{curr_prompt, {f}}" for f in phrases],
-                    reverse=reverse,
-                )
-                flave = best[len(curr_prompt) + 2 :]
-                if not check(flave, idx):
-                    break
-                if self.tokenize([curr_prompt])[0][-1] != 0:
-                    break
-                phrases.remove(flave)
+            with progress_bar() as p:
+                for idx in p.track(range(max_count)):
+                    best = self._rank_top(
+                        image_features,
+                        [f"{curr_prompt, {f}}" for f in phrases],
+                        reverse=reverse,
+                    )
+                    flave = best[len(curr_prompt) + 2 :]
+                    if not check(flave, idx):
+                        break
+                    if self.tokenize([curr_prompt])[0][-1] != 0:
+                        break
+                    phrases.remove(flave)
             return best_prompt
 
         image_features = self._image_to_features(image)
@@ -162,7 +162,6 @@ class CLIPInterrogator(InterrogationModel):
             flaves,
             max_count=max_flavors,
             reverse=True,
-            descriptor="Negative chain",
         )
 
     def _rank_top(
@@ -285,17 +284,16 @@ class LabelTable:
         if len(self.labels) != len(self.embeds):
             self.embeds = []
             chunks = np.array_split(self.labels, max(1, len(self.labels) / self.chunk_size))  # type: ignore
-            for chunk in tqdm(
-                chunks, desc=f"Preprocessing {descriptor}" if descriptor else None
-            ):
-                text_tokens = self.tokenize(chunk).to(self.device)
-                with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
-                    text_features = interrogator.clip_model.encode_text(text_tokens)
-                    text_features /= text_features.norm(dim=-1, keepdim=True)
-                    # if no workie, put a half() before the cpu()
-                    text_features = text_features.cpu().numpy()
-                for i in range(text_features.shape[0]):
-                    self.embeds.append(text_features[i])
+            with progress_bar() as p:
+                for chunk in p.track(chunks):
+                    text_tokens = self.tokenize(chunk).to(self.device)
+                    with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
+                        text_features = interrogator.clip_model.encode_text(text_tokens)
+                        text_features /= text_features.norm(dim=-1, keepdim=True)
+                        # if no workie, put a half() before the cpu()
+                        text_features = text_features.cpu().numpy()
+                    for i in range(text_features.shape[0]):
+                        self.embeds.append(text_features[i])
 
             if descriptor and self.cache_path:
                 self.cache_path.mkdir(parents=True, exist_ok=True)
@@ -361,12 +359,13 @@ class LabelTable:
         keep_per_chunk = int(self.chunk_size / num_chunks)
 
         top_labels, top_embeds = [], []
-        for chunk_idx in tqdm(range(num_chunks)):
-            start = chunk_idx * self.chunk_size
-            stop = min(start + self.chunk_size, len(self.embeds))
-            tops = self._rank(image_features, self.embeds[start:stop], top_count=keep_per_chunk, reverse=reverse)  # type: ignore
-            top_labels.extend([self.labels[start + i] for i in tops])  # type: ignore
-            top_embeds.extend([self.embeds[start + i] for i in tops])  # type: ignore
+        with progress_bar() as p:
+            for chunk_idx in p.track(range(num_chunks)):
+                start = chunk_idx * self.chunk_size
+                stop = min(start + self.chunk_size, len(self.embeds))
+                tops = self._rank(image_features, self.embeds[start:stop], top_count=keep_per_chunk, reverse=reverse)  # type: ignore
+                top_labels.extend([self.labels[start + i] for i in tops])  # type: ignore
+                top_embeds.extend([self.embeds[start + i] for i in tops])  # type: ignore
 
         tops = self._rank(image_features, top_embeds, top_count=top_count)  # type: ignore
         return [top_labels[i] for i in tops]  # type: ignore

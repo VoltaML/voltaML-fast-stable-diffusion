@@ -13,7 +13,6 @@ from streaming_form_data.targets import FileTarget
 
 from api import websocket_manager
 from api.websockets.data import Data
-from core.civitai.download import download_model as _download_checkpoint
 from core.files import get_full_model_path
 from core.shared_dependent import cached_model_list, gpu
 from core.types import (
@@ -23,6 +22,7 @@ from core.types import (
     TextualInversionLoadRequest,
     VaeLoadRequest,
 )
+from core.utils import download_file
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
@@ -244,4 +244,14 @@ def download_checkpoint(
 ) -> str:
     "Download a model from a link and return the path to the downloaded file."
 
-    return _download_checkpoint(link, model_type).as_posix()
+    mtype = model_type.casefold()
+    if mtype == "checkpoint":
+        folder = "models"
+    elif mtype == "textualinversion":
+        folder = "textual-inversion"
+    elif mtype == "lora":
+        folder = "lora"
+    else:
+        raise ValueError(f"Unknown model type {mtype}")
+
+    return download_file(link, Path("data") / folder, True).as_posix()

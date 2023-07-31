@@ -128,11 +128,6 @@ async def startup_event():
         )
         l.handlers = [handler]
 
-    if logger.level > logging.DEBUG:
-        from transformers import logging as transformers_logging
-
-        transformers_logging.set_verbosity_error()
-
     shared.asyncio_loop = asyncio.get_event_loop()
 
     sync_task = asyncio.create_task(websocket_manager.sync_loop())
