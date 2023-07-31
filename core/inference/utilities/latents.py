@@ -226,20 +226,12 @@ def prepare_latents(
     align_to: int = 1,
 ):
     if image is None:
-        if align_to == 1:
-            shape = (
-                batch_size,
-                pipe.unet.config.in_channels,  # type: ignore
-                height,
-                width,
-            )
-        else:
-            shape = (
-                batch_size,
-                pipe.unet.config.in_channels,  # type: ignore
-                (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-                (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
-            )
+        shape = (
+            batch_size,
+            pipe.unet.config.in_channels,  # type: ignore
+            (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+        )
 
         if latents is None:
             if device.type == "mps" or config.api.device_type == "directml":
