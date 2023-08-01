@@ -223,6 +223,7 @@ def prepare_latents(
     device: torch.device,
     generator: Optional[torch.Generator],
     latents=None,
+    latent_channels: Optional[int] = None,
     align_to: int = 1,
 ):
     if image is None:
@@ -266,6 +267,13 @@ def prepare_latents(
 
         init_latents_orig = init_latents
         shape = init_latents.shape
+        if latent_channels is not None:
+            shape = (
+                batch_size,
+                latent_channels,  # type: ignore
+                (math.ceil(height / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+                (math.ceil(width / align_to) * align_to) // pipe.vae_scale_factor,  # type: ignore
+            )
 
         # add noise to latents using the timesteps
         if device.type == "mps" or config.api.device_type == "directml":

@@ -426,6 +426,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 device,
                 generator,
                 latents,
+                latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
             )
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
