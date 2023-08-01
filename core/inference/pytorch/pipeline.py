@@ -1,60 +1,36 @@
 # HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 
-import inspect
 from contextlib import ExitStack
 from typing import Callable, List, Literal, Optional, Union
 
-import numpy as np
 import PIL
 import torch
 from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipeline
-from diffusers.models import AutoencoderKL, UNet2DConditionModel
-from diffusers.pipelines.stable_diffusion import (
-    StableDiffusionPipelineOutput,
-    StableDiffusionSafetyChecker,
-)
-from diffusers.utils import PIL_INTERPOLATION, logging
-from transformers.models.clip import CLIPFeatureExtractor, CLIPTextModel, CLIPTokenizer
+from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
+from diffusers.utils import logging
+from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.config import config
-from core.inference.pytorch.latents import prepare_latents
-from core.inference.pytorch.lwp import get_weighted_text_embeddings
-from core.inference.pytorch.sag import (
-    CrossAttnStoreProcessor,
-    pred_epsilon,
-    pred_x0,
-    sag_masking,
+from core.inference.utilities import (
+    get_timesteps,
+    get_weighted_text_embeddings,
+    pad_tensor,
+    prepare_extra_step_kwargs,
+    prepare_image,
+    prepare_latents,
+    prepare_mask_and_masked_image,
+    prepare_mask_latents,
+    preprocess_image,
+    progress_bar,
 )
 from core.optimizations import autocast
+
+from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
 # ------------------------------------------------------------------------------
 
 logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
-
-
-def preprocess_image(image):
-    w, h = image.size
-    w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
-    image = image.resize((w, h), resample=PIL_INTERPOLATION["lanczos"])
-    image = np.array(image).astype(np.float32) / 255.0
-    image = image[None].transpose(0, 3, 1, 2)
-    image = torch.from_numpy(image)
-    return 2.0 * image - 1.0
-
-
-def preprocess_mask(mask, scale_factor=8):
-    mask = mask.convert("L")
-    w, h = mask.size
-    w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32
-    mask = mask.resize(
-        (w // scale_factor, h // scale_factor), resample=PIL_INTERPOLATION["nearest"]
-    )
-    mask = np.array(mask).astype(np.float32) / 255.0
-    mask = np.tile(mask, (4, 1, 1))
-    mask = mask[None].transpose(0, 1, 2, 3)  # what does this step do?
-    mask = 1 - mask  # repaint white, keep black
-    mask = torch.from_numpy(mask)
-    return mask
 
 
 class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
@@ -94,9 +70,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         tokenizer: CLIPTokenizer,
         unet: UNet2DConditionModel,
         scheduler: SchedulerMixin,
-        safety_checker: StableDiffusionSafetyChecker,
-        feature_extractor: CLIPFeatureExtractor,
-        requires_safety_checker: bool = False,
+        controlnet: Optional[ControlNetModel] = None,
     ):
         super().__init__(
             vae=vae,
@@ -104,9 +78,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             tokenizer=tokenizer,
             unet=unet,
             scheduler=scheduler,  # type: ignore
-            safety_checker=safety_checker,
-            feature_extractor=feature_extractor,
-            requires_safety_checker=requires_safety_checker,
+            safety_checker=None,  # type: ignore
+            feature_extractor=None,  # type: ignore
+            requires_safety_checker=False,
         )
         self.__init__additional__()
 
@@ -116,8 +90,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self.tokenizer: CLIPTokenizer
         self.unet: UNet2DConditionModel
         self.scheduler: LMSDiscreteScheduler
-        self.safety_checker: StableDiffusionSafetyChecker
-        self.feature_extractor: CLIPFeatureExtractor
+        self.controlnet: Optional[ControlNetModel] = controlnet
         self.requires_safety_checker: bool
 
     def __init__additional__(self):
@@ -220,7 +193,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
         return text_embeddings.to(dtype=config.api.dtype)
 
-    def check_inputs(self, prompt, height, width, strength, callback_steps):
+    def _check_inputs(self, prompt, strength, callback_steps):
         if not isinstance(prompt, str) and not isinstance(prompt, list):
             raise ValueError(
                 f"`prompt` has to be of type `str` or `list` but is {type(prompt)}"
@@ -229,11 +202,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         if strength < 0 or strength > 1:
             raise ValueError(
                 f"The value of strength should in [0.0, 1.0] but is {strength}"
-            )
-
-        if height % 8 != 0 or width % 8 != 0:
-            raise ValueError(
-                f"`height` and `width` have to be divisible by 8 but are {height} and {width}."
             )
 
         if (callback_steps is None) or (
@@ -245,76 +213,33 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 f" {type(callback_steps)}."
             )
 
-    def get_timesteps(self, num_inference_steps, strength, device, is_text2img):
-        if is_text2img:
-            return self.scheduler.timesteps.to(device), num_inference_steps  # type: ignore
-        else:
-            # get the original timestep using init_timestep
-            offset = self.scheduler.config.get("steps_offset", 0)  # type: ignore
-            init_timestep = int(num_inference_steps * strength) + offset
-            init_timestep = min(init_timestep, num_inference_steps)
-
-            t_start = max(num_inference_steps - init_timestep + offset, 0)
-            timesteps = self.scheduler.timesteps[t_start:].to(device)  # type: ignore
-            return timesteps, num_inference_steps - t_start
-
-    def run_safety_checker(self, image, device, dtype):
-        if self.safety_checker is not None:  # type: ignore
-            safety_checker_input = self.feature_extractor(  # type: ignore
-                self.numpy_to_pil(image), return_tensors="pt"
-            ).to(device)
-            image, has_nsfw_concept = self.safety_checker(  # type: ignore
-                images=image, clip_input=safety_checker_input.pixel_values.to(dtype)
-            )
-        else:
-            has_nsfw_concept = None
-        return image, has_nsfw_concept
-
-    def decode_latents(self, latents):
+    def _decode_latents(self, latents, height, width):
         latents = 1 / 0.18215 * latents
         image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
         image = image.cpu().permute(0, 2, 3, 1).float().numpy()
-        return image
-
-    def prepare_extra_step_kwargs(self, generator, eta):
-        # prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
-        # eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
-        # eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
-        # and should be between [0, 1]
-
-        accepts_eta = "eta" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()  # type: ignore
-        )
-        extra_step_kwargs = {}
-        if accepts_eta:
-            extra_step_kwargs["eta"] = eta
-
-        # check if the scheduler accepts generator
-        accepts_generator = "generator" in set(
-            inspect.signature(self.scheduler.step).parameters.keys()  # type: ignore
-        )
-        if accepts_generator:
-            extra_step_kwargs["generator"] = generator
-        return extra_step_kwargs
+        img = image[:, :height, :width, :]
+        return img
 
     @torch.no_grad()
     def __call__(
         self,
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         height: int = 512,
         width: int = 512,
+        controlnet_conditioning_scale: Optional[float] = 1.0,
+        guess_mode: Optional[bool] = False,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
         self_attention_scale: float = 0.0,
         strength: float = 0.8,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
-        generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
@@ -410,11 +335,13 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             dtype=self.unet.dtype,
             disable=not config.api.autocast,
         ):
-            height = height or self.unet.config.sample_size * self.vae_scale_factor  # type: ignore
-            width = width or self.unet.config.sample_size * self.vae_scale_factor  # type: ignore
-
             # 1. Check inputs. Raise error if not correct
-            self.check_inputs(prompt, height, width, strength, callback_steps)
+            self._check_inputs(prompt, strength, callback_steps)
+            if self.controlnet is not None:
+                global_pool_conditions = self.controlnet.config.global_pool_conditions  # type: ignore
+                guess_mode = guess_mode or global_pool_conditions
+
+            num_channels_unet = self.unet.config.in_channels  # type: ignore
 
             # 2. Define call parameters
             batch_size = 1 if isinstance(prompt, str) else len(prompt)
@@ -439,28 +366,57 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 4. Preprocess image and mask
             if isinstance(image, PIL.Image.Image):  # type: ignore
-                image = preprocess_image(image)
+                width, height = image.size  # type: ignore
+                if self.controlnet is None:
+                    image = preprocess_image(image)
+                else:
+                    image = prepare_image(
+                        image,
+                        width,
+                        height,
+                        batch_size,
+                        num_images_per_prompt,
+                        device,
+                        dtype,
+                    )
             if image is not None:
                 image = image.to(device=self.device, dtype=dtype)
-            if isinstance(mask_image, PIL.Image.Image):  # type: ignore
-                mask_image = preprocess_mask(mask_image, self.vae_scale_factor)
             if mask_image is not None:
-                mask = mask_image.to(device=self.device, dtype=dtype)
-                mask = torch.cat([mask] * batch_size * num_images_per_prompt)  # type: ignore
+                mask, masked_image, _ = prepare_mask_and_masked_image(
+                    image, mask_image, height, width
+                )
+                mask, masked_image_latents = prepare_mask_latents(
+                    mask,
+                    masked_image,
+                    batch_size * num_images_per_prompt,  # type: ignore
+                    height,
+                    width,
+                    dtype,
+                    device,
+                    generator,
+                    do_classifier_free_guidance,
+                    self.vae,
+                    self.vae_scale_factor,
+                    self.vae.config.scaling_factor,  # type: ignore
+                )
             else:
                 mask = None
 
             # 5. set timesteps
             self.scheduler.set_timesteps(num_inference_steps, device=device)  # type: ignore
-            timesteps, num_inference_steps = self.get_timesteps(
-                num_inference_steps, strength, device, image is None
+            timesteps, num_inference_steps = get_timesteps(
+                self.scheduler,
+                num_inference_steps,
+                strength,
+                device,
+                image is None or self.controlnet is not None,
             )
             latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)  # type: ignore
 
             # 6. Prepare latent variables
-            latents, init_latents_orig, noise = prepare_latents(
+            latents, image_latents, noise = prepare_latents(
                 self,
-                image,
+                image if self.controlnet is None else None,
                 latent_timestep,
                 batch_size * num_images_per_prompt,  # type: ignore
                 height,
@@ -469,10 +425,21 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 device,
                 generator,
                 latents,
+                latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
             )
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
-            extra_step_kwargs = self.prepare_extra_step_kwargs(generator, eta)
+            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, generator, eta)  # type: ignore
+
+            controlnet_keep = []
+            if self.controlnet is not None:
+                for i in range(len(timesteps)):
+                    controlnet_keep.append(
+                        1.0
+                        - float(
+                            i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0
+                        )
+                    )
 
             if do_self_attention_guidance:
                 store_processor = CrossAttnStoreProcessor()
@@ -491,17 +458,70 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                for i, t in enumerate(self.progress_bar(timesteps)):
+                for i, t in enumerate(progress_bar(timesteps)):
                     # expand the latents if we are doing classifier free guidance
                     latent_model_input = (
                         torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
                     )
                     latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
+                    if num_channels_unet == 9:
+                        latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
+
                     # predict the noise residual
-                    noise_pred = self.unet(  # type: ignore
-                        latent_model_input, t, encoder_hidden_states=text_embeddings
-                    ).sample
+                    if self.controlnet is None:
+                        noise_pred = self.unet(  # type: ignore
+                            latent_model_input,
+                            t,
+                            encoder_hidden_states=text_embeddings,
+                        ).sample
+                    else:
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infer ControlNet only for the conditional batch.
+                            control_model_input = latents
+                            control_model_input = self.scheduler.scale_model_input(control_model_input, t)  # type: ignore
+                            controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
+                        else:
+                            control_model_input = latent_model_input
+                            controlnet_prompt_embeds = text_embeddings
+
+                        cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
+
+                        (
+                            down_block_res_samples,
+                            mid_block_res_sample,
+                        ) = self.controlnet(
+                            control_model_input,
+                            t,
+                            encoder_hidden_states=controlnet_prompt_embeds,
+                            controlnet_cond=image,
+                            conditioning_scale=cond_scale,
+                            guess_mode=guess_mode,
+                            return_dict=False,
+                        )
+
+                        if guess_mode and do_classifier_free_guidance:
+                            # Infered ControlNet only for the conditional batch.
+                            # To apply the output of ControlNet to both the unconditional and conditional batches,
+                            # add 0 to the unconditional batch to keep it unchanged.
+                            down_block_res_samples = [
+                                torch.cat([torch.zeros_like(d), d])
+                                for d in down_block_res_samples
+                            ]
+                            mid_block_res_sample = torch.cat(
+                                [
+                                    torch.zeros_like(mid_block_res_sample),
+                                    mid_block_res_sample,
+                                ]
+                            )
+                        noise_pred = self.unet(  # type: ignore
+                            latent_model_input,
+                            t,
+                            encoder_hidden_states=text_embeddings,
+                            down_block_additional_residuals=down_block_res_samples,
+                            mid_block_additional_residual=mid_block_res_sample,
+                            return_dict=False,
+                        )[0]
 
                     # perform guidance
                     if do_classifier_free_guidance:
@@ -550,12 +570,21 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         noise_pred, t.to(noise_pred.device), latents.to(noise_pred.device), **extra_step_kwargs  # type: ignore
                     ).prev_sample  # type: ignore
 
-                    if mask is not None:
+                    if mask is not None and num_channels_unet == 4:
                         # masking
-                        init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                            init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                        init_latents_proper = image_latents[:1]  # type: ignore
+                        init_mask = mask[:1]
+                        init_mask = pad_tensor(
+                            init_mask, 8, (latents.shape[2], latents.shape[3])
                         )
-                        latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
+
+                        if i < len(timesteps) - 1:
+                            noise_timestep = timesteps[i + 1]
+                            init_latents_proper = self.scheduler.add_noise(
+                                init_latents_proper, noise, torch.tensor([noise_timestep])  # type: ignore
+                            )
+
+                        latents = (1 - init_mask) * init_latents_proper + init_mask * latents  # type: ignore
 
                     # call the callback, if provided
                     if i % callback_steps == 0:
@@ -571,12 +600,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             if output_type == "latent":
                 return latents, False
 
-            image = self.decode_latents(latents)
-
-            # 10. Run safety checker
-            image, has_nsfw_concept = self.run_safety_checker(
-                image, device, text_embeddings.dtype
-            )
+            # TODO: maybe implement asymmetric vqgan?
+            image = self._decode_latents(latents, height=height, width=width)
 
             # 11. Convert to PIL
             if output_type == "pil":
@@ -586,15 +611,16 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 self.final_offload_hook.offload()  # type: ignore
 
             if not return_dict:
-                return image, has_nsfw_concept
+                return image, False
 
             return StableDiffusionPipelineOutput(
-                images=image, nsfw_content_detected=has_nsfw_concept  # type: ignore
+                images=image, nsfw_content_detected=False  # type: ignore
             )
 
     def text2img(
         self,
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         height: int = 512,
         width: int = 512,
@@ -603,7 +629,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
-        generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
@@ -669,7 +694,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self.__call__(
+        return self(
             prompt=prompt,
             negative_prompt=negative_prompt,
             height=height,
@@ -693,6 +718,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self,
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
@@ -700,7 +726,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
-        generator: Optional[torch.Generator] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,
@@ -766,7 +791,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self.__call__(
+        return self(
             prompt=prompt,
             negative_prompt=negative_prompt,
             image=image,
@@ -790,6 +815,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
+        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
@@ -797,7 +823,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
-        generator: Optional[torch.Generator] = None,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
         return_dict: bool = True,
@@ -873,7 +898,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self.__call__(
+        return self(
             prompt=prompt,
             negative_prompt=negative_prompt,
             image=image,

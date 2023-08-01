@@ -16,10 +16,9 @@ from aitemplate.compiler import compile_model
 from aitemplate.frontend import IntVar, Tensor
 from aitemplate.testing import detect_target
 
-from ..modeling.vae import AutoencoderKL as ait_AutoencoderKL
 from ..common import mark_output
-
 from ..modeling.mapping import map_vae
+from ..modeling.vae import AutoencoderKL as ait_AutoencoderKL
 
 
 def compile_vae(  # pylint: disable=dangerous-default-value

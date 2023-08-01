@@ -1,13 +1,10 @@
 import logging
 import os
-from typing import Any, List, Literal, Optional, Union
+from typing import TYPE_CHECKING, Any, List, Literal, Optional, Tuple, Union
 
 import torch
-from diffusers import ControlNetModel
-from diffusers.models.autoencoder_kl import AutoencoderKL
-from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
 from PIL import Image
-from rich.console import Console
 from transformers.models.clip import CLIPFeatureExtractor
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -15,7 +12,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets.data import Data
 from core.config import config
-from core.functions import init_ait_module
+from core.inference.ait.pipeline import StableDiffusionAITPipeline
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
 from core.inference_callbacks import (
@@ -23,7 +20,6 @@ from core.inference_callbacks import (
     img2img_callback,
     txt2img_callback,
 )
-from core.schedulers import change_scheduler
 from core.types import (
     Backend,
     ControlNetQueueEntry,
@@ -33,10 +29,16 @@ from core.types import (
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
-from .pytorch import get_weighted_text_embeddings
+from ..utilities.aitemplate import init_ait_module
+from ..utilities.controlnet import image_to_controlnet_input
+from ..utilities.lwp import get_weighted_text_embeddings
+from ..utilities.scheduling import change_scheduler
+
+if TYPE_CHECKING:
+    from diffusers.pipelines import StableDiffusionPipeline
+
 
 logger = logging.getLogger(__name__)
-console = Console()
 
 
 class AITemplateStableDiffusion(InferenceModel):
@@ -78,7 +80,8 @@ class AITemplateStableDiffusion(InferenceModel):
         return os.path.join("data", "aitemplate", self.model_id)
 
     def load(self):
-        from core.aitemplate.pipeline import StableDiffusionAITPipeline
+        # pylint: disable=redefined-outer-name,reimported
+        from .pipeline import StableDiffusionAITPipeline
 
         pipe = load_pytorch_pipeline(
             self.model_id,
@@ -89,19 +92,18 @@ class AITemplateStableDiffusion(InferenceModel):
         pipe.to(self.device)
         self.memory_cleanup()
 
-        with console.status("[bold green]Loading AITemplate model..."):
-            pipe = StableDiffusionAITPipeline(
-                unet=pipe.unet,  # type: ignore
-                vae=pipe.vae,  # type: ignore
-                controlnet=self.controlnet,
-                text_encoder=pipe.text_encoder,  # type: ignore
-                tokenizer=pipe.tokenizer,  # type: ignore
-                scheduler=pipe.scheduler,  # type: ignore
-                directory=self.directory,
-                clip_ait_exe=None,
-                unet_ait_exe=None,
-                vae_ait_exe=None,
-            )
+        pipe = StableDiffusionAITPipeline(
+            unet=pipe.unet,  # type: ignore
+            vae=pipe.vae,  # type: ignore
+            controlnet=self.controlnet,
+            text_encoder=pipe.text_encoder,  # type: ignore
+            tokenizer=pipe.tokenizer,  # type: ignore
+            scheduler=pipe.scheduler,  # type: ignore
+            directory=self.directory,
+            clip_ait_exe=None,
+            unet_ait_exe=None,
+            vae_ait_exe=None,
+        )
         assert isinstance(pipe, StableDiffusionAITPipeline)
 
         self.unet = pipe.unet  # type: ignore
@@ -167,7 +169,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     self.unet_ait_exe = init_ait_module(
                         model_name="UNet2DConditionModel", workdir=self.directory
                     )
-                    from ..aitemplate.src.modeling import mapping
+                    from core.aitemplate.src.modeling import mapping
 
                     self.unet_ait_exe.set_many_constants_with_tensors(
                         mapping.map_unet(self.unet)
@@ -198,7 +200,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         model_name="ControlNetUNet2DConditionModel",
                         workdir=self.directory,
                     )
-                    from ..aitemplate.src.modeling import mapping
+                    from core.aitemplate.src.modeling import mapping
 
                     self.unet_ait_exe.set_many_constants_with_tensors(
                         mapping.map_unet(self.unet)
@@ -235,6 +237,42 @@ class AITemplateStableDiffusion(InferenceModel):
         # Clean memory
         self.memory_cleanup()
 
+    def create_pipe(
+        self,
+        controlnet: str = "",
+        seed: int = -1,
+        scheduler: Optional[Tuple[Any, bool]] = None,
+    ) -> Tuple["StableDiffusionAITPipeline", torch.Generator]:
+        "Centralized way to create new pipelines."
+
+        self.manage_optional_components(target_controlnet=controlnet)
+
+        # pylint: disable=redefined-outer-name,reimported
+        from .pipeline import StableDiffusionAITPipeline
+
+        pipe = StableDiffusionAITPipeline(
+            unet=self.unet,
+            vae=self.vae,
+            directory=self.directory,
+            controlnet=self.controlnet,
+            text_encoder=self.text_encoder,
+            tokenizer=self.tokenizer,
+            scheduler=self.scheduler,
+            clip_ait_exe=self.clip_ait_exe,
+            unet_ait_exe=self.unet_ait_exe,
+            vae_ait_exe=self.vae_ait_exe,
+        )
+
+        generator = torch.Generator(self.device).manual_seed(seed)
+
+        if scheduler:
+            change_scheduler(
+                model=pipe,
+                scheduler=scheduler[0],
+                use_karras_sigmas=scheduler[1],
+            )
+        return pipe, generator
+
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
 
@@ -256,31 +294,10 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Txt2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from text"
-        from core.aitemplate.pipeline import StableDiffusionAITPipeline
-
-        self.manage_optional_components()
-
-        pipe = StableDiffusionAITPipeline(
-            unet=self.unet,
-            vae=self.vae,
-            directory=self.directory,
-            controlnet=self.controlnet,
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            clip_ait_exe=self.clip_ait_exe,
-            unet_ait_exe=self.unet_ait_exe,
-            vae_ait_exe=self.vae_ait_exe,
+        pipe, generator = self.create_pipe(
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
-
-        generator = torch.Generator(self.device).manual_seed(job.data.seed)
-
-        if job.data.scheduler:
-            change_scheduler(
-                model=pipe,
-                scheduler=job.data.scheduler,
-                use_karras_sigmas=job.data.use_karras_sigmas,
-            )
 
         total_images: List[Image.Image] = []
 
@@ -326,30 +343,9 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Img2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from images"
-
-        from core.aitemplate.pipeline import StableDiffusionAITPipeline
-
-        self.manage_optional_components()
-
-        pipe = StableDiffusionAITPipeline(
-            unet=self.unet,
-            vae=self.vae,
-            directory=self.directory,
-            controlnet=self.controlnet,
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            clip_ait_exe=self.clip_ait_exe,
-            unet_ait_exe=self.unet_ait_exe,
-            vae_ait_exe=self.vae_ait_exe,
-        )
-
-        generator = torch.Generator(self.device).manual_seed(job.data.seed)
-
-        change_scheduler(
-            model=pipe,
-            scheduler=job.data.scheduler,
-            use_karras_sigmas=job.data.use_karras_sigmas,
+        pipe, generator = self.create_pipe(
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
 
         input_image = convert_to_image(job.data.image)
@@ -364,14 +360,14 @@ class AITemplateStableDiffusion(InferenceModel):
             data = pipe(
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
-                image=input_image,
+                image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
                 callback=img2img_callback,
-                strength=job.data.strength,
+                strength=job.data.strength,  # type: ignore
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
             )
@@ -402,33 +398,11 @@ class AITemplateStableDiffusion(InferenceModel):
         job: ControlNetQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from images"
-
-        from core.aitemplate.pipeline import StableDiffusionAITPipeline
-
-        self.manage_optional_components(target_controlnet=job.data.controlnet)
-
-        pipe = StableDiffusionAITPipeline(
-            unet=self.unet,
-            vae=self.vae,
-            directory=self.directory,
-            controlnet=self.controlnet,
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            clip_ait_exe=self.clip_ait_exe,
-            unet_ait_exe=self.unet_ait_exe,
-            vae_ait_exe=self.vae_ait_exe,
+        pipe, generator = self.create_pipe(
+            controlnet=job.data.controlnet,
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
-
-        generator = torch.Generator(self.device).manual_seed(job.data.seed)
-
-        change_scheduler(
-            model=pipe,
-            scheduler=job.data.scheduler,
-            use_karras_sigmas=job.data.use_karras_sigmas,
-        )
-
-        from core.controlnet_preprocessing import image_to_controlnet_input
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
@@ -446,7 +420,7 @@ class AITemplateStableDiffusion(InferenceModel):
             data = pipe(
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
-                image=input_image,
+                image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
@@ -455,7 +429,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 callback=controlnet_callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
-                controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,
+                controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,  # type: ignore
                 height=job.data.height,
                 width=job.data.width,
             )

@@ -17,7 +17,7 @@
 from typing import Optional
 
 from aitemplate.compiler import ops
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 
 from ..common import get_shape
 

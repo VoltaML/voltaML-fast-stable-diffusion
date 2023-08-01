@@ -12,7 +12,7 @@ from core.types import (
 from tests.functions import generate_random_image_base64
 
 try:
-    from core.inference.aitemplate import AITemplateStableDiffusion
+    from core.inference.ait import AITemplateStableDiffusion
 except ModuleNotFoundError:
     pytest.skip("Skipping aitemplate tests, ait not installed", allow_module_level=True)
 

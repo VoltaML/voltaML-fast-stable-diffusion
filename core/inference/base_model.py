@@ -33,9 +33,15 @@ class InferenceModel(ABC):
         "Cleanup the GPU memory"
 
         if config.api.clear_memory_policy == "always":
-            if config.api.device_type == "cpu" or config.api.device_type == "directml":
-                gc.collect()
-            else:
-                torch.cuda.empty_cache()
-                torch.cuda.ipc_collect()
-                gc.collect()
+            gc.collect()
+            if config.api.device_type not in ["cpu", "directml", "vulkan"]:
+                if torch.cuda.is_available():
+                    torch.cuda.empty_cache()
+                    torch.cuda.ipc_collect()
+                if torch.backends.mps.is_available():  # type: ignore
+                    torch.mps.empty_cache()  # type: ignore
+                try:
+                    if torch.xpu.is_available():  # type: ignore
+                        torch.xpu.empty_cache()  # type: ignore
+                except AttributeError:
+                    pass

@@ -137,7 +137,7 @@ def test_controlnet(pipe: PyTorchStableDiffusion):
 def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
     "Generate an image with ControlNet Image to Image while having the image preprocessed"
 
-    from core.controlnet_preprocessing import image_to_controlnet_input
+    from core.inference.utilities import image_to_controlnet_input
 
     preprocessed_image = generate_random_image()
     preprocessed_image = image_to_controlnet_input(

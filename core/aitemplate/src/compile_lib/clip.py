@@ -16,9 +16,8 @@ from aitemplate.compiler import compile_model
 from aitemplate.frontend import IntVar, Tensor
 from aitemplate.testing import detect_target
 
-from ..modeling.clip import CLIPTextTransformer as ait_CLIPTextTransformer
 from ..common import mark_output
-
+from ..modeling.clip import CLIPTextTransformer as ait_CLIPTextTransformer
 from ..modeling.mapping import map_clip
 
 

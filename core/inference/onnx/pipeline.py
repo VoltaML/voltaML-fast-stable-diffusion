@@ -27,14 +27,12 @@ from diffusers.utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
 from PIL import Image
 from torch.onnx import export
-from tqdm.auto import tqdm
 from transformers.modeling_outputs import BaseModelOutputWithPooling
 from transformers.models.clip import CLIPTextModel, CLIPTokenizerFast
 from transformers.utils import is_safetensors_available
 
 from api import websocket_manager
 from api.websockets import Data, Notification
-from core.config import config
 from core.files import get_full_model_path
 from core.inference.base_model import InferenceModel
 from core.inference.functions import (
@@ -44,6 +42,7 @@ from core.inference.functions import (
     is_onnxsim_available,
     torch_newer_than_201,
 )
+from core.inference.utilities import progress_bar
 from core.inference_callbacks import (
     img2img_callback,
     inpaint_callback,
@@ -1025,9 +1024,8 @@ class OnnxStableDiffusion(InferenceModel):
 
         logger.debug("timestep start")
         rt = time()
-        for i, t in enumerate(
-            tqdm(self.scheduler.timesteps if timesteps is None else timesteps)
-        ):
+        timesteps = self.scheduler.timesteps if timesteps is None else timesteps
+        for i, t in enumerate(progress_bar(timesteps)):
             if kw is not None:
                 latent_model_input = kw(latents, do_classifier_free_guidance, t)
             else:
@@ -1069,8 +1067,8 @@ class OnnxStableDiffusion(InferenceModel):
             if callback is not None:
                 callback(i, t, latents)
             latents = latents.numpy()
-        logger.debug("timestep end (%.2fs)", time() - rt)
-        return latents
+            logger.debug("timestep end (%.2fs)", time() - rt)
+            return latents
 
     def _extra_args(self):
         accepts_eta = "eta" in set(
