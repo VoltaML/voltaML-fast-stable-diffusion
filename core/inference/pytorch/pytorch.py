@@ -20,12 +20,12 @@ from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
+from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
 from core.inference.utilities import (
-    scale_latents,
     change_scheduler,
     image_to_controlnet_input,
+    scale_latents,
 )
-from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
@@ -264,6 +264,10 @@ class PyTorchStableDiffusion(InferenceModel):
     def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from a prompt"
 
+        from core.shared_dependent import progress
+
+        task = progress.add_task("Text2Image", total=job.data.batch_count, completed=0)
+
         pipe, generator = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
@@ -324,6 +328,9 @@ class PyTorchStableDiffusion(InferenceModel):
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
+            progress.advance(task)
+
+        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -343,6 +350,10 @@ class PyTorchStableDiffusion(InferenceModel):
 
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
+
+        from core.shared_dependent import progress
+
+        task = progress.add_task("Image2Image", total=job.data.batch_count, completed=0)
 
         pipe, generator = self.create_pipe(
             seed=job.data.seed,
@@ -378,6 +389,9 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)
+            progress.advance(task)
+
+        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -397,6 +411,10 @@ class PyTorchStableDiffusion(InferenceModel):
 
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
+
+        from core.shared_dependent import progress
+
+        task = progress.add_task("Inpaint", total=job.data.batch_count, completed=0)
 
         pipe, generator = self.create_pipe(
             seed=job.data.seed,
@@ -438,6 +456,9 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)
+            progress.advance(task)
+
+        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -457,6 +478,10 @@ class PyTorchStableDiffusion(InferenceModel):
 
     def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
+
+        from core.shared_dependent import progress
+
+        task = progress.add_task("Controlnet", total=job.data.batch_count, completed=0)
 
         if config.api.trace_model is True:
             raise ValueError(
@@ -506,6 +531,9 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)  # type: ignore
+            progress.advance(task)
+
+        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(

@@ -3,6 +3,7 @@ from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 from core.config import config
 from core.files import CachedModelList
 from core.gpu import GPU
+from core.inference.utilities.progress import MultiProgress
 
 if TYPE_CHECKING:
     from controlnet_aux import (
@@ -37,3 +38,5 @@ cached_controlnet_preprocessor: Union[
 ] = None
 
 r2: Optional["R2Bucket"] = None
+progress: MultiProgress = MultiProgress()
+progress.start()

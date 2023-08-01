@@ -2,7 +2,6 @@
 
 from contextlib import ExitStack
 from typing import Callable, List, Literal, Optional, Union
-import math
 
 import PIL
 import torch

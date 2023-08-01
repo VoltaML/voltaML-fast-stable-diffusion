@@ -1,19 +1,20 @@
-from typing import Iterable
 from operator import length_hint
+from typing import Iterable
 
-from rich.table import Column
-from rich.text import Text
 from rich.progress import (
     BarColumn,
     DownloadColumn,
-    TaskProgressColumn,
     MofNCompleteColumn,
     Progress,
-    TextColumn,
     ProgressColumn,
+    TaskID,
+    TaskProgressColumn,
+    TextColumn,
     TimeRemainingColumn,
     TransferSpeedColumn,
 )
+from rich.table import Column
+from rich.text import Text
 
 
 class _TimeElapsedColumn(ProgressColumn):
@@ -54,44 +55,52 @@ class _SpeedColumn(ProgressColumn):
 def progress_bar(iterable: Iterable) -> Iterable:
     "Create and start the Progress thread and then stop after iterating"
 
-    p = new_progress()
-    p.start()
+    from core.shared_dependent import progress
 
     def track() -> Iterable:
         total = length_hint(iterable)
-        task_id = p.add_task("Working...", total=total)
+        task_id = progress.add_task("Working...", total=total)
         for v in iterable:
             yield v
-            p.advance(task_id, 1)
-            p.refresh()
-        p.stop()
+            progress.advance(task_id, 1)
+            progress.refresh()
+        progress.remove_task(task_id)
 
     return track()
 
 
-def new_progress(file: bool = False) -> Progress:
-    "Create a new Progress object"
+class MultiProgress(Progress):
+    "Progress bar that can show multiple tasks at once"
 
-    if file:
-        return Progress(
-            TaskProgressColumn(),
-            BarColumn(None),
-            DownloadColumn(),
-            TextColumn("•"),
-            _TimeElapsedColumn(compact=True),
-            TextColumn("|"),
-            TimeRemainingColumn(compact=True),
-            TextColumn("•"),
-            TransferSpeedColumn(),
-        )
-    return Progress(
-        TaskProgressColumn(),
-        BarColumn(None),
-        MofNCompleteColumn(),
-        TextColumn("•"),
-        _TimeElapsedColumn(compact=True),
-        TextColumn("|"),
-        TimeRemainingColumn(compact=True),
-        TextColumn("•"),
-        _SpeedColumn(),
-    )
+    def get_renderables(self):
+        for task in self.tasks:
+            if task.fields.get("progress_type") == "download":
+                self.columns = (
+                    TaskProgressColumn(),
+                    BarColumn(None),
+                    DownloadColumn(),
+                    TextColumn("•"),
+                    _TimeElapsedColumn(compact=True),
+                    TextColumn("|"),
+                    TimeRemainingColumn(compact=True),
+                    TextColumn("•"),
+                    TransferSpeedColumn(),
+                )
+
+            else:
+                self.columns = (
+                    TaskProgressColumn(),
+                    BarColumn(None),
+                    MofNCompleteColumn(),
+                    TextColumn("•"),
+                    _TimeElapsedColumn(compact=True),
+                    TextColumn("|"),
+                    TimeRemainingColumn(compact=True),
+                    TextColumn("•"),
+                    _SpeedColumn(),
+                )
+            yield self.make_tasks_table([task])
+
+    def advance(self, task_id: TaskID, advance: float = 1) -> None:
+        super().advance(task_id, advance)
+        super().refresh()

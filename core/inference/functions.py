@@ -39,7 +39,6 @@ from huggingface_hub.utils._errors import (
 from omegaconf import OmegaConf
 from packaging import version
 from requests import HTTPError
-from rich import get_console
 from transformers import CLIPTextModel
 
 from core.config import config
@@ -367,50 +366,47 @@ def load_pytorch_pipeline(
     logger.info(f"Loading {model_id_or_path} with {config.api.data_type}")
 
     if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
-        with get_console().status("[bold green]Loading model from checkpoint..."):
-            use_safetensors = ".safetensors" in model_id_or_path
-            if use_safetensors:
-                logger.info("Loading model as safetensors")
-            else:
-                logger.info("Loading model as checkpoint")
+        use_safetensors = ".safetensors" in model_id_or_path
+        if use_safetensors:
+            logger.info("Loading model as safetensors")
+        else:
+            logger.info("Loading model as checkpoint")
 
-            # This function does not inherit the channels so we need to hack it like this
-            in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
+        # This function does not inherit the channels so we need to hack it like this
+        in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
 
-            cl = StableDiffusionPipeline
-            # I never knew this existed, but this is pretty handy :)
-            cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
-            try:
-                pipe = download_from_original_stable_diffusion_ckpt(
-                    pipeline_class=cl,  # type: ignore
-                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                    from_safetensors=use_safetensors,
-                    extract_ema=True,
-                    load_safety_checker=False,
-                    num_in_channels=in_channels,
-                )
-            except KeyError:
-                pipe = download_from_original_stable_diffusion_ckpt(
-                    pipeline_class=cl,  # type: ignore
-                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                    from_safetensors=use_safetensors,
-                    extract_ema=False,
-                    load_safety_checker=False,
-                    num_in_channels=in_channels,
-                )
-    else:
-        with get_console().status(
-            f"[bold green]Loading model from {'HuggingFace Hub' if '/' in model_id_or_path else 'HuggingFace model'}..."
-        ):
-            pipe = StableDiffusionPipeline.from_pretrained(
-                pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-                torch_dtype=config.api.dtype,
-                safety_checker=None,
-                requires_safety_checker=False,
-                feature_extractor=None,
-                low_cpu_mem_usage=True,
+        cl = StableDiffusionPipeline
+        # I never knew this existed, but this is pretty handy :)
+        cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
+        try:
+            pipe = download_from_original_stable_diffusion_ckpt(
+                pipeline_class=cl,  # type: ignore
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+                extract_ema=True,
+                load_safety_checker=False,
+                num_in_channels=in_channels,
             )
-            assert isinstance(pipe, StableDiffusionPipeline)
+        except KeyError:
+            pipe = download_from_original_stable_diffusion_ckpt(
+                pipeline_class=cl,  # type: ignore
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+                extract_ema=False,
+                load_safety_checker=False,
+                num_in_channels=in_channels,
+            )
+    else:
+        pipe = StableDiffusionPipeline.from_pretrained(
+            pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
+            torch_dtype=config.api.dtype,
+            safety_checker=None,
+            requires_safety_checker=False,
+            feature_extractor=None,
+            low_cpu_mem_usage=True,
+        )
+
+        assert isinstance(pipe, StableDiffusionPipeline)
 
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 

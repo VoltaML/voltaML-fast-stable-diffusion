@@ -280,4 +280,13 @@ if __name__ == "__main__":
         main(exit_after_init=args.install_only)
     except KeyboardInterrupt:
         logger.info("Received keyboard interrupt, exiting...")
+
+        from core.shared_dependent import progress
+
+        progress.stop()
+
         sys.exit(0)
+
+    from core.shared_dependent import progress
+
+    progress.stop()
