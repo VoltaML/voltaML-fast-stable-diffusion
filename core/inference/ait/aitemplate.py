@@ -5,7 +5,6 @@ from typing import TYPE_CHECKING, Any, List, Literal, Optional, Tuple, Union
 import torch
 from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
 from PIL import Image
-from rich import get_console
 from transformers.models.clip import CLIPFeatureExtractor
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -93,19 +92,18 @@ class AITemplateStableDiffusion(InferenceModel):
         pipe.to(self.device)
         self.memory_cleanup()
 
-        with get_console().status("[bold green]Loading AITemplate model..."):
-            pipe = StableDiffusionAITPipeline(
-                unet=pipe.unet,  # type: ignore
-                vae=pipe.vae,  # type: ignore
-                controlnet=self.controlnet,
-                text_encoder=pipe.text_encoder,  # type: ignore
-                tokenizer=pipe.tokenizer,  # type: ignore
-                scheduler=pipe.scheduler,  # type: ignore
-                directory=self.directory,
-                clip_ait_exe=None,
-                unet_ait_exe=None,
-                vae_ait_exe=None,
-            )
+        pipe = StableDiffusionAITPipeline(
+            unet=pipe.unet,  # type: ignore
+            vae=pipe.vae,  # type: ignore
+            controlnet=self.controlnet,
+            text_encoder=pipe.text_encoder,  # type: ignore
+            tokenizer=pipe.tokenizer,  # type: ignore
+            scheduler=pipe.scheduler,  # type: ignore
+            directory=self.directory,
+            clip_ait_exe=None,
+            unet_ait_exe=None,
+            vae_ait_exe=None,
+        )
         assert isinstance(pipe, StableDiffusionAITPipeline)
 
         self.unet = pipe.unet  # type: ignore

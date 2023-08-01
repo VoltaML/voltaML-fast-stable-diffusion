@@ -9,7 +9,6 @@ from diffusers import (
     StableDiffusionUpscalePipeline,
 )
 from diffusers.utils import is_accelerate_available
-from rich import get_console
 
 from core.config import config
 from core.files import get_full_model_path
