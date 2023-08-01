@@ -14,13 +14,13 @@
 #
 # pylint: disable=protected-access, dangerous-default-value, unused-argument
 
-from typing import Optional, Tuple, Union, List
+from typing import List, Optional, Tuple, Union
 
-from aitemplate.frontend import nn, Tensor
 from aitemplate.compiler import ops
+from aitemplate.frontend import Tensor, nn
 
 from .embeddings import TimestepEmbedding, Timesteps
-from .unet_blocks import get_down_block, get_up_block, UNetMidBlock2DCrossAttn
+from .unet_blocks import UNetMidBlock2DCrossAttn, get_down_block, get_up_block
 
 
 class UNet2DConditionModel(nn.Module):

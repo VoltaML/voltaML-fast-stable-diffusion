@@ -18,7 +18,7 @@ from inspect import isfunction
 from typing import Any, Optional
 
 from aitemplate.compiler import ops
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 from aitemplate.testing import detect_target
 
 USE_CUDA = detect_target().name() == "cuda"

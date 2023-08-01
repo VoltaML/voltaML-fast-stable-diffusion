@@ -13,36 +13,34 @@
 #  limitations under the License.
 #
 import logging
+import math
 from pathlib import Path
 from typing import Callable, List, Optional, Union
-import math
 
 import torch
 from aitemplate.compiler import Model
 from diffusers import (
     AutoencoderKL,
+    ControlNetModel,
     LMSDiscreteScheduler,
     StableDiffusionPipeline,
     UNet2DConditionModel,
-    ControlNetModel,
 )
-from diffusers.pipelines.stable_diffusion import (
-    StableDiffusionPipelineOutput,
-)
+from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.schedulers import KarrasDiffusionSchedulers
-from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 from PIL import Image
+from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.aitemplate.config import get_unet_in_channels
 from core.aitemplate.src.modeling import mapping
 from core.inference.utilities import (
-    get_weighted_text_embeddings,
-    prepare_latents,
     get_timesteps,
+    get_weighted_text_embeddings,
     init_ait_module,
-    prepare_image,
-    preprocess_image,
     prepare_extra_step_kwargs,
+    prepare_image,
+    prepare_latents,
+    preprocess_image,
     progress_bar,
 )
 

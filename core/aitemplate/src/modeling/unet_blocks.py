@@ -15,11 +15,9 @@
 from typing import Any, Optional, Tuple
 
 from aitemplate.compiler import ops
-
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 
 from .attention import AttentionBlock
-
 from .clip import SpatialTransformer
 from .resnet import Downsample2D, ResnetBlock2D, Upsample2D
 

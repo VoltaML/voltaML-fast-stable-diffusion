@@ -16,10 +16,10 @@
 
 from typing import Tuple
 
-from aitemplate.frontend import nn, Tensor
 from aitemplate.compiler import ops
+from aitemplate.frontend import Tensor, nn
 
-from .unet_blocks import get_down_block, get_up_block, UNetMidBlock2D
+from .unet_blocks import UNetMidBlock2D, get_down_block, get_up_block
 
 
 class Decoder(nn.Module):

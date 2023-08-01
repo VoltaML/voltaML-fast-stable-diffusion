@@ -1,11 +1,11 @@
 import importlib
+import inspect
 import logging
 from typing import Dict, Optional
-import inspect
 
+import torch
 from diffusers import SchedulerMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
-import torch
 
 from core.types import PyTorchModelType
 

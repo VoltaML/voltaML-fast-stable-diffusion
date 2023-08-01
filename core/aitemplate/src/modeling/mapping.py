@@ -12,8 +12,9 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
-from transformers import CLIPTextConfig, CLIPTextModel
 import torch
+from transformers import CLIPTextConfig, CLIPTextModel
+
 from ..common import torch_dtype_from_str
 
 

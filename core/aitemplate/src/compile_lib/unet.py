@@ -16,11 +16,11 @@ from aitemplate.compiler import compile_model
 from aitemplate.frontend import IntVar, Tensor
 from aitemplate.testing import detect_target
 
+from ..common import mark_output
+from ..modeling.mapping import map_unet
 from ..modeling.unet_2d_condition import (
     UNet2DConditionModel as ait_UNet2DConditionModel,
 )
-from ..common import mark_output
-from ..modeling.mapping import map_unet
 
 
 def compile_unet(  # pylint: disable=dangerous-default-value

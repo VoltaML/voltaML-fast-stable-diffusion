@@ -15,7 +15,7 @@
 import math
 
 from aitemplate.compiler import ops
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 
 
 def get_timestep_embedding(

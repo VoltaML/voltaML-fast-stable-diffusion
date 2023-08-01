@@ -1,14 +1,14 @@
 import logging
 import math
 from time import time
-from typing import Optional, Union, Tuple
+from typing import Optional, Tuple, Union
 
 import numpy as np
-from PIL import Image
 import torch
 import torch.nn.functional as F
 from diffusers import StableDiffusionPipeline
 from diffusers.utils import PIL_INTERPOLATION
+from PIL import Image
 
 from core.config import config
 from core.flags import LatentScaleModel

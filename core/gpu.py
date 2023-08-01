@@ -17,9 +17,9 @@ from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
 from core.inference.ait import AITemplateStableDiffusion
+from core.inference.esrgan import RealESRGAN, Upscaler
 from core.inference.functions import download_model, is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
-from core.inference.esrgan import RealESRGAN, Upscaler
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue

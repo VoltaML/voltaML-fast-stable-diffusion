@@ -15,7 +15,7 @@
 from typing import Optional
 
 from aitemplate.compiler.ops import reshape
-from aitemplate.frontend import nn, Tensor
+from aitemplate.frontend import Tensor, nn
 
 
 class AttentionBlock(nn.Module):
