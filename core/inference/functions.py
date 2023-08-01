@@ -375,7 +375,7 @@ def load_pytorch_pipeline(
                 logger.info("Loading model as checkpoint")
 
             # This function does not inherit the channels so we need to hack it like this
-            in_channels = 9 if "inpaint" in model_id_or_path else 4
+            in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
 
             cl = StableDiffusionPipeline
             # I never knew this existed, but this is pretty handy :)
