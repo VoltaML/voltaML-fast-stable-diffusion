@@ -302,17 +302,13 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            prompt_embeds, _, negative_prompt_embeds, _ = get_weighted_text_embeddings(
-                pipe, job.data.prompt, job.data.negative_prompt
-            )
             data = pipe(
-                prompt_embeds=prompt_embeds,
-                negative_prompt_embeds=negative_prompt_embeds,
+                prompt=job.data.negative_prompt,
+                negative_prompt=job.data.negative_prompt,
                 height=job.data.height,
                 width=job.data.width,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
                 callback=txt2img_callback,
@@ -354,16 +350,12 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            prompt_embeds, _, negative_prompt_embeds, _ = get_weighted_text_embeddings(
-                pipe, job.data.prompt, job.data.negative_prompt
-            )
             data = pipe(
-                prompt_embeds=prompt_embeds,
-                negative_prompt_embeds=negative_prompt_embeds,
+                prompt=job.data.negative_prompt,
+                negative_prompt=job.data.negative_prompt,
                 image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
                 callback=img2img_callback,
@@ -414,16 +406,12 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = [input_image]
 
         for _ in range(job.data.batch_count):
-            prompt_embeds, _, negative_prompt_embeds, _ = get_weighted_text_embeddings(
-                pipe, job.data.prompt, job.data.negative_prompt
-            )
             data = pipe(
-                prompt_embeds=prompt_embeds,
-                negative_prompt_embeds=negative_prompt_embeds,
+                prompt=job.data.negative_prompt,
+                negative_prompt=job.data.negative_prompt,
                 image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
                 callback=controlnet_callback,

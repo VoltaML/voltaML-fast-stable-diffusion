@@ -263,7 +263,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
         do_classifier_free_guidance = guidance_scale > 1.0
         if prompt is not None:
-            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+            prompt_embeds, _, negative_prompt_embeds, _ = get_weighted_text_embeddings(
                 self,
                 prompt=prompt,
                 uncond_prompt=negative_prompt,
