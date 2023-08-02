@@ -27,6 +27,7 @@ from diffusers.utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
 from PIL import Image
 from torch.onnx import export
+from tqdm import tqdm
 from transformers.modeling_outputs import BaseModelOutputWithPooling
 from transformers.models.clip import CLIPTextModel, CLIPTokenizerFast
 from transformers.utils import is_safetensors_available
@@ -42,7 +43,6 @@ from core.inference.functions import (
     is_onnxsim_available,
     torch_newer_than_201,
 )
-from core.inference.utilities import progress_bar
 from core.inference_callbacks import (
     img2img_callback,
     inpaint_callback,
@@ -492,15 +492,17 @@ class OnnxStableDiffusion(InferenceModel):
                         logger.info(f"Starting FP16 conversion on {str(output_path)}")
                         t = time()
                         import onnx
-                        from onnxconverter_common import (
-                            float16,
-                        )  # pylint: disable=E0401
 
-                        model = onnx.load(str(output_path))  # pylint: disable=no-member
+                        # pylint: disable=E0401
+                        from onnxconverter_common import float16
+
+                        # pylint: disable=no-member
+                        model = onnx.load(str(output_path))  # type: ignore
                         model = float16.convert_float_to_float16(
                             model, keep_io_types=True
                         )
-                        onnx.save(model, str(output_path))  # pylint: disable=no-member
+                        # pylint: disable=no-member
+                        onnx.save(model, str(output_path))  # type: ignore
                         del model
                         logger.info(
                             f"Conversion successful on model {str(output_path)} in {(time() - t):.2f}s."
@@ -520,7 +522,9 @@ class OnnxStableDiffusion(InferenceModel):
                         import onnxsim as onx  # pylint: disable=import-error
 
                         t = time()
-                        model = onnx.load(str(output_path))  # pylint: disable=no-member
+
+                        # pylint: disable=no-member
+                        model = onnx.load(str(output_path))  # type: ignore
                         model_opt, check = onx.simplify(model)  # type: ignore
                         if not check:
                             logger.warning(
@@ -531,7 +535,7 @@ class OnnxStableDiffusion(InferenceModel):
                         del model
                         old_size = os.stat(str(output_path)).st_size
                         os.remove(str(output_path))
-                        onnx.save(  # pylint: disable=no-member
+                        onnx.save(  # pylint: disable=no-member # type: ignore
                             model_opt, str(output_path)
                         )  # pylint: disable=no-member
                         new_size = os.stat(str(output_path)).st_size
@@ -1025,7 +1029,7 @@ class OnnxStableDiffusion(InferenceModel):
         logger.debug("timestep start")
         rt = time()
         timesteps = self.scheduler.timesteps if timesteps is None else timesteps
-        for i, t in enumerate(progress_bar(timesteps)):
+        for i, t in enumerate(tqdm(timesteps)):
             if kw is not None:
                 latent_model_input = kw(latents, do_classifier_free_guidance, t)
             else:
@@ -1183,7 +1187,7 @@ class OnnxStableDiffusion(InferenceModel):
             )
             return latent_model_input
 
-        latents = self._timestep(
+        latents = self._timestep(  # type: ignore
             latents=latents,
             timestep_dtype=timestep_dtype,
             do_classifier_free_guidance=do_classifier_free_guidance,
@@ -1230,7 +1234,7 @@ class OnnxStableDiffusion(InferenceModel):
         extra_step_kwargs = self._extra_args()
         timestep_dtype = self._get_timestep_dtype()
 
-        latents = self._timestep(
+        latents = self._timestep(  # type: ignore
             latents=latents,
             timestep_dtype=timestep_dtype,
             do_classifier_free_guidance=do_classifier_free_guidance,

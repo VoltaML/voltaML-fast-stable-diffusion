@@ -28,6 +28,7 @@ from diffusers import (
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.schedulers import KarrasDiffusionSchedulers
 from PIL import Image
+from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.inference.functions import is_aitemplate_available
@@ -39,13 +40,11 @@ from core.inference.utilities import (
     prepare_image,
     prepare_latents,
     preprocess_image,
-    progress_bar,
 )
 
 if is_aitemplate_available():
     from core.aitemplate.config import get_unet_in_channels
     from core.aitemplate.src.modeling import mapping
-    from aitemplate.compiler import Model
 
 logger = logging.getLogger(__name__)
 
@@ -329,7 +328,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     - float(i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0)
                 )
 
-        for i, t in enumerate(progress_bar(timesteps)):
+        for i, t in enumerate(tqdm(timesteps, desc="AITemplate")):
             latent_model_input = (
                 torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
             )

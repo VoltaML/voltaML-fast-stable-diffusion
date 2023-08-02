@@ -48,8 +48,6 @@ def compile_diffusers(
 ):
     "Compile Stable Diffusion Pipeline to AITemplate format"
 
-    from core.shared_dependent import progress
-
     # Wipe out cache
     if os.path.exists("~/.aitemplate/cuda.db"):
         logger.info("Wiping out cache...")
@@ -68,8 +66,6 @@ def compile_diffusers(
         model_id_or_path=local_dir_or_id,
         device=device,
     )
-
-    task = progress.add_task("Compiling...", total=5)
 
     if isinstance(width, int):
         width = (width, width)
@@ -119,7 +115,6 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"clip": "process"})
     )
-    progress.advance(task, 1)
     try:
         if (
             invalidate_cache
@@ -162,7 +157,6 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"unet": "process"})
     )
-    progress.advance(task, 1)
     try:
         if (
             invalidate_cache
@@ -235,7 +229,6 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"controlnet_unet": "process"})
     )
-    progress.advance(task, 1)
     try:
         if (
             invalidate_cache
@@ -310,7 +303,6 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"vae": "process"})
     )
-    progress.advance(task, 1)
     try:
         if (
             invalidate_cache
@@ -372,7 +364,6 @@ def compile_diffusers(
     websocket_manager.broadcast_sync(
         Data(data_type="aitemplate_compile", data={"cleanup": "process"})
     )
-    progress.advance(task, 1)
     try:
         # Clean all files except test.so recursively
         for root, _dirs, files in os.walk(dump_dir):
@@ -419,5 +410,4 @@ def compile_diffusers(
         )
     )
 
-    progress.remove_task(task)
     logger.info(f"Finished compiling in {deltatime:.2f} seconds")

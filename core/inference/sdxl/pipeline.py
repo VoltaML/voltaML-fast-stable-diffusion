@@ -5,6 +5,7 @@ from typing import Callable, Literal, Optional, Union, Any
 import numpy as np
 import PIL
 import torch
+from tqdm import tqdm
 from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionXLPipeline
 from diffusers.models import AutoencoderKL, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import (
@@ -22,7 +23,6 @@ from core.inference.utilities import (
     prepare_latents,
     get_weighted_text_embeddings,
     Placebo,
-    progress_bar,
 )
 from core.optimizations import autocast, upcast_vae
 
@@ -468,7 +468,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
             # 8. Denoising loop
             with ExitStack() as gs:
-                for i, t in enumerate(progress_bar(timesteps)):
+                for i, t in enumerate(tqdm(timesteps, desc="SDXL")):
                     # expand the latents if we are doing classifier free guidance
                     latent_model_input = (
                         torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore

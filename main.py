@@ -44,7 +44,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 )
 parser.add_argument(
     "--log-level",
-    default="INFO",
     help="Log level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
 )
@@ -83,14 +82,17 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 logging.getLogger("PIL.Image").setLevel(logging.INFO)
 
 # Create necessary folders
-Path("data/aitemplate").mkdir(exist_ok=True, parents=True)
-Path("data/onnx").mkdir(exist_ok=True)
-Path("data/models").mkdir(exist_ok=True)
-Path("data/outputs").mkdir(exist_ok=True)
-Path("data/lora").mkdir(exist_ok=True)
-Path("data/vae").mkdir(exist_ok=True)
-Path("data/upscaler").mkdir(exist_ok=True)
-Path("data/textual-inversion").mkdir(exist_ok=True)
+for directory in [
+    "aitemplate",
+    "onnx",
+    "models",
+    "outputs",
+    "lora",
+    "vae",
+    "upscaler",
+    "textual-inversion",
+]:
+    Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
 # Suppress some annoying warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -221,6 +223,9 @@ def checks():
     # Inject better logger
     from rich.logging import RichHandler
 
+    args_with_extras.log_level = args_with_extras.log_level or os.getenv(
+        "LOG_LEVEL", "INFO"
+    )
     logging.basicConfig(
         level=args_with_extras.log_level,
         format="%(asctime)s | %(name)s » %(message)s",
@@ -282,12 +287,4 @@ if __name__ == "__main__":
     except KeyboardInterrupt:
         logger.info("Received keyboard interrupt, exiting...")
 
-        from core.shared_dependent import progress
-
-        progress.stop()
-
         sys.exit(0)
-
-    from core.shared_dependent import progress
-
-    progress.stop()

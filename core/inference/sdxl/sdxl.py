@@ -6,7 +6,6 @@ from typing import Any, List, Tuple
 import torch
 from diffusers import (
     AutoencoderKL,
-    StableDiffusionInpaintPipeline,
     StableDiffusionXLPipeline,
     UNet2DConditionModel,
 )
@@ -16,6 +15,7 @@ from transformers.models.clip.modeling_clip import (
     CLIPTextModelWithProjection,
 )
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
+from tqdm import tqdm
 
 from api import websocket_manager
 from api.websockets import Data
@@ -154,7 +154,7 @@ class SDXLStableDiffusion(InferenceModel):
             job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
         )
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
 
             if "refiner" in job.flags:
@@ -271,7 +271,7 @@ class SDXLStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
                 prompt=job.data.prompt,
                 image=input_image,
@@ -327,7 +327,7 @@ class SDXLStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
                 prompt=job.data.prompt,
                 image=input_image,

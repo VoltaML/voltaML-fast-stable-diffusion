@@ -16,7 +16,7 @@
     "api:test": "pytest",
     "api:fulltest": "pytest --run-optional-tests=slow --cov=core -x",
     "api:lint": "pylint **/**.py --output-format=colorized",
-    "api:dev": "python main.py --log-level DEBUG",
+    "api:dev": "python main.py",
     "frontend:dev": "cd frontend && yarn dev",
     "frontend:build": "cd frontend && yarn build",
     "frontend:format": "cd frontend && yarn format",
