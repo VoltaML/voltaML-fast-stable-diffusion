@@ -2,7 +2,7 @@ import { _ as _sfc_main$6 } from "./GenerateSection.vue_vue_type_script_setup_tr
 import { B as BurnerClock, _ as _sfc_main$4, a as _sfc_main$5, b as _sfc_main$8 } from "./clock.js";
 import { _ as _sfc_main$7 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, q as NTooltip, r as NSelect, y as NGrid, z as spaceRegex, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, C as resolveComponent, D as h, E as ref, F as NButton, G as NIcon, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, q as NTooltip, r as NSelect, y as NGrid, z as spaceRegex, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, C as resolveComponent, v as createCommentVNode, D as h, E as ref, F as NButton, G as NIcon, x as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NSlider } from "./Slider.js";
@@ -605,7 +605,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
 });
 const ControlNet_vue_vue_type_style_index_0_scoped_24e2a46c_lang = "";
 const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-24e2a46c"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-99f48af3"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-0e681881"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -623,7 +623,10 @@ const _hoisted_11$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ creat
 const _hoisted_12$1 = { class: "flex-container" };
 const _hoisted_13$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1));
 const _hoisted_14$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1));
-const _hoisted_15$1 = { class: "flex-container" };
+const _hoisted_15$1 = {
+  key: 0,
+  class: "flex-container"
+};
 const _hoisted_16$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Self Attention Scale", -1));
 const _hoisted_17$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "PyTorch ONLY.", -1));
 const _hoisted_18$1 = { class: "flex-container" };
@@ -644,6 +647,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     });
     const negativePromptCount = computed(() => {
       return conf.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1;
+    });
+    const isSelectedModelPyTorch = computed(() => {
+      var _a;
+      return ((_a = conf.data.settings.model) == null ? void 0 : _a.backend) === "PyTorch";
     });
     const checkSeed = (seed) => {
       if (seed === -1) {
@@ -873,7 +880,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             step: 0.5
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_15$1, [
+                        isSelectedModelPyTorch.value ? (openBlock(), createElementBlock("div", _hoisted_15$1, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_16$1
@@ -901,7 +908,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             step: 0.05
                           }, null, 8, ["value"])
-                        ]),
+                        ])) : createCommentVNode("", true),
                         createBaseVNode("div", _hoisted_18$1, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -1010,8 +1017,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_99f48af3_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-99f48af3"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_0e681881_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-0e681881"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1587,7 +1594,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-721f7818"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-214780b7"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1623,7 +1630,10 @@ const _hoisted_18 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBas
 const _hoisted_19 = { class: "flex-container" };
 const _hoisted_20 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1));
 const _hoisted_21 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1));
-const _hoisted_22 = { class: "flex-container" };
+const _hoisted_22 = {
+  key: 0,
+  class: "flex-container"
+};
 const _hoisted_23 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Self Attention Scale", -1));
 const _hoisted_24 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "PyTorch ONLY.", -1));
 const _hoisted_25 = { class: "flex-container" };
@@ -1651,6 +1661,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       }
       return seed;
     };
+    const isSelectedModelPyTorch = computed(() => {
+      var _a;
+      return ((_a = conf.data.settings.model) == null ? void 0 : _a.backend) === "PyTorch";
+    });
     const generate = () => {
       var _a;
       if (conf.data.settings.inpainting.seed === null) {
@@ -2112,7 +2126,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             step: 0.5
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_22, [
+                        isSelectedModelPyTorch.value ? (openBlock(), createElementBlock("div", _hoisted_22, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_23
@@ -2140,7 +2154,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             max: 1,
                             step: 0.05
                           }, null, 8, ["value"])
-                        ]),
+                        ])) : createCommentVNode("", true),
                         createBaseVNode("div", _hoisted_25, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -2244,8 +2258,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_721f7818_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-721f7818"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_214780b7_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-214780b7"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

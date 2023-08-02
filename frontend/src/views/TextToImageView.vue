@@ -145,7 +145,7 @@
             </div>
 
             <!-- Self Attention Scale -->
-            <div class="flex-container">
+            <div class="flex-container" v-if="isSelectedModelPyTorch">
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Self Attention Scale</p>
@@ -306,6 +306,7 @@
         <NCard
           title="Highres fix"
           style="margin-top: 12px; margin-bottom: 12px"
+          v-if="!isSelectedModelSDXL"
         >
           <div class="flex-container">
             <div class="slider-label">

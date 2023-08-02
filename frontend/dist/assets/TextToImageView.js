@@ -1,7 +1,7 @@
 import { _ as _sfc_main$3 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$4 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { B as BurnerClock, _ as _sfc_main$1, a as _sfc_main$2, b as _sfc_main$5 } from "./clock.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as createBlock, x as createCommentVNode, y as NGrid, z as spaceRegex } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as createCommentVNode, x as createBlock, y as NGrid, z as spaceRegex } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NSwitch } from "./Switch.js";
 import { N as NSlider } from "./Slider.js";
@@ -26,7 +26,10 @@ const _hoisted_11 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" },
 const _hoisted_12 = { class: "flex-container" };
 const _hoisted_13 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1);
 const _hoisted_14 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1);
-const _hoisted_15 = { class: "flex-container" };
+const _hoisted_15 = {
+  key: 0,
+  class: "flex-container"
+};
 const _hoisted_16 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Self Attention Scale", -1);
 const _hoisted_17 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "PyTorch ONLY.", -1);
 const _hoisted_18 = { class: "flex-container" };
@@ -320,7 +323,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             step: 0.5
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_15, [
+                        isSelectedModelPyTorch.value ? (openBlock(), createElementBlock("div", _hoisted_15, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
                               _hoisted_16
@@ -346,7 +349,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             style: { "min-width": "96px", "width": "96px" },
                             step: 0.05
                           }, null, 8, ["value"])
-                        ]),
+                        ])) : createCommentVNode("", true),
                         createBaseVNode("div", _hoisted_18, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -486,7 +489,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   ]),
                   _: 1
                 })) : createCommentVNode("", true),
-                createVNode(unref(NCard), {
+                !isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(NCard), {
+                  key: 1,
                   title: "Highres fix",
                   style: { "margin-top": "12px", "margin-bottom": "12px" }
                 }, {
@@ -604,7 +608,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                     })) : createCommentVNode("", true)
                   ]),
                   _: 1
-                })
+                })) : createCommentVNode("", true)
               ]),
               _: 1
             }),

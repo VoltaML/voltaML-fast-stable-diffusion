@@ -76,7 +76,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self.safety_checker: Any = None
         self.image_encoder: Any
         self.final_offload_hook: Any = None
-        self.controlnet: Optional[ControlNetModel]
+        self.controlnet: Optional[ControlNetModel] = None
 
         self.current_controlnet: str = ""
 

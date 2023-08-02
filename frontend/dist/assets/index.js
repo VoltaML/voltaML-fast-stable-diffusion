@@ -40924,7 +40924,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-125f9d66"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-7daaec9a"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40944,7 +40944,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "64ad1582": backgroundColor.value
+      "764aebec": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41318,10 +41318,24 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         })
       };
     });
+    const sdxlOptions = computed(() => {
+      return {
+        type: "group",
+        label: "SDXL",
+        key: "sdxl",
+        children: loadedSdxlModels.value.map((model) => {
+          return {
+            label: model.name,
+            value: `${model.path}:SDXL`
+          };
+        })
+      };
+    });
     const generatedModelOptions = computed(() => {
       return [
         pyTorchOptions.value,
         aitOptions.value,
+        sdxlOptions.value,
         onnxOptions.value,
         extraOptions.value
       ];
@@ -41900,7 +41914,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_125f9d66_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_7daaec9a_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41908,7 +41922,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-125f9d66"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-7daaec9a"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42268,9 +42282,9 @@ export {
   serverUrl as s,
   toDisplayString as t,
   useState as u,
-  createBlock as v,
+  createCommentVNode as v,
   withCtx as w,
-  createCommentVNode as x,
+  createBlock as x,
   NGrid as y,
   spaceRegex as z
 };

@@ -155,7 +155,7 @@
             </div>
 
             <!-- Self Attention Scale -->
-            <div class="flex-container">
+            <div class="flex-container" v-if="isSelectedModelPyTorch">
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Self Attention Scale</p>
@@ -322,6 +322,10 @@ const negativePromptCount = computed(() => {
   return (
     conf.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1
   );
+});
+
+const isSelectedModelPyTorch = computed(() => {
+  return conf.data.settings.model?.backend === "PyTorch";
 });
 
 const checkSeed = (seed: number) => {

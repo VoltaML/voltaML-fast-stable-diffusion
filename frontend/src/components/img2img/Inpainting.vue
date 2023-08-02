@@ -276,7 +276,7 @@
             </div>
 
             <!-- Self Attention Scale -->
-            <div class="flex-container">
+            <div class="flex-container" v-if="isSelectedModelPyTorch">
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Self Attention Scale</p>
@@ -452,6 +452,10 @@ const checkSeed = (seed: number) => {
 
   return seed;
 };
+
+const isSelectedModelPyTorch = computed(() => {
+  return conf.data.settings.model?.backend === "PyTorch";
+});
 
 const generate = () => {
   if (conf.data.settings.inpainting.seed === null) {

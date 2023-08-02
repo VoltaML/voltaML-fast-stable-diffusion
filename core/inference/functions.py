@@ -57,6 +57,7 @@ config_name = "model_index.json"
 torch_older_than_200 = version.parse(torch.__version__) < version.parse("2.0.0")
 torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 
+
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
     try:
@@ -465,7 +466,7 @@ def load_pytorch_pipeline(
                     set_module_quantized_tensor_to_device(nt, k, config.api.device, v)
                 setattr(pipe, name, nt)
                 del state_dict, dont_convert
-        del conf
+            del conf
 
     if optimize:
         from core.optimizations import optimize_model

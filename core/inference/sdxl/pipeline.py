@@ -1,5 +1,3 @@
-# HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
-
 import inspect
 from contextlib import ExitStack
 from typing import Callable, Literal, Optional, Union, Any
@@ -25,12 +23,6 @@ from core.inference.utilities import (
     get_weighted_text_embeddings,
     Placebo,
     progress_bar,
-)
-from core.inference.pytorch.sag import (
-    CrossAttnStoreProcessor,
-    pred_epsilon,
-    pred_x0,
-    sag_masking,
 )
 from core.optimizations import autocast, upcast_vae
 
@@ -350,7 +342,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         width: int = 1024,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
-        self_attention_scale: float = 0.0,
         strength: float = 0.8,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
@@ -392,7 +383,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
             # corresponds to doing no classifier free guidance.
             do_classifier_free_guidance = guidance_scale > 1.0
-            do_self_attention_guidance = self_attention_scale > 0.0
 
             # 3. Encode input prompt
             (
@@ -468,10 +458,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             add_text_embeds = add_text_embeds.to(device)
             add_time_ids = add_time_ids.to(device).repeat(batch_size * num_images_per_prompt, 1)  # type: ignore
 
-            if do_self_attention_guidance:
-                store_processor = CrossAttnStoreProcessor()
-                self.unet.mid_block.attentions[0].transformer_blocks[0].attn1.processor = store_processor  # type: ignore
-
             map_size = None
 
             def get_map_size(_, __, output):
@@ -482,9 +468,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
             # 8. Denoising loop
             with ExitStack() as gs:
-                if do_self_attention_guidance:
-                    gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
-
                 for i, t in enumerate(progress_bar(timesteps)):
                     # expand the latents if we are doing classifier free guidance
                     latent_model_input = (
@@ -510,43 +493,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         noise_pred = noise_pred_uncond + guidance_scale * (
                             noise_pred_text - noise_pred_uncond
                         )
-
-                    if do_self_attention_guidance:
-                        if do_classifier_free_guidance:
-                            pred = pred_x0(self, latents, noise_pred_uncond, t)  # type: ignore
-                            uncond_attn, cond_attn = store_processor.attention_probs.chunk(2)  # type: ignore
-                            degraded_latents = sag_masking(
-                                self, pred, uncond_attn, map_size, t, pred_epsilon(self, latents, noise_pred_uncond, t)  # type: ignore
-                            )
-                            uncond_emb, _ = prompt_embeds.chunk(2)
-                            # predict the noise residual
-                            # this probably could have been done better but honestly fuck this
-                            degraded_prep = self.unet(  # type: ignore
-                                degraded_latents,
-                                t,
-                                encoder_hidden_states=uncond_emb,
-                                added_cond_kwargs=added_cond_kwargs,
-                            ).sample
-                            noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
-                        else:
-                            pred = pred_x0(self, latents, noise_pred, t)
-                            cond_attn = store_processor.attention_probs  # type: ignore
-                            degraded_latents = sag_masking(
-                                self,
-                                pred,
-                                cond_attn,
-                                map_size,
-                                t,
-                                pred_epsilon(self, latents, noise_pred, t),
-                            )
-                            # predict the noise residual
-                            degraded_prep = self.unet(  # type: ignore
-                                degraded_latents,
-                                t,
-                                encoder_hidden_states=prompt_embeds,
-                                added_cond_kwargs=added_cond_kwargs,
-                            ).sample
-                            noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
 
                     # compute the previous noisy sample x_t -> x_t-1
                     latents = self.scheduler.step(  # type: ignore
@@ -601,7 +547,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         width: int = 512,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
-        self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: float = 0.0,
         generator: Optional[torch.Generator] = None,
@@ -620,7 +565,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             width=width,
             num_inference_steps=num_inference_steps,
             guidance_scale=guidance_scale,
-            self_attention_scale=self_attention_scale,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,
             generator=generator,
@@ -641,7 +585,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,
-        self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
@@ -658,7 +601,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             image=image,
             num_inference_steps=num_inference_steps,  # type: ignore
             guidance_scale=guidance_scale,  # type: ignore
-            self_attention_scale=self_attention_scale,
             strength=strength,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,  # type: ignore
@@ -680,7 +622,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,
-        self_attention_scale: float = 0.0,
         num_images_per_prompt: Optional[int] = 1,
         eta: Optional[float] = 0.0,
         generator: Optional[torch.Generator] = None,
@@ -700,7 +641,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             mask_image=mask_image,
             num_inference_steps=num_inference_steps,  # type: ignore
             guidance_scale=guidance_scale,  # type: ignore
-            self_attention_scale=self_attention_scale,
             strength=strength,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,  # type: ignore

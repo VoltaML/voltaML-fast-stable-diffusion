@@ -895,10 +895,26 @@ const extraOptions: ComputedRef<SelectMixedOption> = computed(() => {
   };
 });
 
+
+const sdxlOptions: ComputedRef<SelectMixedOption> = computed(() => {
+  return {
+    type: "group",
+    label: "SDXL",
+    key: "sdxl",
+    children: loadedSdxlModels.value.map((model) => {
+      return {
+        label: model.name,
+        value: `${model.path}:SDXL`,
+      };
+    }),
+  };
+});
+
 const generatedModelOptions: ComputedRef<SelectMixedOption[]> = computed(() => {
   return [
     pyTorchOptions.value,
     aitOptions.value,
+    sdxlOptions.value,
     onnxOptions.value,
     extraOptions.value,
   ];

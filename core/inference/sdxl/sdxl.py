@@ -24,7 +24,6 @@ from core.flags import RefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import get_weighted_text_embeddings, change_scheduler
-from core.inference.pytorch.lwp_sdxl import StableDiffusionXLLongPromptWeightingPipeline
 from core.inference_callbacks import (
     img2img_callback,
     inpaint_callback,
@@ -38,6 +37,8 @@ from core.types import (
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
+
+from .pipeline import StableDiffusionXLLongPromptWeightingPipeline
 
 logger = logging.getLogger(__name__)
 
@@ -165,7 +166,6 @@ class SDXLStableDiffusion(InferenceModel):
                 width=job.data.width,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
                 generator=generator,
@@ -198,7 +198,6 @@ class SDXLStableDiffusion(InferenceModel):
                     strength=flags.strength,
                     num_inference_steps=flags.steps,
                     guidance_scale=job.data.guidance_scale,
-                    self_attention_scale=job.data.self_attention_scale,
                     negative_prompt=job.data.negative_prompt,
                     generator=generator,
                     callback=txt2img_callback,
@@ -278,7 +277,6 @@ class SDXLStableDiffusion(InferenceModel):
                 image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
@@ -336,7 +334,6 @@ class SDXLStableDiffusion(InferenceModel):
                 mask_image=input_mask_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 generator=generator,
