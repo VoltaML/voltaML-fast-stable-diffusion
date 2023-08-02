@@ -283,7 +283,6 @@ class ModelResponse:
     valid: bool
     vae: str
     state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
-    loras: List[str] = field(default_factory=list)
     textual_inversions: List[str] = field(default_factory=list)
 
 
@@ -326,3 +325,32 @@ class DeleteModelRequest:
 
     model_path: str
     model_type: Literal["pytorch", "lora", "textual-inversion", "aitemplate"]
+
+
+@dataclass
+class Capabilities:
+    "Dataclass for capabilities of a GPU"
+
+    # ["cpu", "cuda", "directml", "mps", "xpu", "vulkan"]
+    supported_backends: List[str] = field(default_factory=lambda: ["cpu"])
+    # ["float16", "float32", "bfloat16"]
+    supported_precisions_gpu: List[str] = field(default_factory=lambda: ["float32"])
+    # ["float16", "float32", "bfloat16"]
+    supported_precisions_cpu: List[str] = field(default_factory=lambda: ["float32"])
+
+    supported_torch_compile_backends: List[str] = field(
+        default_factory=lambda: ["inductor"]
+    )
+
+    # Does he have bitsandbytes installed?
+    supports_int8: bool = False
+
+    # Does the current build support xformers?
+    # Useful for e.g. torch nightlies
+    supports_xformers: bool = False
+
+    # Volta+ (>=7.0)
+    has_tensor_cores: bool = True
+
+    # Ampere+ (>=8.6)
+    has_tensorfloat: bool = False

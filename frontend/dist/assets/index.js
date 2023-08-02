@@ -39528,6 +39528,40 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   }
 });
 const CollapsibleNavbar_vue_vue_type_style_index_0_lang = "";
+const loc = window.location;
+let new_uri;
+if (loc.protocol === "https:") {
+  new_uri = "wss:";
+} else {
+  new_uri = "ws:";
+}
+const serverUrl = loc.protocol + "//" + loc.host;
+const webSocketUrl = new_uri + "//" + loc.host;
+const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
+const defaultCapabilities = {
+  supported_backends: ["cpu"],
+  supported_precisions_cpu: ["float32"],
+  supported_precisions_gpu: ["float32"],
+  supported_torch_compile_backends: ["inductor"],
+  has_tensorfloat: false,
+  has_tensor_cores: false,
+  supports_xformers: false,
+  supports_int8: false
+};
+async function getCapabilities() {
+  try {
+    const response = await fetch(`${serverUrl}/api/hardware/capabilities`);
+    if (response.status !== 200) {
+      console.error("Server is not responding");
+      return defaultCapabilities;
+    }
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    console.error(error);
+    return defaultCapabilities;
+  }
+}
 const useState = defineStore("state", () => {
   const state = reactive({
     progress: 0,
@@ -39626,9 +39660,14 @@ const useState = defineStore("state", () => {
     secrets: {
       huggingface: "ok"
     },
-    autofill: []
+    autofill: [],
+    capabilities: defaultCapabilities
+    // Should get replaced at runtime
   });
-  return { state };
+  async function fetchCapabilites() {
+    state.capabilities = await getCapabilities();
+  }
+  return { state, fetchCapabilites };
 });
 const _hoisted_1$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
@@ -39705,16 +39744,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const loc = window.location;
-let new_uri;
-if (loc.protocol === "https:") {
-  new_uri = "wss:";
-} else {
-  new_uri = "ws:";
-}
-const serverUrl = loc.protocol + "//" + loc.host;
-const webSocketUrl = new_uri + "//" + loc.host;
-const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
 const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://huggingface.co/settings/tokens"
@@ -39891,6 +39920,14 @@ function processWebSocket(message, global2, notificationProvider) {
       if (message.data.huggingface === "missing") {
         global2.state.secrets.huggingface = "missing";
       }
+      break;
+    }
+    case "refresh_capabilities": {
+      global2.fetchCapabilites().then(() => {
+        console.log("Capabilities refreshed");
+      }).catch((error) => {
+        console.error(error);
+      });
       break;
     }
     default: {
@@ -40605,6 +40642,7 @@ const defaultSettings = {
     websocket_perf_interval: 1,
     image_preview_delay: 2,
     clip_skip: 1,
+    clip_quantization: "full",
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
@@ -40886,7 +40924,11 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
+<<<<<<< HEAD
 const _withScopeId = (n) => (pushScopeId("data-v-e442da1d"), n = n(), popScopeId(), n);
+=======
+const _withScopeId = (n) => (pushScopeId("data-v-2cf1de9c"), n = n(), popScopeId(), n);
+>>>>>>> experimental
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40906,7 +40948,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
+<<<<<<< HEAD
       "c5bf0f7c": backgroundColor.value
+=======
+      "67e22a10": backgroundColor.value
+>>>>>>> experimental
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -40956,7 +41002,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           valid: true,
           state: "not loaded",
           vae: "default",
-          loras: [],
           textual_inversions: []
         },
         ...filteredModels.value.filter((model) => {
@@ -41027,29 +41072,34 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 conf.data.settings.model = null;
               }
             }
-            if (conf.data.settings.model) {
-              const spl = conf.data.settings.model.name.split("__")[1];
-              if (spl) {
-                const xspl = spl.split("x");
-                const width = parseInt(xspl[0]);
-                const height = parseInt(xspl[1]);
-                const batch_size = parseInt(xspl[2]);
-                conf.data.settings.aitDim.width = width;
-                conf.data.settings.aitDim.height = height;
-                conf.data.settings.aitDim.batch_size = batch_size;
+            try {
+              if (conf.data.settings.model) {
+                const spl = conf.data.settings.model.name.split("__")[1];
+                const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
+                const matches = regex.exec(spl);
+                console.log("Match: ", matches);
+                if (matches) {
+                  const width = matches[1].split("-").map((x) => parseInt(x));
+                  const height = matches[2].split("-").map((x) => parseInt(x));
+                  const batch_size = matches[3].split("-").map((x) => parseInt(x));
+                  conf.data.settings.aitDim.width = width;
+                  conf.data.settings.aitDim.height = height;
+                  conf.data.settings.aitDim.batch_size = batch_size;
+                } else {
+                  throw new Error("Invalid model name for AIT dimensions parser");
+                }
               } else {
-                conf.data.settings.aitDim.width = void 0;
-                conf.data.settings.aitDim.height = void 0;
-                conf.data.settings.aitDim.batch_size = void 0;
+                throw new Error("No model, cannot parse AIT dimensions");
               }
-            } else {
+            } catch (e) {
+              console.warn(e);
               conf.data.settings.aitDim.width = void 0;
               conf.data.settings.aitDim.height = void 0;
               conf.data.settings.aitDim.batch_size = void 0;
             }
             const autofillKeys = [];
             for (const model of global2.state.models) {
-              if (model.backend === "LoRA") {
+              if (model.backend === "LoRA" || model.backend === "LyCORIS") {
                 autofillKeys.push(`<lora:${model.name}:1.0>`);
               }
             }
@@ -41152,22 +41202,26 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       } else {
         message.error("Model not found");
       }
-      if (conf.data.settings.model) {
-        const spl = conf.data.settings.model.name.split("__")[1];
-        if (spl) {
-          const xspl = spl.split("x");
-          const width = parseInt(xspl[0]);
-          const height = parseInt(xspl[1]);
-          const batch_size = parseInt(xspl[2]);
-          conf.data.settings.aitDim.width = width;
-          conf.data.settings.aitDim.height = height;
-          conf.data.settings.aitDim.batch_size = batch_size;
+      try {
+        if (conf.data.settings.model) {
+          const spl = conf.data.settings.model.name.split("__")[1];
+          const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
+          const match2 = spl.match(regex);
+          if (match2) {
+            const width = match2[0].split("-").map((x) => parseInt(x));
+            const height = match2[1].split("-").map((x) => parseInt(x));
+            const batch_size = match2[2].split("-").map((x) => parseInt(x));
+            conf.data.settings.aitDim.width = width;
+            conf.data.settings.aitDim.height = height;
+            conf.data.settings.aitDim.batch_size = batch_size;
+          } else {
+            throw new Error("Invalid model name for AIT dimensions parser");
+          }
         } else {
-          conf.data.settings.aitDim.width = void 0;
-          conf.data.settings.aitDim.height = void 0;
-          conf.data.settings.aitDim.batch_size = void 0;
+          throw new Error("No model, cannot parse AIT dimensions");
         }
-      } else {
+      } catch (e) {
+        console.warn(e);
         conf.data.settings.aitDim.width = void 0;
         conf.data.settings.aitDim.height = void 0;
         conf.data.settings.aitDim.batch_size = void 0;
@@ -41854,7 +41908,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
+<<<<<<< HEAD
 const TopBar_vue_vue_type_style_index_0_scoped_e442da1d_lang = "";
+=======
+const TopBar_vue_vue_type_style_index_0_scoped_2cf1de9c_lang = "";
+>>>>>>> experimental
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41862,7 +41920,11 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
+<<<<<<< HEAD
 const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-e442da1d"]]);
+=======
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2cf1de9c"]]);
+>>>>>>> experimental
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -41873,13 +41935,25 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
+<<<<<<< HEAD
       "29cef8cc": backgroundColor.value,
       "4a43647e": theme.value.common.popoverColor,
       "e4e5ec3e": theme.value.common.borderRadius,
       "1beee664": theme.value.common.pressedColor,
       "440cdb18": theme.value.common.primaryColorHover
+=======
+      "16223ad6": backgroundColor.value,
+      "1fedac06": theme.value.common.popoverColor,
+      "ba9033c6": theme.value.common.borderRadius,
+      "3119c2a0": theme.value.common.pressedColor,
+      "aca37748": theme.value.common.primaryColorHover
+>>>>>>> experimental
     }));
     const settings = useSettings();
+    const global2 = useState();
+    global2.fetchCapabilites().then(() => {
+      console.log("Capabilities successfully fetched from the server");
+    });
     const theme = computed(() => {
       if (settings.data.settings.frontend.theme === "dark") {
         document.body.style.backgroundColor = "#121215";
@@ -41990,12 +42064,20 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
+<<<<<<< HEAD
       component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/clock.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
+=======
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/v4.js","assets/Switch.js"] : void 0)
+>>>>>>> experimental
     },
     {
       path: "/image2image",
       name: "image2image",
+<<<<<<< HEAD
       component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
+=======
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
+>>>>>>> experimental
     },
     {
       path: "/extra",
@@ -42005,7 +42087,11 @@ const router = createRouter({
     {
       path: "/models",
       name: "models",
+<<<<<<< HEAD
       component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Slider.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
+=======
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Slider.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
+>>>>>>> experimental
     },
     {
       path: "/about",
@@ -42020,7 +42106,7 @@ const router = createRouter({
     {
       path: "/test",
       name: "test",
-      component: () => __vitePreload(() => import("./TestView.js"), true ? [] : void 0)
+      component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js"] : void 0)
     },
     {
       path: "/settings",
@@ -42056,10 +42142,17 @@ export {
   NIcon as G,
   NTabPane as H,
   NTabs as I,
+<<<<<<< HEAD
   upscalerOptions as J,
   Fragment as K,
   renderList as L,
   NScrollbar as M,
+=======
+  Fragment as J,
+  watch as K,
+  upscalerOptions as L,
+  renderList as M,
+>>>>>>> experimental
   NGi as N,
   upperFirst$1 as O,
   toString as P,
@@ -42075,6 +42168,7 @@ export {
   indexMap as Z,
   _export_sfc as _,
   useSettings as a,
+<<<<<<< HEAD
   NDropdown as a$,
   onBeforeUnmount as a0,
   cB as a1,
@@ -42150,10 +42244,88 @@ export {
   cssrAnchorMetaName as b7,
   repeat as b8,
   beforeNextFrameOnce as b9,
+=======
+  isBrowser$3 as a$,
+  iconSwitchTransition as a0,
+  insideModal as a1,
+  insidePopover as a2,
+  inject as a3,
+  useMemo as a4,
+  useTheme as a5,
+  checkboxLight$1 as a6,
+  useRtl as a7,
+  createKey as a8,
+  useThemeClass as a9,
+  radioLight$1 as aA,
+  resolveWrappedSlot as aB,
+  flatten$2 as aC,
+  getSlot$1 as aD,
+  depx as aE,
+  formatLength as aF,
+  NScrollbar$1 as aG,
+  onBeforeUnmount as aH,
+  off as aI,
+  ChevronDownIcon as aJ,
+  NDropdown as aK,
+  pxfy as aL,
+  get as aM,
+  NBaseLoading as aN,
+  ChevronRightIcon as aO,
+  VResizeObserver as aP,
+  warn$2 as aQ,
+  cssrAnchorMetaName as aR,
+  VVirtualList as aS,
+  NEmpty as aT,
+  repeat as aU,
+  beforeNextFrameOnce as aV,
+  fadeInScaleUpTransition as aW,
+  Transition as aX,
+  dataTableLight$1 as aY,
+  loadingBarApiInjectionKey as aZ,
+  throwError as a_,
+  createId as aa,
+  NIconSwitchTransition as ab,
+  on as ac,
+  popselectLight$1 as ad,
+  NInternalSelectMenu as ae,
+  createTreeMate as af,
+  happensIn as ag,
+  nextTick as ah,
+  keysOf as ai,
+  createTmOptions as aj,
+  keep as ak,
+  createRefSetter as al,
+  mergeEventHandlers as am,
+  omit as an,
+  NPopover as ao,
+  popoverBaseProps as ap,
+  cNotM as aq,
+  useLocale as ar,
+  watchEffect as as,
+  resolveSlot as at,
+  NBaseIcon as au,
+  useAdjustedTo as av,
+  paginationLight$1 as aw,
+  ellipsisLight$1 as ax,
+  onDeactivated as ay,
+  mergeProps as az,
+  useMessage as b,
+  AddIcon as b0,
+  NProgress as b1,
+  NFadeInExpandTransition as b2,
+  EyeIcon as b3,
+  fadeInHeightExpandTransition as b4,
+  Teleport as b5,
+  uploadLight$1 as b6,
+  useCssVars as b7,
+  reactive as b8,
+  onMounted as b9,
+>>>>>>> experimental
   useNotification as bA,
   defaultSettings as bB,
   urlFromPath as bC,
   useRouter as bD,
+<<<<<<< HEAD
   useCompitable as bE,
   descriptionsLight$1 as bF,
   fadeInTransition as bG,
@@ -42162,6 +42334,16 @@ export {
   LazyTeleport as bJ,
   zindexable$1 as bK,
   kebabCase$1 as bL,
+=======
+  fadeInTransition as bE,
+  imageLight as bF,
+  isMounted as bG,
+  LazyTeleport as bH,
+  zindexable$1 as bI,
+  kebabCase$1 as bJ,
+  useCompitable as bK,
+  descriptionsLight$1 as bL,
+>>>>>>> experimental
   withModifiers as bM,
   NAlert as bN,
   inputNumberLight$1 as bO,
@@ -42173,6 +42355,7 @@ export {
   VTarget as bU,
   VFollower as bV,
   sliderLight$1 as bW,
+<<<<<<< HEAD
   fadeInScaleUpTransition as ba,
   dataTableLight$1 as bb,
   loadingBarApiInjectionKey as bc,
@@ -42195,6 +42378,30 @@ export {
   stepsLight$1 as bt,
   FinishedIcon as bu,
   ErrorIcon$1 as bv,
+=======
+  normalizeStyle as ba,
+  NText as bb,
+  huggingfaceModelsFile as bc,
+  NModal as bd,
+  stepsLight$1 as be,
+  FinishedIcon as bf,
+  ErrorIcon$1 as bg,
+  upperFirst$1 as bh,
+  toString as bi,
+  createCompounder as bj,
+  cloneVNode as bk,
+  onBeforeUpdate as bl,
+  indexMap as bm,
+  onUpdated as bn,
+  resolveSlotWithProps as bo,
+  withDirectives as bp,
+  vShow as bq,
+  carouselLight$1 as br,
+  getPreciseEventTarget as bs,
+  rateLight as bt,
+  color2Class as bu,
+  NTag as bv,
+>>>>>>> experimental
   getCurrentInstance as bw,
   formLight$1 as bx,
   commonVariables$m as by,

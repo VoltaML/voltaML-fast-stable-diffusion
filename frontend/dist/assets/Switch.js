@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { a1 as cB, a2 as cE, ar as iconSwitchTransition, a3 as c, a4 as cM, aL as cNotM, d as defineComponent, X as useConfig, aa as useTheme, ap as useFormItem, E as ref, a6 as toRef, a5 as useMergedState, c as computed, ab as useThemeClass, bR as isSlotEmpty, D as h, aV as resolveWrappedSlot, bS as switchLight, ax as createKey, b0 as pxfy, aX as depx, az as NIconSwitchTransition, b2 as NBaseLoading, aq as call } from "./index.js";
+=======
+import { Y as cB, Z as cE, a0 as iconSwitchTransition, X as c, $ as cM, aq as cNotM, d as defineComponent, Q as useConfig, a5 as useTheme, R as useFormItem, E as ref, U as toRef, S as useMergedState, c as computed, a9 as useThemeClass, bR as isSlotEmpty, D as h, aB as resolveWrappedSlot, bS as switchLight, a8 as createKey, aL as pxfy, aE as depx, ab as NIconSwitchTransition, aN as NBaseLoading, W as call } from "./index.js";
+>>>>>>> experimental
 const style = cB("switch", `
  height: var(--n-height);
  min-width: var(--n-width);

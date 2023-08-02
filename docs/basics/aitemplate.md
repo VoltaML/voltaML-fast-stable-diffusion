@@ -8,12 +8,8 @@
 
 - No LoRA support
 - No Textual Inversion support
-- Max 64 tokens
-- Locked down resolution
-
-::: info
-Some of these downsides will be fixed with the Dynamic AITemplate Acceleration
-:::
+- Max 64 tokens (\<Volta v0.3)
+- Locked down resolution (\<Volta v0.3)
 
 ## Acceleration
 
@@ -28,7 +24,7 @@ Make sure that you are one the correct page as can be seen in the image below.
 5. Accelerate Button - click this to start the acceleration process
 
 ::: warning
-Due to extreme load on the CPU, connection between the browser and the server may be lost. If this happens, you need to click the reconnect button - acceleration should not be affected.
+Due to extreme load on the CPU, connection between the browser and the server will be lost. If this happens, you need to click the reconnect button - acceleration should not be affected.
 :::
 
 ## How to use
@@ -40,5 +36,5 @@ Due to extreme load on the CPU, connection between the browser and the server ma
 ![AITemplate Acceleration](../static/basics/aitemplate-load.webp)
 
 ::: danger IMPORTANT
-ControlNet is only available for the 512x512 model - we are working on a fix
+ControlNet is only available for the 512x512 model - we are working on a fix **(works on experimental branch)**
 :::

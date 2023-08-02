@@ -140,10 +140,7 @@ class APIConfig:
 
     # Device settings
     device_id: int = 0
-    device_type: Literal[
-        "cpu", "cuda", "mps", "directml", "intel", "vulkan", "iree"
-    ] = "cuda"
-    iree_target: Literal["cuda", "vulkan", "llvm", "interpreted"] = "vulkan"
+    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan"] = "cuda"
 
     # Critical
     enable_shutdown: bool = True
@@ -153,6 +150,7 @@ class APIConfig:
 
     # CLIP
     clip_skip: int = 1
+    clip_quantization: Literal["full", "int8", "int4"] = "full"
 
     # Autoload
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
@@ -190,22 +188,25 @@ class APIConfig:
 
     @property
     def device(self):
-        "Return the device string"
+        "Return the device"
 
         if self.device_type == "intel":
             from core.inference.functions import is_ipex_available
 
-            return "xpu" if is_ipex_available() else "cpu"
-        if self.device_type == "cpu":
-            return "cpu"
-        if self.device_type == "vulkan":
-            return "vulkan"
+            return torch.device("xpu" if is_ipex_available() else "cpu")
+
+        if self.device_type in ["cpu", "mps"]:
+            return torch.device(self.device_type)
+
+        if self.device_type in ["vulkan", "cuda"]:
+            return torch.device(f"{self.device_type}:{self.device_id}")
+
         if self.device_type == "directml":
             import torch_directml  # pylint: disable=import-error
 
             return torch_directml.device()
-
-        return f"{self.device_type}:{self.device_id}"
+        else:
+            raise ValueError(f"Device type {self.device_type} not supported")
 
 
 @dataclass

@@ -1,13 +1,13 @@
 <template>
   <NTabs type="segment" v-model:value="state.state.extra.tab">
     <NTabPane name="Upscale">
-      <RealESRGAN />
+      <Upscale />
     </NTabPane>
   </NTabs>
 </template>
 
 <script lang="ts" setup>
-import RealESRGAN from "@/components/extra/RealESRGAN.vue";
+import Upscale from "@/components/extra/Upscale.vue";
 import { useState } from "@/store/state";
 import { NTabPane, NTabs } from "naive-ui";
 

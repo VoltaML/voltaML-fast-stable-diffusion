@@ -1,24 +1,24 @@
+import io
 import json
 import logging
-import io
 import os
+from functools import partialmethod
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
-from functools import partialmethod
 
+import requests
 import torch
 from omegaconf import OmegaConf
 from diffusers import (
     StableDiffusionPipeline,
-    StableDiffusionXLPipeline,
     DiffusionPipeline,
     AutoencoderKL,
 )
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
-    download_from_original_stable_diffusion_ckpt,
     assign_to_checkpoint,
     conv_attn_to_linear,
     create_vae_diffusers_config,
+    download_from_original_stable_diffusion_ckpt,
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
 )
@@ -42,15 +42,14 @@ from huggingface_hub.utils._errors import (
     RepositoryNotFoundError,
     RevisionNotFoundError,
 )
+from omegaconf import OmegaConf
 from packaging import version
-import requests
 from requests import HTTPError
-from rich.console import Console
+from transformers import CLIPTextModel
 
 from core.config import config
 from core.files import get_full_model_path
 
-console = Console()
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
@@ -107,16 +106,6 @@ def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
         from onnxsim import simplify  # pylint: disable=import-error,unused-import
-
-        return True
-    except ImportError:
-        return False
-
-
-def is_bitsandbytes_available():
-    "Checks whether bitsandbytes is available."
-    try:
-        import bitsandbytes  # pylint: disable=import-error,unused-import
 
         return True
     except ImportError:
@@ -374,7 +363,7 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
 
 def load_pytorch_pipeline(
     model_id_or_path: str,
-    device: str = "cuda",
+    device: Union[str, torch.device] = "cuda",
     optimize: bool = True,
     is_for_aitemplate: bool = False,
 ) -> StableDiffusionPipeline:
@@ -383,46 +372,42 @@ def load_pytorch_pipeline(
     logger.info(f"Loading {model_id_or_path} with {config.api.data_type}")
 
     if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
-        with console.status("[bold green]Loading model from checkpoint..."):
-            use_safetensors = ".safetensors" in model_id_or_path
-            if use_safetensors:
-                logger.info("Loading model as safetensors")
-            else:
-                logger.info("Loading model as checkpoint")
+        use_safetensors = ".safetensors" in model_id_or_path
+        if use_safetensors:
+            logger.info("Loading model as safetensors")
+        else:
+            logger.info("Loading model as checkpoint")
 
-            # This function does not inherit the channels so we need to hack it like this
-            in_channels = 9 if "inpaint" in model_id_or_path else 4
+        # This function does not inherit the channels so we need to hack it like this
+        in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
 
-            # I never knew this existed, but this is pretty handy :)
-            # cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
-            try:
-                pipe = download_from_original_stable_diffusion_ckpt(
-                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                    from_safetensors=use_safetensors,
-                    extract_ema=True,
-                    load_safety_checker=False,
-                    num_in_channels=in_channels,
-                )
-            except KeyError:
-                pipe = download_from_original_stable_diffusion_ckpt(
-                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                    from_safetensors=use_safetensors,
-                    extract_ema=False,
-                    load_safety_checker=False,
-                    num_in_channels=in_channels,
-                )
-    else:
-        with console.status(
-            f"[bold green]Loading model from {'HuggingFace Hub' if '/' in model_id_or_path else 'HuggingFace model'}..."
-        ):
-            pipe = DiffusionPipeline.from_pretrained(
-                pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-                torch_dtype=config.api.dtype,
-                safety_checker=None,
-                requires_safety_checker=False,
-                feature_extractor=None,
-                low_cpu_mem_usage=True,
+        # I never knew this existed, but this is pretty handy :)
+        # cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
+        try:
+            pipe = download_from_original_stable_diffusion_ckpt(
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+                extract_ema=True,
+                load_safety_checker=False,
+                num_in_channels=in_channels,
             )
+        except KeyError:
+            pipe = download_from_original_stable_diffusion_ckpt(
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+                extract_ema=False,
+                load_safety_checker=False,
+                num_in_channels=in_channels,
+            )
+    else:
+        pipe = DiffusionPipeline.from_pretrained(
+            pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
+            torch_dtype=config.api.dtype,
+            safety_checker=None,
+            requires_safety_checker=False,
+            feature_extractor=None,
+            low_cpu_mem_usage=True,
+        )
 
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
@@ -442,6 +427,36 @@ def load_pytorch_pipeline(
                     None, config=conf, state_dict=text_encoder.state_dict()
                 ),
             )
+            if config.api.clip_quantization != "full":
+                from transformers import BitsAndBytesConfig
+                from transformers.utils.bitsandbytes import (
+                    get_keys_to_not_convert,
+                    replace_with_bnb_linear,
+                    set_module_quantized_tensor_to_device,
+                )
+
+                state_dict = text_encoder.state_dict()  # type: ignore
+                bnbconfig = BitsAndBytesConfig(
+                    load_in_8bit=config.api.clip_quantization == "int8",
+                    load_in_4bit=config.api.clip_quantization == "int4",
+                )
+
+                dont_convert = get_keys_to_not_convert(text_encoder)
+                text_encoder.is_loaded_in_8bit = True  # type: ignore
+                text_encoder.is_quantized = True  # type: ignore
+                nt = replace_with_bnb_linear(
+                    pipe.text_encoder.to(config.api.device, config.api.dtype),  # type: ignore
+                    dont_convert,
+                    quantization_config=bnbconfig,
+                )
+
+                # This shouldn't even be needed, but diffusers likes meta tensors a bit too much
+                # Not that I don't see their purpose, it's just less general
+                for k, v in state_dict.items():
+                    set_module_quantized_tensor_to_device(nt, k, config.api.device, v)
+                setattr(pipe, name, nt)
+                del state_dict, dont_convert
+        del conf
 
     if optimize:
         from core.optimizations import optimize_model

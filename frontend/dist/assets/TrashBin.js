@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { R as replaceable, D as h, d as defineComponent, bf as isBrowser, aa as useTheme, U as createInjectionKey, a3 as c, a1 as cB, bG as fadeInTransition, ba as fadeInScaleUpTransition, aL as cNotM, a6 as toRef, bH as imageLight, E as ref, aM as useLocale, a9 as watch, a0 as onBeforeUnmount, aj as off, V as inject, c as computed, X as useConfig, ab as useThemeClass, bI as isMounted, bJ as LazyTeleport, af as withDirectives, bK as zindexable, ah as Transition, K as Fragment, aO as NBaseIcon, ag as vShow, an as on, al as normalizeStyle, bL as kebabCase, q as NTooltip, b9 as beforeNextFrameOnce, ay as createId, T as provide, bw as getCurrentInstance, $ as onMounted, a7 as watchEffect, e as openBlock, f as createElementBlock, n as createBaseVNode } from "./index.js";
+=======
+import { P as replaceable, D as h, d as defineComponent, a$ as isBrowser, a5 as useTheme, V as createInjectionKey, X as c, Y as cB, bE as fadeInTransition, aW as fadeInScaleUpTransition, aq as cNotM, U as toRef, bF as imageLight, E as ref, ar as useLocale, K as watch, aH as onBeforeUnmount, aI as off, a3 as inject, c as computed, Q as useConfig, a9 as useThemeClass, bG as isMounted, bH as LazyTeleport, bp as withDirectives, bI as zindexable, aX as Transition, J as Fragment, au as NBaseIcon, bq as vShow, ac as on, ba as normalizeStyle, bJ as kebabCase, q as NTooltip, aV as beforeNextFrameOnce, aa as createId, T as provide, bw as getCurrentInstance, b9 as onMounted, as as watchEffect, e as openBlock, f as createElementBlock, n as createBaseVNode } from "./index.js";
+>>>>>>> experimental
 const RotateClockwiseIcon = replaceable("rotateClockwise", h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },

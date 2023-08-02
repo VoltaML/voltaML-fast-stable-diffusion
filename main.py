@@ -9,8 +9,6 @@ import warnings
 from argparse import ArgumentParser
 from pathlib import Path
 
-from transformers import logging as transformers_logging
-
 from core.install_requirements import (  # pylint: disable=wrong-import-position
     commit_hash,
     create_environment,
@@ -90,6 +88,8 @@ Path("data/onnx").mkdir(exist_ok=True)
 Path("data/models").mkdir(exist_ok=True)
 Path("data/outputs").mkdir(exist_ok=True)
 Path("data/lora").mkdir(exist_ok=True)
+Path("data/vae").mkdir(exist_ok=True)
+Path("data/upscaler").mkdir(exist_ok=True)
 Path("data/textual-inversion").mkdir(exist_ok=True)
 
 # Suppress some annoying warnings
@@ -218,9 +218,6 @@ def checks():
 
     args_with_extras = parser.parse_args(args=app_args)
 
-    if args_with_extras.log_level == "INFO":
-        transformers_logging.set_verbosity_error()
-
     # Inject better logger
     from rich.logging import RichHandler
 
@@ -284,4 +281,13 @@ if __name__ == "__main__":
         main(exit_after_init=args.install_only)
     except KeyboardInterrupt:
         logger.info("Received keyboard interrupt, exiting...")
+
+        from core.shared_dependent import progress
+
+        progress.stop()
+
         sys.exit(0)
+
+    from core.shared_dependent import progress
+
+    progress.stop()

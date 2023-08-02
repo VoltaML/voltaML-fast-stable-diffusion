@@ -6,7 +6,7 @@
     <NTabPane name="Huggingface">
       <HuggingfaceDownload />
     </NTabPane>
-    <NTabPane name="CivitAI">
+    <NTabPane name="CivitAI" style="padding-top: 0">
       <CivitAIDownload />
     </NTabPane>
     <NTabPane name="Convert">

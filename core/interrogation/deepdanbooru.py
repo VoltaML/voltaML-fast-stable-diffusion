@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 import torch
@@ -13,9 +13,9 @@ from torch.ao.quantization.quantize_fx import (
     convert_to_reference_fx,
     prepare_fx,
 )
-from tqdm import tqdm
 
 from core.config import config
+from core.inference.utilities import progress_bar
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.interrogation.clip import is_cpu
 from core.interrogation.models.deepdanbooru_model import DeepDanbooruModel
@@ -30,7 +30,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
 
     def __init__(
         self,
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
         quantized: bool = False,
         autoload: bool = False,
     ):
@@ -68,7 +68,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
                 qconfig_dict,
                 (torch.randn(1, 512, 512, 3),),  # great syntax pytorch :)
             )
-            for _ in tqdm(range(25), unit="it", unit_scale=False, desc="Warming up"):
+            for _ in progress_bar(range(25)):
                 prepared(torch.randn(1, 512, 512, 3))
 
             if is_cpu(self.device):

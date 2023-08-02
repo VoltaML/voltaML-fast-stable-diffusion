@@ -1,7 +1,7 @@
 import gc
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import torch
 
@@ -19,7 +19,7 @@ class InterrogationResult:
 class InterrogationModel(ABC):
     "Base class for all interrogator models that will be used in the API"
 
-    def __init__(self, device: str = "cuda"):
+    def __init__(self, device: Union[str, torch.device] = "cuda"):
         self.device = device
         self.backend: Backend = "unknown"
 

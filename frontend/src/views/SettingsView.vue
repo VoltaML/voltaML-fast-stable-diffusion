@@ -36,7 +36,6 @@
 </template>
 
 <script lang="ts" setup>
-import { BurnerClock } from "@/clock";
 import APISettings from "@/components/settings/APISettings.vue";
 import BotSettings from "@/components/settings/BotSettings.vue";
 import ExtraSettings from "@/components/settings/ExtraSettings.vue";
@@ -100,17 +99,7 @@ function saveSettings() {
   });
 }
 
-const conf = useSettings();
-
-// Burner clock
-const burner = new BurnerClock(
-  conf.defaultSettings,
-  conf,
-  saveSettings,
-  3000,
-  false
-);
 onUnmounted(() => {
-  burner.cleanup();
+  saveSettings();
 });
 </script>

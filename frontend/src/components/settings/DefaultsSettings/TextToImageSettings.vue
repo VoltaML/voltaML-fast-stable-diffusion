@@ -28,13 +28,13 @@
       <NFormItem label="Height">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.height"
-          :step="8"
+          :step="1"
         />
       </NFormItem>
       <NFormItem label="Width">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.width"
-          :step="8"
+          :step="1"
         />
       </NFormItem>
       <NFormItem label="Sampler">

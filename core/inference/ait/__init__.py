@@ -1,0 +1,1 @@
+from .aitemplate import AITemplateStableDiffusion

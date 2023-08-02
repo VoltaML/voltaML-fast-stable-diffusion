@@ -7,42 +7,43 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
 
 import torch
+from diffusers.utils import is_xformers_available
 from PIL import Image
 
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
+from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
-from core.inference.aitemplate import AITemplateStableDiffusion
-from core.inference.esrgan.upscale import Upscaler
-from core.inference.functions import download_model
+from core.inference.ait import AITemplateStableDiffusion
+from core.inference.esrgan import RealESRGAN, Upscaler
+from core.inference.functions import download_model, is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.pytorch.sdxl import SDXLStableDiffusion
-from core.inference.real_esrgan import RealESRGAN
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
     AITemplateDynamicBuildRequest,
+    Capabilities,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
-    VaeLoadRequest,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
+    VaeLoadRequest,
 )
 from core.utils import convert_to_image, image_grid
 
 if TYPE_CHECKING:
-    from core.inference.onnx_sd import OnnxStableDiffusion
+    from core.inference.onnx import OnnxStableDiffusion
 
 logger = logging.getLogger(__name__)
 
@@ -61,6 +62,76 @@ class GPU:
                 "OnnxStableDiffusion",
             ],
         ] = {}
+        self.capabilities = self._get_capabilities()
+
+    def _get_capabilities(self) -> Capabilities:
+        "Returns all of the capabilities of this GPU."
+        cap = Capabilities()
+        if torch.cuda.is_available():
+            cap.supported_backends.append("cuda")
+        try:
+            import torch_directml  # pylint: disable=unused-import
+
+            cap.supported_backends.append("directml")
+        except ImportError:
+            pass
+        if torch.backends.mps.is_available():  # type: ignore
+            cap.supported_backends.append("mps")
+        if torch.is_vulkan_available():
+            cap.supported_backends.append("vulkan")
+        if is_ipex_available():
+            cap.supported_backends.append("xpu")
+
+        test_suite = ["float16", "bfloat16"]
+        support_map: Dict[str, List[str]] = {}
+        for device in [torch.device("cpu"), config.api.device]:
+            support_map[device.type] = []
+            for dt in test_suite:
+                dtype = getattr(torch, dt)
+                a = torch.tensor([1.0], device=device, dtype=dtype)
+                b = torch.tensor([2.0], device=device, dtype=dtype)
+                try:
+                    torch.matmul(a, b)
+                    support_map[device.type].append(dt)
+                except RuntimeError:
+                    pass
+        for t, s in support_map.items():
+            if t == "cpu":
+                cap.supported_precisions_cpu = ["float32"] + s
+            else:
+                cap.supported_precisions_gpu = ["float32"] + s
+        try:
+            cap.supported_torch_compile_backends = (
+                torch._dynamo.list_backends()  # type: ignore # pylint: disable=protected-access
+            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
+        if torch.cuda.is_available():
+            try:
+                import bitsandbytes as bnb  # pylint: disable=import-error
+                import bitsandbytes.functional as F  # pylint: disable=import-error
+
+                a = torch.tensor([1.0]).cuda()
+                b, b_state = F.quantize_fp4(torch.tensor([2.0]).cuda())
+                bnb.matmul_4bit(a, b, quant_state=b_state)  # type: ignore
+                cap.supports_int8 = True
+                logger.debug("GPU supports int8")
+            except Exception:  # pylint: disable=broad-except
+                logger.debug("GPU does not support int8")
+
+        cap.supports_xformers = is_xformers_available()
+        if torch.cuda.is_available():
+            caps = torch.cuda.get_device_capability(self.gpu_id)
+            if caps[0] < 7:
+                cap.has_tensor_cores = False
+
+            if caps[0] == 8 and caps[1] >= 6:
+                cap.has_tensorfloat = True
+            elif caps[0] >= 9:
+                cap.has_tensorfloat = True
+
+        return cap
 
     def vram_free(self) -> float:
         "Returns the amount of free VRAM on the GPU in MB."
@@ -142,7 +213,7 @@ class GPU:
                 logger.debug("Generating with AITemplate")
                 images: List[Image.Image] = model.generate(job)
             else:
-                from core.inference.onnx_sd import OnnxStableDiffusion
+                from core.inference.onnx import OnnxStableDiffusion
 
                 if isinstance(model, OnnxStableDiffusion):
                     logger.debug("Generating with ONNX")
@@ -154,10 +225,6 @@ class GPU:
             return images
 
         try:
-            # Check width and height passed by the user
-            if job.data.width % 8 != 0 or job.data.height % 8 != 0:
-                raise DimensionError("Width and height must be divisible by 8")
-
             # Wait for turn in the queue
             await self.queue.wait_for_turn(job.data.id)
 
@@ -306,7 +373,7 @@ class GPU:
                     )
                 )
 
-                from core.inference.onnx_sd import OnnxStableDiffusion
+                from core.inference.onnx import OnnxStableDiffusion
 
                 pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
@@ -445,7 +512,7 @@ class GPU:
                 config.aitemplate.num_threads = request.threads
 
         def ait_build_thread_call():
-            from core.aitemplate.dynamic_compile import compile_diffusers
+            from core.aitemplate.compile import compile_diffusers
 
             compile_diffusers(
                 batch_size=request.batch_size,
@@ -466,7 +533,7 @@ class GPU:
     async def build_onnx_engine(self, request: ONNXBuildRequest):
         "Convert a model to a ONNX engine"
 
-        from core.inference.onnx_sd import OnnxStableDiffusion
+        from core.inference.onnx import OnnxStableDiffusion
 
         logger.debug(f"Building ONNX for {request.model_id}...")
 

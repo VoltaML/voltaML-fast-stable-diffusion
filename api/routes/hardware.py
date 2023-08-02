@@ -8,17 +8,6 @@ from core.shared import all_gpus, amd
 router = APIRouter(tags=["hardware"])
 
 
-@router.get("/driver")
-async def driver():
-    "Return the version of the NVIDIA driver"
-
-    if amd:
-        return "1.0.0"
-    from pynvml import nvml
-
-    return nvml.nvmlSystemGetDriverVersion()
-
-
 @router.get("/gpu_ids")
 async def gpu_ids() -> List[int]:
     "List all available GPUs"
@@ -50,24 +39,24 @@ async def gpu_memory(gpu_id: int):
         data = amdgpu.memory_info
         return (data["vram_size"], data["vram_size"] - amdgpu.query_vram_usage(), "b")
     else:
-        from pynvml import smi
+        from gpustat.core import GPUStatCollection
 
-        nvsmi = smi.nvidia_smi.getInstance()
-        assert nvsmi is not None
-
-        data = nvsmi.DeviceQuery("memory.free, memory.total")["gpu"]
         try:
-            data = data[gpu_id]
-            data = data["fb_memory_usage"]
-            total = data["total"]
-            free = data["free"]
-            unit = data["unit"]
-
-            return (total, free, unit)
+            gpu_data = GPUStatCollection.new_query().gpus[gpu_id]
+            return (gpu_data.memory_total, gpu_data.memory_free, "MB")
         except IndexError:
             raise HTTPException(  # pylint: disable=raise-missing-from
                 status_code=400, detail="GPU not found"
             )
+
+
+@router.get("/capabilities")
+async def capabilities():
+    "List of all the capabilities of this system"
+
+    from core.shared_dependent import gpu as _gpu
+
+    return _gpu.capabilities
 
 
 @router.get("/gpus")

@@ -15,12 +15,10 @@ from PIL import Image
 from rich import print  # pylint: disable=redefined-builtin
 from rich.progress import BarColumn, Progress, TaskID, TimeRemainingColumn
 
-import core.inference.esrgan.utils.dataops as ops
-from core.inference.esrgan.utils.architecture.RRDB import RRDBNet as ESRGAN
-from core.inference.esrgan.utils.architecture.SPSR import SPSRNet as SPSR
-from core.inference.esrgan.utils.architecture.SRVGG import (
-    SRVGGNetCompact as RealESRGANv2,
-)
+from .utils import dataops as ops
+from .utils.architecture.RRDB import RRDBNet as ESRGAN
+from .utils.architecture.SPSR import SPSRNet as SPSR
+from .utils.architecture.SRVGG import SRVGGNetCompact as RealESRGANv2
 
 
 class SeamlessOptions(str, Enum):

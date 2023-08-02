@@ -12,29 +12,20 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+# pylint: disable=unused-argument, protected-access
+
 from inspect import isfunction
-from typing import Optional
+from typing import Any, Optional
 
 from aitemplate.compiler import ops
 from aitemplate.frontend import Tensor, nn
 from aitemplate.testing import detect_target
 
-# pylint: disable=W0102
-
 USE_CUDA = detect_target().name() == "cuda"
 
 
-def get_shape(x):
-    shape = [it.value() for it in x._attrs["shape"]]
-    return shape
-
-
-def exists(val):
-    return val is not None
-
-
-def default(val, d):
-    if exists(val):
+def default(val, d) -> Any:
+    if val is not None:
         return val
     return d() if isfunction(d) else d
 
@@ -42,212 +33,255 @@ def default(val, d):
 class CrossAttention(nn.Module):
     def __init__(
         self,
-        query_dim,
-        context_dim=None,
-        heads=8,
-        dim_head=64,
-        dropout=0.0,
-        dtype="float16",
-    ):
+        query_dim: int,
+        context_dim: Optional[int] = None,
+        heads: int = 8,
+        dim_head: int = 64,
+        dropout: float = 0.0,
+        dtype: str = "float16",
+    ) -> None:
         super().__init__()
         inner_dim = dim_head * heads
         context_dim = default(context_dim, query_dim)
 
-        self.scale = dim_head**-0.5
-        self.heads = heads
-        self.dim_head = dim_head
+        self.scale: float = dim_head * -0.5
+        self.heads: int = heads
+        self.dim_head: int = dim_head
 
-        self.to_q_weight = nn.Parameter(shape=[inner_dim, query_dim], dtype=dtype)
-        self.to_k_weight = nn.Parameter(shape=[inner_dim, context_dim], dtype=dtype)
-        self.to_v_weight = nn.Parameter(shape=[inner_dim, context_dim], dtype=dtype)
+        self.to_q = nn.Linear(query_dim, inner_dim, bias=False, dtype=dtype)
+        self.to_k = nn.Linear(context_dim, inner_dim, bias=False, dtype=dtype)
+        self.to_v = nn.Linear(context_dim, inner_dim, bias=False, dtype=dtype)
         self.to_out = nn.Sequential(
-            nn.Linear(inner_dim, query_dim), nn.Dropout(dropout)  # type: ignore
+            nn.Linear(inner_dim, query_dim, dtype=dtype), nn.Dropout(dropout, dtype=dtype)  # type: ignore
         )
 
-    def forward(self, x, context=None, mask=None, residual=None):
-        nheads = self.heads
-        d = self.dim_head
-
-        layout = "20314" if USE_CUDA else "m2n3"
-
-        bs, seqlen, _ = get_shape(x)
-        q = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(  # type: ignore
-            ops.reshape()(x, [bs * seqlen, -1]), self.to_q_weight.tensor()
-        )
+    def forward(
+        self,
+        x: Tensor,
+        context: Optional[Tensor] = None,
+        mask: Optional[Tensor] = None,
+        residual: Optional[Tensor] = None,
+    ) -> Tensor:
+        q = self.to_q(x)
         context = default(context, x)
+        k = self.to_k(context)
+        v = self.to_v(context)
 
-        seqlen = get_shape(context)[1]
-        k = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(  # type: ignore
-            ops.reshape()(context, [bs * seqlen, -1]), self.to_k_weight.tensor()  # type: ignore
-        )
-        v = ops.gemm_rcr_permute(shape=(seqlen, 1, nheads), layout=layout)(  # type: ignore
-            ops.reshape()(context, [bs * seqlen, -1]), self.to_v_weight.tensor()  # type: ignore
-        )
+        bs = q.shape()[0]
 
-        if USE_CUDA:
-            attn_op = ops.mem_eff_attention(causal=False)
-            out = attn_op(
-                (ops.reshape()(q, [bs, nheads, -1, d])),
-                (ops.reshape()(k, [bs, nheads, -1, d])),
-                (ops.reshape()(v, [bs, nheads, -1, d])),
-            )
-        else:
-            OP = ops.bmm_softmax_bmm_permute(shape=(nheads,), scale=self.scale)
-            out = OP(
-                (ops.reshape()(q, [bs * nheads, -1, d])),
-                (ops.reshape()(k, [bs * nheads, -1, d])),
-                (ops.reshape()(v, [bs * nheads, -1, d])),
-            )
-        out = ops.reshape()(out, [bs, -1, nheads * d])
+        q = ops.reshape()(q, [bs, -1, self.heads, self.dim_head])
+        k = ops.reshape()(k, [bs, -1, self.heads, self.dim_head])
+        v = ops.reshape()(v, [bs, -1, self.heads, self.dim_head])
+        q = ops.permute()(q, [0, 2, 1, 3])
+        k = ops.permute()(k, [0, 2, 1, 3])
+        v = ops.permute()(v, [0, 2, 1, 3])
+
+        attn_op = ops.mem_eff_attention(causal=False)
+        if not USE_CUDA:
+            attn_op = ops.bmm_softmax_bmm_permute(shape=(self.heads,), scale=self.scale)
+        out = attn_op(
+            (ops.reshape()(q, [bs, self.heads, -1, self.dim_head])),
+            (ops.reshape()(k, [bs, self.heads, -1, self.dim_head])),
+            (ops.reshape()(v, [bs, self.heads, -1, self.dim_head])),
+        )
+        out = ops.reshape()(out, [bs, -1, self.heads * self.dim_head])
         proj = self.to_out(out)
-        proj = ops.reshape()(proj, [bs, -1, nheads * d])
+        proj = ops.reshape()(proj, [bs, -1, self.heads * self.dim_head])
         if residual is not None:
             return proj + residual
-        else:
-            return proj
+        return proj
 
 
 class GEGLU(nn.Module):
-    def __init__(self, dim_in, dim_out):
+    def __init__(self, dim_in: int, dim_out: int, dtype: str = "float16") -> None:
         super().__init__()
-        self.proj = nn.Linear(dim_in, dim_out, specialization="mul")
-        self.gate = nn.Linear(dim_in, dim_out, specialization="fast_gelu")
+        self.proj = nn.Linear(dim_in, dim_out, specialization="mul", dtype=dtype)
+        self.gate = nn.Linear(dim_in, dim_out, specialization="fast_gelu", dtype=dtype)
 
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         return self.proj(x, self.gate(x))
 
 
 class FeedForward(nn.Module):
-    def __init__(self, dim, dim_out=None, mult=4, glu=False, dropout=0.0):
+    def __init__(
+        self,
+        dim: int,
+        dim_out: Optional[int] = None,
+        mult: int = 4,
+        glu: bool = False,
+        dropout: float = 0.0,
+        dtype: str = "float16",
+    ) -> None:
         super().__init__()
         inner_dim = int(dim * mult)
         dim_out = default(dim_out, dim)
         project_in = (
             nn.Sequential(
-                nn.Linear(dim, inner_dim, specialization="fast_gelu"),
+                nn.Linear(dim, inner_dim, specialization="fast_gelu", dtype=dtype)
             )
             if not glu
-            else GEGLU(dim, inner_dim)
+            else GEGLU(dim, inner_dim, dtype=dtype)
         )
 
         self.net = nn.Sequential(
-            project_in, nn.Dropout(dropout), nn.Linear(inner_dim, dim_out)  # type: ignore
+            project_in,
+            nn.Dropout(dropout, dtype=dtype),  # type: ignore
+            nn.Linear(inner_dim, dim_out, dtype=dtype),
         )
 
-    def forward(self, x, residual=None):
+    def forward(self, x: Tensor, residual: Optional[Tensor] = None) -> Tensor:
         shape = ops.size()(x)
         x = self.net(x)
         x = ops.reshape()(x, shape)  # type: ignore
         if residual is not None:
             return x + residual
-        else:
-            return x
+        return x
 
 
 class BasicTransformerBlock(nn.Module):
     def __init__(
         self,
-        dim,
-        n_heads,
-        d_head,
-        dropout=0.0,
-        context_dim=None,
-        gated_ff=True,
-        checkpoint=True,
-    ):
+        dim: int,
+        n_heads: int,
+        d_head: int,
+        dropout: float = 0.0,
+        context_dim: Optional[int] = None,
+        gated_ff: bool = True,
+        checkpoint: bool = True,
+        only_cross_attention: bool = False,
+        dtype: str = "float16",
+    ) -> None:
         super().__init__()
+        self.only_cross_attention = only_cross_attention
         self.attn1 = CrossAttention(
-            query_dim=dim, heads=n_heads, dim_head=d_head, dropout=dropout
-        )  # is a self-attention
-        self.ff = FeedForward(dim, dropout=dropout, glu=gated_ff)
-        self.attn2 = CrossAttention(
             query_dim=dim,
-            context_dim=context_dim,
+            context_dim=context_dim if only_cross_attention else None,
             heads=n_heads,
             dim_head=d_head,
             dropout=dropout,
+            dtype=dtype,
         )
-        self.norm1 = nn.LayerNorm(dim)
-        self.norm2 = nn.LayerNorm(dim)
-        self.norm3 = nn.LayerNorm(dim)
-        self.checkpoint = checkpoint
 
+        self.ff = FeedForward(dim, dropout=dropout, glu=gated_ff, dtype=dtype)
+
+        if context_dim is not None:
+            self.attn2 = CrossAttention(
+                query_dim=dim,
+                context_dim=context_dim,
+                heads=n_heads,
+                dim_head=d_head,
+                dropout=dropout,
+                dtype=dtype,
+            )
+        else:
+            self.attn2 = None
+        self.norm1 = nn.LayerNorm(dim, dtype=dtype)
+        self.norm2 = nn.LayerNorm(dim, dtype=dtype)
+        self.norm3 = nn.LayerNorm(dim, dtype=dtype)
+        self.checkpoint = checkpoint
         self.param = (dim, n_heads, d_head, context_dim, gated_ff, checkpoint)
 
-    def forward(self, x, context=None):
-        x = self.attn1(self.norm1(x), residual=x)
-        x = self.attn2(self.norm2(x), context=context, residual=x)
+    def forward(self, x: Tensor, context: Optional[Tensor] = None) -> Tensor:
+        x = self.attn1(
+            self.norm1(x),
+            residual=x,
+            context=context if self.only_cross_attention else None,
+        )
+        if self.attn1 is not None:
+            x = self.attn2(self.norm2(x), context=context, residual=x)  # type: ignore
         x = self.ff(self.norm3(x), residual=x)
         return x
 
 
-def Normalize(in_channels):
-    return nn.GroupNorm(num_groups=32, num_channels=in_channels, eps=1e-6, affine=True)
+def Normalize(in_channels: int, dtype: str = "float16"):
+    return nn.GroupNorm(
+        num_groups=32, num_channels=in_channels, eps=1e-6, affine=True, dtype=dtype
+    )
 
 
 class SpatialTransformer(nn.Module):
-    """
-    Transformer block for image-like data.
-    First, project the input (aka embedding)
-    and reshape to b, t, d.
-    Then apply standard transformer action.
-    Finally, reshape to image
-    """
-
     def __init__(
-        self, in_channels, n_heads, d_head, depth=1, dropout=0.0, context_dim=None
-    ):
+        self,
+        in_channels: int,
+        n_heads: int,
+        d_head: int,
+        depth: int = 1,
+        dropout: float = 0.0,
+        context_dim: Optional[int] = None,
+        use_linear_projection: bool = False,
+        only_cross_attention: bool = False,
+        dtype: str = "float16",
+    ) -> None:
         super().__init__()
         self.in_channels = in_channels
         inner_dim = n_heads * d_head
-        self.norm = Normalize(in_channels)  # Group Norm
+        self.norm = Normalize(in_channels, dtype=dtype)
+        self.use_linear_projection = use_linear_projection
 
-        self.proj_in = nn.Conv2dBias(
-            in_channels, inner_dim, kernel_size=1, stride=1, padding=0
-        )
-
+        if use_linear_projection:
+            self.proj_in = nn.Linear(in_channels, inner_dim, dtype=dtype)
+        else:
+            self.proj_in = nn.Conv2dBias(
+                in_channels, inner_dim, kernel_size=1, stride=1, padding=0, dtype=dtype
+            )
         self.transformer_blocks = nn.ModuleList(
             [
                 BasicTransformerBlock(
-                    inner_dim, n_heads, d_head, dropout=dropout, context_dim=context_dim
+                    inner_dim,
+                    n_heads,
+                    d_head,
+                    dropout=dropout,
+                    context_dim=context_dim,
+                    only_cross_attention=only_cross_attention,
+                    dtype=dtype,
                 )
                 for d in range(depth)
             ]
         )
 
-        self.proj_out = nn.Conv2dBias(
-            inner_dim, in_channels, kernel_size=1, stride=1, padding=0
-        )
+        if use_linear_projection:
+            self.proj_out = nn.Linear(inner_dim, in_channels, dtype=dtype)
+        else:
+            self.proj_out = nn.Conv2dBias(
+                inner_dim, in_channels, kernel_size=1, stride=1, padding=0, dtype=dtype
+            )
 
-    def forward(self, x, context=None):
-        # note: if no context is given, cross-attention defaults to self-attention
-        b, h, w, c = get_shape(x)
+    def forward(self, x: Tensor, context: Optional[Tensor] = None) -> Tensor:
+        b, h, w, c = x.shape()
         x_in = x
         x = self.norm(x)
-        x = self.proj_in(x)
-        x = ops.reshape()(x, [b, -1, c])
+        if self.use_linear_projection:
+            x = ops.reshape()(x, [b, -1, c])
+            x = self.proj_in(x)
+        else:
+            x = self.proj_in(x)
+            x = ops.reshape()(x, [b, -1, c])
+
         for block in self.transformer_blocks:
             x = block(x, context=context)
-        x = ops.reshape()(x, [b, h, w, c])
-        x = self.proj_out(x)
+
+        if self.use_linear_projection:
+            x = self.proj_out(x)
+            x = ops.reshape()(x, [b, h, w, c])
+        else:
+            x = ops.reshape()(x, [b, h, w, c])
+            x = self.proj_out(x)
         return x + x_in
 
 
 class CLIPAttention(nn.Module):
-    """Multi-headed attention from 'Attention Is All You Need' paper"""
-
     def __init__(
         self,
-        hidden_size=768,
-        num_attention_heads=12,
-        attention_dropout=0.0,
-        batch_size=1,
-        seq_len=16,
-        layer_norm_eps=1e-5,
-        hidden_dropout_prob=0.0,
-        causal=False,
-        mask_seq=0,
-    ):
+        hidden_size: int = 768,
+        num_attention_heads: int = 12,
+        attention_dropout: float = 0.0,
+        batch_size: int = 1,
+        seq_len: int = 16,
+        layer_norm_eps: float = 1e-5,
+        hidden_dropout_prob: float = 0.0,
+        causal: bool = False,
+        mask_seq: int = 0,
+    ) -> None:
         super().__init__()
         self.attn = nn.MultiheadAttention(
             dim=hidden_size,
@@ -269,20 +303,15 @@ class CLIPAttention(nn.Module):
         causal_attention_mask: Optional[Tensor] = None,
         output_attentions: Optional[bool] = False,
         residual: Optional[Tensor] = None,
-    ):
+    ) -> Tensor:
         if residual is not None:
-            self_output = self.attn(hidden_states, residual)
+            return self.attn(hidden_states, residual)
         else:
-            self_output = self.attn(hidden_states)
-        return self_output
+            return self.attn(hidden_states)
 
 
 class QuickGELUActivation(nn.Module):
-    """
-    Applies GELU approximation that is fast but somewhat inaccurate. See: https://github.com/hendrycks/GELUs
-    """
-
-    def forward(self, x):
+    def forward(self, x: Tensor) -> Tensor:
         x1 = x * 1.702
         x1 = ops.sigmoid(x1)
         x = x * x1
@@ -290,95 +319,74 @@ class QuickGELUActivation(nn.Module):
 
 
 class CLIPMLP(nn.Module):
-    """MLP as used in Vision Transformer, MLP-Mixer and related networks"""
-
     def __init__(
         self,
-        in_features,
-        hidden_features=None,
-        out_features=None,
-        act_layer="GELU",
-        drop=0,
-    ):
+        in_features: int,
+        hidden_features: Optional[int] = None,
+        out_features: Optional[int] = None,
+        act_layer: str = "GELU",
+        drop: int = 0,
+    ) -> None:
         super().__init__()
         out_features = out_features or in_features
         hidden_features = hidden_features or in_features
 
-        self.fc1 = nn.Linear(
-            in_features,
-            hidden_features,
-            specialization="gelu",
-        )
+        self.fc1 = nn.Linear(in_features, hidden_features, specialization="gelu")
         self.fc2 = nn.Linear(hidden_features, out_features, specialization="add")
 
-    def forward(self, x, res):
-        shape = get_shape(x)
+    def forward(self, x: Tensor, residual: Tensor) -> Tensor:
+        shape = x.shape()
         x = self.fc1(x)
-        x = self.fc2(x, res)
+        x = self.fc2(x, residual)
         return ops.reshape()(x, shape)
 
 
 class CLIPMLPQuickGelu(nn.Module):
-    """MLP as used in Vision Transformer, MLP-Mixer and related networks"""
-
     def __init__(
         self,
-        in_features,
-        hidden_features=None,
-        out_features=None,
-    ):
+        in_features: int,
+        hidden_features: Optional[int] = None,
+        out_features: Optional[int] = None,
+    ) -> None:
         super().__init__()
         out_features = out_features or in_features
-        hidden_features = hidden_features or in_features
+        hidden_features = hidden_features or out_features
 
-        self.fc1 = nn.Linear(
-            in_features,
-            hidden_features,
-        )
+        self.fc1 = nn.Linear(in_features, hidden_features)
         self.activation_fn = QuickGELUActivation()
-
         self.fc2 = nn.Linear(hidden_features, out_features, specialization="add")
 
-    def forward(self, x, res):
-        shape = get_shape(x)
+    def forward(self, x: Tensor, residual: Tensor) -> Tensor:
         x = self.fc1(x)
         x = self.activation_fn(x)
-        x = self.fc2(x, res)
-        return ops.reshape()(x, shape)
+        x = self.fc2(x, residual)
+        return ops.reshape()(x, x.shape())
 
 
 class CLIPEncoderLayer(nn.Module):
-    ACT_LAYER_TO_CLIP_MLP_MAP = {
-        "gelu": CLIPMLP,
-        "quick_gelu": CLIPMLPQuickGelu,
-    }
+    ACT_LAYER_TO_CLIP_MLP_MAP = {"gelu": CLIPMLP, "quick_gelu": CLIPMLPQuickGelu}
 
     def __init__(
         self,
-        hidden_size=768,
-        num_attention_heads=12,
-        attention_dropout=0.0,
-        mlp_ratio=4.0,
-        batch_size=1,
-        seq_len=16,
-        causal=False,
-        mask_seq=0,
-        act_layer="gelu",
-    ):
+        hidden_size: int = 768,
+        num_attention_heads: int = 12,
+        attention_dropout: float = 0.0,
+        mlp_ratio: float = 4.0,
+        batch_size: int = 1,
+        seq_len: int = 16,
+        causal: bool = False,
+        mask_seq: int = 0,
+        act_layer: str = "gelu",
+    ) -> None:
         super().__init__()
         self.embed_dim = hidden_size
-        self.self_attn = nn.MultiheadAttention(
-            dim=hidden_size,
-            batch_size=batch_size,
-            seq_len=seq_len,
-            num_heads=num_attention_heads,
+        self.self_attn = nn.CrossAttention(
+            hidden_size,
+            seq_len,
+            seq_len,
+            num_attention_heads,
             qkv_bias=True,
-            attn_drop=attention_dropout,
-            proj_drop=0,
-            has_residual=True,
             causal=causal,
-            mask_seq=mask_seq,
-            use_mem_eff=True,
         )
         self.layer_norm1 = nn.LayerNorm(self.embed_dim)
         self.mlp = self.ACT_LAYER_TO_CLIP_MLP_MAP[act_layer](
@@ -387,25 +395,13 @@ class CLIPEncoderLayer(nn.Module):
         self.layer_norm2 = nn.LayerNorm(self.embed_dim)
 
     def forward(
-        self,
-        hidden_states: Tensor,
-        output_attentions: Optional[bool] = False,
-    ):
-        """
-        Args:
-            hidden_states (`torch.FloatTensor`): input to the layer of shape `(batch, seq_len, embed_dim)`
-            attention_mask (`torch.FloatTensor`): attention mask of size
-                `(batch, 1, tgt_len, src_len)` where padding elements are indicated by very large negative values.
-                `(config.encoder_attention_heads,)`.
-            output_attentions (`bool`, *optional*):
-                Whether or not to return the attentions tensors of all attention layers. See `attentions` under
-                returned tensors for more detail.
-        """
+        self, hidden_states: Tensor, output_attentions: Optional[bool] = False
+    ) -> Tensor:
         residual = hidden_states
-
         hidden_states = self.layer_norm1(hidden_states)
-        hidden_states = self.self_attn(hidden_states, residual)
-
+        hidden_states = self.self_attn(
+            hidden_states, hidden_states, hidden_states, residual
+        )
         residual = hidden_states
         hidden_states = self.layer_norm2(hidden_states)
         hidden_states = self.mlp(hidden_states, residual)
@@ -414,27 +410,20 @@ class CLIPEncoderLayer(nn.Module):
 
 
 class CLIPEncoder(nn.Module):
-    """
-    Transformer encoder consisting of `config.num_hidden_layers` self attention layers. Each layer is a
-    [`CLIPEncoderLayer`].
-    Args:
-        config: CLIPConfig
-    """
-
     def __init__(
         self,
-        num_hidden_layers=12,
-        output_attentions=False,
-        output_hidden_states=False,
-        use_return_dict=False,
-        hidden_size=768,
-        num_attention_heads=12,
-        batch_size=1,
-        seq_len=64,
-        causal=False,
-        mask_seq=0,
-        act_layer="gelu",
-    ):
+        num_hidden_layers: int = 12,
+        output_attentions: bool = False,
+        output_hidden_states: bool = False,
+        use_return_dict: bool = False,
+        hidden_size: int = 768,
+        num_attention_heads: int = 12,
+        batch_size: int = 1,
+        seq_len: int = 64,
+        causal: bool = False,
+        mask_seq: int = 0,
+        act_layer: str = "gelu",
+    ) -> None:
         super().__init__()
         self.layers = nn.ModuleList(
             [
@@ -447,61 +436,27 @@ class CLIPEncoder(nn.Module):
                     mask_seq=mask_seq,
                     act_layer=act_layer,
                 )
-                for _ in range(num_hidden_layers)
+                for d in range(num_hidden_layers)
             ]
         )
-        self.output_attentions = output_attentions
-        self.output_hidden_states = output_hidden_states
+        self.output_attentions = (output_attentions,)
+        self.output_hidden_states = (output_hidden_states,)
         self.use_return_dict = use_return_dict
 
     def forward(
         self,
-        inputs_embeds,
+        inputs_embeds: Tensor,
         attention_mask: Optional[Tensor] = None,
         causal_attention_mask: Optional[Tensor] = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ):
-        r"""
-        Args:
-            inputs_embeds (`torch.FloatTensor` of shape `(batch_size, sequence_length, hidden_size)`):
-                Optionally, instead of passing `input_ids` you can choose to directly pass an embedded representation.
-                This is useful if you want more control over how to convert `input_ids` indices into associated vectors
-                than the model's internal embedding lookup matrix.
-            attention_mask (`torch.Tensor` of shape `(batch_size, sequence_length)`, *optional*):
-                Mask to avoid performing attention on padding token indices. Mask values selected in `[0, 1]`:
-                - 1 for tokens that are **not masked**,
-                - 0 for tokens that are **masked**.
-                [What are attention masks?](../glossary#attention-mask)
-            causal_attention_mask (`torch.Tensor` of shape `(batch_size, sequence_length)`, *optional*):
-                Causal mask for the text model. Mask values selected in `[0, 1]`:
-                - 1 for tokens that are **not masked**,
-                - 0 for tokens that are **masked**.
-                [What are attention masks?](../glossary#attention-mask)
-            output_attentions (`bool`, *optional*):
-                Whether or not to return the attentions tensors of all attention layers. See `attentions` under
-                returned tensors for more detail.
-            output_hidden_states (`bool`, *optional*):
-                Whether or not to return the hidden states of all layers. See `hidden_states` under returned tensors
-                for more detail.
-            return_dict (`bool`, *optional*):
-                Whether or not to return a [`~utils.ModelOutput`] instead of a plain tuple.
-        """
-        output_attentions = (
-            output_attentions
-            if output_attentions is not None
-            else self.output_attentions
-        )
-        output_hidden_states = (
-            output_hidden_states
-            if output_hidden_states is not None
-            else self.output_hidden_states
-        )
-        return_dict = return_dict if return_dict is not None else self.use_return_dict
+    ) -> Tensor:
+        output_attentions = default(output_attentions, self.output_attentions)
+        output_hidden_states = default(output_hidden_states, self.output_hidden_states)
+        return_dict = default(return_dict, self.use_return_dict)
 
         encoder_states = () if output_hidden_states else None
-        # all_attentions = () if output_attentions else None
 
         hidden_states = inputs_embeds
         for _, encoder_layer in enumerate(self.layers):
@@ -509,24 +464,27 @@ class CLIPEncoder(nn.Module):
                 encoder_states = encoder_states + (hidden_states,)  # type: ignore
             layer_outputs = encoder_layer(hidden_states)
             hidden_states = layer_outputs
-
         return hidden_states
 
 
 class CLIPTextEmbeddings(nn.Module):
     def __init__(
         self,
-        hidden_size=768,
-        vocab_size=49408,
-        max_position_embeddings=77,
-        dtype="float16",
-    ):
+        hidden_size: int = 768,
+        vocab_size: int = 49408,
+        max_position_embeddings: int = 77,
+        dtype: str = "float16",
+    ) -> None:
         super().__init__()
-        embed_dim = hidden_size
+        self.max_position_embeddings = max_position_embeddings
+        self.embed_dim = hidden_size
+        self.vocab_size = vocab_size
 
-        self.token_embedding = nn.Embedding(shape=[vocab_size, embed_dim], dtype=dtype)
+        self.token_embedding = nn.Embedding(
+            shape=[vocab_size, hidden_size], dtype=dtype
+        )
         self.position_embedding = nn.Embedding(
-            shape=[max_position_embeddings, embed_dim], dtype=dtype
+            shape=[max_position_embeddings, hidden_size], dtype=dtype
         )
 
     def forward(
@@ -537,17 +495,20 @@ class CLIPTextEmbeddings(nn.Module):
     ) -> Tensor:
         input_shape = ops.size()(input_ids)
 
-        # [B * S]
-        input_ids = ops.reshape()(input_ids, [-1])
-
-        position_ids = ops.reshape()(position_ids, [-1])
+        token_embedding = self.token_embedding.tensor()
+        token_embedding = ops.reshape()(
+            token_embedding, [1, self.vocab_size, self.embed_dim]
+        )
+        token_embedding = ops.expand()(token_embedding, [input_shape[0], -1, -1])  # type: ignore
 
         if inputs_embeds is None:
-            inputs_embeds = ops.batch_gather()(self.token_embedding.tensor(), input_ids)
-
-        position_embeddings = ops.batch_gather()(
-            self.position_embedding.tensor(), position_ids
+            inputs_embeds = ops.batch_gather()(token_embedding, input_ids)
+        position_embedding = self.position_embedding.tensor()
+        position_embedding = ops.reshape()(
+            position_embedding, [1, self.max_position_embeddings, self.embed_dim]
         )
+        position_embedding = ops.expand()(position_embedding, [input_shape[0], -1, -1])  # type: ignore
+        position_embeddings = ops.batch_gather()(position_embedding, position_ids)
 
         embeddings = inputs_embeds + position_embeddings
 
@@ -559,18 +520,18 @@ class CLIPTextEmbeddings(nn.Module):
 class CLIPTextTransformer(nn.Module):
     def __init__(
         self,
-        hidden_size=768,
-        output_attentions=False,
-        output_hidden_states=False,
+        hidden_size: int = 768,
+        output_attentions: bool = False,
+        output_hidden_states: bool = False,
         use_return_dict=False,
-        num_hidden_layers=12,
-        num_attention_heads=12,
-        batch_size=1,
-        seq_len=64,
-        causal=False,
-        mask_seq=0,
-        act_layer="gelu",
-    ):
+        num_hidden_layers: int = 12,
+        num_attention_heads: int = 12,
+        batch_size: int = 1,
+        seq_len: int = 64,
+        causal: bool = False,
+        mask_seq: int = 0,
+        act_layer: str = "gelu",
+    ) -> None:
         super().__init__()
         self.embeddings = CLIPTextEmbeddings(hidden_size=hidden_size)
         self.encoder = CLIPEncoder(
@@ -597,31 +558,15 @@ class CLIPTextTransformer(nn.Module):
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ):
-        r"""
-        Returns:
-        """
-        output_attentions = (
-            output_attentions
-            if output_attentions is not None
-            else self.output_attentions
-        )
-        output_hidden_states = (
-            output_hidden_states
-            if output_hidden_states is not None
-            else self.output_hidden_states
-        )
-        return_dict = return_dict if return_dict is not None else self.use_return_dict
+    ) -> Tensor:
+        output_attentions = default(output_attentions, self.output_attentions)
+        output_hidden_states = default(output_hidden_states, self.output_hidden_states)
+        return_dict = default(return_dict, self.use_return_dict)
 
         if input_ids is None:
-            raise ValueError("You have to specify either input_ids")
-
+            raise ValueError("input_ids must be specified!")
         hidden_states = self.embeddings(input_ids=input_ids, position_ids=position_ids)
-
-        encoder_outputs = self.encoder(
-            inputs_embeds=hidden_states,
-        )
-
+        encoder_outputs = self.encoder(inputs_embeds=hidden_states)
         last_hidden_state = encoder_outputs
         last_hidden_state = self.final_layer_norm(last_hidden_state)
         return last_hidden_state
