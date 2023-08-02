@@ -15,10 +15,9 @@
 import logging
 import math
 from pathlib import Path
-from typing import Callable, List, Optional, Union
+from typing import Any, Callable, List, Optional, Union
 
 import torch
-from aitemplate.compiler import Model
 from diffusers import (
     AutoencoderKL,
     ControlNetModel,
@@ -31,8 +30,7 @@ from diffusers.schedulers import KarrasDiffusionSchedulers
 from PIL import Image
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
-from core.aitemplate.config import get_unet_in_channels
-from core.aitemplate.src.modeling import mapping
+from core.inference.functions import is_aitemplate_available
 from core.inference.utilities import (
     get_timesteps,
     get_weighted_text_embeddings,
@@ -43,6 +41,11 @@ from core.inference.utilities import (
     preprocess_image,
     progress_bar,
 )
+
+if is_aitemplate_available():
+    from core.aitemplate.config import get_unet_in_channels
+    from core.aitemplate.src.modeling import mapping
+    from aitemplate.compiler import Model
 
 logger = logging.getLogger(__name__)
 
@@ -61,9 +64,9 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         controlnet: Optional[ControlNetModel],
         unet: Optional[UNet2DConditionModel],  # type: ignore # pylint: disable=unused-argument
         directory: str = "",
-        clip_ait_exe: Optional[Model] = None,
-        unet_ait_exe: Optional[Model] = None,
-        vae_ait_exe: Optional[Model] = None,
+        clip_ait_exe: Optional[Any] = None,
+        unet_ait_exe: Optional[Any] = None,
+        vae_ait_exe: Optional[Any] = None,
     ):
         self.register_modules(
             vae=vae,
