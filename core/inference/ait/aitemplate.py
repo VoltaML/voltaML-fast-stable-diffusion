@@ -1,10 +1,11 @@
 import logging
 import os
-from typing import TYPE_CHECKING, Any, List, Literal, Optional, Tuple, Union
+from typing import Any, List, Literal, Optional, Tuple, Union
 
 import torch
 from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
 from PIL import Image
+from tqdm import tqdm
 from transformers.models.clip import CLIPFeatureExtractor
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
@@ -33,10 +34,6 @@ from ..utilities.aitemplate import init_ait_module
 from ..utilities.controlnet import image_to_controlnet_input
 from ..utilities.lwp import get_weighted_text_embeddings
 from ..utilities.scheduling import change_scheduler
-
-if TYPE_CHECKING:
-    from diffusers.pipelines import StableDiffusionPipeline
-
 
 logger = logging.getLogger(__name__)
 
@@ -301,7 +298,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                 pipe, job.data.prompt, job.data.negative_prompt
             )
@@ -353,7 +350,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                 pipe, job.data.prompt, job.data.negative_prompt
             )
@@ -413,7 +410,7 @@ class AITemplateStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = [input_image]
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                 pipe, job.data.prompt, job.data.negative_prompt
             )

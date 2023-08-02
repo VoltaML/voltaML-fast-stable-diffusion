@@ -30,9 +30,6 @@ def optimize_model(
     "Optimize the model for inference."
 
     from core.inference.functions import is_ipex_available
-    from core.shared_dependent import progress
-
-    task = progress.add_task("Optimizing model...", total=11)
 
     # Tuple[Supported, Enabled by default, Enabled]
     hardware_scheduling = experimental_check_hardware_scheduling()
@@ -66,11 +63,9 @@ def optimize_model(
     # Took me an hour to understand why CPU stopped working...
     # Turns out AMD just lacks support for BF16...
     # Not mad, not mad at all... to be fair, I'm just disappointed
-    progress.advance(task, 1)
     if not can_offload and not is_for_aitemplate:
         pipe.to(device, torch_dtype=config.api.dtype)
 
-    progress.advance(task, 1)
     if config.api.device_type == "cuda" and not is_for_aitemplate:
         supports_tf = supports_tf32(device)
         if config.api.reduced_precision:
@@ -99,7 +94,6 @@ def optimize_model(
         torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
     # Attention slicing that should save VRAM (but is slower)
-    progress.advance(task, 1)
     slicing = config.api.attention_slicing
     if slicing != "disabled" and is_pytorch_pipe(pipe) and not is_for_aitemplate:
         if slicing == "auto":
@@ -112,7 +106,6 @@ def optimize_model(
     # Change the order of the channels to be more efficient for the GPU
     # DirectML only supports contiguous memory format
     # Disable for IPEX as well, they don't like torch's way of setting memory format
-    progress.advance(task, 1)
     if (
         config.api.channels_last
         and config.api.device_type != "directml"
@@ -124,7 +117,6 @@ def optimize_model(
         logger.info("Optimization: Enabled channels_last memory format")
 
     # xFormers and SPDA
-    progress.advance(task, 1)
     if not is_for_aitemplate:
         set_attention_processor(pipe)
 
@@ -185,7 +177,6 @@ def optimize_model(
 
                 logger.info("Optimization: Enabled sequential offload")
 
-    progress.advance(task, 1)
     if config.api.vae_slicing:
         if not (
             issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
@@ -198,7 +189,6 @@ def optimize_model(
                 "Optimization: VAE slicing is not available for upscale models"
             )
 
-    progress.advance(task, 1)
     if config.api.vae_tiling:
         if not (
             issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
@@ -209,7 +199,6 @@ def optimize_model(
         else:
             logger.debug("Optimization: VAE tiling is not available for upscale models")
 
-    progress.advance(task, 1)
     if config.api.use_tomesd and not is_for_aitemplate:
         try:
             import tomesd
@@ -221,7 +210,6 @@ def optimize_model(
                 "Optimization: ToMeSD patch failed, despite having it enabled. Please check installation"
             )
 
-    progress.advance(task, 1)
     ipexed = False
     if config.api.device_type == "cpu":
         n = (cpu["num_virtual_cores"] // 4) * 3
@@ -255,7 +243,6 @@ def optimize_model(
             )
             ipexed = True
 
-    progress.advance(task, 1)
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
@@ -273,7 +260,6 @@ def optimize_model(
             "This is a temporary measure, tracing will work with IPEX-enabled devices later on"
         )
 
-    progress.advance(task, 1)
     if config.api.torch_compile and not is_for_aitemplate:
         if config.api.attention_processor == "xformers":
             logger.warning(
@@ -296,8 +282,6 @@ def optimize_model(
             #     dynamic=config.api.torch_compile_dynamic,
             #     mode=config.api.torch_compile_mode,
             # )
-
-    progress.remove_task(task)
 
 
 def supports_tf32(device: Optional[torch.device] = None) -> bool:

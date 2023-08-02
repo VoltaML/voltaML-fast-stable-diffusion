@@ -12,6 +12,7 @@ from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tupl
 import requests
 from PIL import Image
 from requests.adapters import HTTPAdapter, Retry
+from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
 
@@ -177,8 +178,6 @@ def download_file(url: str, file: Path, add_filename: bool = False):
     """Download a file to the specified path, or to a child of the provided file
     with the name provided in the Content-Disposition header"""
 
-    from core.shared_dependent import progress
-
     session = requests.Session()
     retries = Retry(total=5, backoff_factor=1, status_forcelist=[502, 503, 504])
     session.mount("http://", HTTPAdapter(max_retries=retries))
@@ -188,17 +187,15 @@ def download_file(url: str, file: Path, add_filename: bool = False):
         file_name = r.headers["Content-Disposition"].split('"')[1]
         if add_filename:
             file = file / file_name
-        cl = int(r.headers["Content-Length"])
+        total = int(r.headers["Content-Length"])
         logger.info(f"Downloading {file_name} into {file.as_posix()}")
-        pb = progress.add_task(
-            description="Downloading", total=cl, progress_type="download"
-        )
+
         # AFAIK Windows doesn't like big buffers
         s = (64 if os.name == "nt" else 1024) * 1024
         with open(file, mode="wb+") as f:
-            for data in r.iter_content(s):
-                progress.update(pb, advance=len(data))
-                f.write(data)
+            with tqdm(total=total, unit="B", unit_scale=True) as pbar:
+                for data in r.iter_content(s):
+                    f.write(data)
+                    pbar.update(len(data))
 
-        progress.remove_task(pb)
     return file

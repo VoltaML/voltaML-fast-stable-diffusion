@@ -9,6 +9,7 @@ from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipel
 from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.utils import logging
+from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.config import config
@@ -22,7 +23,6 @@ from core.inference.utilities import (
     prepare_mask_and_masked_image,
     prepare_mask_latents,
     preprocess_image,
-    progress_bar,
 )
 from core.optimizations import autocast
 
@@ -458,7 +458,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                for i, t in enumerate(progress_bar(timesteps)):
+                for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
                     # expand the latents if we are doing classifier free guidance
                     latent_model_input = (
                         torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore

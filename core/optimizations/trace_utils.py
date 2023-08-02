@@ -4,9 +4,9 @@ from typing import Tuple
 
 import torch
 from diffusers.models.unet_2d_condition import UNet2DConditionOutput
+from tqdm import tqdm
 
 from core.config import config
-from core.inference.utilities import progress_bar
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ def warmup(
 
     model.eval()
     with torch.inference_mode():
-        for _ in progress_bar(range(amount)):
+        for _ in tqdm(range(amount), desc="Warming up"):
             model(*generate_inputs(dtype, device))
 
 

@@ -10,6 +10,7 @@ from diffusers import (
     UNet2DConditionModel,
 )
 from PIL import Image, ImageOps
+from tqdm import tqdm
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
@@ -264,10 +265,6 @@ class PyTorchStableDiffusion(InferenceModel):
     def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from a prompt"
 
-        from core.shared_dependent import progress
-
-        task = progress.add_task("Text2Image", total=job.data.batch_count, completed=0)
-
         pipe, generator = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
@@ -275,7 +272,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
 
             if "highres_fix" in job.flags:
@@ -328,9 +325,6 @@ class PyTorchStableDiffusion(InferenceModel):
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
-            progress.advance(task)
-
-        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -351,10 +345,6 @@ class PyTorchStableDiffusion(InferenceModel):
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        from core.shared_dependent import progress
-
-        task = progress.add_task("Image2Image", total=job.data.batch_count, completed=0)
-
         pipe, generator = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
@@ -366,7 +356,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
                 prompt=job.data.prompt,
                 image=input_image,
@@ -389,9 +379,6 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)
-            progress.advance(task)
-
-        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -412,10 +399,6 @@ class PyTorchStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        from core.shared_dependent import progress
-
-        task = progress.add_task("Inpaint", total=job.data.batch_count, completed=0)
-
         pipe, generator = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
@@ -431,7 +414,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
                 prompt=job.data.prompt,
                 image=input_image,
@@ -456,9 +439,6 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)
-            progress.advance(task)
-
-        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(
@@ -479,10 +459,6 @@ class PyTorchStableDiffusion(InferenceModel):
     def controlnet2img(self, job: ControlNetQueueEntry) -> List[Image.Image]:
         "Generate an image from an image and controlnet conditioning"
 
-        from core.shared_dependent import progress
-
-        task = progress.add_task("Controlnet", total=job.data.batch_count, completed=0)
-
         if config.api.trace_model is True:
             raise ValueError(
                 "ControlNet is not available with traced UNet, please disable tracing and reload the model."
@@ -496,12 +472,8 @@ class PyTorchStableDiffusion(InferenceModel):
         )
 
         # Preprocess the image
-        logger.debug(f"Requested dim: W{job.data.width}xH{job.data.height}")
-
         input_image = convert_to_image(job.data.image)
-        logger.debug(f"Input image size: {input_image.size}")
         input_image = resize(input_image, job.data.width, job.data.height)
-        logger.debug(f"Resized image size: {input_image.size}")
 
         # Preprocess the image if needed
         if not job.data.is_preprocessed:
@@ -510,7 +482,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = [input_image]
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe(
                 prompt=job.data.prompt,
                 negative_prompt=job.data.negative_prompt,
@@ -531,9 +503,6 @@ class PyTorchStableDiffusion(InferenceModel):
             assert isinstance(images, List)
 
             total_images.extend(images)  # type: ignore
-            progress.advance(task)
-
-        progress.remove_task(task)
 
         websocket_manager.broadcast_sync(
             data=Data(
