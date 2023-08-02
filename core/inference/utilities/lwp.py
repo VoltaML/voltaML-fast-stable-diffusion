@@ -523,7 +523,7 @@ def get_weighted_text_embeddings(
         )
 
     # get the embeddings
-    text_embeddings = get_unweighted_text_embeddings(
+    text_embeddings, hidden_states = get_unweighted_text_embeddings(
         pipe,  # type: ignore
         prompt_tokens,
         pipe.tokenizer.model_max_length,  # type: ignore
@@ -533,7 +533,7 @@ def get_weighted_text_embeddings(
         prompt_weights, dtype=text_embeddings.dtype, device=pipe.device if hasattr(pipe, "clip_inference") else pipe.text_encoder.device  # type: ignore
     )
     if uncond_prompt is not None:
-        uncond_embeddings = get_unweighted_text_embeddings(
+        uncond_embeddings, uncond_hidden_states = get_unweighted_text_embeddings(
             pipe,  # type: ignore
             uncond_tokens,  # type: ignore
             pipe.tokenizer.model_max_length,  # type: ignore

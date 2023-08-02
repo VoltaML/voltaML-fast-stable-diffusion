@@ -7,20 +7,12 @@
   z-index: 2;
 }
 
-<<<<<<< HEAD
-.progress-container[data-v-e442da1d] {
-=======
-.progress-container[data-v-2cf1de9c] {
->>>>>>> experimental
+.progress-container[data-v-125f9d66] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-<<<<<<< HEAD
-.top-bar[data-v-e442da1d] {
-=======
-.top-bar[data-v-2cf1de9c] {
->>>>>>> experimental
+.top-bar[data-v-125f9d66] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -31,25 +23,15 @@
   position: fixed;
   top: 0;
   z-index: 1;
-<<<<<<< HEAD
-  background-color: var(--c5bf0f7c);
+  background-color: var(--64ad1582);
 }
-.logo[data-v-e442da1d] {
-=======
-  background-color: var(--67e22a10);
-}
-.logo[data-v-2cf1de9c] {
->>>>>>> experimental
+.logo[data-v-125f9d66] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
 .main {
-<<<<<<< HEAD
-  background-color: var(--29cef8cc);
-=======
   background-color: var(--16223ad6);
->>>>>>> experimental
 }
 .autocomplete {
   position: relative;
@@ -58,31 +40,18 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-<<<<<<< HEAD
-  background-color: var(--4a43647e);
-  border-radius: var(--e4e5ec3e);
-=======
   background-color: var(--1fedac06);
   border-radius: var(--ba9033c6);
->>>>>>> experimental
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-<<<<<<< HEAD
-  border-radius: var(--e4e5ec3e);
-}
-.autocomplete-active {
-  background-color: var(--1beee664) !important;
-  color: var(--440cdb18) !important;
-=======
   border-radius: var(--ba9033c6);
 }
 .autocomplete-active {
   background-color: var(--3119c2a0) !important;
   color: var(--aca37748) !important;
->>>>>>> experimental
 }
 body {
   min-height: 100vh;

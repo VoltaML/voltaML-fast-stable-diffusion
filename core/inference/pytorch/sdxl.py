@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, List
+from typing import Any, List, Tuple
 
 import torch
 from diffusers import (
@@ -23,14 +23,13 @@ from core.config import config
 from core.flags import RefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
-from core.inference.pytorch.lwp import get_weighted_text_embeddings
+from core.inference.utilities import get_weighted_text_embeddings, change_scheduler
 from core.inference.pytorch.lwp_sdxl import StableDiffusionXLLongPromptWeightingPipeline
 from core.inference_callbacks import (
     img2img_callback,
     inpaint_callback,
     txt2img_callback,
 )
-from core.schedulers import change_scheduler
 from core.types import (
     Backend,
     Img2ImgQueueEntry,
@@ -150,19 +149,9 @@ class SDXLStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
-
-        pipe = self.create_pipe()
-
-        if job.data.scheduler:
-            change_scheduler(
-                model=pipe,
-                scheduler=job.data.scheduler,
-                use_karras_sigmas=job.data.use_karras_sigmas,
-            )
+        pipe, generator = self.create_pipe(
+            job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
+        )
 
         for _ in range(job.data.batch_count):
             output_type = "pil"
@@ -198,7 +187,9 @@ class SDXLStableDiffusion(InferenceModel):
                 model: SDXLStableDiffusion = gpu.loaded_models[flags.model]  # type: ignore
                 if config.api.clear_memory_policy == "always":
                     self.memory_cleanup()
-                pipe = model.create_pipe()
+                pipe, generator = model.create_pipe(
+                    job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
+                )
                 data = pipe(
                     image=latents,
                     prompt=job.data.prompt,
@@ -237,10 +228,17 @@ class SDXLStableDiffusion(InferenceModel):
 
         return total_images
 
-    def create_pipe(self) -> StableDiffusionXLLongPromptWeightingPipeline:
+    def create_pipe(
+        self, seed: int, scheduler: Any, use_karras_sigmas: bool = False
+    ) -> Tuple[StableDiffusionXLLongPromptWeightingPipeline, torch.Generator]:
         "Create an LWP-XL pipeline"
 
-        return StableDiffusionXLLongPromptWeightingPipeline(
+        if config.api.device_type == "directml":
+            generator = torch.Generator().manual_seed(seed)
+        else:
+            generator = torch.Generator(config.api.device).manual_seed(seed)
+
+        pipe = StableDiffusionXLLongPromptWeightingPipeline(
             parent=self,
             vae=self.vae,
             unet=self.unet,  # type: ignore
@@ -254,20 +252,18 @@ class SDXLStableDiffusion(InferenceModel):
             final_offload_hook=self.final_offload_hook,
         )
 
+        change_scheduler(
+            model=pipe,
+            scheduler=scheduler,
+            use_karras_sigmas=use_karras_sigmas,
+        )
+        return pipe, generator
+
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        pipe = self.create_pipe()
-
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
-
-        change_scheduler(
-            model=pipe,
-            scheduler=job.data.scheduler,
-            use_karras_sigmas=job.data.use_karras_sigmas,
+        pipe, generator = self.create_pipe(
+            job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
         )
 
         # Preprocess the image
@@ -319,17 +315,8 @@ class SDXLStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        pipe = self.create_pipe()
-
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
-
-        change_scheduler(
-            model=pipe,
-            scheduler=job.data.scheduler,
-            use_karras_sigmas=job.data.use_karras_sigmas,
+        pipe, generator = self.create_pipe(
+            job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
         )
 
         # Preprocess images
@@ -343,51 +330,22 @@ class SDXLStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in range(job.data.batch_count):
-            if isinstance(pipe, StableDiffusionInpaintPipeline):
-                (
-                    prompt_embeds,
-                    _,
-                    negative_prompt_embeds,
-                    _,
-                ) = get_weighted_text_embeddings(
-                    pipe=self,  # type: ignore
-                    prompt=job.data.prompt,
-                    uncond_prompt=job.data.negative_prompt,
-                )
-
-                data = pipe(
-                    prompt=None,
-                    prompt_embeds=prompt_embeds,  # type: ignore
-                    image=input_image,
-                    mask_image=input_mask_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt_embeds=negative_prompt_embeds,  # type: ignore
-                    output_type="pil",
-                    generator=generator,
-                    callback=inpaint_callback,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                    width=job.data.width,
-                    height=job.data.height,
-                )
-            else:
-                data = pipe.inpaint(
-                    prompt=job.data.prompt,
-                    image=input_image,
-                    mask_image=input_mask_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    self_attention_scale=job.data.self_attention_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=inpaint_callback,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                    width=job.data.width,
-                    height=job.data.height,
-                )
+            data = pipe.inpaint(
+                prompt=job.data.prompt,
+                image=input_image,
+                mask_image=input_mask_image,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                self_attention_scale=job.data.self_attention_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=inpaint_callback,
+                return_dict=False,
+                num_images_per_prompt=job.data.batch_size,
+                width=job.data.width,
+                height=job.data.height,
+            )
 
             if not data:
                 raise ValueError("No data returned from pipeline")

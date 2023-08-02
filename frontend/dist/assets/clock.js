@@ -4,9 +4,6 @@ var __publicField = (obj, key, value) => {
   __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
   return value;
 };
-<<<<<<< HEAD
-import { a9 as watch, E as ref, s as serverUrl } from "./index.js";
-=======
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 import { d as defineComponent, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, m as createTextVNode, t as toDisplayString, i as NCard, x as createCommentVNode, a as useSettings, f as createElementBlock, q as NTooltip, n as createBaseVNode, J as Fragment, K as watch, E as ref, s as serverUrl } from "./index.js";
 import { N as NSlider } from "./Slider.js";
@@ -182,7 +179,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[2] || (_cache[2] = ($event) => props.dimensionsObject.width = $event),
             min: 128,
             max: 2048,
-            step: 8,
+            step: 1,
             style: { "margin-right": "12px" }
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
@@ -190,7 +187,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[3] || (_cache[3] = ($event) => props.dimensionsObject.width = $event),
             size: "small",
             style: { "min-width": "96px", "width": "96px" },
-            step: 8
+            step: 1
           }, null, 8, ["value"])
         ])),
         unref(conf).data.settings.aitDim.height ? (openBlock(), createElementBlock("div", _hoisted_5, [
@@ -219,7 +216,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[6] || (_cache[6] = ($event) => props.dimensionsObject.height = $event),
             min: 128,
             max: 2048,
-            step: 8,
+            step: 1,
             style: { "margin-right": "12px" }
           }, null, 8, ["value"]),
           createVNode(unref(NInputNumber), {
@@ -227,14 +224,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[7] || (_cache[7] = ($event) => props.dimensionsObject.height = $event),
             size: "small",
             style: { "min-width": "96px", "width": "96px" },
-            step: 8
+            step: 1
           }, null, 8, ["value"])
         ]))
       ], 64);
     };
   }
 });
->>>>>>> experimental
 class BurnerClock {
   constructor(observed_value, settings, callback, timerOverrride = 0, sendInterrupt = true) {
     __publicField(this, "isChanging", ref(false));
@@ -305,12 +301,8 @@ class BurnerClock {
   }
 }
 export {
-<<<<<<< HEAD
-  BurnerClock as B
-=======
   BurnerClock as B,
   _sfc_main as _,
   _sfc_main$1 as a,
   _sfc_main$2 as b
->>>>>>> experimental
 };

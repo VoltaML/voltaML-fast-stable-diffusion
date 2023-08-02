@@ -20,8 +20,12 @@ from transformers.models.clip import (
 )
 
 from core.config import config
-from core.inference.pytorch.latents import prepare_latents
-from core.inference.pytorch.lwp import get_weighted_text_embeddings, Placebo
+from core.inference.utilities import (
+    prepare_latents,
+    get_weighted_text_embeddings,
+    Placebo,
+    progress_bar,
+)
 from core.inference.pytorch.sag import (
     CrossAttnStoreProcessor,
     pred_epsilon,
@@ -142,8 +146,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         if negative_prompt == "":
             negative_prompt = None
 
-        batch_size = len(prompt) if isinstance(prompt, list) else 1
-
         prompts = [prompt, prompt]
         negative_prompts = [negative_prompt, negative_prompt]
         tokenizers = (
@@ -180,7 +182,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             ) = get_weighted_text_embeddings(
                 pipe=obj,  # type: ignore
                 prompt=prompt,
-                uncond_prompt=[""] * batch_size if negative_prompt is None and not self.force_zeros else [negative_prompt] * batch_size,  # type: ignore
+                uncond_prompt="" if negative_prompt is None and not self.force_zeros else negative_prompt,  # type: ignore
                 max_embeddings_multiples=max_embeddings_multiples,
             )
             if negative_prompt is None and self.force_zeros:
@@ -483,7 +485,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                for i, t in enumerate(self.progress_bar(timesteps)):
+                for i, t in enumerate(progress_bar(timesteps)):
                     # expand the latents if we are doing classifier free guidance
                     latent_model_input = (
                         torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore

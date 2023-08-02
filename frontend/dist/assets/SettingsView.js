@@ -1,9 +1,4 @@
-<<<<<<< HEAD
-import { B as BurnerClock } from "./clock.js";
-import { V as inject, bw as getCurrentInstance, a9 as watch, a0 as onBeforeUnmount, a1 as cB, a4 as cM, a3 as c, U as createInjectionKey, d as defineComponent, X as useConfig, aa as useTheme, E as ref, T as provide, D as h, bx as formLight, aE as keysOf, c as computed, aY as formatLength, b1 as get, by as commonVariables, a2 as cE, a6 as toRef, ay as createId, bz as formItemInjectionKey, $ as onMounted, ab as useThemeClass, ah as Transition, aV as resolveWrappedSlot, ax as createKey, b4 as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, f as createElementBlock, x as createCommentVNode, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, b as useMessage, bA as useNotification, o as onUnmounted, s as serverUrl, F as NButton, m as createTextVNode, bB as defaultSettings } from "./index.js";
-=======
 import { a3 as inject, bw as getCurrentInstance, K as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, T as provide, D as h, bx as formLight, ai as keysOf, c as computed, aF as formatLength, aM as get, by as commonVariables, Z as cE, U as toRef, aa as createId, bz as formItemInjectionKey, b9 as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, x as createCommentVNode, f as createElementBlock, n as createBaseVNode, i as NCard, H as NTabPane, I as NTabs, b as useMessage, bA as useNotification, o as onUnmounted, s as serverUrl, F as NButton, m as createTextVNode, bB as defaultSettings } from "./index.js";
->>>>>>> experimental
 import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSlider } from "./Slider.js";
@@ -2500,12 +2495,8 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                         value: "bicubic"
                       },
                       {
-                        label: "Bislerp (Original, slow)",
-                        value: "bislerp-original"
-                      },
-                      {
-                        label: "Bislerp (Tortured, fast)",
-                        value: "bislerp-tortured"
+                        label: "Bislerp",
+                        value: "bislerp"
                       },
                       {
                         label: "Nearest Exact",
@@ -2514,7 +2505,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                     ],
                     value: unref(settings).defaultSettings.extra.highres.latent_scale_mode,
                     "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.extra.highres.latent_scale_mode = $event)
-                  }, null, 8, ["options", "value"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
@@ -3266,21 +3257,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         saving.value = false;
       });
     }
-<<<<<<< HEAD
-    const conf = useSettings();
-    const burner = new BurnerClock(
-      conf.defaultSettings,
-      conf,
-      saveSettings,
-      3e3,
-      false
-    );
-    onUnmounted(() => {
-      burner.cleanup();
-=======
     onUnmounted(() => {
       saveSettings();
->>>>>>> experimental
     });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1, [

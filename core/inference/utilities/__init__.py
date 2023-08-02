@@ -10,6 +10,6 @@ from .latents import (
     preprocess_mask,
     scale_latents,
 )
-from .lwp import get_weighted_text_embeddings
+from .lwp import get_weighted_text_embeddings, Placebo
 from .progress import progress_bar
 from .scheduling import change_scheduler, get_timesteps, prepare_extra_step_kwargs

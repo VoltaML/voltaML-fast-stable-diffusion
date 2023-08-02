@@ -22,9 +22,11 @@ Backend = Literal[
     "AITemplate",
     "unknown",
     "LoRA",
+    "LyCORIS",
     "Textual Inversion",
     "ONNX",
     "VAE",
+    "Upscaler",
 ]
 
 

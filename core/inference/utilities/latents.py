@@ -12,7 +12,6 @@ from PIL import Image
 
 from core.config import config
 from core.flags import LatentScaleModel
-from core.optimizations import upcast_vae
 
 logger = logging.getLogger(__name__)
 
@@ -257,6 +256,8 @@ def prepare_latents(
         return latents, None, None
     else:
         if pipe.vae.config.force_upcast or config.api.upcast_vae:
+            from core.optimizations import upcast_vae
+
             upcast_vae(pipe.vae)
 
         if image.shape[1] != 4:

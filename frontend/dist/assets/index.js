@@ -40924,11 +40924,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-<<<<<<< HEAD
-const _withScopeId = (n) => (pushScopeId("data-v-e442da1d"), n = n(), popScopeId(), n);
-=======
-const _withScopeId = (n) => (pushScopeId("data-v-2cf1de9c"), n = n(), popScopeId(), n);
->>>>>>> experimental
+const _withScopeId = (n) => (pushScopeId("data-v-125f9d66"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40948,11 +40944,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-<<<<<<< HEAD
-      "c5bf0f7c": backgroundColor.value
-=======
-      "67e22a10": backgroundColor.value
->>>>>>> experimental
+      "64ad1582": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41908,11 +41900,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-<<<<<<< HEAD
-const TopBar_vue_vue_type_style_index_0_scoped_e442da1d_lang = "";
-=======
-const TopBar_vue_vue_type_style_index_0_scoped_2cf1de9c_lang = "";
->>>>>>> experimental
+const TopBar_vue_vue_type_style_index_0_scoped_125f9d66_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41920,11 +41908,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-<<<<<<< HEAD
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-e442da1d"]]);
-=======
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2cf1de9c"]]);
->>>>>>> experimental
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-125f9d66"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -41935,19 +41919,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-<<<<<<< HEAD
-      "29cef8cc": backgroundColor.value,
-      "4a43647e": theme.value.common.popoverColor,
-      "e4e5ec3e": theme.value.common.borderRadius,
-      "1beee664": theme.value.common.pressedColor,
-      "440cdb18": theme.value.common.primaryColorHover
-=======
       "16223ad6": backgroundColor.value,
       "1fedac06": theme.value.common.popoverColor,
       "ba9033c6": theme.value.common.borderRadius,
       "3119c2a0": theme.value.common.pressedColor,
       "aca37748": theme.value.common.primaryColorHover
->>>>>>> experimental
     }));
     const settings = useSettings();
     const global2 = useState();
@@ -42064,20 +42040,12 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-<<<<<<< HEAD
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/clock.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
-=======
       component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/v4.js","assets/Switch.js"] : void 0)
->>>>>>> experimental
     },
     {
       path: "/image2image",
       name: "image2image",
-<<<<<<< HEAD
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/OutputStats.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/v4.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Image2ImageView.css"] : void 0)
-=======
       component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/Image2ImageView.css"] : void 0)
->>>>>>> experimental
     },
     {
       path: "/extra",
@@ -42087,11 +42055,7 @@ const router = createRouter({
     {
       path: "/models",
       name: "models",
-<<<<<<< HEAD
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Slider.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
-=======
       component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Slider.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
->>>>>>> experimental
     },
     {
       path: "/about",
@@ -42111,7 +42075,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/clock.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -42132,7 +42096,7 @@ app.use(pinia);
 app.use(router);
 app.mount("#app");
 export {
-  onMounted as $,
+  cM as $,
   pushScopeId as A,
   popScopeId as B,
   resolveComponent as C,
@@ -42142,109 +42106,25 @@ export {
   NIcon as G,
   NTabPane as H,
   NTabs as I,
-<<<<<<< HEAD
-  upscalerOptions as J,
-  Fragment as K,
-  renderList as L,
-  NScrollbar as M,
-=======
   Fragment as J,
   watch as K,
   upscalerOptions as L,
   renderList as M,
->>>>>>> experimental
   NGi as N,
-  upperFirst$1 as O,
-  toString as P,
-  createCompounder as Q,
-  replaceable as R,
-  cloneVNode as S,
+  NScrollbar as O,
+  replaceable as P,
+  useConfig as Q,
+  useFormItem as R,
+  useMergedState as S,
   provide as T,
-  createInjectionKey as U,
-  inject as V,
-  throwError as W,
-  useConfig as X,
-  onBeforeUpdate as Y,
-  indexMap as Z,
+  toRef as U,
+  createInjectionKey as V,
+  call as W,
+  c$1 as X,
+  cB as Y,
+  cE as Z,
   _export_sfc as _,
   useSettings as a,
-<<<<<<< HEAD
-  NDropdown as a$,
-  onBeforeUnmount as a0,
-  cB as a1,
-  cE as a2,
-  c$1 as a3,
-  cM as a4,
-  useMergedState as a5,
-  toRef as a6,
-  watchEffect as a7,
-  onUpdated as a8,
-  watch as a9,
-  popselectLight$1 as aA,
-  NInternalSelectMenu as aB,
-  createTreeMate as aC,
-  happensIn as aD,
-  keysOf as aE,
-  createTmOptions as aF,
-  createRefSetter as aG,
-  mergeEventHandlers as aH,
-  omit as aI,
-  NPopover as aJ,
-  popoverBaseProps as aK,
-  cNotM as aL,
-  useLocale as aM,
-  resolveSlot as aN,
-  NBaseIcon as aO,
-  useAdjustedTo as aP,
-  paginationLight$1 as aQ,
-  ellipsisLight$1 as aR,
-  onDeactivated as aS,
-  mergeProps as aT,
-  radioLight$1 as aU,
-  resolveWrappedSlot as aV,
-  getSlot$1 as aW,
-  depx as aX,
-  formatLength as aY,
-  NScrollbar$1 as aZ,
-  ChevronDownIcon as a_,
-  useTheme as aa,
-  useThemeClass as ab,
-  flatten$2 as ac,
-  VResizeObserver as ad,
-  resolveSlotWithProps as ae,
-  withDirectives as af,
-  vShow as ag,
-  Transition as ah,
-  keep as ai,
-  off as aj,
-  carouselLight$1 as ak,
-  normalizeStyle as al,
-  getPreciseEventTarget as am,
-  on as an,
-  nextTick as ao,
-  useFormItem as ap,
-  call as aq,
-  iconSwitchTransition as ar,
-  insideModal as as,
-  insidePopover as at,
-  useMemo as au,
-  checkboxLight$1 as av,
-  useRtl as aw,
-  createKey as ax,
-  createId as ay,
-  NIconSwitchTransition as az,
-  useMessage as b,
-  pxfy as b0,
-  get as b1,
-  NBaseLoading as b2,
-  ChevronRightIcon as b3,
-  warn$2 as b4,
-  VVirtualList as b5,
-  NEmpty as b6,
-  cssrAnchorMetaName as b7,
-  repeat as b8,
-  beforeNextFrameOnce as b9,
-=======
   isBrowser$3 as a$,
   iconSwitchTransition as a0,
   insideModal as a1,
@@ -42320,21 +42200,10 @@ export {
   useCssVars as b7,
   reactive as b8,
   onMounted as b9,
->>>>>>> experimental
   useNotification as bA,
   defaultSettings as bB,
   urlFromPath as bC,
   useRouter as bD,
-<<<<<<< HEAD
-  useCompitable as bE,
-  descriptionsLight$1 as bF,
-  fadeInTransition as bG,
-  imageLight as bH,
-  isMounted as bI,
-  LazyTeleport as bJ,
-  zindexable$1 as bK,
-  kebabCase$1 as bL,
-=======
   fadeInTransition as bE,
   imageLight as bF,
   isMounted as bG,
@@ -42343,7 +42212,6 @@ export {
   kebabCase$1 as bJ,
   useCompitable as bK,
   descriptionsLight$1 as bL,
->>>>>>> experimental
   withModifiers as bM,
   NAlert as bN,
   inputNumberLight$1 as bO,
@@ -42355,30 +42223,6 @@ export {
   VTarget as bU,
   VFollower as bV,
   sliderLight$1 as bW,
-<<<<<<< HEAD
-  fadeInScaleUpTransition as ba,
-  dataTableLight$1 as bb,
-  loadingBarApiInjectionKey as bc,
-  rateLight as bd,
-  color2Class as be,
-  isBrowser$3 as bf,
-  AddIcon as bg,
-  NProgress as bh,
-  NFadeInExpandTransition as bi,
-  EyeIcon as bj,
-  fadeInHeightExpandTransition as bk,
-  Teleport as bl,
-  uploadLight$1 as bm,
-  reactive as bn,
-  NTag as bo,
-  NModal as bp,
-  useCssVars as bq,
-  huggingfaceModelsFile as br,
-  NText as bs,
-  stepsLight$1 as bt,
-  FinishedIcon as bu,
-  ErrorIcon$1 as bv,
-=======
   normalizeStyle as ba,
   NText as bb,
   huggingfaceModelsFile as bc,
@@ -42401,7 +42245,6 @@ export {
   rateLight as bt,
   color2Class as bu,
   NTag as bv,
->>>>>>> experimental
   getCurrentInstance as bw,
   formLight$1 as bx,
   commonVariables$m as by,

@@ -107,6 +107,9 @@ class UpscaleConfig:
 class APIConfig:
     "Configuration for the API"
 
+    # Autoload
+    autoloaded_textual_inversions: List[str] = field(default_factory=list)
+
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
@@ -151,9 +154,6 @@ class APIConfig:
     # CLIP
     clip_skip: int = 1
     clip_quantization: Literal["full", "int8", "int4"] = "full"
-
-    # Autoload
-    autoloaded_textual_inversions: List[str] = field(default_factory=list)
 
     huggingface_style_parsing: bool = False
 
