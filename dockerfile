@@ -27,6 +27,7 @@ RUN --mount=type=cache,mode=0755,target=/app/frontend/node_modules cd frontend &
 RUN rm -rf frontend/node_modules
 
 RUN rm -rf /root/.cache
+RUN rm -rf /usr/local/share/.cache
 RUN pip uninstall -y triton
 
 # Run the server
