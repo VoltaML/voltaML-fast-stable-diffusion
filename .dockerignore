@@ -45,6 +45,8 @@ test.docker-compose.yml
 .pytest_cache
 .coverage
 /.ruff_cache
+voltaml-manager
+voltaml-manager.exe
 
 # Manager
 /manager

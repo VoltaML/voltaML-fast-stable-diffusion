@@ -26,6 +26,9 @@ COPY . /app
 RUN --mount=type=cache,mode=0755,target=/app/frontend/node_modules cd frontend && yarn install && yarn build
 RUN rm -rf frontend/node_modules
 
+RUN rm -rf /root/.cache
+RUN pip uninstall -y triton
+
 # Run the server
 RUN chmod +x scripts/start.sh
 ENTRYPOINT ["bash", "./scripts/start.sh"]
