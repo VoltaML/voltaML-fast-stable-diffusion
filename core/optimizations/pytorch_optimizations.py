@@ -2,7 +2,6 @@ import logging
 from typing import Optional, Tuple, Union
 
 import torch
-from cpufeature import CPUFeature as cpu
 from diffusers import (
     DiffusionPipeline,
     StableDiffusionPipeline,
@@ -212,6 +211,8 @@ def optimize_model(
 
     ipexed = False
     if config.api.device_type == "cpu":
+        from cpufeature import CPUFeature as cpu
+
         n = (cpu["num_virtual_cores"] // 4) * 3
         torch.set_num_threads(n)
         torch.set_num_interop_threads(n)
