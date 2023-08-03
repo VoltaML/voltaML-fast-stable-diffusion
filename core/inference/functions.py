@@ -2,18 +2,11 @@ import io
 import json
 import logging
 import os
-from functools import partialmethod
-from pathlib import Path
-from typing import Any, Dict, Optional, Tuple, Union
+from typing import Any, Dict, Tuple, Union
 
 import requests
 import torch
-from omegaconf import OmegaConf
-from diffusers import (
-    StableDiffusionPipeline,
-    DiffusionPipeline,
-    AutoencoderKL,
-)
+from diffusers import AutoencoderKL, DiffusionPipeline, StableDiffusionPipeline
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     assign_to_checkpoint,
     conv_attn_to_linear,
@@ -22,19 +15,7 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
 )
-from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
-from diffusers.utils.constants import (
-    CONFIG_NAME,
-    DIFFUSERS_CACHE,
-    HUGGINGFACE_CO_RESOLVE_ENDPOINT,
-    ONNX_WEIGHTS_NAME,
-    WEIGHTS_NAME,
-)
-from diffusers.utils.hub_utils import HF_HUB_OFFLINE
-from diffusers.utils.import_utils import is_safetensors_available
-from transformers import CLIPTextModel, CLIPTextModelWithProjection
-from huggingface_hub import model_info  # type: ignore
-from huggingface_hub._snapshot_download import snapshot_download
+from diffusers.utils.constants import DIFFUSERS_CACHE, HUGGINGFACE_CO_RESOLVE_ENDPOINT
 from huggingface_hub.file_download import hf_hub_download
 from huggingface_hub.hf_api import ModelInfo
 from huggingface_hub.utils._errors import (
@@ -45,7 +26,7 @@ from huggingface_hub.utils._errors import (
 from omegaconf import OmegaConf
 from packaging import version
 from requests import HTTPError
-from transformers import CLIPTextModel
+from transformers import CLIPTextModel, CLIPTextModelWithProjection
 
 from core.config import config
 from core.files import get_full_model_path
@@ -284,64 +265,6 @@ def load_config(
         return config_dict, kwargs
 
     return config_dict
-
-
-def download_model(
-    pretrained_model_name: str,
-    cache_dir: Path = Path(DIFFUSERS_CACHE),
-    resume_download: bool = True,
-    revision: Optional[str] = None,
-    local_files_only: bool = HF_HUB_OFFLINE,
-    force_download: bool = False,
-):
-    "Download a model from the Hugging Face Hub"
-
-    if not os.path.isdir(pretrained_model_name):
-        config_dict = load_config(
-            pretrained_model_name_or_path=pretrained_model_name,
-            cache_dir=cache_dir,
-            resume_download=resume_download,
-            force_download=force_download,
-            local_files_only=local_files_only,
-            revision=revision,
-        )
-        # make sure we only download sub-folders and `diffusers` filenames
-        folder_names = [k for k in config_dict.keys() if not k.startswith("_")]  # type: ignore
-        allow_patterns = [os.path.join(k, "*") for k in folder_names]
-        allow_patterns += [
-            WEIGHTS_NAME,
-            SCHEDULER_CONFIG_NAME,
-            CONFIG_NAME,
-            ONNX_WEIGHTS_NAME,
-            config_name,
-        ]
-
-        # # make sure we don't download flax weights
-        ignore_patterns = ["*.msgpack"]
-
-        if is_safetensors_available() and not local_files_only:
-            info = model_info(
-                repo_id=pretrained_model_name,
-                revision=revision,
-            )
-            if is_safetensors_compatible(info):
-                ignore_patterns.append("*.bin")
-            else:
-                # as a safety mechanism we also don't download safetensors if
-                # not all safetensors files are there
-                ignore_patterns.append("*.safetensors")
-        else:
-            ignore_patterns.append("*.safetensors")
-
-        snapshot_download(
-            repo_id=pretrained_model_name,
-            cache_dir=cache_dir,
-            resume_download=resume_download,
-            local_files_only=local_files_only,
-            revision=revision,
-            allow_patterns=allow_patterns,
-            ignore_patterns=ignore_patterns,
-        )
 
 
 def is_safetensors_compatible(info: ModelInfo) -> bool:

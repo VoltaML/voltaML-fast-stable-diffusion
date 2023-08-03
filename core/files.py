@@ -55,12 +55,11 @@ class CachedModelList:
                     if sdxl:
                         models.append(
                             ModelResponse(
-                                name=model_name,
-                                path=model_name,
+                                name=name,
+                                path=name,
                                 backend="SDXL",
                                 vae="default",
                                 valid=True,
-                                loras=[],
                                 state="not loaded",
                             )
                         )
@@ -101,7 +100,6 @@ class CachedModelList:
                                     backend="SDXL",
                                     vae="default",
                                     valid=True,
-                                    loras=[],
                                     state="not loaded",
                                 )
                             )

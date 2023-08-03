@@ -18,7 +18,7 @@ from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
-from core.inference.functions import download_model, is_ipex_available
+from core.inference.functions import is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.sdxl import SDXLStableDiffusion
 from core.interrogation.base_interrogator import InterrogationResult
@@ -583,7 +583,9 @@ class GPU:
     async def download_huggingface_model(self, model: str):
         "Download a model from the internet."
 
-        await asyncio.to_thread(download_model, model)
+        from diffusers import DiffusionPipeline
+
+        await asyncio.to_thread(DiffusionPipeline.download, model, resume_download=True)
 
     async def load_vae(self, req: VaeLoadRequest):
         "Change the models VAE"

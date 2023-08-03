@@ -15,6 +15,7 @@ renamed_requirements = {
     "cuda-python": "cuda",
     "open_clip_torch": "open_clip",
     "python-multipart": "multipart",
+    "invisible-watermark": "imwatermark",
 }
 logger = logging.getLogger(__name__)
 
