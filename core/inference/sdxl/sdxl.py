@@ -23,7 +23,7 @@ from core.config import config
 from core.flags import RefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
-from core.inference.utilities import get_weighted_text_embeddings, change_scheduler
+from core.inference.utilities import change_scheduler
 from core.inference_callbacks import (
     img2img_callback,
     inpaint_callback,
@@ -99,8 +99,6 @@ class SDXLStableDiffusion(InferenceModel):
         else:
             self.aesthetic_score = False
         self.force_zeros = pipe.config.force_zeros_for_empty_prompt  # type: ignore
-        if hasattr(pipe, "final_offload_hook"):
-            self.final_offload_hook = pipe.final_offload_hook
 
         # Free up memory
         del pipe
@@ -113,16 +111,23 @@ class SDXLStableDiffusion(InferenceModel):
             setattr(self, "original_vae", self.vae)
 
         old_vae = getattr(self, "original_vae")
+        dtype = self.unet.dtype
+        device = (
+            self.unet._hf_hook.execution_device  # pylint: disable=protected-access
+            if hasattr(old_vae, "_hf_hook")
+            else self.unet.device
+        )
         if vae == "default":
             self.vae = old_vae
         else:
-            if Path(vae).is_dir():
-                self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+            if "/" in vae or Path(vae).is_dir():
+                self.vae = AutoencoderKL.from_pretrained(vae).to(  # type: ignore
+                    device=device, dtype=dtype
+                )
             else:
                 self.vae = convert_vaept_to_diffusers(vae).to(
-                    device=old_vae.device, dtype=old_vae.dtype
+                    device=device, dtype=dtype
                 )
-        # This is at the end 'cause I've read horror stories about pythons prefetch system
         self.vae_path = vae
 
     def unload(self) -> None:
@@ -248,7 +253,6 @@ class SDXLStableDiffusion(InferenceModel):
             scheduler=self.scheduler,
             force_zeros=self.force_zeros,
             aesthetic_score=self.aesthetic_score,
-            final_offload_hook=self.final_offload_hook,
         )
 
         change_scheduler(

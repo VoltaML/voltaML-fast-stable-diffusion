@@ -1,6 +1,5 @@
 import inspect
-from contextlib import ExitStack
-from typing import Callable, Literal, Optional, Union, Any
+from typing import Callable, Literal, Optional, Union
 
 import numpy as np
 import PIL
@@ -24,7 +23,7 @@ from core.inference.utilities import (
     get_weighted_text_embeddings,
     Placebo,
 )
-from core.optimizations import autocast, upcast_vae
+from core.optimizations import autocast, upcast_vae, ensure_correct_device, unload_all
 
 # ------------------------------------------------------------------------------
 
@@ -69,7 +68,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         scheduler: SchedulerMixin,
         aesthetic_score: bool,
         force_zeros: bool,
-        final_offload_hook: Any,
     ):
         super().__init__(
             vae=vae,
@@ -92,8 +90,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         self.tokenizer_2: CLIPTokenizer
         self.unet: UNet2DConditionModel
         self.scheduler: LMSDiscreteScheduler
-        if final_offload_hook is not None:
-            self.final_offload_hook = final_offload_hook
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
@@ -110,22 +106,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         `pipeline.enable_sequential_cpu_offload()` the execution device can only be inferred from Accelerate's module
         hooks.
         """
-        if self.device != torch.device("meta") or not hasattr(self.unet, "_hf_hook"):  # type: ignore
+        if self.device != torch.device("meta") and not hasattr(self.unet, "offload_device"):  # type: ignore
             return self.device
-        for module in self.unet.modules():  # type: ignore
-            if (
-                hasattr(module, "_hf_hook")
-                and hasattr(
-                    module._hf_hook,  # pylint: disable=protected-access
-                    "execution_device",
-                )
-                and module._hf_hook.execution_device  # pylint: disable=protected-access # type: ignore
-                is not None
-            ):
-                return torch.device(
-                    module._hf_hook.execution_device  # pylint: disable=protected-access # type: ignore
-                )
-        return self.device
+        return getattr(self.unet, "offload_device", self.device)
 
     def _encode_prompt(
         self,
@@ -162,6 +145,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 logger.debug(f"Post textual negative_prompt: {negative_prompt}")
 
             obj = Placebo()
+            ensure_correct_device(text_encoder)
             setattr(obj, "text_encoder", text_encoder)
             setattr(obj, "tokenizer", tokenizer)
             setattr(obj, "loras", [])
@@ -301,9 +285,12 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
     def decode_latents(self, latents):
         if self.vae.config.force_upcast or config.api.upcast_vae:  # type: ignore
             upcast_vae(self.vae)
-            latents = latents.float()  # type: ignore
+            latents = latents.to(
+                next(iter(self.vae.post_quant_conv.parameters())).dtype
+            )
 
         latents = 1 / 0.18215 * latents
+        ensure_correct_device(self.vae)
         image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
@@ -458,69 +445,56 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             add_text_embeds = add_text_embeds.to(device)
             add_time_ids = add_time_ids.to(device).repeat(batch_size * num_images_per_prompt, 1)  # type: ignore
 
-            map_size = None
-
-            def get_map_size(_, __, output):
-                nonlocal map_size
-                map_size = output[0].shape[
-                    -2:
-                ]  # output.sample.shape[-2:] in older diffusers
-
             # 8. Denoising loop
-            with ExitStack() as gs:
-                for i, t in enumerate(tqdm(timesteps, desc="SDXL")):
-                    # expand the latents if we are doing classifier free guidance
-                    latent_model_input = (
-                        torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
+            ensure_correct_device(self.unet)
+            for i, t in enumerate(tqdm(timesteps, desc="SDXL")):
+                # expand the latents if we are doing classifier free guidance
+                latent_model_input = (
+                    torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
+                )
+                latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+
+                # predict the noise residual
+                added_cond_kwargs = {
+                    "text_embeds": add_text_embeds,
+                    "time_ids": add_time_ids,
+                }
+                noise_pred = self.unet(  # type: ignore
+                    latent_model_input,
+                    t,
+                    encoder_hidden_states=prompt_embeds,
+                    added_cond_kwargs=added_cond_kwargs,
+                ).sample
+
+                # perform guidance
+                if do_classifier_free_guidance:
+                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
+                    noise_pred = noise_pred_uncond + guidance_scale * (
+                        noise_pred_text - noise_pred_uncond
                     )
-                    latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
-                    # predict the noise residual
-                    added_cond_kwargs = {
-                        "text_embeds": add_text_embeds,
-                        "time_ids": add_time_ids,
-                    }
-                    noise_pred = self.unet(  # type: ignore
-                        latent_model_input,
-                        t,
-                        encoder_hidden_states=prompt_embeds,
-                        added_cond_kwargs=added_cond_kwargs,
-                    ).sample
+                # compute the previous noisy sample x_t -> x_t-1
+                latents = self.scheduler.step(  # type: ignore
+                    noise_pred, t.to(noise_pred.device), latents.to(noise_pred.device), **extra_step_kwargs  # type: ignore
+                ).prev_sample  # type: ignore
 
-                    # perform guidance
-                    if do_classifier_free_guidance:
-                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                        noise_pred = noise_pred_uncond + guidance_scale * (
-                            noise_pred_text - noise_pred_uncond
-                        )
+                if mask is not None:
+                    # masking
+                    init_latents_proper = self.scheduler.add_noise(  # type: ignore
+                        init_latents_orig, noise, torch.tensor([t])  # type: ignore
+                    )
+                    latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
 
-                    # compute the previous noisy sample x_t -> x_t-1
-                    latents = self.scheduler.step(  # type: ignore
-                        noise_pred, t.to(noise_pred.device), latents.to(noise_pred.device), **extra_step_kwargs  # type: ignore
-                    ).prev_sample  # type: ignore
-
-                    if mask is not None:
-                        # masking
-                        init_latents_proper = self.scheduler.add_noise(  # type: ignore
-                            init_latents_orig, noise, torch.tensor([t])  # type: ignore
-                        )
-                        latents = (init_latents_proper * mask) + (latents * (1 - mask))  # type: ignore
-
-                    # call the callback, if provided
-                    if i % callback_steps == 0:
-                        if callback is not None:
-                            callback(i, t, latents)  # type: ignore
-                        if (
-                            is_cancelled_callback is not None
-                            and is_cancelled_callback()
-                        ):
-                            return None
+                # call the callback, if provided
+                if i % callback_steps == 0:
+                    if callback is not None:
+                        callback(i, t, latents)  # type: ignore
+                    if is_cancelled_callback is not None and is_cancelled_callback():
+                        return None
 
             # 9. Post-processing
             if output_type == "latent":
-                if hasattr(self, "final_offload_hook"):
-                    logger.debug("Offloading UNET")
-                    self.unet.to("cpu")
+                unload_all()
                 return latents, False
 
             image = self.decode_latents(latents)
@@ -529,8 +503,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             if output_type == "pil":
                 image = self.numpy_to_pil(image)
 
-            if hasattr(self, "final_offload_hook"):
-                self.final_offload_hook.offload()  # type: ignore
+            unload_all()
 
             if not return_dict:
                 return image, False

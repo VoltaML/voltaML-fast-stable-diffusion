@@ -284,41 +284,102 @@
               </NScrollbar>
             </NTabPane>
             <NTabPane name="SDXL">
-              <NScrollbar style="height: 70vh">
-                <NCard title="Models" style="height: 100%">
-                  <div
-                    style="
-                      display: inline-flex;
-                      width: 100%;
-                      align-items: center;
-                      justify-content: space-between;
-                      border-bottom: 1px solid rgb(66, 66, 71);
-                    "
-                    v-for="model in sdxlModels"
-                    v-bind:key="model.path"
-                  >
-                    <p>{{ model.name }}</p>
-                    <div>
-                      <NButton
-                        type="error"
-                        ghost
-                        @click="unloadModel(model)"
-                        v-if="model.state === 'loaded'"
-                        >Unload
-                      </NButton>
-                      <NButton
-                        type="success"
-                        ghost
-                        @click="loadModel(model)"
-                        :loading="model.state === 'loading'"
-                        v-else
-                      >
-                        Load</NButton
-                      >
+              <NGrid cols="1 900:2" :x-gap="8" :y-gap="8" style="height: 100%">
+                <!-- Models -->
+                <NGi>
+                  <NCard title="Models" style="height: 100%">
+                    <div
+                      style="
+                        display: inline-flex;
+                        width: 100%;
+                        align-items: center;
+                        justify-content: space-between;
+                        border-bottom: 1px solid rgb(66, 66, 71);
+                      "
+                      v-for="model in sdxlModels"
+                      v-bind:key="model.path"
+                    >
+                      <p>{{ model.name }}</p>
+                      <div style="display: inline-flex">
+                        <NButton
+                          type="error"
+                          ghost
+                          @click="unloadModel(model)"
+                          v-if="model.state === 'loaded'"
+                          >Unload
+                        </NButton>
+                        <NButton
+                          type="success"
+                          ghost
+                          @click="loadModel(model)"
+                          :loading="model.state === 'loading'"
+                          v-else
+                          >Load</NButton
+                        >
+                        <NButton
+                          type="info"
+                          style="margin-left: 4px"
+                          ghost
+                          @click="global.state.selected_model = model"
+                          :disabled="model.state !== 'loaded'"
+                          >Select</NButton
+                        >
+                      </div>
                     </div>
-                  </div>
-                </NCard>
-              </NScrollbar>
+                  </NCard>
+                </NGi>
+
+                <!-- VAE -->
+                <NGi>
+                  <NCard :title="vae_title">
+                    <div v-if="global.state.selected_model !== null">
+                      <div
+                        style="
+                          display: inline-flex;
+                          width: 100%;
+                          align-items: center;
+                          justify-content: space-between;
+                          border-bottom: 1px solid rgb(66, 66, 71);
+                        "
+                        v-for="vae in sdxlVaeModels"
+                        v-bind:key="vae.path"
+                      >
+                        <p>{{ vae.name }}</p>
+                        <div style="display: inline-flex">
+                          <NButton
+                            type="error"
+                            ghost
+                            disabled
+                            v-if="global.state.selected_model?.vae == vae.path"
+                            >Loaded
+                          </NButton>
+                          <NButton
+                            type="success"
+                            ghost
+                            @click="loadVAE(vae)"
+                            :disabled="
+                              global.state.selected_model === undefined
+                            "
+                            :loading="vae.state === 'loading'"
+                            v-else
+                            >Load</NButton
+                          >
+                        </div>
+                      </div>
+                    </div>
+                    <div v-else>
+                      <NAlert
+                        type="warning"
+                        show-icon
+                        title="No model selected"
+                        style="margin-top: 4px"
+                      >
+                        Please select a model first
+                      </NAlert>
+                    </div>
+                  </NCard>
+                </NGi>
+              </NGrid>
             </NTabPane>
             <NTabPane name="ONNX">
               <NScrollbar style="height: 70vh">
@@ -514,6 +575,36 @@ const vaeModels = computed(() => {
       valid: true,
       state: "not loaded",
       vae: "default",
+      textual_inversions: [],
+    } as ModelEntry,
+    ...filteredModels.value
+      .filter((model) => {
+        return model.backend === "VAE";
+      })
+      .sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      }),
+  ];
+});
+
+const sdxlVaeModels = computed(() => {
+  return [
+    {
+      name: "Default VAE (fp32)",
+      path: "default",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "default",
+      textual_inversions: [],
+    } as ModelEntry,
+    {
+      name: "FP16 VAE",
+      path: "madebyollin/sdxl-vae-fp16-fix",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "fp16",
       textual_inversions: [],
     } as ModelEntry,
     ...filteredModels.value
@@ -894,7 +985,6 @@ const extraOptions: ComputedRef<SelectMixedOption> = computed(() => {
     }),
   };
 });
-
 
 const sdxlOptions: ComputedRef<SelectMixedOption> = computed(() => {
   return {

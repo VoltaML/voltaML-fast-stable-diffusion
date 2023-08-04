@@ -11,10 +11,7 @@ from diffusers import (
 )
 from PIL import Image, ImageOps
 from tqdm import tqdm
-from transformers.models.clip.modeling_clip import (
-    CLIPTextModel,
-    CLIPTextModelWithProjection,
-)
+from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
@@ -68,15 +65,8 @@ class PyTorchStableDiffusion(InferenceModel):
         self.vae: AutoencoderKL
         self.unet: UNet2DConditionModel
         self.text_encoder: CLIPTextModel
-        self.text_encoder_2: CLIPTextModelWithProjection = None  # type: ignore
         self.tokenizer: CLIPTokenizer
-        self.tokenizer_2: CLIPTokenizer = None  # type: ignore
         self.scheduler: Any
-        self.feature_extractor: Any = None
-        self.requires_safety_checker: bool
-        self.safety_checker: Any = None
-        self.image_encoder: Any
-        self.final_offload_hook: Any = None
         self.controlnet: Optional[ControlNetModel] = None
 
         self.current_controlnet: str = ""
@@ -108,8 +98,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.feature_extractor = pipe.feature_extractor  # type: ignore
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
-        if hasattr(pipe, "final_offload_hook"):
-            self.final_offload_hook = pipe.final_offload_hook
 
         if not self.bare:
             # Autoload textual inversions
@@ -162,9 +150,6 @@ class PyTorchStableDiffusion(InferenceModel):
             self.text_encoder,
             self.tokenizer,
             self.scheduler,
-            self.feature_extractor,
-            self.requires_safety_checker,
-            self.safety_checker,
         )
 
         if hasattr(self, "image_encoder"):
@@ -198,7 +183,7 @@ class PyTorchStableDiffusion(InferenceModel):
         load_lora_utilities(self)
 
         if not variations:
-            self.image_encoder = None
+            self.image_encoder = None  # type: ignore
 
         if self.current_controlnet != target_controlnet:
             logging.debug(f"Old: {self.current_controlnet}, New: {target_controlnet}")
@@ -253,7 +238,6 @@ class PyTorchStableDiffusion(InferenceModel):
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            final_offload_hook=self.final_offload_hook,
             controlnet=self.controlnet,
         )
 

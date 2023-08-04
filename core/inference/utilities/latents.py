@@ -286,21 +286,10 @@ def prepare_latents(
                 shape, generator=generator, device="cpu", dtype=dtype
             ).to(device)
         else:
-            # Retarded fix, but hey, if it works, it works
-            if hasattr(pipe.vae, "main_device"):
-                noise = torch.randn(
-                    shape,
-                    generator=torch.Generator("cpu").manual_seed(1),
-                    device="cpu",
-                    dtype=dtype,
-                ).to(device)
-            else:
-                noise = torch.randn(
-                    shape, generator=generator, device=device, dtype=dtype
-                )
-        # Now this... I may have called the previous "hack" retarded, but this...
-        # This just takes it to a whole new level
-        latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
+            noise = torch.randn(
+                shape, generator=generator, device=device, dtype=dtype
+            ).to(device)
+        latents = pipe.scheduler.add_noise(init_latents.to(device), noise, timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 
 

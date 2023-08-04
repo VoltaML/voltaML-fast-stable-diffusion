@@ -8,13 +8,12 @@ from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 )
-from diffusers.utils import is_accelerate_available
 
 from core.config import config
-from core.files import get_full_model_path
 
 from .attn import set_attention_processor
 from .trace_utils import generate_inputs, trace_model
+from .offload import set_offload
 
 logger = logging.getLogger(__name__)
 
@@ -61,15 +60,6 @@ def optimize_model(
         "mps",
     ] and (offload != "disabled" and offload is not None)
 
-    if hasattr(pipe, "text_encoder_2") and not config.api.upcast_vae:
-        if not hasattr(pipe.vae.config, "force_upcast") or pipe.vae.config.force_upcast:  # type: ignore
-            from diffusers import AutoencoderKL
-
-            vae = AutoencoderKL.from_pretrained(
-                "madebyollin/sdxl-vae-fp16-fix", torch_dtype=torch.float16
-            )
-            pipe.vae = vae
-
     # Took me an hour to understand why CPU stopped working...
     # Turns out AMD just lacks support for BF16...
     # Not mad, not mad at all... to be fair, I'm just disappointed
@@ -82,6 +72,7 @@ def optimize_model(
         supports_tf = supports_tf32(device)
         if config.api.reduced_precision:
             if supports_tf:
+                torch.set_float32_matmul_precision("medium")
                 logger.info("Optimization: Enabled all reduced precision operations")
             else:
                 logger.warning(
@@ -135,60 +126,19 @@ def optimize_model(
             logger.info("Optimization: Enabled autocast")
 
     if can_offload:
-        if not is_accelerate_available():
-            logger.warning(
-                "Optimization: Offload is not available, because accelerate is not installed"
-            )
-        else:
-            if offload == "model":
-                # Offload to CPU
-                from accelerate import cpu_offload_with_hook
+        if offload == "model":
+            # Offload to CPU
 
-                if config.api.device_type == "cuda":
-                    torch.cuda.empty_cache()  # otherwise we don't see the memory savings (but they probably exist)
-
-                hook = None
-
-                for cpu_offloaded_model in [
-                    pipe.text_encoder,
-                    getattr(pipe, "text_encoder2", None),
-                    pipe.unet,
-                    pipe.vae,
-                ]:
-                    if cpu_offloaded_model is not None:
-                        _, hook = cpu_offload_with_hook(
-                            cpu_offloaded_model, device, prev_module_hook=hook
-                        )
-                pipe.final_offload_hook = hook
-                setattr(pipe.vae, "main_device", True)
-                setattr(pipe.unet, "main_device", True)
-                logger.info("Optimization: Offloaded model parts to CPU.")
-
-            elif offload == "module":
-                # Enable sequential offload
-                from accelerate import cpu_offload, disk_offload
-
-                for m in [
-                    pipe.vae,
-                    pipe.unet,
-                ]:
-                    if USE_DISK_OFFLOAD:
-                        # If USE_DISK_OFFLOAD toggle set (idk why anyone would do this, but it's nice to support stuff
-                        # like this in case anyone wants to try running this on fuck knows what)
-                        # then offload to disk.
-                        disk_offload(
-                            m,
-                            str(
-                                get_full_model_path("offload-dir", model_folder="temp")
-                                / m.__name__
-                            ),
-                            device,
-                            offload_buffers=True,
-                        )
-                    else:
-                        cpu_offload(m, device, offload_buffers=True)
-
-                logger.info("Optimization: Enabled sequential offload")
+            for model_name in [
+                "text_encoder",
+                "text_encoder2",
+                "unet",
+                "vae",
+            ]:
+                cpu_offloaded_model = getattr(pipe, model_name, None)
+                if cpu_offloaded_model is not None:
+                    set_offload(cpu_offloaded_model, device)
+            logger.info("Optimization: Offloaded model parts to CPU.")
 
     if config.api.vae_slicing:
         pipe.enable_vae_slicing()

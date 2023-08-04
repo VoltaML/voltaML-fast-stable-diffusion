@@ -340,7 +340,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     # Infer ControlNet only for the conditional batch.
                     control_model_input = latents
                     control_model_input = self.scheduler.scale_model_input(
-                        control_model_input, t
+                        control_model_input, t  # type: ignore
                     ).half()
                     controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
                 else:

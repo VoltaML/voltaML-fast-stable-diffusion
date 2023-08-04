@@ -593,10 +593,10 @@ class GPU:
         if req.model in self.loaded_models:
             internal_model = self.loaded_models[req.model]
 
-            if isinstance(internal_model, PyTorchStableDiffusion):
+            if hasattr(internal_model, "change_vae"):
                 logger.info(f"Loading VAE model: {req.vae}")
 
-                internal_model.change_vae(req.vae)
+                internal_model.change_vae(req.vae)  # type: ignore
 
                 websocket_manager.broadcast_sync(
                     Notification(
