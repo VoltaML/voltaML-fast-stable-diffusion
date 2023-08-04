@@ -2244,21 +2244,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
           }),
           createVNode(unref(NFormItem), { label: "Offload" }, {
             default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                options: [
-                  {
-                    value: "disabled",
-                    label: "Disabled"
-                  },
-                  {
-                    value: "model",
-                    label: "Offload the whole model to RAM when not used"
-                  },
-                  {
-                    value: "module",
-                    label: "Offload individual modules to RAM when not used"
-                  }
-                ],
+              createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.offload,
                 "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).defaultSettings.api.offload = $event)
               }, null, 8, ["value"])
