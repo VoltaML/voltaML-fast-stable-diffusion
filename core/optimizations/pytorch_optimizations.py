@@ -53,12 +53,16 @@ def optimize_model(
         if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
         else None
     )
-    can_offload = config.api.device_type not in [
-        "cpu",
-        "iree",
-        "vulkan",
-        "mps",
-    ] and (offload != "disabled" and offload is not None)
+    can_offload = (
+        config.api.device_type
+        not in [
+            "cpu",
+            "iree",
+            "vulkan",
+            "mps",
+        ]
+        and not offload
+    )
 
     # Took me an hour to understand why CPU stopped working...
     # Turns out AMD just lacks support for BF16...
@@ -126,19 +130,18 @@ def optimize_model(
             logger.info("Optimization: Enabled autocast")
 
     if can_offload:
-        if offload == "model":
-            # Offload to CPU
+        # Offload to CPU
 
-            for model_name in [
-                "text_encoder",
-                "text_encoder2",
-                "unet",
-                "vae",
-            ]:
-                cpu_offloaded_model = getattr(pipe, model_name, None)
-                if cpu_offloaded_model is not None:
-                    set_offload(cpu_offloaded_model, device)
-            logger.info("Optimization: Offloaded model parts to CPU.")
+        for model_name in [
+            "text_encoder",
+            "text_encoder2",
+            "unet",
+            "vae",
+        ]:
+            cpu_offloaded_model = getattr(pipe, model_name, None)
+            if cpu_offloaded_model is not None:
+                set_offload(cpu_offloaded_model, device)
+        logger.info("Optimization: Offloaded model parts to CPU.")
 
     if config.api.vae_slicing:
         pipe.enable_vae_slicing()

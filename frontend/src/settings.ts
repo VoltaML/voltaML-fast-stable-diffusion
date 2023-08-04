@@ -160,7 +160,7 @@ export interface ISettings {
     vae_slicing: boolean;
     vae_tiling: boolean;
     trace_model: boolean;
-    offload: "module" | "model" | "disabled";
+    offload: boolean;
     image_preview_delay: number;
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
@@ -325,7 +325,7 @@ export const defaultSettings: ISettings = {
     vae_tiling: false,
     trace_model: false,
     cudnn_benchmark: false,
-    offload: "disabled",
+    offload: false,
 
     device_id: 0,
     device_type: "cuda",

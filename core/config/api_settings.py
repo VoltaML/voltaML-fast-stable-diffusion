@@ -34,7 +34,7 @@ class APIConfig:
     vae_tiling: bool = False
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
-    offload: Literal["module", "model", "disabled"] = "disabled"
+    offload: bool = False
     data_type: Literal["float32", "float16", "bfloat16"] = "float16"
 
     # CUDA specific optimizations
