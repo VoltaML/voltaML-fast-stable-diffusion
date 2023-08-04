@@ -112,11 +112,7 @@ class SDXLStableDiffusion(InferenceModel):
 
         old_vae = getattr(self, "original_vae")
         dtype = self.unet.dtype
-        device = (
-            self.unet._hf_hook.execution_device  # pylint: disable=protected-access
-            if hasattr(old_vae, "_hf_hook")
-            else self.unet.device
-        )
+        device = self.unet.device
         if vae == "default":
             self.vae = old_vae
         else:
@@ -128,6 +124,8 @@ class SDXLStableDiffusion(InferenceModel):
                 self.vae = convert_vaept_to_diffusers(vae).to(
                     device=device, dtype=dtype
                 )
+        if hasattr(old_vae, "offload_device"):
+            setattr(self.vae, "offload_device", getattr(old_vae, "offload_device"))
         self.vae_path = vae
 
     def unload(self) -> None:

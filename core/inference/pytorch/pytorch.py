@@ -127,18 +127,21 @@ class PyTorchStableDiffusion(InferenceModel):
             setattr(self, "original_vae", self.vae)
 
         old_vae = getattr(self, "original_vae")
+        dtype = self.unet.dtype
+        device = self.unet.device
         if vae == "default":
             self.vae = old_vae
         else:
-            # Why the fuck do you think that's constant pylint?
-            # Are you mentally insane?
-            if Path(vae).is_dir():
-                self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+            if "/" in vae or Path(vae).is_dir():
+                self.vae = AutoencoderKL.from_pretrained(vae).to(  # type: ignore
+                    device=device, dtype=dtype
+                )
             else:
                 self.vae = convert_vaept_to_diffusers(vae).to(
-                    device=old_vae.device, dtype=old_vae.dtype
+                    device=device, dtype=dtype
                 )
-        # This is at the end 'cause I've read horror stories about pythons prefetch system
+        if hasattr(old_vae, "offload_device"):
+            setattr(self.vae, "offload_device", getattr(old_vae, "offload_device"))
         self.vae_path = vae
 
     def unload(self) -> None:
