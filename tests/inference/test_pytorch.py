@@ -43,7 +43,6 @@ def test_txt2img_scheduler_sweep(
     pipe.generate(job)
 
 
-# Sweep resolutions
 @pytest.mark.parametrize("height", [256, 512, 1024])
 @pytest.mark.parametrize("width", [256, 512, 1024])
 def test_txt2img_res_sweep(pipe: PyTorchStableDiffusion, height: int, width: int):
