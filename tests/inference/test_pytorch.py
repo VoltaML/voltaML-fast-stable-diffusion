@@ -25,14 +25,70 @@ def pipe_fixture():
     return PyTorchStableDiffusion("Azher/Anything-v4.5-vae-fp16-diffuser")
 
 
-def test_txt2img(pipe: PyTorchStableDiffusion):
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+def test_txt2img_scheduler_sweep(
+    pipe: PyTorchStableDiffusion, scheduler: KarrasDiffusionSchedulers
+):
+    "Sweep all schedulers with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=scheduler,
+            id="test",
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
+# Sweep resolutions
+@pytest.mark.parametrize("height", [256, 512, 1024])
+@pytest.mark.parametrize("width", [256, 512, 1024])
+def test_txt2img_res_sweep(pipe: PyTorchStableDiffusion, height: int, width: int):
+    "Sweep multiple resolutions with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+            id="test",
+            height=height,
+            width=width,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
+def test_txt2img_multi(pipe: PyTorchStableDiffusion):
+    "Generating multiple images with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+            id="test",
+            batch_size=2,
+            batch_count=2,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    assert len(pipe.generate(job)) == 4
+
+
+def test_txt2img_self_attention(pipe: PyTorchStableDiffusion):
     "Generate an image with Text to Image"
 
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
             prompt="This is a test",
-            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
             id="test",
+            self_attention_scale=1,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
