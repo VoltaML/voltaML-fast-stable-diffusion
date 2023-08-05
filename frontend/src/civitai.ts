@@ -1,6 +1,6 @@
 interface IImage {
   url: string;
-  nsfw: "None" | "Mature" | string;
+  nsfw: NSFWLevel;
   width: number;
   height: number;
   hash: string;
@@ -87,4 +87,19 @@ export interface ICivitAIModels {
     totalPages: number;
     nextPage: string;
   };
+}
+
+export type NSFWLevel = "None" | "Soft" | "Mature" | "X";
+
+export function nsfwIndex(nsfwLevel: NSFWLevel) {
+  switch (nsfwLevel) {
+    case "None":
+      return 0;
+    case "Soft":
+      return 1;
+    case "Mature":
+      return 2;
+    case "X":
+      return 3;
+  }
 }

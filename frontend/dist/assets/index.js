@@ -40690,7 +40690,8 @@ const defaultSettings = {
     theme: "dark",
     enable_theme_editor: false,
     image_browser_columns: 5,
-    on_change_timer: 2e3
+    on_change_timer: 2e3,
+    nsfw_ok_threshold: 0
   }
 };
 let rSettings = JSON.parse(JSON.stringify(defaultSettings));
