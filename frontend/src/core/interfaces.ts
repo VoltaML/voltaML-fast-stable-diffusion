@@ -55,3 +55,10 @@ export enum ControlNetType {
   SCRIBBLE = "lllyasviel/sd-controlnet-scribble",
   SEGMENTATION = "lllyasviel/sd-controlnet-seg",
 }
+
+export interface IHuggingFaceModel {
+  huggingface_id: string;
+  name: string;
+  huggingface_url: string;
+  example_image_url: string;
+}

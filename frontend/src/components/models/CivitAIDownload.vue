@@ -78,7 +78,7 @@
       style="width: 30vw"
       :min="1"
       :max="10"
-      v-model:value="conf.data.settings.frontend.image_browser_columns"
+      v-model:value="settings.data.settings.frontend.image_browser_columns"
     >
     </NSlider>
   </div>
@@ -110,7 +110,8 @@
                 borderRadius: '8px',
                 cursor: 'pointer',
                 filter:
-                  item.modelVersions[0].images[0].nsfw !== 'None'
+                  nsfwIndex(item.modelVersions[0].images[0].nsfw) >
+                  settings.data.settings.frontend.nsfw_ok_threshold
                     ? 'blur(12px)'
                     : 'none',
               }"
@@ -153,9 +154,10 @@ import {
 } from "naive-ui";
 import { computed, onMounted, onUnmounted, reactive, ref, type Ref } from "vue";
 import type { ICivitAIModel, ICivitAIModels } from "../../civitai";
+import { nsfwIndex } from "../../civitai";
 import { useSettings } from "../../store/settings";
 
-const conf = useSettings();
+const settings = useSettings();
 
 const loadingLock = ref(false);
 const currentPage = ref(1);
@@ -189,11 +191,15 @@ const modelData: ICivitAIModel[] = reactive<ICivitAIModel[]>([]);
 
 const columns = computed(() => {
   const cols: ICivitAIModel[][] = [];
-  for (let i = 0; i < conf.data.settings.frontend.image_browser_columns; i++) {
+  for (
+    let i = 0;
+    i < settings.data.settings.frontend.image_browser_columns;
+    i++
+  ) {
     cols.push([]);
   }
   for (let i = 0; i < modelData.length; i++) {
-    cols[i % conf.data.settings.frontend.image_browser_columns].push(
+    cols[i % settings.data.settings.frontend.image_browser_columns].push(
       modelData[i]
     );
   }
@@ -286,7 +292,7 @@ const handleScroll = (e: Event) => {
 };
 
 function moveImage(direction: number) {
-  const numColumns = conf.data.settings.frontend.image_browser_columns;
+  const numColumns = settings.data.settings.frontend.image_browser_columns;
 
   if (direction === -1) {
     // Traverse all the columns before removing one from the currentIndexOfColumn
@@ -348,7 +354,7 @@ onUnmounted(() => {
 refreshImages();
 
 const backgroundColor = computed(() => {
-  if (conf.data.settings.frontend.theme === "dark") {
+  if (settings.data.settings.frontend.theme === "dark") {
     return "#121215";
   } else {
     return "#fff";
@@ -366,7 +372,7 @@ const backgroundColor = computed(() => {
 .image-grid {
   display: grid;
   grid-template-columns: repeat(
-    v-bind("conf.data.settings.frontend.image_browser_columns"),
+    v-bind("settings.data.settings.frontend.image_browser_columns"),
     1fr
   );
   grid-gap: 8px;

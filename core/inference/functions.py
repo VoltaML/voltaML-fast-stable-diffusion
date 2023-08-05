@@ -51,6 +51,7 @@ config_name = "model_index.json"
 torch_older_than_200 = version.parse(torch.__version__) < version.parse("2.0.0")
 torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 
+
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
     try:
