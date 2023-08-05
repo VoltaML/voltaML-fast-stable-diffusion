@@ -155,7 +155,7 @@ export interface ISettings {
     vae_slicing: boolean;
     vae_tiling: boolean;
     trace_model: boolean;
-    offload: bool;
+    offload: boolean;
     image_preview_delay: number;
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
@@ -174,6 +174,8 @@ export interface ISettings {
     image_quality: number;
 
     disable_grid: boolean;
+
+    upcast_vae: boolean;
 
     torch_compile: boolean;
     torch_compile_fullgraph: boolean;
@@ -338,6 +340,8 @@ export const defaultSettings: ISettings = {
     image_quality: 95,
 
     disable_grid: false,
+
+    upcast_vae: false,
 
     torch_compile: false,
     torch_compile_fullgraph: false,

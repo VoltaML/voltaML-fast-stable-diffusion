@@ -40646,7 +40646,7 @@ const defaultSettings = {
     vae_tiling: false,
     trace_model: false,
     cudnn_benchmark: false,
-    offload: "disabled",
+    offload: false,
     device_id: 0,
     device_type: "cuda",
     data_type: "float16",

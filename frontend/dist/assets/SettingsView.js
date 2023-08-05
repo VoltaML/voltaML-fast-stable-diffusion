@@ -2244,21 +2244,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
           }),
           createVNode(unref(NFormItem), { label: "Offload" }, {
             default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                options: [
-                  {
-                    value: "disabled",
-                    label: "Disabled"
-                  },
-                  {
-                    value: "model",
-                    label: "Offload the whole model to RAM when not used"
-                  },
-                  {
-                    value: "module",
-                    label: "Offload individual modules to RAM when not used"
-                  }
-                ],
+              createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.offload,
                 "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).defaultSettings.api.offload = $event)
               }, null, 8, ["value"])
@@ -2495,12 +2481,8 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
                         value: "bicubic"
                       },
                       {
-                        label: "Bislerp (Original, slow)",
-                        value: "bislerp-original"
-                      },
-                      {
-                        label: "Bislerp (Tortured, fast)",
-                        value: "bislerp-tortured"
+                        label: "Bislerp",
+                        value: "bislerp"
                       },
                       {
                         label: "Nearest Exact",
@@ -2509,7 +2491,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
                     ],
                     value: unref(settings).defaultSettings.extra.highres.latent_scale_mode,
                     "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.extra.highres.latent_scale_mode = $event)
-                  }, null, 8, ["options", "value"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
