@@ -7,8 +7,7 @@ LatentScaleModel = Literal[
     "nearest",
     "area",
     "bilinear",
-    "bislerp-original",
-    "bislerp-tortured",
+    "bislerp",
     "bicubic",
     "nearest-exact",
 ]

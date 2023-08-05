@@ -12,6 +12,7 @@ from PIL import Image
 
 from core.config import config
 from core.flags import LatentScaleModel
+from core.optimizations import upcast_vae
 
 logger = logging.getLogger(__name__)
 
@@ -256,8 +257,16 @@ def prepare_latents(
         return latents, None, None
     else:
         if image.shape[1] != 4:
+            if config.api.upcast_vae:
+                upcast_vae(pipe.vae)
+                image = image.to(
+                    next(iter(pipe.vae.post_quant_conv.parameters())).dtype
+                )
+            else:
+                image = image.to(config.api.device, dtype=pipe.vae.dtype)
+
             image = pad_tensor(image, pipe.vae_scale_factor)
-            init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
+            init_latent_dist = pipe.vae.encode(image).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)
@@ -281,95 +290,14 @@ def prepare_latents(
                 shape, generator=generator, device="cpu", dtype=dtype
             ).to(device)
         else:
-            # Retarded fix, but hey, if it works, it works
-            if hasattr(pipe.vae, "main_device"):
-                noise = torch.randn(
-                    shape,
-                    generator=torch.Generator("cpu").manual_seed(1),
-                    device="cpu",
-                    dtype=dtype,
-                ).to(device)
-            else:
-                noise = torch.randn(
-                    shape, generator=generator, device=device, dtype=dtype
-                )
-        # Now this... I may have called the previous "hack" retarded, but this...
-        # This just takes it to a whole new level
+            noise = torch.randn(
+                shape, generator=generator, device=device, dtype=dtype
+            )
         latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 
 
-def bislerp_original(samples, width, height):
-    shape = list(samples.shape)
-    width_scale = (shape[3]) / (width)
-    height_scale = (shape[2]) / (height)
-
-    shape[3] = width
-    shape[2] = height
-    out1 = torch.empty(
-        shape, dtype=samples.dtype, layout=samples.layout, device=samples.device
-    )
-
-    def algorithm(in1, in2, t):
-        dims = in1.shape
-        val = t
-
-        # flatten to batches
-        low = in1.reshape(dims[0], -1)
-        high = in2.reshape(dims[0], -1)
-
-        low_weight = torch.norm(low, dim=1, keepdim=True)
-        low_weight[low_weight == 0] = 0.0000000001
-        low_norm = low / low_weight
-        high_weight = torch.norm(high, dim=1, keepdim=True)
-        high_weight[high_weight == 0] = 0.0000000001
-        high_norm = high / high_weight
-
-        dot_prod = (low_norm * high_norm).sum(1)
-        dot_prod[dot_prod > 0.9995] = 0.9995
-        dot_prod[dot_prod < -0.9995] = -0.9995
-        omega = torch.acos(dot_prod)
-        so = torch.sin(omega)
-        res = (torch.sin((1.0 - val) * omega) / so).unsqueeze(1) * low_norm + (
-            torch.sin(val * omega) / so
-        ).unsqueeze(1) * high_norm
-        res *= low_weight * (1.0 - val) + high_weight * val
-        return res.reshape(dims)
-
-    for x_dest in range(shape[3]):
-        for y_dest in range(shape[2]):
-            y = (y_dest + 0.5) * height_scale - 0.5
-            x = (x_dest + 0.5) * width_scale - 0.5
-
-            x1 = max(math.floor(x), 0)
-            x2 = min(x1 + 1, samples.shape[3] - 1)
-            wx = x - math.floor(x)
-
-            y1 = max(math.floor(y), 0)
-            y2 = min(y1 + 1, samples.shape[2] - 1)
-            wy = y - math.floor(y)
-
-            in1 = samples[:, :, y1, x1]
-            in2 = samples[:, :, y1, x2]
-            in3 = samples[:, :, y2, x1]
-            in4 = samples[:, :, y2, x2]
-
-            if (x1 == x2) and (y1 == y2):
-                out_value = in1
-            elif x1 == x2:
-                out_value = algorithm(in1, in3, wy)
-            elif y1 == y2:
-                out_value = algorithm(in1, in2, wx)
-            else:
-                o1 = algorithm(in1, in2, wx)
-                o2 = algorithm(in3, in4, wx)
-                out_value = algorithm(o1, o2, wy)
-
-            out1[:, :, y_dest, x_dest] = out_value
-    return out1
-
-
-def bislerp_gabeified(samples, width, height):
+def bislerp(samples, width, height):
     device = samples.device
 
     def slerp(b1, b2, r):
@@ -488,9 +416,7 @@ def scale_latents(
 ):
     "Interpolate the latents to the desired scale."
 
-    align_to = (
-        32 if latent_scale_mode in ["bislerp-tortured", "bislerp-original"] else 8
-    )
+    align_to = 32 if latent_scale_mode == "bislerp" else 8
 
     s = time()
 
@@ -503,10 +429,8 @@ def scale_latents(
     height_truncated = int(((latents.shape[3] * scale - 1) // align_to + 1) * align_to)
 
     # Scale the latents
-    if latent_scale_mode == "bislerp-tortured":
-        interpolated = bislerp_gabeified(latents, height_truncated, width_truncated)
-    elif latent_scale_mode == "bislerp-original":
-        interpolated = bislerp_original(latents, height_truncated, width_truncated)
+    if latent_scale_mode == "bislerp":
+        interpolated = bislerp(latents, height_truncated, width_truncated)
     else:
         interpolated = F.interpolate(
             latents,

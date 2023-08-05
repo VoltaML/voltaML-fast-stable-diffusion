@@ -8,6 +8,7 @@ from diffusers import StableDiffusionPipeline
 
 from ...config import config
 from ...files import get_full_model_path
+from ...optimizations import ensure_correct_device
 
 logger = logging.getLogger(__name__)
 
@@ -253,6 +254,7 @@ def get_unweighted_text_embeddings(
             if hasattr(pipe, "clip_inference"):
                 text_embedding = pipe.clip_inference(text_input_chunk)
             else:
+                ensure_correct_device(pipe.text_encoder)
                 text_embedding = pipe.text_encoder(text_input_chunk)[0]  # type: ignore
 
             if no_boseos_middle:
@@ -272,6 +274,7 @@ def get_unweighted_text_embeddings(
         if hasattr(pipe, "clip_inference"):
             text_embeddings = pipe.clip_inference(text_input)
         else:
+            ensure_correct_device(pipe.text_encoder)
             text_embeddings = pipe.text_encoder(text_input)[0]  # type: ignore
     return text_embeddings
 

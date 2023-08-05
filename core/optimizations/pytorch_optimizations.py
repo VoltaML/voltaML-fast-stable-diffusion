@@ -7,13 +7,12 @@ from diffusers import (
     StableDiffusionPipeline,
     StableDiffusionUpscalePipeline,
 )
-from diffusers.utils import is_accelerate_available
 
 from core.config import config
-from core.files import get_full_model_path
 
 from .attn import set_attention_processor
 from .trace_utils import generate_inputs, trace_model
+from .offload import set_offload
 
 logger = logging.getLogger(__name__)
 
@@ -48,22 +47,24 @@ def optimize_model(
             'You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
         )
 
-    offload = (
-        config.api.offload
-        if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
-        else None
+    offload = config.api.offload and is_pytorch_pipe(pipe) and not is_for_aitemplate
+    can_offload = (
+        config.api.device_type
+        not in [
+            "cpu",
+            "vulkan",
+            "mps",
+        ]
+        and offload
     )
-    can_offload = config.api.device_type not in [
-        "cpu",
-        "vulkan",
-        "mps",
-    ] and (offload != "disabled" and offload is not None)
 
     # Took me an hour to understand why CPU stopped working...
     # Turns out AMD just lacks support for BF16...
     # Not mad, not mad at all... to be fair, I'm just disappointed
     if not can_offload and not is_for_aitemplate:
         pipe.to(device, torch_dtype=config.api.dtype)
+    else:
+        pipe.to(torch_dtype=config.api.dtype)
 
     if config.api.device_type == "cuda" and not is_for_aitemplate:
         supports_tf = supports_tf32(device)
@@ -123,80 +124,27 @@ def optimize_model(
             logger.info("Optimization: Enabled autocast")
 
     if can_offload:
-        if not is_accelerate_available():
-            logger.warning(
-                "Optimization: Offload is not available, because accelerate is not installed"
-            )
-        else:
-            if offload == "model":
-                # Offload to CPU
-                from accelerate import cpu_offload_with_hook
+        # Offload to CPU
 
-                if config.api.device_type == "cuda":
-                    torch.cuda.empty_cache()  # otherwise we don't see the memory savings (but they probably exist)
-
-                hook = None
-
-                for cpu_offloaded_model in [
-                    pipe.text_encoder,
-                    pipe.unet,
-                    pipe.vae,
-                ]:
-                    _, hook = cpu_offload_with_hook(
-                        cpu_offloaded_model, device, prev_module_hook=hook
-                    )
-                pipe.final_offload_hook = hook
-                setattr(pipe.vae, "main_device", True)
-                setattr(pipe.unet, "main_device", True)
-                logger.info("Optimization: Offloaded model parts to CPU.")
-
-            elif offload == "module":
-                # Enable sequential offload
-                from accelerate import cpu_offload, disk_offload
-
-                for m in [
-                    pipe.vae,
-                    pipe.unet,
-                ]:
-                    if USE_DISK_OFFLOAD:
-                        # If USE_DISK_OFFLOAD toggle set (idk why anyone would do this, but it's nice to support stuff
-                        # like this in case anyone wants to try running this on fuck knows what)
-                        # then offload to disk.
-                        disk_offload(
-                            m,
-                            str(
-                                get_full_model_path("offload-dir", model_folder="temp")
-                                / m.__name__
-                            ),
-                            device,
-                            offload_buffers=True,
-                        )
-                    else:
-                        cpu_offload(m, device, offload_buffers=True)
-
-                logger.info("Optimization: Enabled sequential offload")
+        for model_name in [
+            "text_encoder",
+            "text_encoder2",
+            "unet",
+            "vae",
+        ]:
+            cpu_offloaded_model = getattr(pipe, model_name, None)
+            if cpu_offloaded_model is not None:
+                set_offload(cpu_offloaded_model, device)
+                setattr(pipe, model_name, cpu_offloaded_model)
+        logger.info("Optimization: Offloaded model parts to CPU.")
 
     if config.api.vae_slicing:
-        if not (
-            issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
-            or isinstance(pipe, StableDiffusionUpscalePipeline)
-        ):
-            pipe.enable_vae_slicing()
-            logger.info("Optimization: Enabled VAE slicing")
-        else:
-            logger.debug(
-                "Optimization: VAE slicing is not available for upscale models"
-            )
+        pipe.enable_vae_slicing()
+        logger.info("Optimization: Enabled VAE slicing")
 
     if config.api.vae_tiling:
-        if not (
-            issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
-            or isinstance(pipe, StableDiffusionUpscalePipeline)
-        ):
-            pipe.enable_vae_tiling()
-            logger.info("Optimization: Enabled VAE tiling")
-        else:
-            logger.debug("Optimization: VAE tiling is not available for upscale models")
+        pipe.enable_vae_tiling()
+        logger.info("Optimization: Enabled VAE tiling")
 
     if config.api.use_tomesd and not is_for_aitemplate:
         try:

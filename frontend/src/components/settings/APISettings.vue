@@ -209,24 +209,7 @@
     </NFormItem>
 
     <NFormItem label="Offload">
-      <NSelect
-        :options="[
-          {
-            value: 'disabled',
-            label: 'Disabled',
-          },
-          {
-            value: 'model',
-            label: 'Offload the whole model to RAM when not used',
-          },
-          {
-            value: 'module',
-            label: 'Offload individual modules to RAM when not used',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.offload"
-      >
-      </NSelect>
+      <NSwitch v-model:value="settings.defaultSettings.api.offload" />
     </NFormItem>
 
     <h2>Device</h2>

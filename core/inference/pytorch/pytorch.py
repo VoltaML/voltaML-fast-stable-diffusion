@@ -67,10 +67,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.text_encoder: CLIPTextModel
         self.tokenizer: CLIPTokenizer
         self.scheduler: Any
-        self.feature_extractor: Any
-        self.requires_safety_checker: bool
-        self.safety_checker: Any
-        self.image_encoder: Any
         self.controlnet: Optional[ControlNetModel] = None
 
         self.current_controlnet: str = ""
@@ -99,9 +95,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.text_encoder = pipe.text_encoder  # type: ignore
         self.tokenizer = pipe.tokenizer  # type: ignore
         self.scheduler = pipe.scheduler  # type: ignore
-        self.feature_extractor = pipe.feature_extractor  # type: ignore
-        self.requires_safety_checker = False  # type: ignore
-        self.safety_checker = pipe.safety_checker  # type: ignore
 
         if not self.bare:
             # Autoload textual inversions
@@ -131,18 +124,19 @@ class PyTorchStableDiffusion(InferenceModel):
             setattr(self, "original_vae", self.vae)
 
         old_vae = getattr(self, "original_vae")
+        dtype = self.unet.dtype
+        device = old_vae.device
         if vae == "default":
             self.vae = old_vae
         else:
-            # Why the fuck do you think that's constant pylint?
-            # Are you mentally insane?
-            if Path(vae).is_dir():
-                self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+            if "/" in vae or Path(vae).is_dir():
+                self.vae = AutoencoderKL.from_pretrained(vae).to(  # type: ignore
+                    device=device, dtype=dtype
+                )
             else:
                 self.vae = convert_vaept_to_diffusers(vae).to(
-                    device=old_vae.device, dtype=old_vae.dtype
+                    device=device, dtype=dtype
                 )
-        # This is at the end 'cause I've read horror stories about pythons prefetch system
         self.vae_path = vae
 
     def unload(self) -> None:
@@ -154,9 +148,6 @@ class PyTorchStableDiffusion(InferenceModel):
             self.text_encoder,
             self.tokenizer,
             self.scheduler,
-            self.feature_extractor,
-            self.requires_safety_checker,
-            self.safety_checker,
         )
 
         if hasattr(self, "image_encoder"):
@@ -573,9 +564,9 @@ class PyTorchStableDiffusion(InferenceModel):
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
-            safety_checker=self.safety_checker,
+            feature_extractor=None,  # type: ignore
+            requires_safety_checker=False,
+            safety_checker=None,  # type: ignore
         )
 
         pipe.save_pretrained(path, safe_serialization=safetensors)
