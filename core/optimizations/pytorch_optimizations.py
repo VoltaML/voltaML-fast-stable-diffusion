@@ -48,20 +48,15 @@ def optimize_model(
             'You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
         )
 
-    offload = (
-        config.api.offload
-        if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
-        else None
-    )
+    offload = config.api.offload and is_pytorch_pipe(pipe) and not is_for_aitemplate
     can_offload = (
         config.api.device_type
         not in [
             "cpu",
-            "iree",
             "vulkan",
             "mps",
         ]
-        and not offload
+        and offload
     )
 
     # Took me an hour to understand why CPU stopped working...
@@ -134,13 +129,14 @@ def optimize_model(
 
         for model_name in [
             "text_encoder",
-            "text_encoder2",
+            "text_encoder_2",
             "unet",
             "vae",
         ]:
             cpu_offloaded_model = getattr(pipe, model_name, None)
             if cpu_offloaded_model is not None:
                 set_offload(cpu_offloaded_model, device)
+                setattr(pipe, model_name, cpu_offloaded_model)
         logger.info("Optimization: Offloaded model parts to CPU.")
 
     if config.api.vae_slicing:
