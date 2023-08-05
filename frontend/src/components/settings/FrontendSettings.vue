@@ -18,6 +18,9 @@
     <NTabPane name="Theme">
       <ThemeSettings />
     </NTabPane>
+    <NTabPane name="NSFW">
+      <NSFWSettings />
+    </NTabPane>
   </NTabs>
 </template>
 
@@ -29,4 +32,5 @@ import ImageToImageSettings from "./DefaultsSettings/ImageToImageSettings.vue";
 import InpaintingSettings from "./DefaultsSettings/InpaintingSettings.vue";
 import TextToImageSettings from "./DefaultsSettings/TextToImageSettings.vue";
 import ThemeSettings from "./DefaultsSettings/ThemeSettings.vue";
+import NSFWSettings from "./NSFWSettings.vue";
 </script>

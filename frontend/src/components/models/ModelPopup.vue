@@ -24,9 +24,9 @@
               style="height: 70vh; width: 100%"
               draggable
               :slides-per-view="2"
+              :centered-slides="true"
               effect="card"
               dot-type="line"
-              centered-slides
               keyboard
               mousewheel
             >
@@ -35,13 +35,16 @@
                   ? subModel.images
                   : [subModel.images[0], subModel.images[0]]"
                 :key="image.hash"
-                style="border-radius: 20px; overflow: hidden"
               >
                 <img
                   :src="image.url"
                   :style="{
                     width: '100%',
-                    // filter: image.nsfw !== 'None' ? 'blur(4px)' : 'none',
+                    filter:
+                      nsfwIndex(image.nsfw) >
+                      settings.data.settings.frontend.nsfw_ok_threshold
+                        ? 'blur(12px)'
+                        : 'none',
                   }"
                 />
               </div>
@@ -171,8 +174,11 @@ import {
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { nextTick, reactive, ref, watch } from "vue";
 import type { IModelVersion } from "../../civitai";
+import { nsfwIndex } from "../../civitai";
+import { useSettings } from "../../store/settings";
 
 const message = useMessage();
+const settings = useSettings();
 
 const props = defineProps<{
   model: ICivitAIModel | null;
