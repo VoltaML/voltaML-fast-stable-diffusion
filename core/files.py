@@ -82,7 +82,10 @@ class CachedModelList:
                         state="not loaded",
                     )
                 )
-            elif ".safetensors" in model_name or ".ckpt" in model_name:
+            elif (self.checkpoint_converted_path / model_name).suffix in [
+                ".ckpt",
+                ".safetensors",
+            ]:
                 # Assuming that model is in Checkpoint / Safetensors format
                 models.append(
                     ModelResponse(
