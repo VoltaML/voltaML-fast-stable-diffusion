@@ -91,6 +91,7 @@ for directory in [
     "vae",
     "upscaler",
     "textual-inversion",
+    "lycoris",
 ]:
     Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
