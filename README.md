@@ -99,8 +99,6 @@
     <li><a href="https://fastapi.tiangolo.com/">FastAPI</a></li>
     <li><a href="https://pytorch.org/">PyTorch</a></li>
     <li><a href="https://github.com/facebookincubator/AITemplate">AITemplate</a></li>
-    <li><a href="https://github.com/facebookresearch/xformers">xFormers</a></li>
-    <li><a href="https://websockets.readthedocs.io/en/stable/">WebSockets</a></li>
   </ul>
 </details>
 
@@ -127,11 +125,7 @@
 - Clean and simple Web UI
 - Supports PyTorch as well as AITemplat for inference
 - Support for Windows and Linux
-- xFormers supported out of the box
-- GPU cluster load balancing
-- Discord bot
 - Documented API
-- Clean source code that should be easy to understand
 
 ## Speed comparison
 
@@ -149,14 +143,12 @@ Please see the [documentation](https://voltaml.github.io/voltaML-fast-stable-dif
 
 Contributions are always welcome!
 
-See `contributing.md` for ways to get started.
-
 # License
 
 Distributed under the <b>GPL v3</b>. See [License](https://github.com/VoltaML/voltaML-fast-stable-diffusion/blob/experimental/License) for more information.
 
 # Contact
 
-Feel free to contact us on discord: https://discord.gg/pY5SVyHmWm
+Feel free to contact us on Discord: https://discord.gg/pY5SVyHmWm
 
 Project Link: [https://github.com/VoltaML/voltaML-fast-stable-diffusion](https://github.com/VoltaML/voltaML-fast-stable-diffusion)
