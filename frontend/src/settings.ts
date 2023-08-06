@@ -18,10 +18,10 @@ export enum Sampler {
 }
 
 export interface IQuantDict {
-  vae_decoder: "no-quant" | "uint8" | "int8";
-  vae_encoder: "no-quant" | "uint8" | "int8";
-  unet: "no-quant" | "uint8" | "int8";
-  text_encoder: "no-quant" | "uint8" | "int8";
+  vae_decoder: boolean | null;
+  vae_encoder: boolean | null;
+  unet: boolean | null;
+  text_encoder: boolean | null;
 }
 
 export interface ISettings {
@@ -351,10 +351,10 @@ export const defaultSettings: ISettings = {
   },
   onnx: {
     quant_dict: {
-      text_encoder: "no-quant",
-      unet: "no-quant",
-      vae_decoder: "no-quant",
-      vae_encoder: "no-quant",
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null,
     },
     convert_to_fp16: true,
     simplify_unet: false,

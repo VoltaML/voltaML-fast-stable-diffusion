@@ -291,10 +291,10 @@ const _hoisted_4$2 = { class: "flex-container" };
 const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
 const _hoisted_6$2 = { class: "flex-container" };
 const _hoisted_7$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _hoisted_8$2 = { class: "flex-container" };
-const _hoisted_9$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CPU Threads (affects RAM usage)", -1);
-const _hoisted_10$2 = { class: "flex-container" };
-const _hoisted_11$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
+const _hoisted_8$1 = { class: "flex-container" };
+const _hoisted_9$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CPU Threads (affects RAM usage)", -1);
+const _hoisted_10$1 = { class: "flex-container" };
+const _hoisted_11$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "AITemplateAccelerate",
   setup(__props) {
@@ -457,8 +457,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 max: 9
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_8$2, [
-              _hoisted_9$2,
+            createBaseVNode("div", _hoisted_8$1, [
+              _hoisted_9$1,
               createVNode(unref(NSlider), {
                 value: threads.value,
                 "onUpdate:value": _cache[6] || (_cache[6] = ($event) => threads.value = $event),
@@ -477,8 +477,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 max: 64
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_10$2, [
-              _hoisted_11$2,
+            createBaseVNode("div", _hoisted_10$1, [
+              _hoisted_11$1,
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[8] || (_cache[8] = ($event) => model.value = $event),
@@ -537,12 +537,12 @@ const _hoisted_4$1 = { class: "flex-container" };
 const _hoisted_5$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
 const _hoisted_6$1 = { class: "flex-container" };
 const _hoisted_7$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _hoisted_8$1 = { class: "flex-container" };
-const _hoisted_9$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Clip Chunks", -1);
-const _hoisted_10$1 = { class: "flex-container" };
-const _hoisted_11$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CPU Threads (affects RAM usage)", -1);
-const _hoisted_12$1 = { class: "flex-container" };
-const _hoisted_13$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
+const _hoisted_8 = { class: "flex-container" };
+const _hoisted_9 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Clip Chunks", -1);
+const _hoisted_10 = { class: "flex-container" };
+const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CPU Threads (affects RAM usage)", -1);
+const _hoisted_12 = { class: "flex-container" };
+const _hoisted_13 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "AITemplateDynamicAccelerate",
   setup(__props) {
@@ -683,8 +683,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 range: ""
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_8$1, [
-              _hoisted_9$1,
+            createBaseVNode("div", _hoisted_8, [
+              _hoisted_9,
               createVNode(unref(NSlider), {
                 value: clipChunks.value,
                 "onUpdate:value": _cache[3] || (_cache[3] = ($event) => clipChunks.value = $event),
@@ -702,8 +702,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 min: 1
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_10$1, [
-              _hoisted_11$1,
+            createBaseVNode("div", _hoisted_10, [
+              _hoisted_11,
               createVNode(unref(NSlider), {
                 value: threads.value,
                 "onUpdate:value": _cache[5] || (_cache[5] = ($event) => threads.value = $event),
@@ -722,8 +722,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 max: 64
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_12$1, [
-              _hoisted_13$1,
+            createBaseVNode("div", _hoisted_12, [
+              _hoisted_13,
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[7] || (_cache[7] = ($event) => model.value = $event),
@@ -782,15 +782,6 @@ const _hoisted_4 = { class: "flex-container" };
 const _hoisted_5 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Simplify UNet", -1);
 const _hoisted_6 = { class: "flex-container" };
 const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Downcast to FP16", -1);
-const _hoisted_8 = /* @__PURE__ */ createBaseVNode("h3", null, "Quantization", -1);
-const _hoisted_9 = { class: "flex-container" };
-const _hoisted_10 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Text Encoder", -1);
-const _hoisted_11 = { class: "flex-container" };
-const _hoisted_12 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "UNet", -1);
-const _hoisted_13 = { class: "flex-container" };
-const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Encoder", -1);
-const _hoisted_15 = { class: "flex-container" };
-const _hoisted_16 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "VAE Decoder", -1);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ONNXAccelerate",
   setup(__props) {
@@ -907,59 +898,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 value: unref(conf).data.settings.onnx.convert_to_fp16,
                 "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.onnx.convert_to_fp16 = $event)
               }, null, 8, ["value"])
-            ]),
-            _hoisted_8,
-            createBaseVNode("div", _hoisted_9, [
-              _hoisted_10,
-              createVNode(unref(NSelect), {
-                value: unref(conf).data.settings.onnx.quant_dict.text_encoder,
-                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.onnx.quant_dict.text_encoder = $event),
-                options: [
-                  { label: "No quantization", value: "no-quant" },
-                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
-                  { label: "Signed int8", value: "int8" }
-                ],
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value", "options"])
-            ]),
-            createBaseVNode("div", _hoisted_11, [
-              _hoisted_12,
-              createVNode(unref(NSelect), {
-                value: unref(conf).data.settings.onnx.quant_dict.unet,
-                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.onnx.quant_dict.unet = $event),
-                options: [
-                  { label: "No quantization", value: "no-quant" },
-                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
-                  { label: "Signed int8", value: "int8" }
-                ],
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value", "options"])
-            ]),
-            createBaseVNode("div", _hoisted_13, [
-              _hoisted_14,
-              createVNode(unref(NSelect), {
-                value: unref(conf).data.settings.onnx.quant_dict.vae_encoder,
-                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.onnx.quant_dict.vae_encoder = $event),
-                options: [
-                  { label: "No quantization", value: "no-quant" },
-                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
-                  { label: "Signed int8", value: "int8" }
-                ],
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value", "options"])
-            ]),
-            createBaseVNode("div", _hoisted_15, [
-              _hoisted_16,
-              createVNode(unref(NSelect), {
-                value: unref(conf).data.settings.onnx.quant_dict.vae_decoder,
-                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.onnx.quant_dict.vae_decoder = $event),
-                options: [
-                  { label: "No quantization", value: "no-quant" },
-                  { label: "Unsigned int8 (cpu only)", value: "uint8" },
-                  { label: "Signed int8", value: "int8" }
-                ],
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value", "options"])
             ])
           ]),
           _: 1
@@ -977,7 +915,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               ghost: "",
               loading: building.value,
               disabled: building.value || modelOptions.value.length === 0,
-              onClick: _cache[7] || (_cache[7] = ($event) => showUnloadModal.value = true)
+              onClick: _cache[3] || (_cache[3] = ($event) => showUnloadModal.value = true)
             }, {
               default: withCtx(() => [
                 createTextVNode("Accelerate")
@@ -989,7 +927,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         }),
         createVNode(unref(NModal), {
           show: showUnloadModal.value,
-          "onUpdate:show": _cache[8] || (_cache[8] = ($event) => showUnloadModal.value = $event),
+          "onUpdate:show": _cache[4] || (_cache[4] = ($event) => showUnloadModal.value = $event),
           preset: "dialog",
           title: "Unload other models",
           width: "400px",

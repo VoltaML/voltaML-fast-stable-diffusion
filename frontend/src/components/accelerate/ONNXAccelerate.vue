@@ -35,8 +35,7 @@
         <NSwitch v-model:value="conf.data.settings.onnx.convert_to_fp16" />
       </div>
 
-      <!-- Quantization -->
-      <h3>Quantization</h3>
+      <!-- <h3>Quantization</h3>
       <div class="flex-container">
         <p class="slider-label">Text Encoder</p>
         <NSelect
@@ -84,7 +83,7 @@
           ]"
           style="margin-right: 12px"
         />
-      </div>
+      </div> -->
     </NCard>
 
     <NSpace vertical justify="center" style="width: 100%" align="center">

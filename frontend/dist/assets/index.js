@@ -40673,10 +40673,10 @@ const defaultSettings = {
   },
   onnx: {
     quant_dict: {
-      text_encoder: "no-quant",
-      unet: "no-quant",
-      vae_decoder: "no-quant",
-      vae_encoder: "no-quant"
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null
     },
     convert_to_fp16: true,
     simplify_unet: false
