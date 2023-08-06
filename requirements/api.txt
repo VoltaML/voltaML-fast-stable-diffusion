@@ -1,6 +1,6 @@
 requests==2.31.0
 fastapi==0.95.0
-websockets==11.0
+websockets==11.0.3
 uvicorn==0.22.0
 pyngrok==6.0.0
 nest_asyncio==1.5.6
