@@ -13,7 +13,7 @@
   },
   "dependencies": {
     "pinia": "^2.0.28",
-    "semver": "^5.7.2",
+    "semver": "^7.5.4",
     "uuid": "^9.0.0",
     "v3-infinite-loading": "^1.2.2",
     "vue": "^3.2.45",
