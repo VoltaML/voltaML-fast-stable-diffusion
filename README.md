@@ -53,7 +53,7 @@
 </div>
 
 <hr>
-<h3 align="center">Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a> and the community</h3>
+<h3 align="center">Made with ❤️ by <a href="https://github.com/Stax124/">Stax124</a>, <a href="https://github.com/gabe56f">Gabe</a>, and the community</h3>
 <hr>
 
 <br />
