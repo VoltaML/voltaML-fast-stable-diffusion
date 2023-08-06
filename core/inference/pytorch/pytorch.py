@@ -1,18 +1,16 @@
 import logging
-import os
 from pathlib import Path
-from typing import Any, List, Optional
+from typing import Any, List, Optional, Tuple, Union
 
 import torch
 from diffusers import (
     AutoencoderKL,
     ControlNetModel,
-    StableDiffusionControlNetPipeline,
-    StableDiffusionInpaintPipeline,
     StableDiffusionPipeline,
     UNet2DConditionModel,
 )
 from PIL import Image, ImageOps
+from tqdm import tqdm
 from transformers.models.clip.modeling_clip import CLIPTextModel
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
@@ -22,18 +20,19 @@ from api.websockets.notification import Notification
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
-from core.inference.functions import load_pytorch_pipeline
-from core.inference.pytorch.latents import scale_latents
-from core.inference.pytorch.lwp import get_weighted_text_embeddings
-from core.inference.pytorch.lwp_sd import StableDiffusionLongPromptWeightingPipeline
+from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
+from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
+from core.inference.utilities import (
+    change_scheduler,
+    image_to_controlnet_input,
+    scale_latents,
+)
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
     inpaint_callback,
     txt2img_callback,
 )
-from core.lora import load_safetensors_loras
-from core.schedulers import change_scheduler
 from core.types import (
     Backend,
     ControlNetQueueEntry,
@@ -53,16 +52,14 @@ class PyTorchStableDiffusion(InferenceModel):
     def __init__(
         self,
         model_id: str,
-        auth_token: str = os.environ["HUGGINGFACE_TOKEN"],
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
         autoload: bool = True,
+        bare: bool = False,
     ) -> None:
         super().__init__(model_id, device)
 
         self.backend: Backend = "PyTorch"
-
-        # HuggingFace
-        self.auth: str = auth_token
+        self.bare: bool = bare
 
         # Components
         self.vae: AutoencoderKL
@@ -74,11 +71,13 @@ class PyTorchStableDiffusion(InferenceModel):
         self.requires_safety_checker: bool
         self.safety_checker: Any
         self.image_encoder: Any
-        self.controlnet: Optional[ControlNetModel]
+        self.controlnet: Optional[ControlNetModel] = None
 
         self.current_controlnet: str = ""
 
-        self.loras: List[str] = []
+        self.vae_path: str = "default"
+        self.unload_loras: List[str] = []
+        self.unload_lycoris: List[str] = []
         self.textual_inversions: List[str] = []
 
         if autoload:
@@ -91,8 +90,8 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe = load_pytorch_pipeline(
             self.model_id,
-            auth=self.auth,
             device=self.device,
+            optimize=not self.bare,
         )
 
         self.vae = pipe.vae  # type: ignore
@@ -104,45 +103,47 @@ class PyTorchStableDiffusion(InferenceModel):
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
 
-        # Autoload LoRAs
-        for lora_name in config.api.autoloaded_loras:
-            lora = config.api.autoloaded_loras[lora_name]
-
-            try:
-                self.load_lora(
-                    lora_name,
-                    alpha_text_encoder=lora["text_encoder"],
-                    alpha_unet=lora["unet"],
-                )
-            except Exception as e:  # pylint: disable=broad-except
-                logger.warning(f"Failed to load LoRA {lora}: {e}")
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        severity="error",
-                        message=f"Failed to load LoRA: {lora}",
-                        title="Autoload Error",
+        if not self.bare:
+            # Autoload textual inversions
+            for textural_inversion in config.api.autoloaded_textual_inversions:
+                try:
+                    self.load_textual_inversion(textural_inversion)
+                except Exception as e:  # pylint: disable=broad-except
+                    logger.warning(
+                        f"Failed to load textual inversion {textural_inversion}: {e}"
                     )
-                )
-
-        # Autoload textual inversions
-        for textural_inversion in config.api.autoloaded_textual_inversions:
-            try:
-                self.load_textual_inversion(textural_inversion)
-            except Exception as e:  # pylint: disable=broad-except
-                logger.warning(
-                    f"Failed to load textual inversion {textural_inversion}: {e}"
-                )
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        severity="error",
-                        message=f"Failed to load textual inversion: {textural_inversion}",
-                        title="Autoload Error",
+                    websocket_manager.broadcast_sync(
+                        Notification(
+                            severity="error",
+                            message=f"Failed to load textual inversion: {textural_inversion}",
+                            title="Autoload Error",
+                        )
                     )
-                )
 
         # Free up memory
         del pipe
         self.memory_cleanup()
+
+    def change_vae(self, vae: str) -> None:
+        "Change the vae to the one specified"
+
+        if self.vae_path == "default":
+            setattr(self, "original_vae", self.vae)
+
+        old_vae = getattr(self, "original_vae")
+        if vae == "default":
+            self.vae = old_vae
+        else:
+            # Why the fuck do you think that's constant pylint?
+            # Are you mentally insane?
+            if Path(vae).is_dir():
+                self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+            else:
+                self.vae = convert_vaept_to_diffusers(vae).to(
+                    device=old_vae.device, dtype=old_vae.dtype
+                )
+        # This is at the end 'cause I've read horror stories about pythons prefetch system
+        self.vae_path = vae
 
     def unload(self) -> None:
         "Unload the model from memory"
@@ -166,6 +167,14 @@ class PyTorchStableDiffusion(InferenceModel):
             if self.controlnet is not None:
                 del self.controlnet
 
+        if hasattr(self, "original_vae"):
+            del self.original_vae  # type: ignore
+
+        if hasattr(self, "lora_injector"):
+            from ..injectables import uninstall_lora_hook
+
+            uninstall_lora_hook(self)
+
         self.memory_cleanup()
 
     def manage_optional_components(
@@ -175,6 +184,10 @@ class PyTorchStableDiffusion(InferenceModel):
         target_controlnet: str = "",
     ) -> None:
         "Cleanup old components"
+
+        from ..injectables import load_lora_utilities
+
+        load_lora_utilities(self)
 
         if not variations:
             self.image_encoder = None
@@ -196,7 +209,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 target_controlnet,
                 resume_download=True,
                 torch_dtype=config.api.dtype,
-                use_auth_token=self.auth,
             )
 
             assert isinstance(cn, ControlNetModel)
@@ -217,35 +229,50 @@ class PyTorchStableDiffusion(InferenceModel):
         # Clean memory
         self.memory_cleanup()
 
-    def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
-        "Generate an image from a prompt"
-
-        self.manage_optional_components()
+    def create_pipe(
+        self,
+        controlnet: Optional[str] = "",
+        seed: Optional[int] = -1,
+        scheduler: Optional[Tuple[Any, bool]] = None,
+    ) -> Tuple[StableDiffusionLongPromptWeightingPipeline, torch.Generator]:
+        "Create a pipeline -- useful for reducing backend clutter."
+        self.manage_optional_components(target_controlnet=controlnet or "")
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
-            unet=self.unet,  # type: ignore
+            unet=self.unet,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            safety_checker=self.safety_checker,
+            controlnet=self.controlnet,
         )
 
         if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
+            generator = torch.Generator().manual_seed(seed)  # type: ignore
         else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
+            generator = torch.Generator(config.api.device).manual_seed(seed)  # type: ignore
 
-        if job.data.scheduler:
+        if scheduler:
             change_scheduler(
                 model=pipe,
-                scheduler=job.data.scheduler,
+                scheduler=scheduler[0],  # type: ignore
+                use_karras_sigmas=scheduler[1],
             )
+
+        return pipe, generator
+
+    def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
+        "Generate an image from a prompt"
+
+        pipe, generator = self.create_pipe(
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+        )
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
 
             if "highres_fix" in job.flags:
@@ -318,24 +345,10 @@ class PyTorchStableDiffusion(InferenceModel):
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        self.manage_optional_components()
-
-        pipe = StableDiffusionLongPromptWeightingPipeline(
-            vae=self.vae,
-            unet=self.unet,  # type: ignore
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            safety_checker=self.safety_checker,
+        pipe, generator = self.create_pipe(
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
-
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
-
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
 
         # Preprocess the image
         input_image = convert_to_image(job.data.image)
@@ -343,7 +356,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
                 prompt=job.data.prompt,
                 image=input_image,
@@ -386,40 +399,10 @@ class PyTorchStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        self.manage_optional_components()
-
-        if self.unet.config["in_channels"] == 9:
-            pipe = StableDiffusionInpaintPipeline(
-                vae=self.vae,
-                unet=self.unet,  # type: ignore
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                feature_extractor=self.feature_extractor,
-                safety_checker=self.safety_checker,
-                requires_safety_checker=False,
-            )
-        elif self.unet.config["in_channels"] == 4:
-            pipe = StableDiffusionLongPromptWeightingPipeline(
-                vae=self.vae,
-                unet=self.unet,  # type: ignore
-                text_encoder=self.text_encoder,
-                tokenizer=self.tokenizer,
-                scheduler=self.scheduler,
-                feature_extractor=self.feature_extractor,
-                safety_checker=self.safety_checker,
-            )
-        else:
-            raise ValueError(
-                f"Invalid in_channels: {self.unet.in_channels}, expected 4 or 9"
-            )
-
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
-
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
+        pipe, generator = self.create_pipe(
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+        )
 
         # Preprocess images
         input_image = convert_to_image(job.data.image).convert("RGB")
@@ -431,46 +414,23 @@ class PyTorchStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        for _ in range(job.data.batch_count):
-            if isinstance(pipe, StableDiffusionInpaintPipeline):
-                prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                    pipe=pipe,  # type: ignore
-                    prompt=job.data.prompt,
-                    uncond_prompt=job.data.negative_prompt,
-                )
-
-                data = pipe(
-                    prompt_embeds=prompt_embeds,
-                    image=input_image,
-                    mask_image=input_mask_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    negative_prompt_embeds=negative_prompt_embeds,
-                    output_type="pil",
-                    generator=generator,
-                    callback=inpaint_callback,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                    width=job.data.width,
-                    height=job.data.height,
-                )
-            else:
-                data = pipe.inpaint(
-                    prompt=job.data.prompt,
-                    image=input_image,
-                    mask_image=input_mask_image,
-                    num_inference_steps=job.data.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    self_attention_scale=job.data.self_attention_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    generator=generator,
-                    callback=inpaint_callback,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                    width=job.data.width,
-                    height=job.data.height,
-                )
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
+            data = pipe.inpaint(
+                prompt=job.data.prompt,
+                image=input_image,
+                mask_image=input_mask_image,
+                num_inference_steps=job.data.steps,
+                guidance_scale=job.data.guidance_scale,
+                self_attention_scale=job.data.self_attention_scale,
+                negative_prompt=job.data.negative_prompt,
+                output_type="pil",
+                generator=generator,
+                callback=inpaint_callback,
+                return_dict=False,
+                num_images_per_prompt=job.data.batch_size,
+                width=job.data.width,
+                height=job.data.height,
+            )
 
             if not data:
                 raise ValueError("No data returned from pipeline")
@@ -505,57 +465,27 @@ class PyTorchStableDiffusion(InferenceModel):
             )
 
         logger.debug(f"Requested ControlNet: {job.data.controlnet}")
-        self.manage_optional_components(target_controlnet=job.data.controlnet)
-
-        assert self.controlnet is not None
-
-        pipe = StableDiffusionControlNetPipeline(
-            controlnet=self.controlnet,
-            feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
-            safety_checker=self.safety_checker,
-            scheduler=self.scheduler,
-            text_encoder=self.text_encoder,
-            tokenizer=self.tokenizer,
-            unet=self.unet,
-            vae=self.vae,
+        pipe, generator = self.create_pipe(
+            controlnet=job.data.controlnet,
+            seed=job.data.seed,
+            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
 
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(job.data.seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(job.data.seed)
-
-        change_scheduler(model=pipe, scheduler=job.data.scheduler)
-
         # Preprocess the image
-        from core.controlnet_preprocessing import image_to_controlnet_input
-
-        logger.debug(f"Requested dim: W{job.data.width}xH{job.data.height}")
-
         input_image = convert_to_image(job.data.image)
-        logger.debug(f"Input image size: {input_image.size}")
         input_image = resize(input_image, job.data.width, job.data.height)
-        logger.debug(f"Resized image size: {input_image.size}")
 
         # Preprocess the image if needed
         if not job.data.is_preprocessed:
             input_image = image_to_controlnet_input(input_image, job.data)
             logger.debug(f"Preprocessed image size: {input_image.size}")
 
-        # Preprocess the prompt
-        prompt_embeds, negative_embeds = get_weighted_text_embeddings(
-            pipe=pipe,  # type: ignore # implements same protocol, but doesn't inherit
-            prompt=job.data.prompt,
-            uncond_prompt=job.data.negative_prompt,
-        )
-
         total_images: List[Image.Image] = [input_image]
 
-        for _ in range(job.data.batch_count):
+        for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe(
-                prompt_embeds=prompt_embeds,
-                negative_prompt_embeds=negative_embeds,
+                prompt=job.data.prompt,
+                negative_prompt=job.data.negative_prompt,
                 image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
@@ -569,7 +499,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 width=job.data.width,
             )
 
-            images = data[0]
+            images = data[0]  # type: ignore
             assert isinstance(images, List)
 
             total_images.extend(images)  # type: ignore
@@ -614,6 +544,21 @@ class PyTorchStableDiffusion(InferenceModel):
         except Exception as e:
             self.memory_cleanup()
             raise e
+        if len(self.unload_loras) != 0:
+            for l in self.unload_loras:
+                try:
+                    self.lora_injector.remove_lora(l)  # type: ignore
+                    logger.debug(f"Unloading LoRA: {l}")
+                except KeyError:
+                    pass
+            self.unload_loras.clear()
+        if len(self.unload_lycoris) != 0:  # type: ignore
+            for l in self.unload_lycoris:  # type: ignore
+                try:
+                    self.lora_injector.remove_lycoris(l)  # type: ignore
+                    logger.debug(f"Unloading LyCORIS: {l}")
+                except KeyError:
+                    pass
 
         # Clean memory and return images
         self.memory_cleanup()
@@ -635,30 +580,6 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe.save_pretrained(path, safe_serialization=safetensors)
 
-    def load_lora(
-        self, lora: str, alpha_text_encoder: float = 0.5, alpha_unet: float = 0.5
-    ):
-        "Inject a LoRA model into the pipeline"
-
-        logger.info(f"Loading LoRA model {lora} onto {self.model_id}...")
-
-        if any(lora in l for l in self.loras):
-            logger.info(f"LoRA model {lora} already loaded onto {self.model_id}")
-            return
-
-        if ".safetensors" in lora:
-            load_safetensors_loras(
-                self.text_encoder, self.unet, lora, alpha_text_encoder, alpha_unet
-            )
-        else:
-            self.unet.load_attn_procs(
-                pretrained_model_name_or_path_or_dict=lora,
-                resume_download=True,
-                use_auth_token=self.auth,
-            )
-        self.loras.append(lora)
-        logger.info(f"LoRA model {lora} loaded successfully")
-
     def load_textual_inversion(self, textual_inversion: str):
         "Inject a textual inversion model into the pipeline"
 
@@ -673,14 +594,13 @@ class PyTorchStableDiffusion(InferenceModel):
             return
 
         pipe = StableDiffusionLongPromptWeightingPipeline(
+            parent=self,
             vae=self.vae,
             unet=self.unet,
             text_encoder=self.text_encoder,
             tokenizer=self.tokenizer,
             scheduler=self.scheduler,
-            feature_extractor=self.feature_extractor,
-            requires_safety_checker=self.requires_safety_checker,
-            safety_checker=self.safety_checker,
+            controlnet=self.controlnet,
         )
 
         token = Path(textual_inversion).stem

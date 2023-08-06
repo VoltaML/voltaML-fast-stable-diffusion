@@ -79,29 +79,7 @@ function currentStepForward(
 
 export function processWebSocket(
   message: WebSocketMessage,
-  global: Store<
-    "state",
-    _UnwrapAll<
-      Pick<
-        {
-          state: StateInterface;
-        },
-        "state"
-      >
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >
-  >,
+  global: ReturnType<typeof import("@/store/state")["useState"]>,
   notificationProvider: NotificationApiInjection
 ): void {
   switch (message.type) {
@@ -128,18 +106,6 @@ export function processWebSocket(
       global.state.img2img.currentImage = message.data.image
         ? message.data.image
         : global.state.img2img.currentImage;
-      global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = currentStepForward(
-        message.data.current_step,
-        global
-      );
-      global.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "image_variations": {
-      global.state.imageVariations.currentImage = message.data.image
-        ? message.data.image
-        : global.state.imageVariations.currentImage;
       global.state.progress = progressForward(message.data.progress, global);
       global.state.current_step = currentStepForward(
         message.data.current_step,
@@ -199,6 +165,23 @@ export function processWebSocket(
     }
     case "cluster_stats": {
       global.state.perf_drawer.gpus = message.data;
+      break;
+    }
+    case "token": {
+      if (message.data.huggingface === "missing") {
+        global.state.secrets.huggingface = "missing";
+      }
+      break;
+    }
+    case "refresh_capabilities": {
+      global
+        .fetchCapabilites()
+        .then(() => {
+          console.log("Capabilities refreshed");
+        })
+        .catch((error) => {
+          console.error(error);
+        });
       break;
     }
     default: {

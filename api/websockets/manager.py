@@ -39,11 +39,13 @@ class WebSocketManager:
             from gpustat.core import GPUStatCollection
 
             all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
-        except Exception:  # pylint: disable=broad-except
-            logger.info("GPUStat failed to initialize - probably not an NVIDIA GPU")
+        except Exception as e:  # pylint: disable=broad-except
+            logger.info(
+                f"GPUStat failed to initialize - probably not an NVIDIA GPU: {e}"
+            )
             logger.debug("Trying pyamdgpuinfo...")
             try:
-                import pyamdgpuinfo
+                import pyamdgpuinfo  # pylint: disable=import-error
 
                 if pyamdgpuinfo.detect_gpus() == 0:
                     raise ImportError(  # pylint: disable=raise-missing-from
@@ -52,13 +54,6 @@ class WebSocketManager:
                 all_gpus = [
                     pyamdgpuinfo.get_gpu(x) for x in range(pyamdgpuinfo.detect_gpus())
                 ]
-                for stat in all_gpus:
-                    # More sane values, I guess... I mean, who needs 100 updates a second...
-                    precision = 16
-                    stat.start_utilisation_polling(
-                        ticks_per_second=precision,
-                        buffer_size_in_ticks=precision * 5,
-                    )
                 amd = True
             except Exception:  # pylint: disable=broad-except
                 logger.warning(

@@ -18,10 +18,20 @@ class CachedModelList:
         self.pytorch_path = Path(DIFFUSERS_CACHE)
         self.checkpoint_converted_path = Path("data/models")
         self.onnx_path = Path("data/onnx")
-        self.tensorrt_engine_path = Path("data/tensorrt")
         self.aitemplate_path = Path("data/aitemplate")
         self.lora_path = Path("data/lora")
+        self.lycoris_path = Path("data/lycoris")
         self.textual_inversion_path = Path("data/textual-inversion")
+        self.vae_path = Path("data/vae")
+        self.upscaler_path = Path("data/upscaler")
+
+        self.ext_whitelist = [".safetensors", ".ckpt", ".pth", ".pt", ".bin"]
+
+    def model_path_to_name(self, path: str) -> str:
+        "Return only the stem of a file."
+
+        pth = Path(path)
+        return pth.stem
 
     def pytorch(self) -> List[ModelResponse]:
         "List of models downloaded for PyTorch"
@@ -44,8 +54,8 @@ class CachedModelList:
                         name=name,
                         path=name,
                         backend="PyTorch",
+                        vae="default",
                         valid=is_valid_diffusers_model(get_full_model_path(name)),
-                        loras=[],
                         state="not loaded",
                     )
                 )
@@ -65,10 +75,10 @@ class CachedModelList:
                         name=model_name,
                         path=model_name,
                         backend="PyTorch",
+                        vae="default",
                         valid=is_valid_diffusers_model(
                             self.checkpoint_converted_path.joinpath(model_name)
                         ),
-                        loras=[],
                         state="not loaded",
                     )
                 )
@@ -79,8 +89,8 @@ class CachedModelList:
                         name=model_name,
                         path=model_name,
                         backend="PyTorch",
+                        vae="default",
                         valid=True,
-                        loras=[],
                         state="not loaded",
                     )
                 )
@@ -88,32 +98,6 @@ class CachedModelList:
                 # Junk file, notify user
                 logger.debug(
                     f"Found junk file {model_name} in {self.checkpoint_converted_path}, skipping..."
-                )
-
-        return models
-
-    def tensorrt(self) -> List[ModelResponse]:
-        "List of models converted to TRT"
-
-        models: List[ModelResponse] = []
-
-        logger.debug(f"Looking for TensorRT models in {self.tensorrt_engine_path}")
-
-        for author in os.listdir(self.tensorrt_engine_path):
-            logger.debug(f"Found author {author}")
-            for model_name in os.listdir(self.tensorrt_engine_path.joinpath(author)):
-                logger.debug(f"Found model {model_name}")
-                models.append(
-                    ModelResponse(
-                        name="/".join([author, model_name]),
-                        path="/".join([author, model_name]),
-                        backend="TensorRT",
-                        valid=is_valid_tensorrt_model(
-                            self.tensorrt_engine_path.joinpath(author, model_name)
-                        ),
-                        loras=[],
-                        state="not loaded",
-                    )
                 )
 
         return models
@@ -134,10 +118,10 @@ class CachedModelList:
                     name=model_name,
                     path=model,
                     backend="AITemplate",
+                    vae="default",
                     valid=is_valid_aitemplate_model(
                         self.aitemplate_path.joinpath(model)
                     ),
-                    loras=[],
                     state="not loaded",
                 )
             )
@@ -156,9 +140,9 @@ class CachedModelList:
                 ModelResponse(
                     name=model,
                     path=os.path.join(self.onnx_path, model),
+                    vae="default",
                     backend="ONNX",
                     valid=True,
-                    loras=[],
                     state="not loaded",
                 )
             )
@@ -171,15 +155,76 @@ class CachedModelList:
 
         for model in os.listdir(self.lora_path):
             logger.debug(f"Found LoRA {model}")
-            model_name = model.replace(".safetensors", "").replace(".ckpt", "")
+
+            # Skip if it is not a LoRA model
+            if Path(model).suffix not in self.ext_whitelist:
+                continue
+
+            model_name = self.model_path_to_name(model)
 
             models.append(
                 ModelResponse(
                     name=model_name,
                     path=os.path.join(self.lora_path, model),
+                    vae="default",
                     backend="LoRA",
                     valid=True,
-                    loras=[],
+                    state="not loaded",
+                )
+            )
+
+        return models
+
+    def lycoris(self):
+        "List of LyCORIS models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.lycoris_path):
+            logger.debug(f"Found LyCORIS {model}")
+
+            # Skip if it is not a LyCORIS model
+            if Path(model).suffix not in self.ext_whitelist:
+                continue
+
+            model_name = self.model_path_to_name(model)
+
+            models.append(
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.lycoris_path, model),
+                    vae="default",
+                    backend="LyCORIS",
+                    valid=True,
+                    state="not loaded",
+                )
+            )
+
+        return models
+
+    def vae(self):
+        "List of VAE models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.vae_path):
+            logger.debug(f"Found VAE model {model}")
+
+            path = Path(os.path.join(self.vae_path, model))
+
+            # Skip if it is not a VAE model
+            if path.suffix not in self.ext_whitelist and not path.is_dir():
+                continue
+            if path.is_dir() and not is_valid_diffusers_vae(path):
+                continue
+
+            models.append(
+                ModelResponse(
+                    name=path.stem,
+                    path=path.as_posix(),
+                    backend="VAE",
+                    valid=True,
+                    vae="default",
                     state="not loaded",
                 )
             )
@@ -193,19 +238,47 @@ class CachedModelList:
 
         for model in os.listdir(self.textual_inversion_path):
             logger.debug(f"Found textual inversion model {model}")
-            model_name = (
-                model.replace(".safetensors", "")
-                .replace(".ckpt", "")
-                .replace(".pt", "")
-            )
+
+            # Skip if it is not a Texutal Inversion
+            if Path(model).suffix not in self.ext_whitelist:
+                continue
+
+            model_name = self.model_path_to_name(model)
 
             models.append(
                 ModelResponse(
                     name=model_name,
                     path=os.path.join(self.textual_inversion_path, model),
+                    vae="default",
                     backend="Textual Inversion",
                     valid=True,
-                    loras=[],
+                    state="not loaded",
+                )
+            )
+
+        return models
+
+    def upscaler(self):
+        "List of upscaler models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.upscaler_path):
+            logger.debug(f"Found upscaler model {model}")
+
+            # Skip if it is not an upscaler
+            if Path(model).suffix not in self.ext_whitelist:
+                continue
+
+            model_name = self.model_path_to_name(model)
+
+            models.append(
+                ModelResponse(
+                    name=model_name,
+                    path=os.path.join(self.upscaler_path, model),
+                    vae="default",
+                    backend="Upscaler",
+                    valid=True,
                     state="not loaded",
                 )
             )
@@ -217,12 +290,24 @@ class CachedModelList:
 
         return (
             self.pytorch()
-            + self.tensorrt()
             + self.aitemplate()
             + self.onnx()
             + self.lora()
+            + self.lycoris()
             + self.textual_inversion()
+            + self.vae()
+            + self.upscaler()
         )
+
+
+def is_valid_diffusers_vae(model_path: Path) -> bool:
+    "Check if the folder contains valid VAE files."
+
+    files = ["config.json", "diffusion_pytorch_model.bin"]
+    is_valid = True
+    for file in files:
+        is_valid = is_valid and Path(os.path.join(model_path, file)).exists()
+    return is_valid
 
 
 def is_valid_diffusers_model(model_path: Union[str, Path]):
@@ -271,27 +356,6 @@ def is_valid_diffusers_model(model_path: Union[str, Path]):
             is_valid = False
 
     # Check all the other files that should be present
-    for file in files:
-        if not os.path.exists(path / file):
-            is_valid = False
-
-    return is_valid
-
-
-def is_valid_tensorrt_model(model_path: Union[str, Path]):
-    "Check if the folder contains valid TensorRT files"
-
-    files = [
-        "clip.plan",
-        "vae.plan",
-        "unet_fp16.plan",
-    ]
-
-    is_valid = True
-
-    path = model_path if isinstance(model_path, Path) else Path(model_path)
-
-    # Check all the files that should be present
     for file in files:
         if not os.path.exists(path / file):
             is_valid = False

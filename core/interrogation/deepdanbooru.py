@@ -1,5 +1,5 @@
 from pathlib import Path
-from typing import List, Tuple
+from typing import List, Tuple, Union
 
 import numpy as np
 import torch
@@ -30,7 +30,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
 
     def __init__(
         self,
-        device: str = "cuda",
+        device: Union[str, torch.device] = "cuda",
         quantized: bool = False,
         autoload: bool = False,
     ):
@@ -68,7 +68,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
                 qconfig_dict,
                 (torch.randn(1, 512, 512, 3),),  # great syntax pytorch :)
             )
-            for _ in tqdm(range(25), unit="it", unit_scale=False, desc="Warming up"):
+            for _ in tqdm(range(25)):
                 prepared(torch.randn(1, 512, 512, 3))
 
             if is_cpu(self.device):

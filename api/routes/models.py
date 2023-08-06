@@ -4,7 +4,7 @@ import shutil
 import traceback
 from pathlib import Path
 from tempfile import NamedTemporaryFile
-from typing import List
+from typing import List, Literal
 
 import torch
 from fastapi import APIRouter, HTTPException, Request, UploadFile
@@ -18,10 +18,11 @@ from core.shared_dependent import cached_model_list, gpu
 from core.types import (
     DeleteModelRequest,
     InferenceBackend,
-    LoraLoadRequest,
     ModelResponse,
     TextualInversionLoadRequest,
+    VaeLoadRequest,
 )
+from core.utils import download_file
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
@@ -59,7 +60,7 @@ async def list_loaded_models() -> List[ModelResponse]:
                 backend=gpu.loaded_models[model_id].backend,
                 path=gpu.loaded_models[model_id].model_id,
                 state="loaded",
-                loras=gpu.loaded_models[model_id].__dict__.get("loras", []),
+                vae=gpu.loaded_models[model_id].__dict__.get("vae_path", "default"),
                 textual_inversions=gpu.loaded_models[model_id].__dict__.get(
                     "textual_inversions", []
                 ),
@@ -117,13 +118,13 @@ async def unload_all_models():
     return {"message": "All models unloaded"}
 
 
-@router.post("/load-lora")
-async def load_lora(req: LoraLoadRequest):
-    "Load a LoRA model into a model"
+@router.post("/load-vae")
+async def load_vae(req: VaeLoadRequest):
+    "Load a VAE into a model"
 
-    await gpu.load_lora(req)
+    await gpu.load_vae(req)
     await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
-    return {"message": "LoRA model loaded"}
+    return {"message": "VAE model loaded"}
 
 
 @router.post("/load-textual-inversion")
@@ -235,3 +236,22 @@ async def delete_model(req: DeleteModelRequest):
 
     await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model deleted"}
+
+
+@router.post("/download-model")
+def download_checkpoint(
+    link: str, model_type: Literal["Checkpoint", "TextualInversion", "LORA"]
+) -> str:
+    "Download a model from a link and return the path to the downloaded file."
+
+    mtype = model_type.casefold()
+    if mtype == "checkpoint":
+        folder = "models"
+    elif mtype == "textualinversion":
+        folder = "textual-inversion"
+    elif mtype == "lora":
+        folder = "lora"
+    else:
+        raise ValueError(f"Unknown model type {mtype}")
+
+    return download_file(link, Path("data") / folder, True).as_posix()

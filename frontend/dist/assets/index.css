@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-19a4868f] {
+.progress-container[data-v-2cf1de9c] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-19a4868f] {
+.top-bar[data-v-2cf1de9c] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,15 +23,35 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--68605410);
+  background-color: var(--67e22a10);
 }
-.logo[data-v-19a4868f] {
+.logo[data-v-2cf1de9c] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
-.main[data-v-ff9d4f45] {
-  background-color: var(--79262321);
+.main {
+  background-color: var(--16223ad6);
+}
+.autocomplete {
+  position: relative;
+  display: inline-block;
+}
+.autocomplete-items {
+  position: absolute;
+  z-index: 99;
+  background-color: var(--1fedac06);
+  border-radius: var(--ba9033c6);
+  padding: 2px;
+}
+.autocomplete-items div {
+  padding: 8px;
+  cursor: pointer;
+  border-radius: var(--ba9033c6);
+}
+.autocomplete-active {
+  background-color: var(--3119c2a0) !important;
+  color: var(--aca37748) !important;
 }
 body {
   min-height: 100vh;
@@ -59,13 +79,8 @@ body {
 
 /* Handle */
 ::-webkit-scrollbar-thumb {
-  background: rgb(77, 77, 77);
+  background: rgb(39, 39, 39);
   border-radius: 10px;
-}
-
-/* Handle on hover */
-::-webkit-scrollbar-thumb:hover {
-  background: #00ad49;
 }
 
 a,

@@ -27,6 +27,9 @@ ignore = [
     "EM102",
     "PTH112",
     "B008",
+    "D300",
+    "D100",
+    "COM812",
 ]
 
 select = ["ALL"]
@@ -34,3 +37,18 @@ format = "grouped"
 target-version = "py38"
 [tool.ruff.flake8-quotes]
 docstring-quotes = "double"
+
+[tool.poetry]
+name = "voltaml-fast-stable-diffusion"
+version = "0.1.0"
+description = ""
+authors = ["Stax124 <tamoncz@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "3.10.*"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"

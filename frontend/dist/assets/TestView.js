@@ -1,10 +1,25 @@
-import { _ as _export_sfc, e as openBlock, f as createElementBlock } from "./index.js";
-const _sfc_main = {};
-const _hoisted_1 = { class: "main-container" };
-function _sfc_render(_ctx, _cache) {
-  return openBlock(), createElementBlock("div", _hoisted_1);
-}
-const TestView = /* @__PURE__ */ _export_sfc(_sfc_main, [["render", _sfc_render]]);
+import { _ as _sfc_main$1 } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, E as ref, e as openBlock, v as createBlock } from "./index.js";
+import "./DescriptionsItem.js";
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "TestView",
+  setup(__props) {
+    const model = ref(null);
+    const showModal = ref(false);
+    fetch("https://civitai.com/api/v1/models/7240").then((res) => {
+      res.json().then((data) => {
+        model.value = data;
+      });
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(_sfc_main$1, {
+        model: model.value,
+        "show-modal": showModal.value,
+        "onUpdate:showModal": _cache[0] || (_cache[0] = (e) => showModal.value = e)
+      }, null, 8, ["model", "show-modal"]);
+    };
+  }
+});
 export {
-  TestView as default
+  _sfc_main as default
 };

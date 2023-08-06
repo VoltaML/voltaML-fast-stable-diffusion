@@ -1,0 +1,20 @@
+version: 2
+updates:
+  - package-ecosystem: "pip"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    target-branch: "experimental"
+    labels:
+      - "python dependencies"
+    assignees:
+      - "Stax124"
+  - package-ecosystem: "npm"
+    directory: "/frontend"
+    schedule:
+      interval: "daily"
+    target-branch: "experimental"
+    labels:
+      - "javascript dependencies"
+    assignees:
+      - "Stax124"

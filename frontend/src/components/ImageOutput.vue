@@ -11,7 +11,7 @@
         object-fit="contain"
       />
     </div>
-    <div style="height: 150px; margin-top: 12px" v-if="images.length > 1">
+    <div style="margin-top: 12px" v-if="images.length > 1">
       <NScrollbar x-scrollable>
         <span
           v-for="(image, i) in props.images"
@@ -31,10 +31,20 @@
         </span>
       </NScrollbar>
     </div>
+    <div v-if="props.currentImage">
+      <DownloadDelete
+        :base64image="props.currentImage"
+        style="margin-bottom: 4px"
+      />
+
+      <SendOutputTo :output="props.currentImage" :card="false" />
+    </div>
   </NCard>
 </template>
 
 <script lang="ts" setup>
+import DownloadDelete from "@/components/DownloadDelete.vue";
+import SendOutputTo from "@/components/SendOutputTo.vue";
 import { NCard, NImage, NScrollbar } from "naive-ui";
 import { computed } from "vue";
 

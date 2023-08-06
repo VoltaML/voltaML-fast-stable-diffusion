@@ -16,7 +16,7 @@
 
 ### 1. Create a new folder for the project
 
-You can do this in the terminal (`mkdir volta`) or visually with Dolphin or Nautilus. Name doesn't matter, so go with something that you like as you will hopefully be using VoltaML for a long time 😄.
+You can do this in the terminal (`mkdir volta`) or visually with Dolphin or Nautilus. Name doesn't matter, so go with something that you like as you will hopefully be using VoltaML for a long time.
 
 ### 2. Download the VoltaML Manager executable
 
@@ -28,7 +28,7 @@ Select the latest release and download `voltaml-manger`:
 
 ### 3. Put this file into the created folder
 
-Simply drag and drop this executable into the created folder and double click it to run.
+Simply drag and drop this executable into the created folder.
 
 ### 4. Enable execution
 

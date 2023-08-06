@@ -7,43 +7,42 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
 
 import torch
+from diffusers.utils import is_xformers_available
 from PIL import Image
 
 from api import websocket_manager
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.errors import DimensionError, InferenceInterruptedError, ModelNotLoadedError
+from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.flags import HighResFixFlag
-from core.inference.aitemplate import AITemplateStableDiffusion
-from core.inference.functions import download_model
-from core.inference.pytorch import PyTorchSDUpscaler, PyTorchStableDiffusion
-from core.inference.real_esrgan import RealESRGAN
+from core.inference.ait import AITemplateStableDiffusion
+from core.inference.esrgan import RealESRGAN, Upscaler
+from core.inference.functions import download_model, is_ipex_available
+from core.inference.pytorch import PyTorchStableDiffusion
 from core.interrogation.base_interrogator import InterrogationResult
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
     AITemplateBuildRequest,
     AITemplateDynamicBuildRequest,
+    Capabilities,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
-    LoraLoadRequest,
     ONNXBuildRequest,
-    SDUpscaleQueueEntry,
     TextualInversionLoadRequest,
-    TRTBuildRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
+    VaeLoadRequest,
 )
-from core.utils import image_grid
+from core.utils import convert_to_image, image_grid
 
 if TYPE_CHECKING:
-    from core.inference.onnx_sd import OnnxStableDiffusion
-    from core.inference.tensorrt import TensorRTModel
+    from core.inference.onnx import OnnxStableDiffusion
 
 logger = logging.getLogger(__name__)
 
@@ -57,13 +56,81 @@ class GPU:
         self.loaded_models: Dict[
             str,
             Union[
-                "TensorRTModel",
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
-                PyTorchSDUpscaler,
                 "OnnxStableDiffusion",
             ],
         ] = {}
+        self.capabilities = self._get_capabilities()
+
+    def _get_capabilities(self) -> Capabilities:
+        "Returns all of the capabilities of this GPU."
+        cap = Capabilities()
+        if torch.cuda.is_available():
+            cap.supported_backends.append("cuda")
+        try:
+            import torch_directml  # pylint: disable=unused-import
+
+            cap.supported_backends.append("directml")
+        except ImportError:
+            pass
+        if torch.backends.mps.is_available():  # type: ignore
+            cap.supported_backends.append("mps")
+        if torch.is_vulkan_available():
+            cap.supported_backends.append("vulkan")
+        if is_ipex_available():
+            cap.supported_backends.append("xpu")
+
+        test_suite = ["float16", "bfloat16"]
+        support_map: Dict[str, List[str]] = {}
+        for device in [torch.device("cpu"), config.api.device]:
+            support_map[device.type] = []
+            for dt in test_suite:
+                dtype = getattr(torch, dt)
+                a = torch.tensor([1.0], device=device, dtype=dtype)
+                b = torch.tensor([2.0], device=device, dtype=dtype)
+                try:
+                    torch.matmul(a, b)
+                    support_map[device.type].append(dt)
+                except RuntimeError:
+                    pass
+        for t, s in support_map.items():
+            if t == "cpu":
+                cap.supported_precisions_cpu = ["float32"] + s
+            else:
+                cap.supported_precisions_gpu = ["float32"] + s
+        try:
+            cap.supported_torch_compile_backends = (
+                torch._dynamo.list_backends()  # type: ignore # pylint: disable=protected-access
+            )
+        except Exception:  # pylint: disable=broad-exception-caught
+            pass
+
+        if torch.cuda.is_available():
+            try:
+                import bitsandbytes as bnb  # pylint: disable=import-error
+                import bitsandbytes.functional as F  # pylint: disable=import-error
+
+                a = torch.tensor([1.0]).cuda()
+                b, b_state = F.quantize_fp4(torch.tensor([2.0]).cuda())
+                bnb.matmul_4bit(a, b, quant_state=b_state)  # type: ignore
+                cap.supports_int8 = True
+                logger.debug("GPU supports int8")
+            except Exception:  # pylint: disable=broad-except
+                logger.debug("GPU does not support int8")
+
+        cap.supports_xformers = is_xformers_available()
+        if torch.cuda.is_available():
+            caps = torch.cuda.get_device_capability(self.gpu_id)
+            if caps[0] < 7:
+                cap.has_tensor_cores = False
+
+            if caps[0] == 8 and caps[1] >= 6:
+                cap.has_tensorfloat = True
+            elif caps[0] >= 9:
+                cap.has_tensorfloat = True
+
+        return cap
 
     def vram_free(self) -> float:
         "Returns the amount of free VRAM on the GPU in MB."
@@ -83,7 +150,6 @@ class GPU:
             Img2ImgQueueEntry,
             InpaintQueueEntry,
             ControlNetQueueEntry,
-            SDUpscaleQueueEntry,
         ],
     ):
         "Generate images from the queue"
@@ -91,10 +157,8 @@ class GPU:
         def generate_thread_call(job: Job) -> List[Image.Image]:
             try:
                 model: Union[
-                    "TensorRTModel",
                     PyTorchStableDiffusion,
                     AITemplateStableDiffusion,
-                    PyTorchSDUpscaler,
                     "OnnxStableDiffusion",
                 ] = self.loaded_models[job.model]
             except KeyError as err:
@@ -122,7 +186,9 @@ class GPU:
             extra_steps: int = 0
             if "highres_fix" in job.flags:
                 flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
-                extra_steps = math.floor(flag.steps * flag.strength)
+                extra_steps = math.floor(
+                    flag.steps * flag.strength * job.data.batch_count
+                )
 
             shared.current_steps = steps * job.data.batch_count + extra_steps
             shared.current_done_steps = 0
@@ -141,49 +207,19 @@ class GPU:
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
                 images: List[Image.Image] = model.generate(job)
-            elif isinstance(model, PyTorchSDUpscaler):
-                logger.debug("Generating with PyTorchSDUpscaler")
-                images: List[Image.Image] = model.generate(job)
             else:
-                from core.inference.onnx_sd import OnnxStableDiffusion
+                from core.inference.onnx import OnnxStableDiffusion
 
                 if isinstance(model, OnnxStableDiffusion):
                     logger.debug("Generating with ONNX")
                     images: List[Image.Image] = model.generate(job)
                 else:
-                    raise NotImplementedError("TensorRT is not supported at the moment")
-
-                # logger.debug("Generating with TensorRT")
-                # images: List[Image.Image]
-
-                # _, images = model.infer(
-                #     [job.data.prompt],
-                #     [job.data.negative_prompt],
-                #     job.data.height,
-                #     job.data.width,
-                #     guidance_scale=job.data.guidance_scale,
-                #     verbose=False,
-                #     seed=job.data.seed,
-                #     output_dir="output",
-                #     num_of_infer_steps=job.data.steps,
-                #     scheduler=job.data.scheduler,
-                # )
-                # if config.api.clear_memory_policy == "always":
-                #     self.memory_cleanup()
-                # return images
+                    raise NotImplementedError("Unknown model type")
 
             self.memory_cleanup()
             return images
 
         try:
-            # Check width and height passed by the user
-            if not isinstance(
-                job,
-                SDUpscaleQueueEntry,
-            ):
-                if job.data.width % 8 != 0 or job.data.height % 8 != 0:
-                    raise DimensionError("Width and height must be divisible by 8")
-
             # Wait for turn in the queue
             await self.queue.wait_for_turn(job.data.id)
 
@@ -197,7 +233,11 @@ class GPU:
 
                 # [pre, out...]
                 images = generated_images
-                grid = image_grid(images)
+
+                if not config.api.disable_grid:
+                    grid = image_grid(images)
+                else:
+                    grid = None
 
                 # Save only if needed
                 if job.save_image:
@@ -238,7 +278,7 @@ class GPU:
 
             # Append grid to the list of images if needed
             if isinstance(images[0], Image.Image) and len(images) > 1:
-                images = [grid, *images]
+                images = [grid, *images] if grid else images
 
             return (images, deltatime)
         except InferenceInterruptedError:
@@ -277,7 +317,7 @@ class GPU:
                 Notification(
                     "info",
                     "Model already loaded",
-                    f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchStableDiffusion) else 'TensorRT'} backend",
+                    f"{model} is already loaded",
                 )
             )
             return
@@ -294,33 +334,14 @@ class GPU:
                     Notification(
                         "info",
                         "Model already loaded",
-                        f"{model} is already loaded with {'PyTorch' if isinstance(self.loaded_models[model], PyTorchStableDiffusion) else 'TensorRT'} backend",
+                        f"{model} is already loaded",
                     )
                 )
                 return
 
             start_time = time.time()
 
-            if backend == "TensorRT":
-                logger.debug("Selecting TensorRT")
-
-                websocket_manager.broadcast_sync(
-                    Notification(
-                        "info",
-                        "TensorRT",
-                        f"Loading {model} into memory, this may take a while",
-                    )
-                )
-
-                from core.inference.tensorrt import TensorRTModel
-
-                trt_model = TensorRTModel(
-                    model_id=model,
-                )
-                self.loaded_models[model] = trt_model
-                logger.debug("Loading done")
-
-            elif backend == "AITemplate":
+            if backend == "AITemplate":
                 logger.debug("Selecting AITemplate")
 
                 websocket_manager.broadcast_sync(
@@ -347,7 +368,7 @@ class GPU:
                     )
                 )
 
-                from core.inference.onnx_sd import OnnxStableDiffusion
+                from core.inference.onnx import OnnxStableDiffusion
 
                 pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
@@ -362,14 +383,10 @@ class GPU:
                     )
                 )
 
-                if model in ["stabilityai/stable-diffusion-x4-upscaler"]:
-                    pt_model = PyTorchSDUpscaler()
-
-                else:
-                    pt_model = PyTorchStableDiffusion(
-                        model_id=model,
-                        device=config.api.device,
-                    )
+                pt_model = PyTorchStableDiffusion(
+                    model_id=model,
+                    device=config.api.device,
+                )
                 self.loaded_models[model] = pt_model
 
             logger.info(f"Finished loading in {time.time() - start_time:.2f}s")
@@ -408,14 +425,6 @@ class GPU:
                 if hasattr(model, "unload"):
                     logger.debug(f"Unloading model: {model_type}")
                     model.unload()
-                else:
-                    from core.tensorrt.volta_accelerate import TRTModel
-
-                    assert isinstance(
-                        model, TRTModel
-                    ), "Model is not a TRTModel and does not have an unload method"
-                    logger.debug(f"Unloading TensorRT model: {model_type}")
-                    model.teardown()
 
                 del self.loaded_models[model_type]
                 self.memory_cleanup()
@@ -432,20 +441,6 @@ class GPU:
             await self.unload(model)
 
         self.memory_cleanup()
-
-    async def build_trt_engine(self, request: TRTBuildRequest):
-        "Build a TensorRT engine from a request"
-
-        from .inference.tensorrt import TensorRTModel
-
-        logger.debug(f"Building engine for {request.model_id}...")
-
-        def trt_build_thread_call():
-            model = TensorRTModel(model_id=request.model_id, use_f32=False)
-            model.generate_engine(request=request)
-
-        await asyncio.to_thread(trt_build_thread_call)
-        logger.info("TensorRT engine successfully built")
 
     async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
         "Convert a model to a AITemplate engine"
@@ -496,7 +491,7 @@ class GPU:
                 config.aitemplate.num_threads = request.threads
 
         def ait_build_thread_call():
-            from core.aitemplate.dynamic_compile import compile_diffusers
+            from core.aitemplate.compile import compile_diffusers
 
             compile_diffusers(
                 batch_size=request.batch_size,
@@ -517,7 +512,7 @@ class GPU:
     async def build_onnx_engine(self, request: ONNXBuildRequest):
         "Convert a model to a ONNX engine"
 
-        from core.inference.onnx_sd import OnnxStableDiffusion
+        from core.inference.onnx import OnnxStableDiffusion
 
         logger.debug(f"Building ONNX for {request.model_id}...")
 
@@ -548,9 +543,7 @@ class GPU:
 
         def model_to_f16_thread_call():
             pt_model = PyTorchStableDiffusion(
-                model_id=model,
-                device=config.api.device,
-                autoload=True,
+                model_id=model, device=config.api.device, autoload=True, bare=True
             )
 
             model_name = model.split("/")[-1]
@@ -571,36 +564,27 @@ class GPU:
 
         await asyncio.to_thread(download_model, model)
 
-    async def load_lora(self, req: LoraLoadRequest):
-        "Inject a Lora model into a model"
+    async def load_vae(self, req: VaeLoadRequest):
+        "Change the models VAE"
 
         if req.model in self.loaded_models:
             internal_model = self.loaded_models[req.model]
 
             if isinstance(internal_model, PyTorchStableDiffusion):
-                logger.info(
-                    f"Loading Lora model: {req.lora}, weights: ({req.unet_weight}, {req.text_encoder_weight})"
-                )
+                logger.info(f"Loading VAE model: {req.vae}")
 
-                internal_model.load_lora(
-                    req.lora, req.unet_weight, req.text_encoder_weight
-                )
+                internal_model.change_vae(req.vae)
 
                 websocket_manager.broadcast_sync(
                     Notification(
                         "success",
-                        "Lora model loaded",
-                        f"Lora model {req.lora} loaded",
+                        "VAE model loaded",
+                        f"VAE model {req.vae} loaded",
                     )
                 )
-
         else:
             websocket_manager.broadcast_sync(
-                Notification(
-                    "error",
-                    "Model not found",
-                    f"Model {req.model} not found",
-                )
+                Notification("error", "Model not found", f"Model {req.model} not found")
             )
             logger.error(f"Model {req.model} not found")
 
@@ -672,14 +656,9 @@ class GPU:
         "Upscale an image by a specified factor"
 
         def generate_call(job: UpscaleQueueEntry):
-            if job.model in [
-                "RealESRGAN_x4plus",
-                "RealESRNet_x4plus",
-                "RealESRGAN_x4plus_anime_6B",
-                "RealESRGAN_x2plus",
-                "RealESR-general-x4v3",
-            ]:
-                t = time.time()
+            t: float = time.time()
+
+            if "realesr" in job.model.lower():
                 pipe = RealESRGAN(
                     model_name=job.model,
                     tile=job.data.tile_size,
@@ -688,10 +667,22 @@ class GPU:
 
                 image = pipe.generate(job)
                 pipe.unload()
-                deltatime = time.time() - t
-                return image, deltatime
+
             else:
-                raise ValueError(f"Model {job.model} not implemented")
+                pipe = Upscaler(
+                    model=job.model,
+                    device_id=config.api.device_id,
+                    cpu=config.api.device_type == "cpu",
+                    fp16=True,
+                )
+
+                input_image = convert_to_image(job.data.image)
+                image = pipe.run(input_img=input_image, scale=job.data.upscale_factor)[
+                    0
+                ]
+
+            deltatime = time.time() - t
+            return image, deltatime
 
         image: Image.Image
         time_: float

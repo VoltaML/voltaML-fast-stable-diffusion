@@ -2,8 +2,6 @@ import asyncio
 import logging
 from typing import List
 
-from core.config import config
-
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +12,7 @@ class Queue:
         self.jobs: List[str] = []
         self.lock = asyncio.Lock()
         self.condition = asyncio.Condition(self.lock)
-        self.concurrent_jobs = config.api.concurrent_jobs
+        self.concurrent_jobs = 1  # Broken, do not change (torch becomes locked up)
 
     async def mark_finished(self, job_id: str):
         "Mark the current job as finished"

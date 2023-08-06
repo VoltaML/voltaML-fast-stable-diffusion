@@ -73,6 +73,20 @@ export default defineConfig({
 					{ text: "WSL", link: "/installation/wsl" },
 					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Old", link: "/installation/old" },
+					{ text: "xFormers", link: "/installation/xformers" },
+				],
+				collapsed: false,
+			},
+			{
+				text: "Basics",
+				items: [
+					{ text: "Models", link: "/basics/models" },
+					{ text: "LoRA", link: "/basics/lora" },
+					{ text: "Textual Inversion", link: "/basics/textual-inversion" },
+					{
+						text: "AITemplate Acceleration",
+						link: "/basics/aitemplate",
+					},
 				],
 				collapsed: false,
 			},
@@ -80,14 +94,11 @@ export default defineConfig({
 				text: "WebUI",
 				items: [
 					{ text: "Models", link: "/webui/models" },
-					{ text: "Text to Image", link: "/webui/txt2img" },
 					{ text: "Image to Image", link: "/webui/img2img" },
 					{ text: "Extra", link: "/webui/extra" },
-					{ text: "Download", link: "/webui/download" },
-					{ text: "Accelerate", link: "/webui/accelerate" },
+					{ text: "Downloading Models", link: "/webui/download" },
 					{ text: "Image browser", link: "/webui/imagebrowser" },
 					{ text: "Convert", link: "/webui/convert" },
-					{ text: "Settings", link: "/webui/settings" },
 				],
 				collapsed: false,
 			},
@@ -103,15 +114,12 @@ export default defineConfig({
 				collapsed: false,
 			},
 			{
+				text: "Settings",
+				items: [{ text: "Settings", link: "/settings/settings" }],
+			},
+			{
 				text: "Experimental",
-				items: [
-					{ text: "xFormers", link: "/experimental/xformers" },
-					{ text: "Settings", link: "/experimental/settings" },
-					{
-						text: "Safetensors/CKPT support",
-						link: "/experimental/checkpoints",
-					},
-				],
+				items: [],
 				collapsed: false,
 			},
 			{

@@ -8,15 +8,18 @@
     "preview": "vite preview",
     "build-only": "vite build",
     "type-check": "vue-tsc --noEmit",
+    "format": "prettier --write \"src/**/*.{vue,js,jsx,ts,tsx,json,md}\"",
     "lint": "eslint . --ext .vue,.js,.jsx,.cjs,.mjs,.ts,.tsx,.cts,.mts --fix --ignore-path .gitignore"
   },
   "dependencies": {
     "pinia": "^2.0.28",
+    "semver": "^5.7.2",
     "uuid": "^9.0.0",
     "v3-infinite-loading": "^1.2.2",
     "vue": "^3.2.45",
     "vue-drawing-canvas": "^1.0.14",
-    "vue-router": "^4.1.6"
+    "vue-router": "^4.1.6",
+    "word-wrap": "^1.2.4"
   },
   "devDependencies": {
     "@rushstack/eslint-patch": "^1.1.4",

@@ -1,7 +1,7 @@
 import logging
 import multiprocessing
 from dataclasses import Field, dataclass, field, fields
-from typing import Dict, List, Literal, Optional, Union
+from typing import List, Literal, Optional, Union
 
 import torch
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
@@ -110,7 +110,6 @@ class APIConfig:
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
-    concurrent_jobs: int = 1
 
     # TomeSD
     use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit
@@ -141,24 +140,39 @@ class APIConfig:
 
     # Device settings
     device_id: int = 0
-    device_type: Literal[
-        "cpu", "cuda", "mps", "directml", "intel", "vulkan", "iree"
-    ] = "cuda"
-    iree_target: Literal["cuda", "vulkan", "llvm", "interpreted"] = "vulkan"
-
-    # Lora
-    lora_text_encoder_weight: float = 0.5
-    lora_unet_weight: float = 0.5
+    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan"] = "cuda"
 
     # Critical
     enable_shutdown: bool = True
 
+    # CLIP
+    clip_skip: int = 1
+    clip_quantization: Literal["full", "int8", "int4"] = "full"
+
     # Autoload
-    autoloaded_loras: Dict[str, Dict] = field(default_factory=dict)
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
 
-    # Save paths
+    huggingface_style_parsing: bool = False
+
+    # Saving
     save_path_template: str = "{folder}/{prompt}/{id}-{index}.{extension}"
+    image_extension: Literal["png", "webp", "jpeg"] = "png"
+    image_quality: int = 95
+    image_return_format: Literal["bytes", "base64"] = "base64"
+
+    # Grid
+    disable_grid: bool = False
+
+    # Torch compile
+    torch_compile: bool = False
+    torch_compile_fullgraph: bool = False
+    torch_compile_dynamic: bool = False
+    torch_compile_backend: str = "inductor"
+    torch_compile_mode: Literal[
+        "default",
+        "reduce-overhead",
+        "max-autotune",
+    ] = "reduce-overhead"
 
     @property
     def dtype(self):
@@ -171,22 +185,25 @@ class APIConfig:
 
     @property
     def device(self):
-        "Return the device string"
+        "Return the device"
 
         if self.device_type == "intel":
             from core.inference.functions import is_ipex_available
 
-            return "xpu" if is_ipex_available() else "cpu"
-        if self.device_type == "cpu":
-            return "cpu"
-        if self.device_type == "vulkan":
-            return "vulkan"
+            return torch.device("xpu" if is_ipex_available() else "cpu")
+
+        if self.device_type in ["cpu", "mps"]:
+            return torch.device(self.device_type)
+
+        if self.device_type in ["vulkan", "cuda"]:
+            return torch.device(f"{self.device_type}:{self.device_id}")
+
         if self.device_type == "directml":
             import torch_directml  # pylint: disable=import-error
 
             return torch_directml.device()
-
-        return f"{self.device_type}:{self.device_id}"
+        else:
+            raise ValueError(f"Device type {self.device_type} not supported")
 
 
 @dataclass
@@ -241,6 +258,7 @@ class FrontendConfig:
     enable_theme_editor: bool = False
     image_browser_columns: int = 5
     on_change_timer: int = 0
+    nsfw_ok_threshold: int = 0
 
 
 @dataclass_json(undefined=Undefined.INCLUDE)

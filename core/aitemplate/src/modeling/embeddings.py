@@ -18,11 +18,6 @@ from aitemplate.compiler import ops
 from aitemplate.frontend import Tensor, nn
 
 
-def get_shape(x):
-    shape = [it.value() for it in x._attrs["shape"]]  # pylint: disable=protected-access
-    return shape
-
-
 def get_timestep_embedding(
     timesteps: Tensor,
     embedding_dim: int,
@@ -30,21 +25,17 @@ def get_timestep_embedding(
     downscale_freq_shift: float = 1,
     scale: float = 1,
     max_period: int = 10000,
-):
-    """
-    This matches the implementation in Denoising Diffusion Probabilistic Models: Create sinusoidal timestep embeddings.
-
-    :param timesteps: a 1-D Tensor of N indices, one per batch element.
-                      These may be fractional.
-    :param embedding_dim: the dimension of the output. :param max_period: controls the minimum frequency of the
-    embeddings. :return: an [N x dim] Tensor of positional embeddings.
-    """
-    assert len(get_shape(timesteps)) == 1, "Timesteps should be a 1d-array"
+    dtype: str = "float16",
+    arange_name: str = "arange",
+) -> Tensor:
+    assert (
+        timesteps._rank() == 1  # pylint: disable=protected-access
+    ), "Timesteps should be a 1d-array"
 
     half_dim = embedding_dim // 2
 
     exponent = (-math.log(max_period)) * Tensor(
-        shape=[half_dim], dtype="float16", name="arange"  # type: ignore
+        shape=[half_dim], dtype=dtype, name=arange_name  # type: ignore
     )
 
     exponent = exponent * (1.0 / (half_dim - downscale_freq_shift))
@@ -52,10 +43,8 @@ def get_timestep_embedding(
     emb = ops.exp(exponent)
     emb = ops.reshape()(timesteps, [-1, 1]) * ops.reshape()(emb, [1, -1])
 
-    # scale embeddings
     emb = scale * emb
 
-    # concat sine and cosine embeddings
     if flip_sin_to_cos:
         emb = ops.concatenate()(
             [ops.cos(emb), ops.sin(emb)],
@@ -66,17 +55,25 @@ def get_timestep_embedding(
             [ops.sin(emb), ops.cos(emb)],
             dim=-1,
         )
-    return emb
+    return emb  # type: ignore
 
 
 class TimestepEmbedding(nn.Module):
-    def __init__(self, channel: int, time_embed_dim: int, _act_fn: str = "silu"):
+    def __init__(
+        self,
+        channel: int,
+        time_embed_dim: int,
+        act_fn: str = "silu",  # pylint: disable=unused-argument
+        dtype: str = "float16",
+    ) -> None:
         super().__init__()
 
-        self.linear_1 = nn.Linear(channel, time_embed_dim, specialization="swish")
-        self.linear_2 = nn.Linear(time_embed_dim, time_embed_dim)
+        self.linear_1 = nn.Linear(
+            channel, time_embed_dim, specialization="swish", dtype=dtype
+        )
+        self.linear_2 = nn.Linear(time_embed_dim, time_embed_dim, dtype=dtype)
 
-    def forward(self, sample):
+    def forward(self, sample: Tensor) -> Tensor:
         sample = self.linear_1(sample)
         sample = self.linear_2(sample)
         return sample
@@ -84,18 +81,27 @@ class TimestepEmbedding(nn.Module):
 
 class Timesteps(nn.Module):
     def __init__(
-        self, num_channels: int, flip_sin_to_cos: bool, downscale_freq_shift: float
-    ):
+        self,
+        num_channels: int,
+        flip_sin_to_cos: bool,
+        downscale_freq_shift: float,
+        dtype: str = "float16",
+        arange_name: str = "arange",
+    ) -> None:
         super().__init__()
         self.num_channels = num_channels
         self.flip_sin_to_cos = flip_sin_to_cos
         self.downscale_freq_shift = downscale_freq_shift
+        self.dtype = dtype
+        self.arange_name = arange_name
 
-    def forward(self, timesteps):
+    def forward(self, timesteps: Tensor) -> Tensor:
         t_emb = get_timestep_embedding(
             timesteps,
             self.num_channels,
             flip_sin_to_cos=self.flip_sin_to_cos,
             downscale_freq_shift=self.downscale_freq_shift,
+            dtype=self.dtype,
+            arange_name=self.arange_name,
         )
         return t_emb

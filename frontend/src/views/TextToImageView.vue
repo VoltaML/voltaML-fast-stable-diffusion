@@ -12,7 +12,12 @@
               placeholder="Prompt"
               show-count
               @keyup="
-                promptHandleKeyUp($event, conf.data.settings.txt2img, 'prompt')
+                promptHandleKeyUp(
+                  $event,
+                  conf.data.settings.txt2img,
+                  'prompt',
+                  global
+                )
               "
               @keydown="promptHandleKeyDown"
             >
@@ -27,7 +32,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.txt2img,
-                  'negative_prompt'
+                  'negative_prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"
@@ -60,79 +66,27 @@
               />
             </div>
 
+            <!-- Karras Sigmas -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p style="width: 120px">Karras Sigmas</p>
+                </template>
+                Changes the sigmas used in the Karras diffusion process. Might
+                provide better results for some images.
+                <b class="highlight"
+                  >Works only with KDPM samplers. Ignored by other samplers.</b
+                >
+              </NTooltip>
+
+              <NSwitch
+                v-model:value="conf.data.settings.txt2img.use_karras_sigmas"
+                style="justify-self: flex-end"
+              />
+            </div>
+
             <!-- Dimensions -->
-            <div class="flex-container" v-if="conf.data.settings.aitDim.width">
-              <p class="slider-label">Width</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Width</p>
-              <NSlider
-                v-model:value="conf.data.settings.txt2img.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.txt2img.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-if="conf.data.settings.aitDim.height">
-              <p class="slider-label">Height</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Height</p>
-              <NSlider
-                v-model:value="conf.data.settings.txt2img.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.txt2img.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
+            <DimensionsInput :dimensions-object="conf.data.settings.txt2img" />
 
             <!-- Steps -->
             <div class="flex-container">
@@ -158,8 +112,6 @@
                 v-model:value="conf.data.settings.txt2img.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="5"
-                :max="300"
               />
             </div>
 
@@ -188,8 +140,6 @@
                 v-model:value="conf.data.settings.txt2img.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="30"
                 :step="0.5"
               />
             </div>
@@ -218,8 +168,6 @@
                 v-model:value="conf.data.settings.txt2img.self_attention_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="0"
-                :max="1"
                 :step="0.05"
               />
             </div>
@@ -242,55 +190,10 @@
                 v-model:value="conf.data.settings.txt2img.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
               />
             </div>
-            <div
-              class="flex-container"
-              v-if="conf.data.settings.aitDim.batch_size"
-            >
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Batch Size</p>
-                </template>
-                Number of images to generate in paralel.
-              </NTooltip>
-              <NSlider
-                :value="conf.data.settings.aitDim.batch_size"
-                :min="1"
-                :max="9"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.batch_size"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Batch Size</p>
-                </template>
-                Number of images to generate in paralel.
-              </NTooltip>
-              <NSlider
-                v-model:value="conf.data.settings.txt2img.batch_size"
-                :min="1"
-                :max="9"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.txt2img.batch_size"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
-              />
-            </div>
+
+            <BatchSizeInput :batch-size-object="conf.data.settings.txt2img" />
 
             <!-- Seed -->
             <div class="flex-container">
@@ -306,8 +209,6 @@
               <NInputNumber
                 v-model:value="conf.data.settings.txt2img.seed"
                 size="small"
-                :min="-1"
-                :max="999_999_999_999"
                 style="flex-grow: 1"
               />
             </div>
@@ -357,8 +258,6 @@
                 v-model:value="conf.data.settings.extra.highres.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="5"
-                :max="300"
               />
             </div>
 
@@ -369,16 +268,14 @@
                 v-model:value="conf.data.settings.extra.highres.scale"
                 :min="1"
                 :max="8"
-                :step="1"
+                :step="0.1"
                 style="margin-right: 12px"
               />
               <NInputNumber
                 v-model:value="conf.data.settings.extra.highres.scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="8"
-                :step="1"
+                :step="0.1"
               />
             </div>
 
@@ -450,8 +347,6 @@
           @image-clicked="global.state.txt2img.currentImage = $event"
         />
 
-        <SendOutputTo :output="global.state.txt2img.currentImage" />
-
         <OutputStats
           style="margin-top: 12px"
           :gen-data="global.state.txt2img.genData"
@@ -466,7 +361,8 @@ import "@/assets/2img.css";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
+import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
+import DimensionsInput from "@/components/generate/DimensionsInput.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -533,21 +429,16 @@ const generate = () => {
         id: uuidv4(),
         prompt: conf.data.settings.txt2img.prompt,
         negative_prompt: conf.data.settings.txt2img.negative_prompt,
-        width: conf.data.settings.aitDim.width
-          ? conf.data.settings.aitDim.width
-          : conf.data.settings.txt2img.width,
-        height: conf.data.settings.aitDim.height
-          ? conf.data.settings.aitDim.height
-          : conf.data.settings.txt2img.height,
+        width: conf.data.settings.txt2img.width,
+        height: conf.data.settings.txt2img.height,
         steps: conf.data.settings.txt2img.steps,
         guidance_scale: conf.data.settings.txt2img.cfg_scale,
         seed: seed,
-        batch_size: conf.data.settings.aitDim.batch_size
-          ? conf.data.settings.aitDim.batch_size
-          : conf.data.settings.txt2img.batch_size,
+        batch_size: conf.data.settings.txt2img.batch_size,
         batch_count: conf.data.settings.txt2img.batch_count,
         scheduler: conf.data.settings.txt2img.sampler,
         self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
+        use_karras_sigmas: conf.data.settings.txt2img.use_karras_sigmas,
       },
       model: conf.data.settings.model?.name,
       backend: "PyTorch",

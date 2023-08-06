@@ -107,7 +107,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.inpainting,
-                  'prompt'
+                  'prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"
@@ -123,7 +124,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.inpainting,
-                  'negative_prompt'
+                  'negative_prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"
@@ -153,6 +155,25 @@
                 :options="conf.scheduler_options"
                 v-model:value="conf.data.settings.inpainting.sampler"
                 style="flex-grow: 1"
+              />
+            </div>
+
+            <!-- Karras Sigmas -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p style="width: 120px">Karras Sigmas</p>
+                </template>
+                Changes the sigmas used in the Karras diffusion process. Might
+                provide better results for some images.
+                <b class="highlight"
+                  >Works only with KDPM samplers. Ignored by other samplers.</b
+                >
+              </NTooltip>
+
+              <NSwitch
+                v-model:value="conf.data.settings.txt2img.use_karras_sigmas"
+                style="justify-self: flex-end"
               />
             </div>
 
@@ -363,8 +384,6 @@
           @image-clicked="global.state.inpainting.currentImage = $event"
         />
 
-        <SendOutputTo :output="global.state.inpainting.currentImage" />
-
         <OutputStats
           style="margin-top: 12px"
           :gen-data="global.state.inpainting.genData"
@@ -380,7 +399,6 @@ import { BurnerClock } from "@/clock";
 import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -468,6 +486,7 @@ const generate = () => {
         batch_count: conf.data.settings.inpainting.batch_count,
         scheduler: conf.data.settings.inpainting.sampler,
         self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
+        use_karras_sigmas: conf.data.settings.inpainting.use_karras_sigmas,
       },
       model: conf.data.settings.model?.name,
     }),
@@ -509,6 +528,35 @@ const preview = ref("");
 
 const imageContainer = ref<HTMLElement>();
 
+function handleImageUpdate(img: HTMLImageElement) {
+  const containerWidth = imageContainer.value?.clientWidth;
+  if (containerWidth === undefined) return;
+
+  // Scale to fit container and keep aspect ratio
+  const containerScaledWidth = containerWidth;
+  const containerScaledHeight = (img.height * containerScaledWidth) / img.width;
+
+  // Scale to fit into 70vh of the screen
+  const screenHeight = window.innerHeight;
+  const screenHeightScaledHeight =
+    (containerScaledHeight * 0.7 * screenHeight) / containerScaledHeight;
+
+  // Scale width to keep aspect ratio
+  const screenHeightScaledWidth =
+    (img.width * screenHeightScaledHeight) / img.height;
+
+  // Select smaller of the two to fit into the container
+  if (containerScaledWidth < screenHeightScaledWidth) {
+    width.value = containerScaledWidth;
+    height.value = containerScaledHeight;
+  } else {
+    width.value = screenHeightScaledWidth;
+    height.value = screenHeightScaledHeight;
+  }
+
+  canvas.value?.redraw(false);
+}
+
 function previewImage(event: Event) {
   const input = event.target as HTMLInputElement;
   if (input.files) {
@@ -521,35 +569,8 @@ function previewImage(event: Event) {
         const img = new Image();
         img.src = s;
         img.onload = () => {
-          const containerWidth = imageContainer.value?.clientWidth;
-          if (containerWidth === undefined) return;
-
-          // Scale to fit container and keep aspect ratio
-          const containerScaledWidth = containerWidth;
-          const containerScaledHeight =
-            (img.height * containerScaledWidth) / img.width;
-
-          // Scale to fit into 70vh of the screen
-          const screenHeight = window.innerHeight;
-          const screenHeightScaledHeight =
-            (containerScaledHeight * 0.7 * screenHeight) /
-            containerScaledHeight;
-
-          // Scale width to keep aspect ratio
-          const screenHeightScaledWidth =
-            (img.width * screenHeightScaledHeight) / img.height;
-
-          // Select smaller of the two to fit into the container
-          if (containerScaledWidth < screenHeightScaledWidth) {
-            width.value = containerScaledWidth;
-            height.value = containerScaledHeight;
-          } else {
-            width.value = screenHeightScaledWidth;
-            height.value = screenHeightScaledHeight;
-          }
-
+          handleImageUpdate(img);
           conf.data.settings.inpainting.image = s;
-          canvas.value?.redraw(false);
         };
       }
     };
@@ -588,6 +609,16 @@ const burner = new BurnerClock(conf.data.settings.inpainting, conf, generate);
 onUnmounted(() => {
   burner.cleanup();
 });
+
+if (conf.data.settings.inpainting.image !== "") {
+  preview.value = conf.data.settings.inpainting.image;
+  const img = new Image();
+  img.src = conf.data.settings.inpainting.image;
+  img.onload = () => {
+    console.log(img);
+    handleImageUpdate(img);
+  };
+}
 </script>
 <style scoped>
 .hidden-input {

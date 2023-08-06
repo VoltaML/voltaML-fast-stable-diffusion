@@ -1,10 +1,10 @@
 # thank you @Birch-san for your work :)
-from functools import partial
-from typing import Optional, NamedTuple, Protocol, List
 import math
+from functools import partial
+from typing import List, NamedTuple, Optional, Protocol
 
-from diffusers.models.attention import Attention
 import torch
+from diffusers.models.attention import Attention
 
 
 def apply_subquadratic_attention(

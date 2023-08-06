@@ -16,10 +16,10 @@ from transformers.models.auto.modeling_auto import AutoModelForCausalLM
 from transformers.models.auto.processing_auto import AutoProcessor
 from transformers.models.blip.modeling_blip import BlipForConditionalGeneration
 from transformers.models.blip_2 import Blip2ForConditionalGeneration
+from transformers.utils import is_bitsandbytes_available
 
 from core.config import config
 from core.files import get_full_model_path
-from core.inference.functions import is_bitsandbytes_available
 from core.interrogation.base_interrogator import InterrogationModel, InterrogationResult
 from core.optimizations import autocast
 from core.types import InterrogatorQueueEntry, Job
@@ -32,7 +32,9 @@ CACHE_URL = "https://huggingface.co/pharma/ci-preprocess/resolve/main/"
 class CLIPInterrogator(InterrogationModel):
     "internal"
 
-    def __init__(self, device: str = "cuda", autoload: bool = False):
+    def __init__(
+        self, device: Union[str, torch.device] = "cuda", autoload: bool = False
+    ):
         super().__init__(device)
 
         self.device = device
@@ -99,7 +101,6 @@ class CLIPInterrogator(InterrogationModel):
             best_sim: float = 0,
             min_count: int = 8,
             max_count: int = 32,
-            descriptor="Chaining",
             reverse: bool = False,
         ) -> str:
             def _similarity(image_features: torch.Tensor, text: str) -> float:
@@ -134,7 +135,7 @@ class CLIPInterrogator(InterrogationModel):
                     return True
                 return False
 
-            for idx in tqdm(range(max_count), desc=descriptor):
+            for idx in tqdm(range(max_count), desc="CLIP"):
                 best = self._rank_top(
                     image_features,
                     [f"{curr_prompt, {f}}" for f in phrases],
@@ -160,7 +161,6 @@ class CLIPInterrogator(InterrogationModel):
             flaves,
             max_count=max_flavors,
             reverse=True,
-            descriptor="Negative chain",
         )
 
     def _rank_top(
@@ -175,7 +175,7 @@ class CLIPInterrogator(InterrogationModel):
             similarity = text_features @ image_features.T
             if reverse:
                 similarity = -similarity
-        return text_array[similarity.argmax().item()]
+        return text_array[similarity.argmax().item()]  # type: ignore
 
     def load(self):
         # load captioner model (BLIP)
@@ -283,9 +283,7 @@ class LabelTable:
         if len(self.labels) != len(self.embeds):
             self.embeds = []
             chunks = np.array_split(self.labels, max(1, len(self.labels) / self.chunk_size))  # type: ignore
-            for chunk in tqdm(
-                chunks, desc=f"Preprocessing {descriptor}" if descriptor else None
-            ):
+            for chunk in tqdm(chunks, desc="CLIP"):
                 text_tokens = self.tokenize(chunk).to(self.device)
                 with torch.no_grad(), autocast(dtype=self.dtype):  # type: ignore
                     text_features = interrogator.clip_model.encode_text(text_tokens)
@@ -359,7 +357,7 @@ class LabelTable:
         keep_per_chunk = int(self.chunk_size / num_chunks)
 
         top_labels, top_embeds = [], []
-        for chunk_idx in tqdm(range(num_chunks)):
+        for chunk_idx in tqdm(range(num_chunks), desc="CLIP"):
             start = chunk_idx * self.chunk_size
             stop = min(start + self.chunk_size, len(self.embeds))
             tops = self._rank(image_features, self.embeds[start:stop], top_count=keep_per_chunk, reverse=reverse)  # type: ignore

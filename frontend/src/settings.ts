@@ -17,21 +17,16 @@ export enum Sampler {
   UniPCMultistep = 13,
 }
 
-export interface IAutoloadedLora {
-  text_encoder: number;
-  unet: number;
-}
-
 export interface IQuantDict {
-  vae_decoder: "no-quant" | "uint8" | "int8";
-  vae_encoder: "no-quant" | "uint8" | "int8";
-  unet: "no-quant" | "uint8" | "int8";
-  text_encoder: "no-quant" | "uint8" | "int8";
+  vae_decoder: boolean | null;
+  vae_encoder: boolean | null;
+  unet: boolean | null;
+  text_encoder: boolean | null;
 }
 
 export interface ISettings {
   $schema: string;
-  backend: "PyTorch" | "TensorRT" | "AITemplate" | "ONNX" | "unknown";
+  backend: "PyTorch" | "AITemplate" | "ONNX" | "unknown";
   model: ModelEntry | null;
   extra: {
     highres: {
@@ -50,9 +45,9 @@ export interface ISettings {
     };
   };
   aitDim: {
-    width: number | undefined;
-    height: number | undefined;
-    batch_size: number | undefined;
+    width: number[] | undefined;
+    height: number[] | undefined;
+    batch_size: number[] | undefined;
   };
   txt2img: {
     prompt: string;
@@ -66,6 +61,7 @@ export interface ISettings {
     batch_count: number;
     batch_size: number;
     self_attention_scale: number;
+    use_karras_sigmas: boolean;
   };
   img2img: {
     prompt: string;
@@ -81,6 +77,7 @@ export interface ISettings {
     denoising_strength: number;
     image: string;
     self_attention_scale: number;
+    use_karras_sigmas: boolean;
   };
   inpainting: {
     prompt: string;
@@ -96,6 +93,7 @@ export interface ISettings {
     image: string;
     mask_image: string;
     self_attention_scale: number;
+    use_karras_sigmas: boolean;
   };
   controlnet: {
     prompt: string;
@@ -115,21 +113,7 @@ export interface ISettings {
     is_preprocessed: boolean;
     save_preprocessed: boolean;
     return_preprocessed: boolean;
-  };
-  sd_upscale: {
-    prompt: string;
-    negative_prompt: string;
-    seed: number;
-    cfg_scale: number;
-    steps: number;
-    batch_count: number;
-    batch_size: number;
-    sampler: Sampler;
-    tile_size: number;
-    tile_border: number;
-    original_image_slice: number;
-    noise_level: number;
-    image: string;
+    use_karras_sigmas: boolean;
   };
   upscale: {
     image: string;
@@ -151,11 +135,13 @@ export interface ISettings {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
-    concurrent_jobs: number;
 
     use_tomesd: boolean;
     tomesd_ratio: number;
     tomesd_downsample_layers: 1 | 2 | 4 | 8;
+
+    clip_skip: number;
+    clip_quantization: "full" | "int4" | "int8";
 
     autocast: boolean;
     attention_processor:
@@ -180,13 +166,21 @@ export interface ISettings {
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
 
-    lora_text_encoder_weight: number;
-    lora_unet_weight: number;
+    huggingface_style_parsing: boolean;
 
-    autoloaded_loras: Map<string, IAutoloadedLora>;
     autoloaded_textual_inversions: string[];
 
     save_path_template: string;
+    image_extension: "webp" | "png" | "jpeg";
+    image_quality: number;
+
+    disable_grid: boolean;
+
+    torch_compile: boolean;
+    torch_compile_fullgraph: boolean;
+    torch_compile_dynamic: boolean;
+    torch_compile_backend: string;
+    torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
   };
   aitemplate: {
     num_threads: number;
@@ -206,6 +200,7 @@ export interface ISettings {
     enable_theme_editor: boolean;
     image_browser_columns: number;
     on_change_timer: number;
+    nsfw_ok_threshold: number;
   };
 }
 
@@ -239,6 +234,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     negative_prompt: "",
     self_attention_scale: 0,
+    use_karras_sigmas: false,
   },
   img2img: {
     width: 512,
@@ -254,6 +250,7 @@ export const defaultSettings: ISettings = {
     denoising_strength: 0.6,
     image: "",
     self_attention_scale: 0,
+    use_karras_sigmas: false,
   },
   inpainting: {
     prompt: "",
@@ -269,6 +266,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
+    use_karras_sigmas: false,
   },
   controlnet: {
     prompt: "",
@@ -288,21 +286,7 @@ export const defaultSettings: ISettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
-  },
-  sd_upscale: {
-    prompt: "",
-    negative_prompt: "",
-    seed: -1,
-    cfg_scale: 7,
-    steps: 75,
-    batch_count: 1,
-    batch_size: 1,
-    sampler: Sampler.DPMSolverMultistep,
-    tile_size: 128,
-    tile_border: 32,
-    original_image_slice: 32,
-    noise_level: 40,
-    image: "",
+    use_karras_sigmas: false,
   },
   upscale: {
     image: "",
@@ -319,7 +303,11 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
-    concurrent_jobs: 1,
+    image_preview_delay: 2.0,
+
+    clip_skip: 1,
+    clip_quantization: "full",
+
     autocast: true,
     attention_processor: "xformers",
     subquadratic_size: 512,
@@ -328,33 +316,45 @@ export const defaultSettings: ISettings = {
     vae_slicing: false,
     vae_tiling: false,
     trace_model: false,
+    cudnn_benchmark: false,
     offload: "disabled",
-    image_preview_delay: 2.0,
+
     device_id: 0,
     device_type: "cuda",
     data_type: "float16",
+
     use_tomesd: true,
     tomesd_ratio: 0.4,
     tomesd_downsample_layers: 1,
+
     deterministic_generation: false,
     reduced_precision: false,
-    cudnn_benchmark: false,
     clear_memory_policy: "always",
-    lora_text_encoder_weight: 0.5,
-    lora_unet_weight: 0.5,
-    autoloaded_loras: new Map(),
+
+    huggingface_style_parsing: false,
     autoloaded_textual_inversions: [],
+
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
+    image_extension: "png",
+    image_quality: 95,
+
+    disable_grid: false,
+
+    torch_compile: false,
+    torch_compile_fullgraph: false,
+    torch_compile_dynamic: false,
+    torch_compile_backend: "inductor",
+    torch_compile_mode: "default",
   },
   aitemplate: {
     num_threads: 8,
   },
   onnx: {
     quant_dict: {
-      text_encoder: "no-quant",
-      unet: "no-quant",
-      vae_decoder: "no-quant",
-      vae_encoder: "no-quant",
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null,
     },
     convert_to_fp16: true,
     simplify_unet: false,
@@ -369,6 +369,7 @@ export const defaultSettings: ISettings = {
     enable_theme_editor: false,
     image_browser_columns: 5,
     on_change_timer: 2000,
+    nsfw_ok_threshold: 0,
   },
 };
 

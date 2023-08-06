@@ -19,7 +19,12 @@
               placeholder="Prompt"
               show-count
               @keyup="
-                promptHandleKeyUp($event, conf.data.settings.img2img, 'prompt')
+                promptHandleKeyUp(
+                  $event,
+                  conf.data.settings.img2img,
+                  'prompt',
+                  global
+                )
               "
               @keydown="promptHandleKeyDown"
             >
@@ -34,7 +39,8 @@
                 promptHandleKeyUp(
                   $event,
                   conf.data.settings.img2img,
-                  'negative_prompt'
+                  'negative_prompt',
+                  global
                 )
               "
               @keydown="promptHandleKeyDown"
@@ -67,79 +73,26 @@
               />
             </div>
 
-            <!-- Dimensions -->
-            <div class="flex-container" v-if="conf.data.settings.aitDim.width">
-              <p class="slider-label">Width</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Width</p>
-              <NSlider
-                v-model:value="conf.data.settings.img2img.width"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.img2img.width"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
+            <!-- Karras Sigmas -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p style="width: 120px">Karras Sigmas</p>
+                </template>
+                Changes the sigmas used in the Karras diffusion process. Might
+                provide better results for some images.
+                <b class="highlight"
+                  >Works only with KDPM samplers. Ignored by other samplers.</b
+                >
+              </NTooltip>
+
+              <NSwitch
+                v-model:value="conf.data.settings.txt2img.use_karras_sigmas"
+                style="justify-self: flex-end"
               />
             </div>
-            <div class="flex-container" v-if="conf.data.settings.aitDim.height">
-              <p class="slider-label">Height</p>
-              <NSlider
-                :value="conf.data.settings.aitDim.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                :value="conf.data.settings.aitDim.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
-            <div class="flex-container" v-else>
-              <p class="slider-label">Height</p>
-              <NSlider
-                v-model:value="conf.data.settings.img2img.height"
-                :min="128"
-                :max="2048"
-                :step="8"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.img2img.height"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="8"
-                :min="128"
-                :max="2048"
-              />
-            </div>
+
+            <DimensionsInput :dimensions-object="conf.data.settings.img2img" />
 
             <!-- Steps -->
             <div class="flex-container">
@@ -253,27 +206,8 @@
                 :max="9"
               />
             </div>
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Batch Size</p>
-                </template>
-                Number of images to generate in paralel.
-              </NTooltip>
-              <NSlider
-                v-model:value="conf.data.settings.img2img.batch_size"
-                :min="1"
-                :max="9"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="conf.data.settings.img2img.batch_size"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="9"
-              />
-            </div>
+
+            <BatchSizeInput :batch-size-object="conf.data.settings.img2img" />
 
             <!-- Denoising Strength -->
             <div class="flex-container">
@@ -336,8 +270,6 @@
           @image-clicked="global.state.img2img.currentImage = $event"
         />
 
-        <SendOutputTo :output="global.state.img2img.currentImage" />
-
         <OutputStats
           style="margin-top: 12px"
           :gen-data="global.state.img2img.genData"
@@ -354,7 +286,8 @@ import GenerateSection from "@/components/GenerateSection.vue";
 import ImageOutput from "@/components/ImageOutput.vue";
 import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
+import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
+import DimensionsInput from "@/components/generate/DimensionsInput.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -424,12 +357,8 @@ const generate = () => {
         image: conf.data.settings.img2img.image,
         id: uuidv4(),
         negative_prompt: conf.data.settings.img2img.negative_prompt,
-        width: conf.data.settings.aitDim.width
-          ? conf.data.settings.aitDim.width
-          : conf.data.settings.img2img.width,
-        height: conf.data.settings.aitDim.height
-          ? conf.data.settings.aitDim.height
-          : conf.data.settings.img2img.height,
+        width: conf.data.settings.img2img.width,
+        height: conf.data.settings.img2img.height,
         steps: conf.data.settings.img2img.steps,
         guidance_scale: conf.data.settings.img2img.cfg_scale,
         seed: seed,
@@ -438,6 +367,7 @@ const generate = () => {
         strength: conf.data.settings.img2img.denoising_strength,
         scheduler: conf.data.settings.img2img.sampler,
         self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
+        use_karras_sigmas: conf.data.settings.img2img.use_karras_sigmas,
       },
       model: conf.data.settings.model?.name,
     }),

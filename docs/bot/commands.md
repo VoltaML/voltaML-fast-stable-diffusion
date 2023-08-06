@@ -35,7 +35,6 @@ Load a locally saved model.
 
 - `model` - The model to load.
 - `device` - (Optional) The device to use for the inference process. Default: `cuda`.
-- `backend` - (Optional) The backend to use for the inference process. Options: `PyTorch`,`TensorRT`. Default: `PyTorch`.
 
 ## Loaded
 

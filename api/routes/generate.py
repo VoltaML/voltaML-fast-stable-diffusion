@@ -4,7 +4,9 @@ from typing import List, Union
 from fastapi import APIRouter, HTTPException
 from PIL import Image
 
+from core.config import config
 from core.errors import ModelNotLoadedError
+from core.functions import images_to_response, img_to_bytes
 from core.shared_dependent import gpu
 from core.types import (
     AITemplateBuildRequest,
@@ -15,8 +17,6 @@ from core.types import (
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     ONNXBuildRequest,
-    SDUpscaleQueueEntry,
-    TRTBuildRequest,
     Txt2ImgQueueEntry,
     UpscaleQueueEntry,
 )
@@ -39,21 +39,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/img2img")
@@ -73,21 +59,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/inpainting")
@@ -111,21 +83,7 @@ async def inpaint_job(job: InpaintQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/controlnet")
@@ -145,55 +103,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
             status_code=400, detail="Model is not loaded"
         )
 
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
-
-
-@router.post("/sd-upscale")
-async def sd_upscale_job(job: SDUpscaleQueueEntry):
-    "Upscale image with SD Upscaling model"
-
-    image_bytes = job.data.image
-    assert isinstance(image_bytes, bytes)
-    job.data.image = convert_bytes_to_image_stream(image_bytes)
-
-    try:
-        images: Union[List[Image.Image], List[str]]
-        time: float
-        images, time = await gpu.generate(job)
-    except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
-
-    if len(images) == 0:
-        return {
-            "time": time,
-            "images": [],
-        }
-    elif isinstance(images[0], str):
-        return {
-            "time": time,
-            "images": images,
-        }
-    else:
-        return {
-            "time": time,
-            "images": [convert_image_to_base64(i) for i in images],  # type: ignore
-        }
+    return images_to_response(images, time)
 
 
 @router.post("/upscale")
@@ -215,22 +125,15 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
 
     return {
         "time": time,
-        "images": convert_image_to_base64(image),  # type: ignore
+        "images": convert_image_to_base64(image)
+        if config.api.image_return_format == "base64"
+        else img_to_bytes(image),
     }
-
-
-@router.post("/generate-engine")
-async def generate_engine(request: TRTBuildRequest):
-    "Generate a TensorRT engine from a local model"
-
-    await gpu.build_trt_engine(request)
-
-    return {"message": "Success"}
 
 
 @router.post("/generate-aitemplate")
 async def generate_aitemplate(request: AITemplateBuildRequest):
-    "Generate a TensorRT engine from a local model"
+    "Generate a AITemplate model from a local model"
 
     await gpu.build_aitemplate_engine(request)
 
@@ -239,7 +142,7 @@ async def generate_aitemplate(request: AITemplateBuildRequest):
 
 @router.post("/generate-dynamic-aitemplate")
 async def generate_dynamic_aitemplate(request: AITemplateDynamicBuildRequest):
-    "Generate a TensorRT engine from a local model"
+    "Generate a AITemplate engine from a local model"
 
     await gpu.build_dynamic_aitemplate_engine(request)
 
@@ -248,7 +151,7 @@ async def generate_dynamic_aitemplate(request: AITemplateDynamicBuildRequest):
 
 @router.post("/generate-onnx")
 async def generate_onnx(request: ONNXBuildRequest):
-    "Generate a TensorRT engine from a local model"
+    "Generate an ONNX model from a local model"
 
     await gpu.build_onnx_engine(request)
 

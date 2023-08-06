@@ -9,9 +9,14 @@ export class BurnerClock {
   constructor(
     private readonly observed_value: any,
     private settings: any,
-    private readonly callback: () => void
+    private readonly callback: () => void,
+    private readonly timerOverrride: number = 0,
+    private readonly sendInterrupt: boolean = true
   ) {
-    this.timeoutDuration = this.settings.data.settings.frontend.on_change_timer;
+    this.timeoutDuration =
+      this.timerOverrride !== 0
+        ? this.timerOverrride
+        : this.settings.data.settings.frontend.on_change_timer;
     watch(this.observed_value, () => {
       this.handleChange();
     });
@@ -29,19 +34,24 @@ export class BurnerClock {
     if (this.timeoutDuration > 0) {
       this.isChanging.value = true;
       this.timer = setTimeout(() => {
-        fetch(`${serverUrl}/api/general/interrupt`, {
-          method: "POST",
-        })
-          .then((res) => {
-            if (res.status === 200) {
-              this.callback();
-              this.isChanging.value = false;
-            }
+        if (this.sendInterrupt) {
+          fetch(`${serverUrl}/api/general/interrupt`, {
+            method: "POST",
           })
-          .catch((err) => {
-            this.isChanging.value = false;
-            console.error(err);
-          });
+            .then((res) => {
+              if (res.status === 200) {
+                this.callback();
+                this.isChanging.value = false;
+              }
+            })
+            .catch((err) => {
+              this.isChanging.value = false;
+              console.error(err);
+            });
+        } else {
+          this.callback();
+          this.isChanging.value = false;
+        }
       }, this.timeoutDuration);
     }
   }

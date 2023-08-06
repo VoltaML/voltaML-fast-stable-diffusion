@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Model } from "@/core/models";
+import type { IHuggingFaceModel } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 import { Home, Menu } from "@vicons/ionicons5";
 import {
@@ -107,7 +107,7 @@ const renderIcon = (
   };
 };
 
-function getPluginOptions(row: Model) {
+function getPluginOptions(row: IHuggingFaceModel) {
   const options: DropdownMixedOption[] = [
     {
       label: "Hugging Face",
@@ -121,7 +121,7 @@ function getPluginOptions(row: Model) {
   return options;
 }
 
-const columns: DataTableColumns<Model> = [
+const columns: DataTableColumns<IHuggingFaceModel> = [
   {
     title: "Name",
     key: "name",
@@ -172,7 +172,7 @@ const columns: DataTableColumns<Model> = [
   },
 ];
 
-const modelData = reactive<Model[]>([]);
+const modelData = reactive<IHuggingFaceModel[]>([]);
 const modelFilter = ref("");
 
 const dataRef = computed(() => {
@@ -187,7 +187,7 @@ const dataRef = computed(() => {
 const pagination = reactive({ pageSize: 10 });
 
 fetch(huggingfaceModelsFile).then((res) => {
-  res.json().then((data: { models: Model[] }) => {
+  res.json().then((data: { models: IHuggingFaceModel[] }) => {
     modelData.push(...data["models"]);
   });
 });

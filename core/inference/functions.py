@@ -1,15 +1,21 @@
+import io
 import json
 import logging
 import os
-import sys
+from functools import partialmethod
 from pathlib import Path
 from typing import Any, Dict, Optional, Tuple, Union
-from packaging import version
 
+import requests
 import torch
-from diffusers import StableDiffusionPipeline
+from diffusers import AutoencoderKL, StableDiffusionPipeline
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
+    assign_to_checkpoint,
+    conv_attn_to_linear,
+    create_vae_diffusers_config,
     download_from_original_stable_diffusion_ckpt,
+    renew_vae_attention_paths,
+    renew_vae_resnet_paths,
 )
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils.constants import (
@@ -30,19 +36,30 @@ from huggingface_hub.utils._errors import (
     RepositoryNotFoundError,
     RevisionNotFoundError,
 )
+from omegaconf import OmegaConf
+from packaging import version
 from requests import HTTPError
-from rich.console import Console
+from transformers import CLIPTextModel
 
 from core.config import config
 from core.files import get_full_model_path
 
-console = Console()
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
 
 
 torch_older_than_200 = version.parse(torch.__version__) < version.parse("2.0.0")
 torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
+
+
+def is_aitemplate_available():
+    "Checks whether AITemplate is available."
+    try:
+        import aitemplate
+
+        return True
+    except ImportError:
+        return False
 
 
 def is_ipex_available():
@@ -93,16 +110,6 @@ def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
         from onnxsim import simplify  # pylint: disable=import-error,unused-import
-
-        return True
-    except ImportError:
-        return False
-
-
-def is_bitsandbytes_available():
-    "Checks whether bitsandbytes is available."
-    try:
-        import bitsandbytes  # pylint: disable=import-error,unused-import
 
         return True
     except ImportError:
@@ -275,7 +282,6 @@ def load_config(
 
 def download_model(
     pretrained_model_name: str,
-    auth_token: Optional[str] = os.environ["HUGGINGFACE_TOKEN"],
     cache_dir: Path = Path(DIFFUSERS_CACHE),
     resume_download: bool = True,
     revision: Optional[str] = None,
@@ -291,7 +297,6 @@ def download_model(
             resume_download=resume_download,
             force_download=force_download,
             local_files_only=local_files_only,
-            use_auth_token=auth_token,
             revision=revision,
         )
         # make sure we only download sub-folders and `diffusers` filenames
@@ -311,7 +316,6 @@ def download_model(
         if is_safetensors_available() and not local_files_only:
             info = model_info(
                 repo_id=pretrained_model_name,
-                token=auth_token,
                 revision=revision,
             )
             if is_safetensors_compatible(info):
@@ -328,7 +332,6 @@ def download_model(
             cache_dir=cache_dir,
             resume_download=resume_download,
             local_files_only=local_files_only,
-            token=auth_token,
             revision=revision,
             allow_patterns=allow_patterns,
             ignore_patterns=ignore_patterns,
@@ -362,24 +365,9 @@ def dict_from_json_file(json_file: Union[str, os.PathLike]):
     return json.loads(text)
 
 
-class HiddenPrints:
-    "Taken from https://stackoverflow.com/a/45669280. Thank you @alexander-c"
-
-    def __enter__(self):
-        self._original_stdout = (  # pylint: disable=attribute-defined-outside-init
-            sys.stdout
-        )
-        sys.stdout = open(os.devnull, "w", encoding="utf-8")
-
-    def __exit__(self, exc_type, exc_val, exc_tb):
-        sys.stdout.close()
-        sys.stdout = self._original_stdout
-
-
 def load_pytorch_pipeline(
     model_id_or_path: str,
-    auth: str = os.environ["HUGGINGFACE_TOKEN"],
-    device: str = "cuda",
+    device: Union[str, torch.device] = "cuda",
     optimize: bool = True,
     is_for_aitemplate: bool = False,
 ) -> StableDiffusionPipeline:
@@ -388,52 +376,91 @@ def load_pytorch_pipeline(
     logger.info(f"Loading {model_id_or_path} with {config.api.data_type}")
 
     if ".ckpt" in model_id_or_path or ".safetensors" in model_id_or_path:
-        with console.status("[bold green]Loading model from checkpoint..."):
-            use_safetensors = ".safetensors" in model_id_or_path
-            if use_safetensors:
-                logger.info("Loading model as safetensors")
-            else:
-                logger.info("Loading model as checkpoint")
+        use_safetensors = ".safetensors" in model_id_or_path
+        if use_safetensors:
+            logger.info("Loading model as safetensors")
+        else:
+            logger.info("Loading model as checkpoint")
 
-            # This function does not inherit the channels so we need to hack it like this
-            in_channels = 9 if "inpaint" in model_id_or_path else 4
+        # This function does not inherit the channels so we need to hack it like this
+        in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
 
-            # TODO: investigate this - extract_ema is better for inference, but errors out if not present
-            # Maybe open a pr in diffusers?
-            try:
-                pipe = download_from_original_stable_diffusion_ckpt(
-                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                    from_safetensors=use_safetensors,
-                    extract_ema=True,
-                    load_safety_checker=False,
-                    num_in_channels=in_channels,
-                )
-            except KeyError:
-                pipe = download_from_original_stable_diffusion_ckpt(
-                    checkpoint_path=str(get_full_model_path(model_id_or_path)),
-                    from_safetensors=use_safetensors,
-                    extract_ema=False,
-                    load_safety_checker=False,
-                    num_in_channels=in_channels,
-                )
-    else:
-        with console.status(
-            f"[bold green]Loading model from {'HuggingFace Hub' if '/' in model_id_or_path else 'HuggingFace model'}..."
-        ):
-            pipe = StableDiffusionPipeline.from_pretrained(
-                pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-                torch_dtype=config.api.dtype,
-                use_auth_token=auth,
-                safety_checker=None,
-                requires_safety_checker=False,
-                feature_extractor=None,
-                low_cpu_mem_usage=True,
+        cl = StableDiffusionPipeline
+        # I never knew this existed, but this is pretty handy :)
+        cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
+        try:
+            pipe = download_from_original_stable_diffusion_ckpt(
+                pipeline_class=cl,  # type: ignore
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+                extract_ema=True,
+                load_safety_checker=False,
+                num_in_channels=in_channels,
             )
-            assert isinstance(pipe, StableDiffusionPipeline)
+        except KeyError:
+            pipe = download_from_original_stable_diffusion_ckpt(
+                pipeline_class=cl,  # type: ignore
+                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                from_safetensors=use_safetensors,
+                extract_ema=False,
+                load_safety_checker=False,
+                num_in_channels=in_channels,
+            )
+    else:
+        pipe = StableDiffusionPipeline.from_pretrained(
+            pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
+            torch_dtype=config.api.dtype,
+            safety_checker=None,
+            requires_safety_checker=False,
+            feature_extractor=None,
+            low_cpu_mem_usage=True,
+        )
+
+        assert isinstance(pipe, StableDiffusionPipeline)
 
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
     assert isinstance(pipe, StableDiffusionPipeline)
+
+    # AIT freaks out if any of these are lost
+    if not is_for_aitemplate:
+        conf = pipe.text_encoder.config
+        conf.num_hidden_layers = 13 - config.api.clip_skip
+        pipe.text_encoder = CLIPTextModel.from_pretrained(
+            None, config=conf, state_dict=pipe.text_encoder.state_dict()
+        )
+        if config.api.clip_quantization != "full":
+            from transformers import BitsAndBytesConfig
+            from transformers.utils.bitsandbytes import (
+                get_keys_to_not_convert,
+                replace_with_bnb_linear,
+                set_module_quantized_tensor_to_device,
+            )
+
+            state_dict = pipe.text_encoder.state_dict()  # type: ignore
+            bnbconfig = BitsAndBytesConfig(
+                load_in_8bit=config.api.clip_quantization == "int8",
+                load_in_4bit=config.api.clip_quantization == "int4",
+            )
+
+            dont_convert = get_keys_to_not_convert(pipe.text_encoder)
+            pipe.text_encoder = replace_with_bnb_linear(
+                pipe.text_encoder.to(config.api.device, config.api.dtype),  # type: ignore
+                dont_convert,
+                quantization_config=bnbconfig,
+            )
+
+            pipe.text_encoder.is_loaded_in_8bit = True
+            pipe.text_encoder.is_quantized = True
+
+            # This shouldn't even be needed, but diffusers likes meta tensors a bit too much
+            # Not that I don't see their purpose, it's just less general
+            for k, v in state_dict.items():
+                set_module_quantized_tensor_to_device(
+                    pipe.text_encoder, k, config.api.device, v
+                )
+            del state_dict, dont_convert
+        del conf
 
     if optimize:
         from core.optimizations import optimize_model
@@ -447,3 +474,205 @@ def load_pytorch_pipeline(
         pipe.to(device)
 
     return pipe
+
+
+def _custom_convert_ldm_vae_checkpoint(checkpoint, conf):
+    vae_state_dict = checkpoint
+
+    new_checkpoint = {}
+
+    new_checkpoint["encoder.conv_in.weight"] = vae_state_dict["encoder.conv_in.weight"]
+    new_checkpoint["encoder.conv_in.bias"] = vae_state_dict["encoder.conv_in.bias"]
+    new_checkpoint["encoder.conv_out.weight"] = vae_state_dict[
+        "encoder.conv_out.weight"
+    ]
+    new_checkpoint["encoder.conv_out.bias"] = vae_state_dict["encoder.conv_out.bias"]
+    new_checkpoint["encoder.conv_norm_out.weight"] = vae_state_dict[
+        "encoder.norm_out.weight"
+    ]
+    new_checkpoint["encoder.conv_norm_out.bias"] = vae_state_dict[
+        "encoder.norm_out.bias"
+    ]
+
+    new_checkpoint["decoder.conv_in.weight"] = vae_state_dict["decoder.conv_in.weight"]
+    new_checkpoint["decoder.conv_in.bias"] = vae_state_dict["decoder.conv_in.bias"]
+    new_checkpoint["decoder.conv_out.weight"] = vae_state_dict[
+        "decoder.conv_out.weight"
+    ]
+    new_checkpoint["decoder.conv_out.bias"] = vae_state_dict["decoder.conv_out.bias"]
+    new_checkpoint["decoder.conv_norm_out.weight"] = vae_state_dict[
+        "decoder.norm_out.weight"
+    ]
+    new_checkpoint["decoder.conv_norm_out.bias"] = vae_state_dict[
+        "decoder.norm_out.bias"
+    ]
+
+    new_checkpoint["quant_conv.weight"] = vae_state_dict["quant_conv.weight"]
+    new_checkpoint["quant_conv.bias"] = vae_state_dict["quant_conv.bias"]
+    new_checkpoint["post_quant_conv.weight"] = vae_state_dict["post_quant_conv.weight"]
+    new_checkpoint["post_quant_conv.bias"] = vae_state_dict["post_quant_conv.bias"]
+
+    # Retrieves the keys for the encoder down blocks only
+    num_down_blocks = len(
+        {
+            ".".join(layer.split(".")[:3])
+            for layer in vae_state_dict
+            if "encoder.down" in layer
+        }
+    )
+    down_blocks = {
+        layer_id: [key for key in vae_state_dict if f"down.{layer_id}" in key]
+        for layer_id in range(num_down_blocks)
+    }
+
+    # Retrieves the keys for the decoder up blocks only
+    num_up_blocks = len(
+        {
+            ".".join(layer.split(".")[:3])
+            for layer in vae_state_dict
+            if "decoder.up" in layer
+        }
+    )
+    up_blocks = {
+        layer_id: [key for key in vae_state_dict if f"up.{layer_id}" in key]
+        for layer_id in range(num_up_blocks)
+    }
+
+    for i in range(num_down_blocks):
+        resnets = [
+            key
+            for key in down_blocks[i]
+            if f"down.{i}" in key and f"down.{i}.downsample" not in key
+        ]
+
+        if f"encoder.down.{i}.downsample.conv.weight" in vae_state_dict:
+            new_checkpoint[
+                f"encoder.down_blocks.{i}.downsamplers.0.conv.weight"
+            ] = vae_state_dict.pop(f"encoder.down.{i}.downsample.conv.weight")
+            new_checkpoint[
+                f"encoder.down_blocks.{i}.downsamplers.0.conv.bias"
+            ] = vae_state_dict.pop(f"encoder.down.{i}.downsample.conv.bias")
+
+        paths = renew_vae_resnet_paths(resnets)
+        meta_path = {"old": f"down.{i}.block", "new": f"down_blocks.{i}.resnets"}
+        assign_to_checkpoint(
+            paths,
+            new_checkpoint,
+            vae_state_dict,
+            additional_replacements=[meta_path],
+            config=conf,
+        )
+
+    mid_resnets = [key for key in vae_state_dict if "encoder.mid.block" in key]
+    num_mid_res_blocks = 2
+    for i in range(1, num_mid_res_blocks + 1):
+        resnets = [key for key in mid_resnets if f"encoder.mid.block_{i}" in key]
+
+        paths = renew_vae_resnet_paths(resnets)
+        meta_path = {"old": f"mid.block_{i}", "new": f"mid_block.resnets.{i - 1}"}
+        assign_to_checkpoint(
+            paths,
+            new_checkpoint,
+            vae_state_dict,
+            additional_replacements=[meta_path],
+            config=conf,
+        )
+
+    mid_attentions = [key for key in vae_state_dict if "encoder.mid.attn" in key]
+    paths = renew_vae_attention_paths(mid_attentions)
+    meta_path = {"old": "mid.attn_1", "new": "mid_block.attentions.0"}
+    assign_to_checkpoint(
+        paths,
+        new_checkpoint,
+        vae_state_dict,
+        additional_replacements=[meta_path],
+        config=conf,
+    )
+    conv_attn_to_linear(new_checkpoint)
+
+    for i in range(num_up_blocks):
+        block_id = num_up_blocks - 1 - i
+        resnets = [
+            key
+            for key in up_blocks[block_id]
+            if f"up.{block_id}" in key and f"up.{block_id}.upsample" not in key
+        ]
+
+        if f"decoder.up.{block_id}.upsample.conv.weight" in vae_state_dict:
+            new_checkpoint[
+                f"decoder.up_blocks.{i}.upsamplers.0.conv.weight"
+            ] = vae_state_dict[f"decoder.up.{block_id}.upsample.conv.weight"]
+            new_checkpoint[
+                f"decoder.up_blocks.{i}.upsamplers.0.conv.bias"
+            ] = vae_state_dict[f"decoder.up.{block_id}.upsample.conv.bias"]
+
+        paths = renew_vae_resnet_paths(resnets)
+        meta_path = {"old": f"up.{block_id}.block", "new": f"up_blocks.{i}.resnets"}
+        assign_to_checkpoint(
+            paths,
+            new_checkpoint,
+            vae_state_dict,
+            additional_replacements=[meta_path],
+            config=conf,
+        )
+
+    mid_resnets = [key for key in vae_state_dict if "decoder.mid.block" in key]
+    num_mid_res_blocks = 2
+    for i in range(1, num_mid_res_blocks + 1):
+        resnets = [key for key in mid_resnets if f"decoder.mid.block_{i}" in key]
+
+        paths = renew_vae_resnet_paths(resnets)
+        meta_path = {"old": f"mid.block_{i}", "new": f"mid_block.resnets.{i - 1}"}
+        assign_to_checkpoint(
+            paths,
+            new_checkpoint,
+            vae_state_dict,
+            additional_replacements=[meta_path],
+            config=conf,
+        )
+
+    mid_attentions = [key for key in vae_state_dict if "decoder.mid.attn" in key]
+    paths = renew_vae_attention_paths(mid_attentions)
+    meta_path = {"old": "mid.attn_1", "new": "mid_block.attentions.0"}
+    assign_to_checkpoint(
+        paths,
+        new_checkpoint,
+        vae_state_dict,
+        additional_replacements=[meta_path],
+        config=conf,
+    )
+    conv_attn_to_linear(new_checkpoint)
+    return new_checkpoint
+
+
+def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
+    "Convert a .pt/.bin/.satetensors VAE file into a diffusers AutoencoderKL"
+
+    r = requests.get(
+        "https://raw.githubusercontent.com/CompVis/stable-diffusion/main/configs/stable-diffusion/v1-inference.yaml",
+        timeout=10,
+    )
+    io_obj = io.BytesIO(r.content)
+
+    original_config = OmegaConf.load(io_obj)
+    image_size = 512
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    if path.endswith("safetensors"):
+        from safetensors import safe_open
+
+        checkpoint = {}
+        with safe_open(path, framework="pt", device="cpu") as f:
+            for key in f.keys():
+                checkpoint[key] = f.get_tensor(key)
+    else:
+        checkpoint = torch.load(path, map_location=device)["state_dict"]
+
+    # Convert the VAE model.
+    vae_config = create_vae_diffusers_config(original_config, image_size=image_size)
+    converted_vae_checkpoint = _custom_convert_ldm_vae_checkpoint(
+        checkpoint, vae_config
+    )
+
+    vae = AutoencoderKL(**vae_config)
+    vae.load_state_dict(converted_vae_checkpoint)
+    return vae

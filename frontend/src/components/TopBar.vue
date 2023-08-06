@@ -16,7 +16,8 @@
       @click="showModal = true"
       :loading="modelsLoading"
       :type="conf.data.settings.model ? 'default' : 'success'"
-      >Load Model</NButton
+    >
+      Load Model</NButton
     >
     <NModal
       v-model:show="showModal"
@@ -106,8 +107,8 @@
                           ghost
                           @click="unloadModel(model)"
                           v-if="model.state === 'loaded'"
-                          >Unload</NButton
-                        >
+                          >Unload
+                        </NButton>
                         <NButton
                           type="success"
                           ghost
@@ -120,7 +121,7 @@
                           type="info"
                           style="margin-left: 4px"
                           ghost
-                          @click="selectedModel = model"
+                          @click="global.state.selected_model = model"
                           :disabled="model.state !== 'loaded'"
                           >Select</NButton
                         >
@@ -129,70 +130,53 @@
                   </NCard>
                 </NGi>
 
-                <!-- LoRA -->
+                <!-- VAE -->
                 <NGi>
-                  <NCard :title="lora_title">
-                    <NCard
-                      style="width: 100%; margin-bottom: 8px"
-                      title="LoRA strength"
-                      header-style="padding-bottom: 0; font-size: 16px"
-                    >
-                      <div class="flex-container">
-                        <p class="slider-label">Text Encoder</p>
-                        <NSlider
-                          v-model:value="
-                            conf.data.settings.api.lora_text_encoder_weight
-                          "
-                          :min="0.1"
-                          :max="1"
-                          :step="0.01"
-                          style="margin-right: 12px"
-                        />
+                  <NCard :title="vae_title">
+                    <div v-if="global.state.selected_model !== null">
+                      <div
+                        style="
+                          display: inline-flex;
+                          width: 100%;
+                          align-items: center;
+                          justify-content: space-between;
+                          border-bottom: 1px solid rgb(66, 66, 71);
+                        "
+                        v-for="vae in vaeModels"
+                        v-bind:key="vae.path"
+                      >
+                        <p>{{ vae.name }}</p>
+                        <div style="display: inline-flex">
+                          <NButton
+                            type="error"
+                            ghost
+                            disabled
+                            v-if="global.state.selected_model?.vae == vae.path"
+                            >Loaded
+                          </NButton>
+                          <NButton
+                            type="success"
+                            ghost
+                            @click="loadVAE(vae)"
+                            :disabled="
+                              global.state.selected_model === undefined
+                            "
+                            :loading="vae.state === 'loading'"
+                            v-else
+                            >Load</NButton
+                          >
+                        </div>
                       </div>
-
-                      <div class="flex-container">
-                        <p class="slider-label">UNet</p>
-                        <NSlider
-                          v-model:value="
-                            conf.data.settings.api.lora_unet_weight
-                          "
-                          :min="0.1"
-                          :max="1"
-                          :step="0.01"
-                          style="margin-right: 12px"
-                        />
-                      </div>
-                    </NCard>
-                    <div
-                      style="
-                        display: inline-flex;
-                        width: 100%;
-                        align-items: center;
-                        justify-content: space-between;
-                        border-bottom: 1px solid rgb(66, 66, 71);
-                      "
-                      v-for="lora in loraModels"
-                      v-bind:key="lora.path"
-                    >
-                      <p>{{ lora.name }}</p>
-                      <div style="display: inline-flex">
-                        <NButton
-                          type="error"
-                          ghost
-                          disabled
-                          v-if="selectedModel?.loras.includes(lora.path)"
-                          >Loaded</NButton
-                        >
-                        <NButton
-                          type="success"
-                          ghost
-                          @click="loadLoRA(lora)"
-                          :disabled="selectedModel === undefined"
-                          :loading="lora.state === 'loading'"
-                          v-else
-                          >Load</NButton
-                        >
-                      </div>
+                    </div>
+                    <div v-else>
+                      <NAlert
+                        type="warning"
+                        show-icon
+                        title="No model selected"
+                        style="margin-top: 4px"
+                      >
+                        Please select a model first
+                      </NAlert>
                     </div>
                   </NCard>
                 </NGi>
@@ -201,151 +185,140 @@
                 <NGi>
                   <NCard :title="textual_inversions_title">
                     <NAlert
-                      type="warning"
+                      type="info"
                       show-icon
                       title="Usage of textual inversion"
                     >
                       <b>Ignore the tokens on CivitAI</b>. The name of the
                       inversion that is displayed here will be the actual token
+                      (easynegative.pt -> easynegative)
                     </NAlert>
-                    <div
-                      style="
-                        display: inline-flex;
-                        width: 100%;
-                        align-items: center;
-                        justify-content: space-between;
-                        border-bottom: 1px solid rgb(66, 66, 71);
-                      "
-                      v-for="textualInversion in textualInversionModels"
-                      v-bind:key="textualInversion.path"
-                    >
-                      <p>{{ textualInversion.name }}</p>
-                      <div style="display: inline-flex">
-                        <NButton
-                          type="error"
-                          ghost
-                          disabled
-                          v-if="
-                            selectedModel?.loras.includes(textualInversion.path)
-                          "
-                          >Loaded</NButton
-                        >
-                        <NButton
-                          type="success"
-                          ghost
-                          @click="loadTextualInversion(textualInversion)"
-                          :disabled="selectedModel === undefined"
-                          :loading="textualInversion.state === 'loading'"
-                          v-else
-                          >Load</NButton
-                        >
+                    <div v-if="global.state.selected_model !== null">
+                      <div
+                        style="
+                          display: inline-flex;
+                          width: 100%;
+                          align-items: center;
+                          justify-content: space-between;
+                          border-bottom: 1px solid rgb(66, 66, 71);
+                        "
+                        v-for="textualInversion in textualInversionModels"
+                        v-bind:key="textualInversion.path"
+                      >
+                        <p>{{ textualInversion.name }}</p>
+                        <div style="display: inline-flex">
+                          <NButton
+                            type="error"
+                            ghost
+                            disabled
+                            v-if="
+                              global.state.selected_model?.textual_inversions.includes(
+                                textualInversion.path
+                              )
+                            "
+                            >Loaded</NButton
+                          >
+                          <NButton
+                            type="success"
+                            ghost
+                            @click="loadTextualInversion(textualInversion)"
+                            :disabled="
+                              global.state.selected_model === undefined
+                            "
+                            :loading="textualInversion.state === 'loading'"
+                            v-else
+                            >Load</NButton
+                          >
+                        </div>
                       </div>
+                    </div>
+                    <div v-else>
+                      <NAlert
+                        type="warning"
+                        show-icon
+                        title="No model selected"
+                        style="margin-top: 4px"
+                      >
+                        Please select a model first
+                      </NAlert>
                     </div>
                   </NCard>
                 </NGi>
               </NGrid>
             </NTabPane>
             <NTabPane name="AITemplate">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in aitModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload</NButton
-                    >
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                      >Load</NButton
-                    >
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in aitModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload
+                      </NButton>
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                      >
+                        Load</NButton
+                      >
+                    </div>
                   </div>
-                </div>
-              </NCard>
+                </NCard>
+              </NScrollbar>
             </NTabPane>
             <NTabPane name="ONNX">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in onnxModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload</NButton
-                    >
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                      >Load</NButton
-                    >
+              <NScrollbar style="height: 70vh">
+                <NCard title="Models" style="height: 100%">
+                  <div
+                    style="
+                      display: inline-flex;
+                      width: 100%;
+                      align-items: center;
+                      justify-content: space-between;
+                      border-bottom: 1px solid rgb(66, 66, 71);
+                    "
+                    v-for="model in onnxModels"
+                    v-bind:key="model.path"
+                  >
+                    <p>{{ model.name }}</p>
+                    <div>
+                      <NButton
+                        type="error"
+                        ghost
+                        @click="unloadModel(model)"
+                        v-if="model.state === 'loaded'"
+                        >Unload
+                      </NButton>
+                      <NButton
+                        type="success"
+                        ghost
+                        @click="loadModel(model)"
+                        :loading="model.state === 'loading'"
+                        v-else
+                      >
+                        Load</NButton
+                      >
+                    </div>
                   </div>
-                </div>
-              </NCard>
-            </NTabPane>
-            <NTabPane name="Extra">
-              <NCard title="Models" style="height: 100%">
-                <div
-                  style="
-                    display: inline-flex;
-                    width: 100%;
-                    align-items: center;
-                    justify-content: space-between;
-                    border-bottom: 1px solid rgb(66, 66, 71);
-                  "
-                  v-for="model in trtModels"
-                  v-bind:key="model.path"
-                >
-                  <p>{{ model.name }}</p>
-                  <div>
-                    <NButton
-                      type="error"
-                      ghost
-                      @click="unloadModel(model)"
-                      v-if="model.state === 'loaded'"
-                      >Unload</NButton
-                    >
-                    <NButton
-                      type="success"
-                      ghost
-                      @click="loadModel(model)"
-                      :loading="model.state === 'loading'"
-                      v-else
-                      >Load</NButton
-                    >
-                  </div>
-                </div>
-              </NCard>
+                </NCard>
+              </NScrollbar>
             </NTabPane>
           </NTabs>
         </NScrollbar>
@@ -413,7 +386,6 @@ import {
   NModal,
   NScrollbar,
   NSelect,
-  NSlider,
   NTabPane,
   NTabs,
   NText,
@@ -457,39 +429,64 @@ const filteredModels = computed(() => {
 });
 
 const pyTorchModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "PyTorch" && model.valid === true;
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "PyTorch" && model.valid === true;
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 const aitModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "AITemplate";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "AITemplate";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 const onnxModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "ONNX";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "ONNX";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
-const trtModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "TensorRT";
-  });
-});
-
-const loraModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "LoRA";
-  });
+const vaeModels = computed(() => {
+  return [
+    {
+      name: "Default VAE",
+      path: "default",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "default",
+      textual_inversions: [],
+    } as ModelEntry,
+    ...filteredModels.value
+      .filter((model) => {
+        return model.backend === "VAE";
+      })
+      .sort((a, b) => {
+        return a.name.localeCompare(b.name);
+      }),
+  ];
 });
 
 const textualInversionModels = computed(() => {
-  return filteredModels.value.filter((model) => {
-    return model.backend === "Textual Inversion";
-  });
+  return filteredModels.value
+    .filter((model) => {
+      return model.backend === "Textual Inversion";
+    })
+    .sort((a, b) => {
+      return a.name.localeCompare(b.name);
+    });
 });
 
 function refreshModels() {
@@ -497,8 +494,11 @@ function refreshModels() {
   modelsLoading.value = true;
   fetch(`${serverUrl}/api/models/available`)
     .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
+
       res.json().then((data: Array<ModelEntry>) => {
-        // TODO: Lora loaded state isnt updated
         global.state.models.splice(0, global.state.models.length);
         data.forEach((model) => {
           global.state.models.push(model);
@@ -554,29 +554,55 @@ function refreshModels() {
               conf.data.settings.model = null;
             }
           }
-          if (conf.data.settings.model) {
-            const spl = conf.data.settings.model.name.split("__")[1];
-            if (spl) {
-              const xspl = spl.split("x");
-              const width = parseInt(xspl[0]);
-              const height = parseInt(xspl[1]);
-              const batch_size = parseInt(xspl[2]);
+          try {
+            if (conf.data.settings.model) {
+              const spl = conf.data.settings.model.name.split("__")[1];
 
-              conf.data.settings.aitDim.width = width;
-              conf.data.settings.aitDim.height = height;
-              conf.data.settings.aitDim.batch_size = batch_size;
+              const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
+              const matches = regex.exec(spl);
+
+              console.log("Match: ", matches);
+
+              if (matches) {
+                const width = matches[1].split("-").map((x) => parseInt(x));
+                const height = matches[2].split("-").map((x) => parseInt(x));
+                const batch_size = matches[3]
+                  .split("-")
+                  .map((x) => parseInt(x));
+
+                conf.data.settings.aitDim.width = width;
+                conf.data.settings.aitDim.height = height;
+                conf.data.settings.aitDim.batch_size = batch_size;
+              } else {
+                throw new Error("Invalid model name for AIT dimensions parser");
+              }
             } else {
-              conf.data.settings.aitDim.width = undefined;
-              conf.data.settings.aitDim.height = undefined;
-              conf.data.settings.aitDim.batch_size = undefined;
+              throw new Error("No model, cannot parse AIT dimensions");
             }
-          } else {
+          } catch (e) {
+            console.warn(e);
             conf.data.settings.aitDim.width = undefined;
             conf.data.settings.aitDim.height = undefined;
             conf.data.settings.aitDim.batch_size = undefined;
           }
+
+          const autofillKeys = [];
+          for (const model of global.state.models) {
+            if (model.backend === "LoRA" || model.backend === "LyCORIS") {
+              autofillKeys.push(`<lora:${model.name}:1.0>`);
+            }
+            /*else if (model.backend === "Textual Inversion") {
+              autofillKeys.push(`<ti:${model.name}:1.0>`);
+            }*/
+          }
+
+          global.state.autofill = autofillKeys;
         });
       });
+    })
+    .catch((e) => {
+      message.error(`Failed to refresh models: ${e}`);
+      modelsLoading.value = false;
     });
 }
 
@@ -587,18 +613,30 @@ async function loadModel(model: ModelEntry) {
   const params = { model: model.path, backend: model.backend };
   load_url.search = new URLSearchParams(params).toString();
 
-  try {
-    await fetch(load_url, {
-      method: "POST",
+  fetch(load_url, {
+    method: "POST",
+  })
+    .then((res) => {
+      if (!res.ok) {
+        throw new Error(res.statusText);
+      }
+
+      model.state = "loaded";
+      modelsLoading.value = false;
+    })
+    .catch((e) => {
+      message.error(`Failed to load model: ${e}`);
+      console.error(e);
+      modelsLoading.value = false;
+      model.state = "not loaded";
     });
-  } catch (e) {
-    console.error(e);
-  } finally {
-    modelsLoading.value = false;
-  }
 }
 
 async function unloadModel(model: ModelEntry) {
+  if (model === global.state.selected_model) {
+    global.state.selected_model = null;
+  }
+
   const load_url = new URL(`${serverUrl}/api/models/unload`);
   const params = { model: model.name };
   load_url.search = new URLSearchParams(params).toString();
@@ -612,22 +650,20 @@ async function unloadModel(model: ModelEntry) {
   }
 }
 
-async function loadLoRA(lora: ModelEntry) {
-  if (selectedModel.value) {
+async function loadVAE(vae: ModelEntry) {
+  if (global.state.selected_model) {
     try {
-      await fetch(`${serverUrl}/api/models/load-lora`, {
+      await fetch(`${serverUrl}/api/models/load-vae`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: selectedModel.value.name,
-          lora: lora.path,
-          unet_weight: conf.data.settings.api.lora_unet_weight,
-          text_encoder_weight: conf.data.settings.api.lora_text_encoder_weight,
+          model: global.state.selected_model.name,
+          vae: vae.path,
         }),
       });
-      selectedModel.value.loras.push(lora.path);
+      global.state.selected_model.vae = vae.path;
     } catch (e) {
       console.error(e);
     }
@@ -637,7 +673,7 @@ async function loadLoRA(lora: ModelEntry) {
 }
 
 async function loadTextualInversion(textualInversion: ModelEntry) {
-  if (selectedModel.value) {
+  if (global.state.selected_model) {
     try {
       await fetch(`${serverUrl}/api/models/load-textual-inversion`, {
         method: "POST",
@@ -645,11 +681,13 @@ async function loadTextualInversion(textualInversion: ModelEntry) {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
-          model: selectedModel.value.name,
+          model: global.state.selected_model.name,
           textual_inversion: textualInversion.path,
         }),
       });
-      selectedModel.value.loras.push(textualInversion.path);
+      global.state.selected_model.textual_inversions.push(
+        textualInversion.path
+      );
     } catch (e) {
       console.error(e);
     }
@@ -672,23 +710,29 @@ async function onModelChange(modelStr: string) {
     message.error("Model not found");
   }
 
-  if (conf.data.settings.model) {
-    const spl = conf.data.settings.model.name.split("__")[1];
-    if (spl) {
-      const xspl = spl.split("x");
-      const width = parseInt(xspl[0]);
-      const height = parseInt(xspl[1]);
-      const batch_size = parseInt(xspl[2]);
+  try {
+    if (conf.data.settings.model) {
+      const spl = conf.data.settings.model.name.split("__")[1];
 
-      conf.data.settings.aitDim.width = width;
-      conf.data.settings.aitDim.height = height;
-      conf.data.settings.aitDim.batch_size = batch_size;
+      const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
+      const match = spl.match(regex);
+
+      if (match) {
+        const width = match[0].split("-").map((x) => parseInt(x));
+        const height = match[1].split("-").map((x) => parseInt(x));
+        const batch_size = match[2].split("-").map((x) => parseInt(x));
+
+        conf.data.settings.aitDim.width = width;
+        conf.data.settings.aitDim.height = height;
+        conf.data.settings.aitDim.batch_size = batch_size;
+      } else {
+        throw new Error("Invalid model name for AIT dimensions parser");
+      }
     } else {
-      conf.data.settings.aitDim.width = undefined;
-      conf.data.settings.aitDim.height = undefined;
-      conf.data.settings.aitDim.batch_size = undefined;
+      throw new Error("No model, cannot parse AIT dimensions");
     }
-  } else {
+  } catch (e) {
+    console.warn(e);
     conf.data.settings.aitDim.width = undefined;
     conf.data.settings.aitDim.height = undefined;
     conf.data.settings.aitDim.batch_size = undefined;
@@ -810,16 +854,19 @@ const generatedModelOptions: ComputedRef<SelectMixedOption[]> = computed(() => {
 const message = useMessage();
 
 const showModal = ref(false);
-const selectedModel = ref<ModelEntry>();
-const lora_title = computed(() => {
-  return `LoRA (${
-    selectedModel.value ? selectedModel.value.name : "No model selected"
+const vae_title = computed(() => {
+  return `VAE (${
+    global.state.selected_model
+      ? global.state.selected_model.name
+      : "No model selected"
   })`;
 });
 
 const textual_inversions_title = computed(() => {
   return `Textual Inversions (${
-    selectedModel.value ? selectedModel.value.name : "No model selected"
+    global.state.selected_model
+      ? global.state.selected_model.name
+      : "No model selected"
   })`;
 });
 
@@ -878,6 +925,7 @@ const backgroundColor = computed(() => {
   flex-grow: 1;
   width: 400px;
 }
+
 .top-bar {
   display: inline-flex;
   align-items: center;

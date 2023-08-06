@@ -1,127 +1,9 @@
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, bk as useCssVars, u as useState, a as useSettings, E as ref, c as computed, b7 as reactive, bi as onMounted, o as onUnmounted, g as createVNode, h as unref, w as withCtx, L as Fragment, M as renderList, s as serverUrl, k as NInput, G as NIcon, v as NSlider, b9 as NModal, z as NGrid, N as NGi, F as NButton, m as createTextVNode, O as NScrollbar, x as createBlock, t as toDisplayString, y as createCommentVNode, _ as _export_sfc } from "./index.js";
-import { _ as _sfc_main$1, N as NDescriptionsItem, a as NDescriptions } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
-import { T as TrashBin } from "./TrashBin.js";
-import { N as NImage } from "./Image.js";
-const _hoisted_1$2 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M376 160H272v153.37l52.69-52.68a16 16 0 0 1 22.62 22.62l-80 80a16 16 0 0 1-22.62 0l-80-80a16 16 0 0 1 22.62-22.62L240 313.37V160H136a56.06 56.06 0 0 0-56 56v208a56.06 56.06 0 0 0 56 56h240a56.06 56.06 0 0 0 56-56V216a56.06 56.06 0 0 0-56-56z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M272 48a16 16 0 0 0-32 0v112h32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$2 = [_hoisted_2$2, _hoisted_3$2];
-const Download = defineComponent({
-  name: "Download",
-  render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_4$2);
-  }
-});
-const _hoisted_1$1 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "48",
-    y: "48",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "288",
-    y: "48",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "48",
-    y: "288",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5 = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "288",
-    y: "288",
-    width: "176",
-    height: "176",
-    rx: "20",
-    ry: "20",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_6 = [_hoisted_2$1, _hoisted_3$1, _hoisted_4$1, _hoisted_5];
-const GridOutline = defineComponent({
-  name: "GridOutline",
-  render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_6);
-  }
-});
+import { d as defineComponent, b7 as useCssVars, u as useState, a as useSettings, E as ref, c as computed, b8 as reactive, b9 as onMounted, o as onUnmounted, e as openBlock, f as createElementBlock, n as createBaseVNode, g as createVNode, h as unref, w as withCtx, J as Fragment, M as renderList, s as serverUrl, k as NInput, G as NIcon, bd as NModal, y as NGrid, N as NGi, F as NButton, m as createTextVNode, O as NScrollbar, v as createBlock, t as toDisplayString, x as createCommentVNode, bC as urlFromPath, _ as _export_sfc } from "./index.js";
+import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import { G as GridOutline } from "./GridOutline.js";
+import { N as NImage, T as TrashBin } from "./TrashBin.js";
+import { N as NSlider } from "./Slider.js";
+import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "53px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
   class: "top-bar"
@@ -136,8 +18,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "1c7b9a17": unref(conf).data.settings.frontend.image_browser_columns,
-      "4dc33d16": backgroundColor.value
+      "0fdcbc19": unref(conf).data.settings.frontend.image_browser_columns,
+      "ae02b812": backgroundColor.value
     }));
     const global = useState();
     const conf = useSettings();
@@ -147,10 +29,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const imageLimit = ref(30);
     const itemFilter = ref("");
     const gridColumnRefs = ref([]);
-    function urlFromPath(path) {
-      const url = new URL(path, serverUrl);
-      return url.href;
-    }
     const imageSrc = computed(() => {
       const url = urlFromPath(global.state.imageBrowser.currentImage.path);
       return url;
@@ -216,7 +94,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         };
       });
     }
+    const currentColumn = ref(0);
+    const currentRowIndex = ref(0);
     function imgClick(column_index, item_index) {
+      currentRowIndex.value = item_index;
+      currentColumn.value = column_index;
       const item = columns.value[column_index][item_index];
       global.state.imageBrowser.currentImage = item;
       setByte64FromImage(item.path);
@@ -296,11 +178,41 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         imageLimit.value += 30;
       }
     };
+    function moveImage(direction) {
+      const numColumns = conf.data.settings.frontend.image_browser_columns;
+      if (direction === -1) {
+        if (currentColumn.value > 0) {
+          imgClick(currentColumn.value - 1, currentRowIndex.value);
+        } else {
+          imgClick(numColumns - 1, currentRowIndex.value - 1);
+        }
+      } else if (direction === 1) {
+        if (currentColumn.value < numColumns - 1) {
+          imgClick(currentColumn.value + 1, currentRowIndex.value);
+        } else {
+          imgClick(0, currentRowIndex.value + 1);
+        }
+      }
+    }
     onMounted(() => {
       window.addEventListener("scroll", handleScroll);
+      window.addEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+          moveImage(-1);
+        } else if (e.key === "ArrowRight") {
+          moveImage(1);
+        }
+      });
     });
     onUnmounted(() => {
       window.removeEventListener("scroll", handleScroll);
+      window.removeEventListener("keydown", (e) => {
+        if (e.key === "ArrowLeft") {
+          moveImage(-1);
+        } else if (e.key === "ArrowRight") {
+          moveImage(1);
+        }
+      });
     });
     refreshImages();
     const backgroundColor = computed(() => {
@@ -358,7 +270,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "mask-closable": "",
             preset: "card",
             style: { "width": "85vw" },
-            title: "Image Info"
+            title: "Image Info",
+            id: "image-modal"
           }, {
             default: withCtx(() => [
               createVNode(unref(NGrid), {
@@ -499,7 +412,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }, [
                   (openBlock(true), createElementBlock(Fragment, null, renderList(column, (item, item_index) => {
                     return openBlock(), createElementBlock("img", {
-                      src: urlFromPath(item.path),
+                      src: unref(urlFromPath)(item.path),
                       key: item_index,
                       style: { "width": "100%", "height": "auto", "border-radius": "8px", "cursor": "pointer", "margin-bottom": "6px" },
                       onClick: ($event) => imgClick(column_index, item_index)
@@ -514,8 +427,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_f1c06e25_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-f1c06e25"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_c0900653_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c0900653"]]);
 export {
   ImageBrowserView as default
 };

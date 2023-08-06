@@ -8,10 +8,11 @@ from api_analytics.fastapi import Analytics
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import RedirectResponse
+from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
 from fastapi_simple_cachecontrol.types import CacheControl
+from huggingface_hub.hf_api import LocalTokenNotFoundError
 from starlette import status
 from starlette.responses import JSONResponse
 
@@ -27,6 +28,7 @@ from api.routes import (
     test,
     ws,
 )
+from api.websockets.data import Data
 from api.websockets.notification import Notification
 from core import shared
 
@@ -78,11 +80,30 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
     )
 
 
+@app.exception_handler(LocalTokenNotFoundError)
+async def hf_token_error(_request, _exc):
+    await websocket_manager.broadcast(
+        data=Data(
+            data_type="token",
+            data={"huggingface": "missing"},
+        )
+    )
+
+    return JSONResponse(
+        content={
+            "status_code": 10422,
+            "message": "HuggingFace token not found",
+            "data": None,
+        },
+        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+    )
+
+
 @app.exception_handler(404)
 async def custom_http_exception_handler(_request, _exc):
     "Redirect back to the main page (frontend will handle it)"
 
-    return RedirectResponse("/")
+    return FileResponse("frontend/dist/index.html")
 
 
 @app.on_event("startup")
@@ -97,13 +118,20 @@ async def startup_event():
 
     for logger_ in ("uvicorn.access", "uvicorn.error", "fastapi"):
         l = logging.getLogger(logger_)
-        handler = RichHandler(rich_tracebacks=True, show_time=False)
+        handler = RichHandler(
+            rich_tracebacks=True, show_time=False, omit_repeated_times=False
+        )
         handler.setFormatter(
             logging.Formatter(
                 fmt="%(asctime)s | %(name)s » %(message)s", datefmt="%H:%M:%S"
             )
         )
         l.handlers = [handler]
+
+    if logger.level > logging.DEBUG:
+        from transformers import logging as transformers_logging
+
+        transformers_logging.set_verbosity_error()
 
     shared.asyncio_loop = asyncio.get_event_loop()
 
@@ -132,7 +160,7 @@ if key:
     app.add_middleware(Analytics, api_key=key)
     logger.info("Enabled FastAPI Analytics")
 else:
-    logger.info("No FastAPI Analytics key provided, skipping")
+    logger.debug("No FastAPI Analytics key provided, skipping")
 
 # Mount routers
 ## HTTP

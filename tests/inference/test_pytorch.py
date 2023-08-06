@@ -25,14 +25,85 @@ def pipe_fixture():
     return PyTorchStableDiffusion("Azher/Anything-v4.5-vae-fp16-diffuser")
 
 
-def test_txt2img(pipe: PyTorchStableDiffusion):
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+def test_txt2img_scheduler_sweep(
+    pipe: PyTorchStableDiffusion, scheduler: KarrasDiffusionSchedulers
+):
+    "Sweep all schedulers with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=scheduler,
+            id="test",
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
+@pytest.mark.parametrize("height", [256, 512, 1024])
+@pytest.mark.parametrize("width", [256, 512, 1024])
+def test_txt2img_res_sweep(pipe: PyTorchStableDiffusion, height: int, width: int):
+    "Sweep multiple resolutions with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+            id="test",
+            height=height,
+            width=width,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
+def test_txt2img_multi(pipe: PyTorchStableDiffusion):
+    "Generating multiple images with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+            id="test",
+            batch_size=2,
+            batch_count=2,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    assert len(pipe.generate(job)) == 4
+
+
+def test_txt2img_self_attention(pipe: PyTorchStableDiffusion):
     "Generate an image with Text to Image"
 
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
             prompt="This is a test",
-            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
             id="test",
+            self_attention_scale=1,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
+def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
+    "Generate an image with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler,
+            id="test",
+            use_karras_sigmas=True,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )
@@ -121,7 +192,7 @@ def test_controlnet(pipe: PyTorchStableDiffusion):
 def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
     "Generate an image with ControlNet Image to Image while having the image preprocessed"
 
-    from core.controlnet_preprocessing import image_to_controlnet_input
+    from core.inference.utilities import image_to_controlnet_input
 
     preprocessed_image = generate_random_image()
     preprocessed_image = image_to_controlnet_input(
@@ -131,7 +202,7 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             id="test",
             image="",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet="lllyasviel/sd-controlnet-canny",
+            controlnet="lllyasviel/control_v11p_sd15_canny",
         ),
     )
     preprocessed_image_str = convert_image_to_base64(
@@ -144,7 +215,7 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             id="test",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
-            controlnet="lllyasviel/sd-controlnet-canny",
+            controlnet="lllyasviel/control_v11p_sd15_canny",
             is_preprocessed=True,
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
@@ -153,19 +224,12 @@ def test_controlnet_preprocessed(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-def test_lora(pipe: PyTorchStableDiffusion):
-    "Load LoRA model and inject it into the pipe"
-
-    # Dowload: https://civitai.com/models/82098/add-more-details-detail-enhancer-tweaker-lora
-    pipe.load_lora("data/lora/more_details.safetensors")
-
-
 def test_txt2img_with_lora(pipe: PyTorchStableDiffusion):
     "Generate an image with LoRA model"
 
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
-            prompt="shenhe (genshin)",
+            prompt="1girl, blonde, <lora:more_details:0.5>",
             scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
             id="test",
         ),

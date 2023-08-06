@@ -44,7 +44,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 )
 parser.add_argument(
     "--log-level",
-    default="INFO",
     help="Log level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
 )
@@ -83,13 +82,17 @@ logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 logging.getLogger("PIL.Image").setLevel(logging.INFO)
 
 # Create necessary folders
-Path("data/aitemplate").mkdir(exist_ok=True, parents=True)
-Path("data/onnx").mkdir(exist_ok=True)
-Path("data/models").mkdir(exist_ok=True)
-Path("data/outputs").mkdir(exist_ok=True)
-Path("data/lora").mkdir(exist_ok=True)
-Path("data/textual-inversion").mkdir(exist_ok=True)
-Path("data/tensorrt").mkdir(exist_ok=True)
+for directory in [
+    "aitemplate",
+    "onnx",
+    "models",
+    "outputs",
+    "lora",
+    "vae",
+    "upscaler",
+    "textual-inversion",
+]:
+    Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
 # Suppress some annoying warnings
 warnings.filterwarnings("ignore", category=UserWarning)
@@ -220,6 +223,9 @@ def checks():
     # Inject better logger
     from rich.logging import RichHandler
 
+    args_with_extras.log_level = args_with_extras.log_level or os.getenv(
+        "LOG_LEVEL", "INFO"
+    )
     logging.basicConfig(
         level=args_with_extras.log_level,
         format="%(asctime)s | %(name)s » %(message)s",
@@ -227,13 +233,6 @@ def checks():
         handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
     )
     logger = logging.getLogger()  # pylint: disable=redefined-outer-name
-
-    # Check tokens
-    if not os.getenv("HUGGINGFACE_TOKEN") and not args_with_extras.install_only:
-        logger.error(
-            "No token provided. Please provide a token with HUGGINGFACE_TOKEN environment variable"
-        )
-        sys.exit(1)
 
     if args_with_extras.bot and not args_with_extras.install_only:
         if not os.getenv("DISCORD_BOT_TOKEN"):
@@ -250,11 +249,10 @@ def checks():
         args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1
     )
 
-    # Save the token to config
-    from core import shared
-
-    if not args_with_extras.install_only:
-        shared.hf_token = os.environ["HUGGINGFACE_TOKEN"]
+    if not os.getenv("HUGGINGFACE_TOKEN"):
+        logger.info(
+            "No HuggingFace token provided, some features will be disabled until it is provided in the .env file or in the web interface"
+        )
 
     # Create the diffusers cache folder
     from diffusers.utils import DIFFUSERS_CACHE
@@ -288,4 +286,5 @@ if __name__ == "__main__":
         main(exit_after_init=args.install_only)
     except KeyboardInterrupt:
         logger.info("Received keyboard interrupt, exiting...")
+
         sys.exit(0)

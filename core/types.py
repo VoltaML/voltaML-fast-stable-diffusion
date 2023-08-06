@@ -15,9 +15,17 @@ from diffusers import (
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-InferenceBackend = Literal["PyTorch", "TensorRT", "AITemplate", "ONNX"]
+InferenceBackend = Literal["PyTorch", "AITemplate", "ONNX"]
 Backend = Literal[
-    "PyTorch", "TensorRT", "AITemplate", "unknown", "LoRA", "Textual Inversion", "ONNX"
+    "PyTorch",
+    "AITemplate",
+    "unknown",
+    "LoRA",
+    "LyCORIS",
+    "Textual Inversion",
+    "ONNX",
+    "VAE",
+    "Upscaler",
 ]
 
 
@@ -70,6 +78,7 @@ class Txt2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -89,6 +98,7 @@ class Img2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -110,6 +120,7 @@ class InpaintData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -129,6 +140,7 @@ class ControlNetData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
+    use_karras_sigmas: bool = field(default=False)
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -155,26 +167,6 @@ class UpscaleData:
     upscale_factor: float = field(default=4)
     tile_size: int = field(default=128)
     tile_padding: int = field(default=10)
-
-
-@dataclass
-class SDUpscaleData:
-    "Dataclass for the data of Stable Diffusion Tiled Upscale request"
-
-    prompt: str
-    image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
-    id: str = field(default_factory=lambda: uuid4().hex)
-    negative_prompt: str = field(default="")
-    steps: int = field(default=25)
-    guidance_scale: float = field(default=7)
-    seed: int = field(default=0)
-    batch_size: int = field(default=1)
-    batch_count: int = field(default=1)
-    tile_size: int = field(default=128)
-    tile_border: int = field(default=32)
-    original_image_slice: int = field(default=32)
-    noise_level: int = field(default=40)
 
 
 @dataclass
@@ -217,36 +209,6 @@ class UpscaleQueueEntry(Job):
     "Dataclass for a real esrgan job"
 
     data: UpscaleData
-
-
-@dataclass
-class SDUpscaleQueueEntry(Job):
-    "Dataclass for a stable diffusion upscale job"
-
-    data: SDUpscaleData
-    model: str = field(default="stabilityai/stable-diffusion-x4-upscaler")
-
-
-@dataclass
-class TRTBuildRequest:
-    "Dataclass for requesting a build of an engine"
-
-    model_id: str
-    subfolder: str = ""
-    hf_token: str = ""
-    fp16: bool = True
-    verbose: bool = True
-    opt_image_height: int = 512
-    opt_image_width: int = 512
-    max_batch_size: int = 1
-    onnx_opset: int = 16
-    build_static_batch: bool = False
-    build_dynamic_shape: bool = True
-    build_preview_features: bool = False
-    force_engine_build: bool = False
-    force_onnx_export: bool = False
-    force_onnx_optimize: bool = False
-    onnx_minimal_optimization: bool = False
 
 
 @dataclass
@@ -320,8 +282,8 @@ class ModelResponse:
     path: str
     backend: Backend
     valid: bool
+    vae: str
     state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
-    loras: List[str] = field(default_factory=list)
     textual_inversions: List[str] = field(default_factory=list)
 
 
@@ -331,8 +293,23 @@ class LoraLoadRequest:
 
     model: str
     lora: str
-    unet_weight: float = 0.5
-    text_encoder_weight: float = 0.5
+    weight: float = 0.5
+
+
+@dataclass
+class LoraUnloadRequest:
+    "Dataclass for unloading a LoRA from a model"
+
+    model: str
+    lora: str
+
+
+@dataclass
+class VaeLoadRequest:
+    "Dataclass for loading a VAE into a model"
+
+    model: str
+    vae: str
 
 
 @dataclass
@@ -349,3 +326,32 @@ class DeleteModelRequest:
 
     model_path: str
     model_type: Literal["pytorch", "lora", "textual-inversion", "aitemplate"]
+
+
+@dataclass
+class Capabilities:
+    "Dataclass for capabilities of a GPU"
+
+    # ["cpu", "cuda", "directml", "mps", "xpu", "vulkan"]
+    supported_backends: List[str] = field(default_factory=lambda: ["cpu"])
+    # ["float16", "float32", "bfloat16"]
+    supported_precisions_gpu: List[str] = field(default_factory=lambda: ["float32"])
+    # ["float16", "float32", "bfloat16"]
+    supported_precisions_cpu: List[str] = field(default_factory=lambda: ["float32"])
+
+    supported_torch_compile_backends: List[str] = field(
+        default_factory=lambda: ["inductor"]
+    )
+
+    # Does he have bitsandbytes installed?
+    supports_int8: bool = False
+
+    # Does the current build support xformers?
+    # Useful for e.g. torch nightlies
+    supports_xformers: bool = False
+
+    # Volta+ (>=7.0)
+    has_tensor_cores: bool = True
+
+    # Ampere+ (>=8.6)
+    has_tensorfloat: bool = False

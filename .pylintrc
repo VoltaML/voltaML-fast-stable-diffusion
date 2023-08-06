@@ -3,7 +3,6 @@ init-hook="import sys; sys.path.insert(0, '.')"
 ignore=
     core/submodules,
     typings,
-    core/tensorrt,
     AITemplate,
 disable=
     C0114, # Missing module docstring
@@ -26,3 +25,4 @@ disable=
 generated-members=
     torch.*,
     cuda.*,
+    cv2.*,
