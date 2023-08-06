@@ -3,8 +3,6 @@
 This page is focused on transforming input image with the power of Stable Diffusion Models.
 There are multiple ways to do this and we will cover all of the available options here.
 
-If the parameter is not explained here, it is explained in the [Text to Image](/webui/txt2img) page.
-
 ::: warning
 All of these models require extra model to be loaded and sometimes even one more for the detection algorithm. TLDR: It sucks a lot of VRAM.
 :::

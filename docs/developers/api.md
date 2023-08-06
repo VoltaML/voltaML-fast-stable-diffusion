@@ -26,12 +26,9 @@ cd voltaML-fast-stable-diffusion
 
 ### 3. Set up environmental variables
 
-Required variables:
-
-- `HUGGINGFACE_TOKEN`
-
 Optional variables:
 
+- `HUGGINGFACE_TOKEN`
 - `DISCORD_BOT_TOKEN`
 - `FASTAPI_ANALYTICS_KEY`
 - `LOG_LEVEL`

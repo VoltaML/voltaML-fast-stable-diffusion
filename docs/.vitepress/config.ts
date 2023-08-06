@@ -94,14 +94,11 @@ export default defineConfig({
 				text: "WebUI",
 				items: [
 					{ text: "Models", link: "/webui/models" },
-					{ text: "Text to Image", link: "/webui/txt2img" },
 					{ text: "Image to Image", link: "/webui/img2img" },
 					{ text: "Extra", link: "/webui/extra" },
-					{ text: "Download", link: "/webui/download" },
-					{ text: "Accelerate", link: "/webui/accelerate" },
+					{ text: "Downloading Models", link: "/webui/download" },
 					{ text: "Image browser", link: "/webui/imagebrowser" },
 					{ text: "Convert", link: "/webui/convert" },
-					{ text: "Settings", link: "/webui/settings" },
 				],
 				collapsed: false,
 			},
@@ -122,7 +119,7 @@ export default defineConfig({
 			},
 			{
 				text: "Experimental",
-				items: [{ text: "Model browser", link: "/experimental/model-browser" }],
+				items: [],
 				collapsed: false,
 			},
 			{

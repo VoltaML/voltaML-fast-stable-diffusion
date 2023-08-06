@@ -8,8 +8,7 @@
 
 - No LoRA support
 - No Textual Inversion support
-- Max 64 tokens (\<Volta v0.3)
-- Locked down resolution (\<Volta v0.3)
+- Locked down resolution (if you use static AITemplate)
 
 ## Acceleration
 
@@ -25,6 +24,8 @@ Make sure that you are one the correct page as can be seen in the image below.
 
 ::: warning
 Due to extreme load on the CPU, connection between the browser and the server will be lost. If this happens, you need to click the reconnect button - acceleration should not be affected.
+
+WE WOULD RECOMMEND RESTARTING VOLTA AFTER ACCELERATION IS DONE, AS WEBSOCKETS MIGHT BE TOTALLY BROKEN
 :::
 
 ## How to use
@@ -34,7 +35,3 @@ Due to extreme load on the CPU, connection between the browser and the server wi
 3. Generate an image - only txt2img, img2img and ControlNet are supported
 
 ![AITemplate Acceleration](../static/basics/aitemplate-load.webp)
-
-::: danger IMPORTANT
-ControlNet is only available for the 512x512 model - we are working on a fix **(works on experimental branch)**
-:::
