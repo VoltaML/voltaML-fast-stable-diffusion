@@ -719,6 +719,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
         generator: torch.Generator,
+        height: int = 512,
+        width: int = 512,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
@@ -795,6 +797,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             prompt=prompt,
             negative_prompt=negative_prompt,
             image=image,
+            height=height,
+            width=width,
             num_inference_steps=num_inference_steps,  # type: ignore
             guidance_scale=guidance_scale,  # type: ignore
             self_attention_scale=self_attention_scale,
