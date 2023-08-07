@@ -1,10 +1,9 @@
 # pylint: disable=attribute-defined-outside-init
 
 from dataclasses import dataclass
-from typing import Literal, Union, List
+from typing import Literal, Union, List, Optional, Callable
 from time import time
 import math
-import regex as re
 
 from diffusers import (
     DiffusionPipeline,
@@ -20,7 +19,7 @@ from numpy import pi, exp, sqrt
 from PIL.Image import Image
 
 from core.config import config
-from core.optimizations import autocast
+from core.optimizations import autocast, upcast_vae, ensure_correct_device, unload_all
 from core.inference.utilities import preprocess_image, get_weighted_text_embeddings
 from core.utils import resize
 
@@ -106,7 +105,6 @@ class Text2ImageRegion(DiffusionRegion):
             raise ValueError(
                 f"Mask weight must be non-negative, found {self.mask_weight}."
             )
-        self.prompt = re.sub(" +", " ", self.prompt).replace("\n", " ")
 
     @property
     def do_classifier_free_guidance(self) -> bool:
@@ -138,6 +136,7 @@ class Image2ImageRegion(DiffusionRegion):
         device: Union[torch.device, str] = "cpu",
     ):
         """Encodes the reference image for this diffusion region."""
+        ensure_correct_device(encoder)  # type: ignore
         img = preprocess_image(self.reference_image)
         self.reference_latents = encoder.encode(img.to(device)).latent_dist.sample(
             generator=generator
@@ -259,6 +258,7 @@ class StableDiffusionCanvasPipeline(DiffusionPipeline):
 
     def _decode_latents(self, latents):
         latents = 1 / 0.18215 * latents
+        ensure_correct_device(self.vae)
         image = self.vae.decode(latents).sample
         image = (image / 2 + 0.5).clamp(0, 1)
         image = image.cpu().permute(0, 2, 3, 1).numpy()
@@ -289,6 +289,8 @@ class StableDiffusionCanvasPipeline(DiffusionPipeline):
         generator: torch.Generator,
         num_inference_steps: int = 50,
         reroll_regions: List[RerollRegion] = [],
+        callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
+        callback_steps: int = 1,
     ) -> List[Image]:
         batch_size = 1
         device = self._execution_device
@@ -315,6 +317,7 @@ class StableDiffusionCanvasPipeline(DiffusionPipeline):
             self.scheduler.set_timesteps(num_inference_steps, device=device)
 
             for region in txt_regions:
+                ensure_correct_device(self.text_encoder)
                 prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                     self,  # type: ignore
                     region.prompt,
@@ -383,6 +386,7 @@ class StableDiffusionCanvasPipeline(DiffusionPipeline):
                 mask_builder.compute_mask_weights(r).to(device=device)
                 for r in txt_regions
             ]
+            ensure_correct_device(self.unet)  # type: ignore
             for i, t in enumerate(tqdm(self.scheduler.timesteps)):
                 noise_pred_regions = []
 
@@ -458,5 +462,12 @@ class StableDiffusionCanvasPipeline(DiffusionPipeline):
                             region.latent_row_init : region.latent_row_end,
                             region.latent_col_init : region.latent_col_end,
                         ] = region_latents
+
+                if callback is not None:
+                    if i % callback_steps == 0:
+                        callback(i, t, latents)
             image = self._decode_latents(latents)
+
+            unload_all()
+
             return image
