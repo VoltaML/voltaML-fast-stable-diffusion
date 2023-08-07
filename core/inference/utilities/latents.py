@@ -490,9 +490,7 @@ def scale_latents(
 
     s = time()
 
-    logger.debug(
-        f"Scaling latents with shape {list(latents.shape)}, scale: {scale}"
-    )
+    logger.debug(f"Scaling latents with shape {list(latents.shape)}, scale: {scale}")
 
     # Scale and round to multiple of 32
     width_truncated = int(latents.shape[2] * scale)
