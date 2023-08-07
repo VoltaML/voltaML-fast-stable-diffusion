@@ -310,6 +310,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 data = pipe.img2img(
                     prompt=job.data.prompt,
                     image=latents,
+                    height=latents.shape[2] * 8,
+                    width=latents.shape[3] * 8,
                     num_inference_steps=flag.steps,
                     guidance_scale=job.data.guidance_scale,
                     self_attention_scale=job.data.self_attention_scale,
@@ -360,6 +362,8 @@ class PyTorchStableDiffusion(InferenceModel):
             data = pipe.img2img(
                 prompt=job.data.prompt,
                 image=input_image,
+                height=job.data.height,  # technically isn't needed, but it's here for consistency sake
+                width=job.data.width,  # technically isn't needed, but it's here for consistency sake
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 self_attention_scale=job.data.self_attention_scale,

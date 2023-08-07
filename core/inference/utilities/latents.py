@@ -488,19 +488,13 @@ def scale_latents(
 ):
     "Interpolate the latents to the desired scale."
 
-    align_to = (
-        32 if latent_scale_mode in ["bislerp-tortured", "bislerp-original"] else 8
-    )
-
     s = time()
 
-    logger.debug(
-        f"Scaling latents with shape {list(latents.shape)}, scale: {scale}, alignment: {align_to}"
-    )
+    logger.debug(f"Scaling latents with shape {list(latents.shape)}, scale: {scale}")
 
     # Scale and round to multiple of 32
-    width_truncated = int(((latents.shape[2] * scale - 1) // align_to + 1) * align_to)
-    height_truncated = int(((latents.shape[3] * scale - 1) // align_to + 1) * align_to)
+    width_truncated = int(latents.shape[2] * scale)
+    height_truncated = int(latents.shape[3] * scale)
 
     # Scale the latents
     if latent_scale_mode == "bislerp-tortured":
