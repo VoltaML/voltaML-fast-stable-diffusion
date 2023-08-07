@@ -2,7 +2,7 @@ from pathlib import Path
 
 from diffusers.utils.constants import DIFFUSERS_CACHE
 
-from .config import (
+from ._config import (
     Configuration,
     Img2ImgConfig,
     Txt2ImgConfig,

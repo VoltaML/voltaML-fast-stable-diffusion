@@ -35,8 +35,7 @@ export interface ISettings {
         | "nearest"
         | "area"
         | "bilinear"
-        | "bislerp-original"
-        | "bislerp-tortured"
+        | "bislerp"
         | "bicubic"
         | "nearest-exact";
       strength: number;
@@ -156,7 +155,7 @@ export interface ISettings {
     vae_slicing: boolean;
     vae_tiling: boolean;
     trace_model: boolean;
-    offload: "module" | "model" | "disabled";
+    offload: boolean;
     image_preview_delay: number;
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
@@ -175,6 +174,8 @@ export interface ISettings {
     image_quality: number;
 
     disable_grid: boolean;
+
+    upcast_vae: boolean;
 
     torch_compile: boolean;
     torch_compile_fullgraph: boolean;
@@ -317,7 +318,7 @@ export const defaultSettings: ISettings = {
     vae_tiling: false,
     trace_model: false,
     cudnn_benchmark: false,
-    offload: "disabled",
+    offload: false,
 
     device_id: 0,
     device_type: "cuda",
@@ -339,6 +340,8 @@ export const defaultSettings: ISettings = {
     image_quality: 95,
 
     disable_grid: false,
+
+    upcast_vae: false,
 
     torch_compile: false,
     torch_compile_fullgraph: false,

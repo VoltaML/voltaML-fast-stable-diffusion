@@ -24,7 +24,7 @@ from core.inference.utilities import (
     prepare_mask_latents,
     preprocess_image,
 )
-from core.optimizations import autocast
+from core.optimizations import autocast, upcast_vae, ensure_correct_device, unload_all
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
@@ -108,27 +108,13 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         `pipeline.enable_sequential_cpu_offload()` the execution device can only be inferred from Accelerate's module
         hooks.
         """
-        if self.device != torch.device("meta") or not hasattr(self.unet, "_hf_hook"):  # type: ignore
+        if self.device != torch.device("meta") and not hasattr(self.unet, "offload_device"):  # type: ignore
             return self.device
-        for module in self.unet.modules():  # type: ignore
-            if (
-                hasattr(module, "_hf_hook")
-                and hasattr(
-                    module._hf_hook,  # pylint: disable=protected-access
-                    "execution_device",
-                )
-                and module._hf_hook.execution_device  # pylint: disable=protected-access # type: ignore
-                is not None
-            ):
-                return torch.device(
-                    module._hf_hook.execution_device  # pylint: disable=protected-access # type: ignore
-                )
-        return self.device
+        return getattr(self.unet, "offload_device", self.device)
 
     def _encode_prompt(
         self,
         prompt,
-        _device,
         num_images_per_prompt,
         do_classifier_free_guidance,
         negative_prompt,
@@ -171,6 +157,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 " the batch size of `prompt`."
             )
 
+        ensure_correct_device(self.text_encoder)
         text_embeddings, uncond_embeddings = get_weighted_text_embeddings(
             pipe=self.parent,
             prompt=prompt,
@@ -214,7 +201,14 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             )
 
     def _decode_latents(self, latents, height, width):
+        if config.api.upcast_vae:
+            upcast_vae(self.vae)
+            latents = latents.to(
+                next(iter(self.vae.post_quant_conv.parameters())).dtype
+            )
+
         latents = 1 / 0.18215 * latents
+        ensure_correct_device(self.vae)
         image = self.vae.decode(latents).sample  # type: ignore
         image = (image / 2 + 0.5).clamp(0, 1)
         # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
@@ -356,7 +350,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 3. Encode input prompt
             text_embeddings = self._encode_prompt(
                 prompt,
-                device,
                 num_images_per_prompt,
                 do_classifier_free_guidance,
                 negative_prompt,
@@ -454,6 +447,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 ]  # output.sample.shape[-2:] in older diffusers
 
             # 8. Denoising loop
+            ensure_correct_device(self.unet)  # type: ignore
             with ExitStack() as gs:
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
@@ -598,17 +592,17 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 9. Post-processing
             if output_type == "latent":
+                unload_all()
                 return latents, False
 
             # TODO: maybe implement asymmetric vqgan?
             image = self._decode_latents(latents, height=height, width=width)
 
+            unload_all()
+
             # 11. Convert to PIL
             if output_type == "pil":
                 image = self.numpy_to_pil(image)
-
-            if hasattr(self, "final_offload_hook"):
-                self.final_offload_hook.offload()  # type: ignore
 
             if not return_dict:
                 return image, False
