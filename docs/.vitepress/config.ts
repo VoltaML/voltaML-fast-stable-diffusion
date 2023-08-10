@@ -71,6 +71,7 @@ export default defineConfig({
 					{ text: "Windows", link: "/installation/windows" },
 					{ text: "Linux", link: "/installation/linux" },
 					{ text: "WSL", link: "/installation/wsl" },
+					{ text: "Vast.ai", link: "/installation/vast" },
 					{ text: "Docker", link: "/installation/docker" },
 					{ text: "Old", link: "/installation/old" },
 					{ text: "xFormers", link: "/installation/xformers" },
