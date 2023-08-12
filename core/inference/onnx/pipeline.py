@@ -126,6 +126,7 @@ class OnnxStableDiffusion(InferenceModel):
         autoload: bool = True,
     ) -> None:
         if is_onnx_available():
+            # pylint: disable=import-error
             import onnxruntime as ort
 
             super().__init__(model_id)
@@ -145,6 +146,7 @@ class OnnxStableDiffusion(InferenceModel):
 
     def load(self):
         if is_onnx_available():
+            # pylint: disable=import-error
             import onnxruntime as ort
 
             def _load(
@@ -446,6 +448,7 @@ class OnnxStableDiffusion(InferenceModel):
             quantize_success = False if signed != "no-quant" else True
             try:
                 if not quantize_success:
+                    # pylint: disable=import-error
                     from onnxruntime.quantization import QuantType, quantize_dynamic
 
                     t = time()
@@ -1094,7 +1097,7 @@ class OnnxStableDiffusion(InferenceModel):
             ]
         )
         logger.debug("vae_decoder end (%.2fs)", time() - t)
-        image = np.clip(image / 2 + 0.5, 0, 1)
+        image = np.clip(image / 2 + 0.5, 0, 1)  # type: ignore
         image = image.transpose((0, 2, 3, 1))
         return image
 
@@ -1168,7 +1171,7 @@ class OnnxStableDiffusion(InferenceModel):
             else masked_image_latents
         )
 
-        latents = latents * np.float64(self.scheduler.init_noise_sigma)
+        latents = latents * np.float64(self.scheduler.init_noise_sigma)  # type: ignore
         extra_step_kwargs = self._extra_args()
         timestep_dtype = self._get_timestep_dtype()
 
@@ -1229,7 +1232,7 @@ class OnnxStableDiffusion(InferenceModel):
         latents = generator.randn(*latents_shape).astype(latents_dtype)
 
         self.scheduler.set_timesteps(num_inference_steps)
-        latents = latents * np.float64(self.scheduler.init_noise_sigma)
+        latents = latents * np.float64(self.scheduler.init_noise_sigma)  # type: ignore
 
         extra_step_kwargs = self._extra_args()
         timestep_dtype = self._get_timestep_dtype()

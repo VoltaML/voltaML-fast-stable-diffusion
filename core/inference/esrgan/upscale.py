@@ -350,8 +350,8 @@ class Upscaler:
                 img1 = np.copy(img[:, :, :3])
                 img2 = np.copy(img[:, :, :3])
                 for c in range(3):
-                    img1[:, :, c] *= img[:, :, 3]
-                    img2[:, :, c] = (img2[:, :, c] - 1) * img[:, :, 3] + 1
+                    img1[:, :, c] *= img[:, :, 3]  # type: ignore
+                    img2[:, :, c] = (img2[:, :, c] - 1) * img[:, :, 3] + 1  # type: ignore
 
                 output1 = self.process(img1)
                 output2 = self.process(img2)
