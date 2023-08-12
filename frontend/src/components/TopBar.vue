@@ -561,8 +561,6 @@ function refreshModels() {
               const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
               const matches = regex.exec(spl);
 
-              console.log("Match: ", matches);
-
               if (matches) {
                 const width = matches[1].split("-").map((x) => parseInt(x));
                 const height = matches[2].split("-").map((x) => parseInt(x));
@@ -580,7 +578,6 @@ function refreshModels() {
               throw new Error("No model, cannot parse AIT dimensions");
             }
           } catch (e) {
-            console.warn(e);
             conf.data.settings.aitDim.width = undefined;
             conf.data.settings.aitDim.height = undefined;
             conf.data.settings.aitDim.batch_size = undefined;

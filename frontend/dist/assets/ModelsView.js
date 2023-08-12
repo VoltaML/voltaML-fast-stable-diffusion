@@ -1,4 +1,4 @@
-import { d as defineComponent, D as h, P as replaceable, Q as useConfig, R as useFormItem, E as ref, c as computed, S as useMergedState, T as provide, U as toRef, V as createInjectionKey, W as call, X as c, Y as cB, Z as cE, $ as cM, a0 as iconSwitchTransition, a1 as insideModal, a2 as insidePopover, a3 as inject, a4 as useMemo, a5 as useTheme, a6 as checkboxLight, a7 as useRtl, a8 as createKey, a9 as useThemeClass, aa as createId, ab as NIconSwitchTransition, ac as on, ad as popselectLight, K as watch, ae as NInternalSelectMenu, af as createTreeMate, ag as happensIn, ah as nextTick, ai as keysOf, aj as createTmOptions, ak as keep, al as createRefSetter, am as mergeEventHandlers, an as omit, ao as NPopover, ap as popoverBaseProps, aq as cNotM, ar as useLocale, as as watchEffect, at as resolveSlot, k as NInput, r as NSelect, J as Fragment, au as NBaseIcon, av as useAdjustedTo, aw as paginationLight, ax as ellipsisLight, ay as onDeactivated, q as NTooltip, az as mergeProps, aA as radioLight, aB as resolveWrappedSlot, aC as flatten$1, aD as getSlot, aE as depx, aF as formatLength, F as NButton, aG as NScrollbar, aH as onBeforeUnmount, aI as off, aJ as ChevronDownIcon, aK as NDropdown, aL as pxfy, aM as get, aN as NBaseLoading, aO as ChevronRightIcon, o as onUnmounted, aP as VResizeObserver, aQ as warn, aR as cssrAnchorMetaName, aS as VVirtualList, aT as NEmpty, aU as repeat, aV as beforeNextFrameOnce, aW as fadeInScaleUpTransition, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as isBrowser, b0 as AddIcon, b1 as NProgress, b2 as NFadeInExpandTransition, b3 as EyeIcon, b4 as fadeInHeightExpandTransition, b5 as Teleport, b6 as uploadLight, e as openBlock, f as createElementBlock, n as createBaseVNode, b7 as useCssVars, h as unref, a as useSettings, b8 as reactive, b9 as onMounted, g as createVNode, w as withCtx, G as NIcon, M as renderList, ba as normalizeStyle, m as createTextVNode, t as toDisplayString, bb as NText, _ as _export_sfc, u as useState, b as useMessage, bc as huggingfaceModelsFile, i as NCard, s as serverUrl, A as pushScopeId, B as popScopeId, j as NSpace, bd as NModal, N as NGi, y as NGrid, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
+import { d as defineComponent, D as h, P as replaceable, Q as useConfig, R as useFormItem, E as ref, c as computed, S as useMergedState, T as provide, U as toRef, V as createInjectionKey, W as call, X as c, Y as cB, Z as cE, $ as cM, a0 as iconSwitchTransition, a1 as insideModal, a2 as insidePopover, a3 as inject, a4 as useMemo, a5 as useTheme, a6 as checkboxLight, a7 as useRtl, a8 as createKey, a9 as useThemeClass, aa as createId, ab as NIconSwitchTransition, ac as on, ad as popselectLight, K as watch, ae as NInternalSelectMenu, af as createTreeMate, ag as happensIn, ah as nextTick, ai as keysOf, aj as createTmOptions, ak as keep, al as createRefSetter, am as mergeEventHandlers, an as omit, ao as NPopover, ap as popoverBaseProps, aq as cNotM, ar as useLocale, as as watchEffect, at as resolveSlot, k as NInput, r as NSelect, J as Fragment, au as NBaseIcon, av as useAdjustedTo, aw as paginationLight, ax as ellipsisLight, ay as onDeactivated, q as NTooltip, az as mergeProps, aA as radioLight, aB as resolveWrappedSlot, aC as flatten$1, aD as getSlot, aE as depx, aF as formatLength, F as NButton, aG as NScrollbar, aH as onBeforeUnmount, aI as off, aJ as ChevronDownIcon, aK as NDropdown, aL as pxfy, aM as get, aN as NBaseLoading, aO as ChevronRightIcon, o as onUnmounted, aP as VResizeObserver, aQ as warn, aR as cssrAnchorMetaName, aS as VVirtualList, aT as NEmpty, aU as repeat, aV as beforeNextFrameOnce, aW as fadeInScaleUpTransition, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as isBrowser, b0 as AddIcon, b1 as NProgress, b2 as NFadeInExpandTransition, b3 as EyeIcon, b4 as fadeInHeightExpandTransition, b5 as Teleport, b6 as uploadLight, e as openBlock, f as createElementBlock, n as createBaseVNode, b7 as useCssVars, h as unref, a as useSettings, b8 as reactive, b9 as onMounted, g as createVNode, w as withCtx, G as NIcon, M as renderList, ba as normalizeStyle, m as createTextVNode, t as toDisplayString, bb as NText, _ as _export_sfc, u as useState, b as useMessage, bc as huggingfaceModelsFile, i as NCard, s as serverUrl, A as pushScopeId, B as popScopeId, j as NSpace, bd as NModal, v as createBlock, N as NGi, y as NGrid, be as NDivider, bf as Backends, H as NTabPane, I as NTabs } from "./index.js";
 import { _ as _sfc_main$5, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NSlider } from "./Slider.js";
@@ -7071,11 +7071,11 @@ const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$7 = [_hoisted_2$7, _hoisted_3$7];
+const _hoisted_4$6 = [_hoisted_2$7, _hoisted_3$7];
 const Home = defineComponent({
   name: "Home",
   render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$6);
   }
 });
 const _hoisted_1$6 = {
@@ -7111,7 +7111,7 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -7125,11 +7125,11 @@ const _hoisted_4$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = [_hoisted_2$6, _hoisted_3$6, _hoisted_4$6];
+const _hoisted_5$2 = [_hoisted_2$6, _hoisted_3$6, _hoisted_4$5];
 const Menu = defineComponent({
   name: "Menu",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$2);
   }
 });
 const _hoisted_1$5 = {
@@ -7164,11 +7164,11 @@ const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = [_hoisted_2$5, _hoisted_3$5];
+const _hoisted_4$4 = [_hoisted_2$5, _hoisted_3$5];
 const SearchOutline = defineComponent({
   name: "SearchOutline",
   render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_4$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_4$4);
   }
 });
 const _hoisted_1$4 = {
@@ -7198,11 +7198,11 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = [_hoisted_2$4, _hoisted_3$4];
+const _hoisted_4$3 = [_hoisted_2$4, _hoisted_3$4];
 const Settings = defineComponent({
   name: "Settings",
   render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_4$4);
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_4$3);
   }
 });
 const _hoisted_1$3 = {
@@ -7214,8 +7214,8 @@ const _hoisted_2$3 = {
   style: { "margin": "12px", "margin-top": "8px" }
 };
 const _hoisted_3$3 = { class: "image-grid" };
-const _hoisted_4$3 = ["src", "onClick"];
-const _hoisted_5$2 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)" } };
+const _hoisted_4$2 = ["src", "onClick"];
+const _hoisted_5$1 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)" } };
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "CivitAIDownload",
   setup(__props) {
@@ -7492,8 +7492,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           filter: unref(nsfwIndex)(item.modelVersions[0].images[0].nsfw) > unref(settings).data.settings.frontend.nsfw_ok_threshold ? "blur(12px)" : "none"
                         }),
                         onClick: ($event) => imgClick(column_index, item_index)
-                      }, null, 12, _hoisted_4$3),
-                      createBaseVNode("div", _hoisted_5$2, [
+                      }, null, 12, _hoisted_4$2),
+                      createBaseVNode("div", _hoisted_5$1, [
                         createVNode(unref(NText), { depth: 2 }, {
                           default: withCtx(() => [
                             createTextVNode(toDisplayString(item.name), 1)
@@ -7518,7 +7518,7 @@ const _withScopeId = (n) => (pushScopeId("data-v-41346243"), n = n(), popScopeId
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
-const _hoisted_4$2 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "HuggingfaceDownload",
   setup(__props) {
@@ -7643,7 +7643,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           default: withCtx(() => [
             createBaseVNode("div", _hoisted_2$2, [
               _hoisted_3$2,
-              createBaseVNode("div", _hoisted_4$2, [
+              createBaseVNode("div", _hoisted_4$1, [
                 createVNode(unref(NInput), {
                   value: customModel.value,
                   "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
@@ -7701,10 +7701,10 @@ const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeI
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "FP32", -1);
-const _hoisted_4$1 = { class: "flex-container" };
-const _hoisted_5$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Output in safetensors format", -1);
-const _hoisted_6$1 = { class: "flex-container" };
-const _hoisted_7$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
+const _hoisted_4 = { class: "flex-container" };
+const _hoisted_5 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Output in safetensors format", -1);
+const _hoisted_6 = { class: "flex-container" };
+const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ModelConvert",
   setup(__props) {
@@ -7773,15 +7773,15 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[0] || (_cache[0] = ($event) => use_fp32.value = $event)
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_4$1, [
-              _hoisted_5$1,
+            createBaseVNode("div", _hoisted_4, [
+              _hoisted_5,
               createVNode(unref(NSwitch), {
                 value: safetensors.value,
                 "onUpdate:value": _cache[1] || (_cache[1] = ($event) => safetensors.value = $event)
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_6$1, [
-              _hoisted_7$1,
+            createBaseVNode("div", _hoisted_6, [
+              _hoisted_7,
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[2] || (_cache[2] = ($event) => model.value = $event),
@@ -7833,19 +7833,25 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1 = { style: { "padding": "12px" } };
+const _hoisted_1 = { style: { "padding": "0px 12px 12px 12px" } };
 const _hoisted_2 = { style: { "margin-bottom": "12px", "display": "block" } };
 const _hoisted_3 = { style: { "display": "inline-flex" } };
-const _hoisted_4 = { style: { "margin-bottom": "12px", "display": "block" } };
-const _hoisted_5 = { style: { "display": "inline-flex" } };
-const _hoisted_6 = { style: { "margin-bottom": "12px", "display": "block" } };
-const _hoisted_7 = { style: { "display": "inline-flex" } };
+const allowedExtensions = ".safetensors,.ckpt,.pth,.pt,.bin";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ModelManager",
   setup(__props) {
     const global = useState();
     const filter = ref("");
     const message = useMessage();
+    const modelTypes = {
+      PyTorch: "models",
+      LoRA: "lora",
+      LyCORIS: "lycoris",
+      "Textual Inversion": "textual-inversion",
+      VAE: "vae",
+      AITemplate: "aitemplate",
+      ONNX: "onnx"
+    };
     const renderIcon = (icon) => {
       return () => {
         return h(NIcon, null, {
@@ -7858,41 +7864,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         return model.path.toLowerCase().includes(filter.value.toLowerCase()) || filter.value === "";
       }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
     });
-    const pyTorchModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "PyTorch" && model.valid === true;
-      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-    });
-    const loraModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "LoRA";
-      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-    });
-    const textualInversionModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "Textual Inversion";
-      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-    });
-    function createPyTorchOptions(model_path) {
-      return [
-        {
-          label: "Delete",
-          key: `delete:${model_path}`,
-          icon: renderIcon(TrashBin)
-        }
-        // {
-        //   label: "Convert",
-        //   key: `convert:${model_path}`,
-        //   icon: renderIcon(GitCompare),
-        // },
-        // {
-        //   label: "Accelerate",
-        //   key: `accelerate:${model_path}`,
-        //   icon: renderIcon(PlayForward),
-        // },
-      ];
-    }
-    function createLoraOptions(model_path) {
+    function createOptions(model_path) {
       return [
         {
           label: "Delete",
@@ -7901,51 +7873,28 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         }
       ];
     }
-    function createTextualInversionOptions(model_path) {
-      return [
-        {
-          label: "Delete",
-          key: `delete:${model_path}`,
-          icon: renderIcon(TrashBin)
-        }
-      ];
-    }
-    function deleteModel(model_path, model_type) {
-      fetch(`${serverUrl}/api/models/delete-model`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model_path,
-          model_type
-        })
-      }).then((response) => response.json()).then(() => {
+    async function deleteModel(model_path, model_type) {
+      try {
+        const res = await fetch(`${serverUrl}/api/models/delete-model`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model_path,
+            model_type
+          })
+        });
+        await res.json();
         message.success("Model deleted");
-      }).catch((error) => {
+      } catch (error) {
         message.error(error);
-      });
-    }
-    function handlePyTorchModelAction(key) {
-      const [action, model_path] = key.split(":");
-      if (action === "delete") {
-        deleteModel(model_path, "pytorch");
-      } else if (action === "convert") {
-        message.success(key);
-      } else if (action === "accelerate") {
-        message.success(key);
       }
     }
-    function handleLoraModelAction(key) {
+    async function handleAction(key, modelType, model) {
       const [action, model_path] = key.split(":");
       if (action === "delete") {
-        deleteModel(model_path, "lora");
-      }
-    }
-    function handleTextualInversionModelAction(key) {
-      const [action, model_path] = key.split(":");
-      if (action === "delete") {
-        deleteModel(model_path, "textual-inversion");
+        await deleteModel(model_path, modelType);
       }
     }
     return (_ctx, _cache) => {
@@ -7958,226 +7907,113 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           clearable: ""
         }, null, 8, ["value"]),
         createVNode(unref(NGrid), {
-          cols: "3",
-          "x-gap": "12"
+          cols: "1 600:2 900:3",
+          "x-gap": "8",
+          "y-gap": "8"
         }, {
           default: withCtx(() => [
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "Model" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NUpload), {
-                      multiple: "",
-                      "directory-dnd": "",
-                      action: `${unref(serverUrl)}/api/models/upload-model`,
-                      max: 5,
-                      accept: ".ckpt,.safetensors",
-                      style: { "border-bottom": "1px solid rgb(66, 66, 71)", "padding-bottom": "12px" }
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
-                          default: withCtx(() => [
-                            createBaseVNode("div", _hoisted_2, [
-                              createVNode(unref(NIcon), {
-                                size: "48",
-                                depth: 3
-                              }, {
+            (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(modelTypes).filter((item) => item !== "AITemplate" && item !== "ONNX"), (key) => {
+              return openBlock(), createBlock(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NCard), { title: key }, {
+                    default: withCtx(() => [
+                      createVNode(unref(NUpload), {
+                        multiple: "",
+                        "directory-dnd": "",
+                        action: `${unref(serverUrl)}/api/models/upload-model?type=${modelTypes[key]}`,
+                        accept: allowedExtensions
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
+                            default: withCtx(() => [
+                              createBaseVNode("div", _hoisted_2, [
+                                createVNode(unref(NIcon), {
+                                  size: "48",
+                                  depth: 3
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(unref(CloudUpload))
+                                  ]),
+                                  _: 1
+                                })
+                              ]),
+                              createVNode(unref(NText), { style: { "font-size": "24px" } }, {
                                 default: withCtx(() => [
-                                  createVNode(unref(CloudUpload))
+                                  createTextVNode(toDisplayString(key), 1)
+                                ]),
+                                _: 2
+                              }, 1024),
+                              createVNode(unref(NText), { style: { "font-size": "14px" } }, {
+                                default: withCtx(() => [
+                                  createTextVNode(" Click or Drag a model here ")
                                 ]),
                                 _: 1
                               })
                             ]),
-                            createVNode(unref(NText), { style: { "font-size": "24px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Model ")
-                              ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NText), { style: { "font-size": "16px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Click or drag a model to this area to upload it to the server ")
-                              ]),
-                              _: 1
-                            })
-                          ]),
-                          _: 1
-                        })
-                      ]),
-                      _: 1
-                    }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(pyTorchModels.value, (model) => {
-                      return openBlock(), createElementBlock("div", {
-                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                        key: model.path
-                      }, [
-                        createBaseVNode("p", null, toDisplayString(model.name), 1),
-                        createBaseVNode("div", _hoisted_3, [
-                          createVNode(unref(NDropdown), {
-                            options: createPyTorchOptions(model.path),
-                            placement: "right",
-                            onSelect: handlePyTorchModelAction
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(unref(NButton), {
-                                "render-icon": renderIcon(unref(Settings))
-                              }, null, 8, ["render-icon"])
-                            ]),
                             _: 2
-                          }, 1032, ["options"])
-                        ])
-                      ]);
-                    }), 128))
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "LoRA" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NUpload), {
-                      multiple: "",
-                      "directory-dnd": "",
-                      action: `${unref(serverUrl)}/api/models/upload-model?type=lora`,
-                      max: 5,
-                      accept: ".ckpt,.safetensors",
-                      style: { "border-bottom": "1px solid rgb(66, 66, 71)", "padding-bottom": "12px" }
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
-                          default: withCtx(() => [
-                            createBaseVNode("div", _hoisted_4, [
-                              createVNode(unref(NIcon), {
-                                size: "48",
-                                depth: 3
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(unref(CloudUpload))
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            createVNode(unref(NText), { style: { "font-size": "24px" } }, {
+                          }, 1024)
+                        ]),
+                        _: 2
+                      }, 1032, ["action"])
+                    ]),
+                    _: 2
+                  }, 1032, ["title"])
+                ]),
+                _: 2
+              }, 1024);
+            }), 256))
+          ]),
+          _: 1
+        }),
+        createVNode(unref(NDivider)),
+        createVNode(unref(NGrid), {
+          style: { "margin-top": "12px" },
+          cols: "1 900:2 1100:3",
+          "x-gap": "12",
+          "y-gap": "12"
+        }, {
+          default: withCtx(() => [
+            (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(unref(Backends)).filter(
+              (item) => isNaN(Number(item))
+            ), (modelType) => {
+              return openBlock(), createBlock(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NCard), {
+                    title: modelType,
+                    style: { "width": "100%" }
+                  }, {
+                    default: withCtx(() => [
+                      (openBlock(true), createElementBlock(Fragment, null, renderList(filteredModels.value.filter(
+                        (item) => item.backend === modelType
+                      ), (model) => {
+                        return openBlock(), createElementBlock("div", {
+                          style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                          key: model.path
+                        }, [
+                          createBaseVNode("p", null, toDisplayString(model.name), 1),
+                          createBaseVNode("div", _hoisted_3, [
+                            createVNode(unref(NDropdown), {
+                              options: createOptions(model.path),
+                              placement: "right",
+                              onSelect: (key) => handleAction(key, modelTypes[modelType], model)
+                            }, {
                               default: withCtx(() => [
-                                createTextVNode(" LoRA ")
+                                createVNode(unref(NButton), {
+                                  "render-icon": renderIcon(unref(Settings))
+                                }, null, 8, ["render-icon"])
                               ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NText), { style: { "font-size": "16px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Click or drag a model to this area to upload it to the server ")
-                              ]),
-                              _: 1
-                            })
-                          ]),
-                          _: 1
-                        })
-                      ]),
-                      _: 1
-                    }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(loraModels.value, (model) => {
-                      return openBlock(), createElementBlock("div", {
-                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                        key: model.path
-                      }, [
-                        createBaseVNode("p", null, toDisplayString(model.name), 1),
-                        createBaseVNode("div", _hoisted_5, [
-                          createVNode(unref(NDropdown), {
-                            options: createLoraOptions(model.path),
-                            placement: "right",
-                            onSelect: handleLoraModelAction
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(unref(NButton), {
-                                "render-icon": renderIcon(unref(Settings))
-                              }, null, 8, ["render-icon"])
-                            ]),
-                            _: 2
-                          }, 1032, ["options"])
-                        ])
-                      ]);
-                    }), 128))
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "Textual Inversion" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NUpload), {
-                      multiple: "",
-                      "directory-dnd": "",
-                      action: `${unref(serverUrl)}/api/models/upload-model?type=textual-inversion`,
-                      max: 5,
-                      accept: ".pt,.safetensors",
-                      style: { "border-bottom": "1px solid rgb(66, 66, 71)", "padding-bottom": "12px" }
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
-                          default: withCtx(() => [
-                            createBaseVNode("div", _hoisted_6, [
-                              createVNode(unref(NIcon), {
-                                size: "48",
-                                depth: 3
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(unref(CloudUpload))
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            createVNode(unref(NText), { style: { "font-size": "24px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Textual Inversion ")
-                              ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NText), { style: { "font-size": "16px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Click or drag a model to this area to upload it to the server ")
-                              ]),
-                              _: 1
-                            })
-                          ]),
-                          _: 1
-                        })
-                      ]),
-                      _: 1
-                    }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (model) => {
-                      return openBlock(), createElementBlock("div", {
-                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                        key: model.path
-                      }, [
-                        createBaseVNode("p", null, toDisplayString(model.name), 1),
-                        createBaseVNode("div", _hoisted_7, [
-                          createVNode(unref(NDropdown), {
-                            options: createTextualInversionOptions(model.path),
-                            placement: "right",
-                            onSelect: handleTextualInversionModelAction
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(unref(NButton), {
-                                "render-icon": renderIcon(unref(Settings))
-                              }, null, 8, ["render-icon"])
-                            ]),
-                            _: 2
-                          }, 1032, ["options"])
-                        ])
-                      ]);
-                    }), 128))
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            })
+                              _: 2
+                            }, 1032, ["options", "onSelect"])
+                          ])
+                        ]);
+                      }), 128))
+                    ]),
+                    _: 2
+                  }, 1032, ["title"])
+                ]),
+                _: 2
+              }, 1024);
+            }), 256))
           ]),
           _: 1
         })

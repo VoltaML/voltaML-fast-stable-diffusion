@@ -40524,6 +40524,18 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
+var Backends = /* @__PURE__ */ ((Backends2) => {
+  Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
+  Backends2[Backends2["AITemplate"] = 1] = "AITemplate";
+  Backends2[Backends2["ONNX"] = 2] = "ONNX";
+  Backends2[Backends2["unknown"] = 3] = "unknown";
+  Backends2[Backends2["LoRA"] = 4] = "LoRA";
+  Backends2[Backends2["LyCORIS"] = 5] = "LyCORIS";
+  Backends2[Backends2["VAE"] = 6] = "VAE";
+  Backends2[Backends2["Textual Inversion"] = 7] = "Textual Inversion";
+  Backends2[Backends2["Upscaler"] = 8] = "Upscaler";
+  return Backends2;
+})(Backends || {});
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
   ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
@@ -40919,7 +40931,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-2cf1de9c"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-196dee76"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40939,7 +40951,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "67e22a10": backgroundColor.value
+      "83a1f42c": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41056,7 +41068,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 const spl = conf.data.settings.model.name.split("__")[1];
                 const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
                 const matches = regex.exec(spl);
-                console.log("Match: ", matches);
                 if (matches) {
                   const width = matches[1].split("-").map((x) => parseInt(x));
                   const height = matches[2].split("-").map((x) => parseInt(x));
@@ -41071,7 +41082,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 throw new Error("No model, cannot parse AIT dimensions");
               }
             } catch (e) {
-              console.warn(e);
               conf.data.settings.aitDim.width = void 0;
               conf.data.settings.aitDim.height = void 0;
               conf.data.settings.aitDim.batch_size = void 0;
@@ -41832,7 +41842,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_2cf1de9c_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_196dee76_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41840,7 +41850,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-2cf1de9c"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-196dee76"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42007,7 +42017,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/Slider.js","assets/SettingsView.css"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -42132,55 +42142,57 @@ export {
   useCssVars as b7,
   reactive as b8,
   onMounted as b9,
-  useNotification as bA,
-  defaultSettings as bB,
-  urlFromPath as bC,
-  useRouter as bD,
-  fadeInTransition as bE,
-  imageLight as bF,
-  isMounted as bG,
-  LazyTeleport as bH,
-  zindexable$1 as bI,
-  kebabCase$1 as bJ,
-  useCompitable as bK,
-  descriptionsLight$1 as bL,
-  withModifiers as bM,
-  NAlert as bN,
-  inputNumberLight$1 as bO,
-  rgba as bP,
-  XButton as bQ,
-  isSlotEmpty as bR,
-  switchLight$1 as bS,
-  VBinder as bT,
-  VTarget as bU,
-  VFollower as bV,
-  sliderLight$1 as bW,
+  commonVariables$m as bA,
+  formItemInjectionKey as bB,
+  useNotification as bC,
+  defaultSettings as bD,
+  urlFromPath as bE,
+  useRouter as bF,
+  fadeInTransition as bG,
+  imageLight as bH,
+  isMounted as bI,
+  LazyTeleport as bJ,
+  zindexable$1 as bK,
+  kebabCase$1 as bL,
+  useCompitable as bM,
+  descriptionsLight$1 as bN,
+  withModifiers as bO,
+  NAlert as bP,
+  inputNumberLight$1 as bQ,
+  rgba as bR,
+  XButton as bS,
+  isSlotEmpty as bT,
+  switchLight$1 as bU,
+  VBinder as bV,
+  VTarget as bW,
+  VFollower as bX,
+  sliderLight$1 as bY,
   normalizeStyle as ba,
   NText as bb,
   huggingfaceModelsFile as bc,
   NModal as bd,
-  stepsLight$1 as be,
-  FinishedIcon as bf,
-  ErrorIcon$1 as bg,
-  upperFirst$1 as bh,
-  toString as bi,
-  createCompounder as bj,
-  cloneVNode as bk,
-  onBeforeUpdate as bl,
-  indexMap as bm,
-  onUpdated as bn,
-  resolveSlotWithProps as bo,
-  withDirectives as bp,
-  vShow as bq,
-  carouselLight$1 as br,
-  getPreciseEventTarget as bs,
-  rateLight as bt,
-  color2Class as bu,
-  NTag as bv,
-  getCurrentInstance as bw,
-  formLight$1 as bx,
-  commonVariables$m as by,
-  formItemInjectionKey as bz,
+  NDivider as be,
+  Backends as bf,
+  stepsLight$1 as bg,
+  FinishedIcon as bh,
+  ErrorIcon$1 as bi,
+  upperFirst$1 as bj,
+  toString as bk,
+  createCompounder as bl,
+  cloneVNode as bm,
+  onBeforeUpdate as bn,
+  indexMap as bo,
+  onUpdated as bp,
+  resolveSlotWithProps as bq,
+  withDirectives as br,
+  vShow as bs,
+  carouselLight$1 as bt,
+  getPreciseEventTarget as bu,
+  rateLight as bv,
+  color2Class as bw,
+  NTag as bx,
+  getCurrentInstance as by,
+  formLight$1 as bz,
   computed as c,
   defineComponent as d,
   openBlock as e,

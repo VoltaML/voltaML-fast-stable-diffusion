@@ -325,7 +325,9 @@ class DeleteModelRequest:
     "Dataclass for requesting a deletion of a model"
 
     model_path: str
-    model_type: Literal["pytorch", "lora", "textual-inversion", "aitemplate"]
+    model_type: Literal[
+        "models", "lora", "textual-inversion", "lycoris", "vae", "aitemplate"
+    ]
 
 
 @dataclass

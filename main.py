@@ -145,7 +145,12 @@ def main(exit_after_init: bool = False):
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
 
-    uvi_config = Config(app=api_app, host=host, port=args.port)
+    uvi_config = Config(
+        app=api_app,
+        host=host,
+        port=args.port,
+        workers=4,
+    )
     uvi_server = Server(config=uvi_config)
 
     uvi_config.setup_event_loop()

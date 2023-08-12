@@ -1,24 +1,23 @@
 <template>
-  <div style="padding: 12px">
+  <div style="padding: 0px 12px 12px 12px">
     <NInput
       v-model:value="filter"
       style="width: 100%; margin-bottom: 12px"
       placeholder="Filter"
       clearable
     />
-    <NGrid cols="3" x-gap="12">
-      <NGi>
-        <NCard title="Model">
+    <NGrid cols="1 600:2 900:3" x-gap="8" y-gap="8">
+      <NGi
+        v-for="key in (
+          Object.keys(modelTypes) as Array<keyof typeof modelTypes>
+        ).filter((item) => item !== 'AITemplate' && item !== 'ONNX')"
+      >
+        <NCard :title="key">
           <NUpload
             multiple
             directory-dnd
-            :action="`${serverUrl}/api/models/upload-model`"
-            :max="5"
-            accept=".ckpt,.safetensors"
-            style="
-              border-bottom: 1px solid rgb(66, 66, 71);
-              padding-bottom: 12px;
-            "
+            :action="`${serverUrl}/api/models/upload-model?type=${modelTypes[key]}`"
+            :accept="allowedExtensions"
           >
             <NUploadDragger
               style="
@@ -33,69 +32,25 @@
                   <CloudUpload />
                 </NIcon>
               </div>
-              <NText style="font-size: 24px"> Model </NText>
-              <NText style="font-size: 16px">
-                Click or drag a model to this area to upload it to the server
+              <NText style="font-size: 24px"> {{ key }} </NText>
+              <NText style="font-size: 14px">
+                Click or Drag a model here
               </NText>
             </NUploadDragger>
           </NUpload>
-          <div
-            style="
-              display: inline-flex;
-              width: 100%;
-              align-items: center;
-              justify-content: space-between;
-              border-bottom: 1px solid rgb(66, 66, 71);
-            "
-            v-for="model in pyTorchModels"
-            v-bind:key="model.path"
-          >
-            <p>{{ model.name }}</p>
-            <div style="display: inline-flex">
-              <NDropdown
-                :options="createPyTorchOptions(model.path)"
-                placement="right"
-                @select="handlePyTorchModelAction"
-              >
-                <NButton :render-icon="renderIcon(Settings)"> </NButton>
-              </NDropdown>
-            </div>
-          </div>
         </NCard>
       </NGi>
-      <NGi>
-        <NCard title="LoRA">
-          <NUpload
-            multiple
-            directory-dnd
-            :action="`${serverUrl}/api/models/upload-model?type=lora`"
-            :max="5"
-            accept=".ckpt,.safetensors"
-            style="
-              border-bottom: 1px solid rgb(66, 66, 71);
-              padding-bottom: 12px;
-            "
-          >
-            <NUploadDragger
-              style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-              "
-            >
-              <div style="margin-bottom: 12px; display: block">
-                <NIcon size="48" :depth="3">
-                  <CloudUpload />
-                </NIcon>
-              </div>
-              <NText style="font-size: 24px"> LoRA </NText>
+    </NGrid>
 
-              <NText style="font-size: 16px">
-                Click or drag a model to this area to upload it to the server
-              </NText>
-            </NUploadDragger>
-          </NUpload>
+    <NDivider />
+
+    <NGrid style="margin-top: 12px" cols="1 900:2 1100:3" x-gap="12" y-gap="12">
+      <NGi
+        v-for="modelType in Object.keys(Backends).filter((item) =>
+          isNaN(Number(item))
+        ) as (keyof typeof modelTypes)[]"
+      >
+        <NCard :title="modelType" style="width: 100%">
           <div
             style="
               display: inline-flex;
@@ -104,72 +59,19 @@
               justify-content: space-between;
               border-bottom: 1px solid rgb(66, 66, 71);
             "
-            v-for="model in loraModels"
+            v-for="model in filteredModels.filter(
+              (item) => item.backend === modelType
+            )"
             v-bind:key="model.path"
           >
             <p>{{ model.name }}</p>
             <div style="display: inline-flex">
               <NDropdown
-                :options="createLoraOptions(model.path)"
+                :options="createOptions(model.path)"
                 placement="right"
-                @select="handleLoraModelAction"
-              >
-                <NButton :render-icon="renderIcon(Settings)"> </NButton>
-              </NDropdown>
-            </div>
-          </div>
-        </NCard>
-      </NGi>
-      <NGi>
-        <NCard title="Textual Inversion">
-          <NUpload
-            multiple
-            directory-dnd
-            :action="`${serverUrl}/api/models/upload-model?type=textual-inversion`"
-            :max="5"
-            accept=".pt,.safetensors"
-            style="
-              border-bottom: 1px solid rgb(66, 66, 71);
-              padding-bottom: 12px;
-            "
-          >
-            <NUploadDragger
-              style="
-                display: flex;
-                flex-direction: column;
-                align-items: center;
-                justify-content: center;
-              "
-            >
-              <div style="margin-bottom: 12px; display: block">
-                <NIcon size="48" :depth="3">
-                  <CloudUpload />
-                </NIcon>
-              </div>
-              <NText style="font-size: 24px"> Textual Inversion </NText>
-
-              <NText style="font-size: 16px">
-                Click or drag a model to this area to upload it to the server
-              </NText>
-            </NUploadDragger>
-          </NUpload>
-          <div
-            style="
-              display: inline-flex;
-              width: 100%;
-              align-items: center;
-              justify-content: space-between;
-              border-bottom: 1px solid rgb(66, 66, 71);
-            "
-            v-for="model in textualInversionModels"
-            v-bind:key="model.path"
-          >
-            <p>{{ model.name }}</p>
-            <div style="display: inline-flex">
-              <NDropdown
-                :options="createTextualInversionOptions(model.path)"
-                placement="right"
-                @select="handleTextualInversionModelAction"
+                @select="
+                  (key) => handleAction(key, modelTypes[modelType], model)
+                "
               >
                 <NButton :render-icon="renderIcon(Settings)"> </NButton>
               </NDropdown>
@@ -187,6 +89,7 @@ import { CloudUpload, Settings, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
   NCard,
+  NDivider,
   NDropdown,
   NGi,
   NGrid,
@@ -198,11 +101,24 @@ import {
   useMessage,
 } from "naive-ui";
 import { computed, h, ref, type Component } from "vue";
+import { Backends, type ModelEntry } from "../../core/interfaces";
 import { useState } from "../../store/state";
 
 const global = useState();
 const filter = ref("");
 const message = useMessage();
+
+const modelTypes = {
+  PyTorch: "models",
+  LoRA: "lora",
+  LyCORIS: "lycoris",
+  "Textual Inversion": "textual-inversion",
+  VAE: "vae",
+  AITemplate: "aitemplate",
+  ONNX: "onnx",
+} as const;
+
+const allowedExtensions = ".safetensors,.ckpt,.pth,.pt,.bin";
 
 const renderIcon = (icon: Component) => {
   return () => {
@@ -223,51 +139,7 @@ const filteredModels = computed(() => {
     .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
 });
 
-const pyTorchModels = computed(() => {
-  return filteredModels.value
-    .filter((model) => {
-      return model.backend === "PyTorch" && model.valid === true;
-    })
-    .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
-});
-
-const loraModels = computed(() => {
-  return filteredModels.value
-    .filter((model) => {
-      return model.backend === "LoRA";
-    })
-    .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
-});
-
-const textualInversionModels = computed(() => {
-  return filteredModels.value
-    .filter((model) => {
-      return model.backend === "Textual Inversion";
-    })
-    .sort((a, b) => (a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1));
-});
-
-function createPyTorchOptions(model_path: string) {
-  return [
-    {
-      label: "Delete",
-      key: `delete:${model_path}`,
-      icon: renderIcon(TrashBin),
-    },
-    // {
-    //   label: "Convert",
-    //   key: `convert:${model_path}`,
-    //   icon: renderIcon(GitCompare),
-    // },
-    // {
-    //   label: "Accelerate",
-    //   key: `accelerate:${model_path}`,
-    //   icon: renderIcon(PlayForward),
-    // },
-  ];
-}
-
-function createLoraOptions(model_path: string) {
+function createOptions(model_path: string) {
   return [
     {
       label: "Delete",
@@ -277,62 +149,37 @@ function createLoraOptions(model_path: string) {
   ];
 }
 
-function createTextualInversionOptions(model_path: string) {
-  return [
-    {
-      label: "Delete",
-      key: `delete:${model_path}`,
-      icon: renderIcon(TrashBin),
-    },
-  ];
-}
-
-function deleteModel(
+async function deleteModel(
   model_path: string,
-  model_type: "pytorch" | "lora" | "textual-inversion"
+  model_type: (typeof modelTypes)[keyof typeof modelTypes]
 ) {
-  fetch(`${serverUrl}/api/models/delete-model`, {
-    method: "DELETE",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model_path: model_path,
-      model_type: model_type,
-    }),
-  })
-    .then((response) => response.json())
-    .then(() => {
-      message.success("Model deleted");
-    })
-    .catch((error) => {
-      message.error(error);
+  try {
+    const res = await fetch(`${serverUrl}/api/models/delete-model`, {
+      method: "DELETE",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model_path: model_path,
+        model_type: model_type,
+      }),
     });
-}
 
-function handlePyTorchModelAction(key: string) {
-  const [action, model_path] = key.split(":");
-
-  if (action === "delete") {
-    deleteModel(model_path, "pytorch");
-  } else if (action === "convert") {
-    message.success(key);
-  } else if (action === "accelerate") {
-    message.success(key);
+    await res.json();
+    message.success("Model deleted");
+  } catch (error) {
+    message.error(error as string);
   }
 }
 
-function handleLoraModelAction(key: string) {
+async function handleAction(
+  key: string,
+  modelType: (typeof modelTypes)[keyof typeof modelTypes],
+  model: ModelEntry
+) {
   const [action, model_path] = key.split(":");
   if (action === "delete") {
-    deleteModel(model_path, "lora");
-  }
-}
-
-function handleTextualInversionModelAction(key: string) {
-  const [action, model_path] = key.split(":");
-  if (action === "delete") {
-    deleteModel(model_path, "textual-inversion");
+    await deleteModel(model_path, modelType);
   }
 }
 </script>
