@@ -1,55 +1,55 @@
 <template>
   <NCard>
     <NForm>
-      <NFormItem label="Prompt">
+      <NFormItem label="Prompt" label-placement="left">
         <NInput v-model:value="settings.defaultSettings.txt2img.prompt" />
       </NFormItem>
-      <NFormItem label="Negative Prompt">
+      <NFormItem label="Negative Prompt" label-placement="left">
         <NInput
           v-model:value="settings.defaultSettings.txt2img.negative_prompt"
         />
       </NFormItem>
-      <NFormItem label="Batch Count">
+      <NFormItem label="Batch Count" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.batch_count"
         />
       </NFormItem>
-      <NFormItem label="Batch Size">
+      <NFormItem label="Batch Size" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.batch_size"
         />
       </NFormItem>
-      <NFormItem label="CFG Scale">
+      <NFormItem label="CFG Scale" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.cfg_scale"
           :step="0.1"
         />
       </NFormItem>
-      <NFormItem label="Height">
+      <NFormItem label="Height" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.height"
           :step="1"
         />
       </NFormItem>
-      <NFormItem label="Width">
+      <NFormItem label="Width" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.width"
           :step="1"
         />
       </NFormItem>
-      <NFormItem label="Sampler">
+      <NFormItem label="Sampler" label-placement="left">
         <NSelect
           :options="settings.scheduler_options"
           v-model:value="settings.defaultSettings.txt2img.sampler"
         />
       </NFormItem>
-      <NFormItem label="Seed">
+      <NFormItem label="Seed" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.seed"
           :min="-1"
         />
       </NFormItem>
-      <NFormItem label="Steps">
+      <NFormItem label="Steps" label-placement="left">
         <NInputNumber v-model:value="settings.defaultSettings.txt2img.steps" />
       </NFormItem>
     </NForm>

@@ -1,13 +1,13 @@
 <template>
   <NCard>
     <NForm>
-      <NFormItem label="Theme">
+      <NFormItem label="Theme" label-placement="left">
         <NSelect
           :options="themeOptions"
           v-model:value="settings.defaultSettings.frontend.theme"
         />
       </NFormItem>
-      <NFormItem label="Enable Theme Editor">
+      <NFormItem label="Enable Theme Editor" label-placement="left">
         <NSwitch
           v-model:value="settings.defaultSettings.frontend.enable_theme_editor"
         />

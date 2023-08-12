@@ -1,9 +1,9 @@
 <template>
   <NCard>
     <NForm>
-      <h2>NSFW</h2>
       <NFormItem
         label="NSFW OK threshold (if you don't get the reference, select `I'm too young to die`)"
+        label-placement="left"
       >
         <NSelect
           v-model:value="settings.defaultSettings.frontend.nsfw_ok_threshold"
