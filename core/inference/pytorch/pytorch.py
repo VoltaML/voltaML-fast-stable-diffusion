@@ -223,11 +223,11 @@ class PyTorchStableDiffusion(InferenceModel):
             cn.to(self.device)
             self.controlnet = cn
             self.current_controlnet = target_controlnet
+
+            # Clean memory
+            self.memory_cleanup()
         else:
             logger.debug("No change in controlnet mode")
-
-        # Clean memory
-        self.memory_cleanup()
 
     def create_pipe(
         self,
@@ -304,8 +304,6 @@ class PyTorchStableDiffusion(InferenceModel):
                     scale=flag.scale,
                     latent_scale_mode=flag.latent_scale_mode,
                 )
-
-                self.memory_cleanup()
 
                 data = pipe.img2img(
                     prompt=job.data.prompt,
@@ -532,7 +530,6 @@ class PyTorchStableDiffusion(InferenceModel):
         "Generate images from the queue"
 
         logging.info(f"Adding job {job.data.id} to queue")
-        self.memory_cleanup()
 
         try:
             if isinstance(job, Txt2ImgQueueEntry):
@@ -564,8 +561,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 except KeyError:
                     pass
 
-        # Clean memory and return images
-        self.memory_cleanup()
         return images
 
     def save(self, path: str = "converted", safetensors: bool = False):
