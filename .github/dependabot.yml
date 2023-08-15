@@ -9,6 +9,7 @@ updates:
       - "python dependencies"
     assignees:
       - "Stax124"
+    open-pull-requests-limit: 0
   - package-ecosystem: "npm"
     directory: "/frontend"
     schedule:
@@ -18,3 +19,4 @@ updates:
       - "javascript dependencies"
     assignees:
       - "Stax124"
+    open-pull-requests-limit: 0
