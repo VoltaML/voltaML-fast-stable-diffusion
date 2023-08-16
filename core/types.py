@@ -27,6 +27,7 @@ Backend = Literal[
     "VAE",
     "Upscaler",
 ]
+ImageFormats = Literal["png", "jpeg", "webp"]
 
 
 @dataclass

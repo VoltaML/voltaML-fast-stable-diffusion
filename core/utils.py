@@ -15,6 +15,7 @@ from requests.adapters import HTTPAdapter, Retry
 from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
+from core.types import ImageFormats
 
 logger = logging.getLogger(__name__)
 
@@ -43,11 +44,13 @@ def get_grid_dimension(length: int) -> Tuple[int, int]:
     return cols, rows
 
 
-def convert_image_to_stream(image: Image.Image, quality: int = 95) -> BytesIO:
+def convert_image_to_stream(
+    image: Image.Image, quality: int = 95, format: ImageFormats = "webp"
+) -> BytesIO:
     "Convert an image to a stream of bytes"
 
     stream = BytesIO()
-    image.save(stream, format="webp", quality=quality)
+    image.save(stream, format=format, quality=quality)
     stream.seek(0)
     return stream
 
@@ -80,18 +83,14 @@ def convert_to_image(
 def convert_image_to_base64(
     image: Image.Image,
     quality: int = 95,
-    image_format: Literal["png", "webp"] = "png",
+    image_format: ImageFormats = "webp",
     prefix_js: bool = True,
 ) -> str:
     "Convert an image to a base64 string"
 
     stream = convert_image_to_stream(image, quality=quality)
     if prefix_js:
-        prefix = (
-            f"data:image/{image_format};base64,"
-            if image_format == "png"
-            else "data:image/webp;base64,"
-        )
+        prefix = f"data:image/{image_format};base64,"
     else:
         prefix = ""
     return prefix + base64.b64encode(stream.read()).decode("utf-8")
@@ -147,7 +146,7 @@ def image_grid(imgs: List[Image.Image]):
 def convert_images_to_base64_grid(
     images: List[Image.Image],
     quality: int = 95,
-    image_format: Literal["png", "webp"] = "png",
+    image_format: ImageFormats = "png",
 ) -> str:
     "Convert a list of images to a list of base64 strings"
 

@@ -138,7 +138,6 @@ def save_images(
         else:
             folder = "img2img"
 
-        filename = f"{job.data.id}-{i}.png"
         metadata = create_metadata(job, i)
 
         if job.save_image == "r2":
@@ -147,6 +146,7 @@ def save_images(
 
             assert r2 is not None, "R2 is not configured, enable debug mode to see why"
 
+            filename = f"{job.data.id}-{i}.png"
             image_bytes = BytesIO()
             image.save(image_bytes, pnginfo=metadata, format=config.api.image_extension)
             image_bytes.seek(0)

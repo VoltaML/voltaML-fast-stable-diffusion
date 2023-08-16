@@ -334,7 +334,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     "current_step": 0,
                     "total_steps": 0,
                     "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
+                        total_images,
+                        quality=config.api.image_quality,
+                        image_format=config.api.image_extension,
                     ),
                 },
             )
@@ -390,7 +392,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     "current_step": 0,
                     "total_steps": 0,
                     "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
+                        total_images,
+                        quality=config.api.image_quality,
+                        image_format=config.api.image_extension,
                     ),
                 },
             )
@@ -450,7 +454,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     "current_step": 0,
                     "total_steps": 0,
                     "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
+                        total_images,
+                        quality=config.api.image_quality,
+                        image_format=config.api.image_extension,
                     ),
                 },
             )
@@ -517,8 +523,8 @@ class PyTorchStableDiffusion(InferenceModel):
                         total_images
                         if job.data.return_preprocessed
                         else total_images[1:],
-                        quality=90,
-                        image_format="webp",
+                        quality=config.api.image_quality,
+                        image_format=config.api.image_extension,
                     ),
                 },
             )
