@@ -23,6 +23,18 @@ export default defineConfig({
 				content: "/voltaML-fast-stable-diffusion/volta-og-image.webp",
 			},
 		],
+		[
+			"script",
+			{
+				async: "",
+				src: "https://www.googletagmanager.com/gtag/js?id=G-WZPQL8HDP0",
+			},
+		],
+		[
+			"script",
+			{},
+			"window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag('js', new Date());\ngtag('config', 'G-WZPQL8HDP0');",
+		],
 	],
 	themeConfig: {
 		search: {
