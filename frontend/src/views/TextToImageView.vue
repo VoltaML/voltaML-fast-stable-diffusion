@@ -223,16 +223,13 @@
             <div class="slider-label">
               <p>Enabled</p>
             </div>
-            <NSwitch
-              v-model:value="global.state.txt2img.highres"
-              :disabled="!isSelectedModelPyTorch"
-            />
+            <NSwitch v-model:value="global.state.txt2img.highres" />
           </div>
 
           <NSpace
             vertical
             class="left-container"
-            v-if="global.state.txt2img.highres && isSelectedModelPyTorch"
+            v-if="global.state.txt2img.highres"
           >
             <!-- Steps -->
             <div class="flex-container">

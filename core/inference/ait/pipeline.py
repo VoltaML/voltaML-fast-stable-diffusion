@@ -205,7 +205,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt: Optional[Union[str, List[str]]] = None,
-        image: Optional[Image.Image] = None,  # type: ignore
+        image: Union[torch.FloatTensor, Image.Image, None] = None,  # type: ignore
         prompt_embeds: Optional[torch.Tensor] = None,
         negative_prompt_embeds: Optional[torch.Tensor] = None,
         height: int = 512,
@@ -279,18 +279,22 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             text_embeddings = prompt_embeds
 
         self.scheduler.set_timesteps(num_inference_steps, device=self.device)  # type: ignore
-        txt2img = image is None or self.controlnet is not None
         timesteps, num_inference_steps = get_timesteps(
-            self.scheduler, num_inference_steps, strength or 0.7, self.device, txt2img
+            self.scheduler,
+            num_inference_steps,
+            strength or 0.7,
+            self.device,
+            image is None or self.controlnet is not None,
         )
         latent_timestep = timesteps[:1].repeat(self.batch * num_images_per_prompt)  # type: ignore
 
-        if image is not None:
+        if isinstance(image, Image.Image):
             if isinstance(image, Image.Image):
                 width, height = image.size  # type: ignore
 
             if self.controlnet is None:
                 image = preprocess_image(image)
+                image = image.to(device=self.device, dtype=text_embeddings.dtype)
             else:
                 ctrl_image = prepare_image(
                     image,
@@ -314,6 +318,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             prompt_embeds.dtype,
             self.device,
             generator,
+            latents,
             align_to=64,
         )
         extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, generator, eta)  # type: ignore
@@ -404,6 +409,9 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             if callback is not None:
                 callback(i, t, latents)  # type: ignore
 
+        if output_type == "latent":
+            return latents, None
+
         latents = 1 / 0.18215 * latents  # type: ignore
         image: torch.Tensor = self.vae_inference(latents, height=height, width=width)
 
@@ -413,9 +421,6 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         if output_type == "pil":
             image = self.numpy_to_pil(image)  # type: ignore
 
-            has_nsfw_concept = None
-        elif output_type == "latent":
-            image = latents  # type: ignore
             has_nsfw_concept = None
         else:
             raise ValueError(f"Invalid output_type {output_type}")

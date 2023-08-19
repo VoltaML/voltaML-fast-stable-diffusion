@@ -13,9 +13,11 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets.data import Data
 from core.config import config
+from core.flags import HighResFixFlag
 from core.inference.ait.pipeline import StableDiffusionAITPipeline
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
+from core.inference.utilities.latents import scale_latents
 from core.inference_callbacks import (
     controlnet_callback,
     img2img_callback,
@@ -299,6 +301,11 @@ class AITemplateStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
+            output_type = "pil"
+
+            if "highres_fix" in job.flags:
+                output_type = "latent"
+
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                 pipe, job.data.prompt, job.data.negative_prompt
             )
@@ -310,11 +317,42 @@ class AITemplateStableDiffusion(InferenceModel):
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
-                output_type="pil",
+                output_type=output_type,
                 generator=generator,
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
             )
+
+            if output_type == "latent":
+                latents = data[0]  # type: ignore
+                assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
+
+                flag = job.flags["highres_fix"]
+                flag = HighResFixFlag.from_dict(flag)
+
+                latents = scale_latents(
+                    latents=latents,
+                    scale=flag.scale,
+                    latent_scale_mode=flag.latent_scale_mode,
+                )
+
+                data = pipe(
+                    prompt=job.data.prompt,
+                    image=latents,
+                    height=latents.shape[2] * 8,
+                    width=latents.shape[3] * 8,
+                    num_inference_steps=flag.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    generator=generator,
+                    callback=txt2img_callback,
+                    strength=flag.strength,
+                    return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
+                )
+
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
