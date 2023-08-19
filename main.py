@@ -46,6 +46,7 @@ parser.add_argument(
     "--log-level",
     help="Log level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
+    default="INFO",
 )
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
