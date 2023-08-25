@@ -1,6 +1,7 @@
 import importlib.metadata
 import importlib.util
 import logging
+import os
 import platform
 import subprocess
 import sys
@@ -15,6 +16,7 @@ renamed_requirements = {
     "cuda-python": "cuda",
     "open_clip_torch": "open_clip",
     "python-multipart": "multipart",
+    "discord.py": "discord",
 }
 logger = logging.getLogger(__name__)
 
@@ -208,7 +210,7 @@ _pytorch_distributions = [
 ]
 
 
-def install_pytorch(force_distribution: int = -1):
+def install_deps(force_distribution: int = -1):
     "Install necessary requirements for inference"
 
     # Install pytorch
@@ -258,6 +260,9 @@ def install_pytorch(force_distribution: int = -1):
     install_requirements("requirements/pytorch.txt")
     install_requirements("requirements/api.txt")
     install_requirements("requirements/interrogation.txt")
+
+    if os.environ.get("DISCORD_BOT_TOKEN"):
+        install_requirements("requirements/bot.txt")
 
 
 def install_bot():

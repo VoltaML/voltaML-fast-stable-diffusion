@@ -7,13 +7,14 @@ import sys
 import threading
 import warnings
 from argparse import ArgumentParser
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from core.install_requirements import (  # pylint: disable=wrong-import-position
     commit_hash,
     create_environment,
     in_virtualenv,
-    install_pytorch,
+    install_deps,
     is_installed,
     version_check,
 )
@@ -46,7 +47,6 @@ parser.add_argument(
     "--log-level",
     help="Log level",
     choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
-    default="INFO",
 )
 parser.add_argument("--ngrok", action="store_true", help="Use ngrok to expose the API")
 parser.add_argument("--host", action="store_true", help="Expose the API to the network")
@@ -93,11 +93,22 @@ for directory in [
     "upscaler",
     "textual-inversion",
     "lycoris",
+    "logs",
 ]:
     Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
 # Suppress some annoying warnings
 warnings.filterwarnings("ignore", category=UserWarning)
+
+
+def cleanup_old_logs():
+    "Cleanup old logs"
+
+    for file in Path("data/logs").glob("*.log"):
+        if datetime.fromtimestamp(file.stat().st_mtime) < datetime.now() - timedelta(
+            days=7
+        ):
+            file.unlink()
 
 
 def is_root():
@@ -230,14 +241,24 @@ def checks():
     # Inject better logger
     from rich.logging import RichHandler
 
+    print(f"Log level: {args_with_extras.log_level}")
     args_with_extras.log_level = args_with_extras.log_level or os.getenv(
         "LOG_LEVEL", "INFO"
     )
+
+    cleanup_old_logs()
     logging.basicConfig(
         level=args_with_extras.log_level,
         format="%(asctime)s | %(name)s » %(message)s",
         datefmt="%H:%M:%S",
-        handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
+        handlers=[
+            RichHandler(rich_tracebacks=True, show_time=False),
+            logging.FileHandler(
+                f"data/logs/{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.log",
+                mode="w",
+                encoding="utf-8",
+            ),
+        ],
     )
     logger = logging.getLogger()  # pylint: disable=redefined-outer-name
 
@@ -252,9 +273,7 @@ def checks():
     version_check(commit_hash())
 
     # Install pytorch and api requirements
-    install_pytorch(
-        args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1
-    )
+    install_deps(args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1)
 
     if not os.getenv("HUGGINGFACE_TOKEN"):
         logger.info(

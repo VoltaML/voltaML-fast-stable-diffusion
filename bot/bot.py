@@ -6,6 +6,8 @@ import discord
 from discord import utils
 from discord.ext.commands import AutoShardedBot
 
+from bot.shared import config
+
 logger = logging.getLogger(__name__)
 
 
@@ -14,7 +16,7 @@ class ModularBot(AutoShardedBot):
 
     def __init__(self) -> None:
         super().__init__(
-            command_prefix="!",
+            command_prefix=config.prefix,
             intents=discord.Intents.all(),
         )
 
@@ -115,11 +117,15 @@ class ModularBot(AutoShardedBot):
         "Initialise that runs before the bot starts"
 
         # Load core extension
-        await self.load_extension("bot.core")
-        await self.load_extension("bot.listeners")
-        await self.load_extension("bot.txt2img")
-        await self.load_extension("bot.models")
-        await self.load_extension("bot.hardware")
+        core_extensions = [
+            "bot.core",
+            "bot.listeners",
+            "bot.txt2img",
+            "bot.models",
+            "bot.hardware",
+        ]
+        for ext in core_extensions:
+            await self.load_extension(ext)
 
     @property
     def avatar_url(self) -> str:

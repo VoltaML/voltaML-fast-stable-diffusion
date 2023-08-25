@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -39,21 +38,6 @@ class Job:
     websocket_id: Union[str, None] = field(default=None)
     save_image: Literal[True, False, "r2"] = True
     flags: Dict[str, Dict] = field(default_factory=dict)
-
-
-class SupportedModel(Enum):
-    "Enum of models supported by the API"
-
-    AnythingV3 = "Linaqruf/anything-v3.0"
-    StableDiffusion2_1 = "stabilityai/stable-diffusion-2-1"
-    OpenJourney = "prompthero/openjourney"
-    DreamlikeDiffusion = "dreamlike-art/dreamlike-diffusion-1.0"
-    DreamlikePhotoreal = "dreamlike-art/dreamlike-photoreal-2.0"
-    Protogen5_8_Anime = "darkstorm2150/Protogen_x5.8_Official_Release"
-    SynthWave = "ItsJayQz/SynthwavePunk-v2"
-    InkpunkDiffusion = "Envvi/Inkpunk-Diffusion"
-    Protogen5_3_Realism = "darkstorm2150/Protogen_v5.3_Official_Release"
-    AnythingV4 = "andite/anything-v4.0"
 
 
 @dataclass

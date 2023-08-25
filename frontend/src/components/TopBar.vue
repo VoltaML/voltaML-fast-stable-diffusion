@@ -59,11 +59,19 @@
             justify-content: center;
             flex-direction: column;
           "
+          status="404"
         >
-          <template #icon>
-            <NIcon size="64">
-              <CubeSharp />
-            </NIcon>
+          <template #footer>
+            <NButton
+              type="success"
+              @click="
+                () => {
+                  router.push('/models');
+                  showModal = false;
+                }
+              "
+              >Get model</NButton
+            >
           </template>
         </NResult>
       </div>
@@ -397,7 +405,6 @@ import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
   ContrastSharp,
-  CubeSharp,
   PowerSharp,
   SettingsSharp,
   StatsChart,
