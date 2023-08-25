@@ -132,7 +132,7 @@ def main(exit_after_init: bool = False):
         import nest_asyncio
         from pyngrok import ngrok
 
-        ngrok_tunnel = ngrok.connect(5003)
+        ngrok_tunnel = ngrok.connect(args.port)
         logger.info(f"Public URL: {ngrok_tunnel.public_url}")
         nest_asyncio.apply()
 
@@ -156,6 +156,7 @@ def main(exit_after_init: bool = False):
     from core import shared
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
+    shared.api_port = args.port
 
     uvi_config = Config(
         app=api_app,

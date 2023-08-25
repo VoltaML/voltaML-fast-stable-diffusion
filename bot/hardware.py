@@ -5,6 +5,8 @@ from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
+from core import shared
+
 if TYPE_CHECKING:
     from bot.bot import ModularBot
 
@@ -21,7 +23,9 @@ class Hardware(Cog):
         "List all available GPUs"
 
         async with ClientSession() as session:
-            async with session.get("http://localhost:5003/api/hardware/gpus") as resp:
+            async with session.get(
+                f"http://localhost:{shared.api_port}/api/hardware/gpus"
+            ) as resp:
                 status = resp.status
                 data: Dict[str, Dict] = await resp.json()
 
@@ -49,7 +53,7 @@ class Hardware(Cog):
 
         async with ClientSession() as session:
             async with session.post(
-                "http://localhost:5003/api/models/memory-cleanup"
+                f"http://localhost:{shared.api_port}/api/models/memory-cleanup"
             ) as resp:
                 status = resp.status
 

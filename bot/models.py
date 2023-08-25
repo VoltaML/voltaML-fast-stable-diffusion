@@ -5,8 +5,9 @@ from aiohttp import ClientSession
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
-from bot import shared
+from bot import shared as shared_bot
 from bot.helper import get_available_models, get_loaded_models
+from core import shared
 from core.types import InferenceBackend
 
 if TYPE_CHECKING:
@@ -26,7 +27,9 @@ class Models(Cog):
         "Show models loaded in the API"
 
         async with ClientSession() as session:
-            async with session.get("http://localhost:5003/api/models/loaded") as r:
+            async with session.get(
+                f"http://localhost:{shared.api_port}/api/models/loaded"
+            ) as r:
                 status = r.status
                 response: List[Dict[str, Any]] = await r.json()
 
@@ -50,11 +53,11 @@ class Models(Cog):
         "List all available models"
 
         available_models, status = await get_available_models()
-        shared.models.set_cached_available_models(available_models)
-        available_models, status = await shared.models.cached_available_models()
+        shared_bot.models.set_cached_available_models(available_models)
+        available_models, status = await shared_bot.models.cached_available_models()
 
         loaded_models, status = await get_loaded_models()
-        shared.models.set_cached_loaded_models(loaded_models)
+        shared_bot.models.set_cached_loaded_models(loaded_models)
 
         if status == 200:
             await ctx.send(
@@ -77,7 +80,7 @@ class Models(Cog):
 
         async with ClientSession() as session:
             async with session.post(
-                "http://localhost:5003/api/models/load",
+                f"http://localhost:{shared.api_port}/api/models/load",
                 params={"model": model, "backend": backend},
             ) as response:
                 status = response.status
@@ -97,7 +100,7 @@ class Models(Cog):
 
         async with ClientSession() as session:
             async with session.post(
-                "http://localhost:5003/api/models/unload",
+                f"http://localhost:{shared.api_port}/api/models/unload",
                 params={"model": model},
             ) as response:
                 status = response.status

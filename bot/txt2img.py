@@ -11,7 +11,7 @@ from discord.ext import commands
 from discord.ext.commands import Cog, Context
 
 from bot.helper import find_closest_model, inference_call
-from bot.shared import config
+from bot.shared_api import config
 from core.utils import convert_base64_to_bytes
 
 if TYPE_CHECKING:

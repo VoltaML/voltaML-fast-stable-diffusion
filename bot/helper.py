@@ -5,12 +5,13 @@ from typing import Any, Dict, List, Literal
 import aiohttp
 from aiohttp import ClientSession
 
-from bot import shared
+from bot import shared as shared_bot
+from core import shared
 
 
 async def find_closest_model(model: str):
     """Find the closest model to the one provided"""
-    models, _ = await shared.models.cached_loaded_models()
+    models, _ = await shared_bot.models.cached_loaded_models()
     return difflib.get_close_matches(model, models, n=1, cutoff=0.1)[0]
 
 
@@ -20,7 +21,8 @@ async def inference_call(payload: Dict, target: Literal["txt2img"] = "txt2img"):
     async def call():
         async with aiohttp.ClientSession() as session:
             async with session.post(
-                f"http://localhost:5003/api/generate/{target}", json=payload
+                f"http://localhost:{shared.api_port}/api/generate/{target}",
+                json=payload,
             ) as response:
                 status = response.status
                 response = await response.json()
@@ -41,7 +43,7 @@ async def get_available_models():
 
     async with ClientSession() as session:
         async with session.get(
-            "http://localhost:5003/api/models/available"
+            f"http://localhost:{shared.api_port}/api/models/available"
         ) as response:
             status = response.status
             data: List[Dict[str, Any]] = await response.json()
@@ -66,7 +68,9 @@ async def get_loaded_models():
     "List all available models"
 
     async with ClientSession() as session:
-        async with session.get("http://localhost:5003/api/models/loaded") as response:
+        async with session.get(
+            f"http://localhost:{shared.api_port}/api/models/loaded"
+        ) as response:
             status = response.status
             data: List[Dict[str, Any]] = await response.json()
             models = [

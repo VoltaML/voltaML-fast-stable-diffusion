@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from asyncio import AbstractEventLoop
-from typing import Coroutine, List, Optional
+from typing import List, Optional
 
 import torch
 from fastapi import WebSocket
@@ -20,17 +20,6 @@ class WebSocketManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
         self.loop: Optional[AbstractEventLoop] = None
-        self.to_run: List[Coroutine] = []
-
-    async def sync_loop(self):
-        "Infinite loop that runs all coroutines in the to_run list"
-
-        while True:
-            for task in self.to_run:
-                await task
-                self.to_run.remove(task)
-
-            await asyncio.sleep(config.api.websocket_sync_interval)
 
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
@@ -160,9 +149,23 @@ class WebSocketManager:
     def broadcast_sync(self, data: Data):
         "Broadcasts data message to all active websocket connections synchronously"
 
+        loop_error_message = "No event loop found, please inject it in the code"
+
+        try:
+            assert self.loop is not None, loop_error_message
+            asyncio.get_event_loop()
+        except RuntimeError:
+            assert self.loop is not None  # For type safety
+            asyncio.set_event_loop(self.loop)
+        except AssertionError:
+            logger.info("WARNING: No event loop found, assuming we are running tests")
+            return
+
         for connection in self.active_connections:
             if connection.application_state.CONNECTED:
-                self.to_run.append(connection.send_json(data.to_json()))
+                asyncio.run_coroutine_threadsafe(
+                    connection.send_json(data.to_json()), self.loop
+                )
             else:
                 self.active_connections.remove(connection)
 

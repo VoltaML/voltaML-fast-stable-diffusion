@@ -6,7 +6,7 @@ import discord
 from discord import utils
 from discord.ext.commands import AutoShardedBot
 
-from bot.shared import config
+from bot.shared_api import config
 
 logger = logging.getLogger(__name__)
 

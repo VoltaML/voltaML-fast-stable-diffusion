@@ -134,16 +134,13 @@ async def startup_event():
         transformers_logging.set_verbosity_error()
 
     shared.asyncio_loop = asyncio.get_event_loop()
+    websocket_manager.loop = shared.asyncio_loop
 
-    sync_task = asyncio.create_task(websocket_manager.sync_loop())
-    logger.info("Started WebSocketManager sync loop")
     perf_task = asyncio.create_task(websocket_manager.perf_loop())
-
-    shared.asyncio_tasks.append(sync_task)
     shared.asyncio_tasks.append(perf_task)
 
     logger.info("Started WebSocketManager performance monitoring loop")
-    logger.info("UI Available at: http://localhost:5003/")
+    logger.info(f"UI Available at: http://localhost:{shared.api_port}/")
 
 
 @app.on_event("shutdown")
