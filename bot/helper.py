@@ -6,7 +6,6 @@ import aiohttp
 from aiohttp import ClientSession
 
 from bot import shared as shared_bot
-from core import shared
 
 
 async def find_closest_model(model: str):
@@ -15,8 +14,12 @@ async def find_closest_model(model: str):
     return difflib.get_close_matches(model, models, n=1, cutoff=0.1)[0]
 
 
-async def inference_call(payload: Dict, target: Literal["txt2img"] = "txt2img"):
+async def inference_call(
+    payload: Dict, target: Literal["txt2img", "img2img"] = "txt2img"
+):
     "Call to the backend to generate an image"
+
+    from core import shared
 
     async def call():
         async with aiohttp.ClientSession() as session:
@@ -40,6 +43,8 @@ async def inference_call(payload: Dict, target: Literal["txt2img"] = "txt2img"):
 
 async def get_available_models():
     "List all available models"
+
+    from core import shared
 
     async with ClientSession() as session:
         async with session.get(
@@ -66,6 +71,8 @@ async def get_available_models():
 
 async def get_loaded_models():
     "List all available models"
+
+    from core import shared
 
     async with ClientSession() as session:
         async with session.get(

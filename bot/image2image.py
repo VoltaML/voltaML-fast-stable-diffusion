@@ -1,18 +1,21 @@
 import logging
 import random
 import re
+from io import BytesIO
 from typing import TYPE_CHECKING, Optional
 from uuid import uuid4
 
 import discord
+import requests
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 from discord import File
 from discord.ext import commands
 from discord.ext.commands import Cog, Context
+from PIL import Image
 
 from bot.helper import find_closest_model, inference_call
 from bot.shared import config
-from core.utils import convert_base64_to_bytes
+from core.utils import convert_base64_to_bytes, convert_image_to_base64
 
 if TYPE_CHECKING:
     from bot.bot import ModularBot
@@ -22,7 +25,7 @@ logger = logging.getLogger(__name__)
 pattern = r"data:image/[\w]+;base64,"
 
 
-class Text2Image(Cog):
+class Image2Image(Cog):
     "Commands for generating images from text"
 
     def __init__(self, bot: "ModularBot") -> None:
@@ -45,6 +48,14 @@ class Text2Image(Cog):
         verbose: bool = config.default_verbose,
     ):
         "Generate an image from prompt"
+
+        print(ctx.message.attachments)
+
+        input_image = ctx.message.attachments[0].url
+        init_image = Image.open(
+            BytesIO(requests.get(input_image, timeout=10).content)
+        ).convert("RGB")
+        init_image_byte64 = convert_image_to_base64(init_image)
 
         if seed is None:
             seed = random.randint(0, 1000000)
@@ -73,6 +84,7 @@ class Text2Image(Cog):
                 "prompt": prompt,
                 "id": uuid4().hex,
                 "negative_prompt": negative_prompt,
+                "image": init_image_byte64,
                 "width": width,
                 "height": height,
                 "steps": steps,
@@ -89,7 +101,7 @@ class Text2Image(Cog):
         message = await ctx.send(f"Generating image with `{model}`...")
 
         try:
-            status, response = await inference_call(payload=payload)
+            status, response = await inference_call(payload=payload, target="img2img")
         except Exception as e:
             raise e
 
@@ -137,4 +149,4 @@ class Text2Image(Cog):
 async def setup(bot: "ModularBot"):
     "Will be called by the bot"
 
-    await bot.add_cog(Text2Image(bot))
+    await bot.add_cog(Image2Image(bot))
