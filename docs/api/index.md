@@ -30,4 +30,5 @@ class KarrasDiffusionSchedulers(Enum):
     KDPM2AncestralDiscreteScheduler = 11
     DEISMultistepScheduler = 12
     UniPCMultistepScheduler = 13
+    DPMSolverSDEScheduler = 14
 ```

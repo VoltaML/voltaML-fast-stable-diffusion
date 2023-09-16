@@ -85,6 +85,10 @@ export function getSchedulerOptions() {
       label: "UniPCMultistep",
       value: 13,
     },
+    {
+      label: "DPMSolverSDE",
+      value: 14,
+    },
   ];
   return scheduler_options;
 }

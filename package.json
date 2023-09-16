@@ -6,10 +6,12 @@
   "license": "GPL-3.0",
   "private": false,
   "devDependencies": {
+    "concurrently": "^8.2.1",
     "vitepress": "^1.0.0-alpha.36",
     "vue": "^3.2.45"
   },
   "scripts": {
+    "dev": "concurrently -n \"API,Frontend\" -c \"bgBlue,bgGreen\" --kill-others \"python main.py\" \"cd frontend && yarn dev\"",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",

@@ -15,6 +15,7 @@ export enum Sampler {
   KDPM2AncestralDiscrete = 11,
   DEISMultistep = 12,
   UniPCMultistep = 13,
+  DPMSolverSDEScheduler = 14,
 }
 
 export interface IQuantDict {
