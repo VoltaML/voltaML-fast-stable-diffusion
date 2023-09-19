@@ -151,6 +151,7 @@ class APIConfig:
 
     # Autoload
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
+    autoloaded_models: List[str] = field(default_factory=list)
 
     huggingface_style_parsing: bool = False
 

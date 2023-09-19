@@ -61,9 +61,20 @@
     </NCard>
 
     <NCard title="Autoload" class="settings-card">
+      <NFormItem label="Model" label-placement="left">
+        <NSelect
+          multiple
+          filterable
+          :options="autoloadModelOptions"
+          v-model:value="settings.defaultSettings.api.autoloaded_models"
+        >
+        </NSelect>
+      </NFormItem>
+
       <NFormItem label="Textual Inversions" label-placement="left">
         <NSelect
           multiple
+          filterable
           :options="textualInversionOptions"
           v-model:value="
             settings.defaultSettings.api.autoloaded_textual_inversions
@@ -483,6 +494,23 @@ const textualInversionOptions = computed(() => {
       label: model.name,
     };
   });
+});
+
+const autoloadModelOptions = computed(() => {
+  return global.state.models
+    .filter((model) => {
+      return (
+        model.backend === "AITemplate" ||
+        model.backend === "PyTorch" ||
+        model.backend === "ONNX"
+      );
+    })
+    .map((model) => {
+      return {
+        value: model.path,
+        label: model.name,
+      };
+    });
 });
 </script>
 

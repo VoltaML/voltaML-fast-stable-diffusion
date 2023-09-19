@@ -170,6 +170,7 @@ export interface ISettings {
     huggingface_style_parsing: boolean;
 
     autoloaded_textual_inversions: string[];
+    autoloaded_models: string[];
 
     save_path_template: string;
     image_extension: "webp" | "png" | "jpeg";
@@ -334,6 +335,7 @@ export const defaultSettings: ISettings = {
 
     huggingface_style_parsing: false,
     autoloaded_textual_inversions: [],
+    autoloaded_models: [],
 
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
     image_extension: "png",

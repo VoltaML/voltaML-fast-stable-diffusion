@@ -31,6 +31,7 @@ from api.routes import (
 from api.websockets.data import Data
 from api.websockets.notification import Notification
 from core import shared
+from core.types import InferenceBackend
 
 logger = logging.getLogger(__name__)
 
@@ -138,6 +139,20 @@ async def startup_event():
 
     perf_task = asyncio.create_task(websocket_manager.perf_loop())
     shared.asyncio_tasks.append(perf_task)
+
+    from core.config import config
+
+    if config.api.autoloaded_models:
+        from core.shared_dependent import cached_model_list, gpu
+
+        all_models = cached_model_list.all()
+
+        for model in config.api.autoloaded_models:
+            if model in [i.path for i in all_models]:
+                backend: InferenceBackend = [i.backend for i in all_models if i.path == model][0]  # type: ignore
+                await gpu.load_model(model, backend)
+            else:
+                logger.warning(f"Autoloaded model {model} not found, skipping")
 
     logger.info("Started WebSocketManager performance monitoring loop")
     logger.info(f"UI Available at: http://localhost:{shared.api_port}/")
