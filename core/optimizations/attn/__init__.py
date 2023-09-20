@@ -9,6 +9,7 @@ from core.config import config
 
 from .multihead_attention import apply_multihead_attention
 from .sub_quadratic import apply_subquadratic_attention
+from .flash_attention import apply_flash_attention
 
 logger = logging.getLogger(__name__)
 
@@ -38,6 +39,8 @@ ATTENTION_PROCESSORS = {
     )
     is None,
     # ---
+    "flashattention": lambda p: apply_flash_attention(p.unet) is None,
+    # ---
     "multihead": lambda p: apply_multihead_attention(p.unet) is None,
 }
 
@@ -65,5 +68,6 @@ def set_attention_processor(pipe):
 __all__ = [
     "apply_subquadratic_attention",
     "apply_multihead_attention",
+    "apply_flash_attention",
     "set_attention_processor",
 ]

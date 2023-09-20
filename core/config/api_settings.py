@@ -25,7 +25,7 @@ class APIConfig:
     # General optimizations
     autocast: bool = False
     attention_processor: Literal[
-        "xformers", "sdpa", "cross-attention", "subquadratic", "multihead"
+        "xformers", "sdpa", "cross-attention", "subquadratic", "flashattention", "multihead"
     ] = "sdpa"
     subquadratic_size: int = 512
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
