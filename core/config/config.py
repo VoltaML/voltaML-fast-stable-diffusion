@@ -1,10 +1,11 @@
 import logging
 import multiprocessing
 from dataclasses import Field, dataclass, field, fields
-from typing import List, Literal, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 import torch
-from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
+from dataclasses_json import (CatchAll, DataClassJsonMixin, Undefined,
+                              dataclass_json)
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 logger = logging.getLogger(__name__)
@@ -152,6 +153,7 @@ class APIConfig:
     # Autoload
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
     autoloaded_models: List[str] = field(default_factory=list)
+    autoloaded_vae: Dict[str, str] = field(default_factory=dict)
 
     huggingface_style_parsing: bool = False
 

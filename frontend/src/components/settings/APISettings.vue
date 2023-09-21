@@ -82,6 +82,25 @@
         >
         </NSelect>
       </NFormItem>
+
+      <NCard title="VAE">
+        <div style="width: 100%">
+          <div
+            v-for="model of availableModels"
+            :key="model.name"
+            style="display: flex; flex-direction: row; margin-bottom: 4px"
+          >
+            <NText style="width: 50%">
+              {{ model.name }}
+            </NText>
+            <NSelect
+              filterable
+              :options="autoloadVaeOptions"
+              v-model:value="autoloadVaeValue(model.path).value"
+            />
+          </div>
+        </div>
+      </NCard>
     </NCard>
 
     <NCard title="Huggingface" class="settings-card">
@@ -379,6 +398,7 @@ import {
   NSelect,
   NSlider,
   NSwitch,
+  NText,
 } from "naive-ui";
 import { computed } from "vue";
 import { useSettings } from "../../store/settings";
@@ -496,22 +516,58 @@ const textualInversionOptions = computed(() => {
   });
 });
 
-const autoloadModelOptions = computed(() => {
-  return global.state.models
-    .filter((model) => {
-      return (
-        model.backend === "AITemplate" ||
-        model.backend === "PyTorch" ||
-        model.backend === "ONNX"
-      );
-    })
-    .map((model) => {
-      return {
-        value: model.path,
-        label: model.name,
-      };
-    });
+const availableModels = computed(() => {
+  return global.state.models.filter((model) => {
+    return (
+      model.backend === "AITemplate" ||
+      model.backend === "PyTorch" ||
+      model.backend === "ONNX"
+    );
+  });
 });
+
+const availableVaes = computed(() => {
+  return global.state.models.filter((model) => {
+    return model.backend === "VAE";
+  });
+});
+
+const autoloadModelOptions = computed(() => {
+  return availableModels.value.map((model) => {
+    return {
+      value: model.path,
+      label: model.name,
+    };
+  });
+});
+
+const autoloadVaeOptions = computed(() => {
+  const arr = availableVaes.value.map((model) => {
+    return {
+      value: model.path,
+      label: model.name,
+    };
+  });
+  arr.push({ value: "default", label: "Default" });
+
+  return arr;
+});
+
+const autoloadVaeValue = (model: string) => {
+  return computed({
+    get: () => {
+      console.log(settings.data.settings.api.autoloaded_vae[model]);
+      return settings.data.settings.api.autoloaded_vae[model] ?? "default";
+    },
+    set: (value: string) => {
+      if (!value || value === "default") {
+        delete settings.data.settings.api.autoloaded_vae[model];
+      } else {
+        settings.data.settings.api.autoloaded_vae[model] = value;
+      }
+    },
+  });
+};
 </script>
 
 <style scoped>

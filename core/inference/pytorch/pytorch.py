@@ -3,12 +3,8 @@ from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
 
 import torch
-from diffusers import (
-    AutoencoderKL,
-    ControlNetModel,
-    StableDiffusionPipeline,
-    UNet2DConditionModel,
-)
+from diffusers import (AutoencoderKL, ControlNetModel, StableDiffusionPipeline,
+                       UNet2DConditionModel)
 from PIL import Image, ImageOps
 from tqdm import tqdm
 from transformers.models.clip.modeling_clip import CLIPTextModel
@@ -20,27 +16,16 @@ from api.websockets.notification import Notification
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
-from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
-from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
-from core.inference.utilities import (
-    change_scheduler,
-    image_to_controlnet_input,
-    scale_latents,
-)
-from core.inference_callbacks import (
-    controlnet_callback,
-    img2img_callback,
-    inpaint_callback,
-    txt2img_callback,
-)
-from core.types import (
-    Backend,
-    ControlNetQueueEntry,
-    Img2ImgQueueEntry,
-    InpaintQueueEntry,
-    Job,
-    Txt2ImgQueueEntry,
-)
+from core.inference.functions import (convert_vaept_to_diffusers,
+                                      load_pytorch_pipeline)
+from core.inference.pytorch.pipeline import \
+    StableDiffusionLongPromptWeightingPipeline
+from core.inference.utilities import (change_scheduler,
+                                      image_to_controlnet_input, scale_latents)
+from core.inference_callbacks import (controlnet_callback, img2img_callback,
+                                      inpaint_callback, txt2img_callback)
+from core.types import (Backend, ControlNetQueueEntry, Img2ImgQueueEntry,
+                        InpaintQueueEntry, Job, Txt2ImgQueueEntry)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -103,6 +88,12 @@ class PyTorchStableDiffusion(InferenceModel):
         self.requires_safety_checker = False  # type: ignore
         self.safety_checker = pipe.safety_checker  # type: ignore
 
+        if config.api.autoloaded_vae.get(self.model_id):
+            try:
+                self.change_vae(config.api.autoloaded_vae[self.model_id])
+            except FileNotFoundError as e:
+                logger.error(f"Failed to load autoloaded VAE: {e}")
+
         if not self.bare:
             # Autoload textual inversions
             for textural_inversion in config.api.autoloaded_textual_inversions:
@@ -127,6 +118,8 @@ class PyTorchStableDiffusion(InferenceModel):
     def change_vae(self, vae: str) -> None:
         "Change the vae to the one specified"
 
+        logger.info(f"Changing VAE to {vae}")
+
         if self.vae_path == "default":
             setattr(self, "original_vae", self.vae)
 
@@ -134,14 +127,20 @@ class PyTorchStableDiffusion(InferenceModel):
         if vae == "default":
             self.vae = old_vae
         else:
-            # Why the fuck do you think that's constant pylint?
-            # Are you mentally insane?
-            if Path(vae).is_dir():
-                self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+            if Path(vae).exists():
+                # Why the fuck do you think that's constant pylint?
+                # Are you mentally insane?
+                if Path(vae).is_dir():
+                    self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
+                else:
+                    self.vae = convert_vaept_to_diffusers(vae).to(
+                        device=old_vae.device, dtype=old_vae.dtype
+                    )
             else:
-                self.vae = convert_vaept_to_diffusers(vae).to(
-                    device=old_vae.device, dtype=old_vae.dtype
-                )
+                raise FileNotFoundError(f"{vae} is not a valid path")
+        
+        logger.info(f"Successfully changed vae to {vae}")        
+        
         # This is at the end 'cause I've read horror stories about pythons prefetch system
         self.vae_path = vae
 
