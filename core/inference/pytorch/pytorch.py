@@ -3,8 +3,12 @@ from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
 
 import torch
-from diffusers import (AutoencoderKL, ControlNetModel, StableDiffusionPipeline,
-                       UNet2DConditionModel)
+from diffusers import (
+    AutoencoderKL,
+    ControlNetModel,
+    StableDiffusionPipeline,
+    UNet2DConditionModel,
+)
 from PIL import Image, ImageOps
 from tqdm import tqdm
 from transformers.models.clip.modeling_clip import CLIPTextModel
@@ -16,16 +20,27 @@ from api.websockets.notification import Notification
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
-from core.inference.functions import (convert_vaept_to_diffusers,
-                                      load_pytorch_pipeline)
-from core.inference.pytorch.pipeline import \
-    StableDiffusionLongPromptWeightingPipeline
-from core.inference.utilities import (change_scheduler,
-                                      image_to_controlnet_input, scale_latents)
-from core.inference_callbacks import (controlnet_callback, img2img_callback,
-                                      inpaint_callback, txt2img_callback)
-from core.types import (Backend, ControlNetQueueEntry, Img2ImgQueueEntry,
-                        InpaintQueueEntry, Job, Txt2ImgQueueEntry)
+from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
+from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
+from core.inference.utilities import (
+    change_scheduler,
+    image_to_controlnet_input,
+    scale_latents,
+)
+from core.inference_callbacks import (
+    controlnet_callback,
+    img2img_callback,
+    inpaint_callback,
+    txt2img_callback,
+)
+from core.types import (
+    Backend,
+    ControlNetQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Job,
+    Txt2ImgQueueEntry,
+)
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -138,9 +153,9 @@ class PyTorchStableDiffusion(InferenceModel):
                     )
             else:
                 raise FileNotFoundError(f"{vae} is not a valid path")
-        
-        logger.info(f"Successfully changed vae to {vae}")        
-        
+
+        logger.info(f"Successfully changed vae to {vae}")
+
         # This is at the end 'cause I've read horror stories about pythons prefetch system
         self.vae_path = vae
 
