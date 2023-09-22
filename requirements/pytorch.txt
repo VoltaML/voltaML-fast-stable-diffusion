@@ -21,3 +21,4 @@ tomesd==0.1.2
 cpufeature==0.2.1; platform_system != "Darwin"
 pyamdgpuinfo; platform_system == "Linux"
 piexif==1.1.3
+git+https://github.com/crowsonkb/k-diffusion@ab527a9a6d347f364e3d185ba6d714e22d80cb3c
