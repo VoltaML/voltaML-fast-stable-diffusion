@@ -218,12 +218,43 @@ export function promptHandleKeyUp(
     }
 
     const toAppend = [];
+
+    // Special autocomplete for lora and similiar
+    for (let i = 0; i < globalState.state.autofill_special.length; i++) {
+      if (
+        globalState.state.autofill_special[i]
+          .toLowerCase()
+          .includes(currentTokenStripped.toLowerCase())
+      ) {
+        const b = document.createElement("DIV");
+        b.innerText = globalState.state.autofill_special[i];
+        b.innerHTML +=
+          "<input type='hidden' value='" +
+          globalState.state.autofill_special[i] +
+          "'>";
+        b.addEventListener("click", function () {
+          input.value =
+            text.substring(0, text.lastIndexOf(",") + 1) +
+            globalState.state.autofill_special[i];
+          data[key] = input.value;
+
+          closeAllLists(undefined, input);
+        });
+        toAppend.push(b);
+      }
+    }
+
+    // Standard autocomplete
     for (let i = 0; i < globalState.state.autofill.length; i++) {
       if (
         globalState.state.autofill[i]
-          .toUpperCase()
-          .includes(currentTokenStripped.toUpperCase())
+          .toLowerCase()
+          .includes(currentTokenStripped.toLowerCase())
       ) {
+        if (toAppend.length >= 30) {
+          break;
+        }
+
         const b = document.createElement("DIV");
         b.innerText = globalState.state.autofill[i];
         b.innerHTML +=

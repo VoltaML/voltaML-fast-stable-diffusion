@@ -1,3 +1,4 @@
+import { serverUrl } from "@/env";
 import { getCapabilities } from "@/helper/capabilities";
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
@@ -99,6 +100,7 @@ export interface StateInterface {
     huggingface: "missing" | "ok";
   };
   autofill: Array<string>;
+  autofill_special: Array<string>;
   capabilities: Capabilities;
 }
 
@@ -200,6 +202,7 @@ export const useState = defineStore("state", () => {
       huggingface: "ok",
     },
     autofill: [],
+    autofill_special: [],
     capabilities: defaultCapabilities, // Should get replaced at runtime
   });
 
@@ -207,5 +210,17 @@ export const useState = defineStore("state", () => {
     state.capabilities = await getCapabilities();
   }
 
-  return { state, fetchCapabilites };
+  async function fetchAutofill() {
+    fetch(`${serverUrl}/api/autofill`).then(async (response) => {
+      if (response.status === 200) {
+        const arr: string[] = await response.json();
+        state.autofill = arr;
+        console.log("Autofill data successfully fetched from the server");
+      } else {
+        console.error("Failed to fetch autofill data");
+      }
+    });
+  }
+
+  return { state, fetchCapabilites, fetchAutofill };
 });

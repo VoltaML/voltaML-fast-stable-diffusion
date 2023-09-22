@@ -177,13 +177,18 @@ else:
 # Mount routers
 ## HTTP
 app.include_router(static.router)
-app.include_router(test.router, prefix="/api/test")
-app.include_router(generate.router, prefix="/api/generate")
-app.include_router(hardware.router, prefix="/api/hardware")
-app.include_router(models.router, prefix="/api/models")
-app.include_router(outputs.router, prefix="/api/output")
-app.include_router(general.router, prefix="/api/general")
-app.include_router(settings.router, prefix="/api/settings")
+
+# Walk the routes folder and mount all routers
+for file in Path("api/routes").iterdir():
+    if file.is_file():
+        if (
+            file.name != "__init__.py"
+            and file.suffix == ".py"
+            and file.stem != "static"
+        ):
+            logger.debug(f"Mounting: {file} as /api/{file.stem}")
+            module = __import__(f"api.routes.{file.stem}", fromlist=["router"])
+            app.include_router(module.router, prefix=f"/api/{file.stem}")
 
 ## WebSockets
 app.include_router(ws.router, prefix="/api/websockets")
