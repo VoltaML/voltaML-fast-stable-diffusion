@@ -319,6 +319,7 @@
         <ImageOutput
           :current-image="global.state.controlnet.currentImage"
           :images="global.state.controlnet.images"
+          :data="conf.data.settings.controlnet"
           @image-clicked="global.state.controlnet.currentImage = $event"
         />
 

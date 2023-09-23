@@ -341,6 +341,7 @@
         <ImageOutput
           :current-image="global.state.txt2img.currentImage"
           :images="global.state.txt2img.images"
+          :data="conf.data.settings.txt2img"
           @image-clicked="global.state.txt2img.currentImage = $event"
         />
 

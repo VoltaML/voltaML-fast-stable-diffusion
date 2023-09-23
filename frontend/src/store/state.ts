@@ -51,7 +51,7 @@ export interface StateInterface {
   img2img: {
     currentImage: string;
     images: string[];
-    tab: string;
+    tab: "img2img" | "controlnet" | "inpainting";
     genData: GenerationData;
   };
   inpainting: {
@@ -77,11 +77,12 @@ export interface StateInterface {
   extra: {
     currentImage: string;
     images: string[];
-    tab: string;
+    tab: "upscale";
   };
   tagger: {
     positivePrompt: Map<string, number>;
     negativePrompt: Map<string, number>;
+    tab: "tagger";
   };
   current_step: number;
   total_steps: number;
@@ -134,7 +135,7 @@ export const useState = defineStore("state", () => {
     img2img: {
       images: [],
       currentImage: "",
-      tab: "Image to Image",
+      tab: "img2img",
       genData: {
         time_taken: null,
         seed: null,
@@ -175,11 +176,12 @@ export const useState = defineStore("state", () => {
     extra: {
       images: [],
       currentImage: "",
-      tab: "Upscale",
+      tab: "upscale",
     },
     tagger: {
       positivePrompt: new Map<string, number>(),
       negativePrompt: new Map<string, number>(),
+      tab: "tagger",
     },
     current_step: 0,
     total_steps: 0,

@@ -3,8 +3,7 @@ import { _ as _sfc_main$4 } from "./ImageOutput.vue_vue_type_script_setup_true_l
 import { B as BurnerClock, _ as _sfc_main$1, a as _sfc_main$2, b as _sfc_main$5 } from "./clock.js";
 import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, s as serverUrl, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, n as createBaseVNode, q as NTooltip, r as NSelect, v as createBlock, x as createCommentVNode, y as NGrid, z as spaceRegex } from "./index.js";
 import { v as v4 } from "./v4.js";
-import { N as NSwitch } from "./Switch.js";
-import { N as NSlider } from "./Slider.js";
+import { N as NSwitch, a as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
@@ -490,8 +489,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 createVNode(_sfc_main$4, {
                   "current-image": unref(global).state.txt2img.currentImage,
                   images: unref(global).state.txt2img.images,
+                  data: unref(conf).data.settings.txt2img,
                   onImageClicked: _cache[24] || (_cache[24] = ($event) => unref(global).state.txt2img.currentImage = $event)
-                }, null, 8, ["current-image", "images"]),
+                }, null, 8, ["current-image", "images", "data"]),
                 createVNode(_sfc_main$5, {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.txt2img.genData

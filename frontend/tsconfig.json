@@ -5,7 +5,10 @@
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
-    }
+    },
+    "target": "es2019",
+    "module": "esnext",
+    "lib": ["es2019", "dom"]
   },
 
   "references": [

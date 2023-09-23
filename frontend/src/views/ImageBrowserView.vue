@@ -193,7 +193,7 @@ const imageSrc = computed(() => {
 });
 
 function deleteImage() {
-  const url = new URL(`${serverUrl}/api/output/delete/`);
+  const url = new URL(`${serverUrl}/api/outputs/delete/`);
   url.searchParams.append(
     "filename",
     global.state.imageBrowser.currentImage.path
@@ -281,7 +281,7 @@ function imgClick(column_index: number, item_index: number) {
   const item = columns.value[column_index][item_index];
   global.state.imageBrowser.currentImage = item;
   setByte64FromImage(item.path);
-  const url = new URL(`${serverUrl}/api/output/data/`);
+  const url = new URL(`${serverUrl}/api/outputs/data/`);
   url.searchParams.append("filename", item.path);
   fetch(url)
     .then((res) => res.json())
@@ -324,7 +324,7 @@ async function refreshImages() {
   imgData.splice(0, imgData.length);
 
   // Fetch new data
-  await fetch(`${serverUrl}/api/output/txt2img`)
+  await fetch(`${serverUrl}/api/outputs/txt2img`)
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item: IImgData) => {
@@ -332,7 +332,7 @@ async function refreshImages() {
       });
     });
 
-  await fetch(`${serverUrl}/api/output/img2img`)
+  await fetch(`${serverUrl}/api/outputs/img2img`)
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item: IImgData) => {
@@ -340,7 +340,7 @@ async function refreshImages() {
       });
     });
 
-  await fetch(`${serverUrl}/api/output/extra`)
+  await fetch(`${serverUrl}/api/outputs/extra`)
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item: IImgData) => {

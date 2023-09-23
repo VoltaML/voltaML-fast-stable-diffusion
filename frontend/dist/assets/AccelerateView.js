@@ -1,7 +1,6 @@
-import { Y as cB, $ as cM, X as c, Z as cE, a0 as iconSwitchTransition, aq as cNotM, d as defineComponent, Q as useConfig, a7 as useRtl, a5 as useTheme, T as provide, D as h, aC as flatten, aD as getSlot, V as createInjectionKey, bg as stepsLight, a3 as inject, a_ as throwError, c as computed, a9 as useThemeClass, aB as resolveWrappedSlot, at as resolveSlot, ab as NIconSwitchTransition, a8 as createKey, W as call, au as NBaseIcon, bh as FinishedIcon, bi as ErrorIcon, b as useMessage, u as useState, E as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, r as NSelect, F as NButton, m as createTextVNode, bd as NModal, s as serverUrl, a as useSettings, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
-import { N as NSlider } from "./Slider.js";
+import { X as cB, Z as cM, W as c, Y as cE, $ as iconSwitchTransition, ap as cNotM, d as defineComponent, P as useConfig, a6 as useRtl, a4 as useTheme, S as provide, C as h, aB as flatten, aC as getSlot, U as createInjectionKey, bf as stepsLight, a2 as inject, aZ as throwError, c as computed, a8 as useThemeClass, aA as resolveWrappedSlot, as as resolveSlot, aa as NIconSwitchTransition, a7 as createKey, V as call, at as NBaseIcon, bg as FinishedIcon, bh as ErrorIcon, b as useMessage, u as useState, D as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, r as NSelect, E as NButton, m as createTextVNode, bc as NModal, s as serverUrl, a as useSettings, v as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { a as NSlider, N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSwitch } from "./Switch.js";
 const style = cB("steps", `
  width: 100%;
  display: flex;
