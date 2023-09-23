@@ -556,14 +556,14 @@ const autoloadVaeOptions = computed(() => {
 const autoloadVaeValue = (model: string) => {
   return computed({
     get: () => {
-      console.log(settings.data.settings.api.autoloaded_vae[model]);
-      return settings.data.settings.api.autoloaded_vae[model] ?? "default";
+      return settings.defaultSettings.api.autoloaded_vae[model] ?? "default";
     },
     set: (value: string) => {
       if (!value || value === "default") {
-        delete settings.data.settings.api.autoloaded_vae[model];
+        delete settings.defaultSettings.api.autoloaded_vae[model];
       } else {
-        settings.data.settings.api.autoloaded_vae[model] = value;
+        console.log("Setting", model, "to", value);
+        settings.defaultSettings.api.autoloaded_vae[model] = value;
       }
     },
   });

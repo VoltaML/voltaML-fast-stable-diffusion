@@ -1838,7 +1838,7 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-96eb08f0"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-da11dbe9"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "width": "100%" } };
 const _hoisted_2 = {
   key: 0,
@@ -1981,14 +1981,14 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     const autoloadVaeValue = (model) => {
       return computed({
         get: () => {
-          console.log(settings.data.settings.api.autoloaded_vae[model]);
-          return settings.data.settings.api.autoloaded_vae[model] ?? "default";
+          return settings.defaultSettings.api.autoloaded_vae[model] ?? "default";
         },
         set: (value) => {
           if (!value || value === "default") {
-            delete settings.data.settings.api.autoloaded_vae[model];
+            delete settings.defaultSettings.api.autoloaded_vae[model];
           } else {
-            settings.data.settings.api.autoloaded_vae[model] = value;
+            console.log("Setting", model, "to", value);
+            settings.defaultSettings.api.autoloaded_vae[model] = value;
           }
         }
       });
@@ -2650,8 +2650,8 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const APISettings_vue_vue_type_style_index_0_scoped_96eb08f0_lang = "";
-const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-96eb08f0"]]);
+const APISettings_vue_vue_type_style_index_0_scoped_da11dbe9_lang = "";
+const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-da11dbe9"]]);
 const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "BotSettings",
   setup(__props) {
