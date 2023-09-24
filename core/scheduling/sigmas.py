@@ -2,11 +2,11 @@ from typing import Optional
 from logging import getLogger
 
 import torch
-import kdiffusion
+import k_diffusion
 
 from .denoiser import Denoiser
 
-sampling = kdiffusion.sampling
+sampling = k_diffusion.sampling
 logger = getLogger(__name__)
 
 def build_sigmas(
@@ -24,7 +24,7 @@ def build_sigmas(
         logger.debug("No #scheduler provided. Using default sampler.")
         sigmas = denoiser.get_sigmas(steps)
     else:
-        sigma_min, sigma_max = (denoiser.sigmas[0].item(), denoiser.sigmas[-1].item())
+        sigma_min, sigma_max = (denoiser.sigmas[0].item(), denoiser.sigmas[-1].item())  # type: ignore
         rho = None
         if scheduler == "polyexponential":
             rho = 1
