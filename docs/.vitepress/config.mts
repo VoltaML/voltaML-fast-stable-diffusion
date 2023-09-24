@@ -1,5 +1,6 @@
-import { defineConfig } from "vitepress";
+import { defineConfig } from 'vitepress';
 
+// https://vitepress.dev/reference/site-config
 export default defineConfig({
 	title: "VoltaML",
 	description: "Easy to use, yet feature-rich WebUI",
@@ -7,6 +8,12 @@ export default defineConfig({
 	appearance: "dark",
 	lastUpdated: true,
 	base: "/voltaML-fast-stable-diffusion/",
+	locales: {
+		root: {
+			lang: "en-US",
+			label: "English",
+		},
+	},
 	head: [
 		[
 			"link",
@@ -43,6 +50,7 @@ export default defineConfig({
 		nav: [
 			{ text: "Home", link: "/" },
 			{ text: "Docs", link: "/getting-started/introduction" },
+			{ text: "Changelog", link: "/changelog" },
 		],
 		editLink: {
 			pattern:
@@ -80,13 +88,27 @@ export default defineConfig({
 			{
 				text: "Installation",
 				items: [
-					{ text: "Windows", link: "/installation/windows" },
-					{ text: "Linux", link: "/installation/linux" },
-					{ text: "WSL", link: "/installation/wsl" },
-					{ text: "Vast.ai", link: "/installation/vast" },
-					{ text: "Docker", link: "/installation/docker" },
-					{ text: "Old", link: "/installation/old" },
-					{ text: "xFormers", link: "/installation/xformers" },
+					{
+						text: "Local", items: [
+							{ text: "Windows", link: "/installation/windows" },
+							{ text: "Linux", link: "/installation/linux" },
+							{ text: "WSL", link: "/installation/wsl" },
+							{ text: "Docker", link: "/installation/docker" },
+						]
+					},
+					{
+						text: "Cloud",
+						items: [
+							{ text: "Vast.ai", link: "/installation/vast" },
+						],
+					},
+					{
+						text: "Extra",
+						items: [
+							{ text: "Old", link: "/installation/old" },
+							{ text: "xFormers", link: "/installation/xformers" },
+						]
+					}
 				],
 				collapsed: false,
 			},
