@@ -6,9 +6,8 @@ from k_diffusion.external import CompVisVDenoiser, CompVisDenoiser
 Denoiser = Union[CompVisDenoiser, CompVisVDenoiser]
 
 class _ModelWrapper:
-    model: torch.Module
-
     def __init__(self, alphas_cumprod) -> None:
+        self.model = None
         self.alphas_cumprod = alphas_cumprod
 
     def apply_model(self, *args, **kwargs) -> torch.Tensor:
