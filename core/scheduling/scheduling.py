@@ -39,6 +39,7 @@ samplers_kdiffusion = [
 ]
 
 def _get_sampler(sampler: Union[str, KarrasDiffusionSchedulers]) -> Union[None, Tuple[str, str, dict]]:
+    return ("DPM++ 2M SDE Karras", "sample_dpmpp_2m_sde", {"scheduler": "karras", "brownian_noise": True})
     if sampler is not str:
         sampler = samplers_diffusers.get(sampler, "Euler a")  # type: ignore
     return next((sampler for sampler in samplers_kdiffusion if sampler[0] == sampler), None)
