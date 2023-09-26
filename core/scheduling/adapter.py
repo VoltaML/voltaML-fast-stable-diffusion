@@ -88,7 +88,7 @@ class KdiffusionSchedulerAdapter:
         callback_steps,
     ) -> Callable:
         if progress_bar is not None:
-            apply_model = functools.partial(apply_model, tqdm=progress_bar)
+            apply_model = functools.partial(apply_model, progress_bar=progress_bar)
 
         self.denoiser.inner_model.model = apply_model
 

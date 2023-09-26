@@ -453,7 +453,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     -2:
                 ]  # output.sample.shape[-2:] in older diffusers
 
-            def do_denoise(x, t, tqdm: Optional[tqdm]=None):
+            def do_denoise(x, t, progress_bar: Optional[tqdm]=None):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
                     torch.cat([x] * 2) if do_classifier_free_guidance else x  # type: ignore
@@ -583,8 +583,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
 
                     x = (1 - init_mask) * init_latents_proper + init_mask * x  # type: ignore
-                if tqdm is not None:
-                    tqdm.update(1)
+                if progress_bar is not None:
+                    progress_bar.update(1)
                 return noise_pred
 
             # 8. Denoising loop

@@ -71,16 +71,19 @@ def change_scheduler(
     if scheduler == KarrasDiffusionSchedulers.UniPCMultistepScheduler:
         from ...scheduling import scheduling
         new_scheduler = scheduling.create_sampler(
-            alphas_cumprod=scheduler.alphas_cumprod,  # type: ignore
-            prediction_type=scheduler.prediction_type,  # type: ignore
-            eta_noise_seed_delta=0,
+            alphas_cumprod=model.scheduler.alphas_cumprod,  # type: ignore
+            prediction_type=model.scheduler.prediction_type,  # type: ignore
             denoiser_enable_quantization=True,
-            sigma_scheduler=None,
+
+            sampler=scheduler,
+            eta_noise_seed_delta=0,
+
+            sigma_scheduler="karras",
             sigma_always_discard_next_to_last=False,
-            sigma_max=None,
-            sigma_min=None,
-            sigma_rho=None,
-            sigma_use_old_karras_scheduler=False,
+            sigma_max=10,
+            sigma_min=0.1,
+            sigma_rho=1.0,
+            sigma_use_old_karras_scheduler=True,
         )
 
     try:
