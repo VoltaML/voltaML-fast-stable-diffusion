@@ -68,20 +68,7 @@ def change_scheduler(
 
     config = model.scheduler.config  # type: ignore
 
-    if scheduler is str:
-        from ...scheduling import scheduling
-        return scheduling.create_sampler(
-            alphas_cumprod=model.scheduler.alphas_cumprod,  # type: ignore
-            prediction_type=model.scheduler.prediction_type,  # type: ignore
-            denoiser_enable_quantization=True,
-
-            sampler=scheduler,
-            eta_noise_seed_delta=0,
-
-            sigma_always_discard_next_to_last=False,
-            sigma_use_old_karras_scheduler=False,
-        )
-    else:
+    if scheduler is KarrasDiffusionSchedulers:
         try:
             new_scheduler = getattr(importlib.import_module("diffusers"), scheduler.name)  # type: ignore
         except AttributeError:
@@ -97,3 +84,16 @@ def change_scheduler(
                 model.scheduler = new_scheduler.from_config(config=config)  # type: ignore
         else:
             return new_scheduler
+    else:
+        from ...scheduling import scheduling
+        return scheduling.create_sampler(
+            alphas_cumprod=model.scheduler.alphas_cumprod,  # type: ignore
+            prediction_type=model.scheduler.prediction_type,  # type: ignore
+            denoiser_enable_quantization=True,
+
+            sampler=scheduler,
+            eta_noise_seed_delta=0,
+
+            sigma_always_discard_next_to_last=False,
+            sigma_use_old_karras_scheduler=False,
+        )
