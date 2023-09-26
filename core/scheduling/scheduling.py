@@ -98,3 +98,4 @@ def create_sampler(
         prediction_type=prediction_type,
         denoiser_enable_quantization=denoiser_enable_quantization,
     )
+    return adapter
