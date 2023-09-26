@@ -8,6 +8,7 @@ from diffusers import SchedulerMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import PyTorchModelType
+from core.scheduling import KdiffusionSchedulerAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -40,6 +41,9 @@ def prepare_extra_step_kwargs(
     eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
     eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
     and should be between [0, 1]"""
+
+    if scheduler is KdiffusionSchedulerAdapter:
+        return {}
 
     accepts_eta = "eta" in set(
         inspect.signature(scheduler.step).parameters.keys()  # type: ignore
