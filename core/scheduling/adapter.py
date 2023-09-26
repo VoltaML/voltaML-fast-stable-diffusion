@@ -81,6 +81,7 @@ class KdiffusionSchedulerAdapter:
     def do_inference(
         self,
         x,
+        call: Callable,
         apply_model: Callable[..., torch.Tensor],
         progress_bar: tqdm,
         generator,
@@ -88,9 +89,9 @@ class KdiffusionSchedulerAdapter:
         callback_steps,
     ) -> Callable:
         if progress_bar is not None:
-            apply_model = functools.partial(apply_model, progress_bar=progress_bar)
+            apply_model = functools.partial(apply_model, progress_bar=progress_bar, call=self.denoiser)
 
-        self.denoiser.inner_model.model = apply_model
+        self.denoiser.inner_model.model = call
 
         def sampler_call(x, t):
             return self.denoiser(x, t)

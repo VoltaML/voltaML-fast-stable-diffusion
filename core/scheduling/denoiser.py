@@ -1,4 +1,4 @@
-from typing import Any, Callable, Union
+from typing import Callable, Union
 
 import torch
 from k_diffusion.external import CompVisVDenoiser, CompVisDenoiser
@@ -6,13 +6,13 @@ from k_diffusion.external import CompVisVDenoiser, CompVisDenoiser
 Denoiser = Union[CompVisDenoiser, CompVisVDenoiser]
 
 class _ModelWrapper:
-    model: Callable
+    model: torch.Module
 
     def __init__(self, alphas_cumprod) -> None:
         self.alphas_cumprod = alphas_cumprod
 
     def apply_model(self, *args, **kwargs) -> torch.Tensor:
-        return self.model(*args, **kwargs)
+        return self.model(*args, **kwargs).sample  # type: ignore
 
 def create_denoiser(
         alphas_cumprod: torch.Tensor,

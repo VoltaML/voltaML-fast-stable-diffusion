@@ -453,7 +453,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     -2:
                 ]  # output.sample.shape[-2:] in older diffusers
 
-            def do_denoise(x, t, progress_bar: Optional[tqdm]=None):
+            def do_denoise(x, t, call: Optional[Callable]=None, progress_bar: Optional[tqdm]=None):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
                     torch.cat([x] * 2) if do_classifier_free_guidance else x  # type: ignore
@@ -465,11 +465,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                 # predict the noise residual
                 if self.controlnet is None:
-                    noise_pred = self.unet(  # type: ignore
+                    noise_pred = call(  # type: ignore
                         latent_model_input,
                         t,
                         encoder_hidden_states=text_embeddings,
-                    ).sample
+                    )
                 else:
                     if guess_mode and do_classifier_free_guidance:
                         # Infer ControlNet only for the conditional batch.
@@ -509,14 +509,13 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 mid_block_res_sample,
                             ]
                         )
-                    noise_pred = self.unet(  # type: ignore
+                    noise_pred = call(  # type: ignore
                         latent_model_input,
                         t,
                         encoder_hidden_states=text_embeddings,
                         down_block_additional_residuals=down_block_res_samples,
                         mid_block_additional_residual=mid_block_res_sample,
-                        return_dict=False,
-                    )[0]
+                    )
 
                 # perform guidance
                 if do_classifier_free_guidance:
@@ -535,11 +534,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         uncond_emb, _ = text_embeddings.chunk(2)
                         # predict the noise residual
                         # this probably could have been done better but honestly fuck this
-                        degraded_prep = self.unet(  # type: ignore
+                        degraded_prep = call(  # type: ignore
                             degraded_latents,
                             t,
                             encoder_hidden_states=uncond_emb,
-                        ).sample
+                        )
                         noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
                     else:
                         pred = pred_x0(self, x, noise_pred, t)
@@ -553,11 +552,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             pred_epsilon(self, x, noise_pred, t),
                         )
                         # predict the noise residual
-                        degraded_prep = self.unet(  # type: ignore
+                        degraded_prep = call(  # type: ignore
                             degraded_latents,
                             t,
                             encoder_hidden_states=text_embeddings,
-                        ).sample
+                        )
                         noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
 
                 if self.scheduler is not KdiffusionSchedulerAdapter:
@@ -583,9 +582,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
 
                     x = (1 - init_mask) * init_latents_proper + init_mask * x  # type: ignore
+
                 if progress_bar is not None:
                     progress_bar.update(1)
-                return noise_pred
+                return x
 
             # 8. Denoising loop
             with ExitStack() as gs:
@@ -598,6 +598,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     progress_bar = tqdm(timesteps, desc="PyTorch")
                     latents = self.scheduler.do_inference(
                         latents,
+                        call=self.unet,
                         apply_model=do_denoise,
                         progress_bar=progress_bar,
                         generator=generator,
@@ -606,7 +607,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     )
                 else:
                     for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
-                        latents = do_denoise(latents, t)
+                        def _call(x, y, **kwargs):
+                            return self.unet(x, y, **kwargs).sample
+
+                        latents = do_denoise(latents, t, _call)  # type: ignore
 
                         # call the callback, if provided
                         if i % callback_steps == 0:
