@@ -61,7 +61,6 @@ def change_scheduler(
     model: Optional[PyTorchModelType],
     scheduler: Union[str, KarrasDiffusionSchedulers],
     config: Optional[Dict] = None,
-    autoload: bool = True,
     use_karras_sigmas: bool = False,
 ):
     "Change the scheduler of the model"
@@ -74,19 +73,16 @@ def change_scheduler(
         except AttributeError:
             new_scheduler = model.scheduler  # type: ignore
 
-        if autoload:
-            if scheduler.value in [10, 11]:  # type: ignore
-                logger.debug(
-                    f"Loading scheduler {new_scheduler.__class__.__name__} with config karras_sigmas={use_karras_sigmas}"
-                )
-                model.scheduler = new_scheduler.from_config(config=config, use_karras_sigmas=use_karras_sigmas)  # type: ignore
-            else:
-                model.scheduler = new_scheduler.from_config(config=config)  # type: ignore
+        if scheduler.value in [10, 11]:  # type: ignore
+            logger.debug(
+                f"Loading scheduler {new_scheduler.__class__.__name__} with config karras_sigmas={use_karras_sigmas}"
+            )
+            new_scheduler = new_scheduler.from_config(config=config, use_karras_sigmas=use_karras_sigmas)  # type: ignore
         else:
-            return new_scheduler
+            new_scheduler = new_scheduler.from_config(config=config)  # type: ignore
     else:
         from ...scheduling import scheduling
-        return scheduling.create_sampler(
+        new_scheduler = scheduling.create_sampler(
             alphas_cumprod=model.scheduler.alphas_cumprod,  # type: ignore
             prediction_type=model.scheduler.prediction_type,  # type: ignore
             denoiser_enable_quantization=True,
@@ -97,3 +93,5 @@ def change_scheduler(
             sigma_always_discard_next_to_last=False,
             sigma_use_old_karras_scheduler=False,
         )
+    model.scheduler = new_scheduler  # type: ignore
+    return new_scheduler
