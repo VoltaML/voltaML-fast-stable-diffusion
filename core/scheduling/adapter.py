@@ -46,10 +46,10 @@ class KdiffusionSchedulerAdapter:
         self.sampler_tuple = sampler_tuple
 
         # SAG compat.
-        if scheduler_name == "polyexponential":
-            setattr(self.config, "prediction_type", "epsilon")
-        else:
-            setattr(self.config, "prediction_type", "v_prediction")
+        #if scheduler_name == "polyexponential":
+        #    setattr(self.config, "prediction_type", "epsilon")
+        #else:
+        #    setattr(self.config, "prediction_type", "v_prediction")
         self.sigma_range = sigma_range
         self.sigma_rho = sigma_rho
         self.sigma_always_discard_next_to_last = sigma_discard
