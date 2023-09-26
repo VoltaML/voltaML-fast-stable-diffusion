@@ -1,4 +1,4 @@
-import { defineConfig } from 'vitepress';
+import { defineConfig } from "vitepress";
 
 // https://vitepress.dev/reference/site-config
 export default defineConfig({
@@ -89,26 +89,25 @@ export default defineConfig({
 				text: "Installation",
 				items: [
 					{
-						text: "Local", items: [
+						text: "Local",
+						items: [
 							{ text: "Windows", link: "/installation/windows" },
 							{ text: "Linux", link: "/installation/linux" },
 							{ text: "WSL", link: "/installation/wsl" },
 							{ text: "Docker", link: "/installation/docker" },
-						]
+						],
 					},
 					{
 						text: "Cloud",
-						items: [
-							{ text: "Vast.ai", link: "/installation/vast" },
-						],
+						items: [{ text: "Vast.ai", link: "/installation/vast" }],
 					},
 					{
 						text: "Extra",
 						items: [
 							{ text: "Old", link: "/installation/old" },
 							{ text: "xFormers", link: "/installation/xformers" },
-						]
-					}
+						],
+					},
 				],
 				collapsed: false,
 			},
@@ -122,6 +121,7 @@ export default defineConfig({
 						text: "AITemplate Acceleration",
 						link: "/basics/aitemplate",
 					},
+					{ text: "Autoload", link: "/basics/autoload" },
 				],
 				collapsed: false,
 			},
