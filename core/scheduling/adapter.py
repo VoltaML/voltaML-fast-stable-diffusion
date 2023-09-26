@@ -47,9 +47,9 @@ class KdiffusionSchedulerAdapter:
 
         # SAG compat.
         if scheduler_name == "polyexponential":
-            self.config.prediction_type = "epsilon"  # type: ignore
+            setattr(self.config, "prediction_type", "epsilon")
         else:
-            self.config.prediction_type = "v_prediction"  # type: ignore
+            setattr(self.config, "prediction_type", "v_prediction")
         self.sigma_range = sigma_range
         self.sigma_rho = sigma_rho
         self.sigma_always_discard_next_to_last = sigma_discard
