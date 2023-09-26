@@ -7,7 +7,7 @@ import torch
 from tqdm import tqdm
 
 from .sigmas import build_sigmas
-from .denoiser import Denoiser, _ModelWrapper
+from .denoiser import Denoiser
 
 sampling = k_diffusion.sampling
 
@@ -16,7 +16,7 @@ class KdiffusionSchedulerAdapter:
     denoiser: Denoiser  # selected denoiser
 
     # diffusers compat
-    config: dict = {"steps_offset": 0}
+    config: dict = {"steps_offset": 0, "prediction_type": "v_prediction"}
 
     # should really be "sigmas," but for compatibility with diffusers
     # it's named timesteps.
@@ -46,13 +46,13 @@ class KdiffusionSchedulerAdapter:
         self.sampler_tuple = sampler_tuple
 
         # SAG compat.
-        #if scheduler_name == "polyexponential":
-        #    setattr(self.config, "prediction_type", "epsilon")
-        #else:
-        #    setattr(self.config, "prediction_type", "v_prediction")
+        if scheduler_name == "polyexponential":
+            self.config["prediction_type"] = "epsilon"
         self.sigma_range = sigma_range
         self.sigma_rho = sigma_rho
         self.sigma_always_discard_next_to_last = sigma_discard
+
+        self.init_noise_sigma = 1.0
 
         self.sampler_eta = sampler_eta
         if self.sampler_eta == None:
