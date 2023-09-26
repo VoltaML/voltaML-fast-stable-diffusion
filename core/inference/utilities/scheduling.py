@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Optional, Union
 
 import torch
-from diffusers import SchedulerMixin
+from diffusers import SchedulerMixin, DDIMScheduler
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import PyTorchModelType
@@ -42,7 +42,7 @@ def prepare_extra_step_kwargs(
     eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
     and should be between [0, 1]"""
 
-    if scheduler is KdiffusionSchedulerAdapter:
+    if isinstance(scheduler, KdiffusionSchedulerAdapter):
         return {}
 
     accepts_eta = "eta" in set(
@@ -71,7 +71,8 @@ def change_scheduler(
 
     config = model.scheduler.config  # type: ignore
 
-    if scheduler is KarrasDiffusionSchedulers:
+    if scheduler.isdigit():  # type: ignore
+        scheduler = KarrasDiffusionSchedulers(int(scheduler))  # type: ignore
         try:
             new_scheduler = getattr(importlib.import_module("diffusers"), scheduler.name)  # type: ignore
         except AttributeError:
@@ -86,16 +87,19 @@ def change_scheduler(
             new_scheduler = new_scheduler.from_config(config=config)  # type: ignore
     else:
         from ...scheduling import scheduling
-        new_scheduler = scheduling.create_sampler(
-            alphas_cumprod=model.scheduler.alphas_cumprod,  # type: ignore
-            prediction_type=model.scheduler.prediction_type,  # type: ignore
-            denoiser_enable_quantization=True,
 
+        sched = DDIMScheduler.from_pretrained("runwayml/stable-diffusion-v1-5", subfolder="scheduler")  # type: ignore
+
+        new_scheduler = scheduling.create_sampler(
+            alphas_cumprod=sched.alphas_cumprod,  # type: ignore
+            prediction_type=sched.config["prediction_type"],  # type: ignore
+            denoiser_enable_quantization=True,
             sampler=scheduler,
             eta_noise_seed_delta=0,
-
             sigma_always_discard_next_to_last=False,
             sigma_use_old_karras_scheduler=False,
+            device=model.unet.device,  # type: ignore
+            dtype=model.unet.dtype,  # type: ignore
         )
     model.scheduler = new_scheduler  # type: ignore
     return new_scheduler

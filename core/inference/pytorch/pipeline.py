@@ -453,7 +453,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     -2:
                 ]  # output.sample.shape[-2:] in older diffusers
 
-            def do_denoise(x, t, call: Optional[Callable]=None, progress_bar: Optional[tqdm]=None):
+            def do_denoise(
+                x,
+                t,
+                call: Optional[Callable] = None,
+                progress_bar: Optional[tqdm] = None,
+            ):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
                     torch.cat([x] * 2) if do_classifier_free_guidance else x  # type: ignore
@@ -468,7 +473,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     noise_pred = call(  # type: ignore
                         latent_model_input,
                         t,
-                        encoder_hidden_states=text_embeddings,
+                        cond=text_embeddings,
                     )
                 else:
                     if guess_mode and do_classifier_free_guidance:
@@ -512,7 +517,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     noise_pred = call(  # type: ignore
                         latent_model_input,
                         t,
-                        encoder_hidden_states=text_embeddings,
+                        cond=text_embeddings,
                         down_block_additional_residuals=down_block_res_samples,
                         mid_block_additional_residual=mid_block_res_sample,
                     )
@@ -537,7 +542,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         degraded_prep = call(  # type: ignore
                             degraded_latents,
                             t,
-                            encoder_hidden_states=uncond_emb,
+                            cond=uncond_emb,
                         )
                         noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
                     else:
@@ -555,11 +560,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         degraded_prep = call(  # type: ignore
                             degraded_latents,
                             t,
-                            encoder_hidden_states=text_embeddings,
+                            cond=text_embeddings,
                         )
                         noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
 
-                if self.scheduler is not KdiffusionSchedulerAdapter:
+                if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
                     x = self.scheduler.step(  # type: ignore
                         noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
@@ -571,9 +576,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     # masking
                     init_latents_proper = image_latents[:1]  # type: ignore
                     init_mask = mask[:1]
-                    init_mask = pad_tensor(
-                        init_mask, 8, (x.shape[2], x.shape[3])
-                    )
+                    init_mask = pad_tensor(init_mask, 8, (x.shape[2], x.shape[3]))
 
                     if i < len(timesteps) - 1:
                         noise_timestep = timesteps[i + 1]
@@ -594,21 +597,32 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                 from ...scheduling import KdiffusionSchedulerAdapter
 
-                if self.scheduler is KdiffusionSchedulerAdapter:
+                if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     progress_bar = tqdm(timesteps, desc="PyTorch")
                     latents = self.scheduler.do_inference(
                         latents,
-                        call=self.unet,
+                        call=self.unet,  # type: ignore
                         apply_model=do_denoise,
                         progress_bar=progress_bar,
                         generator=generator,
                         callback=callback,
-                        callback_steps=callback_steps
+                        callback_steps=callback_steps,
                     )
                 else:
                     for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
-                        def _call(x, y, **kwargs):
-                            return self.unet(x, y, **kwargs).sample
+
+                        def _call(*args, **kwargs):
+                            if len(args) == 3:
+                                encoder_hidden_states = args[-1]
+                                args = args[:2]
+                            if kwargs.get("cond", None) is not None:
+                                encoder_hidden_states = kwargs.pop("cond")
+                            return self.unet(
+                                *args,
+                                encoder_hidden_states=encoder_hidden_states,
+                                return_dict=True,
+                                **kwargs,
+                            )[0]
 
                         latents = do_denoise(latents, t, _call)  # type: ignore
 
