@@ -55,7 +55,7 @@ class Txt2imgData:
     "Dataclass for the data of a txt2img request"
 
     prompt: str
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -75,7 +75,7 @@ class Img2imgData:
 
     prompt: str
     image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -97,7 +97,7 @@ class InpaintData:
     prompt: str
     image: Union[bytes, str]
     mask_image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -117,7 +117,7 @@ class ControlNetData:
 
     prompt: str
     image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     controlnet: str
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")

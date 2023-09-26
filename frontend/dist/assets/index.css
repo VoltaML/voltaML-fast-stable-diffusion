@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-5d5e4605] {
+.progress-container[data-v-10ff949d] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-5d5e4605] {
+.top-bar[data-v-10ff949d] {
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,15 +23,15 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--604f0a0e);
+  background-color: var(--5fc1b03a);
 }
-.logo[data-v-5d5e4605] {
+.logo[data-v-10ff949d] {
   margin-right: 16px;
   margin-left: 16px;
 }
 
 .main {
-  background-color: var(--16223ad6);
+  background-color: var(--240a9931);
 }
 .autocomplete {
   position: relative;
@@ -40,18 +40,18 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--1fedac06);
-  border-radius: var(--ba9033c6);
+  background-color: var(--ba40dad0);
+  border-radius: var(--558e4eb8);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--ba9033c6);
+  border-radius: var(--558e4eb8);
 }
 .autocomplete-active {
-  background-color: var(--3119c2a0) !important;
-  color: var(--aca37748) !important;
+  background-color: var(--381fa98a) !important;
+  color: var(--65cff6be) !important;
 }
 body {
   min-height: 100vh;

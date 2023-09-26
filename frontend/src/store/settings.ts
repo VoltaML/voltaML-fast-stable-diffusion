@@ -33,6 +33,25 @@ export const upscalerOptions: SelectMixedOption[] = [
 
 export function getSchedulerOptions() {
   const scheduler_options: SelectMixedOption[] = [
+    { label: "Euler a", value: "Euler a" },
+    { label: "Euler", value: "Euler" },
+    { label: "LMS", value: "LMS" },
+    { label: "Heun", value: "Heun" },
+    { label: "DPM2", value: "DPM2" },
+    { label: "DPM2 a", value: "DPM2 a" },
+    { label: "DPM++ 2S a", value: "DPM++ 2S a" },
+    { label: "DPM++ 2M", value: "DPM++ 2M" },
+    { label: "DPM++ SDE", value: "DPM++ SDE" },
+    { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" },
+    { label: "DPM fast", value: "DPM fast" },
+    { label: "DPM adaptive", value: "DPM adaptive" },
+    { label: "LMS Karras", value: "LMS Karras" },
+    { label: "DPM2 Karras", value: "DPM2 Karras" },
+    { label: "DPM2 a Karras", value: "DPM2 a Karras" },
+    { label: "DPM++ 2S a Karras", value: "DPM++ 2S a Karras" },
+    { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" },
+    { label: "DPM++ SDE Karras", value: "DPM++ SDE Karras" },
+    { label: "DPM++ 2M SDE Karras", value: "DPM++ 2M SDE Karras" },
     {
       label: "DDIM",
       value: 1,

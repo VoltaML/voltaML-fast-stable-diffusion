@@ -1,7 +1,7 @@
 import importlib
 import inspect
 import logging
-from typing import Dict, Optional
+from typing import Dict, Optional, Union
 
 import torch
 from diffusers import SchedulerMixin
@@ -59,7 +59,7 @@ def prepare_extra_step_kwargs(
 
 def change_scheduler(
     model: Optional[PyTorchModelType],
-    scheduler: KarrasDiffusionSchedulers,
+    scheduler: Union[str, KarrasDiffusionSchedulers],
     config: Optional[Dict] = None,
     autoload: bool = True,
     use_karras_sigmas: bool = False,
@@ -68,9 +68,9 @@ def change_scheduler(
 
     config = model.scheduler.config  # type: ignore
 
-    if scheduler == KarrasDiffusionSchedulers.UniPCMultistepScheduler:
+    if scheduler is str:
         from ...scheduling import scheduling
-        new_scheduler = scheduling.create_sampler(
+        return scheduling.create_sampler(
             alphas_cumprod=model.scheduler.alphas_cumprod,  # type: ignore
             prediction_type=model.scheduler.prediction_type,  # type: ignore
             denoiser_enable_quantization=True,
@@ -78,26 +78,22 @@ def change_scheduler(
             sampler=scheduler,
             eta_noise_seed_delta=0,
 
-            sigma_scheduler="karras",
             sigma_always_discard_next_to_last=False,
-            sigma_max=10,
-            sigma_min=0.1,
-            sigma_rho=1.0,
-            sigma_use_old_karras_scheduler=True,
+            sigma_use_old_karras_scheduler=False,
         )
-
-    try:
-        new_scheduler = getattr(importlib.import_module("diffusers"), scheduler.name)
-    except AttributeError:
-        new_scheduler = model.scheduler  # type: ignore
-
-    if autoload:
-        if scheduler.value in [10, 11]:
-            logger.debug(
-                f"Loading scheduler {new_scheduler.__class__.__name__} with config karras_sigmas={use_karras_sigmas}"
-            )
-            model.scheduler = new_scheduler.from_config(config=config, use_karras_sigmas=use_karras_sigmas)  # type: ignore
-        else:
-            model.scheduler = new_scheduler.from_config(config=config)  # type: ignore
     else:
-        return new_scheduler
+        try:
+            new_scheduler = getattr(importlib.import_module("diffusers"), scheduler.name)  # type: ignore
+        except AttributeError:
+            new_scheduler = model.scheduler  # type: ignore
+
+        if autoload:
+            if scheduler.value in [10, 11]:  # type: ignore
+                logger.debug(
+                    f"Loading scheduler {new_scheduler.__class__.__name__} with config karras_sigmas={use_karras_sigmas}"
+                )
+                model.scheduler = new_scheduler.from_config(config=config, use_karras_sigmas=use_karras_sigmas)  # type: ignore
+            else:
+                model.scheduler = new_scheduler.from_config(config=config)  # type: ignore
+        else:
+            return new_scheduler
