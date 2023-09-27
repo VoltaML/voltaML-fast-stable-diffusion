@@ -4,7 +4,7 @@ import logging
 from typing import Dict, Optional, Union
 
 import torch
-from diffusers import SchedulerMixin, DDIMScheduler
+from diffusers import DDIMScheduler, SchedulerMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import PyTorchModelType
@@ -92,9 +92,9 @@ def change_scheduler(
 
         new_scheduler = scheduling.create_sampler(
             alphas_cumprod=sched.alphas_cumprod,  # type: ignore
-            prediction_type=sched.config["prediction_type"],  # type: ignore
             denoiser_enable_quantization=True,
             sampler=scheduler,
+            karras_sigma_scheduler=use_karras_sigmas,
             eta_noise_seed_delta=0,
             sigma_always_discard_next_to_last=False,
             sigma_use_old_karras_scheduler=False,

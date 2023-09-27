@@ -1,10 +1,13 @@
 from typing import Optional, Union, Tuple
+import logging
 
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 import torch
 
 from .denoiser import create_denoiser
 from .adapter import KdiffusionSchedulerAdapter
+
+logger = logging.getLogger(__name__)
 
 samplers_diffusers = {
     KarrasDiffusionSchedulers.DPMSolverMultistepScheduler: "DPM++ 2M Karras",
@@ -21,58 +24,41 @@ samplers_kdiffusion = [
     ("Euler", "sample_euler", {}),
     ("LMS", "sample_lms", {}),
     ("Heun", "sample_heun", {"second_order": True}),
-    ("DPM2", "sample_dpm_2", {"discard_next_to_last_sigma": True}),
+    ("DPM fast", "sample_dpm_fast", {"uses_ensd": True, "default_eta": 0.0}),
+    ("DPM adaptive", "sample_dpm_adaptive", {"uses_ensd": True, "default_eta": 0.0}),
+    (
+        "DPM2",
+        "sample_dpm_2",
+        {
+            "discard_next_to_last_sigma": True,
+            "uses_ensd": True,
+            "second_order": True,
+        },
+    ),
     (
         "DPM2 a",
         "sample_dpm_2_ancestral",
-        {"discard_next_to_last_sigma": True, "uses_ensd": True},
+        {
+            "discard_next_to_last_sigma": True,
+            "uses_ensd": True,
+            "second_order": True,
+        },
     ),
     (
         "DPM++ 2S a",
         "sample_dpmpp_2s_ancestral",
         {"uses_ensd": True, "second_order": True},
     ),
-    ("DPM++ 2M", "sample_dpmpp_2m", {}),
-    ("DPM++ SDE", "sample_dpmpp_sde", {"second_order": True, "brownian_noise": True}),
-    ("DPM++ 2M SDE", "sample_dpmpp_2m_sde", {"brownian_noise": True}),
-    ("DPM fast", "sample_dpm_fast", {"uses_ensd": True, "default_eta": 0.0}),
-    ("DPM adaptive", "sample_dpm_adaptive", {"uses_ensd": True, "default_eta": 0.0}),
-    ("LMS Karras", "sample_lms", {"scheduler": "karras"}),
+    ("DPM++ 2M", "sample_dpmpp_2m", {"scheduler": "karras"}),
     (
-        "DPM2 Karras",
-        "sample_dpm_2",
-        {
-            "scheduler": "karras",
-            "discard_next_to_last_sigma": True,
-            "uses_ensd": True,
-            "second_order": True,
-        },
-    ),
-    (
-        "DPM2 a Karras",
-        "sample_dpm_2_ancestral",
-        {
-            "scheduler": "karras",
-            "discard_next_to_last_sigma": True,
-            "uses_ensd": True,
-            "second_order": True,
-        },
-    ),
-    (
-        "DPM++ 2S a Karras",
-        "sample_dpmpp_2s_ancestral",
-        {"scheduler": "karras", "uses_ensd": True, "second_order": True},
-    ),
-    ("DPM++ 2M Karras", "sample_dpmpp_2m", {"scheduler": "karras"}),
-    (
-        "DPM++ SDE Karras",
+        "DPM++ SDE",
         "sample_dpmpp_sde",
-        {"scheduler": "karras", "second_order": True, "brownian_noise": True},
+        {"second_order": True, "brownian_noise": True},
     ),
     (
-        "DPM++ 2M SDE Karras",
+        "DPM++ 2M SDE",
         "sample_dpmpp_2m_sde",
-        {"scheduler": "karras", "brownian_noise": True},
+        {"brownian_noise": True},
     ),
 ]
 
@@ -89,13 +75,12 @@ def _get_sampler(
 
 def create_sampler(
     alphas_cumprod: torch.Tensor,
-    prediction_type: str,
     sampler: Union[str, KarrasDiffusionSchedulers],
     device: torch.device,
     dtype: torch.dtype,
     eta_noise_seed_delta: Optional[float] = None,
     denoiser_enable_quantization: bool = False,
-    sigma_scheduler: Optional[str] = None,
+    karras_sigma_scheduler: bool = False,
     sigma_use_old_karras_scheduler: bool = False,
     sigma_always_discard_next_to_last: bool = False,
     sigma_rho: Optional[float] = None,
@@ -111,11 +96,15 @@ def create_sampler(
     if sampler_tuple is None:
         raise ValueError("sampler_tuple is invalid")
 
-    scheduler_name = sampler_tuple[2].get("scheduler", sigma_scheduler)
-    print(sampler_tuple[0])
+    scheduler_name = sampler_tuple[2].get(
+        "scheduler", "karras" if karras_sigma_scheduler else None
+    )
+    logger.debug(f"Selected scheduler: {sampler_tuple[0]}")
     if scheduler_name == "karras" and sigma_use_old_karras_scheduler:
         sigma_min = 0.1
         sigma_max = 10
+
+    prediction_type = sampler_tuple[2].get("prediction_type", "epsilon")
 
     adapter = KdiffusionSchedulerAdapter(
         alphas_cumprod=alphas_cumprod,

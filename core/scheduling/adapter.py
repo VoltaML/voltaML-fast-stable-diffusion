@@ -1,10 +1,11 @@
+# pylint: disable=unused-argument
+
 from typing import Callable, Optional, Tuple
 import inspect
 import functools
 
 import k_diffusion
 import torch
-from tqdm import tqdm
 
 from .sigmas import build_sigmas
 from .denoiser import Denoiser

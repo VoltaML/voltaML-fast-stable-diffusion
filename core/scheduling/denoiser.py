@@ -1,3 +1,5 @@
+# pylint: disable=not-callable
+
 from typing import Callable, Union
 
 import torch
