@@ -14,6 +14,7 @@ class _ModelWrapper:
         self.alphas_cumprod = alphas_cumprod
 
     def apply_model(self, *args, **kwargs) -> torch.Tensor:
+        "denoiser#apply_model"
         if len(args) == 3:
             encoder_hidden_states = args[-1]
             args = args[:2]
@@ -29,6 +30,7 @@ def create_denoiser(
     dtype: torch.dtype = torch.float16,
     denoiser_enable_quantization: bool = False,
 ) -> Denoiser:
+    "Create a denoiser based on the provided prediction_type"
     model = _ModelWrapper(alphas_cumprod)
     model.alphas_cumprod = alphas_cumprod
     if prediction_type == "v_prediction":

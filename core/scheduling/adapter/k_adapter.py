@@ -1,29 +1,30 @@
 # pylint: disable=unused-argument
 
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Union, Tuple
 import inspect
 import functools
 
 import k_diffusion
 import torch
 
-from .sigmas import build_sigmas
-from .denoiser import Denoiser
+from ..sigmas import build_sigmas
+from ..denoiser import Denoiser
 
 sampling = k_diffusion.sampling
 
 
 class KdiffusionSchedulerAdapter:
-    sampler_tuple: tuple[None, str, dict]  # selected sampler
+    "Somewhat diffusers compatible scheduler-like K-diffusion adapter."
+    sampler_tuple: tuple[str, Union[Callable, str], dict]  # selected sampler
     denoiser: Denoiser  # selected denoiser
 
     # diffusers compat
-    config: dict = {"steps_offset": 0, "prediction_type": "v_prediction"}
+    config: dict = {"steps_offset": 0, "prediction_type": "epsilon"}
 
     # should really be "sigmas," but for compatibility with diffusers
     # it's named timesteps.
     timesteps: torch.Tensor  # calculated sigmas
-    scheduler_name: str  # name of the scheduler (karras or polyexponential)
+    scheduler_name: str  # name of the scheduler ("karras", "polyexponential", None)
 
     alphas_cumprod: torch.Tensor
 
@@ -33,37 +34,36 @@ class KdiffusionSchedulerAdapter:
 
     sampler_eta: Optional[float] = None
     sampler_churn: Optional[float] = None
-    sampler_t: Tuple[float, float] = (0, 0)
+    sampler_trange: Tuple[float, float] = (0, 0)
     sampler_noise: Optional[float] = None
 
     steps: int = 50
 
     eta_noise_seed_delta: float = 0
 
+    device: torch.device
+    dtype: torch.dtype
+
     def __init__(
         self,
-        alphas_cumprod,
-        scheduler_name,
-        sampler_tuple,
-        sigma_range,
-        sigma_rho,
-        sigma_discard,
-        sampler_eta,
-        sampler_churn,
-        sampler_tmin,
-        sampler_tmax,
-        sampler_noise,
-        device,
-        dtype,
+        alphas_cumprod: torch.Tensor,
+        scheduler_name: str,
+        sampler_tuple: Tuple[str, Union[Callable, str], dict],
+        sigma_range: Tuple[float, float],
+        sigma_rho: float,
+        sigma_discard: bool,
+        sampler_eta: float,
+        sampler_churn: float,
+        sampler_trange: Tuple[float, float],
+        sampler_noise: float,
+        device: torch.device,
+        dtype: torch.dtype,
     ) -> None:
         self.alphas_cumprod = alphas_cumprod.to(device=device)
 
         self.scheduler_name = scheduler_name
         self.sampler_tuple = sampler_tuple
 
-        # SAG compat.
-        if scheduler_name == "polyexponential":
-            self.config["prediction_type"] = "epsilon"
         self.sigma_range = sigma_range
         self.sigma_rho = sigma_rho
         self.sigma_always_discard_next_to_last = sigma_discard
@@ -74,7 +74,7 @@ class KdiffusionSchedulerAdapter:
         if self.sampler_eta is None:
             self.sampler_eta = self.sampler_tuple[2].get("default_eta", None)
         self.sampler_churn = sampler_churn
-        self.sampler_t = (sampler_tmin, sampler_tmax)
+        self.sampler_trange = sampler_trange
         self.sampler_noise = sampler_noise
 
         self.device = device
@@ -86,6 +86,7 @@ class KdiffusionSchedulerAdapter:
         device: Optional[torch.device] = None,
         dtype: Optional[torch.dtype] = None,
     ) -> None:
+        "Initialize timesteps (sigmas) and set steps to correct amount."
         self.steps = steps
         self.timesteps = build_sigmas(
             # Not exactly multiplying steps by 2, but this'll do for now...
@@ -104,6 +105,7 @@ class KdiffusionSchedulerAdapter:
     def scale_model_input(
         self, sample: torch.FloatTensor, timestep: Optional[int] = None
     ) -> torch.FloatTensor:
+        "diffusers#scale_model_input"
         return sample
 
     def do_inference(
@@ -114,7 +116,8 @@ class KdiffusionSchedulerAdapter:
         generator: torch.Generator,
         callback,
         callback_steps,
-    ) -> Callable:
+    ) -> torch.Tensor:
+        "Run inference function provided with denoiser."
         apply_model = functools.partial(apply_model, call=self.denoiser)
         self.denoiser.inner_model.callable = call
 
@@ -153,14 +156,17 @@ class KdiffusionSchedulerAdapter:
             "noise_sampler": create_noise_sampler(),
             "eta": self.sampler_eta,
             "s_churn": self.sampler_churn,
-            "s_tmin": self.sampler_t[0],
-            "s_tmax": self.sampler_t[1],
+            "s_tmin": self.sampler_trange[0],
+            "s_tmax": self.sampler_trange[1],
             "s_noise": self.sampler_noise,
         }
 
-        sampler_func = getattr(sampling, self.sampler_tuple[1])
+        if isinstance(self.sampler_tuple[1], str):
+            sampler_func = getattr(sampling, self.sampler_tuple[1])
+        else:
+            sampler_func = self.sampler_tuple[1]
         parameters = inspect.signature(sampler_func).parameters.keys()
-        for key in sampler_args.copy().keys():
+        for key in sampler_args.copy():
             if key not in parameters or sampler_args[key] is None:
                 del sampler_args[key]
         return sampler_func(**sampler_args)
@@ -171,6 +177,7 @@ class KdiffusionSchedulerAdapter:
         noise: torch.FloatTensor,
         timesteps: torch.Tensor,
     ) -> torch.Tensor:
+        "diffusers#add_noise"
         # Make sure alphas_cumprod and timestep have same device and dtype as original_samples
         alphas_cumprod = self.alphas_cumprod.to(
             device=original_samples.device, dtype=original_samples.dtype

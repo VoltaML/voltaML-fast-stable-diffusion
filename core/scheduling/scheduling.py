@@ -1,11 +1,13 @@
-from typing import Optional, Union, Tuple
+from typing import Callable, Optional, Union, Tuple
 import logging
 
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 import torch
 
+from .custom.dpmpp_2m import sample_dpmpp_2mV2
 from .denoiser import create_denoiser
-from .adapter import KdiffusionSchedulerAdapter
+from .adapter.k_adapter import KdiffusionSchedulerAdapter
+from .adapter.unipc_adapter import UnipcSchedulerAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -18,6 +20,7 @@ samplers_diffusers = {
     KarrasDiffusionSchedulers.EulerAncestralDiscreteScheduler: "Euler a",
     KarrasDiffusionSchedulers.HeunDiscreteScheduler: "Heun",
     KarrasDiffusionSchedulers.LMSDiscreteScheduler: "LMS Karras",
+    KarrasDiffusionSchedulers.UniPCMultistepScheduler: "UniPC Multistep",
 }
 samplers_kdiffusion = [
     ("Euler a", "sample_euler_ancestral", {"uses_ensd": True}),
@@ -49,23 +52,29 @@ samplers_kdiffusion = [
         "sample_dpmpp_2s_ancestral",
         {"uses_ensd": True, "second_order": True},
     ),
-    ("DPM++ 2M", "sample_dpmpp_2m", {"scheduler": "karras"}),
+    ("DPM++ 2M", "sample_dpmpp_2m", {}),
     (
         "DPM++ SDE",
         "sample_dpmpp_sde",
         {"second_order": True, "brownian_noise": True},
     ),
     (
+        "DPM++ 2M Sharp",
+        sample_dpmpp_2mV2,  # pretty much experimental, only for testing things
+        {},
+    ),
+    (
         "DPM++ 2M SDE",
         "sample_dpmpp_2m_sde",
         {"brownian_noise": True},
     ),
+    ("UniPC Multistep", "unipc", {}),
 ]
 
 
 def _get_sampler(
     sampler: Union[str, KarrasDiffusionSchedulers]
-) -> Union[None, Tuple[str, str, dict]]:
+) -> Union[None, Tuple[str, Union[Callable, str], dict]]:
     if isinstance(sampler, KarrasDiffusionSchedulers):
         sampler = samplers_diffusers.get(sampler, "Euler a")  # type: ignore
     return next(
@@ -92,43 +101,51 @@ def create_sampler(
     sampler_tmax: Optional[float] = None,
     sampler_noise: Optional[float] = None,
 ):
+    "Helper function for figuring out and creating a KdiffusionSchedulerAdapter for the appropriate settings given."
     sampler_tuple = _get_sampler(sampler)
     if sampler_tuple is None:
         raise ValueError("sampler_tuple is invalid")
 
-    scheduler_name = sampler_tuple[2].get(
-        "scheduler", "karras" if karras_sigma_scheduler else None
-    )
-    logger.debug(f"Selected scheduler: {sampler_tuple[0]}")
-    if scheduler_name == "karras" and sigma_use_old_karras_scheduler:
-        sigma_min = 0.1
-        sigma_max = 10
+    if sampler_tuple[1] == "unipc":
+        adapter = UnipcSchedulerAdapter(
+            alphas_cumprod=alphas_cumprod,
+            device=device,
+            dtype=dtype,
+            **sampler_tuple[2],
+        )
+    else:
+        scheduler_name = sampler_tuple[2].get(
+            "scheduler", "karras" if karras_sigma_scheduler else None
+        )
+        if scheduler_name == "karras" and sigma_use_old_karras_scheduler:
+            sigma_min = 0.1
+            sigma_max = 10
 
-    prediction_type = sampler_tuple[2].get("prediction_type", "epsilon")
+        prediction_type = sampler_tuple[2].get("prediction_type", "epsilon")
+        logger.debug(f"Selected scheduler: {sampler_tuple[0]}-{prediction_type}")
 
-    adapter = KdiffusionSchedulerAdapter(
-        alphas_cumprod=alphas_cumprod,
-        scheduler_name=scheduler_name,
-        sampler_tuple=sampler_tuple,
-        sigma_range=(sigma_min, sigma_max),
-        sigma_rho=sigma_rho,
-        sigma_discard=sigma_always_discard_next_to_last,
-        sampler_churn=sampler_churn,
-        sampler_eta=sampler_eta,
-        sampler_noise=sampler_noise,
-        sampler_tmax=sampler_tmax,
-        sampler_tmin=sampler_tmin,
-        device=device,
-        dtype=dtype,
-    )
+        adapter = KdiffusionSchedulerAdapter(
+            alphas_cumprod=alphas_cumprod,
+            scheduler_name=scheduler_name,
+            sampler_tuple=sampler_tuple,
+            sigma_range=(sigma_min, sigma_max),  # type: ignore
+            sigma_rho=sigma_rho,  # type: ignore
+            sigma_discard=sigma_always_discard_next_to_last,
+            sampler_churn=sampler_churn,  # type: ignore
+            sampler_eta=sampler_eta,  # type: ignore
+            sampler_noise=sampler_noise,  # type: ignore
+            sampler_trange=(sampler_tmin, sampler_tmax),  # type: ignore
+            device=device,
+            dtype=dtype,
+        )
 
-    adapter.eta_noise_seed_delta = eta_noise_seed_delta or 0
+        adapter.eta_noise_seed_delta = eta_noise_seed_delta or 0
 
-    adapter.denoiser = create_denoiser(
-        alphas_cumprod=alphas_cumprod,
-        prediction_type=prediction_type,
-        denoiser_enable_quantization=denoiser_enable_quantization,
-        device=device,
-        dtype=dtype,
-    )
+        adapter.denoiser = create_denoiser(
+            alphas_cumprod=alphas_cumprod,
+            prediction_type=prediction_type,
+            denoiser_enable_quantization=denoiser_enable_quantization,
+            device=device,
+            dtype=dtype,
+        )
     return adapter

@@ -25,6 +25,7 @@ from core.inference.utilities import (
     preprocess_image,
 )
 from core.optimizations import autocast
+from core.scheduling import KdiffusionSchedulerAdapter
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
@@ -591,8 +592,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                from ...scheduling import KdiffusionSchedulerAdapter
-
                 if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     latents = self.scheduler.do_inference(
                         latents,
@@ -603,21 +602,21 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         callback_steps=callback_steps,
                     )
                 else:
+
+                    def _call(*args, **kwargs):
+                        if len(args) == 3:
+                            encoder_hidden_states = args[-1]
+                            args = args[:2]
+                        if kwargs.get("cond", None) is not None:
+                            encoder_hidden_states = kwargs.pop("cond")
+                        return self.unet(
+                            *args,
+                            encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                            return_dict=True,
+                            **kwargs,
+                        )[0]
+
                     for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
-
-                        def _call(*args, **kwargs):
-                            if len(args) == 3:
-                                encoder_hidden_states = args[-1]
-                                args = args[:2]
-                            if kwargs.get("cond", None) is not None:
-                                encoder_hidden_states = kwargs.pop("cond")
-                            return self.unet(
-                                *args,
-                                encoder_hidden_states=encoder_hidden_states,  # type: ignore
-                                return_dict=True,
-                                **kwargs,
-                            )[0]
-
                         latents = do_denoise(latents, t, _call)  # type: ignore
 
                         # call the callback, if provided

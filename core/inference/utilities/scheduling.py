@@ -8,7 +8,11 @@ from diffusers import DDIMScheduler, SchedulerMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import PyTorchModelType
-from core.scheduling import KdiffusionSchedulerAdapter
+from core.scheduling import (
+    KdiffusionSchedulerAdapter,
+    UnipcSchedulerAdapter,
+    create_sampler,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -66,7 +70,7 @@ def change_scheduler(
     scheduler: Union[str, KarrasDiffusionSchedulers],
     config: Optional[Dict] = None,
     use_karras_sigmas: bool = False,
-):
+) -> SchedulerMixin:
     "Change the scheduler of the model"
 
     config = model.scheduler.config  # type: ignore
@@ -86,11 +90,9 @@ def change_scheduler(
         else:
             new_scheduler = new_scheduler.from_config(config=config)  # type: ignore
     else:
-        from ...scheduling import scheduling
-
         sched = DDIMScheduler.from_pretrained("runwayml/stable-diffusion-v1-5", subfolder="scheduler")  # type: ignore
 
-        new_scheduler = scheduling.create_sampler(
+        new_scheduler = create_sampler(
             alphas_cumprod=sched.alphas_cumprod,  # type: ignore
             denoiser_enable_quantization=True,
             sampler=scheduler,
@@ -102,4 +104,4 @@ def change_scheduler(
             dtype=model.unet.dtype,  # type: ignore
         )
     model.scheduler = new_scheduler  # type: ignore
-    return new_scheduler
+    return new_scheduler  # type: ignore

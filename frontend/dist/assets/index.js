@@ -40727,8 +40727,10 @@ function getSchedulerOptions() {
         { label: "DPM2 a", value: "DPM2 a" },
         { label: "DPM++ 2S a", value: "DPM++ 2S a" },
         { label: "DPM++ 2M", value: "DPM++ 2M" },
+        { label: "DPM++ 2M Sharp", value: "DPM++ 2M Sharp" },
         { label: "DPM++ SDE", value: "DPM++ SDE" },
-        { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" }
+        { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" },
+        { label: "UniPC Multistep", value: "UniPC Multistep" }
       ]
     },
     {

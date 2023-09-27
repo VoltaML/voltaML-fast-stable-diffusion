@@ -19,6 +19,7 @@ def build_sigmas(
     custom_sigma_min: Optional[float] = None,
     custom_sigma_max: Optional[float] = None,
 ) -> torch.Tensor:
+    "Build sigmas (timesteps) from custom values."
     steps += 1 if discard_next_to_last_sigma else 0
 
     if scheduler is None:
