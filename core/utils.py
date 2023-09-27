@@ -7,7 +7,7 @@ import re
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple, Union
 
 import requests
 from PIL import Image
@@ -20,7 +20,7 @@ from core.types import ImageFormats
 logger = logging.getLogger(__name__)
 
 
-def unwrap_enum(possible_enum: Union[Enum, Any]):
+def unwrap_enum(possible_enum: Union[Enum, Any]) -> Any:
     "Unwrap an enum to its value"
 
     if isinstance(possible_enum, Enum):
@@ -45,12 +45,12 @@ def get_grid_dimension(length: int) -> Tuple[int, int]:
 
 
 def convert_image_to_stream(
-    image: Image.Image, quality: int = 95, format: ImageFormats = "webp"
+    image: Image.Image, quality: int = 95, _format: ImageFormats = "webp"
 ) -> BytesIO:
     "Convert an image to a stream of bytes"
 
     stream = BytesIO()
-    image.save(stream, format=format, quality=quality)
+    image.save(stream, format=_format, quality=quality)
     stream.seek(0)
     return stream
 

@@ -26,7 +26,9 @@ class Txt2ImgConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    sampler: Union[
+        int, str
+    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
     steps: int = 40
@@ -43,7 +45,9 @@ class Img2ImgConfig:
     height: int = 512
     seed: int = -1
     cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    sampler: Union[
+        int, str
+    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     prompt: str = ""
     negative_prompt: str = ""
     steps: int = 40
@@ -67,7 +71,9 @@ class InpaintingConfig:
     seed: int = -1
     batch_count: int = 1
     batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    sampler: Union[
+        int, str
+    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     self_attention_scale: float = 0.0
 
 
@@ -84,7 +90,9 @@ class ControlNetConfig:
     steps: int = 40
     batch_count: int = 1
     batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    sampler: Union[
+        int, str
+    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     controlnet: str = "lllyasviel/sd-controlnet-canny"
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512

@@ -14,8 +14,23 @@ from core.types import (
     Txt2imgData,
     Txt2ImgQueueEntry,
 )
-from core.utils import convert_image_to_base64
+from core.utils import convert_image_to_base64, unwrap_enum
 from tests.functions import generate_random_image, generate_random_image_base64
+
+kdiff_samplers = [
+    "Euler a",
+    "Euler",
+    # "LMS",
+    # "Heun",
+    # "DPM fast",
+    # "DPM adaptive",
+    "DPM2",
+    "DPM2 a",
+    "DPM++ 2S a",
+    # "DPM++ 2M",
+    "DPM++ SDE",
+    "DPM++ 2M SDE",
+]
 
 
 @pytest.fixture(name="pipe")
@@ -25,7 +40,7 @@ def pipe_fixture():
     return PyTorchStableDiffusion("Azher/Anything-v4.5-vae-fp16-diffuser")
 
 
-@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers) + kdiff_samplers)
 def test_txt2img_scheduler_sweep(
     pipe: PyTorchStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):
@@ -34,7 +49,7 @@ def test_txt2img_scheduler_sweep(
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
             prompt="This is a test",
-            scheduler=scheduler,
+            scheduler=str(unwrap_enum(scheduler)),
             id="test",
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
