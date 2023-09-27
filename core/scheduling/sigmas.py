@@ -9,14 +9,15 @@ from .denoiser import Denoiser
 sampling = k_diffusion.sampling
 logger = getLogger(__name__)
 
+
 def build_sigmas(
-        steps: int,
-        denoiser: Denoiser,
-        discard_next_to_last_sigma: bool = False,
-        scheduler: Optional[str] = None,
-        custom_rho: Optional[float] = None,
-        custom_sigma_min: Optional[float] = None,
-        custom_sigma_max: Optional[float] = None
+    steps: int,
+    denoiser: Denoiser,
+    discard_next_to_last_sigma: bool = False,
+    scheduler: Optional[str] = None,
+    custom_rho: Optional[float] = None,
+    custom_sigma_min: Optional[float] = None,
+    custom_sigma_max: Optional[float] = None,
 ) -> torch.Tensor:
     steps += 1 if discard_next_to_last_sigma else 0
 
@@ -39,15 +40,15 @@ def build_sigmas(
             "n": steps,
             "sigma_min": sigma_min,
             "sigma_max": sigma_max,
-            "rho": rho
+            "rho": rho,
         }
 
         if rho is None:
             del arguments["rho"]
-        
+
         logger.debug(f"Building sigmas with {arguments}")
         sigmas = getattr(sampling, f"get_sigmas_{scheduler}")(**arguments)
-    
+
     if discard_next_to_last_sigma:
         sigmas = torch.cat([sigmas[:-2], sigmas[-1:]])
     return sigmas
