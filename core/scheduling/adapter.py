@@ -55,7 +55,7 @@ class KdiffusionSchedulerAdapter:
         device,
         dtype,
     ) -> None:
-        self.alphas_cumprod = alphas_cumprod
+        self.alphas_cumprod = alphas_cumprod.to(device=device)
 
         self.scheduler_name = scheduler_name
         self.sampler_tuple = sampler_tuple
@@ -110,14 +110,11 @@ class KdiffusionSchedulerAdapter:
         x,
         call: Callable,
         apply_model: Callable[..., torch.Tensor],
-        progress_bar: tqdm,
         generator: torch.Generator,
         callback,
         callback_steps,
     ) -> Callable:
-        apply_model = functools.partial(
-            apply_model, progress_bar=progress_bar, call=self.denoiser
-        )
+        apply_model = functools.partial(apply_model, call=self.denoiser)
         self.denoiser.inner_model.callable = call
 
         def callback_func(data):
@@ -177,7 +174,7 @@ class KdiffusionSchedulerAdapter:
         alphas_cumprod = self.alphas_cumprod.to(
             device=original_samples.device, dtype=original_samples.dtype
         )
-        timesteps = timesteps.to(original_samples.device)
+        timesteps = timesteps.to(original_samples.device, dtype=torch.int64)
 
         sqrt_alpha_prod = alphas_cumprod[timesteps] ** 0.5
         sqrt_alpha_prod = sqrt_alpha_prod.flatten()

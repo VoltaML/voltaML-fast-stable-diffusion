@@ -454,10 +454,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 ]  # output.sample.shape[-2:] in older diffusers
 
             def do_denoise(
-                x,
-                t,
-                call: Optional[Callable] = None,
-                progress_bar: Optional[tqdm] = None,
+                x: torch.Tensor,
+                t: int | torch.IntTensor,
+                call: Callable,
             ):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
@@ -540,7 +539,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         # predict the noise residual
                         # this probably could have been done better but honestly fuck this
                         degraded_prep = call(  # type: ignore
-                            degraded_latents,
+                            degraded_latents.to(dtype=self.unet.dtype),
                             t,
                             cond=uncond_emb,
                         )
@@ -558,7 +557,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
                         # predict the noise residual
                         degraded_prep = call(  # type: ignore
-                            degraded_latents,
+                            degraded_latents.to(dtype=self.unet.dtype),
                             t,
                             cond=text_embeddings,
                         )
@@ -585,9 +584,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
 
                     x = (1 - init_mask) * init_latents_proper + init_mask * x  # type: ignore
-
-                if progress_bar is not None:
-                    progress_bar.update(1)
                 return x
 
             # 8. Denoising loop
@@ -598,12 +594,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 from ...scheduling import KdiffusionSchedulerAdapter
 
                 if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
-                    progress_bar = tqdm(timesteps, desc="PyTorch")
                     latents = self.scheduler.do_inference(
                         latents,
                         call=self.unet,  # type: ignore
                         apply_model=do_denoise,
-                        progress_bar=progress_bar,
                         generator=generator,
                         callback=callback,
                         callback_steps=callback_steps,
@@ -619,7 +613,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 encoder_hidden_states = kwargs.pop("cond")
                             return self.unet(
                                 *args,
-                                encoder_hidden_states=encoder_hidden_states,
+                                encoder_hidden_states=encoder_hidden_states,  # type: ignore
                                 return_dict=True,
                                 **kwargs,
                             )[0]
