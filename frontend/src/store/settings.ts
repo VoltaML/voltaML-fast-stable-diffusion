@@ -7,8 +7,7 @@ import {
   recievedSettings,
   type ISettings,
 } from "../settings";
-
-export const upscalerOptions: SelectMixedOption[] = [
+const upscalerOptions: SelectMixedOption[] = [
   {
     label: "RealESRGAN_x4plus",
     value: "RealESRGAN_x4plus",
@@ -33,80 +32,94 @@ export const upscalerOptions: SelectMixedOption[] = [
 
 export function getSchedulerOptions() {
   const scheduler_options: SelectMixedOption[] = [
-    { label: "Euler a", value: "Euler a" },
-    { label: "Euler", value: "Euler" },
-    { label: "LMS", value: "LMS" },
-    { label: "Heun", value: "Heun" },
-    { label: "DPM2", value: "DPM2" },
-    { label: "DPM2 a", value: "DPM2 a" },
-    { label: "DPM++ 2S a", value: "DPM++ 2S a" },
-    { label: "DPM++ 2M", value: "DPM++ 2M" },
-    { label: "DPM++ SDE", value: "DPM++ SDE" },
-    { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" },
-    { label: "DPM fast", value: "DPM fast" },
-    { label: "DPM adaptive", value: "DPM adaptive" },
-    { label: "LMS Karras", value: "LMS Karras" },
-    { label: "DPM2 Karras", value: "DPM2 Karras" },
-    { label: "DPM2 a Karras", value: "DPM2 a Karras" },
-    { label: "DPM++ 2S a Karras", value: "DPM++ 2S a Karras" },
-    { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" },
-    { label: "DPM++ SDE Karras", value: "DPM++ SDE Karras" },
-    { label: "DPM++ 2M SDE Karras", value: "DPM++ 2M SDE Karras" },
     {
-      label: "DDIM",
-      value: 1,
+      type: "group",
+      label: "k-diffusion",
+      key: "K-Diffusion",
+      children: [
+        { label: "Euler a", value: "Euler a" },
+        { label: "Euler", value: "Euler" },
+        { label: "LMS", value: "LMS", disabled: true },
+        { label: "Heun", value: "Heun", disabled: true },
+        { label: "DPM2", value: "DPM2" },
+        { label: "DPM2 a", value: "DPM2 a" },
+        { label: "DPM++ 2S a", value: "DPM++ 2S a" },
+        { label: "DPM++ 2M", value: "DPM++ 2M" },
+        { label: "DPM++ SDE", value: "DPM++ SDE" },
+        { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" },
+        { label: "DPM Fast", value: "DPM fast" },
+        { label: "DPM Adaptive", value: "DPM adaptive", disabled: true },
+        { label: "LMS Karras", value: "LMS Karras" },
+        { label: "DPM2 Karras", value: "DPM2 Karras" },
+        { label: "DPM2 a Karras", value: "DPM2 a Karras" },
+        { label: "DPM++ 2S a Karras", value: "DPM++ 2S a Karras" },
+        { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" },
+        { label: "DPM++ SDE Karras", value: "DPM++ SDE Karras" },
+        { label: "DPM++ 2M SDE Karras", value: "DPM++ 2M SDE Karras" },
+      ],
     },
     {
-      label: "DDPM",
-      value: 2,
-    },
-    {
-      label: "PNDM",
-      value: 3,
-    },
-    {
-      label: "LMSD",
-      value: 4,
-    },
-    {
-      label: "EulerDiscrete",
-      value: 5,
-    },
-    {
-      label: "HeunDiscrete",
-      value: 6,
-    },
-    {
-      label: "EulerAncestralDiscrete",
-      value: 7,
-    },
-    {
-      label: "DPMSolverMultistep",
-      value: 8,
-    },
-    {
-      label: "DPMSolverSinglestep",
-      value: 9,
-    },
-    {
-      label: "KDPM2Discrete",
-      value: 10,
-    },
-    {
-      label: "KDPM2AncestralDiscrete",
-      value: 11,
-    },
-    {
-      label: "DEISMultistep",
-      value: 12,
-    },
-    {
-      label: "UniPCMultistep",
-      value: 13,
-    },
-    {
-      label: "DPMSolverSDE",
-      value: 14,
+      type: "group",
+      label: "Diffusers",
+      key: "diffusers",
+      children: [
+        {
+          label: "DDIM",
+          value: 1,
+        },
+        {
+          label: "DDPM",
+          value: 2,
+        },
+        {
+          label: "PNDM",
+          value: 3,
+        },
+        {
+          label: "LMSD",
+          value: 4,
+        },
+        {
+          label: "EulerDiscrete",
+          value: 5,
+        },
+        {
+          label: "HeunDiscrete",
+          value: 6,
+        },
+        {
+          label: "EulerAncestralDiscrete",
+          value: 7,
+        },
+        {
+          label: "DPMSolverMultistep",
+          value: 8,
+        },
+        {
+          label: "DPMSolverSinglestep",
+          value: 9,
+        },
+        {
+          label: "KDPM2Discrete",
+          value: 10,
+        },
+        {
+          label: "KDPM2AncestralDiscrete",
+          value: 11,
+        },
+        {
+          label: "DEISMultistep",
+          value: 12,
+        },
+        {
+          label: "UniPCMultistep",
+          value: 13,
+        },
+        {
+          label: "DPMSolverSDE",
+          value: 14,
+        },
+      ],
     },
   ];
   return scheduler_options;

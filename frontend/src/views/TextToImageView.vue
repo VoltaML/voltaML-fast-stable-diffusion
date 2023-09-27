@@ -61,6 +61,7 @@
 
               <NSelect
                 :options="conf.scheduler_options"
+                filterable
                 v-model:value="conf.data.settings.txt2img.sampler"
                 style="flex-grow: 1"
               />
