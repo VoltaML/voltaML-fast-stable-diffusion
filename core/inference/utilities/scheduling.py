@@ -7,12 +7,9 @@ import torch
 from diffusers import DDIMScheduler, SchedulerMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from core.scheduling import KdiffusionSchedulerAdapter, create_sampler
 from core.types import PyTorchModelType
-from core.scheduling import (
-    KdiffusionSchedulerAdapter,
-    UnipcSchedulerAdapter,
-    create_sampler,
-)
+from core.utils import unwrap_enum
 
 logger = logging.getLogger(__name__)
 
@@ -75,14 +72,18 @@ def change_scheduler(
 
     config = model.scheduler.config  # type: ignore
 
-    if scheduler.isdigit():  # type: ignore
-        scheduler = KarrasDiffusionSchedulers(int(scheduler))  # type: ignore
+    if (isinstance(scheduler, str) and scheduler.isdigit()) or isinstance(
+        scheduler, (int, KarrasDiffusionSchedulers)
+    ):
+        scheduler = KarrasDiffusionSchedulers(int(unwrap_enum(scheduler)))
         try:
-            new_scheduler = getattr(importlib.import_module("diffusers"), scheduler.name)  # type: ignore
+            new_scheduler = getattr(
+                importlib.import_module("diffusers"), scheduler.name
+            )
         except AttributeError:
             new_scheduler = model.scheduler  # type: ignore
 
-        if scheduler.value in [10, 11]:  # type: ignore
+        if scheduler.value in [10, 11]:
             logger.debug(
                 f"Loading scheduler {new_scheduler.__class__.__name__} with config karras_sigmas={use_karras_sigmas}"
             )
