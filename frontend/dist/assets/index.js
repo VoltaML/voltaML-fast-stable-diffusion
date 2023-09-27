@@ -40712,80 +40712,87 @@ const upscalerOptions = [
 ];
 function getSchedulerOptions() {
   const scheduler_options = [
-    { label: "Euler a", value: "Euler a" },
-    { label: "Euler", value: "Euler" },
-    { label: "LMS", value: "LMS" },
-    { label: "Heun", value: "Heun" },
-    { label: "DPM2", value: "DPM2" },
-    { label: "DPM2 a", value: "DPM2 a" },
-    { label: "DPM++ 2S a", value: "DPM++ 2S a" },
-    { label: "DPM++ 2M", value: "DPM++ 2M" },
-    { label: "DPM++ SDE", value: "DPM++ SDE" },
-    { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" },
-    { label: "DPM fast", value: "DPM fast" },
-    { label: "DPM adaptive", value: "DPM adaptive" },
-    { label: "LMS Karras", value: "LMS Karras" },
-    { label: "DPM2 Karras", value: "DPM2 Karras" },
-    { label: "DPM2 a Karras", value: "DPM2 a Karras" },
-    { label: "DPM++ 2S a Karras", value: "DPM++ 2S a Karras" },
-    { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" },
-    { label: "DPM++ SDE Karras", value: "DPM++ SDE Karras" },
-    { label: "DPM++ 2M SDE Karras", value: "DPM++ 2M SDE Karras" },
     {
-      label: "DDIM",
-      value: 1
+      type: "group",
+      label: "k-diffusion",
+      key: "K-Diffusion",
+      children: [
+        { label: "Euler a", value: "Euler a" },
+        { label: "Euler", value: "Euler" },
+        { label: "LMS", value: "LMS", disabled: true },
+        { label: "Heun", value: "Heun", disabled: true },
+        { label: "DPM Fast", value: "DPM fast", disabled: true },
+        { label: "DPM Adaptive", value: "DPM adaptive", disabled: true },
+        { label: "DPM2", value: "DPM2" },
+        { label: "DPM2 a", value: "DPM2 a" },
+        { label: "DPM++ 2S a", value: "DPM++ 2S a" },
+        { label: "DPM++ 2M", value: "DPM++ 2M" },
+        { label: "DPM++ SDE", value: "DPM++ SDE" },
+        { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" }
+      ]
     },
     {
-      label: "DDPM",
-      value: 2
-    },
-    {
-      label: "PNDM",
-      value: 3
-    },
-    {
-      label: "LMSD",
-      value: 4
-    },
-    {
-      label: "EulerDiscrete",
-      value: 5
-    },
-    {
-      label: "HeunDiscrete",
-      value: 6
-    },
-    {
-      label: "EulerAncestralDiscrete",
-      value: 7
-    },
-    {
-      label: "DPMSolverMultistep",
-      value: 8
-    },
-    {
-      label: "DPMSolverSinglestep",
-      value: 9
-    },
-    {
-      label: "KDPM2Discrete",
-      value: 10
-    },
-    {
-      label: "KDPM2AncestralDiscrete",
-      value: 11
-    },
-    {
-      label: "DEISMultistep",
-      value: 12
-    },
-    {
-      label: "UniPCMultistep",
-      value: 13
-    },
-    {
-      label: "DPMSolverSDE",
-      value: 14
+      type: "group",
+      label: "Diffusers",
+      key: "diffusers",
+      children: [
+        {
+          label: "DDIM",
+          value: 1
+        },
+        {
+          label: "DDPM",
+          value: 2
+        },
+        {
+          label: "PNDM",
+          value: 3
+        },
+        {
+          label: "LMSD",
+          value: 4
+        },
+        {
+          label: "EulerDiscrete",
+          value: 5
+        },
+        {
+          label: "HeunDiscrete",
+          value: 6
+        },
+        {
+          label: "EulerAncestralDiscrete",
+          value: 7
+        },
+        {
+          label: "DPMSolverMultistep",
+          value: 8
+        },
+        {
+          label: "DPMSolverSinglestep",
+          value: 9
+        },
+        {
+          label: "KDPM2Discrete",
+          value: 10
+        },
+        {
+          label: "KDPM2AncestralDiscrete",
+          value: 11
+        },
+        {
+          label: "DEISMultistep",
+          value: 12
+        },
+        {
+          label: "UniPCMultistep",
+          value: 13
+        },
+        {
+          label: "DPMSolverSDE",
+          value: 14
+        }
+      ]
     }
   ];
   return scheduler_options;
@@ -40914,7 +40921,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-10ff949d"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-5d5e4605"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40934,7 +40941,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "5fc1b03a": backgroundColor.value
+      "604f0a0e": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41832,7 +41839,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_10ff949d_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_5d5e4605_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41840,7 +41847,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-10ff949d"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5d5e4605"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -41851,11 +41858,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "240a9931": backgroundColor.value,
-      "ba40dad0": theme.value.common.popoverColor,
-      "558e4eb8": theme.value.common.borderRadius,
-      "381fa98a": theme.value.common.pressedColor,
-      "65cff6be": theme.value.common.primaryColorHover
+      "16223ad6": backgroundColor.value,
+      "1fedac06": theme.value.common.popoverColor,
+      "ba9033c6": theme.value.common.borderRadius,
+      "3119c2a0": theme.value.common.pressedColor,
+      "aca37748": theme.value.common.primaryColorHover
     }));
     const settings = useSettings();
     const global2 = useState();

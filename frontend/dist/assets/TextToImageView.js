@@ -208,6 +208,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NSelect), {
                             options: unref(conf).scheduler_options,
+                            filterable: "",
                             value: unref(conf).data.settings.txt2img.sampler,
                             "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.txt2img.sampler = $event),
                             style: { "flex-grow": "1" }

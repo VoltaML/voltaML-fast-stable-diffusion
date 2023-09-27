@@ -7,7 +7,7 @@ import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-84d9c4e4"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-2a772a2b"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
@@ -210,8 +210,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Upscale_vue_vue_type_style_index_0_scoped_84d9c4e4_lang = "";
-const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-84d9c4e4"]]);
+const Upscale_vue_vue_type_style_index_0_scoped_2a772a2b_lang = "";
+const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2a772a2b"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {

@@ -1839,7 +1839,7 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-40775cf8"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-96eb08f0"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "width": "100%" } };
 const _hoisted_2 = {
   key: 0,
@@ -2651,8 +2651,8 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const APISettings_vue_vue_type_style_index_0_scoped_40775cf8_lang = "";
-const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-40775cf8"]]);
+const APISettings_vue_vue_type_style_index_0_scoped_96eb08f0_lang = "";
+const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-96eb08f0"]]);
 const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "BotSettings",
   setup(__props) {

@@ -7220,8 +7220,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "CivitAIDownload",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "7ab6dac9": unref(settings).data.settings.frontend.image_browser_columns,
-      "29fe0186": backgroundColor.value
+      "9fc29920": unref(settings).data.settings.frontend.image_browser_columns,
+      "714c7f6d": backgroundColor.value
     }));
     const settings = useSettings();
     const loadingLock = ref(false);
@@ -7512,9 +7512,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const CivitAIDownload_vue_vue_type_style_index_0_scoped_5c16815b_lang = "";
-const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-5c16815b"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-fc89ced0"), n = n(), popScopeId(), n);
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_07574b72_lang = "";
+const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-07574b72"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-41346243"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
@@ -7696,8 +7696,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_fc89ced0_lang = "";
-const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-fc89ced0"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_41346243_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-41346243"]]);
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "FP32", -1);

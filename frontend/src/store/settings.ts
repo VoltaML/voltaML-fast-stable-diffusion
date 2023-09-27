@@ -7,7 +7,7 @@ import {
   recievedSettings,
   type ISettings,
 } from "../settings";
-const upscalerOptions: SelectMixedOption[] = [
+export const upscalerOptions: SelectMixedOption[] = [
   {
     label: "RealESRGAN_x4plus",
     value: "RealESRGAN_x4plus",
@@ -41,21 +41,14 @@ export function getSchedulerOptions() {
         { label: "Euler", value: "Euler" },
         { label: "LMS", value: "LMS", disabled: true },
         { label: "Heun", value: "Heun", disabled: true },
+        { label: "DPM Fast", value: "DPM fast", disabled: true },
+        { label: "DPM Adaptive", value: "DPM adaptive", disabled: true },
         { label: "DPM2", value: "DPM2" },
         { label: "DPM2 a", value: "DPM2 a" },
         { label: "DPM++ 2S a", value: "DPM++ 2S a" },
         { label: "DPM++ 2M", value: "DPM++ 2M" },
         { label: "DPM++ SDE", value: "DPM++ SDE" },
         { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" },
-        { label: "DPM Fast", value: "DPM fast" },
-        { label: "DPM Adaptive", value: "DPM adaptive", disabled: true },
-        { label: "LMS Karras", value: "LMS Karras" },
-        { label: "DPM2 Karras", value: "DPM2 Karras" },
-        { label: "DPM2 a Karras", value: "DPM2 a Karras" },
-        { label: "DPM++ 2S a Karras", value: "DPM++ 2S a Karras" },
-        { label: "DPM++ 2M Karras", value: "DPM++ 2M Karras" },
-        { label: "DPM++ SDE Karras", value: "DPM++ SDE Karras" },
-        { label: "DPM++ 2M SDE Karras", value: "DPM++ 2M SDE Karras" },
       ],
     },
     {

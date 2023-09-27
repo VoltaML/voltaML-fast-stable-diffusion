@@ -1,6 +1,6 @@
 import { d as defineComponent, E as ref, c as computed, b9 as onMounted, e as openBlock, v as createBlock, w as withCtx, n as createBaseVNode, bO as withModifiers, f as createElementBlock, g as createVNode, h as unref, G as NIcon, t as toDisplayString, i as NCard, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
 import { C as CloudUpload } from "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-d7665fd8"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-4f5be896"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "image-container" };
 const _hoisted_2 = {
   for: "file-upload",
@@ -134,8 +134,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageUpload_vue_vue_type_style_index_0_scoped_d7665fd8_lang = "";
-const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-d7665fd8"]]);
+const ImageUpload_vue_vue_type_style_index_0_scoped_4f5be896_lang = "";
+const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-4f5be896"]]);
 export {
   ImageUpload as I
 };

@@ -18,8 +18,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "1f527750": unref(conf).data.settings.frontend.image_browser_columns,
-      "3b836bf6": backgroundColor.value
+      "0fdcbc19": unref(conf).data.settings.frontend.image_browser_columns,
+      "ae02b812": backgroundColor.value
     }));
     const global = useState();
     const conf = useSettings();
@@ -427,8 +427,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_b4ca8d6c_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-b4ca8d6c"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_c0900653_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c0900653"]]);
 export {
   ImageBrowserView as default
 };
