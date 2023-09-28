@@ -52,7 +52,7 @@ samplers_kdiffusion = [
         "sample_dpmpp_2s_ancestral",
         {"uses_ensd": True, "second_order": True},
     ),
-    ("DPM++ 2M", "sample_dpmpp_2m", {}),
+    ("DPM++ 2M", "sample_dpmpp_2m", {"scheduler": "karras"}),
     (
         "DPM++ SDE",
         "sample_dpmpp_sde",
@@ -66,6 +66,11 @@ samplers_kdiffusion = [
     (
         "DPM++ 2M SDE",
         "sample_dpmpp_2m_sde",
+        {"brownian_noise": True},
+    ),
+    (
+        "DPM++ 3M SDE",
+        "sample_dpmpp_3m_sde",
         {"brownian_noise": True},
     ),
     ("UniPC Multistep", "unipc", {}),

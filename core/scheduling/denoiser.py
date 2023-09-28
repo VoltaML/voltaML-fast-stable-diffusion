@@ -1,16 +1,14 @@
 # pylint: disable=not-callable
 
-from typing import Callable, Union
-
 import torch
 from k_diffusion.external import CompVisVDenoiser, CompVisDenoiser
 
-Denoiser = Union[CompVisDenoiser, CompVisVDenoiser]
+from .types import Denoiser
 
 
 class _ModelWrapper:
-    def __init__(self, alphas_cumprod) -> None:
-        self.callable: Callable = None  # type: ignore
+    def __init__(self, alphas_cumprod: torch.Tensor) -> None:
+        self.callable: torch.Module = None  # type: ignore
         self.alphas_cumprod = alphas_cumprod
 
     def apply_model(self, *args, **kwargs) -> torch.Tensor:

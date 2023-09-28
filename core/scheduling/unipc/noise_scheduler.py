@@ -1,23 +1,25 @@
 # type: ignore pylint: disable=W1401
 # Taken from https://github.com/wl-zhao/UniPC/blob/main/uni_pc.py
 
+from typing import Optional
 import math
 
 import torch
 
 from .utility import interpolate_fn
+from ..types import UniPCSchedule
 
 
 class NoiseScheduleVP:
     def __init__(
         self,
-        schedule="discrete",
-        betas=None,
-        alphas_cumprod=None,
-        continuous_beta_0=0.1,
-        continuous_beta_1=20.0,
-        dtype=torch.float32,
-    ):
+        schedule: UniPCSchedule = "discrete",
+        betas: Optional[torch.Tensor] = None,
+        alphas_cumprod: Optional[torch.Tensor] = None,
+        continuous_beta_0: float = 0.1,
+        continuous_beta_1: float = 20.0,
+        dtype: torch.dtype = torch.float32,
+    ) -> None:
         """Create a wrapper class for the forward SDE (VP type).
         ***
         Update: We support discrete-time diffusion models by implementing a picewise linear interpolation for log_alpha_t.
@@ -75,13 +77,6 @@ class NoiseScheduleVP:
         >>> ns = NoiseScheduleVP('linear', continuous_beta_0=0.1, continuous_beta_1=20.)
         """
 
-        if schedule not in ["discrete", "linear", "cosine"]:
-            raise ValueError(
-                "Unsupported noise schedule {}. The schedule needs to be 'discrete' or 'linear' or 'cosine'".format(
-                    schedule
-                )
-            )
-
         self.schedule = schedule
         if schedule == "discrete":
             if betas is not None:
@@ -126,7 +121,7 @@ class NoiseScheduleVP:
             else:
                 self.T = 1.0
 
-    def marginal_log_mean_coeff(self, t):
+    def marginal_log_mean_coeff(self, t: torch.Tensor) -> torch.Tensor:
         """
         Compute log(alpha_t) of a given continuous-time label t in [0, T].
         """
@@ -145,19 +140,19 @@ class NoiseScheduleVP:
             log_alpha_t = log_alpha_fn(t) - self.cosine_log_alpha_0
             return log_alpha_t
 
-    def marginal_alpha(self, t):
+    def marginal_alpha(self, t: torch.Tensor) -> torch.Tensor:
         """
         Compute alpha_t of a given continuous-time label t in [0, T].
         """
         return torch.exp(self.marginal_log_mean_coeff(t))  # type: ignore
 
-    def marginal_std(self, t):
+    def marginal_std(self, t: torch.Tensor) -> torch.Tensor:
         """
         Compute sigma_t of a given continuous-time label t in [0, T].
         """
         return torch.sqrt(1.0 - torch.exp(2.0 * self.marginal_log_mean_coeff(t)))  # type: ignore
 
-    def marginal_lambda(self, t):
+    def marginal_lambda(self, t: torch.Tensor) -> torch.Tensor:
         """
         Compute lambda_t = log(alpha_t) - log(sigma_t) of a given continuous-time label t in [0, T].
         """
@@ -165,7 +160,7 @@ class NoiseScheduleVP:
         log_std = 0.5 * torch.log(1.0 - torch.exp(2.0 * log_mean_coeff))  # type: ignore
         return log_mean_coeff - log_std
 
-    def inverse_lambda(self, lamb):
+    def inverse_lambda(self, lamb: torch.Tensor) -> torch.Tensor:
         """
         Compute the continuous-time label t in [0, T] of a given half-logSNR lambda_t.
         """

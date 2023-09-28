@@ -2,34 +2,51 @@
 # Taken from https://github.com/wl-zhao/UniPC/blob/main/uni_pc.py#L236
 
 import logging
+from typing import Callable, Optional, List, Tuple
 
 import torch
 from tqdm import tqdm
 
 from .utility import expand_dims
+from .noise_scheduler import NoiseScheduleVP
+from ..types import Order, Variant, Method, AlgorithmType, SkipType
 
 logger = logging.getLogger(__name__)
 
 
 class UniPC:
+    "https://github.com/wl-zhao/UniPC/blob/main/uni_pc.py#L236"
+    model: Callable[[torch.Tensor, torch.Tensor], torch.Tensor]
+    noise_schedule: NoiseScheduleVP
+
+    correcting_x0_fn: Optional[
+        Callable[[torch.Tensor, Optional[torch.Tensor]], torch.Tensor]
+    ]
+    correcting_xt_fn: Optional[Callable]
+
+    dynamic_thresholding_ratio: float
+    thresholding_max_val: float
+
+    variant: Variant
+    predict_x0: bool
+
     def __init__(
         self,
-        model_fn,
-        noise_schedule,
-        algorithm_type="data_prediction",
-        correcting_x0_fn=None,
-        correcting_xt_fn=None,
-        thresholding_max_val=1.0,
-        dynamic_thresholding_ratio=0.995,
-        variant="bh1",
-    ):
+        model_fn: Callable,
+        noise_schedule: NoiseScheduleVP,
+        algorithm_type: AlgorithmType = "data_prediction",
+        correcting_x0_fn: Optional[Callable] = None,
+        correcting_xt_fn: Optional[Callable] = None,
+        thresholding_max_val: float = 1.0,
+        dynamic_thresholding_ratio: float = 0.995,
+        variant: Variant = "bh1",
+    ) -> None:
         """Construct a UniPC.
 
         We support both data_prediction and noise_prediction.
         """
         self.model = lambda x, t: model_fn(x, t.expand((x.shape[0])))
         self.noise_schedule = noise_schedule
-        assert algorithm_type in ["data_prediction", "noise_prediction"]
 
         if correcting_x0_fn == "dynamic_thresholding":
             self.correcting_x0_fn = self.dynamic_thresholding_fn
@@ -43,7 +60,11 @@ class UniPC:
         self.variant = variant
         self.predict_x0 = algorithm_type == "data_prediction"
 
-    def dynamic_thresholding_fn(self, x0, t=None):
+    def dynamic_thresholding_fn(
+        self,
+        x0: torch.Tensor,
+        t: Optional[torch.Tensor] = None,  # pylint: disable=unused-argument
+    ) -> torch.Tensor:
         """
         The dynamic thresholding method.
         """
@@ -59,13 +80,13 @@ class UniPC:
         x0 = torch.clamp(x0, -s, s) / s
         return x0
 
-    def noise_prediction_fn(self, x, t):
+    def noise_prediction_fn(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         """
         Return the noise prediction model.
         """
         return self.model(x, t)
 
-    def data_prediction_fn(self, x, t):
+    def data_prediction_fn(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         """
         Return the data prediction model (with corrector).
         """
@@ -75,10 +96,10 @@ class UniPC:
         ), self.noise_schedule.marginal_std(t)
         x0 = (x - sigma_t * noise) / alpha_t
         if self.correcting_x0_fn is not None:
-            x0 = self.correcting_x0_fn(x0)
+            x0 = self.correcting_x0_fn(x0, None)
         return x0
 
-    def model_fn(self, x, t):
+    def model_fn(self, x: torch.Tensor, t: torch.Tensor) -> torch.Tensor:
         """
         Convert the model to the noise prediction model or the data prediction model.
         """
@@ -87,7 +108,14 @@ class UniPC:
         else:
             return self.noise_prediction_fn(x, t)
 
-    def get_time_steps(self, skip_type, t_T, t_0, N, device):
+    def get_time_steps(
+        self,
+        skip_type: SkipType,
+        t_T: int,
+        t_0: int,
+        N: int,
+        device: torch.device,
+    ) -> torch.Tensor:
         """Compute the intermediate time steps for sampling."""
         if skip_type == "logSNR":
             lambda_T = self.noise_schedule.marginal_lambda(torch.tensor(t_T).to(device))
@@ -114,8 +142,14 @@ class UniPC:
             )
 
     def get_orders_and_timesteps_for_singlestep_solver(
-        self, steps, order, skip_type, t_T, t_0, device
-    ):
+        self,
+        steps: int,
+        order: Order,
+        skip_type: SkipType,
+        t_T: int,
+        t_0: int,
+        device: torch.device,
+    ) -> Tuple[torch.Tensor, List[int]]:
         """
         Get the order of each step for sampling by the singlestep DPM-Solver.
         """
@@ -176,15 +210,21 @@ class UniPC:
             ]
         return timesteps_outer, orders
 
-    def denoise_to_zero_fn(self, x, s):
+    def denoise_to_zero_fn(self, x: torch.Tensor, s: torch.Tensor) -> torch.Tensor:
         """
         Denoise at the final step, which is equivalent to solve the ODE from lambda_s to infty by first-order discretization.
         """
         return self.data_prediction_fn(x, s)
 
     def multistep_uni_pc_update(
-        self, x, model_prev_list, t_prev_list, t, order, **kwargs
-    ):
+        self,
+        x: torch.Tensor,
+        model_prev_list: List[torch.Tensor],
+        t_prev_list: List[torch.Tensor],
+        t: torch.Tensor,
+        order: Order,
+        **kwargs,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         if len(t.shape) == 0:
             t = t.view(-1)
         if "bh" in self.variant:
@@ -198,8 +238,14 @@ class UniPC:
             )
 
     def multistep_uni_pc_vary_update(
-        self, x, model_prev_list, t_prev_list, t, order, use_corrector=True
-    ):
+        self,
+        x: torch.Tensor,
+        model_prev_list: List[torch.Tensor],
+        t_prev_list: List[torch.Tensor],
+        t: torch.Tensor,
+        order: Order,
+        use_corrector: bool = True,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         logger.debug(
             f"using unified predictor-corrector with order {order} (solver type: vary coeff)"
         )
@@ -308,11 +354,18 @@ class UniPC:
                         "bkchw,k->bchw", D1s, A_c[k][:-1]  # type: ignore
                     )
                 x_t = x_t - sigma_t * h_phi_ks[K] * (D1_t * A_c[k][-1])  # type: ignore
-        return x_t, model_t
+        return x_t, model_t  # type: ignore
 
     def multistep_uni_pc_bh_update(
-        self, x, model_prev_list, t_prev_list, t, order, x_t=None, use_corrector=True
-    ):
+        self,
+        x: torch.Tensor,
+        model_prev_list: List[torch.Tensor],
+        t_prev_list: List[torch.Tensor],
+        t: torch.Tensor,
+        order: Order,
+        x_t: Optional[torch.Tensor] = None,
+        use_corrector: bool = True,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
         logger.debug(
             f"using unified predictor-corrector with order {order} (solver type: B(h))"
         )
@@ -430,23 +483,23 @@ class UniPC:
                     corr_res = 0
                 D1_t = model_t - model_prev_0
                 x_t = x_t_ - sigma_t * B_h * (corr_res + rhos_c[-1] * D1_t)  # type: ignore
-        return x_t, model_t
+        return x_t, model_t  # type: ignore
 
     def sample(
         self,
-        x,
-        timesteps: torch.Tensor = None,  # type: ignore
-        steps=20,
-        t_start=None,
-        t_end=None,
-        order=2,
-        method="multistep",
-        lower_order_final=True,
-        denoise_to_zero=False,
-        callback=None,
-        callback_steps=1,
-        return_intermediate=False,
-    ):
+        x: torch.Tensor,
+        timesteps: torch.Tensor,
+        steps: int = 20,
+        t_start: Optional[int] = None,
+        t_end: Optional[int] = None,
+        order: Order = 2,
+        method: Method = "multistep",
+        lower_order_final: bool = True,
+        denoise_to_zero: bool = False,
+        callback: Optional[Callable[[int, torch.Tensor, torch.Tensor], None]] = None,
+        callback_steps: int = 1,
+        return_intermediate: bool = False,
+    ) -> torch.Tensor:
         """
         Compute the sample at time `t_end` by UniPC, given the initial `x` at time `t_start`.
         """
@@ -490,7 +543,7 @@ class UniPC:
                 for step in range(1, order):
                     t = timesteps[step]
                     x, model_x = self.multistep_uni_pc_update(
-                        x, model_prev_list, t_prev_list, t, step, use_corrector=True
+                        x, model_prev_list, t_prev_list, t, step, use_corrector=True  # type: ignore
                     )
                     if model_x is None:
                         model_x = self.model_fn(x, t)
@@ -521,7 +574,7 @@ class UniPC:
                         model_prev_list,
                         t_prev_list,
                         t,
-                        step_order,
+                        step_order,  # type: ignore
                         use_corrector=use_corrector,
                     )
                     if self.correcting_xt_fn is not None:
@@ -552,6 +605,6 @@ class UniPC:
                     intermediates.append(x)
         progress_bar.close()
         if return_intermediate:
-            return x, intermediates
+            return x, intermediates  # type: ignore
         else:
             return x

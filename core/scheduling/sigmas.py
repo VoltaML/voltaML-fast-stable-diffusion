@@ -1,10 +1,11 @@
 from typing import Optional
 from logging import getLogger
+import inspect
 
 import torch
 import k_diffusion
 
-from .denoiser import Denoiser
+from .types import Denoiser, SigmaScheduler
 
 sampling = k_diffusion.sampling
 logger = getLogger(__name__)
@@ -14,7 +15,7 @@ def build_sigmas(
     steps: int,
     denoiser: Denoiser,
     discard_next_to_last_sigma: bool = False,
-    scheduler: Optional[str] = None,
+    scheduler: Optional[SigmaScheduler] = None,
     custom_rho: Optional[float] = None,
     custom_sigma_min: Optional[float] = None,
     custom_sigma_max: Optional[float] = None,
@@ -44,8 +45,11 @@ def build_sigmas(
             "rho": rho,
         }
 
-        if rho is None:
-            del arguments["rho"]
+        sigma_func = getattr(sampling, f"get_sigmas_{scheduler}")
+        params = inspect.signature(sigma_func).parameters.keys()
+        for arg, val in arguments.copy().items():
+            if arg not in params and val is not None:
+                del arguments[arg]
 
         logger.debug(f"Building sigmas with {arguments}")
         sigmas = getattr(sampling, f"get_sigmas_{scheduler}")(**arguments)

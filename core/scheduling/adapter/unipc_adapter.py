@@ -1,33 +1,39 @@
+# pylint: disable=W0613
+
 import functools
-from typing import Any, Callable, Union, Literal
+from typing import Any, Callable, Optional
 
 import torch
 
 from .k_adapter import KdiffusionSchedulerAdapter
 from ..unipc import UniPC, NoiseScheduleVP
+from ..types import Order, SkipType, ModelType, Method, Variant
 
 
 class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
     scheduler: NoiseScheduleVP
 
-    skip_type: str
-    model_type: str
-    variant: str
-    method: str
+    skip_type: SkipType
+    model_type: ModelType
+    variant: Variant
+    method: Method
 
-    order: int
+    order: Order
     lower_order_final: bool
+
+    timesteps: torch.Tensor
+    steps: int
 
     def __init__(
         self,
         alphas_cumprod: torch.Tensor,
         device: torch.device,
         dtype: torch.dtype,
-        skip_type: Literal["logSNR", "time_uniform", "time_quadratic"] = "time_uniform",
-        model_type: Union[Literal["v"], Literal["noise"]] = "noise",
-        variant: Union[Literal["bh1"], Literal["bh2"]] = "bh1",
-        method: Literal["multistep", "singlestep", "singlestep_fixed"] = "multistep",
-        order: Literal[1, 2, 3] = 2,
+        skip_type: SkipType = "time_uniform",
+        model_type: ModelType = "noise",
+        variant: Variant = "bh1",
+        method: Method = "multistep",
+        order: Order = 2,
         lower_order_final: bool = True,
     ) -> None:
         super().__init__(
@@ -56,8 +62,8 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
     def set_timesteps(
         self,
         steps: int,
-        device: torch.device | None = None,
-        dtype: torch.dtype | None = None,
+        device: Optional[torch.device] = None,
+        dtype: Optional[torch.dtype] = None,
     ) -> None:
         self.steps = steps
 
@@ -84,9 +90,7 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
                 return t
             else:
                 raise ValueError(
-                    "Unsupported skip_type {}, need to be 'logSNR' or 'time_uniform' or 'time_quadratic'".format(
-                        skip_type
-                    )
+                    f"Unsupported skip_type {skip_type}, need to be 'logSNR' or 'time_uniform' or 'time_quadratic'"
                 )
 
         t_0 = 1.0 / self.scheduler.total_N

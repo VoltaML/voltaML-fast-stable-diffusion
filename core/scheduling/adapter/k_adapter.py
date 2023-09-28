@@ -1,6 +1,6 @@
 # pylint: disable=unused-argument
 
-from typing import Callable, Optional, Union, Tuple
+from typing import Callable, Optional, Tuple
 import inspect
 import functools
 
@@ -8,15 +8,15 @@ import k_diffusion
 import torch
 
 from ..sigmas import build_sigmas
-from ..denoiser import Denoiser
+from ..types import Denoiser, Sampler, SigmaScheduler
 
 sampling = k_diffusion.sampling
 
 
 class KdiffusionSchedulerAdapter:
     "Somewhat diffusers compatible scheduler-like K-diffusion adapter."
-    sampler_tuple: tuple[str, Union[Callable, str], dict]  # selected sampler
-    denoiser: Denoiser  # selected denoiser
+    sampler_tuple: Sampler
+    denoiser: Denoiser
 
     # diffusers compat
     config: dict = {"steps_offset": 0, "prediction_type": "epsilon"}
@@ -24,7 +24,7 @@ class KdiffusionSchedulerAdapter:
     # should really be "sigmas," but for compatibility with diffusers
     # it's named timesteps.
     timesteps: torch.Tensor  # calculated sigmas
-    scheduler_name: str  # name of the scheduler ("karras", "polyexponential", None)
+    scheduler_name: Optional[SigmaScheduler]
 
     alphas_cumprod: torch.Tensor
 
@@ -47,8 +47,8 @@ class KdiffusionSchedulerAdapter:
     def __init__(
         self,
         alphas_cumprod: torch.Tensor,
-        scheduler_name: str,
-        sampler_tuple: Tuple[str, Union[Callable, str], dict],
+        scheduler_name: Optional[SigmaScheduler],
+        sampler_tuple: Sampler,
         sigma_range: Tuple[float, float],
         sigma_rho: float,
         sigma_discard: bool,
@@ -131,19 +131,18 @@ class KdiffusionSchedulerAdapter:
                     x,
                     self.timesteps[self.timesteps > 0].min(),
                     self.timesteps.max(),
-                    seed=[generator.seed()],
                 )
 
-            def noise(sigma, sigma_next):
+            def noiser(sigma=None, sigma_next=None):
                 return torch.randn(
                     x.shape,
-                    layout=x.layout,
-                    device=x.device,
+                    device=generator.device,
                     dtype=x.dtype,
+                    layout=x.layout,
                     generator=generator,
-                ).to(x.device)
+                ).to(device=x.device)
 
-            return noise
+            return noiser
 
         sampler_args = {
             "n": self.steps,
