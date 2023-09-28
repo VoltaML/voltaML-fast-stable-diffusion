@@ -18,7 +18,10 @@ class _ModelWrapper:
             args = args[:2]
         if kwargs.get("cond", None) is not None:
             encoder_hidden_states = kwargs.pop("cond")
-        return self.callable(*args, encoder_hidden_states=encoder_hidden_states, return_dict=True, **kwargs)[0]  # type: ignore
+        if isinstance(self.callable, torch.Module):
+            return self.callable(*args, encoder_hidden_states=encoder_hidden_states, return_dict=True, **kwargs)[0]  # type: ignore
+        else:
+            return self.callable(*args, encoder_hidden_states=encoder_hidden_states, **kwargs)  # type: ignore
 
 
 def create_denoiser(

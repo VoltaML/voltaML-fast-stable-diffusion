@@ -42,6 +42,8 @@ from core.inference.utilities import (
     preprocess_image,
 )
 
+from core.scheduling import KdiffusionSchedulerAdapter
+
 if is_aitemplate_available():
     from core.aitemplate.config import get_unet_in_channels
     from core.aitemplate.src.modeling import mapping
@@ -333,9 +335,9 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     - float(i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0)
                 )
 
-        for i, t in enumerate(tqdm(timesteps, desc="AITemplate")):
+        def do_denoise(x, t, call: Callable = None) -> torch.Tensor:  # type: ignore
             latent_model_input = (
-                torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
+                torch.cat([x] * 2) if do_classifier_free_guidance else x  # type: ignore
             )
             latent_model_input = self.scheduler.scale_model_input(latent_model_input, t).half()  # type: ignore
 
@@ -343,7 +345,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             if self.controlnet is not None and ctrl_image is not None:  # type: ignore
                 if guess_mode and do_classifier_free_guidance:
                     # Infer ControlNet only for the conditional batch.
-                    control_model_input = latents
+                    control_model_input = x
                     control_model_input = self.scheduler.scale_model_input(
                         control_model_input, t  # type: ignore
                     ).half()
@@ -378,20 +380,20 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                         ]
                     )
 
-                noise_pred = self.unet_inference(
+                noise_pred = call(
                     latent_model_input,
                     t,
-                    encoder_hidden_states=text_embeddings,
+                    cond=text_embeddings,
                     height=height,
                     width=width,
                     down_block=down_block_res_samples,
                     mid_block=mid_block_res_sample,
                 )
             else:
-                noise_pred = self.unet_inference(
+                noise_pred = call(
                     latent_model_input,
                     t,
-                    encoder_hidden_states=text_embeddings,
+                    cond=text_embeddings,
                     height=height,
                     width=width,
                 )
@@ -402,12 +404,43 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     noise_pred_text - noise_pred_uncond
                 )
 
-            latents = self.scheduler.step(
-                noise_pred, t, latents, **extra_step_kwargs, return_dict=False  # type: ignore
-            )[0]
+            if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                x = self.scheduler.step(
+                    noise_pred, t, x, **extra_step_kwargs, return_dict=False  # type: ignore
+                )[0]
+            else:
+                x = noise_pred
+            return x
 
-            if callback is not None:
-                callback(i, t, latents)  # type: ignore
+        if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+            self.scheduler.do_inference(
+                latents,
+                call=self.unet_inference,
+                apply_model=do_denoise,
+                generator=generator,  # type: ignore
+                callback=callback,
+                callback_steps=1,
+            )
+        else:
+
+            def _call(*args, **kwargs):
+                if len(args) == 3:
+                    encoder_hidden_states = args[-1]
+                    args = args[:2]
+                if kwargs.get("cond", None) is not None:
+                    encoder_hidden_states = kwargs.pop("cond")
+                return self.unet_inference(
+                    *args,
+                    encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                    **kwargs,
+                )
+
+            for i, t in enumerate(tqdm(timesteps, desc="AITemplate")):
+                latents = do_denoise(latents, t, _call)  # type: ignore
+
+                # call the callback, if provided
+                if callback is not None:
+                    callback(i, t, latents)  # type: ignore
 
         if output_type == "latent":
             return latents, None
