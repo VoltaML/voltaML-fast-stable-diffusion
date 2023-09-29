@@ -18,7 +18,7 @@ class _ModelWrapper:
             args = args[:2]
         if kwargs.get("cond", None) is not None:
             encoder_hidden_states = kwargs.pop("cond")
-        if isinstance(self.callable, torch.Module):
+        if isinstance(self.callable, torch.nn.Module):
             return self.callable(*args, encoder_hidden_states=encoder_hidden_states, return_dict=True, **kwargs)[0]  # type: ignore
         else:
             return self.callable(*args, encoder_hidden_states=encoder_hidden_states, **kwargs)  # type: ignore

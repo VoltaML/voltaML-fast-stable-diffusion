@@ -8,7 +8,6 @@ Denoiser = Union[CompVisVDenoiser, CompVisDenoiser]
 
 # UniPC
 AlgorithmType = Literal["noise_prediction", "data_prediction"]
-Order = Literal[1, 2, 3]
 ModelType = Literal["v", "noise"]  # "v" for 2.x and "noise" for 1.x
 Variant = Literal["bh1", "bh2"]
 SkipType = Literal["logSNR", "time_uniform", "time_quadratic"]

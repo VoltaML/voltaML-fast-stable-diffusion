@@ -9,7 +9,7 @@ from tqdm import tqdm
 
 from .utility import expand_dims
 from .noise_scheduler import NoiseScheduleVP
-from ..types import Order, Variant, Method, AlgorithmType, SkipType
+from ..types import Variant, Method, AlgorithmType, SkipType
 
 logger = logging.getLogger(__name__)
 
@@ -144,7 +144,7 @@ class UniPC:
     def get_orders_and_timesteps_for_singlestep_solver(
         self,
         steps: int,
-        order: Order,
+        order: int,
         skip_type: SkipType,
         t_T: int,
         t_0: int,
@@ -222,7 +222,7 @@ class UniPC:
         model_prev_list: List[torch.Tensor],
         t_prev_list: List[torch.Tensor],
         t: torch.Tensor,
-        order: Order,
+        order: int,
         **kwargs,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         if len(t.shape) == 0:
@@ -243,7 +243,7 @@ class UniPC:
         model_prev_list: List[torch.Tensor],
         t_prev_list: List[torch.Tensor],
         t: torch.Tensor,
-        order: Order,
+        order: int,
         use_corrector: bool = True,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
         logger.debug(
@@ -362,7 +362,7 @@ class UniPC:
         model_prev_list: List[torch.Tensor],
         t_prev_list: List[torch.Tensor],
         t: torch.Tensor,
-        order: Order,
+        order: int,
         x_t: Optional[torch.Tensor] = None,
         use_corrector: bool = True,
     ) -> Tuple[torch.Tensor, torch.Tensor]:
@@ -492,7 +492,7 @@ class UniPC:
         steps: int = 20,
         t_start: Optional[int] = None,
         t_end: Optional[int] = None,
-        order: Order = 2,
+        order: int = 2,
         method: Method = "multistep",
         lower_order_final: bool = True,
         denoise_to_zero: bool = False,

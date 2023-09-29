@@ -5,6 +5,7 @@ from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 import torch
 
 from .custom.dpmpp_2m import sample_dpmpp_2mV2
+from .custom.restart import restart_sampler
 from .denoiser import create_denoiser
 from .adapter.k_adapter import KdiffusionSchedulerAdapter
 from .adapter.unipc_adapter import UnipcSchedulerAdapter
@@ -74,6 +75,7 @@ samplers_kdiffusion = [
         {"brownian_noise": True},
     ),
     ("UniPC Multistep", "unipc", {}),
+    ("Restart", restart_sampler, {}),
 ]
 
 

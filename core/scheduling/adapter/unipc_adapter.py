@@ -7,7 +7,7 @@ import torch
 
 from .k_adapter import KdiffusionSchedulerAdapter
 from ..unipc import UniPC, NoiseScheduleVP
-from ..types import Order, SkipType, ModelType, Method, Variant
+from ..types import SkipType, ModelType, Method, Variant
 
 
 class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
@@ -18,7 +18,7 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
     variant: Variant
     method: Method
 
-    order: Order
+    order: int
     lower_order_final: bool
 
     timesteps: torch.Tensor
@@ -33,7 +33,7 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         model_type: ModelType = "noise",
         variant: Variant = "bh1",
         method: Method = "multistep",
-        order: Order = 2,
+        order: int = 3,
         lower_order_final: bool = True,
     ) -> None:
         super().__init__(

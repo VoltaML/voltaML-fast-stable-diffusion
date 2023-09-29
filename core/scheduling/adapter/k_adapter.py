@@ -7,6 +7,7 @@ import functools
 import k_diffusion
 import torch
 
+from ..hijack import TorchHijack
 from ..sigmas import build_sigmas
 from ..types import Denoiser, Sampler, SigmaScheduler
 
@@ -160,13 +161,15 @@ class KdiffusionSchedulerAdapter:
             "s_noise": self.sampler_noise,
         }
 
+        k_diffusion.sampling.torch = TorchHijack(generator)
+
         if isinstance(self.sampler_tuple[1], str):
             sampler_func = getattr(sampling, self.sampler_tuple[1])
         else:
             sampler_func = self.sampler_tuple[1]
         parameters = inspect.signature(sampler_func).parameters.keys()
-        for key in sampler_args.copy():
-            if key not in parameters or sampler_args[key] is None:
+        for key, value in sampler_args.copy().items():
+            if key not in parameters or value is None:
                 del sampler_args[key]
         return sampler_func(**sampler_args)
 
