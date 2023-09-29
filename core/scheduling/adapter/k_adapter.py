@@ -1,8 +1,8 @@
 # pylint: disable=unused-argument
 
-from typing import Callable, Optional, Tuple
-import inspect
 import functools
+import inspect
+from typing import Callable, Optional, Tuple
 
 import k_diffusion
 import torch
@@ -90,9 +90,7 @@ class KdiffusionSchedulerAdapter:
         "Initialize timesteps (sigmas) and set steps to correct amount."
         self.steps = steps
         self.timesteps = build_sigmas(
-            # Not exactly multiplying steps by 2, but this'll do for now...
-            steps=steps
-            * (2 if self.sampler_tuple[2].get("second_order", False) else 1),
+            steps=steps,
             denoiser=self.denoiser,
             discard_next_to_last_sigma=self.sampler_tuple[2].get(
                 "discard_next_to_last_sigma", self.sigma_always_discard_next_to_last

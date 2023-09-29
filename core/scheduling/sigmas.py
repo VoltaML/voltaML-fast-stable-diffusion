@@ -1,9 +1,9 @@
-from typing import Optional
-from logging import getLogger
 import inspect
+from logging import getLogger
+from typing import Optional
 
-import torch
 import k_diffusion
+import torch
 
 from .types import Denoiser, SigmaScheduler
 
@@ -24,7 +24,7 @@ def build_sigmas(
     steps += 1 if discard_next_to_last_sigma else 0
 
     if scheduler is None:
-        logger.debug("No #scheduler provided. Using default sampler.")
+        logger.debug("No optional scheduler provided. Using default.")
         sigmas = denoiser.get_sigmas(steps)
     else:
         sigma_min, sigma_max = (denoiser.sigmas[0].item(), denoiser.sigmas[-1].item())  # type: ignore
