@@ -163,6 +163,13 @@ def main(exit_after_init: bool = False):
         host=host,
         port=args.port,
         workers=4,
+        headers=[
+            ("Access-Control-Allow-Origin", "*"),
+            ("Access-Control-Allow-Headers", "*"),
+            ("Access-Control-Allow-Methods", "*"),
+            ("Access-Control-Allow-Credentials", "true"),
+            ("Access-Control-Expose-Headers", "*"),
+        ],
     )
     uvi_server = Server(config=uvi_config)
 

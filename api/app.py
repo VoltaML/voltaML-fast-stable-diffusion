@@ -7,13 +7,13 @@ from pathlib import Path
 from api_analytics.fastapi import Analytics
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
 from fastapi_simple_cachecontrol.types import CacheControl
 from huggingface_hub.hf_api import LocalTokenNotFoundError
 from starlette import status
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from api import websocket_manager
@@ -91,8 +91,18 @@ async def hf_token_error(_request, _exc):
 
 
 @app.exception_handler(404)
-async def custom_http_exception_handler(_request, _exc):
+async def custom_http_exception_handler(request: Request, _exc):
     "Redirect back to the main page (frontend will handle it)"
+
+    if request.url.path.startswith("/api"):
+        return JSONResponse(
+            content={
+                "status_code": 10404,
+                "message": "Not Found",
+                "data": None,
+            },
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
     return FileResponse("frontend/dist/index.html")
 
@@ -191,24 +201,21 @@ app.mount("/data/outputs", StaticFiles(directory="data/outputs"), name="outputs"
 # Mount static files (css, js, images, etc.)
 static_app = FastAPI()
 static_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-static_app.add_middleware(
     CacheControlMiddleware, cache_control=CacheControl("no-cache")
 )
 static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
-
 app.mount("/assets", static_app)
 
 # Allow CORS for specified origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+)
+static_app.add_middleware(
+    CORSMiddleware,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
 )
