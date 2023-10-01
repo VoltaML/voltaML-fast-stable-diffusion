@@ -1056,7 +1056,6 @@ class OnnxStableDiffusion(InferenceModel):
                     cond=prompt_embeds,
                     class_labels=class_labels,
                 )
-            noise_pred = noise_pred[0]
 
             if do_classifier_free_guidance:
                 noise_pred_uncond, noise_pred_text = np.split(noise_pred, 2)
