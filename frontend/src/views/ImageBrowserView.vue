@@ -1,151 +1,153 @@
 <template>
-  <div
-    style="
-      width: calc(100vw - 98px);
-      height: 48px;
-      border-bottom: #505050 1px solid;
-      margin-top: 53px;
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      padding-right: 24px;
-      position: fixed;
-      top: 0;
-      z-index: 1;
-    "
-    class="top-bar"
-  >
-    <NInput
-      v-model:value="itemFilter"
-      style="margin: 0 12px"
-      placeholder="Filter"
-    />
-    <NIcon style="margin-right: 12px" size="22">
-      <GridOutline />
-    </NIcon>
-    <NSlider
-      style="width: 50vw"
-      :min="1"
-      :max="10"
-      v-model:value="conf.data.settings.frontend.image_browser_columns"
+  <div>
+    <div
+      style="
+        width: calc(100vw - 98px);
+        height: 48px;
+        border-bottom: #505050 1px solid;
+        margin-top: 53px;
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        padding-right: 24px;
+        position: fixed;
+        top: 0;
+        z-index: 1;
+      "
+      class="top-bar"
     >
-    </NSlider>
-  </div>
-  <div class="main-container" style="margin-top: 114px">
-    <NModal
-      v-model:show="showDeleteModal"
-      :mask-closable="false"
-      preset="confirm"
-      type="error"
-      title="Delete Image"
-      content="Do you want to delete this image? This action cannot be undone."
-      positive-text="Confirm"
-      negative-text="Cancel"
-      transform-origin="center"
-      @positive-click="deleteImage"
-      @negative-click="showDeleteModal = false"
-    />
-    <NModal
-      v-model:show="showImageModal"
-      closable
-      mask-closable
-      preset="card"
-      style="width: 85vw"
-      title="Image Info"
-      id="image-modal"
-    >
-      <NGrid cols="1 m:2" x-gap="12" y-gap="12" responsive="screen">
-        <!-- Left side -->
-        <NGi>
-          <NImage
-            :src="imageSrc"
-            object-fit="contain"
-            style="width: 100%; height: auto; justify-content: center"
-            :img-props="{ style: { width: '40vw', maxHeight: '70vh' } }"
-          />
-          <NGrid cols="2" x-gap="4" y-gap="4" style="margin-top: 12px">
-            <NGi>
-              <NButton
-                type="success"
-                @click="downloadImage"
-                style="width: 100%"
-                ghost
-                ><template #icon>
-                  <NIcon>
-                    <Download />
-                  </NIcon> </template
-                >Download</NButton
-              >
-            </NGi>
+      <NInput
+        v-model:value="itemFilter"
+        style="margin: 0 12px"
+        placeholder="Filter"
+      />
+      <NIcon style="margin-right: 12px" size="22">
+        <GridOutline />
+      </NIcon>
+      <NSlider
+        style="width: 50vw"
+        :min="1"
+        :max="10"
+        v-model:value="conf.data.settings.frontend.image_browser_columns"
+      >
+      </NSlider>
+    </div>
+    <div class="main-container" style="margin-top: 114px">
+      <NModal
+        v-model:show="showDeleteModal"
+        :mask-closable="false"
+        preset="confirm"
+        type="error"
+        title="Delete Image"
+        content="Do you want to delete this image? This action cannot be undone."
+        positive-text="Confirm"
+        negative-text="Cancel"
+        transform-origin="center"
+        @positive-click="deleteImage"
+        @negative-click="showDeleteModal = false"
+      />
+      <NModal
+        v-model:show="showImageModal"
+        closable
+        mask-closable
+        preset="card"
+        style="width: 85vw"
+        title="Image Info"
+        id="image-modal"
+      >
+        <NGrid cols="1 m:2" x-gap="12" y-gap="12" responsive="screen">
+          <!-- Left side -->
+          <NGi>
+            <NImage
+              :src="imageSrc"
+              object-fit="contain"
+              style="width: 100%; height: auto; justify-content: center"
+              :img-props="{ style: { width: '40vw', maxHeight: '70vh' } }"
+            />
+            <NGrid cols="2" x-gap="4" y-gap="4" style="margin-top: 12px">
+              <NGi>
+                <NButton
+                  type="success"
+                  @click="downloadImage"
+                  style="width: 100%"
+                  ghost
+                  ><template #icon>
+                    <NIcon>
+                      <Download />
+                    </NIcon> </template
+                  >Download</NButton
+                >
+              </NGi>
 
-            <NGi>
-              <NButton
-                type="error"
-                @click="showDeleteModal = true"
-                style="width: 100%"
-                ghost
-              >
-                <template #icon>
-                  <NIcon>
-                    <TrashBin />
-                  </NIcon>
-                </template>
-                Delete</NButton
-              >
-            </NGi>
-            <NGi span="2">
-              <SendOutputTo
-                :output="global.state.imageBrowser.currentImageByte64"
-                :card="false"
-              />
-            </NGi>
-          </NGrid>
-        </NGi>
+              <NGi>
+                <NButton
+                  type="error"
+                  @click="showDeleteModal = true"
+                  style="width: 100%"
+                  ghost
+                >
+                  <template #icon>
+                    <NIcon>
+                      <TrashBin />
+                    </NIcon>
+                  </template>
+                  Delete</NButton
+                >
+              </NGi>
+              <NGi span="2">
+                <SendOutputTo
+                  :output="global.state.imageBrowser.currentImageByte64"
+                  :card="false"
+                />
+              </NGi>
+            </NGrid>
+          </NGi>
 
-        <!-- Right side -->
-        <NGi>
-          <NScrollbar>
-            <NDescriptions
-              v-if="global.state.imageBrowser.currentImageMetadata.size !== 0"
-              :column="2"
-              size="large"
-            >
-              <NDescriptionsItem
-                :label="toDescriptionString(key.toString())"
-                content-style="max-width: 100px; word-wrap: break-word;"
-                style="margin: 4px"
-                v-for="(item, key) of global.state.imageBrowser
-                  .currentImageMetadata"
-                v-bind:key="item.toString()"
+          <!-- Right side -->
+          <NGi>
+            <NScrollbar>
+              <NDescriptions
+                v-if="global.state.imageBrowser.currentImageMetadata.size !== 0"
+                :column="2"
+                size="large"
               >
-                {{ item }}
-              </NDescriptionsItem>
-            </NDescriptions>
-          </NScrollbar>
-        </NGi>
-      </NGrid>
-    </NModal>
-    <div ref="scrollComponent">
-      <div class="image-grid">
-        <div
-          v-for="(column, column_index) in columns"
-          v-bind:key="column_index"
-          class="image-column"
-          ref="gridColumnRefs"
-        >
-          <img
-            v-for="(item, item_index) in column"
-            :src="urlFromPath(item.path)"
-            v-bind:key="item_index"
-            style="
-              width: 100%;
-              height: auto;
-              border-radius: 8px;
-              cursor: pointer;
-              margin-bottom: 6px;
-            "
-            @click="imgClick(column_index, item_index)"
-          />
+                <NDescriptionsItem
+                  :label="toDescriptionString(key.toString())"
+                  content-style="max-width: 100px; word-wrap: break-word;"
+                  style="margin: 4px"
+                  v-for="(item, key) of global.state.imageBrowser
+                    .currentImageMetadata"
+                  v-bind:key="item.toString()"
+                >
+                  {{ item }}
+                </NDescriptionsItem>
+              </NDescriptions>
+            </NScrollbar>
+          </NGi>
+        </NGrid>
+      </NModal>
+      <div ref="scrollComponent">
+        <div class="image-grid">
+          <div
+            v-for="(column, column_index) in columns"
+            v-bind:key="column_index"
+            class="image-column"
+            ref="gridColumnRefs"
+          >
+            <img
+              v-for="(item, item_index) in column"
+              :src="urlFromPath(item.path)"
+              v-bind:key="item_index"
+              style="
+                width: 100%;
+                height: auto;
+                border-radius: 8px;
+                cursor: pointer;
+                margin-bottom: 6px;
+              "
+              @click="imgClick(column_index, item_index)"
+            />
+          </div>
         </div>
       </div>
     </div>

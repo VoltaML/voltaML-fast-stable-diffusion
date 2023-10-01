@@ -17,17 +17,7 @@ from starlette import status
 from starlette.responses import JSONResponse
 
 from api import websocket_manager
-from api.routes import (
-    general,
-    generate,
-    hardware,
-    models,
-    outputs,
-    settings,
-    static,
-    test,
-    ws,
-)
+from api.routes import static, ws
 from api.websockets.data import Data
 from api.websockets.notification import Notification
 from core import shared
@@ -184,7 +174,7 @@ for file in Path("api/routes").iterdir():
         if (
             file.name != "__init__.py"
             and file.suffix == ".py"
-            and file.stem != "static"
+            and file.stem not in ["static", "ws"]
         ):
             logger.debug(f"Mounting: {file} as /api/{file.stem}")
             module = __import__(f"api.routes.{file.stem}", fromlist=["router"])
