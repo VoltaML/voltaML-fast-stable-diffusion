@@ -109,7 +109,7 @@ class KdiffusionSchedulerAdapter:
 
     def do_inference(
         self,
-        x,
+        x: torch.Tensor,
         call: Callable,
         apply_model: Callable[..., torch.Tensor],
         generator: torch.Generator,
@@ -119,6 +119,8 @@ class KdiffusionSchedulerAdapter:
         "Run inference function provided with denoiser."
         apply_model = functools.partial(apply_model, call=self.denoiser)
         self.denoiser.inner_model.callable = call
+
+        x = x * self.timesteps[0]
 
         def callback_func(data):
             if callback is not None and data["i"] % callback_steps == 0:
@@ -157,6 +159,7 @@ class KdiffusionSchedulerAdapter:
             "s_tmin": self.sampler_trange[0],
             "s_tmax": self.sampler_trange[1],
             "s_noise": self.sampler_noise,
+            "order": 2 if self.sampler_tuple[2].get("second_order", False) else None,
         }
 
         k_diffusion.sampling.torch = TorchHijack(generator)

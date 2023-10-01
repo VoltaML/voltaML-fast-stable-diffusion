@@ -414,7 +414,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
         if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
             self.scheduler.do_inference(
-                latents,
+                latents,  # type: ignore
                 call=self.unet_inference,
                 apply_model=do_denoise,
                 generator=generator,  # type: ignore

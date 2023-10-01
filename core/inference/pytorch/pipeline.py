@@ -25,7 +25,7 @@ from core.inference.utilities import (
     preprocess_image,
 )
 from core.optimizations import autocast
-from core.scheduling import KdiffusionSchedulerAdapter
+from core.scheduling import KdiffusionSchedulerAdapter, UnipcSchedulerAdapter
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
@@ -456,7 +456,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             def do_denoise(
                 x: torch.Tensor,
-                t: int | torch.IntTensor,
+                t: torch.IntTensor,
                 call: Callable,
             ):
                 # expand the latents if we are doing classifier free guidance
@@ -594,7 +594,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                 if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     latents = self.scheduler.do_inference(
-                        latents,
+                        latents,  # type: ignore
                         call=self.unet,  # type: ignore
                         apply_model=do_denoise,
                         generator=generator,

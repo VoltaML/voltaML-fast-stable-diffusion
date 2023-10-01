@@ -53,7 +53,7 @@ samplers_kdiffusion = [
         "sample_dpmpp_2s_ancestral",
         {"uses_ensd": True, "second_order": True},
     ),
-    ("DPM++ 2M", "sample_dpmpp_2m", {"scheduler": "karras"}),
+    ("DPM++ 2M", "sample_dpmpp_2m", {}),
     (
         "DPM++ SDE",
         "sample_dpmpp_sde",

@@ -51,6 +51,7 @@ export function getSchedulerOptions() {
         { label: "DPM++ SDE", value: "DPM++ SDE" },
         { label: "Borked: DPM++ 2M SDE", value: "DPM++ 2M SDE" },
         { label: "UniPC Multistep", value: "UniPC Multistep" },
+        { label: "Somehwat borked: Restart", value: "Restart" },
       ],
     },
     {

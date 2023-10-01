@@ -9,12 +9,13 @@ import torch
 def sample_dpmpp_2mV2(model, x, sigmas, extra_args=None, callback=None, disable=None):
     """DPM-Solver++(2M) V2."""
     extra_args = {} if extra_args is None else extra_args
-    s_in = x.new_ones([x.shape[0]])
+    s_in: torch.Tensor = x.new_ones([x.shape[0]])
     sigma_fn = lambda t: t.neg().exp()
     t_fn = lambda sigma: sigma.log().neg()
     old_denoised = None
 
     for i in trange(len(sigmas) - 1, disable=disable):
+        print(sigmas[i].item(), s_in.item(), (sigmas[i] * s_in).item())
         denoised = model(x, sigmas[i] * s_in, **extra_args)
         if callback is not None:
             callback(

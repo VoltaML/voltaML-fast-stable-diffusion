@@ -48,7 +48,7 @@ def build_sigmas(
         sigma_func = getattr(sampling, f"get_sigmas_{scheduler}")
         params = inspect.signature(sigma_func).parameters.keys()
         for arg, val in arguments.copy().items():
-            if arg not in params and val is not None:
+            if arg not in params or val is not None:
                 del arguments[arg]
 
         logger.debug(f"Building sigmas with {arguments}")
