@@ -5,6 +5,7 @@ import os
 import re
 import shutil
 import warnings
+import functools
 from dataclasses import fields
 from pathlib import Path
 from time import time
@@ -57,6 +58,7 @@ from core.types import (
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image
+from core.scheduling import KdiffusionSchedulerAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -1031,29 +1033,27 @@ class OnnxStableDiffusion(InferenceModel):
 
         logger.debug("timestep start")
         rt = time()
-        timesteps = self.scheduler.timesteps if timesteps is None else timesteps
-        for i, t in enumerate(tqdm(timesteps)):
+
+        def do_inference(x: torch.Tensor, t: torch.Tensor, call) -> torch.Tensor:
             if kw is not None:
-                latent_model_input = kw(latents, do_classifier_free_guidance, t)
+                latent_model_input = kw(x.numpy(), do_classifier_free_guidance, t)
             else:
                 latent_model_input = _init_latent_model(
-                    latents, do_classifier_free_guidance, t
+                    x.numpy(), do_classifier_free_guidance, t
                 )
 
             timestep = np.array([t], dtype=timestep_dtype)
             if class_labels is None:  # rookie mistake
-                noise_pred = self._run_model(
-                    self.unet,
+                noise_pred = call(
                     sample=latent_model_input,
                     timestep=timestep,
-                    encoder_hidden_states=prompt_embeds,
+                    cond=prompt_embeds,
                 )
             else:
-                noise_pred = self._run_model(
-                    self.unet,
+                noise_pred = call(
                     sample=latent_model_input,
                     timestep=timestep,
-                    encoder_hidden_states=prompt_embeds,
+                    cond=prompt_embeds,
                     class_labels=class_labels,
                 )
             noise_pred = noise_pred[0]
@@ -1063,19 +1063,51 @@ class OnnxStableDiffusion(InferenceModel):
                 noise_pred = noise_pred_uncond + guidance_scale * (
                     noise_pred_text - noise_pred_uncond
                 )
-            scheduler_output = self.scheduler.step(
-                torch.from_numpy(noise_pred),  # type: ignore
-                t,  # type: ignore
-                torch.from_numpy(latents),  # type: ignore
-                **extra_step_kwargs,
-            )
-            latents = scheduler_output.prev_sample  # type: ignore
+            if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                scheduler_output = self.scheduler.step(
+                    torch.from_numpy(noise_pred),  # type: ignore
+                    t,  # type: ignore
+                    torch.from_numpy(x),  # type: ignore
+                    **extra_step_kwargs,
+                )
+                latents = scheduler_output.prev_sample  # type: ignore
+            else:
+                latents = torch.from_numpy(noise_pred)
 
             if callback is not None:
                 callback(i, t, latents)
-            latents = latents.numpy()
-            logger.debug("timestep end (%.2fs)", time() - rt)
             return latents
+
+        timesteps = self.scheduler.timesteps if timesteps is None else timesteps
+
+        if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+            latents = self.scheduler.do_inference(
+                latents,
+                functools.partial(self._run_model, self.unet),
+                do_inference,
+                torch.Generator(),
+                callback,
+                1,
+            ).numpy()
+        else:
+
+            def _call(*args, **kwargs):
+                if len(args) == 3:
+                    encoder_hidden_states = args[-1]
+                    args = args[:2]
+                if kwargs.get("cond", None) is not None:
+                    encoder_hidden_states = kwargs.pop("cond")
+                return self._run_model(
+                    self.unet,
+                    *args,
+                    encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                    **kwargs,
+                )[0]
+
+            for i, t in enumerate(tqdm(timesteps)):
+                latents = do_inference(latents, t, _call)
+        logger.debug("timestep end (%.2fs)", time() - rt)
+        return latents
 
     def _extra_args(self):
         accepts_eta = "eta" in set(
