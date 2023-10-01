@@ -40719,10 +40719,10 @@ function getSchedulerOptions() {
       children: [
         { label: "Euler a", value: "Euler a" },
         { label: "Euler", value: "Euler" },
-        { label: "LMS", value: "LMS", disabled: true },
-        { label: "Heun", value: "Heun", disabled: true },
-        { label: "DPM Fast", value: "DPM fast", disabled: true },
-        { label: "DPM Adaptive", value: "DPM adaptive", disabled: true },
+        { label: "LMS", value: "LMS" },
+        { label: "Heun", value: "Heun" },
+        { label: "DPM Fast", value: "DPM fast" },
+        { label: "DPM Adaptive", value: "DPM adaptive" },
         { label: "DPM2", value: "DPM2" },
         { label: "DPM2 a", value: "DPM2 a" },
         { label: "DPM++ 2S a", value: "DPM++ 2S a" },
@@ -40730,7 +40730,8 @@ function getSchedulerOptions() {
         { label: "DPM++ 2M Sharp", value: "DPM++ 2M Sharp" },
         { label: "DPM++ SDE", value: "DPM++ SDE" },
         { label: "DPM++ 2M SDE", value: "DPM++ 2M SDE" },
-        { label: "UniPC Multistep", value: "UniPC Multistep" }
+        { label: "UniPC Multistep", value: "UniPC Multistep" },
+        { label: "Restart", value: "Restart" }
       ]
     },
     {
@@ -42211,9 +42212,9 @@ export {
   serverUrl as s,
   toDisplayString as t,
   useState as u,
-  createBlock as v,
+  createCommentVNode as v,
   withCtx as w,
-  createCommentVNode as x,
+  createBlock as x,
   NGrid as y,
   spaceRegex as z
 };

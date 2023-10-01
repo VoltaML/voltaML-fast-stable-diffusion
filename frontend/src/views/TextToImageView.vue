@@ -146,16 +146,21 @@
             </div>
 
             <!-- Self Attention Scale -->
-            <div class="flex-container">
+            <div
+              class="flex-container"
+              v-if="
+                Number.isInteger(conf.data.settings.txt2img.sampler) &&
+                conf.data.settings.model?.backend === 'PyTorch'
+              "
+            >
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Self Attention Scale</p>
                 </template>
-                <b class="highlight">PyTorch ONLY.</b> If self attention is >0,
-                SAG will guide the model and improve the quality of the image at
-                the cost of speed. Higher values will follow the guidance more
-                closely, which can lead to better, more sharp and detailed
-                outputs.
+                If self attention is >0, SAG will guide the model and improve
+                the quality of the image at the cost of speed. Higher values
+                will follow the guidance more closely, which can lead to better,
+                more sharp and detailed outputs.
               </NTooltip>
 
               <NSlider
