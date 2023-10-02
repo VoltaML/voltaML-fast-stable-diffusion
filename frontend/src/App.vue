@@ -7,6 +7,7 @@
           <SecretsHandlerVue />
           <CollapsileNavbarVue />
           <TopBarVue />
+          <InitHandler />
           <routerContainerVue style="margin-top: 52px" />
           <PerformanceDrawer />
         </NMessageProvider>
@@ -28,19 +29,14 @@ import {
 } from "naive-ui";
 import { computed } from "vue";
 import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
+import InitHandler from "./components/InitHandler.vue";
 import PerformanceDrawer from "./components/PerformanceDrawer.vue";
 import SecretsHandlerVue from "./components/SecretsHandler.vue";
 import TopBarVue from "./components/TopBar.vue";
 import routerContainerVue from "./router/router-container.vue";
 import { useSettings } from "./store/settings";
-import { useState } from "./store/state";
 
 const settings = useSettings();
-const global = useState();
-
-global.fetchCapabilites().then(() => {
-  console.log("Capabilities successfully fetched from the server");
-});
 
 const theme = computed(() => {
   if (settings.data.settings.frontend.theme === "dark") {

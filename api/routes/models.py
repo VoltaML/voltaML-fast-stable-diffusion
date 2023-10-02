@@ -13,6 +13,7 @@ from streaming_form_data.targets import FileTarget
 
 from api import websocket_manager
 from api.websockets.data import Data
+from api.websockets.notification import Notification
 from core.files import get_full_model_path
 from core.shared_dependent import cached_model_list, gpu
 from core.types import (
@@ -215,17 +216,23 @@ async def delete_model(req: DeleteModelRequest):
     "Delete a model from the server"
 
     assert req.model_type in possible_dirs, f"Invalid upload type {req.model_type}"
-    secondary_dir = Path("data") / req.model_type
 
     if req.model_type == "models":
         path = get_full_model_path(req.model_path, diffusers_skip_ref_follow=True)
     else:
-        path = secondary_dir.joinpath(req.model_path)
+        path = Path(req.model_path)
 
-    logger.warning(f"Deleting model {path} of type {req.model_type}")
+    logger.warning(f"Deleting model '{path}' of type '{req.model_type}'")
 
-    if not path.exists():
-        raise HTTPException(404, "Model not found")
+    if not path.is_symlink():
+        if not path.exists():
+            await websocket_manager.broadcast(
+                data=Notification(
+                    severity="error",
+                    message="Model not found",
+                )
+            )
+            raise HTTPException(404, "Model not found")
 
     if path.is_dir():
         shutil.rmtree(path)

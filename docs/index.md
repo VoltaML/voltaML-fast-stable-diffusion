@@ -21,8 +21,8 @@ features:
     title: Modern and elegant
     details: Modern UI designed for simplicity and ease of use.
   - icon: 🔧
-    title: Upcoming - Volta Manager
-    details: Volta Manager will streamline the installation process and will make it even easier to use VoltaML.
+    title: Volta Manager
+    details: Volta Manager streamlines the installation process and makes it even easier to use VoltaML.
   - icon: ❤‍🔥
     title: Open Source
     details: VoltaML is open source and free to use. Forever.

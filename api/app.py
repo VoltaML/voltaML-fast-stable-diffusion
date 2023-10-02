@@ -7,27 +7,17 @@ from pathlib import Path
 from api_analytics.fastapi import Analytics
 from fastapi import Depends, FastAPI, Request
 from fastapi.exceptions import RequestValidationError
-from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
 from fastapi_simple_cachecontrol.types import CacheControl
 from huggingface_hub.hf_api import LocalTokenNotFoundError
 from starlette import status
+from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import JSONResponse
 
 from api import websocket_manager
-from api.routes import (
-    general,
-    generate,
-    hardware,
-    models,
-    outputs,
-    settings,
-    static,
-    test,
-    ws,
-)
+from api.routes import static, ws
 from api.websockets.data import Data
 from api.websockets.notification import Notification
 from core import shared
@@ -101,8 +91,18 @@ async def hf_token_error(_request, _exc):
 
 
 @app.exception_handler(404)
-async def custom_http_exception_handler(_request, _exc):
+async def custom_http_exception_handler(request: Request, _exc):
     "Redirect back to the main page (frontend will handle it)"
+
+    if request.url.path.startswith("/api"):
+        return JSONResponse(
+            content={
+                "status_code": 10404,
+                "message": "Not Found",
+                "data": None,
+            },
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
     return FileResponse("frontend/dist/index.html")
 
@@ -177,13 +177,18 @@ else:
 # Mount routers
 ## HTTP
 app.include_router(static.router)
-app.include_router(test.router, prefix="/api/test")
-app.include_router(generate.router, prefix="/api/generate")
-app.include_router(hardware.router, prefix="/api/hardware")
-app.include_router(models.router, prefix="/api/models")
-app.include_router(outputs.router, prefix="/api/output")
-app.include_router(general.router, prefix="/api/general")
-app.include_router(settings.router, prefix="/api/settings")
+
+# Walk the routes folder and mount all routers
+for file in Path("api/routes").iterdir():
+    if file.is_file():
+        if (
+            file.name != "__init__.py"
+            and file.suffix == ".py"
+            and file.stem not in ["static", "ws"]
+        ):
+            logger.debug(f"Mounting: {file} as /api/{file.stem}")
+            module = __import__(f"api.routes.{file.stem}", fromlist=["router"])
+            app.include_router(module.router, prefix=f"/api/{file.stem}")
 
 ## WebSockets
 app.include_router(ws.router, prefix="/api/websockets")
@@ -196,24 +201,21 @@ app.mount("/data/outputs", StaticFiles(directory="data/outputs"), name="outputs"
 # Mount static files (css, js, images, etc.)
 static_app = FastAPI()
 static_app.add_middleware(
-    CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-)
-static_app.add_middleware(
     CacheControlMiddleware, cache_control=CacheControl("no-cache")
 )
 static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
-
 app.mount("/assets", static_app)
 
 # Allow CORS for specified origins
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
-    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+)
+static_app.add_middleware(
+    CORSMiddleware,
+    allow_methods=["*"],
+    allow_headers=["*"],
+    expose_headers=["*"],
 )

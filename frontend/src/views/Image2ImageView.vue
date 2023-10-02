@@ -1,14 +1,14 @@
 <template>
   <NTabs type="segment" v-model:value="state.state.img2img.tab">
-    <NTabPane name="Image to Image">
+    <NTabPane tab="Image to Image" name="img2img">
       <Img2Img />
     </NTabPane>
 
-    <NTabPane name="ControlNet">
+    <NTabPane tab="ControlNet" name="controlnet">
       <ControlNet />
     </NTabPane>
 
-    <NTabPane name="Inpainting">
+    <NTabPane tab="Inpainting" name="inpainting">
       <Inpainting />
     </NTabPane>
   </NTabs>

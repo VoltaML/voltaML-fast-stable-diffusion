@@ -387,6 +387,7 @@
         <ImageOutput
           :current-image="global.state.inpainting.currentImage"
           :images="global.state.inpainting.images"
+          :data="conf.data.settings.inpainting"
           @image-clicked="global.state.inpainting.currentImage = $event"
         />
 
@@ -428,6 +429,7 @@ import {
   NSelect,
   NSlider,
   NSpace,
+  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";

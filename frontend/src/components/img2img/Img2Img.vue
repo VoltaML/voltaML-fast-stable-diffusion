@@ -273,6 +273,7 @@
         <ImageOutput
           :current-image="global.state.img2img.currentImage"
           :images="global.state.img2img.images"
+          :data="conf.data.settings.img2img"
           @image-clicked="global.state.img2img.currentImage = $event"
         />
 
@@ -309,6 +310,7 @@ import {
   NSelect,
   NSlider,
   NSpace,
+  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";

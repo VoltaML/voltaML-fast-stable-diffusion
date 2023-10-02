@@ -9,8 +9,8 @@ const router = createRouter({
       component: () => import("../views/TextToImageView.vue"),
     },
     {
-      path: "/image2image",
-      name: "image2image",
+      path: "/img2img",
+      name: "img2img",
       component: () => import("../views/Image2ImageView.vue"),
     },
     {

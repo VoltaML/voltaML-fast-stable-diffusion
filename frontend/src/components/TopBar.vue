@@ -600,7 +600,7 @@ function refreshModels() {
             }*/
           }
 
-          global.state.autofill = autofillKeys;
+          global.state.autofill_special = autofillKeys;
         });
       });
     })
