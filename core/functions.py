@@ -30,11 +30,15 @@ def image_meta_from_file(path: Path) -> Dict[str, str]:
 
             return meta
     else:
-        data = piexif.load(path.as_posix())
-        meta: Dict[str, str] = json.loads(
-            piexif.helper.UserComment.load(data["Exif"][piexif.ExifIFD.UserComment])
-        )
-        return meta
+        try:
+            data = piexif.load(path.as_posix())
+            meta: Dict[str, str] = json.loads(
+                piexif.helper.UserComment.load(data["Exif"][piexif.ExifIFD.UserComment])
+            )
+            return meta
+        except ValueError as e:
+            logger.warning(f"Error while loading metadata from {path}: {e}")
+            return {}
 
 
 def inject_var_into_dotenv(key: str, value: str) -> None:
