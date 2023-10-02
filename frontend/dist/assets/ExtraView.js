@@ -1,8 +1,8 @@
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, q as NTooltip, m as createTextVNode, y as NGrid, L as upscalerOptions, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, x as createBlock, H as NTabPane, I as NTabs } from "./index.js";
-import { N as NSlider } from "./Slider.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, q as NTooltip, m as createTextVNode, y as NGrid, K as upscalerOptions, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, x as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { a as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
@@ -223,7 +223,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(state).state.extra.tab = $event)
       }, {
         default: withCtx(() => [
-          createVNode(unref(NTabPane), { name: "Upscale" }, {
+          createVNode(unref(NTabPane), {
+            tab: "Upscale",
+            name: "upscale"
+          }, {
             default: withCtx(() => [
               createVNode(Upscale)
             ]),

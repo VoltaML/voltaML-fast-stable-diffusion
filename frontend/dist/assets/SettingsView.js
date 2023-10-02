@@ -1,7 +1,6 @@
-import { a3 as inject, by as getCurrentInstance, K as watch, aH as onBeforeUnmount, Y as cB, $ as cM, X as c, V as createInjectionKey, d as defineComponent, Q as useConfig, a5 as useTheme, E as ref, T as provide, D as h, bz as formLight, ai as keysOf, c as computed, aF as formatLength, aM as get, bA as commonVariables, Z as cE, U as toRef, aa as createId, bB as formItemInjectionKey, b9 as onMounted, a9 as useThemeClass, aX as Transition, aB as resolveWrappedSlot, a8 as createKey, aQ as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, v as createCommentVNode, i as NCard, n as createBaseVNode, f as createElementBlock, M as renderList, bb as NText, m as createTextVNode, t as toDisplayString, J as Fragment, A as pushScopeId, B as popScopeId, _ as _export_sfc, H as NTabPane, I as NTabs, b as useMessage, bC as useNotification, o as onUnmounted, s as serverUrl, F as NButton, bD as defaultSettings } from "./index.js";
-import { N as NSwitch } from "./Switch.js";
+import { a2 as inject, bx as getCurrentInstance, J as watch, aG as onBeforeUnmount, X as cB, Z as cM, W as c, U as createInjectionKey, d as defineComponent, P as useConfig, a4 as useTheme, D as ref, S as provide, C as h, by as formLight, ah as keysOf, c as computed, aE as formatLength, aL as get, bz as commonVariables, Y as cE, T as toRef, a9 as createId, bA as formItemInjectionKey, b8 as onMounted, a8 as useThemeClass, aW as Transition, aA as resolveWrappedSlot, a7 as createKey, aP as warn, a as useSettings, u as useState, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, v as createCommentVNode, i as NCard, n as createBaseVNode, f as createElementBlock, L as renderList, ba as NText, m as createTextVNode, t as toDisplayString, I as Fragment, A as pushScopeId, B as popScopeId, _ as _export_sfc, G as NTabPane, H as NTabs, b as useMessage, bB as useNotification, o as onUnmounted, s as serverUrl, E as NButton, bC as defaultSettings } from "./index.js";
+import { N as NSwitch, a as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSlider } from "./Slider.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
   const injection = inject(injectionName, null);
@@ -1839,7 +1838,7 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-96eb08f0"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-da11dbe9"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "width": "100%" } };
 const _hoisted_2 = {
   key: 0,
@@ -1982,14 +1981,14 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     const autoloadVaeValue = (model) => {
       return computed({
         get: () => {
-          console.log(settings.data.settings.api.autoloaded_vae[model]);
-          return settings.data.settings.api.autoloaded_vae[model] ?? "default";
+          return settings.defaultSettings.api.autoloaded_vae[model] ?? "default";
         },
         set: (value) => {
           if (!value || value === "default") {
-            delete settings.data.settings.api.autoloaded_vae[model];
+            delete settings.defaultSettings.api.autoloaded_vae[model];
           } else {
-            settings.data.settings.api.autoloaded_vae[model] = value;
+            console.log("Setting", model, "to", value);
+            settings.defaultSettings.api.autoloaded_vae[model] = value;
           }
         }
       });
@@ -2651,8 +2650,8 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const APISettings_vue_vue_type_style_index_0_scoped_96eb08f0_lang = "";
-const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-96eb08f0"]]);
+const APISettings_vue_vue_type_style_index_0_scoped_da11dbe9_lang = "";
+const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-da11dbe9"]]);
 const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "BotSettings",
   setup(__props) {
