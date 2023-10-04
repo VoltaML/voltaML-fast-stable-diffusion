@@ -304,7 +304,30 @@
       </NFormItem>
     </NCard>
 
-    <NCard title="TomeSD" class="settings-card">
+    <NCard title="Downsampling" class="settings-card">
+      <!--TODO: check whether hypertile + tomesd can be used at once.-->
+      <NFormItem label="Use HyperTile" label-placement="left">
+        <NSwitch v-model:value="settings.defaultSettings.api.hypertile" />
+      </NFormItem>
+
+      <div v-if="settings.defaultSettings.api.hypertile">
+        <NFormItem label="HyperTile UNet chunk size" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.hypertile_unet_chunk"
+            :min="128"
+            :max="512"
+          />
+        </NFormItem>
+
+        <NFormItem label="HyperTile VAE chunk size" label-placement="left">
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.hypertile_vae_chunk"
+            :min="128"
+            :max="256"
+          />
+        </NFormItem>
+      </div>
+
       <NFormItem label="Use TomeSD" label-placement="left">
         <NSwitch v-model:value="settings.defaultSettings.api.use_tomesd" />
       </NFormItem>

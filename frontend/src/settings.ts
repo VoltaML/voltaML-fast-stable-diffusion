@@ -184,6 +184,10 @@ export interface ISettings {
     torch_compile_dynamic: boolean;
     torch_compile_backend: string;
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
+
+    hypertile: boolean;
+    hypertile_unet_chunk: number;
+    hypertile_vae_chunk: number;
   };
   aitemplate: {
     num_threads: number;
@@ -350,6 +354,10 @@ export const defaultSettings: ISettings = {
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
+
+    hypertile: false,
+    hypertile_unet_chunk: 256,
+    hypertile_vae_chunk: 128,
   },
   aitemplate: {
     num_threads: 8,
