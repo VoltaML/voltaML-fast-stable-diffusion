@@ -342,3 +342,5 @@ class Capabilities:
 
     # Ampere+ (>=8.6)
     has_tensorfloat: bool = False
+
+    hypertile_available: bool = False

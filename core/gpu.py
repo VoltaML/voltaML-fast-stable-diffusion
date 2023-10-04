@@ -40,6 +40,7 @@ from core.types import (
     VaeLoadRequest,
 )
 from core.utils import convert_to_image, image_grid
+from core.optimizations import is_hypertile_available
 
 if TYPE_CHECKING:
     from core.inference.onnx import OnnxStableDiffusion
@@ -129,6 +130,9 @@ class GPU:
                 cap.has_tensorfloat = True
             elif caps[0] >= 9:
                 cap.has_tensorfloat = True
+        
+        if is_hypertile_available():
+            cap.hypertile_available = True
 
         return cap
 
