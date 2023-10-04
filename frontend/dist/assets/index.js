@@ -40686,7 +40686,10 @@ const defaultSettings = {
     torch_compile_fullgraph: false,
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
-    torch_compile_mode: "default"
+    torch_compile_mode: "default",
+    hypertile: false,
+    hypertile_unet_chunk: 256,
+    hypertile_vae_chunk: 128
   },
   aitemplate: {
     num_threads: 8

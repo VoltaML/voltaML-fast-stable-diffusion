@@ -311,21 +311,66 @@
       </NFormItem>
 
       <div v-if="settings.defaultSettings.api.hypertile">
-        <NFormItem label="HyperTile UNet chunk size" label-placement="left">
-          <NInputNumber
+        <div class="flex-container">
+          <NTooltip style="max-width: 600px">
+            <template #trigger>
+              <p class="slider-label">Hypertile UNet chunk size</p>
+            </template>
+            <b class="highlight"
+              >PyTorch ONLY. Recommended sizes are 1/4th your desired resolution
+              or plain "256."</b
+            >
+            Internally splits up the generated image into a grid of this size
+            and does work on them one by one. In practice, this can make
+            generation up to 4x faster on <b>LARGE (1024x1024+)</b> images.
+          </NTooltip>
+
+          <NSlider
             v-model:value="settings.defaultSettings.api.hypertile_unet_chunk"
             :min="128"
-            :max="512"
+            :max="1024"
+            :step="8"
+            style="margin-right: 12px"
           />
-        </NFormItem>
-
-        <NFormItem label="HyperTile VAE chunk size" label-placement="left">
           <NInputNumber
+            v-model:value="settings.defaultSettings.api.hypertile_unet_chunk"
+            size="small"
+            style="min-width: 96px; width: 96px"
+            :min="128"
+            :max="1024"
+            :step="1"
+          />
+        </div>
+
+        <div class="flex-container">
+          <NTooltip style="max-width: 600px">
+            <template #trigger>
+              <p class="slider-label">Hypertile VAE chunk size</p>
+            </template>
+            <b class="highlight"
+              >PyTorch ONLY. Recommended size is a flat "128."</b
+            >
+            Internally splits up the generated image into a grid of this size
+            and does work on them one by one. In practice, this can make VAE
+            processing up to 4x faster on <b>LARGE (1024x1024+)</b> images.
+          </NTooltip>
+
+          <NSlider
             v-model:value="settings.defaultSettings.api.hypertile_vae_chunk"
             :min="128"
-            :max="256"
+            :max="1024"
+            :step="8"
+            style="margin-right: 12px"
           />
-        </NFormItem>
+          <NInputNumber
+            v-model:value="settings.defaultSettings.api.hypertile_vae_chunk"
+            size="small"
+            style="min-width: 96px; width: 96px"
+            :min="128"
+            :max="1024"
+            :step="1"
+          />
+        </div>
       </div>
 
       <NFormItem label="Use TomeSD" label-placement="left">
@@ -422,6 +467,7 @@ import {
   NSlider,
   NSwitch,
   NText,
+  NTooltip,
 } from "naive-ui";
 import { computed } from "vue";
 import { useSettings } from "../../store/settings";

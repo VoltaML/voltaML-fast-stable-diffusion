@@ -1,4 +1,4 @@
-import { a2 as inject, bx as getCurrentInstance, J as watch, aG as onBeforeUnmount, X as cB, Z as cM, W as c, U as createInjectionKey, d as defineComponent, P as useConfig, a4 as useTheme, D as ref, S as provide, C as h, by as formLight, ah as keysOf, c as computed, aE as formatLength, aL as get, bz as commonVariables, Y as cE, T as toRef, a9 as createId, bA as formItemInjectionKey, b8 as onMounted, a8 as useThemeClass, aW as Transition, aA as resolveWrappedSlot, a7 as createKey, aP as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, x as createCommentVNode, i as NCard, n as createBaseVNode, f as createElementBlock, L as renderList, ba as NText, m as createTextVNode, t as toDisplayString, I as Fragment, A as pushScopeId, B as popScopeId, _ as _export_sfc, G as NTabPane, H as NTabs, b as useMessage, bB as useNotification, o as onUnmounted, s as serverUrl, E as NButton, bC as defaultSettings } from "./index.js";
+import { a2 as inject, bx as getCurrentInstance, J as watch, aG as onBeforeUnmount, X as cB, Z as cM, W as c, U as createInjectionKey, d as defineComponent, P as useConfig, a4 as useTheme, D as ref, S as provide, C as h, by as formLight, ah as keysOf, c as computed, aE as formatLength, aL as get, bz as commonVariables, Y as cE, T as toRef, a9 as createId, bA as formItemInjectionKey, b8 as onMounted, a8 as useThemeClass, aW as Transition, aA as resolveWrappedSlot, a7 as createKey, aP as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, x as createCommentVNode, i as NCard, n as createBaseVNode, f as createElementBlock, L as renderList, ba as NText, m as createTextVNode, t as toDisplayString, I as Fragment, q as NTooltip, A as pushScopeId, B as popScopeId, _ as _export_sfc, G as NTabPane, H as NTabs, b as useMessage, bB as useNotification, o as onUnmounted, s as serverUrl, E as NButton, bC as defaultSettings } from "./index.js";
 import { N as NSwitch, a as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1838,7 +1838,7 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-da11dbe9"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-d9789dc8"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "width": "100%" } };
 const _hoisted_2 = {
   key: 0,
@@ -1846,7 +1846,16 @@ const _hoisted_2 = {
 };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1));
 const _hoisted_4 = { key: 0 };
-const _hoisted_5 = { key: 0 };
+const _hoisted_5 = { class: "flex-container" };
+const _hoisted_6 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Hypertile UNet chunk size", -1));
+const _hoisted_7 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, 'PyTorch ONLY. Recommended sizes are 1/4th your desired resolution or plain "256."', -1));
+const _hoisted_8 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "LARGE (1024x1024+)", -1));
+const _hoisted_9 = { class: "flex-container" };
+const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Hypertile VAE chunk size", -1));
+const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, 'PyTorch ONLY. Recommended size is a flat "128."', -1));
+const _hoisted_12 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "LARGE (1024x1024+)", -1));
+const _hoisted_13 = { key: 1 };
+const _hoisted_14 = { key: 0 };
 const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "APISettings",
   setup(__props) {
@@ -2501,10 +2510,86 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
             _: 1
           }),
           createVNode(unref(NCard), {
-            title: "TomeSD",
+            title: "Downsampling",
             class: "settings-card"
           }, {
             default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Use HyperTile",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.api.hypertile,
+                    "onUpdate:value": _cache[29] || (_cache[29] = ($event) => unref(settings).defaultSettings.api.hypertile = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              unref(settings).defaultSettings.api.hypertile ? (openBlock(), createElementBlock("div", _hoisted_4, [
+                createBaseVNode("div", _hoisted_5, [
+                  createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                    trigger: withCtx(() => [
+                      _hoisted_6
+                    ]),
+                    default: withCtx(() => [
+                      _hoisted_7,
+                      createTextVNode(" Internally splits up the generated image into a grid of this size and does work on them one by one. In practice, this can make generation up to 4x faster on "),
+                      _hoisted_8,
+                      createTextVNode(" images. ")
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NSlider), {
+                    value: unref(settings).defaultSettings.api.hypertile_unet_chunk,
+                    "onUpdate:value": _cache[30] || (_cache[30] = ($event) => unref(settings).defaultSettings.api.hypertile_unet_chunk = $event),
+                    min: 128,
+                    max: 1024,
+                    step: 8,
+                    style: { "margin-right": "12px" }
+                  }, null, 8, ["value"]),
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.api.hypertile_unet_chunk,
+                    "onUpdate:value": _cache[31] || (_cache[31] = ($event) => unref(settings).defaultSettings.api.hypertile_unet_chunk = $event),
+                    size: "small",
+                    style: { "min-width": "96px", "width": "96px" },
+                    min: 128,
+                    max: 1024,
+                    step: 1
+                  }, null, 8, ["value"])
+                ]),
+                createBaseVNode("div", _hoisted_9, [
+                  createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                    trigger: withCtx(() => [
+                      _hoisted_10
+                    ]),
+                    default: withCtx(() => [
+                      _hoisted_11,
+                      createTextVNode(" Internally splits up the generated image into a grid of this size and does work on them one by one. In practice, this can make VAE processing up to 4x faster on "),
+                      _hoisted_12,
+                      createTextVNode(" images. ")
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NSlider), {
+                    value: unref(settings).defaultSettings.api.hypertile_vae_chunk,
+                    "onUpdate:value": _cache[32] || (_cache[32] = ($event) => unref(settings).defaultSettings.api.hypertile_vae_chunk = $event),
+                    min: 128,
+                    max: 1024,
+                    step: 8,
+                    style: { "margin-right": "12px" }
+                  }, null, 8, ["value"]),
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.api.hypertile_vae_chunk,
+                    "onUpdate:value": _cache[33] || (_cache[33] = ($event) => unref(settings).defaultSettings.api.hypertile_vae_chunk = $event),
+                    size: "small",
+                    style: { "min-width": "96px", "width": "96px" },
+                    min: 128,
+                    max: 1024,
+                    step: 1
+                  }, null, 8, ["value"])
+                ])
+              ])) : createCommentVNode("", true),
               createVNode(unref(NFormItem), {
                 label: "Use TomeSD",
                 "label-placement": "left"
@@ -2512,12 +2597,12 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NSwitch), {
                     value: unref(settings).defaultSettings.api.use_tomesd,
-                    "onUpdate:value": _cache[29] || (_cache[29] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
+                    "onUpdate:value": _cache[34] || (_cache[34] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
-              unref(settings).defaultSettings.api.use_tomesd ? (openBlock(), createElementBlock("div", _hoisted_4, [
+              unref(settings).defaultSettings.api.use_tomesd ? (openBlock(), createElementBlock("div", _hoisted_13, [
                 createVNode(unref(NFormItem), {
                   label: "TomeSD Ratio",
                   "label-placement": "left"
@@ -2525,7 +2610,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => [
                     createVNode(unref(NInputNumber), {
                       value: unref(settings).defaultSettings.api.tomesd_ratio,
-                      "onUpdate:value": _cache[30] || (_cache[30] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
+                      "onUpdate:value": _cache[35] || (_cache[35] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
                       min: 0.1,
                       max: 1
                     }, null, 8, ["value"])
@@ -2557,7 +2642,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                         }
                       ],
                       value: unref(settings).defaultSettings.api.tomesd_downsample_layers,
-                      "onUpdate:value": _cache[31] || (_cache[31] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event)
+                      "onUpdate:value": _cache[36] || (_cache[36] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event)
                     }, null, 8, ["value"])
                   ]),
                   _: 1
@@ -2578,12 +2663,12 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NSwitch), {
                     value: unref(settings).defaultSettings.api.torch_compile,
-                    "onUpdate:value": _cache[32] || (_cache[32] = ($event) => unref(settings).defaultSettings.api.torch_compile = $event)
+                    "onUpdate:value": _cache[37] || (_cache[37] = ($event) => unref(settings).defaultSettings.api.torch_compile = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
-              unref(settings).defaultSettings.api.torch_compile ? (openBlock(), createElementBlock("div", _hoisted_5, [
+              unref(settings).defaultSettings.api.torch_compile ? (openBlock(), createElementBlock("div", _hoisted_14, [
                 createVNode(unref(NFormItem), {
                   label: "Fullgraph",
                   "label-placement": "left"
@@ -2591,7 +2676,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => [
                     createVNode(unref(NSwitch), {
                       value: unref(settings).defaultSettings.api.torch_compile_fullgraph,
-                      "onUpdate:value": _cache[33] || (_cache[33] = ($event) => unref(settings).defaultSettings.api.torch_compile_fullgraph = $event)
+                      "onUpdate:value": _cache[38] || (_cache[38] = ($event) => unref(settings).defaultSettings.api.torch_compile_fullgraph = $event)
                     }, null, 8, ["value"])
                   ]),
                   _: 1
@@ -2603,7 +2688,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => [
                     createVNode(unref(NSwitch), {
                       value: unref(settings).defaultSettings.api.torch_compile_dynamic,
-                      "onUpdate:value": _cache[34] || (_cache[34] = ($event) => unref(settings).defaultSettings.api.torch_compile_dynamic = $event)
+                      "onUpdate:value": _cache[39] || (_cache[39] = ($event) => unref(settings).defaultSettings.api.torch_compile_dynamic = $event)
                     }, null, 8, ["value"])
                   ]),
                   _: 1
@@ -2615,7 +2700,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => [
                     createVNode(unref(NSelect), {
                       value: unref(settings).defaultSettings.api.torch_compile_backend,
-                      "onUpdate:value": _cache[35] || (_cache[35] = ($event) => unref(settings).defaultSettings.api.torch_compile_backend = $event),
+                      "onUpdate:value": _cache[40] || (_cache[40] = ($event) => unref(settings).defaultSettings.api.torch_compile_backend = $event),
                       tag: "",
                       filterable: "",
                       options: availableTorchCompileBackends.value
@@ -2630,7 +2715,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                   default: withCtx(() => [
                     createVNode(unref(NSelect), {
                       value: unref(settings).defaultSettings.api.torch_compile_mode,
-                      "onUpdate:value": _cache[36] || (_cache[36] = ($event) => unref(settings).defaultSettings.api.torch_compile_mode = $event),
+                      "onUpdate:value": _cache[41] || (_cache[41] = ($event) => unref(settings).defaultSettings.api.torch_compile_mode = $event),
                       options: [
                         { value: "default", label: "Default" },
                         { value: "reduce-overhead", label: "Reduce Overhead" },
@@ -2650,8 +2735,8 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const APISettings_vue_vue_type_style_index_0_scoped_da11dbe9_lang = "";
-const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-da11dbe9"]]);
+const APISettings_vue_vue_type_style_index_0_scoped_d9789dc8_lang = "";
+const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-d9789dc8"]]);
 const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "BotSettings",
   setup(__props) {
