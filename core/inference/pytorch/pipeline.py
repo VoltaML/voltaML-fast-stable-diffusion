@@ -412,13 +412,16 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 device,
                 image is None or self.controlnet is not None,
             )
+            if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                self.scheduler.timesteps = timesteps
+                self.scheduler.steps = num_inference_steps
             latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)  # type: ignore
 
             # 6. Prepare latent variables
             latents, image_latents, noise = prepare_latents(
                 self,
                 image if self.controlnet is None else None,
-                timesteps,
+                latent_timestep,
                 batch_size * num_images_per_prompt,  # type: ignore
                 height,
                 width,

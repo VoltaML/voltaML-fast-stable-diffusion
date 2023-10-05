@@ -289,7 +289,9 @@ def prepare_latents(
             if hasattr(pipe.vae, "main_device"):
                 noise = torch.randn(
                     shape,
-                    generator=torch.Generator("cpu").manual_seed(1),
+                    generator=torch.Generator("cpu").manual_seed(
+                        generator.seed() if generator is not None else 1
+                    ),
                     device="cpu",
                     dtype=dtype,
                 ).to(device)
@@ -299,7 +301,10 @@ def prepare_latents(
                 )
         # Now this... I may have called the previous "hack" retarded, but this...
         # This just takes it to a whole new level
-        latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep[1:].repeat(batch_size).to(device))  # type: ignore
+        if isinstance(pipe.scheduler, KdiffusionSchedulerAdapter):
+            latents = init_latents + noise * pipe.scheduler.init_noise_sigma  # type: ignore
+        else:
+            latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 
 
