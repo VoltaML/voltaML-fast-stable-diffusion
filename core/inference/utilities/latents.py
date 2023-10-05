@@ -12,6 +12,7 @@ from PIL import Image
 
 from core.config import config
 from core.flags import LatentScaleModel
+from core.scheduling import KdiffusionSchedulerAdapter, UnipcSchedulerAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -265,6 +266,9 @@ def prepare_latents(
             logger.debug("Skipping VAE encode, already have latents")
             init_latents = image
 
+        # if isinstance(pipe.scheduler, KdiffusionSchedulerAdapter):
+        #     init_latents = init_latents * pipe.scheduler.init_noise_sigma
+
         init_latents_orig = init_latents
         shape = init_latents.shape
         if latent_channels is not None:
@@ -295,7 +299,7 @@ def prepare_latents(
                 )
         # Now this... I may have called the previous "hack" retarded, but this...
         # This just takes it to a whole new level
-        latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
+        latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep[1:].repeat(batch_size).to(device))  # type: ignore
         return latents, init_latents_orig, noise
 
 

@@ -418,7 +418,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             latents, image_latents, noise = prepare_latents(
                 self,
                 image if self.controlnet is None else None,
-                latent_timestep,
+                timesteps,
                 batch_size * num_images_per_prompt,  # type: ignore
                 height,
                 width,

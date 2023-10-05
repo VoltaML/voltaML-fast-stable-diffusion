@@ -69,8 +69,6 @@ class KdiffusionSchedulerAdapter:
         self.sigma_rho = sigma_rho
         self.sigma_always_discard_next_to_last = sigma_discard
 
-        self.init_noise_sigma = 1.0
-
         self.sampler_eta = sampler_eta
         if self.sampler_eta is None:
             self.sampler_eta = self.sampler_tuple[2].get("default_eta", None)
@@ -107,6 +105,11 @@ class KdiffusionSchedulerAdapter:
         "diffusers#scale_model_input"
         return sample
 
+    @property
+    def init_noise_sigma(self) -> torch.Tensor:
+        "diffusers#init_noise_sigma"
+        return self.timesteps[0]
+
     def do_inference(
         self,
         x: torch.Tensor,
@@ -119,8 +122,6 @@ class KdiffusionSchedulerAdapter:
         "Run inference function provided with denoiser."
         apply_model = functools.partial(apply_model, call=self.denoiser)
         self.denoiser.inner_model.callable = call
-
-        x = x * self.timesteps[0]
 
         def callback_func(data):
             if callback is not None and data["i"] % callback_steps == 0:
