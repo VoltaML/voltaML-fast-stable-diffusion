@@ -6607,10 +6607,10 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.1.3
-  * (c) 2023 Eduardo San Martin Morote
-  * @license MIT
-  */
+ * pinia v2.1.6
+ * (c) 2023 Eduardo San Martin Morote
+ * @license MIT
+ */
 let activePinia;
 const setActivePinia = (pinia2) => activePinia = pinia2;
 const piniaSymbol = (
@@ -37584,7 +37584,7 @@ const WifiSharp = defineComponent({
   }
 });
 /*!
-  * vue-router v4.2.2
+  * vue-router v4.2.5
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -38469,7 +38469,7 @@ function normalizeRecordProps(record) {
     propsObject.default = props;
   } else {
     for (const name in record.components)
-      propsObject[name] = typeof props === "boolean" ? props : props[name];
+      propsObject[name] = typeof props === "object" ? props[name] : props;
   }
   return propsObject;
 }
@@ -38608,7 +38608,7 @@ function useCallbacks() {
   }
   return {
     add: add2,
-    list: () => handlers,
+    list: () => handlers.slice(),
     reset
   };
 }
@@ -39122,8 +39122,8 @@ function createRouter(options) {
       return runGuardQueue(guards);
     }).then(() => {
       guards = [];
-      for (const record of to.matched) {
-        if (record.beforeEnter && !from.matched.includes(record)) {
+      for (const record of enteringRecords) {
+        if (record.beforeEnter) {
           if (isArray(record.beforeEnter)) {
             for (const beforeEnter of record.beforeEnter)
               guards.push(guardToPromiseFn(beforeEnter, to, from));
@@ -39153,9 +39153,7 @@ function createRouter(options) {
     ) ? err : Promise.reject(err));
   }
   function triggerAfterEach(to, from, failure) {
-    for (const guard of afterGuards.list()) {
-      runWithContext(() => guard(to, from, failure));
-    }
+    afterGuards.list().forEach((guard) => runWithContext(() => guard(to, from, failure)));
   }
   function finalizeNavigation(toLocation, from, isPush, replace2, data) {
     const error = checkCanceledNavigation(toLocation, from);
@@ -39254,11 +39252,11 @@ function createRouter(options) {
     });
   }
   let readyHandlers = useCallbacks();
-  let errorHandlers = useCallbacks();
+  let errorListeners = useCallbacks();
   let ready;
   function triggerError(error, to, from) {
     markAsReady(error);
-    const list = errorHandlers.list();
+    const list = errorListeners.list();
     if (list.length) {
       list.forEach((handler) => handler(error, to, from));
     } else {
@@ -39309,7 +39307,7 @@ function createRouter(options) {
     beforeEach: beforeGuards.add,
     beforeResolve: beforeResolveGuards.add,
     afterEach: afterGuards.add,
-    onError: errorHandlers.add,
+    onError: errorListeners.add,
     isReady,
     install(app2) {
       const router3 = this;
@@ -39329,10 +39327,13 @@ function createRouter(options) {
       }
       const reactiveRoute = {};
       for (const key in START_LOCATION_NORMALIZED) {
-        reactiveRoute[key] = computed(() => currentRoute.value[key]);
+        Object.defineProperty(reactiveRoute, key, {
+          get: () => currentRoute.value[key],
+          enumerable: true
+        });
       }
       app2.provide(routerKey, router3);
-      app2.provide(routeLocationKey, reactive(reactiveRoute));
+      app2.provide(routeLocationKey, shallowReactive(reactiveRoute));
       app2.provide(routerViewLocationKey, currentRoute);
       const unmountApp = app2.unmount;
       installedApps.add(app2);
@@ -41990,7 +41991,14 @@ const __vitePreload = function preload(baseModule, deps, importerUrl) {
         link.addEventListener("error", () => rej(new Error(`Unable to preload CSS for ${dep}`)));
       });
     }
-  })).then(() => baseModule());
+  })).then(() => baseModule()).catch((err) => {
+    const e = new Event("vite:preloadError", { cancelable: true });
+    e.payload = err;
+    window.dispatchEvent(e);
+    if (!e.defaultPrevented) {
+      throw err;
+    }
+  });
 };
 const router = createRouter({
   history: createWebHistory("/"),

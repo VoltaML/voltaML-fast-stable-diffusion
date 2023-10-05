@@ -143,7 +143,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$3);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-a815d665"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-5a3a793e"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -157,27 +157,28 @@ const _hoisted_7$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ create
 const _hoisted_8$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "Works only with KDPM samplers. Ignored by other samplers.", -1));
 const _hoisted_9$2 = { class: "flex-container" };
 const _hoisted_10$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "ControlNet", -1));
-const _hoisted_11$2 = { class: "flex-container" };
-const _hoisted_12$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
-const _hoisted_13$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1));
-const _hoisted_14$2 = { class: "flex-container" };
-const _hoisted_15$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1));
-const _hoisted_16$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1));
-const _hoisted_17$2 = { class: "flex-container" };
-const _hoisted_18$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Count", -1));
-const _hoisted_19$2 = { class: "flex-container" };
-const _hoisted_20$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "ControlNet Conditioning Scale", -1));
-const _hoisted_21$2 = { class: "flex-container" };
-const _hoisted_22$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Detection resolution", -1));
-const _hoisted_23$2 = { class: "flex-container" };
-const _hoisted_24$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Seed", -1));
-const _hoisted_25$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1));
-const _hoisted_26$1 = { class: "flex-container" };
-const _hoisted_27$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Is Preprocessed", -1));
-const _hoisted_28$1 = { class: "flex-container" };
-const _hoisted_29$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Save Preprocessed", -1));
-const _hoisted_30$1 = { class: "flex-container" };
-const _hoisted_31$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Return Preprocessed", -1));
+const _hoisted_11$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("a", { href: "https://github.com/lllyasviel/ControlNet-v1-1-nightly?tab=readme-ov-file#controlnet-11" }, "Learn more", -1));
+const _hoisted_12$2 = { class: "flex-container" };
+const _hoisted_13$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
+const _hoisted_14$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1));
+const _hoisted_15$2 = { class: "flex-container" };
+const _hoisted_16$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1));
+const _hoisted_17$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1));
+const _hoisted_18$2 = { class: "flex-container" };
+const _hoisted_19$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Count", -1));
+const _hoisted_20$2 = { class: "flex-container" };
+const _hoisted_21$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "ControlNet Conditioning Scale", -1));
+const _hoisted_22$2 = { class: "flex-container" };
+const _hoisted_23$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Detection resolution", -1));
+const _hoisted_24$2 = { class: "flex-container" };
+const _hoisted_25$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Seed", -1));
+const _hoisted_26$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "For random seed use -1.", -1));
+const _hoisted_27$1 = { class: "flex-container" };
+const _hoisted_28$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Is Preprocessed", -1));
+const _hoisted_29$1 = { class: "flex-container" };
+const _hoisted_30$1 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Save Preprocessed", -1));
+const _hoisted_31$1 = { class: "flex-container" };
+const _hoisted_32 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Return Preprocessed", -1));
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "ControlNet",
   setup(__props) {
@@ -373,7 +374,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                               _hoisted_10$2
                             ]),
                             default: withCtx(() => [
-                              createTextVNode(" TODO ")
+                              createTextVNode(' ControlNet is a method of guiding the diffusion process. It allows you to control the output by providing a guidance image. This image will be processed automatically. You can also opt out and enable "Is Preprocessed" to provide your own preprocessed image. '),
+                              _hoisted_11$2
                             ]),
                             _: 1
                           }),
@@ -389,14 +391,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                         createVNode(_sfc_main$4, {
                           "dimensions-object": unref(conf).data.settings.controlnet
                         }, null, 8, ["dimensions-object"]),
-                        createBaseVNode("div", _hoisted_11$2, [
+                        createBaseVNode("div", _hoisted_12$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
-                              _hoisted_12$2
+                              _hoisted_13$2
                             ]),
                             default: withCtx(() => [
                               createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                              _hoisted_13$2
+                              _hoisted_14$2
                             ]),
                             _: 1
                           }),
@@ -416,14 +418,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 300
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_14$2, [
+                        createBaseVNode("div", _hoisted_15$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
-                              _hoisted_15$2
+                              _hoisted_16$2
                             ]),
                             default: withCtx(() => [
                               createTextVNode(' Guidance scale indicates how much should model stay close to the prompt. Higher values might be exactly what you want, but generated images might have some artefacts. Lower values indicates that model can "dream" about this prompt more. '),
-                              _hoisted_16$2
+                              _hoisted_17$2
                             ]),
                             _: 1
                           }),
@@ -445,10 +447,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             step: 0.5
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_17$2, [
+                        createBaseVNode("div", _hoisted_18$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
-                              _hoisted_18$2
+                              _hoisted_19$2
                             ]),
                             default: withCtx(() => [
                               createTextVNode(" Number of images to generate after each other. ")
@@ -474,10 +476,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                         createVNode(_sfc_main$5, {
                           "batch-size-object": unref(conf).data.settings.controlnet
                         }, null, 8, ["batch-size-object"]),
-                        createBaseVNode("div", _hoisted_19$2, [
+                        createBaseVNode("div", _hoisted_20$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
-                              _hoisted_20$2
+                              _hoisted_21$2
                             ]),
                             default: withCtx(() => [
                               createTextVNode(" How much should the ControlNet affect the image. ")
@@ -502,10 +504,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             step: 0.025
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_21$2, [
+                        createBaseVNode("div", _hoisted_22$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
-                              _hoisted_22$2
+                              _hoisted_23$2
                             ]),
                             default: withCtx(() => [
                               createTextVNode(" What resolution to use for the image processing. This process does not affect the final result but can affect the quality of the ControlNet processing. ")
@@ -530,14 +532,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             step: 8
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_23$2, [
+                        createBaseVNode("div", _hoisted_24$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
-                              _hoisted_24$2
+                              _hoisted_25$1
                             ]),
                             default: withCtx(() => [
                               createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
-                              _hoisted_25$1
+                              _hoisted_26$1
                             ]),
                             _: 1
                           }),
@@ -550,22 +552,22 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_26$1, [
-                          _hoisted_27$1,
+                        createBaseVNode("div", _hoisted_27$1, [
+                          _hoisted_28$1,
                           createVNode(unref(NSwitch), {
                             value: unref(conf).data.settings.controlnet.is_preprocessed,
                             "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.controlnet.is_preprocessed = $event)
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_28$1, [
-                          _hoisted_29$1,
+                        createBaseVNode("div", _hoisted_29$1, [
+                          _hoisted_30$1,
                           createVNode(unref(NSwitch), {
                             value: unref(conf).data.settings.controlnet.save_preprocessed,
                             "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(conf).data.settings.controlnet.save_preprocessed = $event)
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_30$1, [
-                          _hoisted_31$1,
+                        createBaseVNode("div", _hoisted_31$1, [
+                          _hoisted_32,
                           createVNode(unref(NSwitch), {
                             value: unref(conf).data.settings.controlnet.return_preprocessed,
                             "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(conf).data.settings.controlnet.return_preprocessed = $event)
@@ -603,8 +605,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_a815d665_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-a815d665"]]);
+const ControlNet_vue_vue_type_style_index_0_scoped_5a3a793e_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-5a3a793e"]]);
 const _withScopeId$1 = (n) => (pushScopeId("data-v-1686ec08"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };

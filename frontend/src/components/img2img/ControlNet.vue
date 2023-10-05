@@ -98,7 +98,15 @@
                 <template #trigger>
                   <p style="margin-right: 12px; width: 150px">ControlNet</p>
                 </template>
-                TODO
+                ControlNet is a method of guiding the diffusion process. It
+                allows you to control the output by providing a guidance image.
+                This image will be processed automatically. You can also opt out
+                and enable "Is Preprocessed" to provide your own preprocessed
+                image.
+                <a
+                  href="https://github.com/lllyasviel/ControlNet-v1-1-nightly?tab=readme-ov-file#controlnet-11"
+                  >Learn more</a
+                >
               </NTooltip>
 
               <NSelect
