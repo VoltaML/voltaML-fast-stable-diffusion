@@ -354,11 +354,10 @@
           :type="websocketState.color"
           quaternary
           icon-placement="left"
-          :render-icon="renderIcon(WifiSharp)"
+          :render-icon="renderIcon(Wifi)"
           :loading="websocketState.loading"
           @click="startWebsocket(message)"
-          >{{ websocketState.text }}</NButton
-        >
+        ></NButton>
       </NDropdown>
       <NButton
         type="success"
@@ -409,7 +408,7 @@ import {
   SettingsSharp,
   StatsChart,
   SyncSharp,
-  WifiSharp,
+  Wifi,
 } from "@vicons/ionicons5";
 import { NAlert, NButton, NProgress, NResult, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";

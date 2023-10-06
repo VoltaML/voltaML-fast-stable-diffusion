@@ -9,6 +9,11 @@ export function dimensionValidator(value: number) {
   return value % 8 === 0;
 }
 
+export function convertToTextString(str: string): string {
+  const upper = str.charAt(0).toUpperCase() + str.slice(1);
+  return upper.replace(/_/g, " ");
+}
+
 function addActive(x: any) {
   if (!x) return false;
   removeActive(x);

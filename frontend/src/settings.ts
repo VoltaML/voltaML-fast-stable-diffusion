@@ -205,7 +205,7 @@ export interface ISettings {
     on_change_timer: number;
     nsfw_ok_threshold: number;
   };
-  scheduler_settings: Record<string, Record<string, any>>;
+  sampler_config: Record<string, Record<string, any>>;
 }
 
 export const defaultSettings: ISettings = {
@@ -377,7 +377,7 @@ export const defaultSettings: ISettings = {
     on_change_timer: 2000,
     nsfw_ok_threshold: 0,
   },
-  scheduler_settings: {},
+  sampler_config: {},
 };
 
 let rSettings: ISettings = JSON.parse(JSON.stringify(defaultSettings));
