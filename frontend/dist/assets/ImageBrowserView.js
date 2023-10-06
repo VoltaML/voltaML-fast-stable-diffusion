@@ -1,8 +1,8 @@
-import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, D as ref, c as computed, b7 as reactive, b8 as onMounted, o as onUnmounted, e as openBlock, f as createElementBlock, n as createBaseVNode, g as createVNode, h as unref, w as withCtx, I as Fragment, L as renderList, s as serverUrl, k as NInput, F as NIcon, bc as NModal, y as NGrid, N as NGi, E as NButton, m as createTextVNode, M as NScrollbar, x as createBlock, t as toDisplayString, v as createCommentVNode, bD as urlFromPath, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b9 as useCssVars, v as useState, u as useSettings, r as ref, y as computed, ba as reactive, bb as onMounted, z as onUnmounted, o as openBlock, c as createElementBlock, f as createBaseVNode, a as createVNode, b as unref, w as withCtx, F as Fragment, e as renderList, A as serverUrl, D as NInput, p as NIcon, j as NModal, I as NGrid, B as NGi, q as NButton, k as createTextVNode, R as NScrollbar, g as createBlock, t as toDisplayString, H as createCommentVNode, bG as urlFromPath, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
-import { a as NSlider } from "./Switch.js";
+import { N as NSlider } from "./Switch.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "53px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },

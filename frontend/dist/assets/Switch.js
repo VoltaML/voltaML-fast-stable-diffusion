@@ -1,4 +1,4 @@
-import { D as ref, bm as onBeforeUpdate, W as c, X as cB, Z as cM, Y as cE, aV as fadeInScaleUpTransition, a0 as insideModal, a1 as insidePopover, d as defineComponent, P as useConfig, a4 as useTheme, Q as useFormItem, c as computed, T as toRef, R as useMergedState, J as watch, aG as onBeforeUnmount, a8 as useThemeClass, bH as isMounted, au as useAdjustedTo, C as h, bS as VBinder, bT as VTarget, as as resolveSlot, bU as VFollower, aW as Transition, bV as sliderLight, ab as on, aH as off, ag as nextTick, V as call, $ as iconSwitchTransition, ap as cNotM, bW as isSlotEmpty, aA as resolveWrappedSlot, bX as switchLight, a7 as createKey, aK as pxfy, aD as depx, aa as NIconSwitchTransition, aM as NBaseLoading } from "./index.js";
+import { r as ref, bp as onBeforeUpdate, ae as c, U as cB, af as cM, av as cE, aU as fadeInScaleUpTransition, aW as insideModal, aX as insidePopover, d as defineComponent, W as useConfig, X as useTheme, at as useFormItem, y as computed, Z as toRef, ai as useMergedState, P as watch, aD as onBeforeUnmount, $ as useThemeClass, bK as isMounted, an as useAdjustedTo, s as h, bV as VBinder, bW as VTarget, al as resolveSlot, bX as VFollower, aZ as Transition, bY as sliderLight, aF as on, aE as off, a4 as nextTick, a3 as call, aV as iconSwitchTransition, ag as cNotM, bZ as isSlotEmpty, ax as resolveWrappedSlot, b_ as switchLight, ap as createKey, aI as pxfy, aA as depx, aK as NIconSwitchTransition, aL as NBaseLoading } from "./index.js";
 function isTouchEvent(e) {
   return window.TouchEvent && e instanceof window.TouchEvent;
 }
@@ -1077,6 +1077,6 @@ const NSwitch = defineComponent({
   }
 });
 export {
-  NSwitch as N,
-  NSlider as a
+  NSlider as N,
+  NSwitch as a
 };

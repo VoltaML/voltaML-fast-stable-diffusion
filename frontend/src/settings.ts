@@ -33,13 +33,13 @@ export interface ISettings {
     highres: {
       scale: number;
       latent_scale_mode:
-      | "nearest"
-      | "area"
-      | "bilinear"
-      | "bislerp-original"
-      | "bislerp-tortured"
-      | "bicubic"
-      | "nearest-exact";
+        | "nearest"
+        | "area"
+        | "bilinear"
+        | "bislerp-original"
+        | "bislerp-tortured"
+        | "bicubic"
+        | "nearest-exact";
       strength: number;
       steps: 50;
       antialiased: boolean;
@@ -120,11 +120,11 @@ export interface ISettings {
     image: string;
     upscale_factor: number;
     model:
-    | "RealESRGAN_x4plus"
-    | "RealESRNet_x4plus"
-    | "RealESRGAN_x4plus_anime_6B"
-    | "RealESRGAN_x2plus"
-    | "RealESR-general-x4v3";
+      | "RealESRGAN_x4plus"
+      | "RealESRNet_x4plus"
+      | "RealESRGAN_x4plus_anime_6B"
+      | "RealESRGAN_x2plus"
+      | "RealESR-general-x4v3";
     tile_size: number;
     tile_padding: number;
   };
@@ -146,11 +146,11 @@ export interface ISettings {
 
     autocast: boolean;
     attention_processor:
-    | "xformers"
-    | "sdpa"
-    | "cross-attention"
-    | "subquadratic"
-    | "multihead";
+      | "xformers"
+      | "sdpa"
+      | "cross-attention"
+      | "subquadratic"
+      | "multihead";
     subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
@@ -205,6 +205,7 @@ export interface ISettings {
     on_change_timer: number;
     nsfw_ok_threshold: number;
   };
+  scheduler_settings: Record<string, Record<string, any>>;
 }
 
 export const defaultSettings: ISettings = {
@@ -376,6 +377,7 @@ export const defaultSettings: ISettings = {
     on_change_timer: 2000,
     nsfw_ok_threshold: 0,
   },
+  scheduler_settings: {},
 };
 
 let rSettings: ISettings = JSON.parse(JSON.stringify(defaultSettings));

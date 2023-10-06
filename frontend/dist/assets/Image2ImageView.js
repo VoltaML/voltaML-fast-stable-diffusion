@@ -2,9 +2,9 @@ import { _ as _sfc_main$6 } from "./GenerateSection.vue_vue_type_script_setup_tr
 import { B as BurnerClock, _ as _sfc_main$4, a as _sfc_main$5, b as _sfc_main$8 } from "./clock.js";
 import { _ as _sfc_main$7 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, q as NTooltip, r as NSelect, y as NGrid, z as spaceRegex, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, v as createCommentVNode, C as h, D as ref, E as NButton, F as NIcon, x as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { d as defineComponent, o as openBlock, c as createElementBlock, f as createBaseVNode, v as useState, u as useSettings, x as useMessage, y as computed, z as onUnmounted, a as createVNode, w as withCtx, b as unref, B as NGi, N as NCard, C as NSpace, D as NInput, E as promptHandleKeyUp, G as promptHandleKeyDown, k as createTextVNode, t as toDisplayString, l as NTooltip, m as NSelect, I as NGrid, J as spaceRegex, A as serverUrl, K as pushScopeId, L as popScopeId, _ as _export_sfc, H as createCommentVNode, s as h, r as ref, q as NButton, p as NIcon, g as createBlock, M as NTabPane, O as NTabs } from "./index.js";
 import { v as v4 } from "./v4.js";
-import { N as NSwitch, a as NSlider } from "./Switch.js";
+import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./DescriptionsItem.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";

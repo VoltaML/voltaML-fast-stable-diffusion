@@ -1,14 +1,14 @@
-from typing import Callable, Optional, Union, Tuple
 import logging
+from typing import Callable, Optional, Tuple, Union
 
-from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 import torch
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from .adapter.k_adapter import KdiffusionSchedulerAdapter
+from .adapter.unipc_adapter import UnipcSchedulerAdapter
 from .custom.dpmpp_2m import sample_dpmpp_2mV2
 from .custom.restart import restart_sampler
 from .denoiser import create_denoiser
-from .adapter.k_adapter import KdiffusionSchedulerAdapter
-from .adapter.unipc_adapter import UnipcSchedulerAdapter
 
 logger = logging.getLogger(__name__)
 
@@ -24,14 +24,14 @@ samplers_diffusers = {
     KarrasDiffusionSchedulers.UniPCMultistepScheduler: "UniPC Multistep",
 }
 samplers_kdiffusion = [
-    ("Euler a", "sample_euler_ancestral", {"uses_ensd": True}),
-    ("Euler", "sample_euler", {}),
-    ("LMS", "sample_lms", {}),
-    ("Heun", "sample_heun", {"second_order": True}),
-    ("DPM fast", "sample_dpm_fast", {"uses_ensd": True, "default_eta": 0.0}),
-    ("DPM adaptive", "sample_dpm_adaptive", {"uses_ensd": True, "default_eta": 0.0}),
+    ("euler_a", "sample_euler_ancestral", {"uses_ensd": True}),
+    ("euler", "sample_euler", {}),
+    ("lms", "sample_lms", {}),
+    ("heun", "sample_heun", {"second_order": True}),
+    ("dpm_fast", "sample_dpm_fast", {"uses_ensd": True, "default_eta": 0.0}),
+    ("dpm_adaptive", "sample_dpm_adaptive", {"uses_ensd": True, "default_eta": 0.0}),
     (
-        "DPM2",
+        "dpm2",
         "sample_dpm_2",
         {
             "discard_next_to_last_sigma": True,
@@ -40,7 +40,7 @@ samplers_kdiffusion = [
         },
     ),
     (
-        "DPM2 a",
+        "dpm2_a",
         "sample_dpm_2_ancestral",
         {
             "discard_next_to_last_sigma": True,
@@ -49,33 +49,33 @@ samplers_kdiffusion = [
         },
     ),
     (
-        "DPM++ 2S a",
+        "dpmpp_2s_a",
         "sample_dpmpp_2s_ancestral",
         {"uses_ensd": True, "second_order": True},
     ),
-    ("DPM++ 2M", "sample_dpmpp_2m", {}),
+    ("dpmpp_2m", "sample_dpmpp_2m", {}),
     (
-        "DPM++ SDE",
+        "dpmpp_sde",
         "sample_dpmpp_sde",
         {"second_order": True, "brownian_noise": True},
     ),
     (
-        "DPM++ 2M Sharp",
+        "dpmpp_2m_sharp",
         sample_dpmpp_2mV2,  # pretty much experimental, only for testing things
         {},
     ),
     (
-        "DPM++ 2M SDE",
+        "dpmpp_2m_sde",
         "sample_dpmpp_2m_sde",
         {"brownian_noise": True},
     ),
     (
-        "DPM++ 3M SDE",
+        "dpmpp_3m_sde",
         "sample_dpmpp_3m_sde",
         {"brownian_noise": True},
     ),
-    ("UniPC Multistep", "unipc", {}),
-    ("Restart", restart_sampler, {}),
+    ("unipc_multistep", "unipc", {}),
+    ("restart", restart_sampler, {}),
 ]
 
 

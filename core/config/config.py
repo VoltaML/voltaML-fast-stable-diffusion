@@ -7,6 +7,8 @@ import torch
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from core.config.samplers.sampler_config import SamplerConfig
+
 logger = logging.getLogger(__name__)
 
 
@@ -219,7 +221,7 @@ class APIConfig:
             return torch_directml.device()
         else:
             raise ValueError(f"Device type {self.device_type} not supported")
-    
+
     @property
     def overwrite_generator(self) -> bool:
         return self.device_type in ["mps", "directml", "vulkan", "intel"]
@@ -296,6 +298,7 @@ class Configuration(DataClassJsonMixin):
     onnx: ONNXConfig = field(default_factory=ONNXConfig)
     bot: BotConfig = field(default_factory=BotConfig)
     frontend: FrontendConfig = field(default_factory=FrontendConfig)
+    sampler_config: SamplerConfig = field(default_factory=SamplerConfig)
     extra: CatchAll = field(default_factory=dict)
 
 

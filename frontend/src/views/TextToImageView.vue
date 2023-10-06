@@ -42,30 +42,7 @@
             </NInput>
 
             <!-- Sampler -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="margin-right: 12px; width: 100px">Sampler</p>
-                </template>
-                The sampler is the method used to generate the image. Your
-                result may vary drastically depending on the sampler you choose.
-                <b class="highlight"
-                  >We recommend using DPMSolverMultistep for the best results .
-                </b>
-                <a
-                  target="_blank"
-                  href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
-                  >Learn more</a
-                >
-              </NTooltip>
-
-              <NSelect
-                :options="conf.scheduler_options"
-                filterable
-                v-model:value="conf.data.settings.txt2img.sampler"
-                style="flex-grow: 1"
-              />
-            </div>
+            <SamplerPicker :type="'txt2img'" />
 
             <!-- Karras Sigmas -->
             <div class="flex-container">
@@ -367,6 +344,7 @@ import ImageOutput from "@/components/ImageOutput.vue";
 import OutputStats from "@/components/OutputStats.vue";
 import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
 import DimensionsInput from "@/components/generate/DimensionsInput.vue";
+import SamplerPicker from "@/components/generate/SamplerPicker.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
