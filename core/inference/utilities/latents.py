@@ -27,8 +27,10 @@ def _randn_tensor(
 ):
     return randn(shape, device, dtype)
 
+
 vae.randn_tensor = _randn_tensor
 logger.debug("Overwritten diffusers randn_tensor")
+
 
 def pad_tensor(
     tensor: torch.Tensor, multiple: int, size: Optional[Tuple[int, int]] = None
@@ -143,9 +145,9 @@ def prepare_mask_latents(
     mask = mask.to(device=device, dtype=dtype)
 
     masked_image = masked_image.to(device=device, dtype=dtype)
-    masked_image_latents = vae_scaling_factor * vae.encode(
-        masked_image
-    ).latent_dist.sample()
+    masked_image_latents = (
+        vae_scaling_factor * vae.encode(masked_image).latent_dist.sample()
+    )
     if mask.shape[0] < batch_size:
         mask = mask.repeat(batch_size // mask.shape[0], 1, 1, 1)
     if masked_image_latents.shape[0] < batch_size:
@@ -248,9 +250,7 @@ def prepare_latents(
 
         if latents is None:
             # randn does not work reproducibly on mps
-            latents = randn(
-                shape, device=device, dtype=dtype  # type: ignore
-            )
+            latents = randn(shape, device=device, dtype=dtype)  # type: ignore
         else:
             if latents.shape != shape:
                 raise ValueError(
@@ -286,9 +286,7 @@ def prepare_latents(
             )
 
         # add noise to latents using the timesteps
-        noise = randn(
-            shape, device=device, dtype=dtype
-        )
+        noise = randn(shape, device=device, dtype=dtype)
         latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 

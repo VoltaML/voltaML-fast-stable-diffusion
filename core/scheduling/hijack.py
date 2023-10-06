@@ -23,4 +23,5 @@ class TorchHijack:
 
     def randn_like(self, x):
         from core.inference.utilities import randn_like
+
         return randn_like(x, x.device, x.dtype)

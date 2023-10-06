@@ -32,7 +32,13 @@ from core.types import (
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
-from ..utilities import init_ait_module, image_to_controlnet_input, get_weighted_text_embeddings, change_scheduler, create_generator
+from ..utilities import (
+    init_ait_module,
+    image_to_controlnet_input,
+    get_weighted_text_embeddings,
+    change_scheduler,
+    create_generator,
+)
 
 logger = logging.getLogger(__name__)
 

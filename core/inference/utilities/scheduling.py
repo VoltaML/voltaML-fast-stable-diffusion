@@ -37,9 +37,7 @@ def get_timesteps(
         return timesteps, num_inference_steps - t_start
 
 
-def prepare_extra_step_kwargs(
-    scheduler: SchedulerMixin, eta: float
-):
+def prepare_extra_step_kwargs(scheduler: SchedulerMixin, eta: float):
     """prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
     eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
     eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
@@ -56,9 +54,11 @@ def prepare_extra_step_kwargs(
         extra_step_kwargs["eta"] = eta
 
     # check if the scheduler accepts generator
-    accepts_generator = "generator" in set(
-        inspect.signature(scheduler.step).parameters.keys()  # type: ignore
-    ) and config.api.generator != "philox"
+    accepts_generator = (
+        "generator"
+        in set(inspect.signature(scheduler.step).parameters.keys())  # type: ignore
+        and config.api.generator != "philox"
+    )
     if accepts_generator:
         extra_step_kwargs["generator"] = _rng
     return extra_step_kwargs

@@ -110,7 +110,11 @@ class KdiffusionSchedulerAdapter:
     def init_noise_sigma(self) -> torch.Tensor:
         "diffusers#init_noise_sigma"
         # SGM / ODE doesn't necessarily produce "better" images, it's here for feature parity with both A1111 and SGM.
-        return torch.sqrt(1.0 + self.timesteps[0] ** 2.0) if config.api.sgm_noise_multiplier else self.timesteps[0]
+        return (
+            torch.sqrt(1.0 + self.timesteps[0] ** 2.0)
+            if config.api.sgm_noise_multiplier
+            else self.timesteps[0]
+        )
 
     def do_inference(
         self,
@@ -138,6 +142,7 @@ class KdiffusionSchedulerAdapter:
 
             def noiser(sigma=None, sigma_next=None):
                 from core.inference.utilities import randn_like
+
                 return randn_like(x, device=x.device, dtype=x.dtype)
 
             return noiser
@@ -178,4 +183,6 @@ class KdiffusionSchedulerAdapter:
         timesteps: torch.Tensor,
     ) -> torch.Tensor:
         "diffusers#add_noise"
-        return original_samples + (noise * self.init_noise_sigma).to(original_samples.device, original_samples.dtype)
+        return original_samples + (noise * self.init_noise_sigma).to(
+            original_samples.device, original_samples.dtype
+        )
