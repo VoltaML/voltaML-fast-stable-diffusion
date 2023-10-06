@@ -81,6 +81,7 @@ logger: logging.Logger = logging.getLogger()
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 logging.getLogger("PIL.Image").setLevel(logging.INFO)
+logging.getLogger("uvicorn.error").setLevel(logging.INFO)
 
 # Create necessary folders
 for directory in [
