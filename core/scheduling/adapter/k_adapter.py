@@ -8,7 +8,6 @@ import k_diffusion
 import torch
 
 from core.config import config
-from core.inference.utilities import randn_like
 from ..hijack import TorchHijack
 from ..sigmas import build_sigmas
 from ..types import Denoiser, Sampler, SigmaScheduler
@@ -138,6 +137,7 @@ class KdiffusionSchedulerAdapter:
                 )
 
             def noiser(sigma=None, sigma_next=None):
+                from core.inference.utilities import randn_like
                 return randn_like(x, device=x.device, dtype=x.dtype)
 
             return noiser
