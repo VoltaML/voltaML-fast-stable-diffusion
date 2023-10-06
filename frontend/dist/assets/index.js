@@ -189,18 +189,6 @@ function normalizeClass(value) {
   }
   return res.trim();
 }
-function normalizeProps(props) {
-  if (!props)
-    return null;
-  let { class: klass, style: style2 } = props;
-  if (klass && !isString$1(klass)) {
-    props.class = normalizeClass(klass);
-  }
-  if (style2) {
-    props.style = normalizeStyle(style2);
-  }
-  return props;
-}
 const specialBooleanAttrs = `itemscope,allowfullscreen,formnovalidate,ismap,nomodule,novalidate,readonly`;
 const isSpecialBooleanAttr = /* @__PURE__ */ makeMap(specialBooleanAttrs);
 function includeBooleanAttr(value) {
@@ -37546,12 +37534,8 @@ const _hoisted_1$4 = {
 const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M332.69 320a115 115 0 0 0-152.8 0",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "square",
-    "stroke-linejoin": "round",
-    "stroke-width": "42"
+    d: "M346.65 304.3a136 136 0 0 0-180.71 0a21 21 0 1 0 27.91 31.38a94 94 0 0 1 124.89 0a21 21 0 0 0 27.91-31.4z",
+    fill: "currentColor"
   },
   null,
   -1
@@ -37560,12 +37544,8 @@ const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M393.74 259a201.26 201.26 0 0 0-274.92 0",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "square",
-    "stroke-linejoin": "round",
-    "stroke-width": "42"
+    d: "M256.28 183.7a221.47 221.47 0 0 0-151.8 59.92a21 21 0 1 0 28.68 30.67a180.28 180.28 0 0 1 246.24 0a21 21 0 1 0 28.68-30.67a221.47 221.47 0 0 0-151.8-59.92z",
+    fill: "currentColor"
   },
   null,
   -1
@@ -37574,21 +37554,19 @@ const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M448 191.52a288 288 0 0 0-383.44 0",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "square",
-    "stroke-linejoin": "round",
-    "stroke-width": "42"
+    d: "M462 175.86a309 309 0 0 0-411.44 0a21 21 0 1 0 28 31.29a267 267 0 0 1 355.43 0a21 21 0 0 0 28-31.31z",
+    fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
 const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
-  "path",
+  "circle",
   {
-    d: "M300.67 384L256 433l-44.34-49a56.73 56.73 0 0 1 88.92 0z",
+    cx: "256.28",
+    cy: "393.41",
+    r: "32",
     fill: "currentColor"
   },
   null,
@@ -37596,8 +37574,8 @@ const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
-const WifiSharp = defineComponent({
-  name: "WifiSharp",
+const Wifi = defineComponent({
+  name: "Wifi",
   render: function render14(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$1);
   }
@@ -40325,6 +40303,10 @@ const useWebsocket = defineStore("websocket", () => {
 const spaceRegex = new RegExp("[\\s,]+");
 const arrowKeys = [38, 40];
 let currentFocus = -1;
+function convertToTextString(str) {
+  const upper = str.charAt(0).toUpperCase() + str.slice(1);
+  return upper.replace(/_/g, " ");
+}
 function addActive(x) {
   if (!x)
     return false;
@@ -40672,7 +40654,6 @@ const defaultSettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
-    image_preview_delay: 2,
     clip_skip: 1,
     clip_quantization: "full",
     autocast: true,
@@ -40706,7 +40687,11 @@ const defaultSettings = {
     torch_compile_fullgraph: false,
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
-    torch_compile_mode: "default"
+    torch_compile_mode: "default",
+    sgm_noise_multiplier: false,
+    generator: "device",
+    live_preview_method: "approximation",
+    live_preview_delay: 2
   },
   aitemplate: {
     num_threads: 8
@@ -40733,7 +40718,7 @@ const defaultSettings = {
     on_change_timer: 2e3,
     nsfw_ok_threshold: 0
   },
-  scheduler_settings: {}
+  sampler_config: {}
 };
 let rSettings = JSON.parse(JSON.stringify(defaultSettings));
 try {
@@ -40993,7 +40978,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-6eaacb44"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-27aa8797"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41013,7 +40998,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "18c31171": backgroundColor.value
+      "6bdcacdd": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41897,15 +41882,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 type: unref(websocketState).color,
                 quaternary: "",
                 "icon-placement": "left",
-                "render-icon": renderIcon(unref(WifiSharp)),
+                "render-icon": renderIcon(unref(Wifi)),
                 loading: unref(websocketState).loading,
                 onClick: _cache[5] || (_cache[5] = ($event) => unref(startWebsocket)(unref(message)))
-              }, {
-                default: withCtx(() => [
-                  createTextVNode(toDisplayString(unref(websocketState).text), 1)
-                ]),
-                _: 1
-              }, 8, ["type", "render-icon", "loading"])
+              }, null, 8, ["type", "render-icon", "loading"])
             ]),
             _: 1
           }),
@@ -41929,7 +41909,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_6eaacb44_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_27aa8797_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41937,7 +41917,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-6eaacb44"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-27aa8797"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42121,178 +42101,177 @@ app.use(createPinia());
 app.use(router);
 app.mount("#app");
 export {
-  useThemeClass as $,
-  serverUrl as A,
-  NGi as B,
-  NSpace as C,
-  NInput as D,
-  promptHandleKeyUp as E,
+  NInternalSelectMenu as $,
+  NGi as A,
+  NSpace as B,
+  NInput as C,
+  promptHandleKeyUp as D,
+  promptHandleKeyDown as E,
   Fragment as F,
-  promptHandleKeyDown as G,
-  createCommentVNode as H,
-  NGrid as I,
-  spaceRegex as J,
-  pushScopeId as K,
-  popScopeId as L,
-  NTabPane as M,
+  createCommentVNode as G,
+  NGrid as H,
+  spaceRegex as I,
+  pushScopeId as J,
+  popScopeId as K,
+  NTabPane as L,
+  NTabs as M,
   NCard as N,
-  NTabs as O,
-  watch as P,
-  upscalerOptions as Q,
-  NScrollbar as R,
-  replaceable as S,
-  createInjectionKey as T,
-  cB as U,
-  inject as V,
-  useConfig as W,
-  useTheme as X,
-  popselectLight$1 as Y,
-  toRef as Z,
+  watch as O,
+  upscalerOptions as P,
+  NScrollbar as Q,
+  replaceable as R,
+  createInjectionKey as S,
+  cB as T,
+  inject as U,
+  useConfig as V,
+  useTheme as W,
+  popselectLight$1 as X,
+  toRef as Y,
+  useThemeClass as Z,
   _export_sfc as _,
-  createVNode as a,
-  loadingBarApiInjectionKey as a$,
-  NInternalSelectMenu as a0,
-  createTreeMate as a1,
-  happensIn as a2,
-  call as a3,
-  nextTick as a4,
-  keysOf as a5,
-  createTmOptions as a6,
-  provide as a7,
-  keep as a8,
-  createRefSetter as a9,
-  depx as aA,
-  formatLength as aB,
-  NScrollbar$1 as aC,
-  onBeforeUnmount as aD,
-  off as aE,
-  on as aF,
-  ChevronDownIcon as aG,
-  NDropdown as aH,
-  pxfy as aI,
-  get as aJ,
-  NIconSwitchTransition as aK,
-  NBaseLoading as aL,
-  ChevronRightIcon as aM,
-  VResizeObserver as aN,
-  warn$2 as aO,
-  cssrAnchorMetaName as aP,
-  VVirtualList as aQ,
-  NEmpty as aR,
-  repeat as aS,
-  beforeNextFrameOnce as aT,
-  fadeInScaleUpTransition as aU,
-  iconSwitchTransition as aV,
-  insideModal as aW,
-  insidePopover as aX,
-  createId as aY,
-  Transition as aZ,
-  dataTableLight$1 as a_,
-  mergeEventHandlers as aa,
-  omit as ab,
-  NPopover as ac,
-  popoverBaseProps as ad,
-  c$1 as ae,
-  cM as af,
-  cNotM as ag,
-  useLocale as ah,
-  useMergedState as ai,
-  watchEffect as aj,
-  useRtl as ak,
-  resolveSlot as al,
-  NBaseIcon as am,
-  useAdjustedTo as an,
-  paginationLight$1 as ao,
-  createKey as ap,
-  ellipsisLight$1 as aq,
-  onDeactivated as ar,
-  mergeProps as as,
-  useFormItem as at,
-  useMemo as au,
-  cE as av,
-  radioLight$1 as aw,
-  resolveWrappedSlot as ax,
-  flatten$2 as ay,
-  getSlot$1 as az,
-  unref as b,
-  throwError as b0,
-  isBrowser$3 as b1,
-  AddIcon as b2,
-  NProgress as b3,
-  NFadeInExpandTransition as b4,
-  EyeIcon as b5,
-  fadeInHeightExpandTransition as b6,
-  Teleport as b7,
-  uploadLight$1 as b8,
-  useCssVars as b9,
-  getCurrentInstance as bA,
-  formLight$1 as bB,
-  commonVariables$m as bC,
-  formItemInjectionKey as bD,
-  useNotification as bE,
-  defaultSettings as bF,
-  urlFromPath as bG,
-  useRouter as bH,
-  fadeInTransition as bI,
-  imageLight as bJ,
-  isMounted as bK,
-  LazyTeleport as bL,
-  zindexable$1 as bM,
-  kebabCase$1 as bN,
-  useCompitable as bO,
-  descriptionsLight$1 as bP,
-  withModifiers as bQ,
-  NAlert as bR,
-  inputNumberLight$1 as bS,
-  rgba as bT,
-  XButton as bU,
-  VBinder as bV,
-  VTarget as bW,
-  VFollower as bX,
-  sliderLight$1 as bY,
-  isSlotEmpty as bZ,
-  switchLight$1 as b_,
-  reactive as ba,
-  onMounted as bb,
-  normalizeStyle as bc,
-  NText as bd,
-  huggingfaceModelsFile as be,
-  NDivider as bf,
-  Backends as bg,
-  checkboxLight$1 as bh,
-  stepsLight$1 as bi,
-  FinishedIcon as bj,
-  ErrorIcon$1 as bk,
-  upperFirst$1 as bl,
-  toString as bm,
-  createCompounder as bn,
-  cloneVNode as bo,
-  onBeforeUpdate as bp,
-  indexMap as bq,
-  onUpdated as br,
-  resolveSlotWithProps as bs,
-  withDirectives as bt,
-  vShow as bu,
-  carouselLight$1 as bv,
-  getPreciseEventTarget as bw,
-  rateLight as bx,
-  color2Class as by,
-  NTag as bz,
-  createElementBlock as c,
+  createElementBlock as a,
+  throwError as a$,
+  createTreeMate as a0,
+  happensIn as a1,
+  call as a2,
+  nextTick as a3,
+  keysOf as a4,
+  createTmOptions as a5,
+  provide as a6,
+  keep as a7,
+  createRefSetter as a8,
+  mergeEventHandlers as a9,
+  formatLength as aA,
+  NScrollbar$1 as aB,
+  onBeforeUnmount as aC,
+  off as aD,
+  on as aE,
+  ChevronDownIcon as aF,
+  NDropdown as aG,
+  pxfy as aH,
+  get as aI,
+  NIconSwitchTransition as aJ,
+  NBaseLoading as aK,
+  ChevronRightIcon as aL,
+  VResizeObserver as aM,
+  warn$2 as aN,
+  cssrAnchorMetaName as aO,
+  VVirtualList as aP,
+  NEmpty as aQ,
+  repeat as aR,
+  beforeNextFrameOnce as aS,
+  fadeInScaleUpTransition as aT,
+  iconSwitchTransition as aU,
+  insideModal as aV,
+  insidePopover as aW,
+  createId as aX,
+  Transition as aY,
+  dataTableLight$1 as aZ,
+  loadingBarApiInjectionKey as a_,
+  omit as aa,
+  NPopover as ab,
+  popoverBaseProps as ac,
+  c$1 as ad,
+  cM as ae,
+  cNotM as af,
+  useLocale as ag,
+  useMergedState as ah,
+  watchEffect as ai,
+  useRtl as aj,
+  resolveSlot as ak,
+  NBaseIcon as al,
+  useAdjustedTo as am,
+  paginationLight$1 as an,
+  createKey as ao,
+  ellipsisLight$1 as ap,
+  onDeactivated as aq,
+  mergeProps as ar,
+  useFormItem as as,
+  useMemo as at,
+  cE as au,
+  radioLight$1 as av,
+  resolveWrappedSlot as aw,
+  flatten$2 as ax,
+  getSlot$1 as ay,
+  depx as az,
+  createVNode as b,
+  isBrowser$3 as b0,
+  AddIcon as b1,
+  NProgress as b2,
+  NFadeInExpandTransition as b3,
+  EyeIcon as b4,
+  fadeInHeightExpandTransition as b5,
+  Teleport as b6,
+  uploadLight$1 as b7,
+  useCssVars as b8,
+  reactive as b9,
+  formLight$1 as bA,
+  commonVariables$m as bB,
+  formItemInjectionKey as bC,
+  useNotification as bD,
+  defaultSettings as bE,
+  urlFromPath as bF,
+  useRouter as bG,
+  fadeInTransition as bH,
+  imageLight as bI,
+  isMounted as bJ,
+  LazyTeleport as bK,
+  zindexable$1 as bL,
+  kebabCase$1 as bM,
+  useCompitable as bN,
+  descriptionsLight$1 as bO,
+  withModifiers as bP,
+  NAlert as bQ,
+  inputNumberLight$1 as bR,
+  rgba as bS,
+  XButton as bT,
+  VBinder as bU,
+  VTarget as bV,
+  VFollower as bW,
+  sliderLight$1 as bX,
+  isSlotEmpty as bY,
+  switchLight$1 as bZ,
+  onMounted as ba,
+  normalizeStyle as bb,
+  NText as bc,
+  huggingfaceModelsFile as bd,
+  NDivider as be,
+  Backends as bf,
+  checkboxLight$1 as bg,
+  stepsLight$1 as bh,
+  FinishedIcon as bi,
+  ErrorIcon$1 as bj,
+  upperFirst$1 as bk,
+  toString as bl,
+  createCompounder as bm,
+  cloneVNode as bn,
+  onBeforeUpdate as bo,
+  indexMap as bp,
+  onUpdated as bq,
+  resolveSlotWithProps as br,
+  withDirectives as bs,
+  vShow as bt,
+  carouselLight$1 as bu,
+  getPreciseEventTarget as bv,
+  rateLight as bw,
+  color2Class as bx,
+  NTag as by,
+  getCurrentInstance as bz,
+  computed as c,
   defineComponent as d,
-  renderList as e,
-  createBaseVNode as f,
-  createBlock as g,
-  guardReactiveProps as h,
-  resolveDynamicComponent as i,
-  NModal as j,
-  createTextVNode as k,
-  NTooltip as l,
-  NSelect as m,
-  normalizeProps as n,
+  unref as e,
+  renderList as f,
+  NButton as g,
+  createTextVNode as h,
+  createBaseVNode as i,
+  convertToTextString as j,
+  createBlock as k,
+  resolveDynamicComponent as l,
+  NModal as m,
+  NTooltip as n,
   openBlock as o,
-  NIcon as p,
-  NButton as q,
+  NSelect as p,
+  NIcon as q,
   ref as r,
   h as s,
   toDisplayString as t,
@@ -42300,6 +42279,6 @@ export {
   useState as v,
   withCtx as w,
   useMessage as x,
-  computed as y,
-  onUnmounted as z
+  onUnmounted as y,
+  serverUrl as z
 };

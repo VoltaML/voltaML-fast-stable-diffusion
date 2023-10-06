@@ -5,7 +5,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, o as openBlock, g as createBlock, w as withCtx, a as createVNode, b as unref, k as createTextVNode, t as toDisplayString, N as NCard, H as createCommentVNode, u as useSettings, c as createElementBlock, l as NTooltip, f as createBaseVNode, F as Fragment, P as watch, r as ref, A as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, k as createBlock, w as withCtx, b as createVNode, e as unref, h as createTextVNode, t as toDisplayString, N as NCard, G as createCommentVNode, u as useSettings, a as createElementBlock, n as NTooltip, i as createBaseVNode, F as Fragment, O as watch, r as ref, z as serverUrl } from "./index.js";
 import { N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({

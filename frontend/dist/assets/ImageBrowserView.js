@@ -1,4 +1,4 @@
-import { d as defineComponent, b9 as useCssVars, v as useState, u as useSettings, r as ref, y as computed, ba as reactive, bb as onMounted, z as onUnmounted, o as openBlock, c as createElementBlock, f as createBaseVNode, a as createVNode, b as unref, w as withCtx, F as Fragment, e as renderList, A as serverUrl, D as NInput, p as NIcon, j as NModal, I as NGrid, B as NGi, q as NButton, k as createTextVNode, R as NScrollbar, g as createBlock, t as toDisplayString, H as createCommentVNode, bG as urlFromPath, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b8 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, b9 as reactive, ba as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, i as createBaseVNode, b as createVNode, e as unref, w as withCtx, F as Fragment, f as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, g as NButton, h as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bF as urlFromPath, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
@@ -18,8 +18,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "f932cece": unref(conf).data.settings.frontend.image_browser_columns,
-      "6d67a077": backgroundColor.value
+      "70a629e9": unref(conf).data.settings.frontend.image_browser_columns,
+      "db36f472": backgroundColor.value
     }));
     const global = useState();
     const conf = useSettings();
@@ -53,10 +53,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         global.state.imageBrowser.currentImageByte64 = "";
         global.state.imageBrowser.currentImageMetadata = /* @__PURE__ */ new Map();
       });
-    }
-    function toDescriptionString(str) {
-      const upper = str.charAt(0).toUpperCase() + str.slice(1);
-      return upper.replace(/_/g, " ");
     }
     function downloadImage() {
       const url = urlFromPath(global.state.imageBrowser.currentImage.path);
@@ -371,7 +367,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             default: withCtx(() => [
                               (openBlock(true), createElementBlock(Fragment, null, renderList(unref(global).state.imageBrowser.currentImageMetadata, (item, key) => {
                                 return openBlock(), createBlock(unref(NDescriptionsItem), {
-                                  label: toDescriptionString(key.toString()),
+                                  label: unref(convertToTextString)(key.toString()),
                                   "content-style": "max-width: 100px; word-wrap: break-word;",
                                   style: { "margin": "4px" },
                                   key: item.toString()
@@ -427,8 +423,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_eb853d85_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-eb853d85"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_8cf0bb58_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-8cf0bb58"]]);
 export {
   ImageBrowserView as default
 };

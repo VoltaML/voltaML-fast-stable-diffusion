@@ -1,7 +1,7 @@
 import { _ as _sfc_main$4 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$5 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { B as BurnerClock, _ as _sfc_main$2, a as _sfc_main$3, b as _sfc_main$6 } from "./clock.js";
-import { d as defineComponent, u as useSettings, r as ref, o as openBlock, c as createElementBlock, a as createVNode, w as withCtx, b as unref, N as NCard, F as Fragment, e as renderList, f as createBaseVNode, t as toDisplayString, g as createBlock, n as normalizeProps, h as guardReactiveProps, i as resolveDynamicComponent, j as NModal, k as createTextVNode, l as NTooltip, m as NSelect, p as NIcon, q as NButton, s as h, v as useState, x as useMessage, y as computed, z as onUnmounted, A as serverUrl, B as NGi, C as NSpace, D as NInput, E as promptHandleKeyUp, G as promptHandleKeyDown, H as createCommentVNode, I as NGrid, J as spaceRegex } from "./index.js";
+import { d as defineComponent, u as useSettings, r as ref, c as computed, o as openBlock, a as createElementBlock, b as createVNode, w as withCtx, e as unref, N as NCard, F as Fragment, f as renderList, g as NButton, h as createTextVNode, t as toDisplayString, i as createBaseVNode, j as convertToTextString, k as createBlock, l as resolveDynamicComponent, m as NModal, n as NTooltip, p as NSelect, q as NIcon, s as h, v as useState, x as useMessage, y as onUnmounted, z as serverUrl, A as NGi, B as NSpace, C as NInput, D as promptHandleKeyUp, E as promptHandleKeyDown, G as createCommentVNode, H as NGrid, I as spaceRegex } from "./index.js";
 import { S as Settings, N as NCheckbox } from "./Settings.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
@@ -11,10 +11,9 @@ import "./TrashBin.js";
 import "./DescriptionsItem.js";
 const _hoisted_1$1 = { class: "flex-container" };
 const _hoisted_2$1 = { class: "flex-container" };
-const _hoisted_3$1 = { style: { "margin-right": "12px", "white-space": "nowrap" } };
+const _hoisted_3$1 = { style: { "margin-left": "12px", "margin-right": "12px", "white-space": "nowrap" } };
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "100px" } }, "Sampler", -1);
-const _hoisted_5$1 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using DPMSolverMultistep for the best results . ", -1);
-const _hoisted_6$1 = /* @__PURE__ */ createBaseVNode("a", {
+const _hoisted_5$1 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
 }, "Learn more", -1);
@@ -30,111 +29,47 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const props = __props;
     const settings = useSettings();
     const showModal = ref(false);
-    const samplerSettings = {
-      eta_noise_seed_delta: {
-        componentType: "number",
-        min: 0,
-        max: 999999999999,
-        step: 1,
-        modelValue: 0.5
-      },
-      denoiser_enable_quantization: {
-        componentType: "boolean",
-        checked: true
-      },
-      karras_sigma_scheduler: {
-        componentType: "boolean",
-        checked: false
-      },
-      sigma_use_old_karras_scheduler: {
-        componentType: "boolean",
-        checked: false
-      },
-      sigma_always_discard_next_to_last: {
-        componentType: "boolean",
-        checked: false
-      },
-      sigma_rho: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      },
-      sigma_min: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      },
-      sigma_max: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      },
-      sampler_eta: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      },
-      sampler_churn: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      },
-      sampler_tmin: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      },
-      sampler_tmax: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      },
-      sampler_noise_seed_delta: {
-        componentType: "slider",
-        min: 0,
-        max: 1,
-        step: 0.1,
-        modelValue: 0.5
-      }
-    };
-    function resolveComponent(settings2) {
+    function getValue(param) {
+      const val = settings.data.settings.sampler_config[settings.data.settings[props.type].sampler][param];
+      return val;
+    }
+    function setValue(param, value) {
+      settings.data.settings.sampler_config[settings.data.settings[props.type].sampler][param] = value;
+    }
+    function resolveComponent(settings2, param) {
       switch (settings2.componentType) {
         case "slider":
           return h(NSlider, {
             min: settings2.min,
             max: settings2.max,
             step: settings2.step,
-            modelValue: settings2.modelValue
+            value: getValue(param),
+            onUpdateValue: (value) => setValue(param, value)
           });
         case "select":
-          return h(NSelect);
+          return h(NSelect, {
+            options: settings2.options,
+            value: getValue(param),
+            onUpdateValue: (value) => setValue(param, value)
+          });
         case "boolean":
           return h(NCheckbox, {
-            checked: settings2.checked
+            checked: getValue(param),
+            onUpdateChecked: (value) => setValue(param, value)
           });
         case "number":
           return h(NInputNumber, {
             min: settings2.min,
             max: settings2.max,
             step: settings2.step,
-            defaultValue: settings2.modelValue
+            value: getValue(param),
+            onUpdateValue: (value) => setValue(param, value)
           });
       }
     }
+    const computedSettings = computed(() => {
+      return settings.data.settings.sampler_config[settings.data.settings[props.type].sampler] ?? {};
+    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NModal), {
@@ -151,10 +86,27 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               onClose: _cache[0] || (_cache[0] = ($event) => showModal.value = false)
             }, {
               default: withCtx(() => [
-                (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(samplerSettings), (param) => {
+                (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(computedSettings.value), (param) => {
                   return openBlock(), createElementBlock("div", _hoisted_2$1, [
-                    createBaseVNode("p", _hoisted_3$1, toDisplayString(param), 1),
-                    (openBlock(), createBlock(resolveDynamicComponent(resolveComponent(samplerSettings[param])), normalizeProps(guardReactiveProps(samplerSettings[param])), null, 16))
+                    createVNode(unref(NButton), {
+                      type: computedSettings.value[param] !== null ? "error" : "default",
+                      ghost: "",
+                      disabled: computedSettings.value[param] === null,
+                      onClick: ($event) => setValue(param, null),
+                      style: { "min-width": "100px" }
+                    }, {
+                      default: withCtx(() => [
+                        createTextVNode(toDisplayString(computedSettings.value[param] !== null ? "Reset" : "Disabled"), 1)
+                      ]),
+                      _: 2
+                    }, 1032, ["type", "disabled", "onClick"]),
+                    createBaseVNode("p", _hoisted_3$1, toDisplayString(unref(convertToTextString)(param)), 1),
+                    (openBlock(), createBlock(resolveDynamicComponent(
+                      resolveComponent(
+                        unref(settings).data.settings.sampler_config["ui_settings"][param],
+                        param
+                      )
+                    )))
                   ]);
                 }), 256))
               ]),
@@ -169,8 +121,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           ]),
           default: withCtx(() => [
             createTextVNode(" The sampler is the method used to generate the image. Your result may vary drastically depending on the sampler you choose. "),
-            _hoisted_5$1,
-            _hoisted_6$1
+            _hoisted_5$1
           ]),
           _: 1
         }),

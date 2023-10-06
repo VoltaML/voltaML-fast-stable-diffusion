@@ -1,5 +1,22 @@
 <template>
   <NForm>
+    <NCard title="Samplers" class="settings-card">
+      <NFormItem label="SGM Noise Multiplier" label-placement="left">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.sgm_noise_multiplier"
+        />
+      </NFormItem>
+      <NFormItem label="Generator" label-placement="left">
+        <NSelect
+          v-model:value="settings.defaultSettings.api.generator"
+          :options="[
+            { value: 'On-Device', label: 'device' },
+            { value: 'CPU', label: 'cpu' },
+            { value: 'CPU (device mock)', label: 'philox' },
+          ]"
+        />
+      </NFormItem>
+    </NCard>
     <NCard title="Saving outputs" class="settings-card">
       <NFormItem label="Template for saving outputs" label-placement="left">
         <NInput
@@ -127,15 +144,6 @@
           v-model:value="settings.defaultSettings.api.websocket_sync_interval"
           :min="0.001"
           :step="0.01"
-        />
-      </NFormItem>
-      <NFormItem
-        label="Image Preview Interval (seconds)"
-        label-placement="left"
-      >
-        <NInputNumber
-          v-model:value="settings.defaultSettings.api.image_preview_delay"
-          :step="0.1"
         />
       </NFormItem>
     </NCard>
@@ -384,6 +392,29 @@
           />
         </NFormItem>
       </div>
+    </NCard>
+
+    <NCard title="Live preview" class="settings-card">
+      <NFormItem
+        label="Image Preview Interval (seconds)"
+        label-placement="left"
+      >
+        <NInputNumber
+          v-model:value="settings.defaultSettings.api.live_preview_delay"
+          :step="0.1"
+        />
+      </NFormItem>
+
+      <NFormItem label="Image Preview Method" label-placement="left">
+        <NSelect
+          v-model:value="settings.defaultSettings.api.live_preview_method"
+          :options="[
+            { value: 'disabled', label: 'Disabled' },
+            { value: 'approximation', label: 'Quick approximation (Default)' },
+            { value: 'taesd', label: 'Tiny VAE' },
+          ]"
+        />
+      </NFormItem>
     </NCard>
   </NForm>
 </template>

@@ -158,7 +158,6 @@ export interface ISettings {
     vae_tiling: boolean;
     trace_model: boolean;
     offload: "module" | "model" | "disabled";
-    image_preview_delay: number;
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
     data_type: "float16" | "float32" | "bfloat16";
@@ -184,6 +183,12 @@ export interface ISettings {
     torch_compile_dynamic: boolean;
     torch_compile_backend: string;
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
+
+    sgm_noise_multiplier: boolean;
+
+    generator: "device" | "cpu" | "philox";
+    live_preview_method: "disabled" | "approximation" | "taesd";
+    live_preview_delay: number;
   };
   aitemplate: {
     num_threads: number;
@@ -307,7 +312,6 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
-    image_preview_delay: 2.0,
 
     clip_skip: 1,
     clip_quantization: "full",
@@ -351,6 +355,12 @@ export const defaultSettings: ISettings = {
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
+
+    sgm_noise_multiplier: false,
+
+    generator: "device",
+    live_preview_method: "approximation",
+    live_preview_delay: 2.0,
   },
   aitemplate: {
     num_threads: 8,
