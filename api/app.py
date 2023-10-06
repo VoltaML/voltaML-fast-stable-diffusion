@@ -5,16 +5,14 @@ import os
 from pathlib import Path
 
 from api_analytics.fastapi import Analytics
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
 from fastapi_simple_cachecontrol.types import CacheControl
 from huggingface_hub.hf_api import LocalTokenNotFoundError
-from starlette import status
-from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
 
 from api import websocket_manager
 from api.routes import static, ws
@@ -188,16 +186,20 @@ static_app.add_middleware(
 static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
 app.mount("/assets", static_app)
 
+origins = ["*"]
+
 # Allow CORS for specified origins
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 static_app.add_middleware(
     CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )

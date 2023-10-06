@@ -233,7 +233,7 @@ function toDescriptionString(str: string): string {
 function downloadImage() {
   const url = urlFromPath(global.state.imageBrowser.currentImage.path);
 
-  fetch(url)
+  fetch(url, { mode: "no-cors" })
     .then((res) => res.blob())
     .then((blob) => {
       const reader = new FileReader();
@@ -258,7 +258,7 @@ function downloadImage() {
 
 function setByte64FromImage(path: string) {
   const url = urlFromPath(path);
-  fetch(url)
+  fetch(url, { mode: "no-cors" })
     .then((res) => res.blob())
     .then((blob) => {
       const reader = new FileReader();
