@@ -476,6 +476,24 @@ const vaeModels = computed(() => {
       vae: "default",
       textual_inversions: [],
     } as ModelEntry,
+    {
+      name: "Tiny VAE (fast)",
+      path: "madebyollin/taesd",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "madebyollin/taesd",
+      textual_inversions: [],
+    } as ModelEntry,
+    {
+      name: "Asymmetric VAE",
+      path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+      textual_inversions: [],
+    } as ModelEntry,
     ...filteredModels.value
       .filter((model) => {
         return model.backend === "VAE";

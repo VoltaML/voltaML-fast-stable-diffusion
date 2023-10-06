@@ -26,7 +26,6 @@ from diffusers.utils.constants import (
     WEIGHTS_NAME,
 )
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
-from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download
@@ -313,7 +312,7 @@ def download_model(
         # # make sure we don't download flax weights
         ignore_patterns = ["*.msgpack"]
 
-        if is_safetensors_available() and not local_files_only:
+        if not local_files_only:
             info = model_info(
                 repo_id=pretrained_model_name,
                 revision=revision,
@@ -390,8 +389,8 @@ def load_pytorch_pipeline(
         cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
+                checkpoint_path_or_dict=str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
                 extract_ema=True,
                 load_safety_checker=False,
@@ -399,8 +398,8 @@ def load_pytorch_pipeline(
             )
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
+                checkpoint_path_or_dict=str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
                 extract_ema=False,
                 load_safety_checker=False,

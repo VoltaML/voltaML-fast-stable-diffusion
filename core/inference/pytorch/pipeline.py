@@ -23,6 +23,8 @@ from core.inference.utilities import (
     prepare_mask_and_masked_image,
     prepare_mask_latents,
     preprocess_image,
+    full_vae,
+    numpy_to_pil,
 )
 from core.optimizations import autocast
 from core.scheduling import KdiffusionSchedulerAdapter
@@ -632,12 +634,11 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             if output_type == "latent":
                 return latents, False
 
-            # TODO: maybe implement asymmetric vqgan?
-            image = self._decode_latents(latents, height=height, width=width)
+            image = full_vae(latents, overwrite=lambda sample: self.vae.decode(sample).sample, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL
             if output_type == "pil":
-                image = self.numpy_to_pil(image)
+                image = numpy_to_pil(image)
 
             if hasattr(self, "final_offload_hook"):
                 self.final_offload_hook.offload()  # type: ignore

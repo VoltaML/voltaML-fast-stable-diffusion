@@ -12,17 +12,14 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets.data import Data
+from core import shared
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.ait.pipeline import StableDiffusionAITPipeline
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
 from core.inference.utilities.latents import scale_latents
-from core.inference_callbacks import (
-    controlnet_callback,
-    img2img_callback,
-    txt2img_callback,
-)
+from core.inference_callbacks import callback
 from core.types import (
     Backend,
     ControlNetQueueEntry,
@@ -302,6 +299,7 @@ class AITemplateStableDiffusion(InferenceModel):
         )
 
         total_images: List[Image.Image] = []
+        shared.current_method = "txt2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
@@ -321,7 +319,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
-                callback=txt2img_callback,
+                callback=callback,
                 num_images_per_prompt=job.data.batch_size,
             )
 
@@ -348,7 +346,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     self_attention_scale=job.data.self_attention_scale,
                     negative_prompt=job.data.negative_prompt,
                     output_type="pil",
-                    callback=txt2img_callback,
+                    callback=callback,
                     strength=flag.strength,
                     return_dict=False,
                     num_images_per_prompt=job.data.batch_size,
@@ -390,6 +388,7 @@ class AITemplateStableDiffusion(InferenceModel):
         input_image = resize(input_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
+        shared.current_method = "img2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
@@ -403,7 +402,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                callback=img2img_callback,
+                callback=callback,
                 strength=job.data.strength,  # type: ignore
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
@@ -451,6 +450,7 @@ class AITemplateStableDiffusion(InferenceModel):
             input_image = image_to_controlnet_input(input_image, job.data)
 
         total_images: List[Image.Image] = [input_image]
+        shared.current_method = "controlnet"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
@@ -464,7 +464,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                callback=controlnet_callback,
+                callback=callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
                 controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,  # type: ignore

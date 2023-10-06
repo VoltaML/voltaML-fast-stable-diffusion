@@ -40993,7 +40993,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-5eb35c6b"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-6eaacb44"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41013,7 +41013,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "3593d424": backgroundColor.value
+      "18c31171": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
@@ -41056,6 +41056,24 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           valid: true,
           state: "not loaded",
           vae: "default",
+          textual_inversions: []
+        },
+        {
+          name: "Tiny VAE (fast)",
+          path: "madebyollin/taesd",
+          backend: "VAE",
+          valid: true,
+          state: "not loaded",
+          vae: "madebyollin/taesd",
+          textual_inversions: []
+        },
+        {
+          name: "Asymmetric VAE",
+          path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+          backend: "VAE",
+          valid: true,
+          state: "not loaded",
+          vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
           textual_inversions: []
         },
         ...filteredModels.value.filter((model) => {
@@ -41911,7 +41929,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_5eb35c6b_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_6eaacb44_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41919,7 +41937,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5eb35c6b"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-6eaacb44"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

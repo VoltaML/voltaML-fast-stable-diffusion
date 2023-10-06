@@ -18,8 +18,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "b5694a5a": unref(conf).data.settings.frontend.image_browser_columns,
-      "99a5dd9e": backgroundColor.value
+      "f932cece": unref(conf).data.settings.frontend.image_browser_columns,
+      "6d67a077": backgroundColor.value
     }));
     const global = useState();
     const conf = useSettings();
@@ -60,7 +60,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     function downloadImage() {
       const url = urlFromPath(global.state.imageBrowser.currentImage.path);
-      fetch(url).then((res) => res.blob()).then((blob) => {
+      fetch(url, { mode: "no-cors" }).then((res) => res.blob()).then((blob) => {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = function() {
@@ -81,7 +81,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     function setByte64FromImage(path) {
       const url = urlFromPath(path);
-      fetch(url).then((res) => res.blob()).then((blob) => {
+      fetch(url, { mode: "no-cors" }).then((res) => res.blob()).then((blob) => {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = function() {
@@ -427,8 +427,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_53c8c0e3_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-53c8c0e3"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_eb853d85_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-eb853d85"]]);
 export {
   ImageBrowserView as default
 };

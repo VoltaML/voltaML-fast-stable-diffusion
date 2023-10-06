@@ -7,6 +7,7 @@ import torch
 from diffusers import DDIMScheduler, SchedulerMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from core import shared
 from core.config import config
 from core.scheduling import KdiffusionSchedulerAdapter, create_sampler
 from core.types import PyTorchModelType
@@ -25,6 +26,7 @@ def get_timesteps(
 ):
     "Get the amount of timesteps for the provided options"
     if is_text2img:
+        shared.current_steps = num_inference_steps
         return scheduler.timesteps.to(device), num_inference_steps  # type: ignore
     else:
         # get the original timestep using init_timestep
@@ -34,6 +36,9 @@ def get_timesteps(
 
         t_start = max(num_inference_steps - init_timestep + offset, 0)
         timesteps = scheduler.timesteps[t_start:].to(device)  # type: ignore
+
+        shared.current_steps = num_inference_steps
+
         return timesteps, num_inference_steps - t_start
 
 

@@ -1,14 +1,17 @@
 import logging
 from pathlib import Path
 from typing import Any, List, Optional, Tuple, Union
+import importlib
 
 import torch
 from diffusers import (
+    ModelMixin,
     AutoencoderKL,
     ControlNetModel,
     StableDiffusionPipeline,
     UNet2DConditionModel,
 )
+import requests
 from PIL import Image, ImageOps
 from tqdm import tqdm
 from transformers.models.clip.modeling_clip import CLIPTextModel
@@ -17,6 +20,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 from api import websocket_manager
 from api.websockets import Data
 from api.websockets.notification import Notification
+from core import shared
 from core.config import config
 from core.flags import HighResFixFlag
 from core.inference.base_model import InferenceModel
@@ -28,12 +32,7 @@ from core.inference.utilities import (
     scale_latents,
     create_generator,
 )
-from core.inference_callbacks import (
-    controlnet_callback,
-    img2img_callback,
-    inpaint_callback,
-    txt2img_callback,
-)
+from core.inference_callbacks import callback
 from core.types import (
     Backend,
     ControlNetQueueEntry,
@@ -143,19 +142,37 @@ class PyTorchStableDiffusion(InferenceModel):
         if vae == "default":
             self.vae = old_vae
         else:
-            if Path(vae).exists():
-                # Why the fuck do you think that's constant pylint?
-                # Are you mentally insane?
-                if Path(vae).is_dir():
-                    self.vae = AutoencoderKL.from_pretrained(vae)  # type: ignore
-                else:
-                    self.vae = convert_vaept_to_diffusers(vae).to(
-                        device=old_vae.device, dtype=old_vae.dtype
+            if len(vae.split("/")) == 2:
+                cont = requests.get(  # pylint: disable=W3101
+                    f"https://huggingface.co/{vae}/raw/main/config.json"
+                ).json()["_class_name"]
+                cont = getattr(importlib.import_module("diffusers"), cont)
+                self.vae = cont.from_pretrained(vae).to(
+                    device=old_vae.device, dtype=old_vae.dtype
+                )
+                if not hasattr(self.vae.config, "block_out_channels"):
+                    setattr(
+                        self.vae.config,
+                        "block_out_channels",
+                        (
+                            1,
+                            1,
+                            1,
+                            1,
+                        ),
                     )
             else:
-                raise FileNotFoundError(f"{vae} is not a valid path")
+                if Path(vae).exists():
+                    if Path(vae).is_dir():
+                        self.vae = ModelMixin.from_pretrained(vae)  # type: ignore
+                    else:
+                        self.vae = convert_vaept_to_diffusers(vae).to(
+                            device=old_vae.device, dtype=old_vae.dtype
+                        )
+                else:
+                    raise FileNotFoundError(f"{vae} is not a valid path")
 
-        logger.info(f"Successfully changed vae to {vae}")
+        logger.info(f"Successfully changed vae to {vae} of type {type(self.vae)}")
 
         # This is at the end 'cause I've read horror stories about pythons prefetch system
         self.vae_path = vae
@@ -283,6 +300,7 @@ class PyTorchStableDiffusion(InferenceModel):
         )
 
         total_images: List[Image.Image] = []
+        shared.current_method = "txt2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
@@ -299,7 +317,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
-                callback=txt2img_callback,
+                callback=callback,
                 num_images_per_prompt=job.data.batch_size,
             )
 
@@ -326,7 +344,7 @@ class PyTorchStableDiffusion(InferenceModel):
                     self_attention_scale=job.data.self_attention_scale,
                     negative_prompt=job.data.negative_prompt,
                     output_type="pil",
-                    callback=txt2img_callback,
+                    callback=callback,
                     strength=flag.strength,
                     return_dict=False,
                     num_images_per_prompt=job.data.batch_size,
@@ -367,6 +385,7 @@ class PyTorchStableDiffusion(InferenceModel):
         input_image = resize(input_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
+        shared.current_method = "img2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
@@ -379,7 +398,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                callback=img2img_callback,
+                callback=callback,
                 strength=job.data.strength,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
@@ -428,6 +447,7 @@ class PyTorchStableDiffusion(InferenceModel):
         input_mask_image = resize(input_mask_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
+        shared.current_method = "inpainting"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
@@ -439,7 +459,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                callback=inpaint_callback,
+                callback=callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
                 width=job.data.width,
@@ -497,6 +517,7 @@ class PyTorchStableDiffusion(InferenceModel):
             logger.debug(f"Preprocessed image size: {input_image.size}")
 
         total_images: List[Image.Image] = [input_image]
+        shared.current_method = "controlnet"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe(
@@ -506,7 +527,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 output_type="pil",
-                callback=controlnet_callback,
+                callback=callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
                 controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,

@@ -131,8 +131,6 @@ class APIConfig:
     tomesd_ratio: float = 0.25  # had to tone this down, 0.4 is too big of a context loss even on short prompts
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
 
-    image_preview_delay: float = 2.0
-
     # General optimizations
     autocast: bool = False
     attention_processor: Literal[
@@ -141,8 +139,6 @@ class APIConfig:
     subquadratic_size: int = 512
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
-    vae_slicing: bool = True
-    vae_tiling: bool = False
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
@@ -189,7 +185,14 @@ class APIConfig:
     # K_Diffusion
     sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
 
+    # "philox" is what a "cuda" generator would be, except, it's on cpu
     generator: Literal["device", "cpu", "philox"] = "device"
+
+    # VAE
+    live_preview_method: Literal["disabled", "approximation", "taesd"] = "approximation"
+    live_preview_delay: float = 2.0
+    vae_slicing: bool = True
+    vae_tiling: bool = False
 
     @property
     def dtype(self):
@@ -224,6 +227,8 @@ class APIConfig:
 
     @property
     def overwrite_generator(self) -> bool:
+        "Whether the generator needs to be overwritten with 'cpu.'"
+
         return self.device_type in ["mps", "directml", "vulkan", "intel"]
 
 
