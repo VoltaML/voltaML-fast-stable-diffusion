@@ -112,7 +112,7 @@
                 size="large"
               >
                 <NDescriptionsItem
-                  :label="toDescriptionString(key.toString())"
+                  :label="convertToTextString(key.toString())"
                   content-style="max-width: 100px; word-wrap: break-word;"
                   style="margin: 4px"
                   v-for="(item, key) of global.state.imageBrowser
@@ -158,7 +158,7 @@
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import type { imgData as IImgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
-import { urlFromPath } from "@/functions";
+import { convertToTextString, urlFromPath } from "@/functions";
 import { Download, GridOutline, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
@@ -223,11 +223,6 @@ function deleteImage() {
         string
       >();
     });
-}
-
-function toDescriptionString(str: string): string {
-  const upper = str.charAt(0).toUpperCase() + str.slice(1);
-  return upper.replace(/_/g, " ");
 }
 
 function downloadImage() {

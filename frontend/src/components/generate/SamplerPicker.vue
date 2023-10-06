@@ -9,12 +9,27 @@
       >
         <div
           class="flex-container"
-          v-for="param in Object.keys(samplerSettings)"
+          v-for="param in Object.keys(computedSettings)"
         >
-          <p style="margin-right: 12px; white-space: nowrap">{{ param }}</p>
+          <NButton
+            :type="computedSettings[param] !== null ? 'error' : 'default'"
+            ghost
+            :disabled="computedSettings[param] === null"
+            @click="setValue(param, null)"
+            style="min-width: 100px"
+          >
+            {{ computedSettings[param] !== null ? "Reset" : "Disabled" }}
+          </NButton>
+          <p style="margin-left: 12px; margin-right: 12px; white-space: nowrap">
+            {{ convertToTextString(param) }}
+          </p>
           <component
-            :is="resolveComponent(samplerSettings[param])"
-            v-bind="samplerSettings[param]"
+            :is="
+              resolveComponent(
+                settings.data.settings.sampler_config['ui_settings'][param],
+                param
+              )
+            "
           />
         </div>
       </NCard>
@@ -26,9 +41,6 @@
       </template>
       The sampler is the method used to generate the image. Your result may vary
       drastically depending on the sampler you choose.
-      <b class="highlight"
-        >We recommend using DPMSolverMultistep for the best results .
-      </b>
       <a
         target="_blank"
         href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
@@ -52,6 +64,7 @@
 </template>
 
 <script setup lang="ts">
+import { convertToTextString } from "@/functions";
 import { Settings } from "@vicons/ionicons5";
 import {
   NButton,
@@ -65,7 +78,7 @@ import {
   NTooltip,
 } from "naive-ui";
 import type { PropType } from "vue";
-import { h, ref } from "vue";
+import { computed, h, ref } from "vue";
 import { useSettings } from "../../store/settings";
 
 const settings = useSettings();
@@ -77,7 +90,6 @@ type SliderSettings = {
   min: number;
   max: number;
   step: number;
-  modelValue: number;
 };
 
 type SelectSettings = {
@@ -86,12 +98,10 @@ type SelectSettings = {
     label: string;
     value: string;
   };
-  modelValue: string;
 };
 
 type BooleanSettings = {
   componentType: "boolean";
-  checked: boolean;
 };
 
 type NumberInputSettings = {
@@ -99,7 +109,6 @@ type NumberInputSettings = {
   min: number;
   max: number;
   step: number;
-  modelValue: number;
 };
 
 type SamplerSetting =
@@ -108,109 +117,50 @@ type SamplerSetting =
   | BooleanSettings
   | NumberInputSettings;
 
-const samplerSettings: Record<string, SamplerSetting> = {
-  eta_noise_seed_delta: {
-    componentType: "number",
-    min: 0,
-    max: 999_999_999_999,
-    step: 1,
-    modelValue: 0.5,
-  },
-  denoiser_enable_quantization: {
-    componentType: "boolean",
-    checked: true,
-  },
-  karras_sigma_scheduler: {
-    componentType: "boolean",
-    checked: false,
-  },
-  sigma_use_old_karras_scheduler: {
-    componentType: "boolean",
-    checked: false,
-  },
-  sigma_always_discard_next_to_last: {
-    componentType: "boolean",
-    checked: false,
-  },
-  sigma_rho: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-  sigma_min: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-  sigma_max: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-  sampler_eta: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-  sampler_churn: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-  sampler_tmin: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-  sampler_tmax: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-  sampler_noise_seed_delta: {
-    componentType: "slider",
-    min: 0,
-    max: 1,
-    step: 0.1,
-    modelValue: 0.5,
-  },
-};
+function getValue(param: string) {
+  const val =
+    settings.data.settings.sampler_config[
+      settings.data.settings[props.type].sampler
+    ][param];
+  return val;
+}
 
-function resolveComponent(settings: SamplerSetting) {
+function setValue(param: string, value: any) {
+  settings.data.settings.sampler_config[
+    settings.data.settings[props.type].sampler
+  ][param] = value;
+}
+
+function resolveComponent(settings: SamplerSetting, param: string) {
   switch (settings.componentType) {
     case "slider":
       return h(NSlider, {
         min: settings.min,
         max: settings.max,
         step: settings.step,
-        modelValue: settings.modelValue,
+        value: getValue(param),
+        onUpdateValue: (value: number) => setValue(param, value),
       });
     case "select":
-      return h(NSelect);
+      // @ts-ignore, some random bullshit
+      return h(NSelect, {
+        options: settings.options,
+        value: getValue(param),
+        onUpdateValue: (value: string) => setValue(param, value),
+      });
     case "boolean":
       return h(NCheckbox, {
-        checked: settings.checked,
+        checked: getValue(param),
+        onUpdateChecked: (value: boolean) => setValue(param, value),
       });
     case "number":
+      // @ts-ignore, some random bullshit
       return h(NInputNumber, {
         min: settings.min,
         max: settings.max,
         step: settings.step,
-        defaultValue: settings.modelValue,
+        value: getValue(param),
+        onUpdateValue: (value: number) => setValue(param, value),
       });
   }
 }
@@ -222,5 +172,13 @@ const props = defineProps({
     >,
     required: true,
   },
+});
+
+const computedSettings = computed(() => {
+  return (
+    settings.data.settings.sampler_config[
+      settings.data.settings[props.type].sampler
+    ] ?? {}
+  );
 });
 </script>
