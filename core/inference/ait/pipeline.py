@@ -219,7 +219,6 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         strength: Optional[float] = 0.7,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         eta: Optional[float] = 0.0,
-        generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
@@ -319,11 +318,10 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             width,
             prompt_embeds.dtype,
             self.device,
-            generator,
             latents,
             align_to=64,
         )
-        extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, generator, eta)  # type: ignore
+        extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta)  # type: ignore
         # Necessary for controlnet to function
         text_embeddings = text_embeddings.half()  # type: ignore
 
@@ -417,7 +415,6 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                 latents,  # type: ignore
                 call=self.unet_inference,
                 apply_model=do_denoise,
-                generator=generator,  # type: ignore
                 callback=callback,
                 callback_steps=1,
             )

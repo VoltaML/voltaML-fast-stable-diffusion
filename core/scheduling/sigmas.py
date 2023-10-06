@@ -23,7 +23,7 @@ def build_sigmas(
     "Build sigmas (timesteps) from custom values."
     steps += 1 if discard_next_to_last_sigma else 0
 
-    if scheduler is None:
+    if scheduler is None or scheduler == "automatic":
         logger.debug("No optional scheduler provided. Using default.")
         sigmas = denoiser.get_sigmas(steps)
     else:

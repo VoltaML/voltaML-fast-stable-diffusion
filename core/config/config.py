@@ -184,6 +184,11 @@ class APIConfig:
         "max-autotune",
     ] = "reduce-overhead"
 
+    # K_Diffusion
+    sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
+
+    generator: Literal["device", "cpu", "philox"] = "device"
+
     @property
     def dtype(self):
         "Return selected data type"
@@ -214,6 +219,10 @@ class APIConfig:
             return torch_directml.device()
         else:
             raise ValueError(f"Device type {self.device_type} not supported")
+    
+    @property
+    def overwrite_generator(self) -> bool:
+        return self.device_type in ["mps", "directml", "vulkan", "intel"]
 
 
 @dataclass

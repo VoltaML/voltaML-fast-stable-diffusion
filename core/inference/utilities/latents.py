@@ -1,21 +1,34 @@
 import logging
 import math
 from time import time
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple, Union, List
 
 import numpy as np
 import torch
 import torch.nn.functional as F
+from diffusers.models import vae
 from diffusers import StableDiffusionPipeline
 from diffusers.utils import PIL_INTERPOLATION
 from PIL import Image
 
 from core.config import config
 from core.flags import LatentScaleModel
-from core.scheduling import KdiffusionSchedulerAdapter, UnipcSchedulerAdapter
+from .random import randn
 
 logger = logging.getLogger(__name__)
 
+
+def _randn_tensor(
+    shape: Union[Tuple, List],
+    generator: Optional[Union[List["torch.Generator"], "torch.Generator"]] = None,
+    device: Optional["torch.device"] = None,
+    dtype: Optional["torch.dtype"] = None,
+    layout: Optional["torch.layout"] = None,
+):
+    return randn(shape, device, dtype)
+
+vae.randn_tensor = _randn_tensor
+logger.debug("Overwritten diffusers randn_tensor")
 
 def pad_tensor(
     tensor: torch.Tensor, multiple: int, size: Optional[Tuple[int, int]] = None
@@ -114,7 +127,6 @@ def prepare_mask_latents(
     width: int,
     dtype: torch.dtype,
     device: torch.device,
-    generator: torch.Generator,
     do_classifier_free_guidance: bool,
     vae,
     vae_scale_factor: float,
@@ -133,7 +145,7 @@ def prepare_mask_latents(
     masked_image = masked_image.to(device=device, dtype=dtype)
     masked_image_latents = vae_scaling_factor * vae.encode(
         masked_image
-    ).latent_dist.sample(generator=generator)
+    ).latent_dist.sample()
     if mask.shape[0] < batch_size:
         mask = mask.repeat(batch_size // mask.shape[0], 1, 1, 1)
     if masked_image_latents.shape[0] < batch_size:
@@ -222,7 +234,6 @@ def prepare_latents(
     width: Optional[int],
     dtype: torch.dtype,
     device: torch.device,
-    generator: Optional[torch.Generator],
     latents=None,
     latent_channels: Optional[int] = None,
     align_to: int = 1,
@@ -236,15 +247,10 @@ def prepare_latents(
         )
 
         if latents is None:
-            if device.type == "mps" or config.api.device_type == "directml":
-                # randn does not work reproducibly on mps
-                latents = torch.randn(
-                    shape, generator=generator, device="cpu", dtype=dtype  # type: ignore
-                ).to(device)
-            else:
-                latents = torch.randn(
-                    shape, generator=generator, device=generator.device, dtype=dtype  # type: ignore
-                )
+            # randn does not work reproducibly on mps
+            latents = randn(
+                shape, device=device, dtype=dtype  # type: ignore
+            )
         else:
             if latents.shape != shape:
                 raise ValueError(
@@ -259,7 +265,7 @@ def prepare_latents(
         if image.shape[1] != 4:
             image = pad_tensor(image, pipe.vae_scale_factor)
             init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
-            init_latents = init_latent_dist.sample(generator=generator)
+            init_latents = init_latent_dist.sample()
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)
         else:
@@ -280,31 +286,10 @@ def prepare_latents(
             )
 
         # add noise to latents using the timesteps
-        if device.type == "mps" or config.api.device_type == "directml":
-            noise = torch.randn(
-                shape, generator=generator, device="cpu", dtype=dtype
-            ).to(device)
-        else:
-            # Retarded fix, but hey, if it works, it works
-            if hasattr(pipe.vae, "main_device"):
-                noise = torch.randn(
-                    shape,
-                    generator=torch.Generator("cpu").manual_seed(
-                        generator.seed() if generator is not None else 1
-                    ),
-                    device="cpu",
-                    dtype=dtype,
-                ).to(device)
-            else:
-                noise = torch.randn(
-                    shape, generator=generator, device=device, dtype=dtype
-                )
-        # Now this... I may have called the previous "hack" retarded, but this...
-        # This just takes it to a whole new level
-        if isinstance(pipe.scheduler, KdiffusionSchedulerAdapter):
-            latents = init_latents + noise * pipe.scheduler.init_noise_sigma  # type: ignore
-        else:
-            latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
+        noise = randn(
+            shape, device=device, dtype=dtype
+        )
+        latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 
 

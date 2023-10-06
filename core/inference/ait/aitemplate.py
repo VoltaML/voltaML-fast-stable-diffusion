@@ -32,10 +32,7 @@ from core.types import (
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
-from ..utilities.aitemplate import init_ait_module
-from ..utilities.controlnet import image_to_controlnet_input
-from ..utilities.lwp import get_weighted_text_embeddings
-from ..utilities.scheduling import change_scheduler
+from ..utilities import init_ait_module, image_to_controlnet_input, get_weighted_text_embeddings, change_scheduler, create_generator
 
 logger = logging.getLogger(__name__)
 
@@ -241,7 +238,7 @@ class AITemplateStableDiffusion(InferenceModel):
         controlnet: str = "",
         seed: int = -1,
         scheduler: Optional[Tuple[Any, bool]] = None,
-    ) -> Tuple["StableDiffusionAITPipeline", torch.Generator]:
+    ) -> "StableDiffusionAITPipeline":
         "Centralized way to create new pipelines."
 
         self.manage_optional_components(target_controlnet=controlnet)
@@ -262,7 +259,7 @@ class AITemplateStableDiffusion(InferenceModel):
             vae_ait_exe=self.vae_ait_exe,
         )
 
-        generator = torch.Generator(self.device).manual_seed(seed)
+        create_generator(seed)
 
         if scheduler:
             change_scheduler(
@@ -270,7 +267,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 scheduler=scheduler[0],
                 use_karras_sigmas=scheduler[1],
             )
-        return pipe, generator
+        return pipe
 
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
@@ -293,7 +290,7 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Txt2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from text"
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
@@ -318,7 +315,6 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
-                generator=generator,
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
             )
@@ -346,7 +342,6 @@ class AITemplateStableDiffusion(InferenceModel):
                     self_attention_scale=job.data.self_attention_scale,
                     negative_prompt=job.data.negative_prompt,
                     output_type="pil",
-                    generator=generator,
                     callback=txt2img_callback,
                     strength=flag.strength,
                     return_dict=False,
@@ -380,7 +375,7 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Img2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from images"
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
@@ -402,7 +397,6 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
                 callback=img2img_callback,
                 strength=job.data.strength,  # type: ignore
                 return_dict=False,
@@ -437,7 +431,7 @@ class AITemplateStableDiffusion(InferenceModel):
         job: ControlNetQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from images"
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             controlnet=job.data.controlnet,
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
@@ -464,7 +458,6 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
                 callback=controlnet_callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,

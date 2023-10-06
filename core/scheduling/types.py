@@ -3,7 +3,7 @@ from typing import Any, Callable, Dict, Literal, Union, Tuple
 from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 
 Sampler = Tuple[str, Union[Callable, str], Dict[str, Any]]
-SigmaScheduler = Literal["karras", "exponential", "polyexponential", "vp"]
+SigmaScheduler = Literal["automatic", "karras", "exponential", "polyexponential", "vp"]
 Denoiser = Union[CompVisVDenoiser, CompVisDenoiser]
 
 # UniPC

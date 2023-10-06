@@ -26,6 +26,7 @@ from core.inference.utilities import (
     change_scheduler,
     image_to_controlnet_input,
     scale_latents,
+    create_generator,
 )
 from core.inference_callbacks import (
     controlnet_callback,
@@ -248,7 +249,7 @@ class PyTorchStableDiffusion(InferenceModel):
         controlnet: Optional[str] = "",
         seed: Optional[int] = -1,
         scheduler: Optional[Tuple[Any, bool]] = None,
-    ) -> Tuple[StableDiffusionLongPromptWeightingPipeline, torch.Generator]:
+    ) -> StableDiffusionLongPromptWeightingPipeline:
         "Create a pipeline -- useful for reducing backend clutter."
         self.manage_optional_components(target_controlnet=controlnet or "")
 
@@ -262,10 +263,7 @@ class PyTorchStableDiffusion(InferenceModel):
             controlnet=self.controlnet,
         )
 
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(seed)  # type: ignore
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(seed)  # type: ignore
+        create_generator(seed)  # type: ignore
 
         if scheduler:
             change_scheduler(
@@ -274,12 +272,12 @@ class PyTorchStableDiffusion(InferenceModel):
                 use_karras_sigmas=scheduler[1],
             )
 
-        return pipe, generator
+        return pipe
 
     def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from a prompt"
 
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
@@ -301,7 +299,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
-                generator=generator,
                 callback=txt2img_callback,
                 num_images_per_prompt=job.data.batch_size,
             )
@@ -329,7 +326,6 @@ class PyTorchStableDiffusion(InferenceModel):
                     self_attention_scale=job.data.self_attention_scale,
                     negative_prompt=job.data.negative_prompt,
                     output_type="pil",
-                    generator=generator,
                     callback=txt2img_callback,
                     strength=flag.strength,
                     return_dict=False,
@@ -361,7 +357,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
@@ -383,7 +379,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
                 callback=img2img_callback,
                 strength=job.data.strength,
                 return_dict=False,
@@ -419,7 +414,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
@@ -444,7 +439,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 self_attention_scale=job.data.self_attention_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
                 callback=inpaint_callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
@@ -487,7 +481,7 @@ class PyTorchStableDiffusion(InferenceModel):
             )
 
         logger.debug(f"Requested ControlNet: {job.data.controlnet}")
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             controlnet=job.data.controlnet,
             seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
@@ -512,7 +506,6 @@ class PyTorchStableDiffusion(InferenceModel):
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 output_type="pil",
-                generator=generator,
                 callback=controlnet_callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,

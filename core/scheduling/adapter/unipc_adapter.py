@@ -108,7 +108,6 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         x,
         call: Callable[..., Any],  # type: ignore
         apply_model: Callable[..., torch.Tensor],
-        generator: torch.Generator,
         callback,
         callback_steps,
     ) -> torch.Tensor:

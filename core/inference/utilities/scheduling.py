@@ -7,9 +7,11 @@ import torch
 from diffusers import DDIMScheduler, SchedulerMixin
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from core.config import config
 from core.scheduling import KdiffusionSchedulerAdapter, create_sampler
 from core.types import PyTorchModelType
 from core.utils import unwrap_enum
+from .random import _rng
 
 logger = logging.getLogger(__name__)
 
@@ -36,7 +38,7 @@ def get_timesteps(
 
 
 def prepare_extra_step_kwargs(
-    scheduler: SchedulerMixin, generator: torch.Generator, eta: float
+    scheduler: SchedulerMixin, eta: float
 ):
     """prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
     eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
@@ -56,9 +58,9 @@ def prepare_extra_step_kwargs(
     # check if the scheduler accepts generator
     accepts_generator = "generator" in set(
         inspect.signature(scheduler.step).parameters.keys()  # type: ignore
-    )
+    ) and config.api.generator != "philox"
     if accepts_generator:
-        extra_step_kwargs["generator"] = generator
+        extra_step_kwargs["generator"] = _rng
     return extra_step_kwargs
 
 

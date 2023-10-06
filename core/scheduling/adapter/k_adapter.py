@@ -7,6 +7,8 @@ from typing import Callable, Optional, Tuple
 import k_diffusion
 import torch
 
+from core.config import config
+from core.inference.utilities import randn_like
 from ..hijack import TorchHijack
 from ..sigmas import build_sigmas
 from ..types import Denoiser, Sampler, SigmaScheduler
@@ -108,14 +110,14 @@ class KdiffusionSchedulerAdapter:
     @property
     def init_noise_sigma(self) -> torch.Tensor:
         "diffusers#init_noise_sigma"
-        return self.timesteps[0]
+        # SGM / ODE doesn't necessarily produce "better" images, it's here for feature parity with both A1111 and SGM.
+        return torch.sqrt(1.0 + self.timesteps[0] ** 2.0) if config.api.sgm_noise_multiplier else self.timesteps[0]
 
     def do_inference(
         self,
         x: torch.Tensor,
         call: Callable,
         apply_model: Callable[..., torch.Tensor],
-        generator: torch.Generator,
         callback,
         callback_steps,
     ) -> torch.Tensor:
@@ -136,13 +138,7 @@ class KdiffusionSchedulerAdapter:
                 )
 
             def noiser(sigma=None, sigma_next=None):
-                return torch.randn(
-                    x.shape,
-                    device=generator.device,
-                    dtype=x.dtype,
-                    layout=x.layout,
-                    generator=generator,
-                ).to(device=x.device)
+                return randn_like(x, device=x.device, dtype=x.dtype)
 
             return noiser
 
@@ -163,7 +159,7 @@ class KdiffusionSchedulerAdapter:
             "order": 2 if self.sampler_tuple[2].get("second_order", False) else None,
         }
 
-        k_diffusion.sampling.torch = TorchHijack(generator)
+        k_diffusion.sampling.torch = TorchHijack()
 
         if isinstance(self.sampler_tuple[1], str):
             sampler_func = getattr(sampling, self.sampler_tuple[1])
@@ -182,23 +178,4 @@ class KdiffusionSchedulerAdapter:
         timesteps: torch.Tensor,
     ) -> torch.Tensor:
         "diffusers#add_noise"
-        # Make sure alphas_cumprod and timestep have same device and dtype as original_samples
-        alphas_cumprod = self.alphas_cumprod.to(
-            device=original_samples.device, dtype=original_samples.dtype
-        )
-        timesteps = timesteps.to(original_samples.device, dtype=torch.int64)
-
-        sqrt_alpha_prod = alphas_cumprod[timesteps] ** 0.5
-        sqrt_alpha_prod = sqrt_alpha_prod.flatten()
-        while len(sqrt_alpha_prod.shape) < len(original_samples.shape):
-            sqrt_alpha_prod = sqrt_alpha_prod.unsqueeze(-1)
-
-        sqrt_one_minus_alpha_prod = (1 - alphas_cumprod[timesteps]) ** 0.5
-        sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.flatten()
-        while len(sqrt_one_minus_alpha_prod.shape) < len(original_samples.shape):
-            sqrt_one_minus_alpha_prod = sqrt_one_minus_alpha_prod.unsqueeze(-1)
-
-        noisy_samples = (
-            sqrt_alpha_prod * original_samples + sqrt_one_minus_alpha_prod * noise
-        )
-        return noisy_samples
+        return original_samples + (noise * self.init_noise_sigma).to(original_samples.device, original_samples.dtype)

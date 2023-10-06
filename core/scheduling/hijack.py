@@ -1,5 +1,7 @@
 import torch
 
+from core.inference.utilities import randn_like
+
 
 class TorchHijack:
     """This is here to replace torch.randn_like of k-diffusion.
@@ -9,9 +11,6 @@ class TorchHijack:
 
     We need to replace to make images generated in batches to be same as images generated individually.
     """
-
-    def __init__(self, generator):
-        self.generator = generator
 
     def __getattr__(self, item):
         if item == "randn_like":
@@ -25,10 +24,4 @@ class TorchHijack:
         )
 
     def randn_like(self, x):
-        return torch.randn(
-            x.shape,
-            device=self.generator.device,
-            dtype=x.dtype,
-            layout=x.layout,
-            generator=self.generator,
-        ).to(device=x.device)
+        return randn_like(x, x.device, x.dtype)

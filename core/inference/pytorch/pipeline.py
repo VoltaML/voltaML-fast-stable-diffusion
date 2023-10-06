@@ -25,7 +25,7 @@ from core.inference.utilities import (
     preprocess_image,
 )
 from core.optimizations import autocast
-from core.scheduling import KdiffusionSchedulerAdapter, UnipcSchedulerAdapter
+from core.scheduling import KdiffusionSchedulerAdapter
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
@@ -227,7 +227,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt: Union[str, List[str]],
-        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
@@ -394,7 +393,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     width,
                     dtype,
                     device,
-                    generator,
                     do_classifier_free_guidance,
                     self.vae,
                     self.vae_scale_factor,
@@ -427,13 +425,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 width,
                 dtype,
                 device,
-                generator,
                 latents,
                 latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
             )
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
-            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, generator, eta)  # type: ignore
+            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta)  # type: ignore
 
             controlnet_keep = []
             if self.controlnet is not None:
@@ -600,7 +597,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         latents,  # type: ignore
                         call=self.unet,  # type: ignore
                         apply_model=do_denoise,
-                        generator=generator,
                         callback=callback,
                         callback_steps=callback_steps,
                     )
@@ -656,7 +652,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def text2img(
         self,
         prompt: Union[str, List[str]],
-        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         height: int = 512,
         width: int = 512,
@@ -740,7 +735,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             self_attention_scale=self_attention_scale,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,
-            generator=generator,
             latents=latents,
             max_embeddings_multiples=max_embeddings_multiples,
             output_type=output_type,
@@ -754,7 +748,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self,
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
-        generator: torch.Generator,
         height: int = 512,
         width: int = 512,
         negative_prompt: Optional[Union[str, List[str]]] = None,
@@ -841,7 +834,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             strength=strength,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,  # type: ignore
-            generator=generator,
             max_embeddings_multiples=max_embeddings_multiples,
             output_type=output_type,
             return_dict=return_dict,
@@ -855,7 +847,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
-        generator: torch.Generator,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
@@ -949,7 +940,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             strength=strength,
             num_images_per_prompt=num_images_per_prompt,
             eta=eta,  # type: ignore
-            generator=generator,
             max_embeddings_multiples=max_embeddings_multiples,
             output_type=output_type,
             return_dict=return_dict,
