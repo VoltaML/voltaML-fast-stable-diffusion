@@ -316,10 +316,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         console.log(err);
       });
     };
-    computed(() => {
-      var _a;
-      return ((_a = conf.data.settings.model) == null ? void 0 : _a.backend) === "PyTorch";
-    });
     const burner = new BurnerClock(conf.data.settings.txt2img, conf, generate);
     onUnmounted(() => {
       burner.cleanup();

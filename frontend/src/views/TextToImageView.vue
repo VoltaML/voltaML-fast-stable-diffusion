@@ -464,10 +464,6 @@ const generate = () => {
     });
 };
 
-const isSelectedModelPyTorch = computed(() => {
-  return conf.data.settings.model?.backend === "PyTorch";
-});
-
 // Burner clock
 const burner = new BurnerClock(conf.data.settings.txt2img, conf, generate);
 onUnmounted(() => {

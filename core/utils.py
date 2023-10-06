@@ -183,12 +183,20 @@ def download_file(url: str, file: Path, add_filename: bool = False):
     session.mount("https://", HTTPAdapter(max_retries=retries))
 
     with session.get(url, stream=True, timeout=30) as r:
-        file_name = r.headers["Content-Disposition"].split('"')[1]
+        try:
+            file_name = r.headers["Content-Disposition"].split('"')[1]
+        except KeyError:
+            file_name = url.split("/")[-1]
+
         if add_filename:
             file = file / file_name
         total = int(r.headers["Content-Length"])
-        logger.info(f"Downloading {file_name} into {file.as_posix()}")
 
+        if file.exists():
+            logger.debug(f"File {file.as_posix()} already exists, skipping")
+            return file
+
+        logger.info(f"Downloading {file_name} into {file.as_posix()}")
         # AFAIK Windows doesn't like big buffers
         s = (64 if os.name == "nt" else 1024) * 1024
         with open(file, mode="wb+") as f:

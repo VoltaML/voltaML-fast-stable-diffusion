@@ -170,6 +170,7 @@ def main(exit_after_init: bool = False):
             ("Access-Control-Allow-Credentials", "true"),
             ("Access-Control-Expose-Headers", "*"),
         ],
+        log_config=None,
     )
     uvi_server = Server(config=uvi_config)
 

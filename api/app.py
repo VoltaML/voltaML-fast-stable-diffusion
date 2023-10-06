@@ -111,24 +111,6 @@ async def custom_http_exception_handler(request: Request, _exc):
 async def startup_event():
     "Prepare the event loop for other asynchronous tasks"
 
-    # Inject the logger
-    from rich.logging import RichHandler
-
-    # Disable duplicate logger
-    logging.getLogger("uvicorn").handlers = []
-
-    for logger_ in ("uvicorn.access", "uvicorn.error", "fastapi"):
-        l = logging.getLogger(logger_)
-        handler = RichHandler(
-            rich_tracebacks=True, show_time=False, omit_repeated_times=False
-        )
-        handler.setFormatter(
-            logging.Formatter(
-                fmt="%(asctime)s | %(name)s » %(message)s", datefmt="%H:%M:%S"
-            )
-        )
-        l.handlers = [handler]
-
     if logger.level > logging.DEBUG:
         from transformers import logging as transformers_logging
 
