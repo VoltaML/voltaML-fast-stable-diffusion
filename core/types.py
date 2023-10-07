@@ -324,7 +324,9 @@ class Capabilities:
     "Dataclass for capabilities of a GPU"
 
     # ["cpu", "cuda", "directml", "mps", "xpu", "vulkan"]
-    supported_backends: Dict[str, str] = field(default_factory=lambda: {"CPU": "cpu"})
+    supported_backends: List[List[str]] = field(
+        default_factory=lambda: [["CPU", "cpu"]]
+    )
     # ["float16", "float32", "bfloat16"]
     supported_precisions_gpu: List[str] = field(default_factory=lambda: ["float32"])
     # ["float16", "float32", "bfloat16"]

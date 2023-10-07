@@ -158,8 +158,7 @@ export interface ISettings {
     vae_tiling: boolean;
     trace_model: boolean;
     offload: "module" | "model" | "disabled";
-    device_id: number;
-    device_type: "cpu" | "cuda" | "mps" | "directml";
+    device: string;
     data_type: "float16" | "float32" | "bfloat16";
     deterministic_generation: boolean;
     reduced_precision: boolean;
@@ -328,8 +327,7 @@ export const defaultSettings: ISettings = {
     cudnn_benchmark: false,
     offload: "disabled",
 
-    device_id: 0,
-    device_type: "cuda",
+    device: "cuda:0",
     data_type: "float16",
 
     use_tomesd: true,

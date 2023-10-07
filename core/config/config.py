@@ -150,8 +150,7 @@ class APIConfig:
     deterministic_generation: bool = False
 
     # Device settings
-    device_id: int = 0
-    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan"] = "cuda"
+    device: str = "cuda:0"
 
     # Critical
     enable_shutdown: bool = True
@@ -205,32 +204,12 @@ class APIConfig:
         return torch.float32
 
     @property
-    def device(self):
-        "Return the device"
-
-        if self.device_type == "intel":
-            from core.inference.functions import is_ipex_available
-
-            return torch.device("xpu" if is_ipex_available() else "cpu")
-
-        if self.device_type in ["cpu", "mps"]:
-            return torch.device(self.device_type)
-
-        if self.device_type in ["vulkan", "cuda"]:
-            return torch.device(f"{self.device_type}:{self.device_id}")
-
-        if self.device_type == "directml":
-            import torch_directml  # pylint: disable=import-error
-
-            return torch_directml.device()
-        else:
-            raise ValueError(f"Device type {self.device_type} not supported")
-
-    @property
     def overwrite_generator(self) -> bool:
         "Whether the generator needs to be overwritten with 'cpu.'"
 
-        return self.device_type in ["mps", "directml", "vulkan", "intel"]
+        return any(
+            map(lambda x: x in self.device, ["mps", "directml", "vulkan", "intel"])
+        )
 
 
 @dataclass

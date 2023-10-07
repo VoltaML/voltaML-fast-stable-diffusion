@@ -3,7 +3,7 @@
     <NFormItem label="Device" label-placement="left">
       <NSelect
         :options="availableBackends"
-        v-model:value="settings.defaultSettings.api.device_type"
+        v-model:value="settings.defaultSettings.api.device"
       />
     </NFormItem>
     <NFormItem label="Data type" label-placement="left">
@@ -92,13 +92,12 @@ import { NForm, NFormItem, NInputNumber, NSelect, NSwitch } from "naive-ui";
 import { computed } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
-import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 
 const settings = useSettings();
 const global = useState();
 
 const availableDtypes = computed(() => {
-  if (settings.defaultSettings.api.device_type == "cpu") {
+  if (settings.defaultSettings.api.device.includes("cpu")) {
     return global.state.capabilities.supported_precisions_cpu.map((value) => {
       var description = "";
       switch (value) {
@@ -131,11 +130,9 @@ const availableDtypes = computed(() => {
 });
 
 const availableBackends = computed(() => {
-  const r: SelectMixedOption[] = [];
-  global.state.capabilities.supported_backends.forEach((value, key) => {
-    r.push({ value: key, label: value });
+  return global.state.capabilities.supported_backends.map((l) => {
+    return { value: l[1], label: l[0] };
   });
-  return r;
 });
 
 const availableQuantizations = computed(() => {

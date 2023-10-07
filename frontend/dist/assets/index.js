@@ -39490,7 +39490,7 @@ const serverUrl = loc.protocol + "//" + loc.host;
 const webSocketUrl = new_uri + "//" + loc.host;
 const huggingfaceModelsFile = "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/experimental/static/huggingface-models.json";
 const defaultCapabilities = {
-  supported_backends: /* @__PURE__ */ new Map(),
+  supported_backends: [["CPU", "cpu"]],
   supported_precisions_cpu: ["float32"],
   supported_precisions_gpu: ["float32"],
   supported_torch_compile_backends: ["inductor"],

@@ -2,7 +2,7 @@ import type { Capabilities } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 
 export const defaultCapabilities: Capabilities = {
-  supported_backends: new Map<string, string>(),
+  supported_backends: [["CPU", "cpu"]],
   supported_precisions_cpu: ["float32"],
   supported_precisions_gpu: ["float32"],
   supported_torch_compile_backends: ["inductor"],

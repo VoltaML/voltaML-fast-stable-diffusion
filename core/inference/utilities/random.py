@@ -28,6 +28,7 @@ def randn(
     assert _rng is not None
     if isinstance(_rng, philox):
         return torch.asarray(_rng.randn(shape), device=device, dtype=dtype)
+    assert _rng is native
     return torch.randn(
         shape,
         generator=_rng,

@@ -49,8 +49,7 @@ logger = logging.getLogger(__name__)
 class GPU:
     "GPU with models attached to it."
 
-    def __init__(self, torch_gpu_id: int) -> None:
-        self.gpu_id = torch_gpu_id
+    def __init__(self) -> None:
         self.queue: Queue = Queue()
         self.loaded_models: Dict[
             str,
@@ -67,28 +66,28 @@ class GPU:
         cap = Capabilities()
         if torch.cuda.is_available():
             for i in range(torch.cuda.device_count()):
-                cap.supported_backends[
-                    f"cuda:{i}"
-                ] = "(CUDA) " + torch.cuda.get_device_name(i)
+                cap.supported_backends.append(
+                    [f"(CUDA) {torch.cuda.get_device_name(i)}", f"cuda:{i}"]
+                )
         try:
             import torch_directml  # pylint: disable=unused-import
 
             for i in range(torch_directml.device_count()):
-                cap.supported_backends[
-                    "privateuseone:{i}"
-                ] = "(DML) " + torch_directml.device_name(i)
+                cap.supported_backends.append(
+                    [f"(DML) {torch_directml.device_name(i)}", f"privateuseone:{i}"]
+                )
         except ImportError:
             pass
         if torch.backends.mps.is_available():  # type: ignore
-            cap.supported_backends["mps"] = "MPS"
+            cap.supported_backends.append(["MPS", "mps"])
         if torch.is_vulkan_available():
-            cap.supported_backends["vulkan"] = "Vulkan"
+            cap.supported_backends.append(["Vulkan", "vulkan"])
         if is_ipex_available():
-            cap.supported_backends["xpu"] = "Intel CPU/GPU"
+            cap.supported_backends.append(["Intel CPU/GPU", "xpu"])
 
         test_suite = ["float16", "bfloat16"]
         support_map: Dict[str, List[str]] = {}
-        for device in [torch.device("cpu"), config.api.device]:
+        for device in [torch.device("cpu"), torch.device(config.api.device)]:
             support_map[device.type] = []
             for dt in test_suite:
                 dtype = getattr(torch, dt)
@@ -126,7 +125,7 @@ class GPU:
 
         cap.supports_xformers = is_xformers_available()
         if torch.cuda.is_available():
-            caps = torch.cuda.get_device_capability(self.gpu_id)
+            caps = torch.cuda.get_device_capability(0)
             if caps[0] < 7:
                 cap.has_tensor_cores = False
 
@@ -139,14 +138,16 @@ class GPU:
 
     def vram_free(self) -> float:
         "Returns the amount of free VRAM on the GPU in MB."
+        index = torch.device(config.api.device).index
         return (
-            torch.cuda.get_device_properties(self.gpu_id).total_memory
-            - torch.cuda.memory_allocated(self.gpu_id)
+            torch.cuda.get_device_properties(index).total_memory
+            - torch.cuda.memory_allocated(index)
         ) / 1024**2
 
     def vram_used(self) -> float:
         "Returns the amount of used VRAM on the GPU in MB."
-        return torch.cuda.memory_allocated(self.gpu_id) / 1024**2
+        index = torch.device(config.api.device).index
+        return torch.cuda.memory_allocated(index) / 1024**2
 
     async def generate(
         self,
@@ -408,9 +409,10 @@ class GPU:
         "Release all unused memory"
         if config.api.clear_memory_policy == "always":
             if torch.cuda.is_available():
-                logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
+                index = torch.device(config.api.device).index
+                logger.debug(f"Cleaning up GPU memory: {index}")
 
-                with torch.cuda.device(self.gpu_id):
+                with torch.cuda.device(index):
                     torch.cuda.empty_cache()
                     torch.cuda.ipc_collect()
 
@@ -670,8 +672,8 @@ class GPU:
             else:
                 pipe = Upscaler(
                     model=job.model,
-                    device_id=config.api.device_id,
-                    cpu=config.api.device_type == "cpu",
+                    device_id=torch.device(config.api.device).index,
+                    cpu=config.api.device == "cpu",
                     fp16=True,
                 )
 

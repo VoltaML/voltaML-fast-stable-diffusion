@@ -3449,11 +3449,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       });
     });
     const availableBackends = computed(() => {
-      const r = [];
-      global.state.capabilities.supported_backends.forEach((value, key) => {
-        r.push({ value: key, label: value });
+      return global.state.capabilities.supported_backends.map((l) => {
+        return { value: l[1], label: l[0] };
       });
-      return r;
     });
     const availableQuantizations = computed(() => {
       return [
