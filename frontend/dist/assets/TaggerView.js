@@ -2,8 +2,9 @@ import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_tr
 import { I as ImageUpload } from "./ImageUpload.js";
 import { d as defineComponent, v as useState, u as useSettings, x as useMessage, r as ref, c as computed, o as openBlock, a as createElementBlock, b as createVNode, w as withCtx, e as unref, A as NGi, N as NCard, B as NSpace, i as createBaseVNode, p as NSelect, n as NTooltip, h as createTextVNode, C as NInput, t as toDisplayString, H as NGrid, z as serverUrl, I as spaceRegex, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
 import { v as v4 } from "./v4.js";
-import { N as NSlider, a as NSwitch } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
+import { N as NSwitch } from "./Switch.js";
 import "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-e404f3d8"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };

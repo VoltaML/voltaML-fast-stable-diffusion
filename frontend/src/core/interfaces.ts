@@ -40,7 +40,7 @@ export interface ModelEntry {
 }
 
 export interface Capabilities {
-  supported_backends: string[];
+  supported_backends: Map<string, string>;
   supported_precisions_gpu: string[];
   supported_precisions_cpu: string[];
   supported_torch_compile_backends: string[];

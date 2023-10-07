@@ -184,6 +184,7 @@ class APIConfig:
 
     # K_Diffusion
     sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
+    kdiffusers_quantization: bool = True  # improves sampling quality
 
     # "philox" is what a "cuda" generator would be, except, it's on cpu
     generator: Literal["device", "cpu", "philox"] = "device"

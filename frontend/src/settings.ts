@@ -185,6 +185,7 @@ export interface ISettings {
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
 
     sgm_noise_multiplier: boolean;
+    kdiffusers_quantization: boolean;
 
     generator: "device" | "cpu" | "philox";
     live_preview_method: "disabled" | "approximation" | "taesd";
@@ -357,6 +358,7 @@ export const defaultSettings: ISettings = {
     torch_compile_mode: "default",
 
     sgm_noise_multiplier: false,
+    kdiffusers_quantization: true,
 
     generator: "device",
     live_preview_method: "approximation",

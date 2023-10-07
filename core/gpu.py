@@ -15,7 +15,6 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
-from core.flags import HighResFixFlag
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
 from core.inference.functions import download_model, is_ipex_available
@@ -67,19 +66,25 @@ class GPU:
         "Returns all of the capabilities of this GPU."
         cap = Capabilities()
         if torch.cuda.is_available():
-            cap.supported_backends.append("cuda")
+            for i in range(torch.cuda.device_count()):
+                cap.supported_backends[
+                    f"cuda:{i}"
+                ] = "(CUDA) " + torch.cuda.get_device_name(i)
         try:
             import torch_directml  # pylint: disable=unused-import
 
-            cap.supported_backends.append("directml")
+            for i in range(torch_directml.device_count()):
+                cap.supported_backends[
+                    "privateuseone:{i}"
+                ] = "(DML) " + torch_directml.device_name(i)
         except ImportError:
             pass
         if torch.backends.mps.is_available():  # type: ignore
-            cap.supported_backends.append("mps")
+            cap.supported_backends["mps"] = "MPS"
         if torch.is_vulkan_available():
-            cap.supported_backends.append("vulkan")
+            cap.supported_backends["vulkan"] = "Vulkan"
         if is_ipex_available():
-            cap.supported_backends.append("xpu")
+            cap.supported_backends["xpu"] = "Intel CPU/GPU"
 
         test_suite = ["float16", "bfloat16"]
         support_map: Dict[str, List[str]] = {}

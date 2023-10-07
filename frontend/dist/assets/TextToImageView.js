@@ -4,8 +4,9 @@ import { B as BurnerClock, _ as _sfc_main$2, a as _sfc_main$3, b as _sfc_main$6 
 import { d as defineComponent, u as useSettings, r as ref, c as computed, o as openBlock, a as createElementBlock, b as createVNode, w as withCtx, e as unref, N as NCard, F as Fragment, f as renderList, g as NButton, h as createTextVNode, t as toDisplayString, i as createBaseVNode, j as convertToTextString, k as createBlock, l as resolveDynamicComponent, m as NModal, n as NTooltip, p as NSelect, q as NIcon, s as h, v as useState, x as useMessage, y as onUnmounted, z as serverUrl, A as NGi, B as NSpace, C as NInput, D as promptHandleKeyUp, E as promptHandleKeyDown, G as createCommentVNode, H as NGrid, I as spaceRegex } from "./index.js";
 import { S as Settings, N as NCheckbox } from "./Settings.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSlider, a as NSwitch } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { v as v4 } from "./v4.js";
+import { N as NSwitch } from "./Switch.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./DescriptionsItem.js";
