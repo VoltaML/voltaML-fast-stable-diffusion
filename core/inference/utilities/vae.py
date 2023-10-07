@@ -1,8 +1,7 @@
 from typing import Callable, Optional
 
-from diffusers import AutoencoderTiny
-import torch
 import numpy as np
+import torch
 from PIL import Image
 
 from core import shared
@@ -17,6 +16,8 @@ def taesd(
     global taesd_model  # pylint: disable=global-statement
 
     if taesd_model is None:
+        from diffusers import AutoencoderTiny
+
         model = "madebyollin/taesd"
         if False:  # TODO: if is_sdxl:
             model = "madebyollin/taesdxl"
