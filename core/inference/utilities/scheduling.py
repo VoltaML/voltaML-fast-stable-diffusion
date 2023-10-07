@@ -9,10 +9,10 @@ from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core import shared
 from core.config import config
+from core.inference.utilities.philox import PhiloxGenerator
 from core.scheduling import KdiffusionSchedulerAdapter, create_sampler
 from core.types import PyTorchModelType
 from core.utils import unwrap_enum
-from .random import _rng
 
 logger = logging.getLogger(__name__)
 
@@ -42,7 +42,11 @@ def get_timesteps(
         return timesteps, num_inference_steps - t_start
 
 
-def prepare_extra_step_kwargs(scheduler: SchedulerMixin, eta: float):
+def prepare_extra_step_kwargs(
+    scheduler: SchedulerMixin,
+    eta: float,
+    generator: Union[PhiloxGenerator, torch.Generator],
+):
     """prepare extra kwargs for the scheduler step, since not all schedulers have the same signature
     eta (η) is only used with the DDIMScheduler, it will be ignored for other schedulers.
     eta corresponds to η in DDIM paper: https://arxiv.org/abs/2010.02502
@@ -65,19 +69,19 @@ def prepare_extra_step_kwargs(scheduler: SchedulerMixin, eta: float):
         and config.api.generator != "philox"
     )
     if accepts_generator:
-        extra_step_kwargs["generator"] = _rng
+        extra_step_kwargs["generator"] = generator
     return extra_step_kwargs
 
 
 def change_scheduler(
     model: Optional[PyTorchModelType],
     scheduler: Union[str, KarrasDiffusionSchedulers],
-    config: Optional[Dict] = None,
+    configuration: Optional[Dict] = None,
     use_karras_sigmas: bool = False,
 ) -> SchedulerMixin:
     "Change the scheduler of the model"
 
-    config = model.scheduler.config  # type: ignore
+    configuration = model.scheduler.config  # type: ignore
 
     if (isinstance(scheduler, str) and scheduler.isdigit()) or isinstance(
         scheduler, (int, KarrasDiffusionSchedulers)
@@ -94,9 +98,9 @@ def change_scheduler(
             logger.debug(
                 f"Loading scheduler {new_scheduler.__class__.__name__} with config karras_sigmas={use_karras_sigmas}"
             )
-            new_scheduler = new_scheduler.from_config(config=config, use_karras_sigmas=use_karras_sigmas)  # type: ignore
+            new_scheduler = new_scheduler.from_config(config=configuration, use_karras_sigmas=use_karras_sigmas)  # type: ignore
         else:
-            new_scheduler = new_scheduler.from_config(config=config)  # type: ignore
+            new_scheduler = new_scheduler.from_config(config=configuration)  # type: ignore
     else:
         sched = DDIMScheduler.from_pretrained("runwayml/stable-diffusion-v1-5", subfolder="scheduler")  # type: ignore
 

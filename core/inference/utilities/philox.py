@@ -61,7 +61,7 @@ def box_muller(x, y):
     return r1.astype(np.float32)
 
 
-class Generator:
+class PhiloxGenerator:
     """RNG that produces same outputs as torch.randn(..., device='cuda') on CPU"""
 
     def __init__(self, seed):

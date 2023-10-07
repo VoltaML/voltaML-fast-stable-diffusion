@@ -1,13 +1,15 @@
 # pylint: disable=W0613
 
 import functools
-from typing import Any, Callable, Optional
+from typing import Any, Callable, Optional, Union
 
 import torch
 
+from core.inference.utilities.philox import PhiloxGenerator
+
+from ..types import Method, ModelType, SkipType, Variant
+from ..unipc import NoiseScheduleVP, UniPC
 from .k_adapter import KdiffusionSchedulerAdapter
-from ..unipc import UniPC, NoiseScheduleVP
-from ..types import SkipType, ModelType, Method, Variant
 
 
 class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
@@ -108,6 +110,7 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         x,
         call: Callable[..., Any],  # type: ignore
         apply_model: Callable[..., torch.Tensor],
+        generator: Union[PhiloxGenerator, torch.Generator],
         callback,
         callback_steps,
     ) -> torch.Tensor:

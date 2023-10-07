@@ -77,7 +77,10 @@ def convert_to_image(
 
         return im
 
-    return image
+    if isinstance(image, Image.Image):
+        return image
+
+    raise ValueError(f"Type {type(image)} not supported yet")
 
 
 def convert_image_to_base64(

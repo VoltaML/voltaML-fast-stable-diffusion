@@ -41,7 +41,7 @@ from core.inference.utilities import (
     prepare_latents,
     preprocess_image,
 )
-
+from core.inference.utilities.philox import PhiloxGenerator
 from core.scheduling import KdiffusionSchedulerAdapter
 
 if is_aitemplate_available():
@@ -206,6 +206,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
     @torch.no_grad()
     def __call__(
         self,
+        generator: Union[PhiloxGenerator, torch.Generator],
         prompt: Optional[Union[str, List[str]]] = None,
         image: Union[torch.FloatTensor, Image.Image, None] = None,  # type: ignore
         prompt_embeds: Optional[torch.Tensor] = None,
@@ -318,10 +319,11 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             width,
             prompt_embeds.dtype,
             self.device,
+            generator,
             latents,
             align_to=64,
         )
-        extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta)  # type: ignore
+        extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator=generator)  # type: ignore
         # Necessary for controlnet to function
         text_embeddings = text_embeddings.half()  # type: ignore
 
@@ -413,6 +415,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
             self.scheduler.do_inference(
                 latents,  # type: ignore
+                generator=generator,
                 call=self.unet_inference,
                 apply_model=do_denoise,
                 callback=callback,

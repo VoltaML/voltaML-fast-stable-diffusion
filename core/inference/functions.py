@@ -54,7 +54,7 @@ torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
     try:
-        import aitemplate
+        import aitemplate  # pylint: disable=unused-import
 
         return True
     except ImportError:
@@ -410,7 +410,6 @@ def load_pytorch_pipeline(
             pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
             torch_dtype=config.api.dtype,
             safety_checker=None,
-            requires_safety_checker=False,
             feature_extractor=None,
             low_cpu_mem_usage=True,
         )

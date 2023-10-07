@@ -1,45 +1,46 @@
-from typing import Union, Optional
+from typing import Optional, Union
 
 import torch
 from torch import Generator as native
 
 from core.config import config
-from .philox import Generator as philox
 
-_rng: Union[None, philox, torch.Generator] = None
+from .philox import PhiloxGenerator
 
 
-def create_generator(seed: int) -> None:
-    global _rng
+def create_generator(seed: int) -> Union[PhiloxGenerator, torch.Generator]:
     generator = config.api.generator
     if generator == "device" and config.api.overwrite_generator:
         generator = "cpu"
     if generator == "philox":
-        _rng = philox(seed)
-    else:
-        _rng = native(
-            config.api.device if generator == "device" else "cpu"
-        ).manual_seed(seed)
+        return PhiloxGenerator(seed)
+
+    return native(config.api.device if generator == "device" else "cpu").manual_seed(
+        seed
+    )
 
 
 def randn(
-    shape, device: Optional[torch.device] = None, dtype: Optional[torch.dtype] = None
+    shape,
+    generator: Union[PhiloxGenerator, torch.Generator],
+    device: Optional[torch.device] = None,
+    dtype: Optional[torch.dtype] = None,
 ) -> torch.Tensor:
-    assert _rng is not None
-    if isinstance(_rng, philox):
-        return torch.asarray(_rng.randn(shape), device=device, dtype=dtype)
-    assert _rng is native
+    if isinstance(generator, PhiloxGenerator):
+        return torch.asarray(generator.randn(shape), device=device, dtype=dtype)
+
     return torch.randn(
         shape,
-        generator=_rng,
+        generator=generator,
         dtype=dtype,
-        device="cpu" if config.api.overwrite_generator else _rng.device,
+        device="cpu" if config.api.overwrite_generator else generator.device,
     ).to(device)
 
 
 def randn_like(
     x: torch.Tensor,
+    generator: Union[PhiloxGenerator, torch.Generator],
     device: Optional[torch.device] = None,
     dtype: Optional[torch.dtype] = None,
 ) -> torch.Tensor:
-    return randn(x.shape, device, dtype)
+    return randn(x.shape, generator, device, dtype)

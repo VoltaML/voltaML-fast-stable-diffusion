@@ -1,7 +1,7 @@
 # HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 
 from contextlib import ExitStack
-from typing import Callable, List, Literal, Optional, Union
+from typing import Any, Callable, List, Literal, Optional, Union
 
 import PIL
 import torch
@@ -14,8 +14,10 @@ from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.config import config
 from core.inference.utilities import (
+    full_vae,
     get_timesteps,
     get_weighted_text_embeddings,
+    numpy_to_pil,
     pad_tensor,
     prepare_extra_step_kwargs,
     prepare_image,
@@ -23,9 +25,8 @@ from core.inference.utilities import (
     prepare_mask_and_masked_image,
     prepare_mask_latents,
     preprocess_image,
-    full_vae,
-    numpy_to_pil,
 )
+from core.inference.utilities.philox import PhiloxGenerator
 from core.optimizations import autocast
 from core.scheduling import KdiffusionSchedulerAdapter
 
@@ -67,12 +68,14 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
     def __init__(
         self,
-        parent,
         vae: AutoencoderKL,
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
         unet: UNet2DConditionModel,
         scheduler: SchedulerMixin,
+        safety_checker: Any = None,  # pylint: disable=unused-argument
+        feature_extractor: Any = None,  # pylint: disable=unused-argument
+        requires_safety_checker: bool = False,  # pylint: disable=unused-argument
         controlnet: Optional[ControlNetModel] = None,
     ):
         super().__init__(
@@ -87,14 +90,13 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         )
         self.__init__additional__()
 
-        self.parent = parent
+        self.parent: Any
         self.vae: AutoencoderKL
         self.text_encoder: CLIPTextModel
         self.tokenizer: CLIPTokenizer
         self.unet: UNet2DConditionModel
         self.scheduler: LMSDiscreteScheduler
         self.controlnet: Optional[ControlNetModel] = controlnet
-        self.requires_safety_checker: bool
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
@@ -229,6 +231,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def __call__(
         self,
         prompt: Union[str, List[str]],
+        generator: Union[PhiloxGenerator, torch.Generator],
         negative_prompt: Optional[Union[str, List[str]]] = None,
         image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
@@ -427,12 +430,13 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 width,
                 dtype,
                 device,
+                generator,
                 latents,
                 latent_channels=None if mask is None else self.vae.config.latent_channels,  # type: ignore
             )
 
             # 7. Prepare extra step kwargs. TODO: Logic should ideally just be moved out of the pipeline
-            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta)  # type: ignore
+            extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
 
             controlnet_keep = []
             if self.controlnet is not None:
@@ -597,6 +601,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     latents = self.scheduler.do_inference(
                         latents,  # type: ignore
+                        generator=generator,
                         call=self.unet,  # type: ignore
                         apply_model=do_denoise,
                         callback=callback,
@@ -653,6 +658,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def text2img(
         self,
         prompt: Union[str, List[str]],
+        generator: Union[PhiloxGenerator, torch.Generator],
         negative_prompt: Optional[Union[str, List[str]]] = None,
         height: int = 512,
         width: int = 512,
@@ -728,6 +734,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         """
         return self(
             prompt=prompt,
+            generator=generator,
             negative_prompt=negative_prompt,
             height=height,
             width=width,
@@ -749,6 +756,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self,
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
+        generator: Union[PhiloxGenerator, torch.Generator],
         height: int = 512,
         width: int = 512,
         negative_prompt: Optional[Union[str, List[str]]] = None,
@@ -823,8 +831,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self(
+        return self.__call__(  # pylint: disable=unnecessary-dunder-call
             prompt=prompt,
+            generator=generator,
             negative_prompt=negative_prompt,
             image=image,
             height=height,
@@ -848,6 +857,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
         prompt: Union[str, List[str]],
+        generator: Union[PhiloxGenerator, torch.Generator],
         negative_prompt: Optional[Union[str, List[str]]] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
@@ -930,8 +940,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self(
+        return self.__call__(  # pylint: disable=unnecessary-dunder-call
             prompt=prompt,
+            generator=generator,
             negative_prompt=negative_prompt,
             image=image,
             mask_image=mask_image,

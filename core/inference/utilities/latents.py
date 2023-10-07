@@ -1,18 +1,20 @@
 import logging
 import math
 from time import time
-from typing import Optional, Tuple, Union, List
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
 import torch.nn.functional as F
-from diffusers.models import vae
 from diffusers import StableDiffusionPipeline
+from diffusers.models import vae as diffusers_vae
 from diffusers.utils import PIL_INTERPOLATION
 from PIL import Image
 
 from core.config import config
 from core.flags import LatentScaleModel
+from core.inference.utilities.philox import PhiloxGenerator
+
 from .random import randn
 
 logger = logging.getLogger(__name__)
@@ -20,15 +22,15 @@ logger = logging.getLogger(__name__)
 
 def _randn_tensor(
     shape: Union[Tuple, List],
-    generator: Optional[Union[List["torch.Generator"], "torch.Generator"]] = None,
+    generator: Union[PhiloxGenerator, torch.Generator],
     device: Optional["torch.device"] = None,
     dtype: Optional["torch.dtype"] = None,
     layout: Optional["torch.layout"] = None,
 ):
-    return randn(shape, device, dtype)
+    return randn(shape, generator, device, dtype)
 
 
-vae.randn_tensor = _randn_tensor
+diffusers_vae.randn_tensor = _randn_tensor
 logger.debug("Overwritten diffusers randn_tensor")
 
 
@@ -236,6 +238,7 @@ def prepare_latents(
     width: Optional[int],
     dtype: torch.dtype,
     device: torch.device,
+    generator: Union[PhiloxGenerator, torch.Generator],
     latents=None,
     latent_channels: Optional[int] = None,
     align_to: int = 1,
@@ -250,7 +253,7 @@ def prepare_latents(
 
         if latents is None:
             # randn does not work reproducibly on mps
-            latents = randn(shape, device=device, dtype=dtype)  # type: ignore
+            latents = randn(shape, generator, device=device, dtype=dtype)  # type: ignore
         else:
             if latents.shape != shape:
                 raise ValueError(
@@ -286,7 +289,7 @@ def prepare_latents(
             )
 
         # add noise to latents using the timesteps
-        noise = randn(shape, device=device, dtype=dtype)
+        noise = randn(shape, generator, device=device, dtype=dtype)
         latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 

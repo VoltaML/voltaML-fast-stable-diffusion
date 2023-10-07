@@ -2,12 +2,14 @@
 
 import functools
 import inspect
-from typing import Callable, Optional, Tuple
+from typing import Callable, Optional, Tuple, Union
 
 import k_diffusion
 import torch
 
 from core.config import config
+from core.inference.utilities.philox import PhiloxGenerator
+
 from ..hijack import TorchHijack
 from ..sigmas import build_sigmas
 from ..types import Denoiser, Sampler, SigmaScheduler
@@ -121,6 +123,7 @@ class KdiffusionSchedulerAdapter:
         x: torch.Tensor,
         call: Callable,
         apply_model: Callable[..., torch.Tensor],
+        generator: Union[PhiloxGenerator, torch.Generator],
         callback,
         callback_steps,
     ) -> torch.Tensor:
@@ -143,7 +146,7 @@ class KdiffusionSchedulerAdapter:
             def noiser(sigma=None, sigma_next=None):
                 from core.inference.utilities import randn_like
 
-                return randn_like(x, device=x.device, dtype=x.dtype)
+                return randn_like(x, generator, device=x.device, dtype=x.dtype)
 
             return noiser
 

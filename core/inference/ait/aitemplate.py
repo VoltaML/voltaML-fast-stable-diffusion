@@ -30,11 +30,11 @@ from core.types import (
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 from ..utilities import (
-    init_ait_module,
-    image_to_controlnet_input,
-    get_weighted_text_embeddings,
     change_scheduler,
     create_generator,
+    get_weighted_text_embeddings,
+    image_to_controlnet_input,
+    init_ait_module,
 )
 
 logger = logging.getLogger(__name__)
@@ -239,7 +239,6 @@ class AITemplateStableDiffusion(InferenceModel):
     def create_pipe(
         self,
         controlnet: str = "",
-        seed: int = -1,
         scheduler: Optional[Tuple[Any, bool]] = None,
     ) -> "StableDiffusionAITPipeline":
         "Centralized way to create new pipelines."
@@ -261,8 +260,6 @@ class AITemplateStableDiffusion(InferenceModel):
             unet_ait_exe=self.unet_ait_exe,
             vae_ait_exe=self.vae_ait_exe,
         )
-
-        create_generator(seed)
 
         if scheduler:
             change_scheduler(
@@ -294,9 +291,10 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from text"
         pipe = self.create_pipe(
-            seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
+
+        generator = create_generator(seed=job.data.seed)
 
         total_images: List[Image.Image] = []
         shared.current_method = "txt2img"
@@ -311,6 +309,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 pipe, job.data.prompt, job.data.negative_prompt
             )
             data = pipe(
+                generator=generator,
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
                 height=job.data.height,
@@ -337,6 +336,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 )
 
                 data = pipe(
+                    generator=generator,
                     prompt=job.data.prompt,
                     image=latents,
                     height=latents.shape[2] * 8,
@@ -380,9 +380,10 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
         pipe = self.create_pipe(
-            seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
+
+        generator = create_generator(seed=job.data.seed)
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
@@ -395,6 +396,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 pipe, job.data.prompt, job.data.negative_prompt
             )
             data = pipe(
+                generator=generator,
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
                 image=input_image,  # type: ignore
@@ -438,9 +440,10 @@ class AITemplateStableDiffusion(InferenceModel):
         "Generates images from images"
         pipe = self.create_pipe(
             controlnet=job.data.controlnet,
-            seed=job.data.seed,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
         )
+
+        generator = create_generator(seed=job.data.seed)
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
@@ -457,6 +460,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 pipe, job.data.prompt, job.data.negative_prompt
             )
             data = pipe(
+                generator=generator,
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
                 image=input_image,  # type: ignore

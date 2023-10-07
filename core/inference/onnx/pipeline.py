@@ -1,3 +1,4 @@
+import functools
 import importlib
 import inspect
 import logging
@@ -5,7 +6,6 @@ import os
 import re
 import shutil
 import warnings
-import functools
 from dataclasses import fields
 from pathlib import Path
 from time import time
@@ -49,6 +49,7 @@ from core.inference_callbacks import (
     inpaint_callback,
     txt2img_callback,
 )
+from core.scheduling import KdiffusionSchedulerAdapter
 from core.types import (
     Backend,
     Img2ImgQueueEntry,
@@ -58,7 +59,6 @@ from core.types import (
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image
-from core.scheduling import KdiffusionSchedulerAdapter
 
 logger = logging.getLogger(__name__)
 

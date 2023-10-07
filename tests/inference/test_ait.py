@@ -21,14 +21,14 @@ model = "Azher--Anything-v4.5-vae-fp16-diffuser__512-1024x512-1024x1-1"
 
 @pytest.fixture(name="pipe")
 def pipe_fixture():
-    return AITemplateStableDiffusion(
+    return AITemplateStableDiffusion(  # type: ignore
         model_id=model,
     )
 
 
 @pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
 def test_aitemplate_txt2img(
-    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers  # type: ignore
 ):
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
@@ -39,12 +39,12 @@ def test_aitemplate_txt2img(
         model=model,
     )
 
-    pipe.generate(job)
+    pipe.generate(job)  # type: ignore
 
 
 @pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
 def test_aitemplate_img2img(
-    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers  # type: ignore
 ):
     job = Img2ImgQueueEntry(
         data=Img2imgData(
@@ -56,12 +56,12 @@ def test_aitemplate_img2img(
         model=model,
     )
 
-    pipe.generate(job)
+    pipe.generate(job)  # type: ignore
 
 
 @pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
 def test_aitemplate_controlnet(
-    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers  # type: ignore
 ):
     job = ControlNetQueueEntry(
         data=ControlNetData(
@@ -74,12 +74,12 @@ def test_aitemplate_controlnet(
         model=model,
     )
 
-    pipe.generate(job)
+    pipe.generate(job)  # type: ignore
 
 
-def test_unload(pipe: AITemplateStableDiffusion):
-    pipe.unload()
+def test_unload(pipe: AITemplateStableDiffusion):  # type: ignore
+    pipe.unload()  # type: ignore
 
 
-def test_cleanup(pipe: AITemplateStableDiffusion):
-    pipe.memory_cleanup()
+def test_cleanup(pipe: AITemplateStableDiffusion):  # type: ignore
+    pipe.memory_cleanup()  # type: ignore
