@@ -3,17 +3,90 @@ from typing import Optional
 
 
 @dataclass
-class DPM_2S_a:
-    eta_noise_seed_delta: Optional[float] = None
-    denoiser_enable_quantization: Optional[bool] = None
-    karras_sigma_scheduler: Optional[bool] = None
-    sigma_use_old_karras_scheduler: Optional[bool] = None
-    sigma_always_discard_next_to_last: Optional[bool] = None
-    sigma_rho: Optional[float] = None
-    sigma_min: Optional[float] = None
-    sigma_max: Optional[float] = None
-    sampler_eta: Optional[float] = None
-    sampler_churn: Optional[float] = None
-    sampler_tmin: Optional[float] = None
-    sampler_tmax: Optional[float] = None
-    sampler_noise: Optional[float] = None
+class AncestralMixin:
+    eta: Optional[float] = None
+    s_noise: Optional[float] = None
+
+
+@dataclass
+class Euler:
+    s_churn: Optional[float] = None
+    s_tmin: Optional[float] = None
+    s_tmax: Optional[float] = None
+    s_noise: Optional[float] = None
+
+
+@dataclass
+class Euler_a(AncestralMixin):
+    noise_sampler: Optional[str] = None
+
+
+@dataclass
+class Heun:
+    s_churn: Optional[float] = None
+    s_tmin: Optional[float] = None
+    s_tmax: Optional[float] = None
+    s_noise: Optional[float] = None
+
+
+@dataclass
+class DPM_2:
+    s_churn: Optional[float] = None
+    s_tmin: Optional[float] = None
+    s_tmax: Optional[float] = None
+    s_noise: Optional[float] = None
+
+
+@dataclass
+class DPM_2_a(AncestralMixin):
+    noise_sampler: Optional[str] = None
+
+
+@dataclass
+class LMS:
+    order: Optional[int] = None
+
+
+@dataclass
+class DPM_fast(AncestralMixin):
+    noise_sampler: Optional[str] = None
+
+
+@dataclass
+class DPM_adaptive(AncestralMixin):
+    order: Optional[int] = None
+    rtol: Optional[float] = None
+    atol: Optional[float] = None
+    h_init: Optional[float] = None
+    pcoeff: Optional[float] = None
+    icoeff: Optional[float] = None
+    dcoeff: Optional[float] = None
+    accept_safety: Optional[float] = None
+    noise_sampler: Optional[str] = None
+
+
+@dataclass
+class DPMpp_2S_a(AncestralMixin):
+    noise_sampler: Optional[str] = None
+
+
+@dataclass
+class DPMpp_SDE(AncestralMixin):
+    noise_sampler: Optional[str] = None
+    r: Optional[float] = None
+
+
+@dataclass
+class DPMpp_2M:
+    pass
+
+
+@dataclass
+class DPMpp_2M_SDE(AncestralMixin):
+    noise_sampler: Optional[str] = None
+    solver_type: Optional[str] = None
+
+
+@dataclass
+class DPMpp_3M_SDE(AncestralMixin):
+    noise_sampler: Optional[str] = None
