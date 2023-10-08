@@ -389,7 +389,7 @@ def load_pytorch_pipeline(
         cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path_or_dict=str(get_full_model_path(model_id_or_path)),
+                str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=True,
@@ -398,7 +398,7 @@ def load_pytorch_pipeline(
             )
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path_or_dict=str(get_full_model_path(model_id_or_path)),
+                str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=False,
