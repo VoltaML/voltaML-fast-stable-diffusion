@@ -29,6 +29,8 @@ def randn(
     if isinstance(generator, PhiloxGenerator):
         return torch.asarray(generator.randn(shape), device=device, dtype=dtype)
 
+    print("randn", generator)
+
     return torch.randn(
         shape,
         generator=generator,

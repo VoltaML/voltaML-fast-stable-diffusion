@@ -25,7 +25,7 @@ def _randn_tensor(
     generator: Union[PhiloxGenerator, torch.Generator],
     device: Optional["torch.device"] = None,
     dtype: Optional["torch.dtype"] = None,
-    layout: Optional["torch.layout"] = None,
+    layout: Optional["torch.layout"] = None,  # pylint: disable=unused-argument
 ):
     return randn(shape, generator, device, dtype)
 
@@ -135,6 +135,7 @@ def prepare_mask_latents(
     vae,
     vae_scale_factor: float,
     vae_scaling_factor: float,
+    generator: Union[PhiloxGenerator, torch.Generator],
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """This function resizes and converts the input mask to a PyTorch tensor,
     encodes the input masked image to its latent representation,
@@ -147,9 +148,9 @@ def prepare_mask_latents(
     mask = mask.to(device=device, dtype=dtype)
 
     masked_image = masked_image.to(device=device, dtype=dtype)
-    masked_image_latents = (
-        vae_scaling_factor * vae.encode(masked_image).latent_dist.sample()
-    )
+    masked_image_latents = vae_scaling_factor * vae.encode(
+        masked_image
+    ).latent_dist.sample(generator=generator)
     if mask.shape[0] < batch_size:
         mask = mask.repeat(batch_size // mask.shape[0], 1, 1, 1)
     if masked_image_latents.shape[0] < batch_size:
@@ -268,7 +269,7 @@ def prepare_latents(
         if image.shape[1] != 4:
             image = pad_tensor(image, pipe.vae_scale_factor)
             init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
-            init_latents = init_latent_dist.sample()
+            init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
             init_latents = torch.cat([init_latents] * batch_size, dim=0)
         else:

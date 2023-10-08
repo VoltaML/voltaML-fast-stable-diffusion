@@ -12,23 +12,26 @@ from core.types import (
 from tests.functions import generate_random_image_base64
 
 try:
-    from core.inference.ait import AITemplateStableDiffusion
+    import aitemplate  # pylint: disable=unused-import
 except ModuleNotFoundError:
     pytest.skip("Skipping aitemplate tests, ait not installed", allow_module_level=True)
+
+# pylint: disable=ungrouped-imports
+from core.inference.ait import AITemplateStableDiffusion
 
 model = "Azher--Anything-v4.5-vae-fp16-diffuser__512-1024x512-1024x1-1"
 
 
 @pytest.fixture(name="pipe")
 def pipe_fixture():
-    return AITemplateStableDiffusion(  # type: ignore
+    return AITemplateStableDiffusion(
         model_id=model,
     )
 
 
 @pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
 def test_aitemplate_txt2img(
-    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers  # type: ignore
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
@@ -39,12 +42,12 @@ def test_aitemplate_txt2img(
         model=model,
     )
 
-    pipe.generate(job)  # type: ignore
+    pipe.generate(job)
 
 
 @pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
 def test_aitemplate_img2img(
-    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers  # type: ignore
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):
     job = Img2ImgQueueEntry(
         data=Img2imgData(
@@ -56,12 +59,12 @@ def test_aitemplate_img2img(
         model=model,
     )
 
-    pipe.generate(job)  # type: ignore
+    pipe.generate(job)
 
 
 @pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
 def test_aitemplate_controlnet(
-    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers  # type: ignore
+    pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):
     job = ControlNetQueueEntry(
         data=ControlNetData(
@@ -74,12 +77,12 @@ def test_aitemplate_controlnet(
         model=model,
     )
 
-    pipe.generate(job)  # type: ignore
+    pipe.generate(job)
 
 
-def test_unload(pipe: AITemplateStableDiffusion):  # type: ignore
-    pipe.unload()  # type: ignore
+def test_unload(pipe: AITemplateStableDiffusion):
+    pipe.unload()
 
 
-def test_cleanup(pipe: AITemplateStableDiffusion):  # type: ignore
-    pipe.memory_cleanup()  # type: ignore
+def test_cleanup(pipe: AITemplateStableDiffusion):
+    pipe.memory_cleanup()

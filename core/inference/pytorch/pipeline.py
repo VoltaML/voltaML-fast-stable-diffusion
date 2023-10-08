@@ -402,6 +402,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     self.vae,
                     self.vae_scale_factor,
                     self.vae.config.scaling_factor,  # type: ignore
+                    generator=generator,
                 )
             else:
                 mask = None
