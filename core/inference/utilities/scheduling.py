@@ -44,7 +44,7 @@ def get_timesteps(
 
 def prepare_extra_step_kwargs(
     scheduler: SchedulerMixin,
-    eta: float,
+    eta: Optional[float],
     generator: Union[PhiloxGenerator, torch.Generator],
 ):
     """prepare extra kwargs for the scheduler step, since not all schedulers have the same signature

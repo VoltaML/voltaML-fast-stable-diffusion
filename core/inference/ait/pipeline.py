@@ -323,9 +323,11 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             latents,
             align_to=64,
         )
-        extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator=generator)  # type: ignore
+        extra_step_kwargs = prepare_extra_step_kwargs(
+            self.scheduler, eta, generator=generator
+        )
         # Necessary for controlnet to function
-        text_embeddings = text_embeddings.half()  # type: ignore
+        text_embeddings = text_embeddings.half()
 
         controlnet_keep = []
         if self.controlnet is not None:
@@ -335,14 +337,14 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     - float(i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0)
                 )
 
-        def do_denoise(x, t, call: Callable = None) -> torch.Tensor:  # type: ignore
+        def do_denoise(x, t, call: Callable) -> torch.Tensor:
             latent_model_input = (
-                torch.cat([x] * 2) if do_classifier_free_guidance else x  # type: ignore
+                torch.cat([x] * 2) if do_classifier_free_guidance else x
             )
             latent_model_input = self.scheduler.scale_model_input(latent_model_input, t).half()  # type: ignore
 
             # predict the noise residual
-            if self.controlnet is not None and ctrl_image is not None:  # type: ignore
+            if self.controlnet is not None and ctrl_image is not None:
                 if guess_mode and do_classifier_free_guidance:
                     # Infer ControlNet only for the conditional batch.
                     control_model_input = x
