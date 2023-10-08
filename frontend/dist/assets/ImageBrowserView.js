@@ -1,10 +1,9 @@
-import { d as defineComponent, b8 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, b9 as reactive, ba as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, i as createBaseVNode, b as createVNode, e as unref, w as withCtx, F as Fragment, f as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, g as NButton, h as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bG as urlFromPath, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b8 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, b9 as reactive, ba as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, i as createBaseVNode, b as createVNode, e as unref, w as withCtx, F as Fragment, f as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, g as NButton, h as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bF as urlFromPath, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
-import { N as NSlider } from "./Slider.js";
+import { N as NSlider } from "./Switch.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import "./Switch.js";
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "53px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
   class: "top-bar"
@@ -19,11 +18,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "70a629e9": unref(conf).data.settings.frontend.image_browser_columns,
-      "db36f472": backgroundColor.value
+      "352f69e6": unref(settings).data.settings.frontend.image_browser_columns,
+      "75eff66c": backgroundColor.value
     }));
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const showDeleteModal = ref(false);
     const showImageModal = ref(false);
     const scrollComponent = ref(null);
@@ -120,11 +119,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     const columns = computed(() => {
       const cols = [];
-      for (let i = 0; i < conf.data.settings.frontend.image_browser_columns; i++) {
+      for (let i = 0; i < settings.data.settings.frontend.image_browser_columns; i++) {
         cols.push([]);
       }
       for (let i = 0; i < computedImgDataLimit.value; i++) {
-        cols[i % conf.data.settings.frontend.image_browser_columns].push(
+        cols[i % settings.data.settings.frontend.image_browser_columns].push(
           filteredImgData.value[i]
         );
       }
@@ -176,7 +175,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     };
     function moveImage(direction) {
-      const numColumns = conf.data.settings.frontend.image_browser_columns;
+      const numColumns = settings.data.settings.frontend.image_browser_columns;
       if (direction === -1) {
         if (currentColumn.value > 0) {
           imgClick(currentColumn.value - 1, currentRowIndex.value);
@@ -213,7 +212,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     refreshImages();
     const backgroundColor = computed(() => {
-      if (conf.data.settings.frontend.theme === "dark") {
+      if (settings.data.settings.frontend.theme === "dark") {
         return "#121215";
       } else {
         return "#fff";
@@ -241,8 +240,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             style: { "width": "50vw" },
             min: 1,
             max: 10,
-            value: unref(conf).data.settings.frontend.image_browser_columns,
-            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.frontend.image_browser_columns = $event)
+            value: unref(settings).data.settings.frontend.image_browser_columns,
+            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.frontend.image_browser_columns = $event)
           }, null, 8, ["value"])
         ]),
         createBaseVNode("div", _hoisted_2, [
@@ -424,8 +423,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_8cf0bb58_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-8cf0bb58"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_7b99b7a6_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7b99b7a6"]]);
 export {
   ImageBrowserView as default
 };

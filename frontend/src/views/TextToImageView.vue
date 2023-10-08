@@ -7,14 +7,14 @@
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
-              v-model:value="conf.data.settings.txt2img.prompt"
+              v-model:value="settings.data.settings.txt2img.prompt"
               type="textarea"
               placeholder="Prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.txt2img,
+                  settings.data.settings.txt2img,
                   'prompt',
                   global
                 )
@@ -24,14 +24,14 @@
               <template #count>{{ promptCount }}</template>
             </NInput>
             <NInput
-              v-model:value="conf.data.settings.txt2img.negative_prompt"
+              v-model:value="settings.data.settings.txt2img.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.txt2img,
+                  settings.data.settings.txt2img,
                   'negative_prompt',
                   global
                 )
@@ -58,13 +58,15 @@
               </NTooltip>
 
               <NSwitch
-                v-model:value="conf.data.settings.txt2img.use_karras_sigmas"
+                v-model:value="settings.data.settings.txt2img.use_karras_sigmas"
                 style="justify-self: flex-end"
               />
             </div>
 
             <!-- Dimensions -->
-            <DimensionsInput :dimensions-object="conf.data.settings.txt2img" />
+            <DimensionsInput
+              :dimensions-object="settings.data.settings.txt2img"
+            />
 
             <!-- Steps -->
             <div class="flex-container">
@@ -81,13 +83,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.txt2img.steps"
+                v-model:value="settings.data.settings.txt2img.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.steps"
+                v-model:value="settings.data.settings.txt2img.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
               />
@@ -108,14 +110,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.txt2img.cfg_scale"
+                v-model:value="settings.data.settings.txt2img.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.cfg_scale"
+                v-model:value="settings.data.settings.txt2img.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="0.5"
@@ -126,8 +128,8 @@
             <div
               class="flex-container"
               v-if="
-                Number.isInteger(conf.data.settings.txt2img.sampler) &&
-                conf.data.settings.model?.backend === 'PyTorch'
+                Number.isInteger(settings.data.settings.txt2img.sampler) &&
+                settings.data.settings.model?.backend === 'PyTorch'
               "
             >
               <NTooltip style="max-width: 600px">
@@ -141,14 +143,18 @@
               </NTooltip>
 
               <NSlider
-                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                v-model:value="
+                  settings.data.settings.txt2img.self_attention_scale
+                "
                 :min="0"
                 :max="1"
                 :step="0.05"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                v-model:value="
+                  settings.data.settings.txt2img.self_attention_scale
+                "
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="0.05"
@@ -164,19 +170,21 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.txt2img.batch_count"
+                v-model:value="settings.data.settings.txt2img.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.batch_count"
+                v-model:value="settings.data.settings.txt2img.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
               />
             </div>
 
-            <BatchSizeInput :batch-size-object="conf.data.settings.txt2img" />
+            <BatchSizeInput
+              :batch-size-object="settings.data.settings.txt2img"
+            />
 
             <!-- Seed -->
             <div class="flex-container">
@@ -190,7 +198,7 @@
                 <b class="highlight">For random seed use -1.</b>
               </NTooltip>
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.seed"
+                v-model:value="settings.data.settings.txt2img.seed"
                 size="small"
                 style="flex-grow: 1"
               />
@@ -229,13 +237,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.extra.highres.steps"
+                v-model:value="settings.data.settings.extra.highres.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.extra.highres.steps"
+                v-model:value="settings.data.settings.extra.highres.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
               />
@@ -245,14 +253,14 @@
             <div class="flex-container">
               <p class="slider-label">Scale</p>
               <NSlider
-                v-model:value="conf.data.settings.extra.highres.scale"
+                v-model:value="settings.data.settings.extra.highres.scale"
                 :min="1"
                 :max="8"
                 :step="0.1"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.extra.highres.scale"
+                v-model:value="settings.data.settings.extra.highres.scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="0.1"
@@ -263,14 +271,14 @@
             <div class="flex-container">
               <p class="slider-label">Strength</p>
               <NSlider
-                v-model:value="conf.data.settings.extra.highres.strength"
+                v-model:value="settings.data.settings.extra.highres.strength"
                 :min="0.1"
                 :max="0.9"
                 :step="0.05"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.extra.highres.strength"
+                v-model:value="settings.data.settings.extra.highres.strength"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
@@ -282,7 +290,7 @@
             <div class="flex-container">
               <p class="slider-label">Antialiased</p>
               <NSwitch
-                v-model:value="conf.data.settings.extra.highres.antialiased"
+                v-model:value="settings.data.settings.extra.highres.antialiased"
               />
             </div>
 
@@ -290,7 +298,7 @@
               <p class="slider-label">Latent Mode</p>
               <NSelect
                 v-model:value="
-                  conf.data.settings.extra.highres.latent_scale_mode
+                  settings.data.settings.extra.highres.latent_scale_mode
                 "
                 size="small"
                 style="flex-grow: 1"
@@ -324,7 +332,7 @@
         <ImageOutput
           :current-image="global.state.txt2img.currentImage"
           :images="global.state.txt2img.images"
-          :data="conf.data.settings.txt2img"
+          :data="settings.data.settings.txt2img"
           @image-clicked="global.state.txt2img.currentImage = $event"
         />
 
@@ -371,15 +379,15 @@ import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const messageHandler = useMessage();
 
 const promptCount = computed(() => {
-  return conf.data.settings.txt2img.prompt.split(spaceRegex).length - 1;
+  return settings.data.settings.txt2img.prompt.split(spaceRegex).length - 1;
 });
 const negativePromptCount = computed(() => {
   return (
-    conf.data.settings.txt2img.negative_prompt.split(spaceRegex).length - 1
+    settings.data.settings.txt2img.negative_prompt.split(spaceRegex).length - 1
   );
 });
 
@@ -393,13 +401,13 @@ const checkSeed = (seed: number) => {
 };
 
 const generate = () => {
-  if (conf.data.settings.txt2img.seed === null) {
+  if (settings.data.settings.txt2img.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
   global.state.generating = true;
 
-  const seed = checkSeed(conf.data.settings.txt2img.seed);
+  const seed = checkSeed(settings.data.settings.txt2img.seed);
 
   fetch(`${serverUrl}/api/generate/txt2img`, {
     method: "POST",
@@ -409,31 +417,36 @@ const generate = () => {
     body: JSON.stringify({
       data: {
         id: uuidv4(),
-        prompt: conf.data.settings.txt2img.prompt,
-        negative_prompt: conf.data.settings.txt2img.negative_prompt,
-        width: conf.data.settings.txt2img.width,
-        height: conf.data.settings.txt2img.height,
-        steps: conf.data.settings.txt2img.steps,
-        guidance_scale: conf.data.settings.txt2img.cfg_scale,
+        prompt: settings.data.settings.txt2img.prompt,
+        negative_prompt: settings.data.settings.txt2img.negative_prompt,
+        width: settings.data.settings.txt2img.width,
+        height: settings.data.settings.txt2img.height,
+        steps: settings.data.settings.txt2img.steps,
+        guidance_scale: settings.data.settings.txt2img.cfg_scale,
         seed: seed,
-        batch_size: conf.data.settings.txt2img.batch_size,
-        batch_count: conf.data.settings.txt2img.batch_count,
-        scheduler: conf.data.settings.txt2img.sampler,
-        self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
-        use_karras_sigmas: conf.data.settings.txt2img.use_karras_sigmas,
+        batch_size: settings.data.settings.txt2img.batch_size,
+        batch_count: settings.data.settings.txt2img.batch_count,
+        scheduler: settings.data.settings.txt2img.sampler,
+        self_attention_scale:
+          settings.data.settings.txt2img.self_attention_scale,
+        use_karras_sigmas: settings.data.settings.txt2img.use_karras_sigmas,
+        sampler_settings:
+          settings.data.settings.sampler_config[
+            settings.data.settings.txt2img.sampler
+          ],
       },
-      model: conf.data.settings.model?.name,
+      model: settings.data.settings.model?.name,
       backend: "PyTorch",
       autoload: false,
       flags: global.state.txt2img.highres
         ? {
             highres_fix: {
-              scale: conf.data.settings.extra.highres.scale,
+              scale: settings.data.settings.extra.highres.scale,
               latent_scale_mode:
-                conf.data.settings.extra.highres.latent_scale_mode,
-              strength: conf.data.settings.extra.highres.strength,
-              steps: conf.data.settings.extra.highres.steps,
-              antialiased: conf.data.settings.extra.highres.antialiased,
+                settings.data.settings.extra.highres.latent_scale_mode,
+              strength: settings.data.settings.extra.highres.strength,
+              steps: settings.data.settings.extra.highres.steps,
+              antialiased: settings.data.settings.extra.highres.antialiased,
             },
           }
         : {},
@@ -465,7 +478,11 @@ const generate = () => {
 };
 
 // Burner clock
-const burner = new BurnerClock(conf.data.settings.txt2img, conf, generate);
+const burner = new BurnerClock(
+  settings.data.settings.txt2img,
+  settings,
+  generate
+);
 onUnmounted(() => {
   burner.cleanup();
 });

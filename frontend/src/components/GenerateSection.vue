@@ -10,8 +10,8 @@
           :disabled="
             !props.doNotDisableGenerate &&
             (global.state.generating ||
-              conf.data.settings.model?.name === '' ||
-              conf.data.settings.model?.name === undefined)
+              settings.data.settings.model?.name === '' ||
+              settings.data.settings.model?.name === undefined)
           "
           :loading="global.state.generating"
           style="width: 100%"
@@ -44,8 +44,8 @@
       style="margin-top: 12px"
       v-if="
         !props.doNotDisableGenerate &&
-        (conf.data.settings.model?.name === '' ||
-          conf.data.settings.model?.name === undefined)
+        (settings.data.settings.model?.name === '' ||
+          settings.data.settings.model?.name === undefined)
       "
       type="warning"
       title="No model loaded"
@@ -65,7 +65,7 @@ import type { MaybeArray } from "naive-ui/es/_utils";
 import { onMounted, onUnmounted, ref, type PropType } from "vue";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 
 const generateButton = ref<HTMLElement | null>(null);
 

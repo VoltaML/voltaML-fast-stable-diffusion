@@ -1,5 +1,5 @@
-import { U as inject, bz as getCurrentInstance, O as watch, aC as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bA as formLight, a4 as keysOf, c as computed, aA as formatLength, aI as get, bB as commonVariables, au as cE, Y as toRef, aX as createId, bC as formItemInjectionKey, ba as onMounted, Z as useThemeClass, aY as Transition, aw as resolveWrappedSlot, ao as createKey, aN as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, b as createVNode, e as unref, p as NSelect, i as createBaseVNode, a as createElementBlock, f as renderList, bc as NText, h as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, bD as resolveComponent, g as NButton, x as useMessage, bE as useNotification, y as onUnmounted, z as serverUrl, bF as defaultSettings } from "./index.js";
-import { N as NSwitch } from "./Switch.js";
+import { U as inject, bz as getCurrentInstance, O as watch, aC as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bA as formLight, a4 as keysOf, c as computed, aA as formatLength, aI as get, bB as commonVariables, au as cE, Y as toRef, aX as createId, bC as formItemInjectionKey, ba as onMounted, Z as useThemeClass, aY as Transition, aw as resolveWrappedSlot, ao as createKey, aN as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, b as createVNode, e as unref, p as NSelect, i as createBaseVNode, a as createElementBlock, f as renderList, bc as NText, h as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, g as NButton, x as useMessage, bD as useNotification, y as onUnmounted, z as serverUrl, bE as defaultSettings } from "./index.js";
+import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
@@ -3128,7 +3128,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       ];
     });
     return (_ctx, _cache) => {
-      const _component_NSlider = resolveComponent("NSlider");
       return openBlock(), createBlock(unref(NForm), null, {
         default: withCtx(() => [
           createVNode(unref(NFormItem), {
@@ -3158,7 +3157,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           }),
           unref(settings).defaultSettings.api.attention_processor == "subquadratic" ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
             _hoisted_2,
-            createVNode(_component_NSlider, {
+            createVNode(unref(NSlider), {
               value: unref(settings).defaultSettings.api.subquadratic_size,
               "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.subquadratic_size = $event),
               step: 64,

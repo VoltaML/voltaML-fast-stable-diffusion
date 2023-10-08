@@ -40979,7 +40979,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-27aa8797"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-4aa96a77"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -40999,12 +40999,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "6bdcacdd": backgroundColor.value
+      "37a4cfa2": backgroundColor.value
     }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
     const global2 = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const modelsLoading = ref(false);
     const filter = ref("");
     const filteredModels = computed(() => {
@@ -41093,13 +41093,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }).then(() => {
         fetch(`${serverUrl}/api/models/loaded`).then((res) => {
           res.json().then((data) => {
-            if (conf.data.settings.model) {
+            if (settings.data.settings.model) {
               if (!data.find((model) => {
                 var _a2;
-                return model.path === ((_a2 = conf.data.settings.model) == null ? void 0 : _a2.path);
+                return model.path === ((_a2 = settings.data.settings.model) == null ? void 0 : _a2.path);
               })) {
                 console.log("Current model is not loaded anymore");
-                conf.data.settings.model = null;
+                settings.data.settings.model = null;
               }
             }
             data.forEach((loadedModel) => {
@@ -41110,7 +41110,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 Object.assign(model, loadedModel);
               }
             });
-            if (!conf.data.settings.model) {
+            if (!settings.data.settings.model) {
               const allLoaded = [
                 ...loadedPyTorchModels.value,
                 ...loadedAitModels.value,
@@ -41119,28 +41119,28 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               ];
               console.log("All loaded models: ", allLoaded);
               if (allLoaded.length > 0) {
-                conf.data.settings.model = allLoaded[0];
+                settings.data.settings.model = allLoaded[0];
                 console.log(
                   "Set current model to first available model: ",
-                  conf.data.settings.model
+                  settings.data.settings.model
                 );
               } else {
                 console.log("No models available");
-                conf.data.settings.model = null;
+                settings.data.settings.model = null;
               }
             }
             try {
-              if (conf.data.settings.model) {
-                const spl = conf.data.settings.model.name.split("__")[1];
+              if (settings.data.settings.model) {
+                const spl = settings.data.settings.model.name.split("__")[1];
                 const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
                 const matches = regex.exec(spl);
                 if (matches) {
                   const width = matches[1].split("-").map((x) => parseInt(x));
                   const height = matches[2].split("-").map((x) => parseInt(x));
                   const batch_size = matches[3].split("-").map((x) => parseInt(x));
-                  conf.data.settings.aitDim.width = width;
-                  conf.data.settings.aitDim.height = height;
-                  conf.data.settings.aitDim.batch_size = batch_size;
+                  settings.data.settings.aitDim.width = width;
+                  settings.data.settings.aitDim.height = height;
+                  settings.data.settings.aitDim.batch_size = batch_size;
                 } else {
                   throw new Error("Invalid model name for AIT dimensions parser");
                 }
@@ -41148,9 +41148,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 throw new Error("No model, cannot parse AIT dimensions");
               }
             } catch (e) {
-              conf.data.settings.aitDim.width = void 0;
-              conf.data.settings.aitDim.height = void 0;
-              conf.data.settings.aitDim.batch_size = void 0;
+              settings.data.settings.aitDim.width = void 0;
+              settings.data.settings.aitDim.height = void 0;
+              settings.data.settings.aitDim.batch_size = void 0;
             }
             const autofillKeys = [];
             for (const model of global2.state.models) {
@@ -41253,22 +41253,22 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         return model2.path === modelName && model2.backend === modelBackend;
       });
       if (model) {
-        conf.data.settings.model = model;
+        settings.data.settings.model = model;
       } else {
         message.error("Model not found");
       }
       try {
-        if (conf.data.settings.model) {
-          const spl = conf.data.settings.model.name.split("__")[1];
+        if (settings.data.settings.model) {
+          const spl = settings.data.settings.model.name.split("__")[1];
           const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
           const match2 = spl.match(regex);
           if (match2) {
             const width = match2[0].split("-").map((x) => parseInt(x));
             const height = match2[1].split("-").map((x) => parseInt(x));
             const batch_size = match2[2].split("-").map((x) => parseInt(x));
-            conf.data.settings.aitDim.width = width;
-            conf.data.settings.aitDim.height = height;
-            conf.data.settings.aitDim.batch_size = batch_size;
+            settings.data.settings.aitDim.width = width;
+            settings.data.settings.aitDim.height = height;
+            settings.data.settings.aitDim.batch_size = batch_size;
           } else {
             throw new Error("Invalid model name for AIT dimensions parser");
           }
@@ -41277,9 +41277,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         }
       } catch (e) {
         console.warn(e);
-        conf.data.settings.aitDim.width = void 0;
-        conf.data.settings.aitDim.height = void 0;
-        conf.data.settings.aitDim.batch_size = void 0;
+        settings.data.settings.aitDim.width = void 0;
+        settings.data.settings.aitDim.height = void 0;
+        settings.data.settings.aitDim.batch_size = void 0;
       }
     }
     function resetModels() {
@@ -41429,7 +41429,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     }
     startWebsocket(message);
     const backgroundColor = computed(() => {
-      if (conf.data.settings.frontend.theme === "dark") {
+      if (settings.data.settings.frontend.theme === "dark") {
         return "#121215";
       } else {
         return "#fff";
@@ -41444,14 +41444,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           "onUpdate:value": onModelChange,
           loading: modelsLoading.value,
           placeholder: "",
-          value: unref(conf).data.settings.model !== null ? (_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name : "",
+          value: unref(settings).data.settings.model !== null ? (_a2 = unref(settings).data.settings.model) == null ? void 0 : _a2.name : "",
           "consistent-menu-width": false,
           filterable: ""
         }, null, 8, ["options", "loading", "value"]),
         createVNode(unref(NButton), {
           onClick: _cache[0] || (_cache[0] = ($event) => showModal.value = true),
           loading: modelsLoading.value,
-          type: unref(conf).data.settings.model ? "default" : "success"
+          type: unref(settings).data.settings.model ? "default" : "success"
         }, {
           default: withCtx(() => [
             createTextVNode(" Load Model")
@@ -41903,14 +41903,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "icon-placement": "left",
             "render-icon": themeIcon,
             style: { "margin-right": "8px" },
-            onClick: _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.frontend.theme = unref(conf).data.settings.frontend.theme === "dark" ? "light" : "dark")
+            onClick: _cache[7] || (_cache[7] = ($event) => unref(settings).data.settings.frontend.theme = unref(settings).data.settings.frontend.theme === "dark" ? "light" : "dark")
           })
         ])
       ]);
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_27aa8797_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_4aa96a77_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41918,7 +41918,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-27aa8797"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-4aa96a77"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42047,22 +42047,22 @@ const router = createRouter({
     {
       path: "/",
       name: "text2image",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Image2ImageView.css"] : void 0)
     },
     {
       path: "/extra",
       name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/Slider.js","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
     },
     {
       path: "/models",
       name: "models",
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Slider.js","assets/Settings.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Switch.js","assets/Settings.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
     },
     {
       path: "/about",
@@ -42072,7 +42072,7 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/test",
@@ -42087,12 +42087,12 @@ const router = createRouter({
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/GridOutline.js","assets/TrashBin.js","assets/Slider.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/GridOutline.js","assets/TrashBin.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
     },
     {
       path: "/tagger",
       name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
     }
   ]
 });
@@ -42209,30 +42209,29 @@ export {
   formLight$1 as bA,
   commonVariables$m as bB,
   formItemInjectionKey as bC,
-  resolveComponent as bD,
-  useNotification as bE,
-  defaultSettings as bF,
-  urlFromPath as bG,
-  useRouter as bH,
-  fadeInTransition as bI,
-  imageLight as bJ,
-  isMounted as bK,
-  LazyTeleport as bL,
-  zindexable$1 as bM,
-  kebabCase$1 as bN,
-  useCompitable as bO,
-  descriptionsLight$1 as bP,
-  withModifiers as bQ,
-  NAlert as bR,
-  inputNumberLight$1 as bS,
-  rgba as bT,
-  XButton as bU,
-  VBinder as bV,
-  VTarget as bW,
-  VFollower as bX,
-  sliderLight$1 as bY,
-  isSlotEmpty as bZ,
-  switchLight$1 as b_,
+  useNotification as bD,
+  defaultSettings as bE,
+  urlFromPath as bF,
+  useRouter as bG,
+  fadeInTransition as bH,
+  imageLight as bI,
+  isMounted as bJ,
+  LazyTeleport as bK,
+  zindexable$1 as bL,
+  kebabCase$1 as bM,
+  useCompitable as bN,
+  descriptionsLight$1 as bO,
+  withModifiers as bP,
+  NAlert as bQ,
+  inputNumberLight$1 as bR,
+  rgba as bS,
+  XButton as bT,
+  VBinder as bU,
+  VTarget as bV,
+  VFollower as bW,
+  sliderLight$1 as bX,
+  isSlotEmpty as bY,
+  switchLight$1 as bZ,
   onMounted as ba,
   normalizeStyle as bb,
   NText as bc,

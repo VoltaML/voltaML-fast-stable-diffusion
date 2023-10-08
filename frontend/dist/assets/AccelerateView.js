@@ -1,7 +1,6 @@
 import { T as cB, ae as cM, ad as c, au as cE, aU as iconSwitchTransition, af as cNotM, d as defineComponent, V as useConfig, aj as useRtl, W as useTheme, a6 as provide, s as h, ax as flatten, ay as getSlot, S as createInjectionKey, bh as stepsLight, U as inject, a$ as throwError, c as computed, Z as useThemeClass, aw as resolveWrappedSlot, ak as resolveSlot, aJ as NIconSwitchTransition, ao as createKey, a2 as call, al as NBaseIcon, bi as FinishedIcon, bj as ErrorIcon, x as useMessage, v as useState, r as ref, o as openBlock, a as createElementBlock, b as createVNode, w as withCtx, e as unref, B as NSpace, N as NCard, i as createBaseVNode, p as NSelect, g as NButton, h as createTextVNode, m as NModal, z as serverUrl, u as useSettings, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
-import { N as NSlider } from "./Slider.js";
+import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSwitch } from "./Switch.js";
 const style = cB("steps", `
  width: 100%;
  display: flex;
@@ -552,7 +551,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     var _a, _b;
     const message = useMessage();
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const model = ref("");
     const building = ref(false);
     const showUnloadModal = ref(false);
@@ -591,9 +590,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         },
         body: JSON.stringify({
           model_id: model.value,
-          quant_dict: conf.data.settings.onnx.quant_dict,
-          simplify_unet: conf.data.settings.onnx.simplify_unet,
-          convert_to_fp16: conf.data.settings.onnx.convert_to_fp16
+          quant_dict: settings.data.settings.onnx.quant_dict,
+          simplify_unet: settings.data.settings.onnx.simplify_unet,
+          convert_to_fp16: settings.data.settings.onnx.convert_to_fp16
         })
       }).then(() => {
         building.value = false;
@@ -652,15 +651,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             createBaseVNode("div", _hoisted_4, [
               _hoisted_5,
               createVNode(unref(NSwitch), {
-                value: unref(conf).data.settings.onnx.simplify_unet,
-                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.onnx.simplify_unet = $event)
+                value: unref(settings).data.settings.onnx.simplify_unet,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.onnx.simplify_unet = $event)
               }, null, 8, ["value"])
             ]),
             createBaseVNode("div", _hoisted_6, [
               _hoisted_7,
               createVNode(unref(NSwitch), {
-                value: unref(conf).data.settings.onnx.convert_to_fp16,
-                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.onnx.convert_to_fp16 = $event)
+                value: unref(settings).data.settings.onnx.convert_to_fp16,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.onnx.convert_to_fp16 = $event)
               }, null, 8, ["value"])
             ])
           ]),

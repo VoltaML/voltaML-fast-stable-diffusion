@@ -90,7 +90,7 @@ import { useRouter } from "vue-router";
 import { useSettings } from "../store/settings";
 const router = useRouter();
 
-const conf = useSettings();
+const settings = useSettings();
 const state = useState();
 
 const showModal = ref(false);
@@ -149,9 +149,9 @@ const valuesToCopyFiltered = computed(() => {
     Object.keys(valuesToCopy)
       .filter((key) => {
         if (maybeTarget.value) {
-          return Object.keys(conf.data.settings[maybeTarget.value]).includes(
-            key
-          );
+          return Object.keys(
+            settings.data.settings[maybeTarget.value]
+          ).includes(key);
         }
       })
       .map((key) => [key, valuesToCopy[key]])
@@ -161,14 +161,14 @@ const valuesToCopyFiltered = computed(() => {
 async function toTarget(target: keyof typeof targets) {
   const targetPage = targets[target];
 
-  conf.data.settings[target].image = props.output;
+  settings.data.settings[target].image = props.output;
   state.state[targetPage].tab = target;
 
   Object.keys(props.data).forEach((key) => {
     if (valuesToCopy[key]) {
-      if (Object.keys(conf.data.settings[target]).includes(key)) {
+      if (Object.keys(settings.data.settings[target]).includes(key)) {
         // @ts-ignore
-        conf.data.settings[target][key] = props.data[key];
+        settings.data.settings[target][key] = props.data[key];
       }
     }
   });

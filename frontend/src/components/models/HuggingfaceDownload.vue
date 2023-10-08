@@ -20,8 +20,8 @@
             type="primary"
             bordered
             @click="downloadModel(customModel)"
-            :loading="conf.state.downloading"
-            :disabled="conf.state.downloading || customModel === ''"
+            :loading="settings.state.downloading"
+            :disabled="settings.state.downloading || customModel === ''"
             secondary
             style="margin-right: 16px; margin-left: 4px"
             >Install</NButton
@@ -66,7 +66,7 @@ import type { DropdownMixedOption } from "naive-ui/es/dropdown/src/interface";
 import { computed, h, reactive, ref, type Component, type Ref } from "vue";
 import { huggingfaceModelsFile } from "../../env";
 import { useState } from "../../store/state";
-const conf = useState();
+const settings = useState();
 const message = useMessage();
 
 const customModel = ref("");
@@ -76,16 +76,16 @@ function downloadModel(model: Ref<string> | string) {
   const modelName = typeof model === "string" ? model : model.value;
   url.searchParams.append("model", modelName);
   console.log(url);
-  conf.state.downloading = true;
+  settings.state.downloading = true;
   customModel.value = "";
   message.info(`Downloading model: ${modelName}`);
   fetch(url, { method: "POST" })
     .then(() => {
-      conf.state.downloading = false;
+      settings.state.downloading = false;
       message.success(`Downloaded model: ${modelName}`);
     })
     .catch(() => {
-      conf.state.downloading = false;
+      settings.state.downloading = false;
       message.error(`Failed to download model: ${modelName}`);
     });
 }
@@ -144,7 +144,7 @@ const columns: DataTableColumns<IHuggingFaceModel> = [
           round: true,
           block: true,
           bordered: false,
-          disabled: conf.state.downloading,
+          disabled: settings.state.downloading,
           onClick: () => {
             downloadModel(row.huggingface_id);
           },
@@ -163,7 +163,7 @@ const columns: DataTableColumns<IHuggingFaceModel> = [
         {
           trigger: "hover",
           options: getPluginOptions(row),
-          disabled: conf.state.downloading,
+          disabled: settings.state.downloading,
         },
         { default: renderIcon(Menu) }
       );

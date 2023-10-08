@@ -162,6 +162,7 @@ import {
   NFormItem,
   NInputNumber,
   NSelect,
+  NSlider,
   NSwitch,
 } from "naive-ui";
 import { computed } from "vue";

@@ -1,5 +1,5 @@
-import { d as defineComponent, o as openBlock, a as createElementBlock, i as createBaseVNode, bH as useRouter, u as useSettings, v as useState, r as ref, b9 as reactive, c as computed, b as createVNode, w as withCtx, e as unref, N as NCard, Q as NScrollbar, F as Fragment, f as renderList, h as createTextVNode, t as toDisplayString, be as NDivider, g as NButton, m as NModal, k as createBlock, A as NGi, H as NGrid, G as createCommentVNode } from "./index.js";
-import { N as NSwitch } from "./Switch.js";
+import { d as defineComponent, o as openBlock, a as createElementBlock, i as createBaseVNode, bG as useRouter, u as useSettings, v as useState, r as ref, b9 as reactive, c as computed, b as createVNode, w as withCtx, e as unref, N as NCard, Q as NScrollbar, F as Fragment, f as renderList, h as createTextVNode, t as toDisplayString, be as NDivider, g as NButton, m as NModal, k as createBlock, A as NGi, H as NGrid, G as createCommentVNode } from "./index.js";
+import { a as NSwitch } from "./Switch.js";
 const _hoisted_1$3 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -140,7 +140,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const props = __props;
     const router = useRouter();
-    const conf = useSettings();
+    const settings = useSettings();
     const state = useState();
     const showModal = ref(false);
     const maybeTarget = ref(null);
@@ -174,21 +174,21 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       return Object.fromEntries(
         Object.keys(valuesToCopy).filter((key) => {
           if (maybeTarget.value) {
-            return Object.keys(conf.data.settings[maybeTarget.value]).includes(
-              key
-            );
+            return Object.keys(
+              settings.data.settings[maybeTarget.value]
+            ).includes(key);
           }
         }).map((key) => [key, valuesToCopy[key]])
       );
     });
     async function toTarget(target) {
       const targetPage = targets[target];
-      conf.data.settings[target].image = props.output;
+      settings.data.settings[target].image = props.output;
       state.state[targetPage].tab = target;
       Object.keys(props.data).forEach((key) => {
         if (valuesToCopy[key]) {
-          if (Object.keys(conf.data.settings[target]).includes(key)) {
-            conf.data.settings[target][key] = props.data[key];
+          if (Object.keys(settings.data.settings[target]).includes(key)) {
+            settings.data.settings[target][key] = props.data[key];
           }
         }
       });

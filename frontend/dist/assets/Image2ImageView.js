@@ -4,8 +4,7 @@ import { _ as _sfc_main$7 } from "./ImageOutput.vue_vue_type_script_setup_true_l
 import { I as ImageUpload } from "./ImageUpload.js";
 import { d as defineComponent, o as openBlock, a as createElementBlock, i as createBaseVNode, v as useState, u as useSettings, x as useMessage, c as computed, y as onUnmounted, b as createVNode, w as withCtx, e as unref, A as NGi, N as NCard, B as NSpace, C as NInput, D as promptHandleKeyUp, E as promptHandleKeyDown, h as createTextVNode, t as toDisplayString, n as NTooltip, p as NSelect, H as NGrid, I as spaceRegex, z as serverUrl, J as pushScopeId, K as popScopeId, _ as _export_sfc, G as createCommentVNode, s as h, r as ref, g as NButton, q as NIcon, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
 import { v as v4 } from "./v4.js";
-import { N as NSwitch } from "./Switch.js";
-import { N as NSlider } from "./Slider.js";
+import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./DescriptionsItem.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
@@ -144,7 +143,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$3);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-5a3a793e"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-b2f52486"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -184,13 +183,13 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "ControlNet",
   setup(__props) {
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const messageHandler = useMessage();
     const promptCount = computed(() => {
-      return conf.data.settings.controlnet.prompt.split(spaceRegex).length - 1;
+      return settings.data.settings.controlnet.prompt.split(spaceRegex).length - 1;
     });
     const negativePromptCount = computed(() => {
-      return conf.data.settings.controlnet.negative_prompt.split(spaceRegex).length - 1;
+      return settings.data.settings.controlnet.negative_prompt.split(spaceRegex).length - 1;
     });
     const checkSeed = (seed) => {
       if (seed === -1) {
@@ -199,16 +198,16 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       return seed;
     };
     const imageSelectCallback = (base64Image) => {
-      conf.data.settings.controlnet.image = base64Image;
+      settings.data.settings.controlnet.image = base64Image;
     };
     const generate = () => {
       var _a;
-      if (conf.data.settings.controlnet.seed === null) {
+      if (settings.data.settings.controlnet.seed === null) {
         messageHandler.error("Please set a seed");
         return;
       }
       global.state.generating = true;
-      const seed = checkSeed(conf.data.settings.controlnet.seed);
+      const seed = checkSeed(settings.data.settings.controlnet.seed);
       fetch(`${serverUrl}/api/generate/controlnet`, {
         method: "POST",
         headers: {
@@ -216,31 +215,31 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         },
         body: JSON.stringify({
           data: {
-            prompt: conf.data.settings.controlnet.prompt,
-            image: conf.data.settings.controlnet.image,
+            prompt: settings.data.settings.controlnet.prompt,
+            image: settings.data.settings.controlnet.image,
             id: v4(),
-            negative_prompt: conf.data.settings.controlnet.negative_prompt,
-            width: conf.data.settings.controlnet.width,
-            height: conf.data.settings.controlnet.height,
-            steps: conf.data.settings.controlnet.steps,
-            guidance_scale: conf.data.settings.controlnet.cfg_scale,
+            negative_prompt: settings.data.settings.controlnet.negative_prompt,
+            width: settings.data.settings.controlnet.width,
+            height: settings.data.settings.controlnet.height,
+            steps: settings.data.settings.controlnet.steps,
+            guidance_scale: settings.data.settings.controlnet.cfg_scale,
             seed,
-            batch_size: conf.data.settings.controlnet.batch_size,
-            batch_count: conf.data.settings.controlnet.batch_count,
-            controlnet: conf.data.settings.controlnet.controlnet,
-            controlnet_conditioning_scale: conf.data.settings.controlnet.controlnet_conditioning_scale,
-            detection_resolution: conf.data.settings.controlnet.detection_resolution,
-            scheduler: conf.data.settings.controlnet.sampler,
-            use_karras_sigmas: conf.data.settings.controlnet.use_karras_sigmas,
+            batch_size: settings.data.settings.controlnet.batch_size,
+            batch_count: settings.data.settings.controlnet.batch_count,
+            controlnet: settings.data.settings.controlnet.controlnet,
+            controlnet_conditioning_scale: settings.data.settings.controlnet.controlnet_conditioning_scale,
+            detection_resolution: settings.data.settings.controlnet.detection_resolution,
+            scheduler: settings.data.settings.controlnet.sampler,
+            use_karras_sigmas: settings.data.settings.controlnet.use_karras_sigmas,
             canny_low_threshold: 100,
             canny_high_threshold: 200,
             mlsd_thr_v: 0.1,
             mlsd_thr_d: 0.1,
-            is_preprocessed: conf.data.settings.controlnet.is_preprocessed,
-            save_preprocessed: conf.data.settings.controlnet.save_preprocessed,
-            return_preprocessed: conf.data.settings.controlnet.return_preprocessed
+            is_preprocessed: settings.data.settings.controlnet.is_preprocessed,
+            save_preprocessed: settings.data.settings.controlnet.save_preprocessed,
+            return_preprocessed: settings.data.settings.controlnet.return_preprocessed
           },
-          model: (_a = conf.data.settings.model) == null ? void 0 : _a.name
+          model: (_a = settings.data.settings.model) == null ? void 0 : _a.name
         })
       }).then((res) => {
         if (!res.ok) {
@@ -265,7 +264,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         console.log(err);
       });
     };
-    const burner = new BurnerClock(conf.data.settings.controlnet, conf, generate);
+    const burner = new BurnerClock(
+      settings.data.settings.controlnet,
+      settings,
+      generate
+    );
     onUnmounted(() => {
       burner.cleanup();
     });
@@ -281,9 +284,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(ImageUpload, {
                   callback: imageSelectCallback,
-                  preview: unref(conf).data.settings.controlnet.image,
+                  preview: unref(settings).data.settings.controlnet.image,
                   style: { "margin-bottom": "12px" },
-                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.controlnet.image = $event)
+                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.controlnet.image = $event)
                 }, null, 8, ["preview"]),
                 createVNode(unref(NCard), {
                   title: "Settings",
@@ -296,14 +299,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     }, {
                       default: withCtx(() => [
                         createVNode(unref(NInput), {
-                          value: unref(conf).data.settings.controlnet.prompt,
-                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.controlnet.prompt = $event),
+                          value: unref(settings).data.settings.controlnet.prompt,
+                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.controlnet.prompt = $event),
                           type: "textarea",
                           placeholder: "Prompt",
                           "show-count": "",
                           onKeyup: _cache[2] || (_cache[2] = ($event) => unref(promptHandleKeyUp)(
                             $event,
-                            unref(conf).data.settings.controlnet,
+                            unref(settings).data.settings.controlnet,
                             "prompt",
                             unref(global)
                           )),
@@ -315,14 +318,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           _: 1
                         }, 8, ["value", "onKeydown"]),
                         createVNode(unref(NInput), {
-                          value: unref(conf).data.settings.controlnet.negative_prompt,
-                          "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.controlnet.negative_prompt = $event),
+                          value: unref(settings).data.settings.controlnet.negative_prompt,
+                          "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.controlnet.negative_prompt = $event),
                           type: "textarea",
                           placeholder: "Negative prompt",
                           "show-count": "",
                           onKeyup: _cache[4] || (_cache[4] = ($event) => unref(promptHandleKeyUp)(
                             $event,
-                            unref(conf).data.settings.controlnet,
+                            unref(settings).data.settings.controlnet,
                             "negative_prompt",
                             unref(global)
                           )),
@@ -346,9 +349,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSelect), {
-                            options: unref(conf).scheduler_options,
-                            value: unref(conf).data.settings.controlnet.sampler,
-                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.controlnet.sampler = $event),
+                            options: unref(settings).scheduler_options,
+                            value: unref(settings).data.settings.controlnet.sampler,
+                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).data.settings.controlnet.sampler = $event),
                             style: { "flex-grow": "1" }
                           }, null, 8, ["options", "value"])
                         ]),
@@ -364,8 +367,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSwitch), {
-                            value: unref(conf).data.settings.controlnet.use_karras_sigmas,
-                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.controlnet.use_karras_sigmas = $event),
+                            value: unref(settings).data.settings.controlnet.use_karras_sigmas,
+                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).data.settings.controlnet.use_karras_sigmas = $event),
                             style: { "justify-self": "flex-end" }
                           }, null, 8, ["value"])
                         ]),
@@ -381,16 +384,16 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSelect), {
-                            options: unref(conf).controlnet_options,
-                            value: unref(conf).data.settings.controlnet.controlnet,
-                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.controlnet.controlnet = $event),
+                            options: unref(settings).controlnet_options,
+                            value: unref(settings).data.settings.controlnet.controlnet,
+                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).data.settings.controlnet.controlnet = $event),
                             filterable: "",
                             tag: "",
                             style: { "flex-grow": "1" }
                           }, null, 8, ["options", "value"])
                         ]),
                         createVNode(_sfc_main$4, {
-                          "dimensions-object": unref(conf).data.settings.controlnet
+                          "dimensions-object": unref(settings).data.settings.controlnet
                         }, null, 8, ["dimensions-object"]),
                         createBaseVNode("div", _hoisted_12$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -404,15 +407,15 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.controlnet.steps,
-                            "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.controlnet.steps = $event),
+                            value: unref(settings).data.settings.controlnet.steps,
+                            "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).data.settings.controlnet.steps = $event),
                             min: 5,
                             max: 300,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.controlnet.steps,
-                            "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.controlnet.steps = $event),
+                            value: unref(settings).data.settings.controlnet.steps,
+                            "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).data.settings.controlnet.steps = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 5,
@@ -431,16 +434,16 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.controlnet.cfg_scale,
-                            "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.controlnet.cfg_scale = $event),
+                            value: unref(settings).data.settings.controlnet.cfg_scale,
+                            "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).data.settings.controlnet.cfg_scale = $event),
                             min: 1,
                             max: 30,
                             step: 0.5,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.controlnet.cfg_scale,
-                            "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.controlnet.cfg_scale = $event),
+                            value: unref(settings).data.settings.controlnet.cfg_scale,
+                            "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).data.settings.controlnet.cfg_scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -459,15 +462,15 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.controlnet.batch_count,
-                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.controlnet.batch_count = $event),
+                            value: unref(settings).data.settings.controlnet.batch_count,
+                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).data.settings.controlnet.batch_count = $event),
                             min: 1,
                             max: 9,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.controlnet.batch_count,
-                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.controlnet.batch_count = $event),
+                            value: unref(settings).data.settings.controlnet.batch_count,
+                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).data.settings.controlnet.batch_count = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -475,7 +478,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createVNode(_sfc_main$5, {
-                          "batch-size-object": unref(conf).data.settings.controlnet
+                          "batch-size-object": unref(settings).data.settings.controlnet
                         }, null, 8, ["batch-size-object"]),
                         createBaseVNode("div", _hoisted_20$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -488,16 +491,16 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.controlnet.controlnet_conditioning_scale,
-                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.controlnet.controlnet_conditioning_scale = $event),
+                            value: unref(settings).data.settings.controlnet.controlnet_conditioning_scale,
+                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).data.settings.controlnet.controlnet_conditioning_scale = $event),
                             min: 0.1,
                             max: 2,
                             style: { "margin-right": "12px" },
                             step: 0.025
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.controlnet.controlnet_conditioning_scale,
-                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.controlnet.controlnet_conditioning_scale = $event),
+                            value: unref(settings).data.settings.controlnet.controlnet_conditioning_scale,
+                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).data.settings.controlnet.controlnet_conditioning_scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 0.1,
@@ -516,16 +519,16 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.controlnet.detection_resolution,
-                            "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(conf).data.settings.controlnet.detection_resolution = $event),
+                            value: unref(settings).data.settings.controlnet.detection_resolution,
+                            "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).data.settings.controlnet.detection_resolution = $event),
                             min: 128,
                             max: 2048,
                             style: { "margin-right": "12px" },
                             step: 8
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.controlnet.detection_resolution,
-                            "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.controlnet.detection_resolution = $event),
+                            value: unref(settings).data.settings.controlnet.detection_resolution,
+                            "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).data.settings.controlnet.detection_resolution = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 128,
@@ -545,8 +548,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.controlnet.seed,
-                            "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(conf).data.settings.controlnet.seed = $event),
+                            value: unref(settings).data.settings.controlnet.seed,
+                            "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).data.settings.controlnet.seed = $event),
                             size: "small",
                             min: -1,
                             max: 999999999999,
@@ -556,22 +559,22 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                         createBaseVNode("div", _hoisted_27$1, [
                           _hoisted_28$1,
                           createVNode(unref(NSwitch), {
-                            value: unref(conf).data.settings.controlnet.is_preprocessed,
-                            "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.controlnet.is_preprocessed = $event)
+                            value: unref(settings).data.settings.controlnet.is_preprocessed,
+                            "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).data.settings.controlnet.is_preprocessed = $event)
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_29$1, [
                           _hoisted_30$1,
                           createVNode(unref(NSwitch), {
-                            value: unref(conf).data.settings.controlnet.save_preprocessed,
-                            "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(conf).data.settings.controlnet.save_preprocessed = $event)
+                            value: unref(settings).data.settings.controlnet.save_preprocessed,
+                            "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).data.settings.controlnet.save_preprocessed = $event)
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_31$1, [
                           _hoisted_32,
                           createVNode(unref(NSwitch), {
-                            value: unref(conf).data.settings.controlnet.return_preprocessed,
-                            "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(conf).data.settings.controlnet.return_preprocessed = $event)
+                            value: unref(settings).data.settings.controlnet.return_preprocessed,
+                            "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).data.settings.controlnet.return_preprocessed = $event)
                           }, null, 8, ["value"])
                         ])
                       ]),
@@ -589,7 +592,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 createVNode(_sfc_main$7, {
                   "current-image": unref(global).state.controlnet.currentImage,
                   images: unref(global).state.controlnet.images,
-                  data: unref(conf).data.settings.controlnet,
+                  data: unref(settings).data.settings.controlnet,
                   onImageClicked: _cache[22] || (_cache[22] = ($event) => unref(global).state.controlnet.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
                 createVNode(_sfc_main$8, {
@@ -606,9 +609,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_5a3a793e_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-5a3a793e"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-456ee30d"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_b2f52486_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-b2f52486"]]);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-c4004da1"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -643,13 +646,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "Img2Img",
   setup(__props) {
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const messageHandler = useMessage();
     const promptCount = computed(() => {
-      return conf.data.settings.img2img.prompt.split(spaceRegex).length - 1;
+      return settings.data.settings.img2img.prompt.split(spaceRegex).length - 1;
     });
     const negativePromptCount = computed(() => {
-      return conf.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1;
+      return settings.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1;
     });
     const checkSeed = (seed) => {
       if (seed === -1) {
@@ -658,16 +661,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       return seed;
     };
     const imageSelectCallback = (base64Image) => {
-      conf.data.settings.img2img.image = base64Image;
+      settings.data.settings.img2img.image = base64Image;
     };
     const generate = () => {
       var _a;
-      if (conf.data.settings.img2img.seed === null) {
+      if (settings.data.settings.img2img.seed === null) {
         messageHandler.error("Please set a seed");
         return;
       }
       global.state.generating = true;
-      const seed = checkSeed(conf.data.settings.img2img.seed);
+      const seed = checkSeed(settings.data.settings.img2img.seed);
       fetch(`${serverUrl}/api/generate/img2img`, {
         method: "POST",
         headers: {
@@ -675,23 +678,23 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         },
         body: JSON.stringify({
           data: {
-            prompt: conf.data.settings.img2img.prompt,
-            image: conf.data.settings.img2img.image,
+            prompt: settings.data.settings.img2img.prompt,
+            image: settings.data.settings.img2img.image,
             id: v4(),
-            negative_prompt: conf.data.settings.img2img.negative_prompt,
-            width: conf.data.settings.img2img.width,
-            height: conf.data.settings.img2img.height,
-            steps: conf.data.settings.img2img.steps,
-            guidance_scale: conf.data.settings.img2img.cfg_scale,
+            negative_prompt: settings.data.settings.img2img.negative_prompt,
+            width: settings.data.settings.img2img.width,
+            height: settings.data.settings.img2img.height,
+            steps: settings.data.settings.img2img.steps,
+            guidance_scale: settings.data.settings.img2img.cfg_scale,
             seed,
-            batch_size: conf.data.settings.img2img.batch_size,
-            batch_count: conf.data.settings.img2img.batch_count,
-            strength: conf.data.settings.img2img.denoising_strength,
-            scheduler: conf.data.settings.img2img.sampler,
-            self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
-            use_karras_sigmas: conf.data.settings.img2img.use_karras_sigmas
+            batch_size: settings.data.settings.img2img.batch_size,
+            batch_count: settings.data.settings.img2img.batch_count,
+            strength: settings.data.settings.img2img.denoising_strength,
+            scheduler: settings.data.settings.img2img.sampler,
+            self_attention_scale: settings.data.settings.txt2img.self_attention_scale,
+            use_karras_sigmas: settings.data.settings.img2img.use_karras_sigmas
           },
-          model: (_a = conf.data.settings.model) == null ? void 0 : _a.name
+          model: (_a = settings.data.settings.model) == null ? void 0 : _a.name
         })
       }).then((res) => {
         if (!res.ok) {
@@ -715,7 +718,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         console.log(err);
       });
     };
-    const burner = new BurnerClock(conf.data.settings.img2img, conf, generate);
+    const burner = new BurnerClock(
+      settings.data.settings.img2img,
+      settings,
+      generate
+    );
     onUnmounted(() => {
       burner.cleanup();
     });
@@ -731,9 +738,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(ImageUpload, {
                   callback: imageSelectCallback,
-                  preview: unref(conf).data.settings.img2img.image,
+                  preview: unref(settings).data.settings.img2img.image,
                   style: { "margin-bottom": "12px" },
-                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.img2img.image = $event)
+                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.img2img.image = $event)
                 }, null, 8, ["preview"]),
                 createVNode(unref(NCard), {
                   title: "Settings",
@@ -748,14 +755,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                         var _a;
                         return [
                           createVNode(unref(NInput), {
-                            value: unref(conf).data.settings.img2img.prompt,
-                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.img2img.prompt = $event),
+                            value: unref(settings).data.settings.img2img.prompt,
+                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.img2img.prompt = $event),
                             type: "textarea",
                             placeholder: "Prompt",
                             "show-count": "",
                             onKeyup: _cache[2] || (_cache[2] = ($event) => unref(promptHandleKeyUp)(
                               $event,
-                              unref(conf).data.settings.img2img,
+                              unref(settings).data.settings.img2img,
                               "prompt",
                               unref(global)
                             )),
@@ -767,14 +774,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }, 8, ["value", "onKeydown"]),
                           createVNode(unref(NInput), {
-                            value: unref(conf).data.settings.img2img.negative_prompt,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.img2img.negative_prompt = $event),
+                            value: unref(settings).data.settings.img2img.negative_prompt,
+                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.img2img.negative_prompt = $event),
                             type: "textarea",
                             placeholder: "Negative prompt",
                             "show-count": "",
                             onKeyup: _cache[4] || (_cache[4] = ($event) => unref(promptHandleKeyUp)(
                               $event,
-                              unref(conf).data.settings.img2img,
+                              unref(settings).data.settings.img2img,
                               "negative_prompt",
                               unref(global)
                             )),
@@ -798,9 +805,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSelect), {
-                              options: unref(conf).scheduler_options,
-                              value: unref(conf).data.settings.img2img.sampler,
-                              "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.img2img.sampler = $event),
+                              options: unref(settings).scheduler_options,
+                              value: unref(settings).data.settings.img2img.sampler,
+                              "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).data.settings.img2img.sampler = $event),
                               style: { "flex-grow": "1" }
                             }, null, 8, ["options", "value"])
                           ]),
@@ -816,13 +823,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSwitch), {
-                              value: unref(conf).data.settings.txt2img.use_karras_sigmas,
-                              "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.txt2img.use_karras_sigmas = $event),
+                              value: unref(settings).data.settings.txt2img.use_karras_sigmas,
+                              "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).data.settings.txt2img.use_karras_sigmas = $event),
                               style: { "justify-self": "flex-end" }
                             }, null, 8, ["value"])
                           ]),
                           createVNode(_sfc_main$4, {
-                            "dimensions-object": unref(conf).data.settings.img2img
+                            "dimensions-object": unref(settings).data.settings.img2img
                           }, null, 8, ["dimensions-object"]),
                           createBaseVNode("div", _hoisted_9$1, [
                             createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -836,15 +843,15 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.img2img.steps,
-                              "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.img2img.steps = $event),
+                              value: unref(settings).data.settings.img2img.steps,
+                              "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).data.settings.img2img.steps = $event),
                               min: 5,
                               max: 300,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.img2img.steps,
-                              "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.img2img.steps = $event),
+                              value: unref(settings).data.settings.img2img.steps,
+                              "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).data.settings.img2img.steps = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 5,
@@ -863,16 +870,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.img2img.cfg_scale,
-                              "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.img2img.cfg_scale = $event),
+                              value: unref(settings).data.settings.img2img.cfg_scale,
+                              "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).data.settings.img2img.cfg_scale = $event),
                               min: 1,
                               max: 30,
                               step: 0.5,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.img2img.cfg_scale,
-                              "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.img2img.cfg_scale = $event),
+                              value: unref(settings).data.settings.img2img.cfg_scale,
+                              "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).data.settings.img2img.cfg_scale = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 1,
@@ -880,7 +887,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               step: 0.5
                             }, null, 8, ["value"])
                           ]),
-                          Number.isInteger(unref(conf).data.settings.txt2img.sampler) && ((_a = unref(conf).data.settings.model) == null ? void 0 : _a.backend) === "PyTorch" ? (openBlock(), createElementBlock("div", _hoisted_15$1, [
+                          Number.isInteger(unref(settings).data.settings.txt2img.sampler) && ((_a = unref(settings).data.settings.model) == null ? void 0 : _a.backend) === "PyTorch" ? (openBlock(), createElementBlock("div", _hoisted_15$1, [
                             createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_16$1
@@ -892,16 +899,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.txt2img.self_attention_scale,
-                              "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
+                              value: unref(settings).data.settings.txt2img.self_attention_scale,
+                              "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).data.settings.txt2img.self_attention_scale = $event),
                               min: 0,
                               max: 1,
                               step: 0.05,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.txt2img.self_attention_scale,
-                              "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
+                              value: unref(settings).data.settings.txt2img.self_attention_scale,
+                              "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).data.settings.txt2img.self_attention_scale = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 0,
@@ -920,15 +927,15 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.img2img.batch_count,
-                              "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.img2img.batch_count = $event),
+                              value: unref(settings).data.settings.img2img.batch_count,
+                              "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).data.settings.img2img.batch_count = $event),
                               min: 1,
                               max: 9,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.img2img.batch_count,
-                              "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.img2img.batch_count = $event),
+                              value: unref(settings).data.settings.img2img.batch_count,
+                              "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).data.settings.img2img.batch_count = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 1,
@@ -936,7 +943,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             }, null, 8, ["value"])
                           ]),
                           createVNode(_sfc_main$5, {
-                            "batch-size-object": unref(conf).data.settings.img2img
+                            "batch-size-object": unref(settings).data.settings.img2img
                           }, null, 8, ["batch-size-object"]),
                           createBaseVNode("div", _hoisted_20$1, [
                             createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
@@ -949,16 +956,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.img2img.denoising_strength,
-                              "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.img2img.denoising_strength = $event),
+                              value: unref(settings).data.settings.img2img.denoising_strength,
+                              "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).data.settings.img2img.denoising_strength = $event),
                               min: 0.1,
                               max: 1,
                               style: { "margin-right": "12px" },
                               step: 0.025
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.img2img.denoising_strength,
-                              "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(conf).data.settings.img2img.denoising_strength = $event),
+                              value: unref(settings).data.settings.img2img.denoising_strength,
+                              "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).data.settings.img2img.denoising_strength = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 0.1,
@@ -978,8 +985,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.img2img.seed,
-                              "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.img2img.seed = $event),
+                              value: unref(settings).data.settings.img2img.seed,
+                              "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).data.settings.img2img.seed = $event),
                               size: "small",
                               min: -1,
                               max: 999999999999,
@@ -1002,7 +1009,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 createVNode(_sfc_main$7, {
                   "current-image": unref(global).state.img2img.currentImage,
                   images: unref(global).state.img2img.images,
-                  data: unref(conf).data.settings.img2img,
+                  data: unref(settings).data.settings.img2img,
                   onImageClicked: _cache[18] || (_cache[18] = ($event) => unref(global).state.img2img.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
                 createVNode(_sfc_main$8, {
@@ -1019,8 +1026,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_456ee30d_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-456ee30d"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_c4004da1_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-c4004da1"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1596,7 +1603,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-e1a427aa"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-dd7ac49f"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1649,13 +1656,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "Inpainting",
   setup(__props) {
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const messageHandler = useMessage();
     const promptCount = computed(() => {
-      return conf.data.settings.inpainting.prompt.split(spaceRegex).length - 1;
+      return settings.data.settings.inpainting.prompt.split(spaceRegex).length - 1;
     });
     const negativePromptCount = computed(() => {
-      return conf.data.settings.inpainting.negative_prompt.split(spaceRegex).length - 1;
+      return settings.data.settings.inpainting.negative_prompt.split(spaceRegex).length - 1;
     });
     const checkSeed = (seed) => {
       if (seed === -1) {
@@ -1665,13 +1672,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
     const generate = () => {
       var _a;
-      if (conf.data.settings.inpainting.seed === null) {
+      if (settings.data.settings.inpainting.seed === null) {
         messageHandler.error("Please set a seed");
         return;
       }
       generateMask();
       global.state.generating = true;
-      const seed = checkSeed(conf.data.settings.inpainting.seed);
+      const seed = checkSeed(settings.data.settings.inpainting.seed);
       fetch(`${serverUrl}/api/generate/inpainting`, {
         method: "POST",
         headers: {
@@ -1679,23 +1686,23 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         },
         body: JSON.stringify({
           data: {
-            prompt: conf.data.settings.inpainting.prompt,
-            image: conf.data.settings.inpainting.image,
-            mask_image: conf.data.settings.inpainting.mask_image,
+            prompt: settings.data.settings.inpainting.prompt,
+            image: settings.data.settings.inpainting.image,
+            mask_image: settings.data.settings.inpainting.mask_image,
             id: v4(),
-            negative_prompt: conf.data.settings.inpainting.negative_prompt,
-            width: conf.data.settings.inpainting.width,
-            height: conf.data.settings.inpainting.height,
-            steps: conf.data.settings.inpainting.steps,
-            guidance_scale: conf.data.settings.inpainting.cfg_scale,
+            negative_prompt: settings.data.settings.inpainting.negative_prompt,
+            width: settings.data.settings.inpainting.width,
+            height: settings.data.settings.inpainting.height,
+            steps: settings.data.settings.inpainting.steps,
+            guidance_scale: settings.data.settings.inpainting.cfg_scale,
             seed,
-            batch_size: conf.data.settings.inpainting.batch_size,
-            batch_count: conf.data.settings.inpainting.batch_count,
-            scheduler: conf.data.settings.inpainting.sampler,
-            self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
-            use_karras_sigmas: conf.data.settings.inpainting.use_karras_sigmas
+            batch_size: settings.data.settings.inpainting.batch_size,
+            batch_count: settings.data.settings.inpainting.batch_count,
+            scheduler: settings.data.settings.inpainting.sampler,
+            self_attention_scale: settings.data.settings.txt2img.self_attention_scale,
+            use_karras_sigmas: settings.data.settings.inpainting.use_karras_sigmas
           },
-          model: (_a = conf.data.settings.model) == null ? void 0 : _a.name
+          model: (_a = settings.data.settings.model) == null ? void 0 : _a.name
         })
       }).then((res) => {
         if (!res.ok) {
@@ -1760,7 +1767,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             img.src = s;
             img.onload = () => {
               handleImageUpdate(img);
-              conf.data.settings.inpainting.image = s;
+              settings.data.settings.inpainting.image = s;
             };
           }
         };
@@ -1792,14 +1799,18 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         maskCanvas.value.redraw(true);
       }
     }
-    const burner = new BurnerClock(conf.data.settings.inpainting, conf, generate);
+    const burner = new BurnerClock(
+      settings.data.settings.inpainting,
+      settings,
+      generate
+    );
     onUnmounted(() => {
       burner.cleanup();
     });
-    if (conf.data.settings.inpainting.image !== "") {
-      preview.value = conf.data.settings.inpainting.image;
+    if (settings.data.settings.inpainting.image !== "") {
+      preview.value = settings.data.settings.inpainting.image;
       const img = new Image();
-      img.src = conf.data.settings.inpainting.image;
+      img.src = settings.data.settings.inpainting.image;
       img.onload = () => {
         console.log(img);
         handleImageUpdate(img);
@@ -1839,8 +1850,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                         "canvas-id": "VueDrawingCanvas1"
                       }, null, 8, ["width", "height", "backgroundImage", "lineWidth", "eraser"]),
                       createVNode(unref(VueDrawingCanvas), {
-                        image: unref(conf).data.settings.inpainting.mask_image,
-                        "onUpdate:image": _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.inpainting.mask_image = $event),
+                        image: unref(settings).data.settings.inpainting.mask_image,
+                        "onUpdate:image": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.inpainting.mask_image = $event),
                         width: width.value,
                         height: height.value,
                         ref_key: "maskCanvas",
@@ -1956,14 +1967,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                         var _a;
                         return [
                           createVNode(unref(NInput), {
-                            value: unref(conf).data.settings.inpainting.prompt,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.inpainting.prompt = $event),
+                            value: unref(settings).data.settings.inpainting.prompt,
+                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.inpainting.prompt = $event),
                             type: "textarea",
                             placeholder: "Prompt",
                             "show-count": "",
                             onKeyup: _cache[3] || (_cache[3] = ($event) => unref(promptHandleKeyUp)(
                               $event,
-                              unref(conf).data.settings.inpainting,
+                              unref(settings).data.settings.inpainting,
                               "prompt",
                               unref(global)
                             )),
@@ -1975,14 +1986,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }, 8, ["value", "onKeydown"]),
                           createVNode(unref(NInput), {
-                            value: unref(conf).data.settings.inpainting.negative_prompt,
-                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.inpainting.negative_prompt = $event),
+                            value: unref(settings).data.settings.inpainting.negative_prompt,
+                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.inpainting.negative_prompt = $event),
                             type: "textarea",
                             placeholder: "Negative prompt",
                             "show-count": "",
                             onKeyup: _cache[5] || (_cache[5] = ($event) => unref(promptHandleKeyUp)(
                               $event,
-                              unref(conf).data.settings.inpainting,
+                              unref(settings).data.settings.inpainting,
                               "negative_prompt",
                               unref(global)
                             )),
@@ -2006,9 +2017,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSelect), {
-                              options: unref(conf).scheduler_options,
-                              value: unref(conf).data.settings.inpainting.sampler,
-                              "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.inpainting.sampler = $event),
+                              options: unref(settings).scheduler_options,
+                              value: unref(settings).data.settings.inpainting.sampler,
+                              "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).data.settings.inpainting.sampler = $event),
                               style: { "flex-grow": "1" }
                             }, null, 8, ["options", "value"])
                           ]),
@@ -2024,24 +2035,24 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSwitch), {
-                              value: unref(conf).data.settings.txt2img.use_karras_sigmas,
-                              "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.txt2img.use_karras_sigmas = $event),
+                              value: unref(settings).data.settings.txt2img.use_karras_sigmas,
+                              "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).data.settings.txt2img.use_karras_sigmas = $event),
                               style: { "justify-self": "flex-end" }
                             }, null, 8, ["value"])
                           ]),
                           createBaseVNode("div", _hoisted_12, [
                             _hoisted_13,
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.inpainting.width,
-                              "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(conf).data.settings.inpainting.width = $event),
+                              value: unref(settings).data.settings.inpainting.width,
+                              "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).data.settings.inpainting.width = $event),
                               min: 128,
                               max: 2048,
                               step: 8,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.inpainting.width,
-                              "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(conf).data.settings.inpainting.width = $event),
+                              value: unref(settings).data.settings.inpainting.width,
+                              "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).data.settings.inpainting.width = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               step: 8,
@@ -2052,16 +2063,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           createBaseVNode("div", _hoisted_14, [
                             _hoisted_15,
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.inpainting.height,
-                              "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(conf).data.settings.inpainting.height = $event),
+                              value: unref(settings).data.settings.inpainting.height,
+                              "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).data.settings.inpainting.height = $event),
                               min: 128,
                               max: 2048,
                               step: 8,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.inpainting.height,
-                              "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(conf).data.settings.inpainting.height = $event),
+                              value: unref(settings).data.settings.inpainting.height,
+                              "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).data.settings.inpainting.height = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               step: 8,
@@ -2081,15 +2092,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.inpainting.steps,
-                              "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(conf).data.settings.inpainting.steps = $event),
+                              value: unref(settings).data.settings.inpainting.steps,
+                              "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).data.settings.inpainting.steps = $event),
                               min: 5,
                               max: 300,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.inpainting.steps,
-                              "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(conf).data.settings.inpainting.steps = $event),
+                              value: unref(settings).data.settings.inpainting.steps,
+                              "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).data.settings.inpainting.steps = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 5,
@@ -2108,16 +2119,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.inpainting.cfg_scale,
-                              "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(conf).data.settings.inpainting.cfg_scale = $event),
+                              value: unref(settings).data.settings.inpainting.cfg_scale,
+                              "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).data.settings.inpainting.cfg_scale = $event),
                               min: 1,
                               max: 30,
                               step: 0.5,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.inpainting.cfg_scale,
-                              "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(conf).data.settings.inpainting.cfg_scale = $event),
+                              value: unref(settings).data.settings.inpainting.cfg_scale,
+                              "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).data.settings.inpainting.cfg_scale = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 1,
@@ -2125,7 +2136,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               step: 0.5
                             }, null, 8, ["value"])
                           ]),
-                          Number.isInteger(unref(conf).data.settings.txt2img.sampler) && ((_a = unref(conf).data.settings.model) == null ? void 0 : _a.backend) === "PyTorch" ? (openBlock(), createElementBlock("div", _hoisted_22, [
+                          Number.isInteger(unref(settings).data.settings.txt2img.sampler) && ((_a = unref(settings).data.settings.model) == null ? void 0 : _a.backend) === "PyTorch" ? (openBlock(), createElementBlock("div", _hoisted_22, [
                             createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                               trigger: withCtx(() => [
                                 _hoisted_23
@@ -2137,16 +2148,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.txt2img.self_attention_scale,
-                              "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
+                              value: unref(settings).data.settings.txt2img.self_attention_scale,
+                              "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).data.settings.txt2img.self_attention_scale = $event),
                               min: 0,
                               max: 1,
                               step: 0.05,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.txt2img.self_attention_scale,
-                              "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(conf).data.settings.txt2img.self_attention_scale = $event),
+                              value: unref(settings).data.settings.txt2img.self_attention_scale,
+                              "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).data.settings.txt2img.self_attention_scale = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 0,
@@ -2165,15 +2176,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.inpainting.batch_count,
-                              "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(conf).data.settings.inpainting.batch_count = $event),
+                              value: unref(settings).data.settings.inpainting.batch_count,
+                              "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).data.settings.inpainting.batch_count = $event),
                               min: 1,
                               max: 9,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.inpainting.batch_count,
-                              "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(conf).data.settings.inpainting.batch_count = $event),
+                              value: unref(settings).data.settings.inpainting.batch_count,
+                              "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).data.settings.inpainting.batch_count = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 1,
@@ -2191,15 +2202,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NSlider), {
-                              value: unref(conf).data.settings.inpainting.batch_size,
-                              "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(conf).data.settings.inpainting.batch_size = $event),
+                              value: unref(settings).data.settings.inpainting.batch_size,
+                              "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).data.settings.inpainting.batch_size = $event),
                               min: 1,
                               max: 9,
                               style: { "margin-right": "12px" }
                             }, null, 8, ["value"]),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.inpainting.batch_size,
-                              "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(conf).data.settings.inpainting.batch_size = $event),
+                              value: unref(settings).data.settings.inpainting.batch_size,
+                              "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).data.settings.inpainting.batch_size = $event),
                               size: "small",
                               style: { "min-width": "96px", "width": "96px" },
                               min: 1,
@@ -2218,8 +2229,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               _: 1
                             }),
                             createVNode(unref(NInputNumber), {
-                              value: unref(conf).data.settings.inpainting.seed,
-                              "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(conf).data.settings.inpainting.seed = $event),
+                              value: unref(settings).data.settings.inpainting.seed,
+                              "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(settings).data.settings.inpainting.seed = $event),
                               size: "small",
                               min: -1,
                               max: 999999999999,
@@ -2242,7 +2253,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 createVNode(_sfc_main$7, {
                   "current-image": unref(global).state.inpainting.currentImage,
                   images: unref(global).state.inpainting.images,
-                  data: unref(conf).data.settings.inpainting,
+                  data: unref(settings).data.settings.inpainting,
                   onImageClicked: _cache[23] || (_cache[23] = ($event) => unref(global).state.inpainting.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
                 createVNode(_sfc_main$8, {
@@ -2259,8 +2270,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_e1a427aa_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-e1a427aa"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_dd7ac49f_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-dd7ac49f"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

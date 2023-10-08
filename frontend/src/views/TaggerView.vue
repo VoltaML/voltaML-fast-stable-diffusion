@@ -5,9 +5,9 @@
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="conf.data.settings.tagger.image"
+          :preview="settings.data.settings.tagger.image"
           style="margin-bottom: 12px"
-          @file-dropped="conf.data.settings.tagger.image = $event"
+          @file-dropped="settings.data.settings.tagger.image = $event"
         />
 
         <NCard title="Settings" style="margin-bottom: 12px">
@@ -31,7 +31,7 @@
                     value: 'flamingo',
                   },
                 ]"
-                v-model:value="conf.data.settings.tagger.model"
+                v-model:value="settings.data.settings.tagger.model"
                 style="flex-grow: 1"
               />
             </div>
@@ -46,14 +46,14 @@
                 tokens will be given to you.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.tagger.threshold"
+                v-model:value="settings.data.settings.tagger.threshold"
                 :min="0.1"
                 :max="1"
                 style="margin-right: 12px"
                 :step="0.025"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.tagger.threshold"
+                v-model:value="settings.data.settings.tagger.threshold"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
@@ -124,11 +124,11 @@ import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const messageHandler = useMessage();
 
 const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.tagger.image = base64Image;
+  settings.data.settings.tagger.image = base64Image;
 };
 
 const generate = () => {
@@ -140,11 +140,11 @@ const generate = () => {
     },
     body: JSON.stringify({
       data: {
-        image: conf.data.settings.tagger.image,
+        image: settings.data.settings.tagger.image,
         id: uuidv4(),
-        threshold: conf.data.settings.tagger.threshold,
+        threshold: settings.data.settings.tagger.threshold,
       },
-      model: conf.data.settings.tagger.model,
+      model: settings.data.settings.tagger.model,
     }),
   })
     .then((res) => {

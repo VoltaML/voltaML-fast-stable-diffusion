@@ -5,23 +5,23 @@
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="conf.data.settings.controlnet.image"
+          :preview="settings.data.settings.controlnet.image"
           style="margin-bottom: 12px"
-          @file-dropped="conf.data.settings.controlnet.image = $event"
+          @file-dropped="settings.data.settings.controlnet.image = $event"
         />
 
         <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
-              v-model:value="conf.data.settings.controlnet.prompt"
+              v-model:value="settings.data.settings.controlnet.prompt"
               type="textarea"
               placeholder="Prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.controlnet,
+                  settings.data.settings.controlnet,
                   'prompt',
                   global
                 )
@@ -31,14 +31,14 @@
               <template #count>{{ promptCount }}</template>
             </NInput>
             <NInput
-              v-model:value="conf.data.settings.controlnet.negative_prompt"
+              v-model:value="settings.data.settings.controlnet.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.controlnet,
+                  settings.data.settings.controlnet,
                   'negative_prompt',
                   global
                 )
@@ -67,8 +67,8 @@
               </NTooltip>
 
               <NSelect
-                :options="conf.scheduler_options"
-                v-model:value="conf.data.settings.controlnet.sampler"
+                :options="settings.scheduler_options"
+                v-model:value="settings.data.settings.controlnet.sampler"
                 style="flex-grow: 1"
               />
             </div>
@@ -87,7 +87,9 @@
               </NTooltip>
 
               <NSwitch
-                v-model:value="conf.data.settings.controlnet.use_karras_sigmas"
+                v-model:value="
+                  settings.data.settings.controlnet.use_karras_sigmas
+                "
                 style="justify-self: flex-end"
               />
             </div>
@@ -110,8 +112,8 @@
               </NTooltip>
 
               <NSelect
-                :options="conf.controlnet_options"
-                v-model:value="conf.data.settings.controlnet.controlnet"
+                :options="settings.controlnet_options"
+                v-model:value="settings.data.settings.controlnet.controlnet"
                 filterable
                 tag
                 style="flex-grow: 1"
@@ -119,7 +121,7 @@
             </div>
 
             <DimensionsInput
-              :dimensions-object="conf.data.settings.controlnet"
+              :dimensions-object="settings.data.settings.controlnet"
             />
 
             <!-- Steps -->
@@ -137,13 +139,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.controlnet.steps"
+                v-model:value="settings.data.settings.controlnet.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.controlnet.steps"
+                v-model:value="settings.data.settings.controlnet.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="5"
@@ -166,14 +168,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.controlnet.cfg_scale"
+                v-model:value="settings.data.settings.controlnet.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.controlnet.cfg_scale"
+                v-model:value="settings.data.settings.controlnet.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -191,13 +193,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.controlnet.batch_count"
+                v-model:value="settings.data.settings.controlnet.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.controlnet.batch_count"
+                v-model:value="settings.data.settings.controlnet.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -206,7 +208,7 @@
             </div>
 
             <BatchSizeInput
-              :batch-size-object="conf.data.settings.controlnet"
+              :batch-size-object="settings.data.settings.controlnet"
             />
 
             <!-- ControlNet Conditioning Scale -->
@@ -219,7 +221,8 @@
               </NTooltip>
               <NSlider
                 v-model:value="
-                  conf.data.settings.controlnet.controlnet_conditioning_scale
+                  settings.data.settings.controlnet
+                    .controlnet_conditioning_scale
                 "
                 :min="0.1"
                 :max="2"
@@ -228,7 +231,8 @@
               />
               <NInputNumber
                 v-model:value="
-                  conf.data.settings.controlnet.controlnet_conditioning_scale
+                  settings.data.settings.controlnet
+                    .controlnet_conditioning_scale
                 "
                 size="small"
                 style="min-width: 96px; width: 96px"
@@ -250,7 +254,7 @@
               </NTooltip>
               <NSlider
                 v-model:value="
-                  conf.data.settings.controlnet.detection_resolution
+                  settings.data.settings.controlnet.detection_resolution
                 "
                 :min="128"
                 :max="2048"
@@ -259,7 +263,7 @@
               />
               <NInputNumber
                 v-model:value="
-                  conf.data.settings.controlnet.detection_resolution
+                  settings.data.settings.controlnet.detection_resolution
                 "
                 size="small"
                 style="min-width: 96px; width: 96px"
@@ -281,7 +285,7 @@
                 <b class="highlight">For random seed use -1.</b>
               </NTooltip>
               <NInputNumber
-                v-model:value="conf.data.settings.controlnet.seed"
+                v-model:value="settings.data.settings.controlnet.seed"
                 size="small"
                 :min="-1"
                 :max="999_999_999_999"
@@ -293,7 +297,9 @@
             <div class="flex-container">
               <p class="slider-label">Is Preprocessed</p>
               <NSwitch
-                v-model:value="conf.data.settings.controlnet.is_preprocessed"
+                v-model:value="
+                  settings.data.settings.controlnet.is_preprocessed
+                "
               />
             </div>
 
@@ -301,7 +307,9 @@
             <div class="flex-container">
               <p class="slider-label">Save Preprocessed</p>
               <NSwitch
-                v-model:value="conf.data.settings.controlnet.save_preprocessed"
+                v-model:value="
+                  settings.data.settings.controlnet.save_preprocessed
+                "
               />
             </div>
 
@@ -310,7 +318,7 @@
               <p class="slider-label">Return Preprocessed</p>
               <NSwitch
                 v-model:value="
-                  conf.data.settings.controlnet.return_preprocessed
+                  settings.data.settings.controlnet.return_preprocessed
                 "
               />
             </div>
@@ -327,7 +335,7 @@
         <ImageOutput
           :current-image="global.state.controlnet.currentImage"
           :images="global.state.controlnet.images"
-          :data="conf.data.settings.controlnet"
+          :data="settings.data.settings.controlnet"
           @image-clicked="global.state.controlnet.currentImage = $event"
         />
 
@@ -374,15 +382,16 @@ import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const messageHandler = useMessage();
 
 const promptCount = computed(() => {
-  return conf.data.settings.controlnet.prompt.split(spaceRegex).length - 1;
+  return settings.data.settings.controlnet.prompt.split(spaceRegex).length - 1;
 });
 const negativePromptCount = computed(() => {
   return (
-    conf.data.settings.controlnet.negative_prompt.split(spaceRegex).length - 1
+    settings.data.settings.controlnet.negative_prompt.split(spaceRegex).length -
+    1
   );
 });
 
@@ -396,17 +405,17 @@ const checkSeed = (seed: number) => {
 };
 
 const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.controlnet.image = base64Image;
+  settings.data.settings.controlnet.image = base64Image;
 };
 
 const generate = () => {
-  if (conf.data.settings.controlnet.seed === null) {
+  if (settings.data.settings.controlnet.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
   global.state.generating = true;
 
-  const seed = checkSeed(conf.data.settings.controlnet.seed);
+  const seed = checkSeed(settings.data.settings.controlnet.seed);
 
   fetch(`${serverUrl}/api/generate/controlnet`, {
     method: "POST",
@@ -415,34 +424,35 @@ const generate = () => {
     },
     body: JSON.stringify({
       data: {
-        prompt: conf.data.settings.controlnet.prompt,
-        image: conf.data.settings.controlnet.image,
+        prompt: settings.data.settings.controlnet.prompt,
+        image: settings.data.settings.controlnet.image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.controlnet.negative_prompt,
-        width: conf.data.settings.controlnet.width,
-        height: conf.data.settings.controlnet.height,
-        steps: conf.data.settings.controlnet.steps,
-        guidance_scale: conf.data.settings.controlnet.cfg_scale,
+        negative_prompt: settings.data.settings.controlnet.negative_prompt,
+        width: settings.data.settings.controlnet.width,
+        height: settings.data.settings.controlnet.height,
+        steps: settings.data.settings.controlnet.steps,
+        guidance_scale: settings.data.settings.controlnet.cfg_scale,
         seed: seed,
-        batch_size: conf.data.settings.controlnet.batch_size,
-        batch_count: conf.data.settings.controlnet.batch_count,
-        controlnet: conf.data.settings.controlnet.controlnet,
+        batch_size: settings.data.settings.controlnet.batch_size,
+        batch_count: settings.data.settings.controlnet.batch_count,
+        controlnet: settings.data.settings.controlnet.controlnet,
         controlnet_conditioning_scale:
-          conf.data.settings.controlnet.controlnet_conditioning_scale,
+          settings.data.settings.controlnet.controlnet_conditioning_scale,
         detection_resolution:
-          conf.data.settings.controlnet.detection_resolution,
-        scheduler: conf.data.settings.controlnet.sampler,
-        use_karras_sigmas: conf.data.settings.controlnet.use_karras_sigmas,
+          settings.data.settings.controlnet.detection_resolution,
+        scheduler: settings.data.settings.controlnet.sampler,
+        use_karras_sigmas: settings.data.settings.controlnet.use_karras_sigmas,
 
         canny_low_threshold: 100,
         canny_high_threshold: 200,
         mlsd_thr_v: 0.1,
         mlsd_thr_d: 0.1,
-        is_preprocessed: conf.data.settings.controlnet.is_preprocessed,
-        save_preprocessed: conf.data.settings.controlnet.save_preprocessed,
-        return_preprocessed: conf.data.settings.controlnet.return_preprocessed,
+        is_preprocessed: settings.data.settings.controlnet.is_preprocessed,
+        save_preprocessed: settings.data.settings.controlnet.save_preprocessed,
+        return_preprocessed:
+          settings.data.settings.controlnet.return_preprocessed,
       },
-      model: conf.data.settings.model?.name,
+      model: settings.data.settings.model?.name,
     }),
   })
     .then((res) => {
@@ -472,7 +482,11 @@ const generate = () => {
 };
 
 // Burner clock
-const burner = new BurnerClock(conf.data.settings.controlnet, conf, generate);
+const burner = new BurnerClock(
+  settings.data.settings.controlnet,
+  settings,
+  generate
+);
 onUnmounted(() => {
   burner.cleanup();
 });
