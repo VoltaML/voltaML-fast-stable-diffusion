@@ -17,11 +17,8 @@ if is_hypertile_available():
     from hyper_tile import split_attention
 
 
-def hypertile(unet, vae, height: int, width: int) -> ExitStack:
+def hypertile(unet, height: int, width: int) -> ExitStack:
     s = ExitStack()
-    # s.enter_context(
-    #     split_attention(vae, height / width, tile_size=config.api.hypertile_vae_chunk)
-    # )
     s.enter_context(
         split_attention(unet, height / width, tile_size=config.api.hypertile_unet_chunk)
     )

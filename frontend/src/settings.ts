@@ -187,7 +187,6 @@ export interface ISettings {
 
     hypertile: boolean;
     hypertile_unet_chunk: number;
-    hypertile_vae_chunk: number;
   };
   aitemplate: {
     num_threads: number;
@@ -357,7 +356,6 @@ export const defaultSettings: ISettings = {
 
     hypertile: false,
     hypertile_unet_chunk: 256,
-    hypertile_vae_chunk: 128,
   },
   aitemplate: {
     num_threads: 8,

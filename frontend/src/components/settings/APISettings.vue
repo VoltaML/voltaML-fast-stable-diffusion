@@ -341,36 +341,6 @@
             :step="1"
           />
         </div>
-
-        <div class="flex-container">
-          <NTooltip style="max-width: 600px">
-            <template #trigger>
-              <p class="slider-label">Hypertile VAE chunk size</p>
-            </template>
-            <b class="highlight"
-              >PyTorch ONLY. Recommended size is a flat "128."</b
-            >
-            Internally splits up the generated image into a grid of this size
-            and does work on them one by one. In practice, this can make VAE
-            processing up to 4x faster on <b>LARGE (1024x1024+)</b> images.
-          </NTooltip>
-
-          <NSlider
-            v-model:value="settings.defaultSettings.api.hypertile_vae_chunk"
-            :min="128"
-            :max="1024"
-            :step="8"
-            style="margin-right: 12px"
-          />
-          <NInputNumber
-            v-model:value="settings.defaultSettings.api.hypertile_vae_chunk"
-            size="small"
-            style="min-width: 96px; width: 96px"
-            :min="128"
-            :max="1024"
-            :step="1"
-          />
-        </div>
       </div>
 
       <NFormItem label="Use TomeSD" label-placement="left">

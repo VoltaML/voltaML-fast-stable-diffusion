@@ -179,7 +179,6 @@ class APIConfig:
     # Hypertile
     hypertile: bool = False
     hypertile_unet_chunk: int = 256
-    hypertile_vae_chunk: int = 128
 
     @property
     def dtype(self):
