@@ -167,7 +167,7 @@ class KdiffusionSchedulerAdapter:
             "order": 2 if self.sampler_tuple[2].get("second_order", False) else None,
         }
 
-        k_diffusion.sampling.torch = TorchHijack()
+        k_diffusion.sampling.torch = TorchHijack(generator)
 
         if isinstance(self.sampler_tuple[1], str):
             sampler_func = getattr(sampling, self.sampler_tuple[1])

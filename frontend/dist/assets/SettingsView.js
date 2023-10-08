@@ -3417,7 +3417,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const settings = useSettings();
     const global = useState();
     const availableDtypes = computed(() => {
-      if (settings.defaultSettings.api.device_type == "cpu") {
+      if (settings.defaultSettings.api.device.includes("cpu")) {
         return global.state.capabilities.supported_precisions_cpu.map((value) => {
           var description = "";
           switch (value) {
@@ -3472,8 +3472,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSelect), {
                 options: availableBackends.value,
-                value: unref(settings).defaultSettings.api.device_type,
-                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.device_type = $event)
+                value: unref(settings).defaultSettings.api.device,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.device = $event)
               }, null, 8, ["options", "value"])
             ]),
             _: 1

@@ -1,4 +1,8 @@
+from typing import Union
+
 import torch
+
+from core.inference.utilities.philox import PhiloxGenerator
 
 
 class TorchHijack:
@@ -9,6 +13,11 @@ class TorchHijack:
 
     We need to replace to make images generated in batches to be same as images generated individually.
     """
+
+    def __init__(self, generator: Union[PhiloxGenerator, torch.Generator]) -> None:
+        self.generator = generator
+
+        super().__init__()
 
     def __getattr__(self, item):
         if item == "randn_like":
@@ -24,4 +33,4 @@ class TorchHijack:
     def randn_like(self, x):
         from core.inference.utilities import randn_like
 
-        return randn_like(x, x.device, x.dtype)
+        return randn_like(x, self.generator, x.device, x.dtype)

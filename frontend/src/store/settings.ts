@@ -50,6 +50,7 @@ export function getSchedulerOptions() {
         { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
         { label: "DPM++ SDE", value: "dpmpp_sde" },
         { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
+        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
         { label: "UniPC Multistep", value: "unipc_multistep" },
         { label: "Restart", value: "restart" },
       ],

@@ -40666,8 +40666,7 @@ const defaultSettings = {
     trace_model: false,
     cudnn_benchmark: false,
     offload: "disabled",
-    device_id: 0,
-    device_type: "cuda",
+    device: "cuda:0",
     data_type: "float16",
     use_tomesd: true,
     tomesd_ratio: 0.4,
@@ -40785,6 +40784,7 @@ function getSchedulerOptions() {
         { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
         { label: "DPM++ SDE", value: "dpmpp_sde" },
         { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
+        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
         { label: "UniPC Multistep", value: "unipc_multistep" },
         { label: "Restart", value: "restart" }
       ]
