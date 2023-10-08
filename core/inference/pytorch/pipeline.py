@@ -327,7 +327,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 0. Modify unet and vae to the (optionally) modified versions from inf
             self.unet = inf.unet  # type: ignore
             self.vae = inf.vae  # type: ignore
-            
+
             # 1. Check inputs. Raise error if not correct
             self._check_inputs(prompt, strength, callback_steps)
             if self.controlnet is not None:

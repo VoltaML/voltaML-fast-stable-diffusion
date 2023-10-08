@@ -130,7 +130,7 @@ class GPU:
                 cap.has_tensorfloat = True
             elif caps[0] >= 9:
                 cap.has_tensorfloat = True
-        
+
         if is_hypertile_available():
             cap.hypertile_available = True
 
