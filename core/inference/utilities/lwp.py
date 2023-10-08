@@ -251,6 +251,9 @@ def get_unweighted_text_embeddings(
     When the length of tokens is a multiple of the capacity of the text encoder,
     it should be split into chunks and sent to the text encoder individually.
     """
+
+    # TODO: when SDXL releases, refactor CLIP_stop_at_last_layer here.
+
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
 
     if max_embeddings_multiples > 1:
