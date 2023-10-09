@@ -98,6 +98,7 @@
                 <SendOutputTo
                   :output="global.state.imageBrowser.currentImageByte64"
                   :card="false"
+                  :data="global.state.imageBrowser.currentImageMetadata"
                 />
               </NGi>
             </NGrid>
@@ -119,7 +120,7 @@
                     .currentImageMetadata"
                   v-bind:key="item.toString()"
                 >
-                  {{ item }}
+                  {{ typeof item }} | {{ item }}
                 </NDescriptionsItem>
               </NDescriptions>
             </NScrollbar>
@@ -218,10 +219,7 @@ function deleteImage() {
         time: 0,
       };
       global.state.imageBrowser.currentImageByte64 = "";
-      global.state.imageBrowser.currentImageMetadata = new Map<
-        string,
-        string
-      >();
+      global.state.imageBrowser.currentImageMetadata = {};
     });
 }
 
@@ -253,7 +251,7 @@ function downloadImage() {
 
 function setByte64FromImage(path: string) {
   const url = urlFromPath(path);
-  fetch(url, { mode: "no-cors" })
+  fetch(url)
     .then((res) => res.blob())
     .then((blob) => {
       const reader = new FileReader();
@@ -272,6 +270,27 @@ function setByte64FromImage(path: string) {
 const currentColumn = ref(0);
 const currentRowIndex = ref(0);
 
+const numberRegex = /^[+-]?([0-9]*[.])?[0-9]+$/g;
+
+function parseMetadataFromString(value: string) {
+  switch (value) {
+    case "true":
+      return true;
+    case "false":
+      return false;
+    default:
+      if (numberRegex.test(value)) {
+        if (value.includes(".")) {
+          return parseFloat(value);
+        } else {
+          return parseInt(value);
+        }
+      } else {
+        return value;
+      }
+  }
+}
+
 function imgClick(column_index: number, item_index: number) {
   currentRowIndex.value = item_index;
   currentColumn.value = column_index;
@@ -283,7 +302,13 @@ function imgClick(column_index: number, item_index: number) {
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      global.state.imageBrowser.currentImageMetadata = data;
+      // Go through values and parse them
+      const newRecord: Record<string, string | number | boolean> = {};
+      Object.keys(data).forEach((key) => {
+        newRecord[key] = parseMetadataFromString(data[key].trim());
+      });
+
+      global.state.imageBrowser.currentImageMetadata = newRecord;
     });
   showImageModal.value = true;
 }

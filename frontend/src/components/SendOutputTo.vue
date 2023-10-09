@@ -3,7 +3,15 @@
     <NCard style="max-width: 700px" title="Copy additional properties">
       <NScrollbar style="max-height: 70vh; margin-bottom: 8px">
         <div style="margin: 0 24px">
-          <div v-for="item in Object.keys(valuesToCopyFiltered)">
+          <div
+            v-for="item in Object.keys(valuesToCopy).filter((key) => {
+              if (maybeTarget) {
+                return Object.keys(
+                  settings.data.settings[maybeTarget]
+                ).includes(key);
+              }
+            })"
+          >
             <div
               style="
                 display: flex;
@@ -85,7 +93,7 @@ import {
   NScrollbar,
   NSwitch,
 } from "naive-ui";
-import { computed, reactive, ref } from "vue";
+import { reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useSettings } from "../store/settings";
 const router = useRouter();
@@ -144,19 +152,16 @@ const valuesToCopy = reactive(
   Object.fromEntries(Object.keys(props.data).map((key) => [key, false]))
 );
 
-const valuesToCopyFiltered = computed(() => {
-  return Object.fromEntries(
-    Object.keys(valuesToCopy)
-      .filter((key) => {
-        if (maybeTarget.value) {
-          return Object.keys(
-            settings.data.settings[maybeTarget.value]
-          ).includes(key);
-        }
-      })
-      .map((key) => [key, valuesToCopy[key]])
-  );
-});
+watch(
+  () => props.data,
+  (newData) => {
+    Object.keys(newData).forEach((key) => {
+      if (!valuesToCopy.hasOwnProperty(key)) {
+        valuesToCopy[key] = false;
+      }
+    });
+  }
+);
 
 async function toTarget(target: keyof typeof targets) {
   const targetPage = targets[target];
