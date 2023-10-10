@@ -1,6 +1,5 @@
 import torch
 from typing import Optional
-from flash_attn import flash_attn_qkvpacked_func, flash_attn_func
 from diffusers.models.attention import Attention
 
 def apply_flash_attention(module: torch.nn.Module):
@@ -97,6 +96,7 @@ class FlashAttentionStandardAttention(FlashAttentionBaseAttention):
         query = query.unflatten(-1, (attn.heads, -1))  # type: ignore
         key = key.unflatten(-1, (attn.heads, -1))
         value = value.unflatten(-1, (attn.heads, -1))
+        from flash_attn import flash_attn_func
         hidden_states = flash_attn_func(
             query, key, value, dropout_p=0.0, causal=False  # type: ignore
         )
@@ -111,6 +111,7 @@ class FlashAttentionQkvAttention(FlashAttentionBaseAttention):
     def do(self, attn: Attention, hidden_states: torch.FloatTensor, encoder_hidden_states: torch.FloatTensor, query: Optional[torch.FloatTensor] = None) -> torch.FloatTensor:
         qkv = attn.to_qkv(hidden_states)  # type: ignore
         qkv = qkv.unflatten(-1, (3, attn.heads, -1))
+        from flash_attn import flash_attn_qkvpacked_func
         hidden_states = flash_attn_qkvpacked_func(
             qkv, dropout_p=0.0, causal=False
         )
