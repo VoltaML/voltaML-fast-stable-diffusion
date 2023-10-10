@@ -341,7 +341,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             latent_model_input = (
                 torch.cat([x] * 2) if do_classifier_free_guidance else x
             )
-            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t).half()  # type: ignore
+            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
             # predict the noise residual
             if self.controlnet is not None and ctrl_image is not None:
@@ -406,7 +406,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     noise_pred_text - noise_pred_uncond
                 )
 
-            if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+            if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                 x = self.scheduler.step(
                     noise_pred, t, x, **extra_step_kwargs, return_dict=False  # type: ignore
                 )[0]
@@ -415,7 +415,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             return x
 
         if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
-            self.scheduler.do_inference(
+            latents = self.scheduler.do_inference(
                 latents,  # type: ignore
                 generator=generator,
                 call=self.unet_inference,
