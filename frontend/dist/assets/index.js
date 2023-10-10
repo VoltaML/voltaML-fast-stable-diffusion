@@ -39600,7 +39600,7 @@ const useState = defineStore("state", () => {
         time: 0
       },
       currentImageByte64: "",
-      currentImageMetadata: /* @__PURE__ */ new Map()
+      currentImageMetadata: {}
     },
     perf_drawer: {
       enabled: false,

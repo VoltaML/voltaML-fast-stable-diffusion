@@ -120,7 +120,7 @@
                     .currentImageMetadata"
                   v-bind:key="item.toString()"
                 >
-                  {{ typeof item }} | {{ item }}
+                  {{ item }}
                 </NDescriptionsItem>
               </NDescriptions>
             </NScrollbar>
@@ -270,24 +270,19 @@ function setByte64FromImage(path: string) {
 const currentColumn = ref(0);
 const currentRowIndex = ref(0);
 
-const numberRegex = /^[+-]?([0-9]*[.])?[0-9]+$/g;
+function parseMetadataFromString(key: string, value: string) {
+  value = value.trim().toLowerCase();
 
-function parseMetadataFromString(value: string) {
-  switch (value) {
-    case "true":
-      return true;
-    case "false":
-      return false;
-    default:
-      if (numberRegex.test(value)) {
-        if (value.includes(".")) {
-          return parseFloat(value);
-        } else {
-          return parseInt(value);
-        }
-      } else {
-        return value;
-      }
+  if (value === "true") {
+    return true;
+  } else if (value === "false") {
+    return false;
+  } else {
+    if (isFinite(+value)) {
+      return +value;
+    } else {
+      return value;
+    }
   }
 }
 
@@ -302,13 +297,16 @@ function imgClick(column_index: number, item_index: number) {
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      // Go through values and parse them
-      const newRecord: Record<string, string | number | boolean> = {};
-      Object.keys(data).forEach((key) => {
-        newRecord[key] = parseMetadataFromString(data[key].trim());
-      });
-
-      global.state.imageBrowser.currentImageMetadata = newRecord;
+      global.state.imageBrowser.currentImageMetadata = JSON.parse(
+        JSON.stringify(data),
+        (key, value) => {
+          if (typeof value === "string") {
+            return parseMetadataFromString(key, value);
+          }
+          return value;
+        }
+      );
+      console.log(global.state.imageBrowser.currentImageMetadata);
     });
   showImageModal.value = true;
 }

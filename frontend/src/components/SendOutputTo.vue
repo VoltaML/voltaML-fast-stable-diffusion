@@ -11,6 +11,7 @@
                 ).includes(key);
               }
             })"
+            v-bind:key="item"
           >
             <div
               style="
@@ -55,7 +56,7 @@
   <div v-if="output">
     <NCard style="margin: 12px 0" title="Send To" v-if="output && card">
       <NGrid cols="4" x-gap="4" y-gap="4">
-        <NGi v-for="target in Object.keys(targets)">
+        <NGi v-for="target in Object.keys(targets)" v-bind:key="target">
           <NButton
             type="default"
             @click="() => handleClick(target as keyof typeof targets)"
@@ -67,7 +68,7 @@
       </NGrid>
     </NCard>
     <NGrid cols="3" x-gap="4" y-gap="4" v-else>
-      <NGi v-for="target in Object.keys(targets)">
+      <NGi v-for="target in Object.keys(targets)" v-bind:key="target">
         <NButton
           type="default"
           @click="() => handleClick(target as keyof typeof targets)"
@@ -156,6 +157,7 @@ watch(
   () => props.data,
   (newData) => {
     Object.keys(newData).forEach((key) => {
+      // eslint-disable-next-line no-prototype-builtins
       if (!valuesToCopy.hasOwnProperty(key)) {
         valuesToCopy[key] = false;
       }

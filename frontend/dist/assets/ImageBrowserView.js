@@ -18,8 +18,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "352f69e6": unref(settings).data.settings.frontend.image_browser_columns,
-      "75eff66c": backgroundColor.value
+      "c641501e": unref(settings).data.settings.frontend.image_browser_columns,
+      "0c6c1cae": backgroundColor.value
     }));
     const global = useState();
     const settings = useSettings();
@@ -51,7 +51,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           time: 0
         };
         global.state.imageBrowser.currentImageByte64 = "";
-        global.state.imageBrowser.currentImageMetadata = /* @__PURE__ */ new Map();
+        global.state.imageBrowser.currentImageMetadata = {};
       });
     }
     function downloadImage() {
@@ -77,7 +77,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     function setByte64FromImage(path) {
       const url = urlFromPath(path);
-      fetch(url, { mode: "no-cors" }).then((res) => res.blob()).then((blob) => {
+      fetch(url).then((res) => res.blob()).then((blob) => {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = function() {
@@ -92,6 +92,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     const currentColumn = ref(0);
     const currentRowIndex = ref(0);
+    function parseMetadataFromString(key, value) {
+      value = value.trim().toLowerCase();
+      if (value === "true") {
+        return true;
+      } else if (value === "false") {
+        return false;
+      } else {
+        if (isFinite(+value)) {
+          return +value;
+        } else {
+          return value;
+        }
+      }
+    }
     function imgClick(column_index, item_index) {
       currentRowIndex.value = item_index;
       currentColumn.value = column_index;
@@ -101,7 +115,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       const url = new URL(`${serverUrl}/api/outputs/data/`);
       url.searchParams.append("filename", item.path);
       fetch(url).then((res) => res.json()).then((data) => {
-        global.state.imageBrowser.currentImageMetadata = data;
+        global.state.imageBrowser.currentImageMetadata = JSON.parse(
+          JSON.stringify(data),
+          (key, value) => {
+            if (typeof value === "string") {
+              return parseMetadataFromString(key, value);
+            }
+            return value;
+          }
+        );
+        console.log(global.state.imageBrowser.currentImageMetadata);
       });
       showImageModal.value = true;
     }
@@ -344,8 +367,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             default: withCtx(() => [
                               createVNode(_sfc_main$1, {
                                 output: unref(global).state.imageBrowser.currentImageByte64,
-                                card: false
-                              }, null, 8, ["output"])
+                                card: false,
+                                data: unref(global).state.imageBrowser.currentImageMetadata
+                              }, null, 8, ["output", "data"])
                             ]),
                             _: 1
                           })
@@ -423,8 +447,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_7b99b7a6_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7b99b7a6"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_59d31164_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-59d31164"]]);
 export {
   ImageBrowserView as default
 };

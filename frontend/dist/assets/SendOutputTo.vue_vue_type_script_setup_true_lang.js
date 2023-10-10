@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, a as createElementBlock, i as createBaseVNode, bG as useRouter, u as useSettings, v as useState, r as ref, b9 as reactive, c as computed, b as createVNode, w as withCtx, e as unref, N as NCard, Q as NScrollbar, F as Fragment, f as renderList, h as createTextVNode, t as toDisplayString, be as NDivider, g as NButton, m as NModal, k as createBlock, A as NGi, H as NGrid, G as createCommentVNode } from "./index.js";
+import { d as defineComponent, o as openBlock, a as createElementBlock, i as createBaseVNode, bG as useRouter, u as useSettings, v as useState, r as ref, b9 as reactive, O as watch, b as createVNode, w as withCtx, e as unref, N as NCard, Q as NScrollbar, F as Fragment, f as renderList, h as createTextVNode, t as toDisplayString, be as NDivider, g as NButton, m as NModal, k as createBlock, A as NGi, H as NGrid, G as createCommentVNode } from "./index.js";
 import { a as NSwitch } from "./Switch.js";
 const _hoisted_1$3 = {
   xmlns: "http://www.w3.org/2000/svg",
@@ -170,17 +170,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const valuesToCopy = reactive(
       Object.fromEntries(Object.keys(props.data).map((key) => [key, false]))
     );
-    const valuesToCopyFiltered = computed(() => {
-      return Object.fromEntries(
-        Object.keys(valuesToCopy).filter((key) => {
-          if (maybeTarget.value) {
-            return Object.keys(
-              settings.data.settings[maybeTarget.value]
-            ).includes(key);
+    watch(
+      () => props.data,
+      (newData) => {
+        Object.keys(newData).forEach((key) => {
+          if (!valuesToCopy.hasOwnProperty(key)) {
+            valuesToCopy[key] = false;
           }
-        }).map((key) => [key, valuesToCopy[key]])
-      );
-    });
+        });
+      }
+    );
     async function toTarget(target) {
       const targetPage = targets[target];
       settings.data.settings[target].image = props.output;
@@ -209,8 +208,14 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NScrollbar), { style: { "max-height": "70vh", "margin-bottom": "8px" } }, {
                   default: withCtx(() => [
                     createBaseVNode("div", _hoisted_1, [
-                      (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(valuesToCopyFiltered.value), (item) => {
-                        return openBlock(), createElementBlock("div", null, [
+                      (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(valuesToCopy).filter((key) => {
+                        if (maybeTarget.value) {
+                          return Object.keys(
+                            unref(settings).data.settings[maybeTarget.value]
+                          ).includes(key);
+                        }
+                      }), (item) => {
+                        return openBlock(), createElementBlock("div", { key: item }, [
                           createBaseVNode("div", _hoisted_2, [
                             createTextVNode(toDisplayString(capitalizeAndReplace(item)) + " ", 1),
                             createVNode(unref(NSwitch), {
@@ -220,7 +225,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           ]),
                           createVNode(unref(NDivider), { style: { "margin": "12px 0" } })
                         ]);
-                      }), 256))
+                      }), 128))
                     ])
                   ]),
                   _: 1
@@ -273,7 +278,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               }, {
                 default: withCtx(() => [
                   (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(targets), (target) => {
-                    return openBlock(), createBlock(unref(NGi), null, {
+                    return openBlock(), createBlock(unref(NGi), { key: target }, {
                       default: withCtx(() => [
                         createVNode(unref(NButton), {
                           type: "default",
@@ -289,7 +294,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 2
                     }, 1024);
-                  }), 256))
+                  }), 128))
                 ]),
                 _: 1
               })
@@ -303,7 +308,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           }, {
             default: withCtx(() => [
               (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(targets), (target) => {
-                return openBlock(), createBlock(unref(NGi), null, {
+                return openBlock(), createBlock(unref(NGi), { key: target }, {
                   default: withCtx(() => [
                     createVNode(unref(NButton), {
                       type: "default",
@@ -319,7 +324,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   ]),
                   _: 2
                 }, 1024);
-              }), 256))
+              }), 128))
             ]),
             _: 1
           }))
