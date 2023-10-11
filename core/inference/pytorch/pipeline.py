@@ -486,7 +486,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     if guess_mode and do_classifier_free_guidance:
                         # Infer ControlNet only for the conditional batch.
                         control_model_input = x
-                        control_model_input = self.scheduler.scale_model_input(control_model_input, t)  # type: ignore
+                        control_model_input = self.scheduler.scale_model_input(control_model_input, t).half()  # type: ignore
                         controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
                     else:
                         control_model_input = latent_model_input

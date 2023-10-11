@@ -358,7 +358,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
                 cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
                 down_block_res_samples, mid_block_res_sample = self.controlnet(
-                    control_model_input,
+                    control_model_input.half(),
                     t,
                     encoder_hidden_states=controlnet_prompt_embeds.half(),
                     controlnet_cond=ctrl_image,  # type: ignore
