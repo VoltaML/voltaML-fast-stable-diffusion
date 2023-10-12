@@ -5,7 +5,12 @@ const router = createRouter({
   routes: [
     {
       path: "/",
-      name: "text2image",
+      name: "home",
+      component: () => import("../views/TextToImageView.vue"),
+    },
+    {
+      path: "/txt2img",
+      name: "txt2img",
       component: () => import("../views/TextToImageView.vue"),
     },
     {

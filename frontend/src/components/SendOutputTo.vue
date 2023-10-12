@@ -1,18 +1,26 @@
 <template>
   <NModal :show="showModal">
     <NCard style="max-width: 700px" title="Copy additional properties">
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-end;
+          margin-bottom: 8px;
+        "
+      >
+        <NButton
+          type="success"
+          ghost
+          style="margin-right: 4px"
+          @click="selectAll"
+          >Select All</NButton
+        >
+        <NButton type="warning" ghost @click="selectNone">Select None</NButton>
+      </div>
       <NScrollbar style="max-height: 70vh; margin-bottom: 8px">
         <div style="margin: 0 24px">
-          <div
-            v-for="item in Object.keys(valuesToCopy).filter((key) => {
-              if (maybeTarget) {
-                return Object.keys(
-                  settings.data.settings[maybeTarget]
-                ).includes(key);
-              }
-            })"
-            v-bind:key="item"
-          >
+          <div v-for="item in valuesToCopyFiltered" v-bind:key="item">
             <div
               style="
                 display: flex;
@@ -94,7 +102,7 @@ import {
   NScrollbar,
   NSwitch,
 } from "naive-ui";
-import { reactive, ref, watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useSettings } from "../store/settings";
 const router = useRouter();
@@ -107,6 +115,7 @@ const maybeTarget = ref<keyof typeof targets | null>(null);
 
 // Key is both name and tab name, value is target url
 const targets = {
+  txt2img: "txt2img",
   img2img: "img2img",
   controlnet: "img2img",
   inpainting: "img2img",
@@ -165,11 +174,26 @@ watch(
   }
 );
 
+const valuesToCopyFiltered = computed(() => {
+  return Object.keys(valuesToCopy).filter((key) => {
+    if (maybeTarget.value) {
+      return Object.keys(settings.data.settings[maybeTarget.value]).includes(
+        key
+      );
+    }
+  });
+});
+
 async function toTarget(target: keyof typeof targets) {
   const targetPage = targets[target];
 
-  settings.data.settings[target].image = props.output;
-  state.state[targetPage].tab = target;
+  if (target !== "txt2img") {
+    settings.data.settings[target].image = props.output;
+  }
+
+  if (targetPage !== "txt2img" && target !== "txt2img") {
+    state.state[targetPage].tab = target;
+  }
 
   Object.keys(props.data).forEach((key) => {
     if (valuesToCopy[key]) {
@@ -188,5 +212,17 @@ function capitalizeAndReplace(target: string) {
     .split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ");
+}
+
+function selectAll() {
+  for (const key in valuesToCopy) {
+    valuesToCopy[key] = true;
+  }
+}
+
+function selectNone() {
+  for (const key in valuesToCopy) {
+    valuesToCopy[key] = false;
+  }
 }
 </script>
