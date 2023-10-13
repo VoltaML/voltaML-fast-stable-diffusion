@@ -107,9 +107,22 @@ def create_sampler(
     sampler_tmin: Optional[float] = None,
     sampler_tmax: Optional[float] = None,
     sampler_noise: Optional[float] = None,
+    sampler_settings: Optional[dict] = None,
 ):
     "Helper function for figuring out and creating a KdiffusionSchedulerAdapter for the appropriate settings given."
     sampler_tuple = _get_sampler(sampler)
+    sampler_settings = sampler_settings or {}
+
+    sigma_min = sampler_settings.pop("sigma_min", sigma_min)
+    sigma_max = sampler_settings.pop("sigma_max", sigma_max)
+    sigma_rho = sampler_settings.pop("sigma_rho", sigma_rho)
+    sigma_always_discard_next_to_last = sampler_settings.pop(
+        "sigma_discard", sigma_always_discard_next_to_last
+    )
+    sampler_tmin = sampler_settings.pop("sampler_tmin", sampler_tmin)
+    sampler_tmax = sampler_settings.pop("sampler_tmax", sampler_tmax)
+    sampler_noise = sampler_settings.pop("sampler_noise", sampler_noise)
+
     if sampler_tuple is None:
         raise ValueError("sampler_tuple is invalid")
 
@@ -144,6 +157,7 @@ def create_sampler(
             sampler_trange=(sampler_tmin, sampler_tmax),  # type: ignore
             device=device,
             dtype=dtype,
+            sampler_settings=sampler_settings,
         )
 
         adapter.eta_noise_seed_delta = eta_noise_seed_delta or 0

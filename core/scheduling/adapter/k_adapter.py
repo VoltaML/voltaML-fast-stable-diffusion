@@ -2,6 +2,7 @@
 
 import functools
 import inspect
+import logging
 from typing import Callable, Optional, Tuple, Union
 
 import k_diffusion
@@ -15,6 +16,7 @@ from ..sigmas import build_sigmas
 from ..types import Denoiser, Sampler, SigmaScheduler
 
 sampling = k_diffusion.sampling
+logger = logging.getLogger(__name__)
 
 
 class KdiffusionSchedulerAdapter:
@@ -48,6 +50,8 @@ class KdiffusionSchedulerAdapter:
     device: torch.device
     dtype: torch.dtype
 
+    sampler_settings: dict
+
     def __init__(
         self,
         alphas_cumprod: torch.Tensor,
@@ -62,6 +66,7 @@ class KdiffusionSchedulerAdapter:
         sampler_noise: float,
         device: torch.device,
         dtype: torch.dtype,
+        sampler_settings: dict,
     ) -> None:
         self.alphas_cumprod = alphas_cumprod.to(device=device)
 
@@ -69,8 +74,14 @@ class KdiffusionSchedulerAdapter:
         self.sampler_tuple = sampler_tuple
 
         self.sigma_range = sigma_range
-        self.sigma_rho = sigma_rho
-        self.sigma_always_discard_next_to_last = sigma_discard
+
+        self.sampler_settings = sampler_settings
+        if self.sampler_settings:
+            for key, value in self.sampler_settings.copy().items():
+                if value is None:
+                    del self.sampler_settings[key]
+
+            logger.debug(f"Sampler settings overwrite: {self.sampler_settings}")
 
         self.sampler_eta = sampler_eta
         if self.sampler_eta is None:
@@ -165,6 +176,7 @@ class KdiffusionSchedulerAdapter:
             "s_tmax": self.sampler_trange[1],
             "s_noise": self.sampler_noise,
             "order": 2 if self.sampler_tuple[2].get("second_order", False) else None,
+            **self.sampler_settings,
         }
 
         k_diffusion.sampling.torch = TorchHijack(generator)

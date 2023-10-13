@@ -265,6 +265,7 @@ class PyTorchStableDiffusion(InferenceModel):
         self,
         controlnet: Optional[str] = "",
         scheduler: Optional[Tuple[Any, bool]] = None,
+        sampler_settings: Optional[dict] = None,
     ) -> StableDiffusionLongPromptWeightingPipeline:
         "Create a pipeline -- useful for reducing backend clutter."
         self.manage_optional_components(target_controlnet=controlnet or "")
@@ -284,6 +285,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 model=pipe,
                 scheduler=scheduler[0],  # type: ignore
                 use_karras_sigmas=scheduler[1],
+                sampler_settings=sampler_settings,
             )
 
         return pipe
@@ -293,6 +295,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe = self.create_pipe(
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
         generator = create_generator(job.data.seed)
@@ -377,6 +380,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe = self.create_pipe(
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
         generator = create_generator(job.data.seed)
@@ -437,6 +441,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         pipe = self.create_pipe(
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
         generator = create_generator(job.data.seed)
@@ -508,6 +513,7 @@ class PyTorchStableDiffusion(InferenceModel):
         pipe = self.create_pipe(
             controlnet=job.data.controlnet,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
         generator = create_generator(job.data.seed)

@@ -240,6 +240,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self,
         controlnet: str = "",
         scheduler: Optional[Tuple[Any, bool]] = None,
+        sampler_settings: Optional[dict] = None,
     ) -> "StableDiffusionAITPipeline":
         "Centralized way to create new pipelines."
 
@@ -266,6 +267,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 model=pipe,
                 scheduler=scheduler[0],
                 use_karras_sigmas=scheduler[1],
+                sampler_settings=sampler_settings,
             )
         return pipe
 
@@ -292,6 +294,7 @@ class AITemplateStableDiffusion(InferenceModel):
         "Generates images from text"
         pipe = self.create_pipe(
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
         generator = create_generator(seed=job.data.seed)
@@ -381,6 +384,7 @@ class AITemplateStableDiffusion(InferenceModel):
         "Generates images from images"
         pipe = self.create_pipe(
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
         generator = create_generator(seed=job.data.seed)
@@ -441,6 +445,7 @@ class AITemplateStableDiffusion(InferenceModel):
         pipe = self.create_pipe(
             controlnet=job.data.controlnet,
             scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
         generator = create_generator(seed=job.data.seed)

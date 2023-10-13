@@ -51,6 +51,7 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
             0,
             device,
             dtype,
+            sampler_settings={},
         )
 
         self.skip_type = skip_type

@@ -78,6 +78,7 @@ def change_scheduler(
     scheduler: Union[str, KarrasDiffusionSchedulers],
     configuration: Optional[Dict] = None,
     use_karras_sigmas: bool = False,
+    sampler_settings: Optional[Dict] = None,
 ) -> SchedulerMixin:
     "Change the scheduler of the model"
 
@@ -114,6 +115,7 @@ def change_scheduler(
             sigma_use_old_karras_scheduler=False,
             device=model.unet.device,  # type: ignore
             dtype=model.unet.dtype,  # type: ignore
+            sampler_settings=sampler_settings,
         )
     model.scheduler = new_scheduler  # type: ignore
     return new_scheduler  # type: ignore

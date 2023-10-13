@@ -63,33 +63,30 @@ class ParamSettings:
     denoiser_enable_quantization: FrontendComponent = field(default_factory=Checkbox)
     karras_sigma_scheduler: FrontendComponent = field(default_factory=Checkbox)
     sigma_use_old_karras_scheduler: FrontendComponent = field(default_factory=Checkbox)
-    sigma_always_discard_next_to_last: FrontendComponent = field(
-        default_factory=Checkbox
-    )
+    sigma_discard: FrontendComponent = field(default_factory=Checkbox)
     sigma_rho: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     sigma_min: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     sigma_max: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
-
     eta: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     s_churn: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
-    s_tmin: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+    sampler_tmin: FrontendComponent = field(
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
-    s_tmax: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+    sampler_tmax: FrontendComponent = field(
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
-    s_noise: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+    sampler_noise: FrontendComponent = field(
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     noise_sampler: FrontendComponent = field(default_factory=lambda: Select([]))
 
@@ -97,28 +94,28 @@ class ParamSettings:
         default_factory=lambda: NumberInput(min=0, max=10, step=1)
     )
     rtol: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     atol: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     h_init: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     pcoeff: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     icoeff: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     dcoeff: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     accept_safety: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     r: FrontendComponent = field(
-        default_factory=lambda: NumberInput(min=0, max=1, step=0.01)
+        default_factory=lambda: NumberInput(min=0, max=10, step=0.01)
     )
     solver_type: FrontendComponent = field(default_factory=lambda: Select([]))
 
