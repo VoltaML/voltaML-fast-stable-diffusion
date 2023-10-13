@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import inspect
 import logging
 import math
 from pathlib import Path
@@ -136,6 +137,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         width,
         down_block: list = [None],
         mid_block=None,
+        **kwargs,
     ):
         "Execute AIT#UNet module"
         exe_module = self.unet_ait_exe
@@ -415,14 +417,33 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             return x
 
         if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
-            latents = self.scheduler.do_inference(
-                latents,  # type: ignore
-                generator=generator,
-                call=self.unet_inference,
-                apply_model=do_denoise,
-                callback=callback,
-                callback_steps=1,
-            )
+            func_param_keys = inspect.signature(
+                self.scheduler.do_inference
+            ).parameters.keys()
+
+            if (
+                "optional_device" in func_param_keys
+                and "optional_dtype" in func_param_keys
+            ):
+                latents = self.scheduler.do_inference(
+                    latents,  # type: ignore
+                    generator=generator,
+                    call=self.unet_inference,
+                    apply_model=do_denoise,
+                    callback=callback,
+                    callback_steps=1,
+                    optional_device=self.device,  # type: ignore
+                    optional_dtype=latents.dtype,  # type: ignore
+                )
+            else:
+                latents = self.scheduler.do_inference(
+                    latents,  # type: ignore
+                    generator=generator,
+                    call=self.unet_inference,
+                    apply_model=do_denoise,
+                    callback=callback,
+                    callback_steps=1,
+                )
         else:
 
             def _call(*args, **kwargs):

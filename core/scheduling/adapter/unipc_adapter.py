@@ -113,20 +113,25 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         generator: Union[PhiloxGenerator, torch.Generator],
         callback,
         callback_steps,
+        optional_device: Optional[torch.device] = None,
+        optional_dtype: Optional[torch.dtype] = None,
     ) -> torch.Tensor:
+        device = optional_device or call.device
+        dtype = optional_dtype or call.dtype
+
         def noise_pred_fn(x, t_continuous, cond=None, **model_kwargs):
             # Was originally get_model_input_time(t_continous)
             # but "schedule" is ALWAYS "discrete," so we can skip it :)
             t_input = (t_continuous - 1.0 / self.scheduler.total_N) * 1000
             if cond is None:
                 output = call(
-                    x.to(device=call.device, dtype=call.dtype),
-                    t_input.to(device=call.device, dtype=call.dtype),
+                    x.to(device=device, dtype=dtype),
+                    t_input.to(device=device, dtype=dtype),
                     return_dict=True,
                     **model_kwargs,
                 )[0]
             else:
-                output = call(x.to(device=call.device, dtype=call.dtype), t_input.to(device=call.device, dtype=call.dtype), return_dict=True, encoder_hidden_states=cond, **model_kwargs)[0]  # type: ignore
+                output = call(x.to(device=device, dtype=dtype), t_input.to(device=device, dtype=dtype), return_dict=True, encoder_hidden_states=cond, **model_kwargs)[0]  # type: ignore
             if self.model_type == "noise":
                 return output
             elif self.model_type == "x_start":
