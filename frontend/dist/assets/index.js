@@ -40585,7 +40585,7 @@ const defaultSettings = {
     batch_size: 1,
     negative_prompt: "",
     self_attention_scale: 0,
-    use_karras_sigmas: false
+    sigmas: ""
   },
   img2img: {
     width: 512,
@@ -40601,7 +40601,7 @@ const defaultSettings = {
     denoising_strength: 0.6,
     image: "",
     self_attention_scale: 0,
-    use_karras_sigmas: false
+    sigmas: ""
   },
   inpainting: {
     prompt: "",
@@ -40617,7 +40617,7 @@ const defaultSettings = {
     batch_size: 1,
     sampler: 8,
     self_attention_scale: 0,
-    use_karras_sigmas: false
+    sigmas: ""
   },
   controlnet: {
     prompt: "",
@@ -40637,7 +40637,7 @@ const defaultSettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
-    use_karras_sigmas: false
+    sigmas: ""
   },
   upscale: {
     image: "",
@@ -42200,7 +42200,7 @@ export {
   flatten$2 as ax,
   getSlot$1 as ay,
   depx as az,
-  createVNode as b,
+  createBaseVNode as b,
   isBrowser$3 as b0,
   AddIcon as b1,
   NProgress as b2,
@@ -42265,11 +42265,11 @@ export {
   getCurrentInstance as bz,
   computed as c,
   defineComponent as d,
-  unref as e,
-  renderList as f,
-  NButton as g,
-  createTextVNode as h,
-  createBaseVNode as i,
+  createVNode as e,
+  unref as f,
+  renderList as g,
+  NButton as h,
+  createTextVNode as i,
   convertToTextString as j,
   createBlock as k,
   resolveDynamicComponent as l,

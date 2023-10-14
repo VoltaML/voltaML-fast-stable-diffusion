@@ -96,7 +96,7 @@ def test_txt2img_self_attention(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
+def test_txt2img_karras_sigmas_diffusers(pipe: PyTorchStableDiffusion):
     "Generate an image with Text to Image"
 
     job = Txt2ImgQueueEntry(
@@ -104,7 +104,7 @@ def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler,
             id="test",
-            use_karras_sigmas=True,
+            sigmas="karras",
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )

@@ -1,4 +1,5 @@
 <template>
+  <!-- Sampler -->
   <div class="flex-container">
     <NModal v-model:show="showModal" close-on-esc mask-closable>
       <NCard
@@ -10,6 +11,7 @@
         <div
           class="flex-container"
           v-for="param in Object.keys(computedSettings)"
+          v-bind:key="param"
         >
           <NButton
             :type="computedSettings[param] !== null ? 'error' : 'default'"
@@ -61,6 +63,27 @@
       </NIcon>
     </NButton>
   </div>
+
+  <!-- Sigmas -->
+  <div class="flex-container">
+    <NTooltip style="max-width: 600px">
+      <template #trigger>
+        <p style="margin-right: 12px; width: 94px">Sigmas</p>
+      </template>
+      Changes the sigmas used in the diffusion process. Can change the quality
+      of the output.
+      <b class="highlight"
+        >Only "Default" and "Karras" sigmas work on diffusers samplers (and
+        "Karras" are only applied to KDPM samplers)</b
+      >
+    </NTooltip>
+
+    <NSelect
+      :options="sigmaOptions"
+      v-model:value="settings.data.settings[props.type].sigmas"
+      :status="sigmaValidationStatus"
+    />
+  </div>
 </template>
 
 <script setup lang="ts">
@@ -77,6 +100,8 @@ import {
   NSlider,
   NTooltip,
 } from "naive-ui";
+import type { FormValidationStatus } from "naive-ui/es/form/src/interface";
+import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import type { PropType } from "vue";
 import { computed, h, ref } from "vue";
 import { useSettings } from "../../store/settings";
@@ -180,5 +205,50 @@ const computedSettings = computed(() => {
       settings.data.settings[props.type].sampler
     ] ?? {}
   );
+});
+
+const sigmaOptions = computed<SelectMixedOption[]>(() => {
+  const karras = typeof settings.data.settings[props.type].sampler === "string";
+  return [
+    {
+      label: "Default",
+      value: "",
+    },
+    {
+      label: "Karras",
+      value: "karras",
+    },
+    {
+      label: "Automatic",
+      value: "automatic",
+      disabled: !karras,
+    },
+    {
+      label: "Exponential",
+      value: "exponential",
+      disabled: !karras,
+    },
+    {
+      label: "Polyexponential",
+      value: "polyexponential",
+      disabled: !karras,
+    },
+    {
+      label: "VP",
+      value: "vp",
+      disabled: !karras,
+    },
+  ];
+});
+
+const sigmaValidationStatus = computed<FormValidationStatus | undefined>(() => {
+  if (typeof settings.data.settings[props.type].sampler !== "string") {
+    if (!["", "karras"].includes(settings.data.settings[props.type].sigmas)) {
+      return "error";
+    } else {
+      return undefined;
+    }
+  }
+  return undefined;
 });
 </script>

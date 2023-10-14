@@ -8,8 +8,26 @@ from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.config.samplers.sampler_config import SamplerConfig
+from core.types import SigmaType
 
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class BaseDiffusionMixin:
+    width: int = 512
+    height: int = 512
+    batch_count: int = 1
+    batch_size: int = 1
+    seed: int = -1
+    cfg_scale: int = 7
+    steps: int = 40
+    prompt: str = ""
+    negative_prompt: str = ""
+    sampler: Union[
+        int, str
+    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    sigmas: SigmaType = ""
 
 
 @dataclass
@@ -21,80 +39,32 @@ class QuantDict:
 
 
 @dataclass
-class Txt2ImgConfig:
+class Txt2ImgConfig(BaseDiffusionMixin):
     "Configuration for the text to image pipeline"
 
-    width: int = 512
-    height: int = 512
-    seed: int = -1
-    cfg_scale: int = 7
-    sampler: Union[
-        int, str
-    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    prompt: str = ""
-    negative_prompt: str = ""
-    steps: int = 40
-    batch_count: int = 1
-    batch_size: int = 1
     self_attention_scale: float = 0.0
 
 
 @dataclass
-class Img2ImgConfig:
+class Img2ImgConfig(BaseDiffusionMixin):
     "Configuration for the image to image pipeline"
 
-    width: int = 512
-    height: int = 512
-    seed: int = -1
-    cfg_scale: int = 7
-    sampler: Union[
-        int, str
-    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    prompt: str = ""
-    negative_prompt: str = ""
-    steps: int = 40
-    batch_count: int = 1
-    batch_size: int = 1
     resize_method: int = 0
     denoising_strength: float = 0.6
     self_attention_scale: float = 0.0
 
 
 @dataclass
-class InpaintingConfig:
+class InpaintingConfig(BaseDiffusionMixin):
     "Configuration for the inpainting pipeline"
 
-    prompt: str = ""
-    negative_prompt: str = ""
-    width: int = 512
-    height: int = 512
-    steps: int = 40
-    cfg_scale: int = 7
-    seed: int = -1
-    batch_count: int = 1
-    batch_size: int = 1
-    sampler: Union[
-        int, str
-    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     self_attention_scale: float = 0.0
 
 
 @dataclass
-class ControlNetConfig:
+class ControlNetConfig(BaseDiffusionMixin):
     "Configuration for the inpainting pipeline"
 
-    prompt: str = ""
-    negative_prompt: str = ""
-    width: int = 512
-    height: int = 512
-    seed: int = -1
-    cfg_scale: int = 7
-    steps: int = 40
-    batch_count: int = 1
-    batch_size: int = 1
-    sampler: Union[
-        int, str
-    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     controlnet: str = "lllyasviel/sd-controlnet-canny"
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512

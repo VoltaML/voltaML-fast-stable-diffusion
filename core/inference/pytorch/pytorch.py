@@ -39,6 +39,7 @@ from core.types import (
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     Job,
+    SigmaType,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
@@ -264,7 +265,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def create_pipe(
         self,
         controlnet: Optional[str] = "",
-        scheduler: Optional[Tuple[Any, bool]] = None,
+        scheduler: Optional[Tuple[Any, SigmaType]] = None,
         sampler_settings: Optional[dict] = None,
     ) -> StableDiffusionLongPromptWeightingPipeline:
         "Create a pipeline -- useful for reducing backend clutter."
@@ -284,7 +285,7 @@ class PyTorchStableDiffusion(InferenceModel):
             change_scheduler(
                 model=pipe,
                 scheduler=scheduler[0],  # type: ignore
-                use_karras_sigmas=scheduler[1],
+                sigma_type=scheduler[1],
                 sampler_settings=sampler_settings,
             )
 
@@ -294,7 +295,7 @@ class PyTorchStableDiffusion(InferenceModel):
         "Generate an image from a prompt"
 
         pipe = self.create_pipe(
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
             sampler_settings=job.data.sampler_settings,
         )
 
@@ -379,7 +380,7 @@ class PyTorchStableDiffusion(InferenceModel):
         "Generate an image from an image"
 
         pipe = self.create_pipe(
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
             sampler_settings=job.data.sampler_settings,
         )
 
@@ -440,7 +441,7 @@ class PyTorchStableDiffusion(InferenceModel):
         "Generate an image from an image"
 
         pipe = self.create_pipe(
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
             sampler_settings=job.data.sampler_settings,
         )
 
@@ -512,7 +513,7 @@ class PyTorchStableDiffusion(InferenceModel):
         logger.debug(f"Requested ControlNet: {job.data.controlnet}")
         pipe = self.create_pipe(
             controlnet=job.data.controlnet,
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
             sampler_settings=job.data.sampler_settings,
         )
 

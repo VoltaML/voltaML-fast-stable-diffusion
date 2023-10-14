@@ -44,25 +44,6 @@
             <!-- Sampler -->
             <SamplerPicker :type="'txt2img'" />
 
-            <!-- Karras Sigmas -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="width: 120px">Karras Sigmas</p>
-                </template>
-                Changes the sigmas used in the Karras diffusion process. Might
-                provide better results for some images.
-                <b class="highlight"
-                  >Works only with KDPM samplers. Ignored by other samplers.</b
-                >
-              </NTooltip>
-
-              <NSwitch
-                v-model:value="settings.data.settings.txt2img.use_karras_sigmas"
-                style="justify-self: flex-end"
-              />
-            </div>
-
             <!-- Dimensions -->
             <DimensionsInput
               :dimensions-object="settings.data.settings.txt2img"
@@ -429,7 +410,7 @@ const generate = () => {
         scheduler: settings.data.settings.txt2img.sampler,
         self_attention_scale:
           settings.data.settings.txt2img.self_attention_scale,
-        use_karras_sigmas: settings.data.settings.txt2img.use_karras_sigmas,
+        sigmas: settings.data.settings.txt2img.sigmas,
         sampler_settings:
           settings.data.settings.sampler_config[
             settings.data.settings.txt2img.sampler

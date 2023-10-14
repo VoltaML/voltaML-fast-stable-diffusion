@@ -25,6 +25,7 @@ from core.types import (
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     Job,
+    SigmaType,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
@@ -239,7 +240,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def create_pipe(
         self,
         controlnet: str = "",
-        scheduler: Optional[Tuple[Any, bool]] = None,
+        scheduler: Optional[Tuple[Any, SigmaType]] = None,
         sampler_settings: Optional[dict] = None,
     ) -> "StableDiffusionAITPipeline":
         "Centralized way to create new pipelines."
@@ -266,7 +267,7 @@ class AITemplateStableDiffusion(InferenceModel):
             change_scheduler(
                 model=pipe,
                 scheduler=scheduler[0],
-                use_karras_sigmas=scheduler[1],
+                sigma_type=scheduler[1],
                 sampler_settings=sampler_settings,
             )
         return pipe
@@ -293,7 +294,7 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from text"
         pipe = self.create_pipe(
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
             sampler_settings=job.data.sampler_settings,
         )
 
@@ -383,7 +384,7 @@ class AITemplateStableDiffusion(InferenceModel):
     ) -> List[Image.Image]:
         "Generates images from images"
         pipe = self.create_pipe(
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
             sampler_settings=job.data.sampler_settings,
         )
 
@@ -444,7 +445,7 @@ class AITemplateStableDiffusion(InferenceModel):
         "Generates images from images"
         pipe = self.create_pipe(
             controlnet=job.data.controlnet,
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
             sampler_settings=job.data.sampler_settings,
         )
 

@@ -158,25 +158,6 @@
               />
             </div>
 
-            <!-- Karras Sigmas -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="width: 120px">Karras Sigmas</p>
-                </template>
-                Changes the sigmas used in the Karras diffusion process. Might
-                provide better results for some images.
-                <b class="highlight"
-                  >Works only with KDPM samplers. Ignored by other samplers.</b
-                >
-              </NTooltip>
-
-              <NSwitch
-                v-model:value="settings.data.settings.txt2img.use_karras_sigmas"
-                style="justify-self: flex-end"
-              />
-            </div>
-
             <!-- Dimensions -->
             <div class="flex-container">
               <p class="slider-label">Width</p>
@@ -433,7 +414,6 @@ import {
   NSelect,
   NSlider,
   NSpace,
-  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";
@@ -500,7 +480,7 @@ const generate = () => {
         scheduler: settings.data.settings.inpainting.sampler,
         self_attention_scale:
           settings.data.settings.txt2img.self_attention_scale,
-        use_karras_sigmas: settings.data.settings.inpainting.use_karras_sigmas,
+        sigmas: settings.data.settings.inpainting.sigmas,
       },
       model: settings.data.settings.model?.name,
     }),

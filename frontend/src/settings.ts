@@ -18,6 +18,14 @@ export enum Sampler {
   DPMSolverSDEScheduler = 14,
 }
 
+export type SigmaType =
+  | ""
+  | "karras"
+  | "automatic"
+  | "exponential"
+  | "polyexponential"
+  | "vp";
+
 export interface IQuantDict {
   vae_decoder: boolean | null;
   vae_encoder: boolean | null;
@@ -62,7 +70,7 @@ export interface ISettings {
     batch_count: number;
     batch_size: number;
     self_attention_scale: number;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   img2img: {
     prompt: string;
@@ -78,7 +86,7 @@ export interface ISettings {
     denoising_strength: number;
     image: string;
     self_attention_scale: number;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   inpainting: {
     prompt: string;
@@ -94,7 +102,7 @@ export interface ISettings {
     image: string;
     mask_image: string;
     self_attention_scale: number;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   controlnet: {
     prompt: string;
@@ -114,7 +122,7 @@ export interface ISettings {
     is_preprocessed: boolean;
     save_preprocessed: boolean;
     return_preprocessed: boolean;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   upscale: {
     image: string;
@@ -243,7 +251,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     negative_prompt: "",
     self_attention_scale: 0,
-    use_karras_sigmas: false,
+    sigmas: "",
   },
   img2img: {
     width: 512,
@@ -259,7 +267,7 @@ export const defaultSettings: ISettings = {
     denoising_strength: 0.6,
     image: "",
     self_attention_scale: 0,
-    use_karras_sigmas: false,
+    sigmas: "",
   },
   inpainting: {
     prompt: "",
@@ -275,7 +283,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
-    use_karras_sigmas: false,
+    sigmas: "",
   },
   controlnet: {
     prompt: "",
@@ -295,7 +303,7 @@ export const defaultSettings: ISettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
-    use_karras_sigmas: false,
+    sigmas: "",
   },
   upscale: {
     image: "",

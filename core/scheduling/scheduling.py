@@ -4,6 +4,8 @@ from typing import Callable, Optional, Tuple, Union
 import torch
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from core.types import SigmaType
+
 from .adapter.k_adapter import KdiffusionSchedulerAdapter
 from .adapter.unipc_adapter import UnipcSchedulerAdapter
 from .custom.dpmpp_2m import sample_dpmpp_2mV2
@@ -96,7 +98,7 @@ def create_sampler(
     dtype: torch.dtype,
     eta_noise_seed_delta: Optional[float] = None,
     denoiser_enable_quantization: bool = False,
-    karras_sigma_scheduler: bool = False,
+    sigma_type: SigmaType = "",
     sigma_use_old_karras_scheduler: bool = False,
     sigma_always_discard_next_to_last: bool = False,
     sigma_rho: Optional[float] = None,
@@ -135,7 +137,7 @@ def create_sampler(
         )
     else:
         scheduler_name = sampler_tuple[2].get(
-            "scheduler", "karras" if karras_sigma_scheduler else None
+            "scheduler", "karras" if sigma_type == "karras" else None
         )
         if scheduler_name == "karras" and sigma_use_old_karras_scheduler:
             sigma_min = 0.1

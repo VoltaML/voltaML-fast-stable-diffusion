@@ -11,7 +11,7 @@ from core import shared
 from core.config import config
 from core.inference.utilities.philox import PhiloxGenerator
 from core.scheduling import KdiffusionSchedulerAdapter, create_sampler
-from core.types import PyTorchModelType
+from core.types import PyTorchModelType, SigmaType
 from core.utils import unwrap_enum
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ def change_scheduler(
     model: Optional[PyTorchModelType],
     scheduler: Union[str, KarrasDiffusionSchedulers],
     configuration: Optional[Dict] = None,
-    use_karras_sigmas: bool = False,
+    sigma_type: SigmaType = "",
     sampler_settings: Optional[Dict] = None,
 ) -> SchedulerMixin:
     "Change the scheduler of the model"
@@ -97,9 +97,9 @@ def change_scheduler(
 
         if scheduler.value in [10, 11]:
             logger.debug(
-                f"Loading scheduler {new_scheduler.__class__.__name__} with config karras_sigmas={use_karras_sigmas}"
+                f"Loading scheduler {new_scheduler.__class__.__name__} with config sigmas={sigma_type}"
             )
-            new_scheduler = new_scheduler.from_config(config=configuration, use_karras_sigmas=use_karras_sigmas)  # type: ignore
+            new_scheduler = new_scheduler.from_config(config=configuration, use_karras_sigmas=sigma_type == "")  # type: ignore
         else:
             new_scheduler = new_scheduler.from_config(config=configuration)  # type: ignore
     else:
@@ -109,7 +109,7 @@ def change_scheduler(
             alphas_cumprod=sched.alphas_cumprod,  # type: ignore
             denoiser_enable_quantization=True,
             sampler=scheduler,
-            karras_sigma_scheduler=use_karras_sigmas,
+            sigma_type=sigma_type,
             eta_noise_seed_delta=0,
             sigma_always_discard_next_to_last=False,
             sigma_use_old_karras_scheduler=False,

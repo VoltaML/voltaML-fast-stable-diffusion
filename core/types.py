@@ -15,6 +15,7 @@ from diffusers import (
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 InferenceBackend = Literal["PyTorch", "AITemplate", "ONNX"]
+SigmaType = Literal["", "karras", "automatic", "exponential", "polyexponential", "vp"]
 Backend = Literal[
     "PyTorch",
     "AITemplate",
@@ -63,7 +64,7 @@ class Txt2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaType = field(default="")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -84,7 +85,7 @@ class Img2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaType = field(default="")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -107,7 +108,7 @@ class InpaintData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaType = field(default="")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
@@ -128,7 +129,7 @@ class ControlNetData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaType = field(default="")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
