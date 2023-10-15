@@ -1,9 +1,8 @@
-from typing import Any, Callable, Dict, Literal, Union, Tuple
+from typing import Any, Callable, Dict, Literal, Tuple, Union
 
 from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 
 Sampler = Tuple[str, Union[Callable, str], Dict[str, Any]]
-SigmaScheduler = Literal["automatic", "karras", "exponential", "polyexponential", "vp"]
 Denoiser = Union[CompVisVDenoiser, CompVisDenoiser]
 
 # UniPC

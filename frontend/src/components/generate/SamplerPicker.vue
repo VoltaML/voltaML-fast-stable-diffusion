@@ -211,17 +211,12 @@ const sigmaOptions = computed<SelectMixedOption[]>(() => {
   const karras = typeof settings.data.settings[props.type].sampler === "string";
   return [
     {
-      label: "Default",
-      value: "",
+      label: "Automatic",
+      value: "automatic",
     },
     {
       label: "Karras",
       value: "karras",
-    },
-    {
-      label: "Automatic",
-      value: "automatic",
-      disabled: !karras,
     },
     {
       label: "Exponential",
@@ -243,7 +238,11 @@ const sigmaOptions = computed<SelectMixedOption[]>(() => {
 
 const sigmaValidationStatus = computed<FormValidationStatus | undefined>(() => {
   if (typeof settings.data.settings[props.type].sampler !== "string") {
-    if (!["", "karras"].includes(settings.data.settings[props.type].sigmas)) {
+    if (
+      !["automatic", "karras"].includes(
+        settings.data.settings[props.type].sigmas
+      )
+    ) {
       return "error";
     } else {
       return undefined;

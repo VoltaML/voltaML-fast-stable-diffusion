@@ -40585,7 +40585,7 @@ const defaultSettings = {
     batch_size: 1,
     negative_prompt: "",
     self_attention_scale: 0,
-    sigmas: ""
+    sigmas: "automatic"
   },
   img2img: {
     width: 512,
@@ -40601,7 +40601,7 @@ const defaultSettings = {
     denoising_strength: 0.6,
     image: "",
     self_attention_scale: 0,
-    sigmas: ""
+    sigmas: "automatic"
   },
   inpainting: {
     prompt: "",
@@ -40617,7 +40617,7 @@ const defaultSettings = {
     batch_size: 1,
     sampler: 8,
     self_attention_scale: 0,
-    sigmas: ""
+    sigmas: "automatic"
   },
   controlnet: {
     prompt: "",
@@ -40637,7 +40637,7 @@ const defaultSettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
-    sigmas: ""
+    sigmas: "automatic"
   },
   upscale: {
     image: "",

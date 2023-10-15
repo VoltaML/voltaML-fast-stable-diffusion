@@ -19,9 +19,8 @@ export enum Sampler {
 }
 
 export type SigmaType =
-  | ""
-  | "karras"
   | "automatic"
+  | "karras"
   | "exponential"
   | "polyexponential"
   | "vp";
@@ -251,7 +250,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     negative_prompt: "",
     self_attention_scale: 0,
-    sigmas: "",
+    sigmas: "automatic",
   },
   img2img: {
     width: 512,
@@ -267,7 +266,7 @@ export const defaultSettings: ISettings = {
     denoising_strength: 0.6,
     image: "",
     self_attention_scale: 0,
-    sigmas: "",
+    sigmas: "automatic",
   },
   inpainting: {
     prompt: "",
@@ -283,7 +282,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
-    sigmas: "",
+    sigmas: "automatic",
   },
   controlnet: {
     prompt: "",
@@ -303,7 +302,7 @@ export const defaultSettings: ISettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
-    sigmas: "",
+    sigmas: "automatic",
   },
   upscale: {
     image: "",

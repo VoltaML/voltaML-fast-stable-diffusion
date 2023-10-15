@@ -5,7 +5,9 @@ from typing import Optional
 import k_diffusion
 import torch
 
-from .types import Denoiser, SigmaScheduler
+from core.types import SigmaScheduler
+
+from .types import Denoiser
 
 sampling = k_diffusion.sampling
 logger = getLogger(__name__)

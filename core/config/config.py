@@ -8,7 +8,7 @@ from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.config.samplers.sampler_config import SamplerConfig
-from core.types import SigmaType
+from core.types import SigmaScheduler
 
 logger = logging.getLogger(__name__)
 
@@ -27,7 +27,7 @@ class BaseDiffusionMixin:
     sampler: Union[
         int, str
     ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    sigmas: SigmaType = ""
+    sigmas: SigmaScheduler = "automatic"
 
 
 @dataclass

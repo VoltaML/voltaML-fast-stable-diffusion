@@ -10,10 +10,11 @@ import torch
 
 from core.config import config
 from core.inference.utilities.philox import PhiloxGenerator
+from core.types import SigmaScheduler
 
 from ..hijack import TorchHijack
 from ..sigmas import build_sigmas
-from ..types import Denoiser, Sampler, SigmaScheduler
+from ..types import Denoiser, Sampler
 
 sampling = k_diffusion.sampling
 logger = logging.getLogger(__name__)

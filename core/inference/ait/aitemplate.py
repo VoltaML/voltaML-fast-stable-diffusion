@@ -25,7 +25,7 @@ from core.types import (
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     Job,
-    SigmaType,
+    SigmaScheduler,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
@@ -240,7 +240,7 @@ class AITemplateStableDiffusion(InferenceModel):
     def create_pipe(
         self,
         controlnet: str = "",
-        scheduler: Optional[Tuple[Any, SigmaType]] = None,
+        scheduler: Optional[Tuple[Any, SigmaScheduler]] = None,
         sampler_settings: Optional[dict] = None,
     ) -> "StableDiffusionAITPipeline":
         "Centralized way to create new pipelines."

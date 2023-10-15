@@ -11,7 +11,7 @@ from core import shared
 from core.config import config
 from core.inference.utilities.philox import PhiloxGenerator
 from core.scheduling import KdiffusionSchedulerAdapter, create_sampler
-from core.types import PyTorchModelType, SigmaType
+from core.types import PyTorchModelType, SigmaScheduler
 from core.utils import unwrap_enum
 
 logger = logging.getLogger(__name__)
@@ -77,7 +77,7 @@ def change_scheduler(
     model: Optional[PyTorchModelType],
     scheduler: Union[str, KarrasDiffusionSchedulers],
     configuration: Optional[Dict] = None,
-    sigma_type: SigmaType = "",
+    sigma_type: SigmaScheduler = "automatic",
     sampler_settings: Optional[Dict] = None,
 ) -> SchedulerMixin:
     "Change the scheduler of the model"

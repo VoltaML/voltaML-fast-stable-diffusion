@@ -39,7 +39,7 @@ from core.types import (
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     Job,
-    SigmaType,
+    SigmaScheduler,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
@@ -265,7 +265,7 @@ class PyTorchStableDiffusion(InferenceModel):
     def create_pipe(
         self,
         controlnet: Optional[str] = "",
-        scheduler: Optional[Tuple[Any, SigmaType]] = None,
+        scheduler: Optional[Tuple[Any, SigmaScheduler]] = None,
         sampler_settings: Optional[dict] = None,
     ) -> StableDiffusionLongPromptWeightingPipeline:
         "Create a pipeline -- useful for reducing backend clutter."
