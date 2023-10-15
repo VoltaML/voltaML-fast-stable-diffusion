@@ -21,9 +21,7 @@ from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.models.vae import DecoderOutput
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
-    StableDiffusionPipelineOutput,
-)
+from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
 from PIL import Image
@@ -44,11 +42,7 @@ from core.inference.functions import (
     is_onnxsim_available,
     torch_newer_than_201,
 )
-from core.inference_callbacks import (
-    img2img_callback,
-    inpaint_callback,
-    txt2img_callback,
-)
+from core.inference_callbacks import callback
 from core.scheduling import KdiffusionSchedulerAdapter
 from core.types import (
     Backend,
@@ -1149,7 +1143,7 @@ class OnnxStableDiffusion(InferenceModel):
         seed: int = -1,
         generator: RandomState = None,  # type: ignore pylint: disable=no-member
         latents: np.ndarray = None,  # type: ignore
-    ) -> StableDiffusionPipelineOutput:
+    ):
         if generator is None:
             generator = RandomState(MT19937(SeedSequence(seed)))
         do_classifier_free_guidance = guidance_scale > 1.0
@@ -1250,7 +1244,7 @@ class OnnxStableDiffusion(InferenceModel):
         seed: int = -1,
         generator: RandomState = None,  # type: ignore pylint: disable=no-member
         latents: np.ndarray = None,  # type: ignore
-    ) -> StableDiffusionPipelineOutput:
+    ):
         if generator is None:
             generator = RandomState(MT19937(SeedSequence(seed)))
         do_classifier_free_guidance = guidance_scale > 1.0
@@ -1296,7 +1290,7 @@ class OnnxStableDiffusion(InferenceModel):
         num_images_per_prompt: int = 1,
         callback=None,
         seed: int = -1,
-    ) -> StableDiffusionPipelineOutput:
+    ):
         do_classifier_free_guidance = guidance_scale > 1.0
 
         width, height = (
@@ -1395,7 +1389,7 @@ class OnnxStableDiffusion(InferenceModel):
                         job.data.guidance_scale,
                         job.data.negative_prompt,
                         job.data.batch_size,
-                        txt2img_callback,
+                        callback,
                         job.data.seed,
                     ).images
                 )
@@ -1425,7 +1419,7 @@ class OnnxStableDiffusion(InferenceModel):
                         job.data.guidance_scale,
                         job.data.negative_prompt,
                         job.data.batch_size,
-                        img2img_callback,
+                        callback,
                         job.data.seed,
                     ).images
                 )
@@ -1455,7 +1449,7 @@ class OnnxStableDiffusion(InferenceModel):
                         job.data.guidance_scale,
                         job.data.negative_prompt,
                         job.data.batch_size,
-                        inpaint_callback,
+                        callback,
                         job.data.seed,
                     ).images
                 )
