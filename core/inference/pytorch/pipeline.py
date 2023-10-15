@@ -27,7 +27,7 @@ from core.inference.utilities import (
     preprocess_image,
 )
 from core.inference.utilities.philox import PhiloxGenerator
-from core.optimizations import autocast
+from core.optimizations import inference_context
 from core.scheduling import KdiffusionSchedulerAdapter
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
@@ -133,7 +133,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
     def _encode_prompt(
         self,
         prompt,
-        _device,
+        dtype,
         num_images_per_prompt,
         do_classifier_free_guidance,
         negative_prompt,
@@ -196,7 +196,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             )
             text_embeddings = torch.cat([uncond_embeddings, text_embeddings])
 
-        return text_embeddings.to(dtype=config.api.dtype)
+        return text_embeddings.to(dtype=dtype)
 
     def _check_inputs(self, prompt, strength, callback_steps):
         if not isinstance(prompt, str) and not isinstance(prompt, list):
@@ -327,19 +327,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        if config.api.torch_compile:
-            self.unet = torch.compile(
-                self.unet,
-                fullgraph=config.api.torch_compile_fullgraph,
-                dynamic=config.api.torch_compile_dynamic,
-                mode=config.api.torch_compile_mode,
-            )  # type: ignore
 
-        # 0. Default height and width to unet
-        with autocast(
-            dtype=self.unet.dtype,
-            disable=not config.api.autocast,
-        ):
+        with inference_context(self.unet, self.vae, height, width) as inf:
+            # 0. Modify unet and vae to the (optionally) modified versions from inf
+            self.unet = inf.unet  # type: ignore
+            self.vae = inf.vae  # type: ignore
+
             # 1. Check inputs. Raise error if not correct
             self._check_inputs(prompt, strength, callback_steps)
             if self.controlnet is not None:
@@ -361,7 +354,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 3. Encode input prompt
             text_embeddings = self._encode_prompt(
                 prompt,
-                device,
+                self.unet.dtype,
                 num_images_per_prompt,
                 do_classifier_free_guidance,
                 negative_prompt,

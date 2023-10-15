@@ -190,6 +190,9 @@ export interface ISettings {
     torch_compile_backend: string;
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
 
+    hypertile: boolean;
+    hypertile_unet_chunk: number;
+
     sgm_noise_multiplier: boolean;
     kdiffusers_quantization: boolean;
 
@@ -361,6 +364,9 @@ export const defaultSettings: ISettings = {
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
+
+    hypertile: false,
+    hypertile_unet_chunk: 256,
 
     sgm_noise_multiplier: false,
     kdiffusers_quantization: true,

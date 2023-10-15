@@ -1,4 +1,4 @@
-import { U as inject, bz as getCurrentInstance, O as watch, aC as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bA as formLight, a4 as keysOf, c as computed, aA as formatLength, aI as get, bB as commonVariables, au as cE, Y as toRef, aX as createId, bC as formItemInjectionKey, ba as onMounted, Z as useThemeClass, aY as Transition, aw as resolveWrappedSlot, ao as createKey, aN as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, bc as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, h as NButton, x as useMessage, bD as useNotification, y as onUnmounted, z as serverUrl, bE as defaultSettings } from "./index.js";
+import { U as inject, bz as getCurrentInstance, O as watch, aC as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bA as formLight, a4 as keysOf, c as computed, aA as formatLength, aI as get, bB as commonVariables, au as cE, Y as toRef, aX as createId, bC as formItemInjectionKey, ba as onMounted, Z as useThemeClass, aY as Transition, aw as resolveWrappedSlot, ao as createKey, aN as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, bc as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, h as NButton, n as NTooltip, x as useMessage, bD as useNotification, y as onUnmounted, z as serverUrl, bE as defaultSettings } from "./index.js";
 import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -3072,9 +3072,9 @@ const _hoisted_1$2 = {
   key: 0,
   class: "flex-container"
 };
-const _hoisted_2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
-const _hoisted_3 = { "flex-direction": "row" };
-const _hoisted_4 = { key: 1 };
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
+const _hoisted_3$1 = { "flex-direction": "row" };
+const _hoisted_4$1 = { key: 1 };
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "OptimizationSettings",
   setup(__props) {
@@ -3156,7 +3156,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }),
           unref(settings).defaultSettings.api.attention_processor == "subquadratic" ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
-            _hoisted_2,
+            _hoisted_2$1,
             createVNode(unref(NSlider), {
               value: unref(settings).defaultSettings.api.subquadratic_size,
               "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.subquadratic_size = $event),
@@ -3180,7 +3180,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             "label-placement": "left"
           }, {
             default: withCtx(() => [
-              createBaseVNode("div", _hoisted_3, [
+              createBaseVNode("div", _hoisted_3$1, [
                 createVNode(unref(NButton), {
                   onClick: _cache[4] || (_cache[4] = ($event) => change_compilation("disabled")),
                   color: disableColor.value
@@ -3212,7 +3212,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          unref(settings).defaultSettings.api.torch_compile ? (openBlock(), createElementBlock("div", _hoisted_4, [
+          unref(settings).defaultSettings.api.torch_compile ? (openBlock(), createElementBlock("div", _hoisted_4$1, [
             createVNode(unref(NFormItem), {
               label: "Fullgraph compile",
               "label-placement": "left"
@@ -3410,6 +3410,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   }
 });
 const _hoisted_1$1 = { key: 1 };
+const _hoisted_2 = { class: "flex-container" };
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Hypertile UNet chunk size", -1);
+const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, 'PyTorch ONLY. Recommended sizes are 1/4th your desired resolution or plain "256."', -1);
+const _hoisted_5 = /* @__PURE__ */ createBaseVNode("b", null, "LARGE (1024x1024+)", -1);
+const _hoisted_6 = { key: 2 };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ReproducibilitySettings",
   setup(__props) {
@@ -3573,47 +3578,103 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             _: 1
           })) : createCommentVNode("", true),
           createVNode(unref(NFormItem), {
-            label: "ToMeSD",
+            label: "Use HyperTile",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.hypertile,
+                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.hypertile = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          unref(settings).defaultSettings.api.hypertile ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
+            createBaseVNode("div", _hoisted_2, [
+              createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                trigger: withCtx(() => [
+                  _hoisted_3
+                ]),
+                default: withCtx(() => [
+                  _hoisted_4,
+                  createTextVNode(" Internally splits up the generated image into a grid of this size and does work on them one by one. In practice, this can make generation up to 4x faster on "),
+                  _hoisted_5,
+                  createTextVNode(" images. ")
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NSlider), {
+                value: unref(settings).defaultSettings.api.hypertile_unet_chunk,
+                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.hypertile_unet_chunk = $event),
+                min: 128,
+                max: 1024,
+                step: 8,
+                style: { "margin-right": "12px" }
+              }, null, 8, ["value"]),
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.hypertile_unet_chunk,
+                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.hypertile_unet_chunk = $event),
+                size: "small",
+                style: { "min-width": "96px", "width": "96px" },
+                min: 128,
+                max: 1024,
+                step: 1
+              }, null, 8, ["value"])
+            ])
+          ])) : createCommentVNode("", true),
+          createVNode(unref(NFormItem), {
+            label: "Use TomeSD",
             "label-placement": "left"
           }, {
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.use_tomesd,
-                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
           }),
-          unref(settings).defaultSettings.api.use_tomesd ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
+          unref(settings).defaultSettings.api.use_tomesd ? (openBlock(), createElementBlock("div", _hoisted_6, [
             createVNode(unref(NFormItem), {
-              label: "ToMeSD ratio",
+              label: "TomeSD Ratio",
               "label-placement": "left"
             }, {
               default: withCtx(() => [
                 createVNode(unref(NInputNumber), {
                   value: unref(settings).defaultSettings.api.tomesd_ratio,
-                  "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
-                  min: 0,
-                  max: 1,
-                  step: 0.05
+                  "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
+                  min: 0.1,
+                  max: 1
                 }, null, 8, ["value"])
               ]),
               _: 1
             }),
             createVNode(unref(NFormItem), {
-              label: "ToMeSD downsample layers",
+              label: "TomeSD Downsample layers",
               "label-placement": "left"
             }, {
               default: withCtx(() => [
                 createVNode(unref(NSelect), {
-                  value: unref(settings).defaultSettings.api.tomesd_downsample_layers,
-                  "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event),
                   options: [
-                    { value: "1", label: "1" },
-                    { value: "2", label: "2" },
-                    { value: "4", label: "4" },
-                    { value: "8", label: "8" }
-                  ]
+                    {
+                      value: 1,
+                      label: "1"
+                    },
+                    {
+                      value: 2,
+                      label: "2"
+                    },
+                    {
+                      value: 4,
+                      label: "4"
+                    },
+                    {
+                      value: 8,
+                      label: "8"
+                    }
+                  ],
+                  value: unref(settings).defaultSettings.api.tomesd_downsample_layers,
+                  "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event)
                 }, null, 8, ["value"])
               ]),
               _: 1
@@ -3626,7 +3687,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             default: withCtx(() => [
               createVNode(unref(NSwitch), {
                 value: unref(settings).defaultSettings.api.huggingface_style_parsing,
-                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.huggingface_style_parsing = $event)
+                "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.api.huggingface_style_parsing = $event)
               }, null, 8, ["value"])
             ]),
             _: 1

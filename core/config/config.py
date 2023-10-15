@@ -151,6 +151,10 @@ class APIConfig:
         "max-autotune",
     ] = "reduce-overhead"
 
+    # Hypertile
+    hypertile: bool = False
+    hypertile_unet_chunk: int = 256
+
     # K_Diffusion
     sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
     kdiffusers_quantization: bool = True  # improves sampling quality

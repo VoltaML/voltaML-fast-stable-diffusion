@@ -17,6 +17,7 @@ renamed_requirements = {
     "open_clip_torch": "open_clip",
     "python-multipart": "multipart",
     "discord.py": "discord",
+    "HyperTile": "hyper-tile",
 }
 logger = logging.getLogger(__name__)
 
@@ -45,8 +46,11 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                     continue
 
             if "git+http" in i:
-                logger.debug(f"Skipping git requirement (cannot check version): {i}")
-                continue
+                tmp = i.split("@")[0].split("/")[-1].replace(".git", "").strip()
+                logger.debug(
+                    f"Rewrote git requirement (cannot check hash, but proceeding): {i} => {tmp}"
+                )
+                i = tmp
 
             if "==" in i:
                 requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
