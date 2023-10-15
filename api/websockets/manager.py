@@ -119,9 +119,9 @@ class WebSocketManager:
             and config.api.clear_memory_policy == "after_disconnect"
         ):
             if torch.cuda.is_available():
-                logger.debug(f"Cleaning up GPU memory: {config.api.device_id}")
+                logger.debug(f"Cleaning up GPU memory: {config.api.device}")
 
-                with torch.cuda.device(config.api.device_id):
+                with torch.device(config.api.device):
                     torch.cuda.empty_cache()
                     torch.cuda.ipc_collect()
 
@@ -177,9 +177,9 @@ class WebSocketManager:
 
         if config.api.clear_memory_policy == "after_disconnect":
             if torch.cuda.is_available():
-                logger.debug(f"Cleaning up GPU memory: {config.api.device_id}")
+                logger.debug(f"Cleaning up GPU memory: {config.api.device}")
 
-                with torch.cuda.device(config.api.device_id):
+                with torch.cuda.device(config.api.device):
                     torch.cuda.empty_cache()
                     torch.cuda.ipc_collect()
 

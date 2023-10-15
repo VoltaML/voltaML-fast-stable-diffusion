@@ -7,7 +7,27 @@ import torch
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from core.config.samplers.sampler_config import SamplerConfig
+from core.types import SigmaScheduler
+
 logger = logging.getLogger(__name__)
+
+
+@dataclass
+class BaseDiffusionMixin:
+    width: int = 512
+    height: int = 512
+    batch_count: int = 1
+    batch_size: int = 1
+    seed: int = -1
+    cfg_scale: int = 7
+    steps: int = 40
+    prompt: str = ""
+    negative_prompt: str = ""
+    sampler: Union[
+        int, str
+    ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
+    sigmas: SigmaScheduler = "automatic"
 
 
 @dataclass
@@ -19,72 +39,32 @@ class QuantDict:
 
 
 @dataclass
-class Txt2ImgConfig:
+class Txt2ImgConfig(BaseDiffusionMixin):
     "Configuration for the text to image pipeline"
 
-    width: int = 512
-    height: int = 512
-    seed: int = -1
-    cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    prompt: str = ""
-    negative_prompt: str = ""
-    steps: int = 40
-    batch_count: int = 1
-    batch_size: int = 1
     self_attention_scale: float = 0.0
 
 
 @dataclass
-class Img2ImgConfig:
+class Img2ImgConfig(BaseDiffusionMixin):
     "Configuration for the image to image pipeline"
 
-    width: int = 512
-    height: int = 512
-    seed: int = -1
-    cfg_scale: int = 7
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
-    prompt: str = ""
-    negative_prompt: str = ""
-    steps: int = 40
-    batch_count: int = 1
-    batch_size: int = 1
     resize_method: int = 0
     denoising_strength: float = 0.6
     self_attention_scale: float = 0.0
 
 
 @dataclass
-class InpaintingConfig:
+class InpaintingConfig(BaseDiffusionMixin):
     "Configuration for the inpainting pipeline"
 
-    prompt: str = ""
-    negative_prompt: str = ""
-    width: int = 512
-    height: int = 512
-    steps: int = 40
-    cfg_scale: int = 7
-    seed: int = -1
-    batch_count: int = 1
-    batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     self_attention_scale: float = 0.0
 
 
 @dataclass
-class ControlNetConfig:
+class ControlNetConfig(BaseDiffusionMixin):
     "Configuration for the inpainting pipeline"
 
-    prompt: str = ""
-    negative_prompt: str = ""
-    width: int = 512
-    height: int = 512
-    seed: int = -1
-    cfg_scale: int = 7
-    steps: int = 40
-    batch_count: int = 1
-    batch_size: int = 1
-    sampler: int = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     controlnet: str = "lllyasviel/sd-controlnet-canny"
     controlnet_conditioning_scale: float = 1.0
     detection_resolution: int = 512
@@ -107,6 +87,11 @@ class UpscaleConfig:
 class APIConfig:
     "Configuration for the API"
 
+    # Autoload
+    autoloaded_textual_inversions: List[str] = field(default_factory=list)
+    autoloaded_models: List[str] = field(default_factory=list)
+    autoloaded_vae: Dict[str, str] = field(default_factory=dict)
+
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
@@ -116,8 +101,6 @@ class APIConfig:
     tomesd_ratio: float = 0.25  # had to tone this down, 0.4 is too big of a context loss even on short prompts
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
 
-    image_preview_delay: float = 2.0
-
     # General optimizations
     autocast: bool = False
     attention_processor: Literal[
@@ -126,8 +109,6 @@ class APIConfig:
     subquadratic_size: int = 512
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
-    vae_slicing: bool = True
-    vae_tiling: bool = False
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
@@ -139,8 +120,7 @@ class APIConfig:
     deterministic_generation: bool = False
 
     # Device settings
-    device_id: int = 0
-    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan"] = "cuda"
+    device: str = "cuda:0"
 
     # Critical
     enable_shutdown: bool = True
@@ -148,11 +128,6 @@ class APIConfig:
     # CLIP
     clip_skip: int = 1
     clip_quantization: Literal["full", "int8", "int4"] = "full"
-
-    # Autoload
-    autoloaded_textual_inversions: List[str] = field(default_factory=list)
-    autoloaded_models: List[str] = field(default_factory=list)
-    autoloaded_vae: Dict[str, str] = field(default_factory=dict)
 
     huggingface_style_parsing: bool = False
 
@@ -176,6 +151,19 @@ class APIConfig:
         "max-autotune",
     ] = "reduce-overhead"
 
+    # K_Diffusion
+    sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
+    kdiffusers_quantization: bool = True  # improves sampling quality
+
+    # "philox" is what a "cuda" generator would be, except, it's on cpu
+    generator: Literal["device", "cpu", "philox"] = "device"
+
+    # VAE
+    live_preview_method: Literal["disabled", "approximation", "taesd"] = "approximation"
+    live_preview_delay: float = 2.0
+    vae_slicing: bool = True
+    vae_tiling: bool = False
+
     @property
     def dtype(self):
         "Return selected data type"
@@ -186,26 +174,12 @@ class APIConfig:
         return torch.float32
 
     @property
-    def device(self):
-        "Return the device"
+    def overwrite_generator(self) -> bool:
+        "Whether the generator needs to be overwritten with 'cpu.'"
 
-        if self.device_type == "intel":
-            from core.inference.functions import is_ipex_available
-
-            return torch.device("xpu" if is_ipex_available() else "cpu")
-
-        if self.device_type in ["cpu", "mps"]:
-            return torch.device(self.device_type)
-
-        if self.device_type in ["vulkan", "cuda"]:
-            return torch.device(f"{self.device_type}:{self.device_id}")
-
-        if self.device_type == "directml":
-            import torch_directml  # pylint: disable=import-error
-
-            return torch_directml.device()
-        else:
-            raise ValueError(f"Device type {self.device_type} not supported")
+        return any(
+            map(lambda x: x in self.device, ["mps", "directml", "vulkan", "intel"])
+        )
 
 
 @dataclass
@@ -279,6 +253,7 @@ class Configuration(DataClassJsonMixin):
     onnx: ONNXConfig = field(default_factory=ONNXConfig)
     bot: BotConfig = field(default_factory=BotConfig)
     frontend: FrontendConfig = field(default_factory=FrontendConfig)
+    sampler_config: SamplerConfig = field(default_factory=SamplerConfig)
     extra: CatchAll = field(default_factory=dict)
 
 

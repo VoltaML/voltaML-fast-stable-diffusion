@@ -81,6 +81,7 @@ logger: logging.Logger = logging.getLogger()
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 logging.getLogger("PIL.Image").setLevel(logging.INFO)
+logging.getLogger("uvicorn.error").setLevel(logging.INFO)
 
 # Create necessary folders
 for directory in [
@@ -163,13 +164,6 @@ def main(exit_after_init: bool = False):
         host=host,
         port=args.port,
         workers=4,
-        headers=[
-            ("Access-Control-Allow-Origin", "*"),
-            ("Access-Control-Allow-Headers", "*"),
-            ("Access-Control-Allow-Methods", "*"),
-            ("Access-Control-Allow-Credentials", "true"),
-            ("Access-Control-Expose-Headers", "*"),
-        ],
         log_config=None,
     )
     uvi_server = Server(config=uvi_config)

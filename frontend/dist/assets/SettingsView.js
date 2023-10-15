@@ -1,5 +1,5 @@
-import { a2 as inject, bx as getCurrentInstance, J as watch, aG as onBeforeUnmount, X as cB, Z as cM, W as c, U as createInjectionKey, d as defineComponent, P as useConfig, a4 as useTheme, D as ref, S as provide, C as h, by as formLight, ah as keysOf, c as computed, aE as formatLength, aL as get, bz as commonVariables, Y as cE, T as toRef, a9 as createId, bA as formItemInjectionKey, b8 as onMounted, a8 as useThemeClass, aW as Transition, aA as resolveWrappedSlot, a7 as createKey, aP as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, k as NInput, r as NSelect, x as createCommentVNode, i as NCard, n as createBaseVNode, f as createElementBlock, L as renderList, ba as NText, m as createTextVNode, t as toDisplayString, I as Fragment, A as pushScopeId, B as popScopeId, _ as _export_sfc, G as NTabPane, H as NTabs, b as useMessage, bB as useNotification, o as onUnmounted, s as serverUrl, E as NButton, bC as defaultSettings } from "./index.js";
-import { N as NSwitch, a as NSlider } from "./Switch.js";
+import { U as inject, bz as getCurrentInstance, O as watch, aC as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bA as formLight, a4 as keysOf, c as computed, aA as formatLength, aI as get, bB as commonVariables, au as cE, Y as toRef, aX as createId, bC as formItemInjectionKey, ba as onMounted, Z as useThemeClass, aY as Transition, aw as resolveWrappedSlot, ao as createKey, aN as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, bc as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, h as NButton, x as useMessage, bD as useNotification, y as onUnmounted, z as serverUrl, bE as defaultSettings } from "./index.js";
+import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
@@ -1838,105 +1838,12 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-da11dbe9"), n = n(), popScopeId(), n);
-const _hoisted_1$1 = { style: { "width": "100%" } };
-const _hoisted_2 = {
-  key: 0,
-  class: "flex-container"
-};
-const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1));
-const _hoisted_4 = { key: 0 };
-const _hoisted_5 = { key: 0 };
-const _sfc_main$c = /* @__PURE__ */ defineComponent({
-  __name: "APISettings",
+const _hoisted_1$3 = { style: { "width": "100%" } };
+const _sfc_main$g = /* @__PURE__ */ defineComponent({
+  __name: "AutoloadSettings",
   setup(__props) {
     const settings = useSettings();
     const global = useState();
-    const availableDtypes = computed(() => {
-      if (settings.defaultSettings.api.device_type == "cpu") {
-        return global.state.capabilities.supported_precisions_cpu.map((value) => {
-          var description = "";
-          switch (value) {
-            case "float32":
-              description = "32-bit float";
-              break;
-            case "float16":
-              description = "16-bit float";
-              break;
-            default:
-              description = "16-bit bfloat";
-          }
-          return { value, label: description };
-        });
-      }
-      return global.state.capabilities.supported_precisions_gpu.map((value) => {
-        var description = "";
-        switch (value) {
-          case "float32":
-            description = "32-bit float";
-            break;
-          case "float16":
-            description = "16-bit float";
-            break;
-          default:
-            description = "16-bit bfloat";
-        }
-        return { value, label: description };
-      });
-    });
-    const availableBackends = computed(() => {
-      return global.state.capabilities.supported_backends.map((value) => {
-        switch (value) {
-          case "cuda":
-            return { value: "cuda", label: "CUDA/ROCm" };
-          case "mps":
-            return { value: "mps", label: "MPS (Apple)" };
-          case "xpu":
-            return { value: "intel", label: "Intel" };
-          case "directml":
-            return { value: "directml", label: "DirectML" };
-          default:
-            return { value: "cpu", label: "CPU" };
-        }
-      });
-    });
-    const availableTorchCompileBackends = computed(() => {
-      return global.state.capabilities.supported_torch_compile_backends.map(
-        (value) => {
-          return { value, label: value };
-        }
-      );
-    });
-    const availableAttentions = computed(() => {
-      return [
-        ...global.state.capabilities.supports_xformers ? [{ value: "xformers", label: "xFormers" }] : [],
-        {
-          value: "sdpa",
-          label: "SDP Attention"
-        },
-        {
-          value: "cross-attention",
-          label: "Cross-Attention"
-        },
-        {
-          value: "subquadratic",
-          label: "Sub-quadratic Attention"
-        },
-        {
-          value: "multihead",
-          label: "Multihead attention"
-        }
-      ];
-    });
-    const availableQuantizations = computed(() => {
-      return [
-        { value: "full", label: "Full precision" },
-        ...global.state.capabilities.supports_int8 ? [
-          { value: "int8", label: "Quantized (int8)" },
-          { value: "int4", label: "Quantized (int4)" }
-        ] : []
-      ];
-    });
     const textualInversions = computed(() => {
       return global.state.models.filter((model) => {
         return model.backend === "Textual Inversion";
@@ -1996,651 +1903,59 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NForm), null, {
         default: withCtx(() => [
-          createVNode(unref(NCard), {
-            title: "Saving outputs",
-            class: "settings-card"
+          createVNode(unref(NFormItem), {
+            label: "Model",
+            "label-placement": "left"
           }, {
             default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Template for saving outputs",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.api.save_path_template,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.save_path_template = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Disable generating grid image",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.disable_grid,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.disable_grid = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Image extension",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    value: unref(settings).defaultSettings.api.image_extension,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.image_extension = $event),
-                    options: [
-                      {
-                        label: "PNG",
-                        value: "png"
-                      },
-                      {
-                        label: "WebP",
-                        value: "webp"
-                      },
-                      {
-                        label: "JPEG",
-                        value: "jpeg"
-                      }
-                    ]
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              unref(settings).defaultSettings.api.image_extension != "png" ? (openBlock(), createBlock(unref(NFormItem), {
-                key: 0,
-                label: "Image quality (JPEG/WebP only)",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.image_quality,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.image_quality = $event),
-                    min: 0,
-                    max: 100,
-                    step: 1
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })) : createCommentVNode("", true)
+              createVNode(unref(NSelect), {
+                multiple: "",
+                filterable: "",
+                options: autoloadModelOptions.value,
+                value: unref(settings).defaultSettings.api.autoloaded_models,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.autoloaded_models = $event)
+              }, null, 8, ["options", "value"])
             ]),
             _: 1
           }),
-          createVNode(unref(NCard), {
-            title: "CLIP settings",
-            class: "settings-card"
+          createVNode(unref(NFormItem), {
+            label: "Textual Inversions",
+            "label-placement": "left"
           }, {
             default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "CLIP skip",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.clip_skip,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.clip_skip = $event),
-                    min: 1,
-                    max: 11,
-                    step: 1
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Quantized Precision",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    value: unref(settings).defaultSettings.api.clip_quantization,
-                    "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.clip_quantization = $event),
-                    options: availableQuantizations.value,
-                    disabled: !unref(global).state.capabilities.supports_int8
-                  }, null, 8, ["value", "options", "disabled"])
-                ]),
-                _: 1
-              })
+              createVNode(unref(NSelect), {
+                multiple: "",
+                filterable: "",
+                options: textualInversionOptions.value,
+                value: unref(settings).defaultSettings.api.autoloaded_textual_inversions,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.autoloaded_textual_inversions = $event)
+              }, null, 8, ["options", "value"])
             ]),
             _: 1
           }),
-          createVNode(unref(NCard), {
-            title: "Autoload",
-            class: "settings-card"
-          }, {
+          createVNode(unref(NCard), { title: "VAE" }, {
             default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Model",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    multiple: "",
-                    filterable: "",
-                    options: autoloadModelOptions.value,
-                    value: unref(settings).defaultSettings.api.autoloaded_models,
-                    "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).defaultSettings.api.autoloaded_models = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Textual Inversions",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    multiple: "",
-                    filterable: "",
-                    options: textualInversionOptions.value,
-                    value: unref(settings).defaultSettings.api.autoloaded_textual_inversions,
-                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.api.autoloaded_textual_inversions = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NCard), { title: "VAE" }, {
-                default: withCtx(() => [
-                  createBaseVNode("div", _hoisted_1$1, [
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(availableModels.value, (model) => {
-                      return openBlock(), createElementBlock("div", {
-                        key: model.name,
-                        style: { "display": "flex", "flex-direction": "row", "margin-bottom": "4px" }
-                      }, [
-                        createVNode(unref(NText), { style: { "width": "50%" } }, {
-                          default: withCtx(() => [
-                            createTextVNode(toDisplayString(model.name), 1)
-                          ]),
-                          _: 2
-                        }, 1024),
-                        createVNode(unref(NSelect), {
-                          filterable: "",
-                          options: autoloadVaeOptions.value,
-                          value: autoloadVaeValue(model.path).value,
-                          "onUpdate:value": ($event) => autoloadVaeValue(model.path).value = $event
-                        }, null, 8, ["options", "value", "onUpdate:value"])
-                      ]);
-                    }), 128))
-                  ])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NCard), {
-            title: "Huggingface",
-            class: "settings-card"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Huggingface-style prompting",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.huggingface_style_parsing,
-                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.huggingface_style_parsing = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NCard), {
-            title: "Timings and Queue",
-            class: "settings-card"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "WebSocket Performance Monitor Interval",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.websocket_perf_interval,
-                    "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.websocket_perf_interval = $event),
-                    min: 0.1,
-                    step: 0.1
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "WebSocket Sync Interval",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.websocket_sync_interval,
-                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.websocket_sync_interval = $event),
-                    min: 1e-3,
-                    step: 0.01
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Image Preview Interval (seconds)",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.image_preview_delay,
-                    "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.image_preview_delay = $event),
-                    step: 0.1
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NCard), {
-            title: "Optimizations",
-            class: "settings-card"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Autocast",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.autocast,
-                    "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.api.autocast = $event),
-                    disabled: availableDtypes.value.length < 2
-                  }, null, 8, ["value", "disabled"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Attention Processor",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: availableAttentions.value,
-                    value: unref(settings).defaultSettings.api.attention_processor,
-                    "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.api.attention_processor = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              unref(settings).defaultSettings.api.attention_processor == "subquadratic" ? (openBlock(), createElementBlock("div", _hoisted_2, [
-                _hoisted_3,
-                createVNode(unref(NSlider), {
-                  value: unref(settings).defaultSettings.api.subquadratic_size,
-                  "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.api.subquadratic_size = $event),
-                  step: 64,
-                  min: 64,
-                  max: 8192,
-                  style: { "margin-right": "12px" }
-                }, null, 8, ["value"]),
-                createVNode(unref(NInputNumber), {
-                  value: unref(settings).defaultSettings.api.subquadratic_size,
-                  "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).defaultSettings.api.subquadratic_size = $event),
-                  size: "small",
-                  style: { "min-width": "96px", "width": "96px" },
-                  step: 64,
-                  min: 64,
-                  max: 8192
-                }, null, 8, ["value"])
-              ])) : createCommentVNode("", true),
-              createVNode(unref(NFormItem), {
-                label: "Attention Slicing",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: [
-                      {
-                        value: "disabled",
-                        label: "None"
-                      },
-                      {
-                        value: "auto",
-                        label: "Auto"
-                      }
-                    ],
-                    value: unref(settings).defaultSettings.api.attention_slicing,
-                    "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.api.attention_slicing = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Channels Last",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.channels_last,
-                    "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.api.channels_last = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Deterministic generation",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.deterministic_generation,
-                    "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.api.deterministic_generation = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Reduced Precision (RTX 30xx and newer cards)",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.reduced_precision,
-                    "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).defaultSettings.api.reduced_precision = $event),
-                    disabled: !unref(global).state.capabilities.has_tensorfloat
-                  }, null, 8, ["value", "disabled"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "CudNN Benchmark (big VRAM spikes - use on 8GB+ cards only)",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.cudnn_benchmark,
-                    "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).defaultSettings.api.cudnn_benchmark = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Clean Memory",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: [
-                      {
-                        value: "always",
-                        label: "Always"
-                      },
-                      {
-                        value: "never",
-                        label: "Never"
-                      },
-                      {
-                        value: "after_disconnect",
-                        label: "After disconnect"
-                      }
-                    ],
-                    value: unref(settings).defaultSettings.api.clear_memory_policy,
-                    "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).defaultSettings.api.clear_memory_policy = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "VAE Slicing",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.vae_slicing,
-                    "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(settings).defaultSettings.api.vae_slicing = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "VAE Tiling",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.vae_tiling,
-                    "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(settings).defaultSettings.api.vae_tiling = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Trace UNet",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.trace_model,
-                    "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).defaultSettings.api.trace_model = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Offload",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: [
-                      {
-                        value: "disabled",
-                        label: "Disabled"
-                      },
-                      {
-                        value: "model",
-                        label: "Offload the whole model to RAM when not used"
-                      },
-                      {
-                        value: "module",
-                        label: "Offload individual modules to RAM when not used"
-                      }
-                    ],
-                    value: unref(settings).defaultSettings.api.offload,
-                    "onUpdate:value": _cache[25] || (_cache[25] = ($event) => unref(settings).defaultSettings.api.offload = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NCard), {
-            title: "Device",
-            class: "settings-card"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Device Type",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: availableBackends.value,
-                    value: unref(settings).defaultSettings.api.device_type,
-                    "onUpdate:value": _cache[26] || (_cache[26] = ($event) => unref(settings).defaultSettings.api.device_type = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              unref(settings).defaultSettings.api.device_type != "cpu" ? (openBlock(), createBlock(unref(NFormItem), {
-                key: 0,
-                label: "Device ID (GPU ID)",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.api.device_id,
-                    "onUpdate:value": _cache[27] || (_cache[27] = ($event) => unref(settings).defaultSettings.api.device_id = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })) : createCommentVNode("", true),
-              createVNode(unref(NFormItem), {
-                label: "Precision",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: availableDtypes.value,
-                    value: unref(settings).defaultSettings.api.data_type,
-                    "onUpdate:value": _cache[28] || (_cache[28] = ($event) => unref(settings).defaultSettings.api.data_type = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NCard), {
-            title: "TomeSD",
-            class: "settings-card"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Use TomeSD",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.use_tomesd,
-                    "onUpdate:value": _cache[29] || (_cache[29] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              unref(settings).defaultSettings.api.use_tomesd ? (openBlock(), createElementBlock("div", _hoisted_4, [
-                createVNode(unref(NFormItem), {
-                  label: "TomeSD Ratio",
-                  "label-placement": "left"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NInputNumber), {
-                      value: unref(settings).defaultSettings.api.tomesd_ratio,
-                      "onUpdate:value": _cache[30] || (_cache[30] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
-                      min: 0.1,
-                      max: 1
-                    }, null, 8, ["value"])
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NFormItem), {
-                  label: "TomeSD Downsample layers",
-                  "label-placement": "left"
-                }, {
-                  default: withCtx(() => [
+              createBaseVNode("div", _hoisted_1$3, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList(availableModels.value, (model) => {
+                  return openBlock(), createElementBlock("div", {
+                    key: model.name,
+                    style: { "display": "flex", "flex-direction": "row", "margin-bottom": "4px" }
+                  }, [
+                    createVNode(unref(NText), { style: { "width": "50%" } }, {
+                      default: withCtx(() => [
+                        createTextVNode(toDisplayString(model.name), 1)
+                      ]),
+                      _: 2
+                    }, 1024),
                     createVNode(unref(NSelect), {
-                      options: [
-                        {
-                          value: 1,
-                          label: "1"
-                        },
-                        {
-                          value: 2,
-                          label: "2"
-                        },
-                        {
-                          value: 4,
-                          label: "4"
-                        },
-                        {
-                          value: 8,
-                          label: "8"
-                        }
-                      ],
-                      value: unref(settings).defaultSettings.api.tomesd_downsample_layers,
-                      "onUpdate:value": _cache[31] || (_cache[31] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event)
-                    }, null, 8, ["value"])
-                  ]),
-                  _: 1
-                })
-              ])) : createCommentVNode("", true)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NCard), {
-            title: "Torch Compile",
-            class: "settings-card"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Torch Compile",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.api.torch_compile,
-                    "onUpdate:value": _cache[32] || (_cache[32] = ($event) => unref(settings).defaultSettings.api.torch_compile = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              unref(settings).defaultSettings.api.torch_compile ? (openBlock(), createElementBlock("div", _hoisted_5, [
-                createVNode(unref(NFormItem), {
-                  label: "Fullgraph",
-                  "label-placement": "left"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NSwitch), {
-                      value: unref(settings).defaultSettings.api.torch_compile_fullgraph,
-                      "onUpdate:value": _cache[33] || (_cache[33] = ($event) => unref(settings).defaultSettings.api.torch_compile_fullgraph = $event)
-                    }, null, 8, ["value"])
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NFormItem), {
-                  label: "Dynamic",
-                  "label-placement": "left"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NSwitch), {
-                      value: unref(settings).defaultSettings.api.torch_compile_dynamic,
-                      "onUpdate:value": _cache[34] || (_cache[34] = ($event) => unref(settings).defaultSettings.api.torch_compile_dynamic = $event)
-                    }, null, 8, ["value"])
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NFormItem), {
-                  label: "Backend",
-                  "label-placement": "left"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NSelect), {
-                      value: unref(settings).defaultSettings.api.torch_compile_backend,
-                      "onUpdate:value": _cache[35] || (_cache[35] = ($event) => unref(settings).defaultSettings.api.torch_compile_backend = $event),
-                      tag: "",
                       filterable: "",
-                      options: availableTorchCompileBackends.value
-                    }, null, 8, ["value", "options"])
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NFormItem), {
-                  label: "Compile Mode",
-                  "label-placement": "left"
-                }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NSelect), {
-                      value: unref(settings).defaultSettings.api.torch_compile_mode,
-                      "onUpdate:value": _cache[36] || (_cache[36] = ($event) => unref(settings).defaultSettings.api.torch_compile_mode = $event),
-                      options: [
-                        { value: "default", label: "Default" },
-                        { value: "reduce-overhead", label: "Reduce Overhead" },
-                        { value: "max-autotune", label: "Max Autotune" }
-                      ]
-                    }, null, 8, ["value"])
-                  ]),
-                  _: 1
-                })
-              ])) : createCommentVNode("", true)
+                      options: autoloadVaeOptions.value,
+                      value: autoloadVaeValue(model.path).value,
+                      "onUpdate:value": ($event) => autoloadVaeValue(model.path).value = $event
+                    }, null, 8, ["options", "value", "onUpdate:value"])
+                  ]);
+                }), 128))
+              ])
             ]),
             _: 1
           })
@@ -2650,9 +1965,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const APISettings_vue_vue_type_style_index_0_scoped_da11dbe9_lang = "";
-const APISettings = /* @__PURE__ */ _export_sfc(_sfc_main$c, [["__scopeId", "data-v-da11dbe9"]]);
-const _sfc_main$b = /* @__PURE__ */ defineComponent({
+const _sfc_main$f = /* @__PURE__ */ defineComponent({
   __name: "BotSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2707,7 +2020,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$a = /* @__PURE__ */ defineComponent({
+const _sfc_main$e = /* @__PURE__ */ defineComponent({
   __name: "ExtraSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2815,7 +2128,86 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+const _sfc_main$d = /* @__PURE__ */ defineComponent({
+  __name: "FilesSettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NForm), null, {
+        default: withCtx(() => [
+          createVNode(unref(NFormItem), {
+            label: "Template for saving outputs",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInput), {
+                value: unref(settings).defaultSettings.api.save_path_template,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.save_path_template = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Disable generating grid image",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.disable_grid,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.disable_grid = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Image extension",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                value: unref(settings).defaultSettings.api.image_extension,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.image_extension = $event),
+                options: [
+                  {
+                    label: "PNG",
+                    value: "png"
+                  },
+                  {
+                    label: "WebP",
+                    value: "webp"
+                  },
+                  {
+                    label: "JPEG",
+                    value: "jpeg"
+                  }
+                ]
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          unref(settings).defaultSettings.api.image_extension != "png" ? (openBlock(), createBlock(unref(NFormItem), {
+            key: 0,
+            label: "Image quality (JPEG/WebP only)",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.image_quality,
+                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.image_quality = $event),
+                min: 0,
+                max: 100,
+                step: 1
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          })) : createCommentVNode("", true)
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "ControlNetSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3011,7 +2403,7 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3041,7 +2433,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const _sfc_main$a = /* @__PURE__ */ defineComponent({
   __name: "ImageToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3197,7 +2589,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   __name: "InpaintingSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3340,7 +2732,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "TextToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3483,7 +2875,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "ThemeSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3533,7 +2925,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "NSFWSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3587,7 +2979,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "FrontendSettings",
   setup(__props) {
     return (_ctx, _cache) => {
@@ -3595,43 +2987,43 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           createVNode(unref(NTabPane), { name: "Text to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$5)
+              createVNode(_sfc_main$8)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Image to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$7)
+              createVNode(_sfc_main$a)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "ControlNet" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$9)
+              createVNode(_sfc_main$c)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Inpainting" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$6)
+              createVNode(_sfc_main$9)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Image Browser" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$8)
+              createVNode(_sfc_main$b)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Theme" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$4)
+              createVNode(_sfc_main$7)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "NSFW" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$3)
+              createVNode(_sfc_main$6)
             ]),
             _: 1
           })
@@ -3641,7 +3033,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "GeneralSettings",
   setup(__props) {
     const settings = useSettings();
@@ -3667,6 +3059,646 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 1
               })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _hoisted_1$2 = {
+  key: 0,
+  class: "flex-container"
+};
+const _hoisted_2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
+const _hoisted_3 = { "flex-direction": "row" };
+const _hoisted_4 = { key: 1 };
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  __name: "OptimizationSettings",
+  setup(__props) {
+    const settings = useSettings();
+    const global = useState();
+    const compileColor = computed(() => {
+      if (settings.defaultSettings.api.torch_compile)
+        return "#f1f1f1";
+      return void 0;
+    });
+    const traceColor = computed(() => {
+      if (settings.defaultSettings.api.trace_model)
+        return "#f1f1f1";
+      return void 0;
+    });
+    const disableColor = computed(() => {
+      if (settings.defaultSettings.api.torch_compile || settings.defaultSettings.api.trace_model)
+        return void 0;
+      return "#ffffff";
+    });
+    function change_compilation(a) {
+      settings.defaultSettings.api.torch_compile = a === "compile";
+      settings.defaultSettings.api.trace_model = a === "trace";
+    }
+    const availableTorchCompileBackends = computed(() => {
+      return global.state.capabilities.supported_torch_compile_backends.map(
+        (value) => {
+          return { value, label: value };
+        }
+      );
+    });
+    const availableAttentions = computed(() => {
+      return [
+        ...global.state.capabilities.supports_xformers ? [{ value: "xformers", label: "xFormers" }] : [],
+        {
+          value: "sdpa",
+          label: "SDP Attention"
+        },
+        {
+          value: "cross-attention",
+          label: "Cross-Attention"
+        },
+        {
+          value: "subquadratic",
+          label: "Sub-quadratic Attention"
+        },
+        {
+          value: "multihead",
+          label: "Multihead attention"
+        }
+      ];
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NForm), null, {
+        default: withCtx(() => [
+          createVNode(unref(NFormItem), {
+            label: "Autocast",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.autocast,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.autocast = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Attention processor",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: availableAttentions.value,
+                value: unref(settings).defaultSettings.api.attention_processor,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.attention_processor = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
+          unref(settings).defaultSettings.api.attention_processor == "subquadratic" ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
+            _hoisted_2,
+            createVNode(unref(NSlider), {
+              value: unref(settings).defaultSettings.api.subquadratic_size,
+              "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.subquadratic_size = $event),
+              step: 64,
+              min: 64,
+              max: 8192,
+              style: { "margin-right": "12px" }
+            }, null, 8, ["value"]),
+            createVNode(unref(NInputNumber), {
+              value: unref(settings).defaultSettings.api.subquadratic_size,
+              "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.subquadratic_size = $event),
+              size: "small",
+              style: { "min-width": "96px", "width": "96px" },
+              step: 64,
+              min: 64,
+              max: 8192
+            }, null, 8, ["value"])
+          ])) : createCommentVNode("", true),
+          createVNode(unref(NFormItem), {
+            label: "Compilation method",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createBaseVNode("div", _hoisted_3, [
+                createVNode(unref(NButton), {
+                  onClick: _cache[4] || (_cache[4] = ($event) => change_compilation("disabled")),
+                  color: disableColor.value
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Disabled")
+                  ]),
+                  _: 1
+                }, 8, ["color"]),
+                createVNode(unref(NButton), {
+                  onClick: _cache[5] || (_cache[5] = ($event) => change_compilation("trace")),
+                  color: traceColor.value
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Trace UNet")
+                  ]),
+                  _: 1
+                }, 8, ["color"]),
+                createVNode(unref(NButton), {
+                  onClick: _cache[6] || (_cache[6] = ($event) => change_compilation("compile")),
+                  color: compileColor.value
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("torch.compile")
+                  ]),
+                  _: 1
+                }, 8, ["color"])
+              ])
+            ]),
+            _: 1
+          }),
+          unref(settings).defaultSettings.api.torch_compile ? (openBlock(), createElementBlock("div", _hoisted_4, [
+            createVNode(unref(NFormItem), {
+              label: "Fullgraph compile",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSwitch), {
+                  value: unref(settings).defaultSettings.api.torch_compile_fullgraph,
+                  "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.api.torch_compile_fullgraph = $event)
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "Dynamic compile",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSwitch), {
+                  value: unref(settings).defaultSettings.api.torch_compile_dynamic,
+                  "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.torch_compile_dynamic = $event)
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "Compilation backend",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSelect), {
+                  options: availableTorchCompileBackends.value,
+                  value: unref(settings).defaultSettings.api.torch_compile_backend,
+                  "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.torch_compile_backend = $event)
+                }, null, 8, ["options", "value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "Compilation mode",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSelect), {
+                  options: [
+                    { value: "default", label: "Default" },
+                    { value: "reduce-overhead", label: "Reduce Overhead" },
+                    { value: "max-autotune", label: "Max Autotune" }
+                  ],
+                  value: unref(settings).defaultSettings.api.torch_compile_mode,
+                  "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.torch_compile_mode = $event)
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            })
+          ])) : createCommentVNode("", true),
+          createVNode(unref(NFormItem), {
+            label: "Attention Slicing",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "disabled",
+                    label: "None"
+                  },
+                  {
+                    value: "auto",
+                    label: "Auto"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.attention_slicing,
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.attention_slicing = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Channels Last",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.channels_last,
+                "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.api.channels_last = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Reduced Precision (RTX 30xx and newer cards)",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.reduced_precision,
+                "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.api.reduced_precision = $event),
+                disabled: !unref(global).state.capabilities.has_tensorfloat
+              }, null, 8, ["value", "disabled"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "CudNN Benchmark (big VRAM spikes - use on 8GB+ cards only)",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.cudnn_benchmark,
+                "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.api.cudnn_benchmark = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Clean Memory",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "always",
+                    label: "Always"
+                  },
+                  {
+                    value: "never",
+                    label: "Never"
+                  },
+                  {
+                    value: "after_disconnect",
+                    label: "After disconnect"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.clear_memory_policy,
+                "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).defaultSettings.api.clear_memory_policy = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "VAE Slicing",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.vae_slicing,
+                "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.api.vae_slicing = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "VAE Tiling",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.vae_tiling,
+                "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.api.vae_tiling = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Offload",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "disabled",
+                    label: "Disabled"
+                  },
+                  {
+                    value: "model",
+                    label: "Offload the whole model to RAM when not used"
+                  },
+                  {
+                    value: "module",
+                    label: "Offload individual modules to RAM when not used"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.offload,
+                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.api.offload = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _hoisted_1$1 = { key: 1 };
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+  __name: "ReproducibilitySettings",
+  setup(__props) {
+    const settings = useSettings();
+    const global = useState();
+    const availableDtypes = computed(() => {
+      if (settings.defaultSettings.api.device.includes("cpu")) {
+        return global.state.capabilities.supported_precisions_cpu.map((value) => {
+          var description = "";
+          switch (value) {
+            case "float32":
+              description = "32-bit float";
+              break;
+            case "float16":
+              description = "16-bit float";
+              break;
+            default:
+              description = "16-bit bfloat";
+          }
+          return { value, label: description };
+        });
+      }
+      return global.state.capabilities.supported_precisions_gpu.map((value) => {
+        var description = "";
+        switch (value) {
+          case "float32":
+            description = "32-bit float";
+            break;
+          case "float16":
+            description = "16-bit float";
+            break;
+          default:
+            description = "16-bit bfloat";
+        }
+        return { value, label: description };
+      });
+    });
+    const availableBackends = computed(() => {
+      return global.state.capabilities.supported_backends.map((l) => {
+        return { value: l[1], label: l[0] };
+      });
+    });
+    const availableQuantizations = computed(() => {
+      return [
+        { value: "full", label: "Full precision" },
+        ...global.state.capabilities.supports_int8 ? [
+          { value: "int8", label: "Quantized (int8)" },
+          { value: "int4", label: "Quantized (int4)" }
+        ] : []
+      ];
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NForm), null, {
+        default: withCtx(() => [
+          createVNode(unref(NFormItem), {
+            label: "Device",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: availableBackends.value,
+                value: unref(settings).defaultSettings.api.device,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.device = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Data type",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: availableDtypes.value,
+                value: unref(settings).defaultSettings.api.data_type,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.data_type = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Deterministic generation",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.deterministic_generation,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.deterministic_generation = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "SGM Noise multiplier",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.sgm_noise_multiplier,
+                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.sgm_noise_multiplier = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Quantization in k-samplers",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.kdiffusers_quantization,
+                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.api.kdiffusers_quantization = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Generator",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                value: unref(settings).defaultSettings.api.generator,
+                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).defaultSettings.api.generator = $event),
+                options: [
+                  { value: "device", label: "On-Device" },
+                  { value: "cpu", label: "CPU" },
+                  { value: "philox", label: "CPU (device mock)" }
+                ]
+              }, null, 8, ["value", "options"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "CLIP skip",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.clip_skip,
+                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).defaultSettings.api.clip_skip = $event),
+                min: 1,
+                max: 11,
+                step: 1
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          availableQuantizations.value.length != 1 ? (openBlock(), createBlock(unref(NFormItem), {
+            key: 0,
+            label: "CLIP quantization",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: availableQuantizations.value,
+                value: unref(settings).defaultSettings.api.clip_quantization,
+                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.api.clip_quantization = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          })) : createCommentVNode("", true),
+          createVNode(unref(NFormItem), {
+            label: "ToMeSD",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.use_tomesd,
+                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.api.use_tomesd = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          unref(settings).defaultSettings.api.use_tomesd ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
+            createVNode(unref(NFormItem), {
+              label: "ToMeSD ratio",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NInputNumber), {
+                  value: unref(settings).defaultSettings.api.tomesd_ratio,
+                  "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.api.tomesd_ratio = $event),
+                  min: 0,
+                  max: 1,
+                  step: 0.05
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "ToMeSD downsample layers",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSelect), {
+                  value: unref(settings).defaultSettings.api.tomesd_downsample_layers,
+                  "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.api.tomesd_downsample_layers = $event),
+                  options: [
+                    { value: "1", label: "1" },
+                    { value: "2", label: "2" },
+                    { value: "4", label: "4" },
+                    { value: "8", label: "8" }
+                  ]
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            })
+          ])) : createCommentVNode("", true),
+          createVNode(unref(NFormItem), {
+            label: "Huggingface-style prompting",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.huggingface_style_parsing,
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.api.huggingface_style_parsing = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "UISettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NForm), null, {
+        default: withCtx(() => [
+          createVNode(unref(NFormItem), {
+            label: "Image Preview Interval (seconds)",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.live_preview_delay,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.live_preview_delay = $event),
+                step: 0.1
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Image Preview Method",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                value: unref(settings).defaultSettings.api.live_preview_method,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.live_preview_method = $event),
+                options: [
+                  { value: "disabled", label: "Disabled" },
+                  { value: "approximation", label: "Quick approximation (Default)" },
+                  { value: "taesd", label: "Tiny VAE" }
+                ]
+              }, null, 8, ["value", "options"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "WebSocket Performance Monitor Interval",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.websocket_perf_interval,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.websocket_perf_interval = $event),
+                min: 0.1,
+                step: 0.1
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "WebSocket Sync Interval",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.websocket_sync_interval,
+                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.websocket_sync_interval = $event),
+                min: 1e-3,
+                step: 0.01
+              }, null, 8, ["value"])
             ]),
             _: 1
           })
@@ -3750,33 +3782,57 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }, 8, ["loading"])
               ]),
               default: withCtx(() => [
-                createVNode(unref(NTabPane), { name: "Frontend" }, {
+                createVNode(unref(NTabPane), { name: "Autoload" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$g)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Files & Saving" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$d)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Optimizations" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$3)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Reproducibility & Generation" }, {
                   default: withCtx(() => [
                     createVNode(_sfc_main$2)
                   ]),
                   _: 1
                 }),
-                createVNode(unref(NTabPane), { name: "API" }, {
-                  default: withCtx(() => [
-                    createVNode(APISettings)
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NTabPane), { name: "Bot" }, {
-                  default: withCtx(() => [
-                    createVNode(_sfc_main$b)
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NTabPane), { name: "General" }, {
+                createVNode(unref(NTabPane), { name: "Live preview & UI" }, {
                   default: withCtx(() => [
                     createVNode(_sfc_main$1)
                   ]),
                   _: 1
                 }),
+                createVNode(unref(NTabPane), { name: "Defaults" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$5)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Bot" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$f)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "General" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$4)
+                  ]),
+                  _: 1
+                }),
                 createVNode(unref(NTabPane), { name: "Extra" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$a)
+                    createVNode(_sfc_main$e)
                   ]),
                   _: 1
                 })

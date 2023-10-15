@@ -1,19 +1,37 @@
 import logging
 import math
 from time import time
-from typing import Optional, Tuple, Union
+from typing import List, Optional, Tuple, Union
 
 import numpy as np
 import torch
 import torch.nn.functional as F
 from diffusers import StableDiffusionPipeline
+from diffusers.models import vae as diffusers_vae
 from diffusers.utils import PIL_INTERPOLATION
 from PIL import Image
 
 from core.config import config
 from core.flags import LatentScaleModel
+from core.inference.utilities.philox import PhiloxGenerator
+
+from .random import randn
 
 logger = logging.getLogger(__name__)
+
+
+def _randn_tensor(
+    shape: Union[Tuple, List],
+    generator: Union[PhiloxGenerator, torch.Generator],
+    device: Optional["torch.device"] = None,
+    dtype: Optional["torch.dtype"] = None,
+    layout: Optional["torch.layout"] = None,  # pylint: disable=unused-argument
+):
+    return randn(shape, generator, device, dtype)
+
+
+diffusers_vae.randn_tensor = _randn_tensor
+logger.debug("Overwritten diffusers randn_tensor")
 
 
 def pad_tensor(
@@ -113,11 +131,11 @@ def prepare_mask_latents(
     width: int,
     dtype: torch.dtype,
     device: torch.device,
-    generator: torch.Generator,
     do_classifier_free_guidance: bool,
     vae,
     vae_scale_factor: float,
     vae_scaling_factor: float,
+    generator: Union[PhiloxGenerator, torch.Generator],
 ) -> Tuple[torch.Tensor, torch.Tensor]:
     """This function resizes and converts the input mask to a PyTorch tensor,
     encodes the input masked image to its latent representation,
@@ -221,7 +239,7 @@ def prepare_latents(
     width: Optional[int],
     dtype: torch.dtype,
     device: torch.device,
-    generator: Optional[torch.Generator],
+    generator: Union[PhiloxGenerator, torch.Generator],
     latents=None,
     latent_channels: Optional[int] = None,
     align_to: int = 1,
@@ -235,15 +253,8 @@ def prepare_latents(
         )
 
         if latents is None:
-            if device.type == "mps" or config.api.device_type == "directml":
-                # randn does not work reproducibly on mps
-                latents = torch.randn(
-                    shape, generator=generator, device="cpu", dtype=dtype  # type: ignore
-                ).to(device)
-            else:
-                latents = torch.randn(
-                    shape, generator=generator, device=generator.device, dtype=dtype  # type: ignore
-                )
+            # randn does not work reproducibly on mps
+            latents = randn(shape, generator, device=device, dtype=dtype)  # type: ignore
         else:
             if latents.shape != shape:
                 raise ValueError(
@@ -265,6 +276,9 @@ def prepare_latents(
             logger.debug("Skipping VAE encode, already have latents")
             init_latents = image
 
+        # if isinstance(pipe.scheduler, KdiffusionSchedulerAdapter):
+        #     init_latents = init_latents * pipe.scheduler.init_noise_sigma
+
         init_latents_orig = init_latents
         shape = init_latents.shape
         if latent_channels is not None:
@@ -276,25 +290,7 @@ def prepare_latents(
             )
 
         # add noise to latents using the timesteps
-        if device.type == "mps" or config.api.device_type == "directml":
-            noise = torch.randn(
-                shape, generator=generator, device="cpu", dtype=dtype
-            ).to(device)
-        else:
-            # Retarded fix, but hey, if it works, it works
-            if hasattr(pipe.vae, "main_device"):
-                noise = torch.randn(
-                    shape,
-                    generator=torch.Generator("cpu").manual_seed(1),
-                    device="cpu",
-                    dtype=dtype,
-                ).to(device)
-            else:
-                noise = torch.randn(
-                    shape, generator=generator, device=device, dtype=dtype
-                )
-        # Now this... I may have called the previous "hack" retarded, but this...
-        # This just takes it to a whole new level
+        noise = randn(shape, generator, device=device, dtype=dtype)
         latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
         return latents, init_latents_orig, noise
 

@@ -32,7 +32,7 @@ def _wipe_old():
     logger.debug("Did not find this controlnet preprocessor cached, wiping old ones")
     shared_dependent.cached_controlnet_preprocessor = None
 
-    if config.api.device_type == "cuda":
+    if "cuda" in config.api.device:
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
     gc.collect()

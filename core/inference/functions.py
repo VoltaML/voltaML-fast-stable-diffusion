@@ -26,7 +26,6 @@ from diffusers.utils.constants import (
     WEIGHTS_NAME,
 )
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
-from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download
@@ -55,7 +54,7 @@ torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
     try:
-        import aitemplate
+        import aitemplate  # pylint: disable=unused-import
 
         return True
     except ImportError:
@@ -313,7 +312,7 @@ def download_model(
         # # make sure we don't download flax weights
         ignore_patterns = ["*.msgpack"]
 
-        if is_safetensors_available() and not local_files_only:
+        if not local_files_only:
             info = model_info(
                 repo_id=pretrained_model_name,
                 revision=revision,
@@ -390,8 +389,8 @@ def load_pytorch_pipeline(
         cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
+                str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
                 extract_ema=True,
                 load_safety_checker=False,
@@ -399,8 +398,8 @@ def load_pytorch_pipeline(
             )
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
+                str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
                 extract_ema=False,
                 load_safety_checker=False,
@@ -411,7 +410,6 @@ def load_pytorch_pipeline(
             pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
             torch_dtype=config.api.dtype,
             safety_checker=None,
-            requires_safety_checker=False,
             feature_extractor=None,
             low_cpu_mem_usage=True,
         )

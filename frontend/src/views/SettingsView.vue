@@ -2,11 +2,23 @@
   <div class="main-container">
     <NCard>
       <NTabs>
-        <NTabPane name="Frontend">
-          <FrontendSettings />
+        <NTabPane name="Autoload">
+          <AutoloadSettings />
         </NTabPane>
-        <NTabPane name="API">
-          <APISettings />
+        <NTabPane name="Files & Saving">
+          <FilesSettings />
+        </NTabPane>
+        <NTabPane name="Optimizations">
+          <OptimizationSettings />
+        </NTabPane>
+        <NTabPane name="Reproducibility & Generation">
+          <ReproducibilitySettings />
+        </NTabPane>
+        <NTabPane name="Live preview & UI">
+          <UISettings />
+        </NTabPane>
+        <NTabPane name="Defaults">
+          <FrontendSettings />
         </NTabPane>
         <NTabPane name="Bot">
           <BotSettings />
@@ -36,11 +48,15 @@
 </template>
 
 <script lang="ts" setup>
-import APISettings from "@/components/settings/APISettings.vue";
+import AutoloadSettings from "@/components/settings/AutoloadSettings.vue";
 import BotSettings from "@/components/settings/BotSettings.vue";
 import ExtraSettings from "@/components/settings/ExtraSettings.vue";
+import FilesSettings from "@/components/settings/FilesSettings.vue";
 import FrontendSettings from "@/components/settings/FrontendSettings.vue";
 import GeneralSettings from "@/components/settings/GeneralSettings.vue";
+import OptimizationSettings from "@/components/settings/OptimizationSettings.vue";
+import ReproducibilitySettings from "@/components/settings/ReproducibilitySettings.vue";
+import UISettings from "@/components/settings/UISettings.vue";
 import { serverUrl } from "@/env";
 import { defaultSettings } from "@/settings";
 import { useSettings } from "@/store/settings";

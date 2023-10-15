@@ -14,7 +14,8 @@ from core.types import (
     Txt2imgData,
     Txt2ImgQueueEntry,
 )
-from core.utils import convert_image_to_base64
+from core.utils import convert_image_to_base64, unwrap_enum
+from tests.const import KDIFF_SAMPLERS
 from tests.functions import generate_random_image, generate_random_image_base64
 
 
@@ -25,7 +26,7 @@ def pipe_fixture():
     return PyTorchStableDiffusion("Azher/Anything-v4.5-vae-fp16-diffuser")
 
 
-@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers) + KDIFF_SAMPLERS)
 def test_txt2img_scheduler_sweep(
     pipe: PyTorchStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):
@@ -34,7 +35,7 @@ def test_txt2img_scheduler_sweep(
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
             prompt="This is a test",
-            scheduler=scheduler,
+            scheduler=str(unwrap_enum(scheduler)),
             id="test",
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
@@ -95,7 +96,7 @@ def test_txt2img_self_attention(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
+def test_txt2img_karras_sigmas_diffusers(pipe: PyTorchStableDiffusion):
     "Generate an image with Text to Image"
 
     job = Txt2ImgQueueEntry(
@@ -103,7 +104,7 @@ def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler,
             id="test",
-            use_karras_sigmas=True,
+            sigmas="karras",
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )

@@ -5,8 +5,8 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, m as createTextVNode, t as toDisplayString, i as NCard, x as createCommentVNode, a as useSettings, f as createElementBlock, q as NTooltip, n as createBaseVNode, I as Fragment, J as watch, D as ref, s as serverUrl } from "./index.js";
-import { a as NSlider } from "./Switch.js";
+import { d as defineComponent, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, i as createTextVNode, t as toDisplayString, N as NCard, G as createCommentVNode, u as useSettings, a as createElementBlock, n as NTooltip, b as createBaseVNode, F as Fragment, O as watch, r as ref, z as serverUrl } from "./index.js";
+import { N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "OutputStats",
@@ -66,9 +66,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
-    const conf = useSettings();
+    const settings = useSettings();
     return (_ctx, _cache) => {
-      return unref(conf).data.settings.aitDim.batch_size ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
+      return unref(settings).data.settings.aitDim.batch_size ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
           trigger: withCtx(() => [
             _hoisted_2$1
@@ -81,16 +81,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         createVNode(unref(NSlider), {
           value: props.batchSizeObject.batch_size,
           "onUpdate:value": _cache[0] || (_cache[0] = ($event) => props.batchSizeObject.batch_size = $event),
-          min: unref(conf).data.settings.aitDim.batch_size[0],
-          max: unref(conf).data.settings.aitDim.batch_size[1],
+          min: unref(settings).data.settings.aitDim.batch_size[0],
+          max: unref(settings).data.settings.aitDim.batch_size[1],
           style: { "margin-right": "12px" }
         }, null, 8, ["value", "min", "max"]),
         createVNode(unref(NInputNumber), {
           value: props.batchSizeObject.batch_size,
           "onUpdate:value": _cache[1] || (_cache[1] = ($event) => props.batchSizeObject.batch_size = $event),
           size: "small",
-          min: unref(conf).data.settings.aitDim.batch_size[0],
-          max: unref(conf).data.settings.aitDim.batch_size[1],
+          min: unref(settings).data.settings.aitDim.batch_size[0],
+          max: unref(settings).data.settings.aitDim.batch_size[1],
           style: { "min-width": "96px", "width": "96px" }
         }, null, 8, ["value", "min", "max"])
       ])) : (openBlock(), createElementBlock("div", _hoisted_3$1, [
@@ -150,16 +150,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
-    const conf = useSettings();
+    const settings = useSettings();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        unref(conf).data.settings.aitDim.width ? (openBlock(), createElementBlock("div", _hoisted_1, [
+        unref(settings).data.settings.aitDim.width ? (openBlock(), createElementBlock("div", _hoisted_1, [
           _hoisted_2,
           createVNode(unref(NSlider), {
             value: props.dimensionsObject.width,
             "onUpdate:value": _cache[0] || (_cache[0] = ($event) => props.dimensionsObject.width = $event),
-            min: unref(conf).data.settings.aitDim.width[0],
-            max: unref(conf).data.settings.aitDim.width[1],
+            min: unref(settings).data.settings.aitDim.width[0],
+            max: unref(settings).data.settings.aitDim.width[1],
             step: 64,
             style: { "margin-right": "12px" }
           }, null, 8, ["value", "min", "max"]),
@@ -168,8 +168,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[1] || (_cache[1] = ($event) => props.dimensionsObject.width = $event),
             size: "small",
             style: { "min-width": "96px", "width": "96px" },
-            min: unref(conf).data.settings.aitDim.width[0],
-            max: unref(conf).data.settings.aitDim.width[1],
+            min: unref(settings).data.settings.aitDim.width[0],
+            max: unref(settings).data.settings.aitDim.width[1],
             step: 64
           }, null, 8, ["value", "min", "max"])
         ])) : (openBlock(), createElementBlock("div", _hoisted_3, [
@@ -190,13 +190,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             step: 1
           }, null, 8, ["value"])
         ])),
-        unref(conf).data.settings.aitDim.height ? (openBlock(), createElementBlock("div", _hoisted_5, [
+        unref(settings).data.settings.aitDim.height ? (openBlock(), createElementBlock("div", _hoisted_5, [
           _hoisted_6,
           createVNode(unref(NSlider), {
             value: props.dimensionsObject.height,
             "onUpdate:value": _cache[4] || (_cache[4] = ($event) => props.dimensionsObject.height = $event),
-            min: unref(conf).data.settings.aitDim.height[0],
-            max: unref(conf).data.settings.aitDim.height[1],
+            min: unref(settings).data.settings.aitDim.height[0],
+            max: unref(settings).data.settings.aitDim.height[1],
             step: 64,
             style: { "margin-right": "12px" }
           }, null, 8, ["value", "min", "max"]),
@@ -205,8 +205,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:value": _cache[5] || (_cache[5] = ($event) => props.dimensionsObject.height = $event),
             size: "small",
             style: { "min-width": "96px", "width": "96px" },
-            min: unref(conf).data.settings.aitDim.height[0],
-            max: unref(conf).data.settings.aitDim.height[1],
+            min: unref(settings).data.settings.aitDim.height[0],
+            max: unref(settings).data.settings.aitDim.height[1],
             step: 64
           }, null, 8, ["value", "min", "max"])
         ])) : (openBlock(), createElementBlock("div", _hoisted_7, [

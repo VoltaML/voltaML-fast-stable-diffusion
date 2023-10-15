@@ -1,8 +1,8 @@
-import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, D as ref, c as computed, b7 as reactive, b8 as onMounted, o as onUnmounted, e as openBlock, f as createElementBlock, n as createBaseVNode, g as createVNode, h as unref, w as withCtx, I as Fragment, L as renderList, s as serverUrl, k as NInput, F as NIcon, bc as NModal, y as NGrid, N as NGi, E as NButton, m as createTextVNode, M as NScrollbar, v as createBlock, t as toDisplayString, x as createCommentVNode, bD as urlFromPath, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b8 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, b9 as reactive, ba as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, w as withCtx, F as Fragment, g as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, h as NButton, i as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bF as urlFromPath, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
-import { a as NSlider } from "./Switch.js";
+import { N as NSlider } from "./Switch.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "53px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
@@ -18,11 +18,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "b5694a5a": unref(conf).data.settings.frontend.image_browser_columns,
-      "99a5dd9e": backgroundColor.value
+      "c641501e": unref(settings).data.settings.frontend.image_browser_columns,
+      "0c6c1cae": backgroundColor.value
     }));
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const showDeleteModal = ref(false);
     const showImageModal = ref(false);
     const scrollComponent = ref(null);
@@ -51,16 +51,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           time: 0
         };
         global.state.imageBrowser.currentImageByte64 = "";
-        global.state.imageBrowser.currentImageMetadata = /* @__PURE__ */ new Map();
+        global.state.imageBrowser.currentImageMetadata = {};
       });
-    }
-    function toDescriptionString(str) {
-      const upper = str.charAt(0).toUpperCase() + str.slice(1);
-      return upper.replace(/_/g, " ");
     }
     function downloadImage() {
       const url = urlFromPath(global.state.imageBrowser.currentImage.path);
-      fetch(url).then((res) => res.blob()).then((blob) => {
+      fetch(url, { mode: "no-cors" }).then((res) => res.blob()).then((blob) => {
         const reader = new FileReader();
         reader.readAsDataURL(blob);
         reader.onloadend = function() {
@@ -96,6 +92,20 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     const currentColumn = ref(0);
     const currentRowIndex = ref(0);
+    function parseMetadataFromString(key, value) {
+      value = value.trim().toLowerCase();
+      if (value === "true") {
+        return true;
+      } else if (value === "false") {
+        return false;
+      } else {
+        if (isFinite(+value)) {
+          return +value;
+        } else {
+          return value;
+        }
+      }
+    }
     function imgClick(column_index, item_index) {
       currentRowIndex.value = item_index;
       currentColumn.value = column_index;
@@ -105,7 +115,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       const url = new URL(`${serverUrl}/api/outputs/data/`);
       url.searchParams.append("filename", item.path);
       fetch(url).then((res) => res.json()).then((data) => {
-        global.state.imageBrowser.currentImageMetadata = data;
+        global.state.imageBrowser.currentImageMetadata = JSON.parse(
+          JSON.stringify(data),
+          (key, value) => {
+            if (typeof value === "string") {
+              return parseMetadataFromString(key, value);
+            }
+            return value;
+          }
+        );
+        console.log(global.state.imageBrowser.currentImageMetadata);
       });
       showImageModal.value = true;
     }
@@ -123,11 +142,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     const columns = computed(() => {
       const cols = [];
-      for (let i = 0; i < conf.data.settings.frontend.image_browser_columns; i++) {
+      for (let i = 0; i < settings.data.settings.frontend.image_browser_columns; i++) {
         cols.push([]);
       }
       for (let i = 0; i < computedImgDataLimit.value; i++) {
-        cols[i % conf.data.settings.frontend.image_browser_columns].push(
+        cols[i % settings.data.settings.frontend.image_browser_columns].push(
           filteredImgData.value[i]
         );
       }
@@ -179,7 +198,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     };
     function moveImage(direction) {
-      const numColumns = conf.data.settings.frontend.image_browser_columns;
+      const numColumns = settings.data.settings.frontend.image_browser_columns;
       if (direction === -1) {
         if (currentColumn.value > 0) {
           imgClick(currentColumn.value - 1, currentRowIndex.value);
@@ -216,7 +235,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     });
     refreshImages();
     const backgroundColor = computed(() => {
-      if (conf.data.settings.frontend.theme === "dark") {
+      if (settings.data.settings.frontend.theme === "dark") {
         return "#121215";
       } else {
         return "#fff";
@@ -244,8 +263,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             style: { "width": "50vw" },
             min: 1,
             max: 10,
-            value: unref(conf).data.settings.frontend.image_browser_columns,
-            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.frontend.image_browser_columns = $event)
+            value: unref(settings).data.settings.frontend.image_browser_columns,
+            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.frontend.image_browser_columns = $event)
           }, null, 8, ["value"])
         ]),
         createBaseVNode("div", _hoisted_2, [
@@ -348,8 +367,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             default: withCtx(() => [
                               createVNode(_sfc_main$1, {
                                 output: unref(global).state.imageBrowser.currentImageByte64,
-                                card: false
-                              }, null, 8, ["output"])
+                                card: false,
+                                data: unref(global).state.imageBrowser.currentImageMetadata
+                              }, null, 8, ["output", "data"])
                             ]),
                             _: 1
                           })
@@ -371,7 +391,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             default: withCtx(() => [
                               (openBlock(true), createElementBlock(Fragment, null, renderList(unref(global).state.imageBrowser.currentImageMetadata, (item, key) => {
                                 return openBlock(), createBlock(unref(NDescriptionsItem), {
-                                  label: toDescriptionString(key.toString()),
+                                  label: unref(convertToTextString)(key.toString()),
                                   "content-style": "max-width: 100px; word-wrap: break-word;",
                                   style: { "margin": "4px" },
                                   key: item.toString()
@@ -427,8 +447,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_53c8c0e3_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-53c8c0e3"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_59d31164_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-59d31164"]]);
 export {
   ImageBrowserView as default
 };

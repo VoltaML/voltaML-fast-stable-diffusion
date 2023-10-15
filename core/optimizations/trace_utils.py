@@ -72,7 +72,7 @@ def trace_model(
     logger.debug("Starting trace")
     with warnings.catch_warnings():
         warnings.simplefilter("ignore")
-        if config.api.device_type == "cpu":
+        if "cpu" in config.api.device:
             torch.jit.enable_onednn_fusion(True)
         model = torch.jit.trace(model, generate_inputs(dtype, device), check_trace=False)  # type: ignore
         model = torch.jit.freeze(model)  # type: ignore
