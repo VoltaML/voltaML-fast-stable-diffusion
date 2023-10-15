@@ -28,7 +28,7 @@
         style="width: 50vw"
         :min="1"
         :max="10"
-        v-model:value="conf.data.settings.frontend.image_browser_columns"
+        v-model:value="settings.data.settings.frontend.image_browser_columns"
       >
       </NSlider>
     </div>
@@ -98,6 +98,7 @@
                 <SendOutputTo
                   :output="global.state.imageBrowser.currentImageByte64"
                   :card="false"
+                  :data="global.state.imageBrowser.currentImageMetadata"
                 />
               </NGi>
             </NGrid>
@@ -112,7 +113,7 @@
                 size="large"
               >
                 <NDescriptionsItem
-                  :label="toDescriptionString(key.toString())"
+                  :label="convertToTextString(key.toString())"
                   content-style="max-width: 100px; word-wrap: break-word;"
                   style="margin: 4px"
                   v-for="(item, key) of global.state.imageBrowser
@@ -158,7 +159,7 @@
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import type { imgData as IImgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
-import { urlFromPath } from "@/functions";
+import { convertToTextString, urlFromPath } from "@/functions";
 import { Download, GridOutline, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
@@ -178,7 +179,7 @@ import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const showDeleteModal = ref(false);
 
 const showImageModal = ref(false);
@@ -218,22 +219,14 @@ function deleteImage() {
         time: 0,
       };
       global.state.imageBrowser.currentImageByte64 = "";
-      global.state.imageBrowser.currentImageMetadata = new Map<
-        string,
-        string
-      >();
+      global.state.imageBrowser.currentImageMetadata = {};
     });
-}
-
-function toDescriptionString(str: string): string {
-  const upper = str.charAt(0).toUpperCase() + str.slice(1);
-  return upper.replace(/_/g, " ");
 }
 
 function downloadImage() {
   const url = urlFromPath(global.state.imageBrowser.currentImage.path);
 
-  fetch(url)
+  fetch(url, { mode: "no-cors" })
     .then((res) => res.blob())
     .then((blob) => {
       const reader = new FileReader();
@@ -277,6 +270,22 @@ function setByte64FromImage(path: string) {
 const currentColumn = ref(0);
 const currentRowIndex = ref(0);
 
+function parseMetadataFromString(key: string, value: string) {
+  value = value.trim().toLowerCase();
+
+  if (value === "true") {
+    return true;
+  } else if (value === "false") {
+    return false;
+  } else {
+    if (isFinite(+value)) {
+      return +value;
+    } else {
+      return value;
+    }
+  }
+}
+
 function imgClick(column_index: number, item_index: number) {
   currentRowIndex.value = item_index;
   currentColumn.value = column_index;
@@ -288,7 +297,16 @@ function imgClick(column_index: number, item_index: number) {
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      global.state.imageBrowser.currentImageMetadata = data;
+      global.state.imageBrowser.currentImageMetadata = JSON.parse(
+        JSON.stringify(data),
+        (key, value) => {
+          if (typeof value === "string") {
+            return parseMetadataFromString(key, value);
+          }
+          return value;
+        }
+      );
+      console.log(global.state.imageBrowser.currentImageMetadata);
     });
   showImageModal.value = true;
 }
@@ -310,11 +328,15 @@ const computedImgDataLimit = computed(() => {
 
 const columns = computed(() => {
   const cols: IImgData[][] = [];
-  for (let i = 0; i < conf.data.settings.frontend.image_browser_columns; i++) {
+  for (
+    let i = 0;
+    i < settings.data.settings.frontend.image_browser_columns;
+    i++
+  ) {
     cols.push([]);
   }
   for (let i = 0; i < computedImgDataLimit.value; i++) {
-    cols[i % conf.data.settings.frontend.image_browser_columns].push(
+    cols[i % settings.data.settings.frontend.image_browser_columns].push(
       filteredImgData.value[i]
     );
   }
@@ -387,7 +409,7 @@ const handleScroll = (e: Event) => {
 };
 
 function moveImage(direction: number) {
-  const numColumns = conf.data.settings.frontend.image_browser_columns;
+  const numColumns = settings.data.settings.frontend.image_browser_columns;
 
   if (direction === -1) {
     // Traverse all the columns before removing one from the currentIndexOfColumn
@@ -437,7 +459,7 @@ onUnmounted(() => {
 refreshImages();
 
 const backgroundColor = computed(() => {
-  if (conf.data.settings.frontend.theme === "dark") {
+  if (settings.data.settings.frontend.theme === "dark") {
     return "#121215";
   } else {
     return "#fff";
@@ -455,7 +477,7 @@ const backgroundColor = computed(() => {
 .image-grid {
   display: grid;
   grid-template-columns: repeat(
-    v-bind("conf.data.settings.frontend.image_browser_columns"),
+    v-bind("settings.data.settings.frontend.image_browser_columns"),
     1fr
   );
   grid-gap: 8px;

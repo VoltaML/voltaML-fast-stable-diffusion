@@ -1,14 +1,13 @@
 --extra-index-url https://pypi.ngc.nvidia.com
 coloredlogs==15.0.1
 dataclasses-json==0.5.8
-diffusers==0.18.2
-huggingface_hub==0.16.4
+diffusers==0.21.4
+huggingface_hub==0.17.3
 scipy==1.10.1
 transformers==4.30.0
 accelerate==0.19.0
 ftfy==6.1.1
 OmegaConf==2.3.0
-k-diffusion==0.0.15
 safetensors==0.3.1
 pytorch-lightning==2.0.3
 gpustat==1.1
@@ -22,3 +21,4 @@ cpufeature==0.2.1; platform_system != "Darwin"
 pyamdgpuinfo; platform_system == "Linux"
 piexif==1.1.3
 git+https://github.com/tfernd/HyperTile@2ef64b2800d007d305755c33550537410310d7df
+k-diffusion==0.1.1

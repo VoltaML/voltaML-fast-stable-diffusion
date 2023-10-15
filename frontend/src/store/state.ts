@@ -89,7 +89,7 @@ export interface StateInterface {
   imageBrowser: {
     currentImage: imgData;
     currentImageByte64: string;
-    currentImageMetadata: Map<string, string>;
+    currentImageMetadata: Record<string, string | number | boolean>;
   };
   perf_drawer: {
     enabled: boolean;
@@ -192,7 +192,7 @@ export const useState = defineStore("state", () => {
         time: 0,
       },
       currentImageByte64: "",
-      currentImageMetadata: new Map(),
+      currentImageMetadata: {},
     },
     perf_drawer: {
       enabled: false,

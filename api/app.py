@@ -5,16 +5,14 @@ import os
 from pathlib import Path
 
 from api_analytics.fastapi import Analytics
-from fastapi import Depends, FastAPI, Request
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.exceptions import RequestValidationError
-from fastapi.responses import FileResponse
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi_simple_cachecontrol.middleware import CacheControlMiddleware
 from fastapi_simple_cachecontrol.types import CacheControl
 from huggingface_hub.hf_api import LocalTokenNotFoundError
-from starlette import status
-from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import JSONResponse
 
 from api import websocket_manager
 from api.routes import static, ws
@@ -111,24 +109,6 @@ async def custom_http_exception_handler(request: Request, _exc):
 async def startup_event():
     "Prepare the event loop for other asynchronous tasks"
 
-    # Inject the logger
-    from rich.logging import RichHandler
-
-    # Disable duplicate logger
-    logging.getLogger("uvicorn").handlers = []
-
-    for logger_ in ("uvicorn.access", "uvicorn.error", "fastapi"):
-        l = logging.getLogger(logger_)
-        handler = RichHandler(
-            rich_tracebacks=True, show_time=False, omit_repeated_times=False
-        )
-        handler.setFormatter(
-            logging.Formatter(
-                fmt="%(asctime)s | %(name)s » %(message)s", datefmt="%H:%M:%S"
-            )
-        )
-        l.handlers = [handler]
-
     if logger.level > logging.DEBUG:
         from transformers import logging as transformers_logging
 
@@ -206,16 +186,20 @@ static_app.add_middleware(
 static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
 app.mount("/assets", static_app)
 
+origins = ["*"]
+
 # Allow CORS for specified origins
 app.add_middleware(
     CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )
 static_app.add_middleware(
     CORSMiddleware,
+    allow_origins=origins,
+    allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
-    expose_headers=["*"],
 )

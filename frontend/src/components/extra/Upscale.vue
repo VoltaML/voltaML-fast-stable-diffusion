@@ -5,9 +5,9 @@
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="conf.data.settings.upscale.image"
+          :preview="settings.data.settings.upscale.image"
           style="margin-bottom: 12px"
-          @file-dropped="conf.data.settings.upscale.image = $event"
+          @file-dropped="settings.data.settings.upscale.image = $event"
         />
 
         <NCard title="Settings" style="margin-bottom: 12px">
@@ -16,7 +16,7 @@
             <div class="flex-container">
               <p class="slider-label">Model</p>
               <NSelect
-                v-model:value="conf.data.settings.upscale.model"
+                v-model:value="settings.data.settings.upscale.model"
                 style="margin-right: 12px"
                 filterable
                 tag
@@ -33,14 +33,14 @@
                 TODO
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.upscale.upscale_factor"
+                v-model:value="settings.data.settings.upscale.upscale_factor"
                 :min="1"
                 :max="4"
                 :step="0.1"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.upscale.upscale_factor"
+                v-model:value="settings.data.settings.upscale.upscale_factor"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -59,13 +59,13 @@
                 memory. 0 will disable tiling.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.upscale.tile_size"
+                v-model:value="settings.data.settings.upscale.tile_size"
                 :min="32"
                 :max="2048"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.upscale.tile_size"
+                v-model:value="settings.data.settings.upscale.tile_size"
                 size="small"
                 :min="32"
                 :max="2048"
@@ -83,11 +83,11 @@
                 memory, but image should not have visible seams.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.upscale.tile_padding"
+                v-model:value="settings.data.settings.upscale.tile_padding"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.upscale.tile_padding"
+                v-model:value="settings.data.settings.upscale.tile_padding"
                 size="small"
                 style="min-width: 96px; width: 96px"
               />
@@ -135,11 +135,11 @@ import { upscalerOptions, useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const messageHandler = useMessage();
 
 const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.upscale.image = base64Image;
+  settings.data.settings.upscale.image = base64Image;
 };
 
 const upscalerOptionsFull = computed<SelectMixedOption[]>(() => {
@@ -170,13 +170,13 @@ const generate = () => {
     },
     body: JSON.stringify({
       data: {
-        image: conf.data.settings.upscale.image,
-        upscale_factor: conf.data.settings.upscale.upscale_factor,
-        model: conf.data.settings.upscale.model,
-        tile_size: conf.data.settings.upscale.tile_size,
-        tile_padding: conf.data.settings.upscale.tile_padding,
+        image: settings.data.settings.upscale.image,
+        upscale_factor: settings.data.settings.upscale.upscale_factor,
+        model: settings.data.settings.upscale.model,
+        tile_size: settings.data.settings.upscale.tile_size,
+        tile_padding: settings.data.settings.upscale.tile_padding,
       },
-      model: conf.data.settings.upscale.model,
+      model: settings.data.settings.upscale.model,
     }),
   })
     .then((res) => {

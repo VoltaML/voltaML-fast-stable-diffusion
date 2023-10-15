@@ -1,6 +1,5 @@
 from typing import TYPE_CHECKING, Any, Optional, Tuple, Union
 
-from core.config import config
 from core.files import CachedModelList
 from core.gpu import GPU
 
@@ -22,7 +21,7 @@ if TYPE_CHECKING:
 
 disable_hardware_warning: bool = False
 cached_model_list = CachedModelList()
-gpu = GPU(config.api.device_id)
+gpu = GPU()
 cached_controlnet_preprocessor: Union[
     None,
     "CannyDetector",

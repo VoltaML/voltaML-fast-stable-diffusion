@@ -22,7 +22,7 @@
               canvas-id="VueDrawingCanvas1"
             />
             <VueDrawingCanvas
-              v-model:image="conf.data.settings.inpainting.mask_image"
+              v-model:image="settings.data.settings.inpainting.mask_image"
               :width="width"
               :height="height"
               ref="maskCanvas"
@@ -99,14 +99,14 @@
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
-              v-model:value="conf.data.settings.inpainting.prompt"
+              v-model:value="settings.data.settings.inpainting.prompt"
               type="textarea"
               placeholder="Prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.inpainting,
+                  settings.data.settings.inpainting,
                   'prompt',
                   global
                 )
@@ -116,14 +116,14 @@
               <template #count>{{ promptCount }}</template>
             </NInput>
             <NInput
-              v-model:value="conf.data.settings.inpainting.negative_prompt"
+              v-model:value="settings.data.settings.inpainting.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.inpainting,
+                  settings.data.settings.inpainting,
                   'negative_prompt',
                   global
                 )
@@ -152,28 +152,9 @@
               </NTooltip>
 
               <NSelect
-                :options="conf.scheduler_options"
-                v-model:value="conf.data.settings.inpainting.sampler"
+                :options="settings.scheduler_options"
+                v-model:value="settings.data.settings.inpainting.sampler"
                 style="flex-grow: 1"
-              />
-            </div>
-
-            <!-- Karras Sigmas -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="width: 120px">Karras Sigmas</p>
-                </template>
-                Changes the sigmas used in the Karras diffusion process. Might
-                provide better results for some images.
-                <b class="highlight"
-                  >Works only with KDPM samplers. Ignored by other samplers.</b
-                >
-              </NTooltip>
-
-              <NSwitch
-                v-model:value="conf.data.settings.txt2img.use_karras_sigmas"
-                style="justify-self: flex-end"
               />
             </div>
 
@@ -181,14 +162,14 @@
             <div class="flex-container">
               <p class="slider-label">Width</p>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.width"
+                v-model:value="settings.data.settings.inpainting.width"
                 :min="128"
                 :max="2048"
                 :step="8"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.width"
+                v-model:value="settings.data.settings.inpainting.width"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="8"
@@ -199,14 +180,14 @@
             <div class="flex-container">
               <p class="slider-label">Height</p>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.height"
+                v-model:value="settings.data.settings.inpainting.height"
                 :min="128"
                 :max="2048"
                 :step="8"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.height"
+                v-model:value="settings.data.settings.inpainting.height"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :step="8"
@@ -230,13 +211,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.steps"
+                v-model:value="settings.data.settings.inpainting.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.steps"
+                v-model:value="settings.data.settings.inpainting.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="5"
@@ -259,14 +240,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.cfg_scale"
+                v-model:value="settings.data.settings.inpainting.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.cfg_scale"
+                v-model:value="settings.data.settings.inpainting.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -276,7 +257,13 @@
             </div>
 
             <!-- Self Attention Scale -->
-            <div class="flex-container">
+            <div
+              class="flex-container"
+              v-if="
+                Number.isInteger(settings.data.settings.txt2img.sampler) &&
+                settings.data.settings.model?.backend === 'PyTorch'
+              "
+            >
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Self Attention Scale</p>
@@ -289,14 +276,18 @@
               </NTooltip>
 
               <NSlider
-                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                v-model:value="
+                  settings.data.settings.txt2img.self_attention_scale
+                "
                 :min="0"
                 :max="1"
                 :step="0.05"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                v-model:value="
+                  settings.data.settings.txt2img.self_attention_scale
+                "
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0"
@@ -314,13 +305,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.batch_count"
+                v-model:value="settings.data.settings.inpainting.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.batch_count"
+                v-model:value="settings.data.settings.inpainting.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -335,13 +326,13 @@
                 Number of images to generate in paralel.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.inpainting.batch_size"
+                v-model:value="settings.data.settings.inpainting.batch_size"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.batch_size"
+                v-model:value="settings.data.settings.inpainting.batch_size"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -361,7 +352,7 @@
                 <b class="highlight">For random seed use -1.</b>
               </NTooltip>
               <NInputNumber
-                v-model:value="conf.data.settings.inpainting.seed"
+                v-model:value="settings.data.settings.inpainting.seed"
                 size="small"
                 :min="-1"
                 :max="999_999_999_999"
@@ -381,7 +372,7 @@
         <ImageOutput
           :current-image="global.state.inpainting.currentImage"
           :images="global.state.inpainting.images"
-          :data="conf.data.settings.inpainting"
+          :data="settings.data.settings.inpainting"
           @image-clicked="global.state.inpainting.currentImage = $event"
         />
 
@@ -423,7 +414,6 @@ import {
   NSelect,
   NSlider,
   NSpace,
-  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";
@@ -434,15 +424,16 @@ import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const messageHandler = useMessage();
 
 const promptCount = computed(() => {
-  return conf.data.settings.inpainting.prompt.split(spaceRegex).length - 1;
+  return settings.data.settings.inpainting.prompt.split(spaceRegex).length - 1;
 });
 const negativePromptCount = computed(() => {
   return (
-    conf.data.settings.inpainting.negative_prompt.split(spaceRegex).length - 1
+    settings.data.settings.inpainting.negative_prompt.split(spaceRegex).length -
+    1
   );
 });
 
@@ -456,7 +447,7 @@ const checkSeed = (seed: number) => {
 };
 
 const generate = () => {
-  if (conf.data.settings.inpainting.seed === null) {
+  if (settings.data.settings.inpainting.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
@@ -465,7 +456,7 @@ const generate = () => {
 
   global.state.generating = true;
 
-  const seed = checkSeed(conf.data.settings.inpainting.seed);
+  const seed = checkSeed(settings.data.settings.inpainting.seed);
 
   fetch(`${serverUrl}/api/generate/inpainting`, {
     method: "POST",
@@ -474,23 +465,24 @@ const generate = () => {
     },
     body: JSON.stringify({
       data: {
-        prompt: conf.data.settings.inpainting.prompt,
-        image: conf.data.settings.inpainting.image,
-        mask_image: conf.data.settings.inpainting.mask_image,
+        prompt: settings.data.settings.inpainting.prompt,
+        image: settings.data.settings.inpainting.image,
+        mask_image: settings.data.settings.inpainting.mask_image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.inpainting.negative_prompt,
-        width: conf.data.settings.inpainting.width,
-        height: conf.data.settings.inpainting.height,
-        steps: conf.data.settings.inpainting.steps,
-        guidance_scale: conf.data.settings.inpainting.cfg_scale,
+        negative_prompt: settings.data.settings.inpainting.negative_prompt,
+        width: settings.data.settings.inpainting.width,
+        height: settings.data.settings.inpainting.height,
+        steps: settings.data.settings.inpainting.steps,
+        guidance_scale: settings.data.settings.inpainting.cfg_scale,
         seed: seed,
-        batch_size: conf.data.settings.inpainting.batch_size,
-        batch_count: conf.data.settings.inpainting.batch_count,
-        scheduler: conf.data.settings.inpainting.sampler,
-        self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
-        use_karras_sigmas: conf.data.settings.inpainting.use_karras_sigmas,
+        batch_size: settings.data.settings.inpainting.batch_size,
+        batch_count: settings.data.settings.inpainting.batch_count,
+        scheduler: settings.data.settings.inpainting.sampler,
+        self_attention_scale:
+          settings.data.settings.txt2img.self_attention_scale,
+        sigmas: settings.data.settings.inpainting.sigmas,
       },
-      model: conf.data.settings.model?.name,
+      model: settings.data.settings.model?.name,
     }),
   })
     .then((res) => {
@@ -572,7 +564,7 @@ function previewImage(event: Event) {
         img.src = s;
         img.onload = () => {
           handleImageUpdate(img);
-          conf.data.settings.inpainting.image = s;
+          settings.data.settings.inpainting.image = s;
         };
       }
     };
@@ -607,15 +599,19 @@ function generateMask() {
 }
 
 // Burner clock
-const burner = new BurnerClock(conf.data.settings.inpainting, conf, generate);
+const burner = new BurnerClock(
+  settings.data.settings.inpainting,
+  settings,
+  generate
+);
 onUnmounted(() => {
   burner.cleanup();
 });
 
-if (conf.data.settings.inpainting.image !== "") {
-  preview.value = conf.data.settings.inpainting.image;
+if (settings.data.settings.inpainting.image !== "") {
+  preview.value = settings.data.settings.inpainting.image;
   const img = new Image();
-  img.src = conf.data.settings.inpainting.image;
+  img.src = settings.data.settings.inpainting.image;
   img.onload = () => {
     console.log(img);
     handleImageUpdate(img);

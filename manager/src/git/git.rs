@@ -10,7 +10,8 @@ pub fn is_git_repo_up_to_date() -> Result<bool, Box<dyn Error>> {
     let current_branch = current_branch_raw.trim();
 
     let remote_command = format!("git rev-parse origin/{}", current_branch);
-    let remote_commit = run_command(&remote_command, "Parse remote commit hash")?;
+    let remote_commit_raw = run_command(&remote_command, "Parse remote commit hash")?;
+    let remote_commit = remote_commit_raw.trim();
 
     let local_commit_raw = run_command("git rev-parse HEAD", "Parse local commit hash")?;
     let local_commit = local_commit_raw.trim();

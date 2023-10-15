@@ -43,7 +43,10 @@ class RealESRGAN(InferenceModel):
     def gpu_id(self) -> int:
         "Returns the GPU ID"
 
-        return config.api.device_id
+        if config.api.device.startswith("cuda:"):
+            return int(config.api.device.split(":")[-1])
+        else:
+            return -1
 
     def load(self):
         if self.model_id == "RealESRGAN_x4plus":  # x4 RRDBNet model
