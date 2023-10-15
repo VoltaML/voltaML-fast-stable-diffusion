@@ -30,6 +30,23 @@ Backend = Literal[
 ImageFormats = Literal["png", "jpeg", "webp"]
 
 
+@dataclass(kw_only=True)
+class InferenceDataMixin:
+    prompt: str
+    scheduler: Union[str, KarrasDiffusionSchedulers]
+    id: str = field(default_factory=lambda: uuid4().hex)
+    negative_prompt: str = field(default="")
+    width: int = field(default=512)
+    height: int = field(default=512)
+    steps: int = field(default=25)
+    guidance_scale: float = field(default=7)
+    sigmas: SigmaScheduler = field(default="automatic")
+    seed: int = field(default=0)
+    batch_size: int = field(default=1)
+    batch_count: int = field(default=1)
+    sampler_settings: Dict = field(default_factory=dict)
+
+
 @dataclass
 class Job:
     "Base class for all jobs"
@@ -52,90 +69,38 @@ class InterrogationData:
 
 
 @dataclass
-class Txt2imgData:
+class Txt2imgData(InferenceDataMixin):
     "Dataclass for the data of a txt2img request"
 
-    prompt: str
-    scheduler: Union[str, KarrasDiffusionSchedulers]
-    id: str = field(default_factory=lambda: uuid4().hex)
-    negative_prompt: str = field(default="")
-    width: int = field(default=512)
-    height: int = field(default=512)
-    steps: int = field(default=25)
-    guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    sigmas: SigmaScheduler = field(default="automatic")
-    seed: int = field(default=0)
-    batch_size: int = field(default=1)
-    batch_count: int = field(default=1)
-    sampler_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
-class Img2imgData:
+class Img2imgData(InferenceDataMixin):
     "Dataclass for the data of an img2img request"
 
-    prompt: str
     image: Union[bytes, str]
-    scheduler: Union[str, KarrasDiffusionSchedulers]
-    id: str = field(default_factory=lambda: uuid4().hex)
-    negative_prompt: str = field(default="")
-    width: int = field(default=512)
-    height: int = field(default=512)
-    steps: int = field(default=25)
-    guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    sigmas: SigmaScheduler = field(default="automatic")
-    seed: int = field(default=0)
-    batch_size: int = field(default=1)
-    batch_count: int = field(default=1)
     strength: float = field(default=0.6)
-    sampler_settings: Dict = field(default_factory=dict)
 
 
-@dataclass
-class InpaintData:
+@dataclass()
+class InpaintData(InferenceDataMixin):
     "Dataclass for the data of an img2img request"
 
-    prompt: str
     image: Union[bytes, str]
     mask_image: Union[bytes, str]
-    scheduler: Union[str, KarrasDiffusionSchedulers]
-    id: str = field(default_factory=lambda: uuid4().hex)
-    negative_prompt: str = field(default="")
-    width: int = field(default=512)
-    height: int = field(default=512)
-    steps: int = field(default=25)
-    guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    sigmas: SigmaScheduler = field(default="automatic")
-    seed: int = field(default=0)
-    batch_size: int = field(default=1)
-    batch_count: int = field(default=1)
-    sampler_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
-class ControlNetData:
+class ControlNetData(InferenceDataMixin):
     "Dataclass for the data of a control net request"
 
-    prompt: str
     image: Union[bytes, str]
-    scheduler: Union[str, KarrasDiffusionSchedulers]
     controlnet: str
-    id: str = field(default_factory=lambda: uuid4().hex)
-    negative_prompt: str = field(default="")
-    width: int = field(default=512)
-    height: int = field(default=512)
-    steps: int = field(default=25)
-    guidance_scale: float = field(default=7)
-    sigmas: SigmaScheduler = field(default="automatic")
-    seed: int = field(default=0)
-    batch_size: int = field(default=1)
-    batch_count: int = field(default=1)
     controlnet_conditioning_scale: float = field(default=1.0)
     detection_resolution: int = field(default=512)
-    sampler_settings: Dict = field(default_factory=dict)
 
     canny_low_threshold: int = field(default=100)
     canny_high_threshold: int = field(default=200)
