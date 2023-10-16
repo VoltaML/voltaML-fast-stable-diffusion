@@ -1,4 +1,4 @@
-import { s as h, d as defineComponent, V as useConfig, as as useFormItem, r as ref, c as computed, ah as useMergedState, a6 as provide, Y as toRef, S as createInjectionKey, a2 as call, ad as c, T as cB, au as cE, ae as cM, aU as iconSwitchTransition, aV as insideModal, aW as insidePopover, U as inject, at as useMemo, W as useTheme, bg as checkboxLight, aj as useRtl, ao as createKey, Z as useThemeClass, aX as createId, aJ as NIconSwitchTransition, aE as on, o as openBlock, a as createElementBlock, b as createBaseVNode } from "./index.js";
+import { s as h, d as defineComponent, V as useConfig, au as useFormItem, r as ref, c as computed, ah as useMergedState, a6 as provide, Y as toRef, S as createInjectionKey, a2 as call, ad as c, T as cB, ae as cM, aw as cE, aW as iconSwitchTransition, aX as insideModal, aY as insidePopover, U as inject, av as useMemo, W as useTheme, bh as checkboxLight, aj as useRtl, ao as createKey, Z as useThemeClass, aZ as createId, ay as resolveWrappedSlot, aL as NIconSwitchTransition, aG as on, o as openBlock, a as createElementBlock, b as createBaseVNode } from "./index.js";
 const CheckMark = h(
   "svg",
   { viewBox: "0 0 64 64", class: "check-icon" },
@@ -156,7 +156,6 @@ const NCheckboxGroup = defineComponent({
 });
 const style = c([
   cB("checkbox", `
- line-height: var(--n-label-line-height);
  font-size: var(--n-font-size);
  outline: none;
  cursor: pointer;
@@ -164,10 +163,9 @@ const style = c([
  flex-wrap: nowrap;
  align-items: flex-start;
  word-break: break-word;
+ line-height: var(--n-size);
  --n-merged-color-table: var(--n-color-table);
- `, [c("&:hover", [cB("checkbox-box", [cE("border", {
-    border: "var(--n-border-checked)"
-  })])]), c("&:focus:not(:active)", [cB("checkbox-box", [cE("border", `
+ `, [cM("show-label", "line-height: var(--n-label-line-height);"), c("&:hover", [cB("checkbox-box", [cE("border", "border: var(--n-border-checked);")])]), c("&:focus:not(:active)", [cB("checkbox-box", [cE("border", `
  border: var(--n-border-focus);
  box-shadow: var(--n-box-shadow-focus);
  `)])]), cM("inside-table", [cB("checkbox-box", `
@@ -205,13 +203,13 @@ const style = c([
     fill: "var(--n-check-mark-color-disabled-checked)"
   })])])]), cB("checkbox-box", `
  background-color: var(--n-color-disabled);
- `, [cE("border", {
-    border: "var(--n-border-disabled)"
-  }), cB("checkbox-icon", [c(".check-icon, .line-icon", {
-    fill: "var(--n-check-mark-color-disabled)"
-  })])]), cE("label", {
-    color: "var(--n-text-color-disabled)"
-  })]), cB("checkbox-box-wrapper", `
+ `, [cE("border", `
+ border: var(--n-border-disabled);
+ `), cB("checkbox-icon", [c(".check-icon, .line-icon", `
+ fill: var(--n-check-mark-color-disabled);
+ `)])]), cE("label", `
+ color: var(--n-text-color-disabled);
+ `)]), cB("checkbox-box-wrapper", `
  position: relative;
  width: var(--n-size);
  flex-shrink: 0;
@@ -485,6 +483,12 @@ const NCheckbox = defineComponent({
     var _a;
     const { $slots, renderedChecked, mergedDisabled, indeterminate, privateInsideTable, cssVars, labelId, label, mergedClsPrefix, focusable, handleKeyUp, handleKeyDown, handleClick } = this;
     (_a = this.onRender) === null || _a === void 0 ? void 0 : _a.call(this);
+    const labelNode = resolveWrappedSlot($slots.default, (children) => {
+      if (label || children) {
+        return h("span", { class: `${mergedClsPrefix}-checkbox__label`, id: labelId }, label || children);
+      }
+      return null;
+    });
     return h(
       "div",
       { ref: "selfRef", class: [
@@ -494,7 +498,8 @@ const NCheckbox = defineComponent({
         renderedChecked && `${mergedClsPrefix}-checkbox--checked`,
         mergedDisabled && `${mergedClsPrefix}-checkbox--disabled`,
         indeterminate && `${mergedClsPrefix}-checkbox--indeterminate`,
-        privateInsideTable && `${mergedClsPrefix}-checkbox--inside-table`
+        privateInsideTable && `${mergedClsPrefix}-checkbox--inside-table`,
+        labelNode && `${mergedClsPrefix}-checkbox--show-label`
       ], tabindex: mergedDisabled || !focusable ? void 0 : 0, role: "checkbox", "aria-checked": indeterminate ? "mixed" : renderedChecked, "aria-labelledby": labelId, style: cssVars, onKeyup: handleKeyUp, onKeydown: handleKeyDown, onClick: handleClick, onMousedown: () => {
         on("selectstart", window, (e) => {
           e.preventDefault();
@@ -515,7 +520,7 @@ const NCheckbox = defineComponent({
           h("div", { class: `${mergedClsPrefix}-checkbox-box__border` })
         )
       ),
-      label !== null || $slots.default ? h("span", { class: `${mergedClsPrefix}-checkbox__label`, id: labelId }, $slots.default ? $slots.default() : label) : null
+      labelNode
     );
   }
 });

@@ -1,7 +1,7 @@
 # Welcome to VoltaML
 
 <h2 align="center" style="border-bottom: 1px solid var(--vp-c-divider); padding-bottom: 24px;">
-Made with ❤️ by <a href="https://github.com/Stax124" target="_blank">Stax124</a>
+Made with ❤️ by <a href="https://github.com/Stax124" target="_blank">Stax124</a> and <a href="https://github.com/gabe56f" target="_blank">Gabe</a>
 </h2>
 
 ::: danger IMPORTANT

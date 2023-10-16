@@ -1,4 +1,4 @@
-import { T as cB, ae as cM, ad as c, au as cE, aU as iconSwitchTransition, af as cNotM, d as defineComponent, V as useConfig, aj as useRtl, W as useTheme, a6 as provide, s as h, ax as flatten, ay as getSlot, S as createInjectionKey, bh as stepsLight, U as inject, a$ as throwError, c as computed, Z as useThemeClass, aw as resolveWrappedSlot, ak as resolveSlot, aJ as NIconSwitchTransition, ao as createKey, a2 as call, al as NBaseIcon, bi as FinishedIcon, bj as ErrorIcon, x as useMessage, v as useState, r as ref, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, B as NSpace, N as NCard, b as createBaseVNode, p as NSelect, h as NButton, i as createTextVNode, m as NModal, z as serverUrl, u as useSettings, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
+import { T as cB, ae as cM, ad as c, aw as cE, aW as iconSwitchTransition, af as cNotM, d as defineComponent, V as useConfig, aj as useRtl, W as useTheme, a6 as provide, s as h, az as flatten, aA as getSlot, S as createInjectionKey, bi as stepsLight, U as inject, b1 as throwError, c as computed, Z as useThemeClass, ay as resolveWrappedSlot, ak as resolveSlot, aL as NIconSwitchTransition, ao as createKey, a2 as call, al as NBaseIcon, bj as FinishedIcon, bk as ErrorIcon, x as useMessage, v as useState, r as ref, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, B as NSpace, N as NCard, b as createBaseVNode, p as NSelect, h as NButton, i as createTextVNode, m as NModal, z as serverUrl, u as useSettings, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 const style = cB("steps", `
@@ -67,6 +67,7 @@ const style = cB("steps", `
  position: absolute;
  left: 0;
  top: 0;
+ white-space: nowrap;
  font-size: var(--n-indicator-index-font-size);
  width: var(--n-indicator-icon-size);
  height: var(--n-indicator-icon-size);

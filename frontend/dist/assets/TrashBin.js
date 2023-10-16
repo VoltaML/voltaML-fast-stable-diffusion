@@ -1,4 +1,4 @@
-import { R as replaceable, s as h, d as defineComponent, b0 as isBrowser, W as useTheme, S as createInjectionKey, ad as c, T as cB, bH as fadeInTransition, aT as fadeInScaleUpTransition, af as cNotM, Y as toRef, bI as imageLight, r as ref, ag as useLocale, O as watch, aC as onBeforeUnmount, aD as off, U as inject, c as computed, V as useConfig, Z as useThemeClass, bJ as isMounted, bK as LazyTeleport, bs as withDirectives, bL as zindexable, aY as Transition, F as Fragment, al as NBaseIcon, bt as vShow, aE as on, bb as normalizeStyle, bM as kebabCase, n as NTooltip, aS as beforeNextFrameOnce, aX as createId, a6 as provide, bz as getCurrentInstance, ba as onMounted, ai as watchEffect, o as openBlock, a as createElementBlock, b as createBaseVNode } from "./index.js";
+import { R as replaceable, s as h, d as defineComponent, bI as isBrowser, W as useTheme, S as createInjectionKey, ad as c, T as cB, bJ as fadeInTransition, aV as fadeInScaleUpTransition, af as cNotM, Y as toRef, bK as imageLight, r as ref, ag as useLocale, O as watch, aE as onBeforeUnmount, aF as off, U as inject, c as computed, V as useConfig, Z as useThemeClass, bL as isMounted, bM as LazyTeleport, bt as withDirectives, bN as zindexable, a_ as Transition, F as Fragment, al as NBaseIcon, bu as vShow, aG as on, bc as normalizeStyle, bO as kebabCase, n as NTooltip, aU as beforeNextFrameOnce, aZ as createId, a6 as provide, bA as getCurrentInstance, bb as onMounted, ai as watchEffect, o as openBlock, a as createElementBlock, b as createBaseVNode } from "./index.js";
 const RotateClockwiseIcon = replaceable("rotateClockwise", h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
@@ -113,8 +113,173 @@ const observeIntersection = (el, options, shouldStartLoadingRef) => {
   shouldStartLoadingRefMap.set(el, shouldStartLoadingRef);
   return unobserve;
 };
-const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), { showToolbar: { type: Boolean, default: true }, showToolbarTooltip: Boolean });
+const imagePreviewSharedProps = Object.assign(Object.assign({}, useTheme.props), { onPreviewPrev: Function, onPreviewNext: Function, showToolbar: { type: Boolean, default: true }, showToolbarTooltip: Boolean });
 const imageContextKey = createInjectionKey("n-image");
+var __awaiter = globalThis && globalThis.__awaiter || function(thisArg, _arguments, P, generator) {
+  function adopt(value) {
+    return value instanceof P ? value : new P(function(resolve) {
+      resolve(value);
+    });
+  }
+  return new (P || (P = Promise))(function(resolve, reject) {
+    function fulfilled(value) {
+      try {
+        step(generator.next(value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function rejected(value) {
+      try {
+        step(generator["throw"](value));
+      } catch (e) {
+        reject(e);
+      }
+    }
+    function step(result) {
+      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
+    }
+    step((generator = generator.apply(thisArg, _arguments || [])).next());
+  });
+};
+const isImageFileType = (type) => type.includes("image/");
+const getExtname = (url = "") => {
+  const temp = url.split("/");
+  const filename = temp[temp.length - 1];
+  const filenameWithoutSuffix = filename.split(/#|\?/)[0];
+  return (/\.[^./\\]*$/.exec(filenameWithoutSuffix) || [""])[0];
+};
+const imageExtensionRegex = /(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i;
+const isImageFile = (file) => {
+  if (file.type) {
+    return isImageFileType(file.type);
+  }
+  const fileNameExtension = getExtname(file.name || "");
+  if (imageExtensionRegex.test(fileNameExtension)) {
+    return true;
+  }
+  const url = file.thumbnailUrl || file.url || "";
+  const urlExtension = getExtname(url);
+  if (/^data:image\//.test(url) || imageExtensionRegex.test(urlExtension)) {
+    return true;
+  }
+  return false;
+};
+function createImageDataUrl(file) {
+  return __awaiter(this, void 0, void 0, function* () {
+    return yield new Promise((resolve) => {
+      if (!file.type || !isImageFileType(file.type)) {
+        resolve("");
+        return;
+      }
+      resolve(window.URL.createObjectURL(file));
+    });
+  });
+}
+const environmentSupportFile = isBrowser && window.FileReader && window.File;
+function isFileSystemDirectoryEntry(item) {
+  return item.isDirectory;
+}
+function isFileSystemFileEntry(item) {
+  return item.isFile;
+}
+function getFilesFromEntries(entries, directory) {
+  return __awaiter(this, void 0, void 0, function* () {
+    const fileAndEntries = [];
+    let _resolve;
+    let requestCallbackCount = 0;
+    function lock() {
+      requestCallbackCount++;
+    }
+    function unlock() {
+      requestCallbackCount--;
+      if (!requestCallbackCount) {
+        _resolve(fileAndEntries);
+      }
+    }
+    function _getFilesFromEntries(entries2) {
+      entries2.forEach((entry) => {
+        if (!entry)
+          return;
+        lock();
+        if (directory && isFileSystemDirectoryEntry(entry)) {
+          const directoryReader = entry.createReader();
+          lock();
+          directoryReader.readEntries((entries3) => {
+            _getFilesFromEntries(entries3);
+            unlock();
+          }, () => {
+            unlock();
+          });
+        } else if (isFileSystemFileEntry(entry)) {
+          lock();
+          entry.file((file) => {
+            fileAndEntries.push({ file, entry, source: "dnd" });
+            unlock();
+          }, () => {
+            unlock();
+          });
+        }
+        unlock();
+      });
+    }
+    yield new Promise((resolve) => {
+      _resolve = resolve;
+      _getFilesFromEntries(entries);
+    });
+    return fileAndEntries;
+  });
+}
+function createSettledFileInfo(fileInfo) {
+  const { id, name, percentage, status, url, file, thumbnailUrl, type, fullPath, batchId } = fileInfo;
+  return {
+    id,
+    name,
+    percentage: percentage !== null && percentage !== void 0 ? percentage : null,
+    status,
+    url: url !== null && url !== void 0 ? url : null,
+    file: file !== null && file !== void 0 ? file : null,
+    thumbnailUrl: thumbnailUrl !== null && thumbnailUrl !== void 0 ? thumbnailUrl : null,
+    type: type !== null && type !== void 0 ? type : null,
+    fullPath: fullPath !== null && fullPath !== void 0 ? fullPath : null,
+    batchId: batchId !== null && batchId !== void 0 ? batchId : null
+  };
+}
+function matchType(name, mimeType, accept) {
+  name = name.toLowerCase();
+  mimeType = mimeType.toLocaleLowerCase();
+  accept = accept.toLocaleLowerCase();
+  const acceptAtoms = accept.split(",").map((acceptAtom) => acceptAtom.trim()).filter(Boolean);
+  return acceptAtoms.some((acceptAtom) => {
+    if (acceptAtom.startsWith(".")) {
+      if (name.endsWith(acceptAtom))
+        return true;
+    } else if (acceptAtom.includes("/")) {
+      const [type, subtype] = mimeType.split("/");
+      const [acceptType, acceptSubtype] = acceptAtom.split("/");
+      if (acceptType === "*" || type && acceptType && acceptType === type) {
+        if (acceptSubtype === "*" || subtype && acceptSubtype && acceptSubtype === subtype) {
+          return true;
+        }
+      }
+    } else {
+      return true;
+    }
+    return false;
+  });
+}
+const download = (url, name) => {
+  if (!url)
+    return;
+  const a = document.createElement("a");
+  a.href = url;
+  if (name !== void 0) {
+    a.download = name;
+  }
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+};
 const prevIcon = h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
@@ -129,6 +294,11 @@ const closeIcon = h(
   "svg",
   { viewBox: "0 0 20 20", fill: "none", xmlns: "http://www.w3.org/2000/svg" },
   h("path", { d: "M4.089 4.216l.057-.07a.5.5 0 0 1 .638-.057l.07.057L10 9.293l5.146-5.147a.5.5 0 0 1 .638-.057l.07.057a.5.5 0 0 1 .057.638l-.057.07L10.707 10l5.147 5.146a.5.5 0 0 1 .057.638l-.057.07a.5.5 0 0 1-.638.057l-.07-.057L10 10.707l-5.146 5.147a.5.5 0 0 1-.638.057l-.07-.057a.5.5 0 0 1-.057-.638l.057-.07L9.293 10L4.146 4.854a.5.5 0 0 1-.057-.638l.057-.07l-.057.07z", fill: "currentColor" })
+);
+const downloadIcon = h(
+  "svg",
+  { xmlns: "http://www.w3.org/2000/svg", width: "32", height: "32", viewBox: "0 0 1024 1024" },
+  h("path", { fill: "currentColor", d: "M505.7 661a8 8 0 0 0 12.6 0l112-141.7c4.1-5.2.4-12.9-6.3-12.9h-74.1V168c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v338.3H400c-6.7 0-10.4 7.7-6.3 12.9l112 141.8zM878 626h-60c-4.4 0-8 3.6-8 8v154H214V634c0-4.4-3.6-8-8-8h-60c-4.4 0-8 3.6-8 8v198c0 17.7 14.3 32 32 32h684c17.7 0 32-14.3 32-32V634c0-4.4-3.6-8-8-8z" })
 );
 const style = c([c("body >", [cB("image-container", "position: fixed;")]), cB("image-preview-container", `
  position: fixed;
@@ -418,6 +588,12 @@ const NImagePreview = defineComponent({
         derivePreviewStyle();
       }
     }
+    function handleDownloadClick() {
+      const src = previewSrcRef.value;
+      if (src) {
+        download(src, void 0);
+      }
+    }
     function derivePreviewStyle(transition = true) {
       var _a;
       const { value: preview } = previewRef;
@@ -514,6 +690,7 @@ const NImagePreview = defineComponent({
       },
       zoomIn,
       zoomOut,
+      handleDownloadClick,
       rotateCounterclockwise,
       rotateClockwise,
       handleSwitchPrev,
@@ -575,6 +752,7 @@ const NImagePreview = defineComponent({
                   }), "tipOriginalSize"),
                   withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomOut }, { default: () => h(ZoomOutIcon, null) }), "tipZoomOut"),
                   withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.zoomIn }, { default: () => h(ZoomInIcon, null) }), "tipZoomIn"),
+                  withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.handleDownloadClick }, { default: () => downloadIcon }), "tipDownload"),
                   withTooltip(h(NBaseIcon, { clsPrefix, onClick: this.toggleShow }, { default: () => closeIcon }), "tipClose")
                 );
               }
@@ -623,6 +801,7 @@ const NImageGroup = defineComponent({
       (_a = previewInstRef.value) === null || _a === void 0 ? void 0 : _a.setPreviewSrc(src);
     };
     function go(step) {
+      var _a, _b;
       if (!(vm === null || vm === void 0 ? void 0 : vm.proxy))
         return;
       const container = vm.proxy.$el.parentElement;
@@ -635,6 +814,7 @@ const NImageGroup = defineComponent({
       } else {
         setPreviewSrc(imgs[0].dataset.previewSrc);
       }
+      step === 1 ? (_a = props.onPreviewNext) === null || _a === void 0 ? void 0 : _a.call(props) : (_b = props.onPreviewPrev) === null || _b === void 0 ? void 0 : _b.call(props);
     }
     provide(imageGroupInjectionKey, {
       mergedClsPrefixRef,
@@ -835,5 +1015,12 @@ const TrashBin = defineComponent({
 export {
   NImage as N,
   TrashBin as T,
-  NImageGroup as a
+  NImageGroup as a,
+  createImageDataUrl as b,
+  createSettledFileInfo as c,
+  download as d,
+  environmentSupportFile as e,
+  getFilesFromEntries as g,
+  isImageFile as i,
+  matchType as m
 };

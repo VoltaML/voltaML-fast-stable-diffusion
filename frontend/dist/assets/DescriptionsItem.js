@@ -1,4 +1,4 @@
-import { ad as c, T as cB, af as cNotM, ae as cM, au as cE, aV as insideModal, aW as insidePopover, d as defineComponent, V as useConfig, W as useTheme, c as computed, Z as useThemeClass, bN as useCompitable, ax as flatten, s as h, ay as getSlot, bO as descriptionsLight, ao as createKey } from "./index.js";
+import { ad as c, T as cB, af as cNotM, ae as cM, aw as cE, aX as insideModal, aY as insidePopover, d as defineComponent, V as useConfig, W as useTheme, c as computed, Z as useThemeClass, bP as useCompitable, az as flatten, s as h, aT as repeat, aA as getSlot, bQ as descriptionsLight, ao as createKey } from "./index.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
   if (children !== null && typeof children === "object" && !Array.isArray(children)) {
@@ -255,7 +255,14 @@ const NDescriptions = defineComponent({
         h(
           "table",
           { class: `${mergedClsPrefix}-descriptions-table` },
-          h("tbody", null, rows)
+          h(
+            "tbody",
+            null,
+            labelPlacement === "top" && h("tr", { class: `${mergedClsPrefix}-descriptions-table-row`, style: {
+              visibility: "collapse"
+            } }, repeat(compitableColumn * 2, h("td", null))),
+            rows
+          )
         )
       )
     );

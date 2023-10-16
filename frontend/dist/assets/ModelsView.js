@@ -1,9 +1,9 @@
-import { d as defineComponent, s as h, R as replaceable, S as createInjectionKey, T as cB, U as inject, V as useConfig, W as useTheme, X as popselectLight, c as computed, O as watch, Y as toRef, Z as useThemeClass, $ as NInternalSelectMenu, a0 as createTreeMate, a1 as happensIn, a2 as call, a3 as nextTick, a4 as keysOf, a5 as createTmOptions, r as ref, a6 as provide, a7 as keep, a8 as createRefSetter, a9 as mergeEventHandlers, aa as omit, ab as NPopover, ac as popoverBaseProps, ad as c, ae as cM, af as cNotM, ag as useLocale, ah as useMergedState, ai as watchEffect, aj as useRtl, ak as resolveSlot, C as NInput, p as NSelect, F as Fragment, al as NBaseIcon, am as useAdjustedTo, an as paginationLight, ao as createKey, ap as ellipsisLight, aq as onDeactivated, n as NTooltip, ar as mergeProps, as as useFormItem, at as useMemo, au as cE, av as radioLight, aw as resolveWrappedSlot, ax as flatten$1, ay as getSlot, az as depx, aA as formatLength, h as NButton, aB as NScrollbar, aC as onBeforeUnmount, aD as off, aE as on, aF as ChevronDownIcon, aG as NDropdown, aH as pxfy, aI as get, aJ as NIconSwitchTransition, aK as NBaseLoading, aL as ChevronRightIcon, y as onUnmounted, aM as VResizeObserver, aN as warn, aO as cssrAnchorMetaName, aP as VVirtualList, aQ as NEmpty, aR as repeat, aS as beforeNextFrameOnce, aT as fadeInScaleUpTransition, aU as iconSwitchTransition, aV as insideModal, aW as insidePopover, aX as createId, aY as Transition, aZ as dataTableLight, a_ as loadingBarApiInjectionKey, a$ as throwError, b0 as isBrowser, b1 as AddIcon, b2 as NProgress, b3 as NFadeInExpandTransition, b4 as EyeIcon, b5 as fadeInHeightExpandTransition, b6 as Teleport, b7 as uploadLight, o as openBlock, a as createElementBlock, b as createBaseVNode, b8 as useCssVars, f as unref, u as useSettings, b9 as reactive, ba as onMounted, e as createVNode, w as withCtx, q as NIcon, g as renderList, bb as normalizeStyle, i as createTextVNode, t as toDisplayString, bc as NText, _ as _export_sfc, v as useState, x as useMessage, bd as huggingfaceModelsFile, N as NCard, z as serverUrl, J as pushScopeId, K as popScopeId, B as NSpace, m as NModal, k as createBlock, A as NGi, H as NGrid, be as NDivider, bf as Backends, L as NTabPane, M as NTabs } from "./index.js";
+import { d as defineComponent, s as h, R as replaceable, S as createInjectionKey, T as cB, U as inject, V as useConfig, W as useTheme, X as popselectLight, c as computed, O as watch, Y as toRef, Z as useThemeClass, $ as NInternalSelectMenu, a0 as createTreeMate, a1 as happensIn, a2 as call, a3 as nextTick, a4 as keysOf, a5 as createTmOptions, r as ref, a6 as provide, a7 as keep, a8 as createRefSetter, a9 as mergeEventHandlers, aa as omit, ab as NPopover, ac as popoverBaseProps, ad as c, ae as cM, af as cNotM, ag as useLocale, ah as useMergedState, ai as watchEffect, aj as useRtl, ak as resolveSlot, C as NInput, p as NSelect, F as Fragment, al as NBaseIcon, am as useAdjustedTo, an as paginationLight, ao as createKey, ap as useMergedClsPrefix, aq as ellipsisLight, ar as onDeactivated, n as NTooltip, as as mergeProps, at as useStyle, au as useFormItem, av as useMemo, aw as cE, ax as radioLight, ay as resolveWrappedSlot, az as flatten$1, aA as getSlot, aB as depx, aC as formatLength, h as NButton, aD as NScrollbar, aE as onBeforeUnmount, aF as off, aG as on, aH as ChevronDownIcon, aI as NDropdown, aJ as pxfy, aK as get, aL as NIconSwitchTransition, aM as NBaseLoading, aN as ChevronRightIcon, y as onUnmounted, aO as VResizeObserver, aP as warn, aQ as cssrAnchorMetaName, aR as VVirtualList, aS as NEmpty, aT as repeat, aU as beforeNextFrameOnce, aV as fadeInScaleUpTransition, aW as iconSwitchTransition, aX as insideModal, aY as insidePopover, aZ as createId, a_ as Transition, a$ as dataTableLight, b0 as loadingBarApiInjectionKey, b1 as throwError, b2 as AddIcon, b3 as NProgress, b4 as NFadeInExpandTransition, b5 as EyeIcon, b6 as fadeInHeightExpandTransition, b7 as Teleport, b8 as uploadLight, o as openBlock, a as createElementBlock, b as createBaseVNode, b9 as useCssVars, f as unref, u as useSettings, ba as reactive, bb as onMounted, e as createVNode, w as withCtx, q as NIcon, g as renderList, bc as normalizeStyle, i as createTextVNode, t as toDisplayString, bd as NText, _ as _export_sfc, v as useState, x as useMessage, be as huggingfaceModelsFile, N as NCard, z as serverUrl, J as pushScopeId, K as popScopeId, B as NSpace, m as NModal, k as createBlock, A as NGi, H as NGrid, bf as NDivider, bg as Backends, L as NTabPane, M as NTabs } from "./index.js";
 import { _ as _sfc_main$5, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { a as NCheckboxGroup, N as NCheckbox, S as Settings } from "./Settings.js";
-import { N as NImage, a as NImageGroup, T as TrashBin } from "./TrashBin.js";
+import { g as getFilesFromEntries, i as isImageFile, N as NImage, d as download, a as NImageGroup, e as environmentSupportFile, c as createSettledFileInfo, m as matchType, b as createImageDataUrl, T as TrashBin } from "./TrashBin.js";
 import { C as CloudUpload } from "./CloudUpload.js";
 import "./DescriptionsItem.js";
 function smallerSize(size) {
@@ -1218,7 +1218,7 @@ const NEllipsis = defineComponent({
   inheritAttrs: false,
   props: ellipsisProps,
   setup(props, { slots, attrs }) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const mergedClsPrefixRef = useMergedClsPrefix();
     const mergedTheme = useTheme("Ellipsis", "-ellipsis", style$4, ellipsisLight, props, mergedClsPrefixRef);
     const triggerRef = ref(null);
     const triggerInnerRef = ref(null);
@@ -1343,6 +1343,45 @@ const NEllipsis = defineComponent({
       });
     } else
       return renderTrigger();
+  }
+});
+const NPerformantEllipsis = defineComponent({
+  name: "PerformantEllipsis",
+  props: ellipsisProps,
+  inheritAttrs: false,
+  setup(props, { attrs, slots }) {
+    const mouseEnteredRef = ref(false);
+    const mergedClsPrefixRef = useMergedClsPrefix();
+    useStyle("-ellipsis", style$4, mergedClsPrefixRef);
+    const renderTrigger = () => {
+      const { lineClamp } = props;
+      const mergedClsPrefix = mergedClsPrefixRef.value;
+      return h("span", Object.assign({}, mergeProps(attrs, {
+        class: [
+          `${mergedClsPrefix}-ellipsis`,
+          lineClamp !== void 0 ? createLineClampClass(mergedClsPrefix) : void 0,
+          props.expandTrigger === "click" ? createCursorClass(mergedClsPrefix, "pointer") : void 0
+        ],
+        style: lineClamp === void 0 ? {
+          textOverflow: "ellipsis"
+        } : {
+          "-webkit-line-clamp": lineClamp
+        }
+      }), { onMouseenter: () => {
+        mouseEnteredRef.value = true;
+      } }), lineClamp ? slots : h("span", null, slots));
+    };
+    return {
+      mouseEntered: mouseEnteredRef,
+      renderTrigger
+    };
+  },
+  render() {
+    if (this.mouseEntered) {
+      return h(NEllipsis, mergeProps({}, this.$attrs, this.$props), this.$slots);
+    } else {
+      return this.renderTrigger();
+    }
   }
 });
 const RenderSorter = defineComponent({
@@ -1543,7 +1582,7 @@ const RenderFilter = defineComponent({
     });
   }
 });
-const radioProps = {
+const radioBaseProps = {
   name: String,
   value: {
     type: [String, Number, Boolean],
@@ -1752,9 +1791,10 @@ const style$3 = cB("radio", `
 }), cB("radio-input", `
  cursor: not-allowed;
  `)])]);
+const radioProps = Object.assign(Object.assign({}, useTheme.props), radioBaseProps);
 const NRadio = defineComponent({
   name: "Radio",
-  props: Object.assign(Object.assign({}, useTheme.props), radioProps),
+  props: radioProps,
   setup(props) {
     const radio = setup(props);
     const themeRef = useTheme("Radio", "-radio", style$3, radioLight, props, radio.mergedClsPrefix);
@@ -2431,6 +2471,7 @@ const ResizeButton = defineComponent({
     }
     function handleMousedown(e) {
       var _a;
+      e.preventDefault();
       const alreadyStarted = activeRef.value;
       startX = getMouseX(e);
       activeRef.value = true;
@@ -2570,7 +2611,6 @@ const TableHeader = defineComponent({
       checkOptionsRef,
       mergedSortStateRef,
       componentId,
-      scrollPartRef,
       mergedTableLayoutRef,
       headerCheckboxDisabledRef,
       onUnstableColumnResize,
@@ -2603,12 +2643,6 @@ const TableHeader = defineComponent({
       const nextSorter = createNextSorter(column, activeSorter);
       deriveNextSorter(nextSorter);
     }
-    function handleMouseenter() {
-      scrollPartRef.value = "head";
-    }
-    function handleMouseleave() {
-      scrollPartRef.value = "body";
-    }
     const resizeStartWidthMap = /* @__PURE__ */ new Map();
     function handleColumnResizeStart(column) {
       resizeStartWidthMap.set(column.key, getCellActualWidth(column.key));
@@ -2640,8 +2674,6 @@ const TableHeader = defineComponent({
       checkOptions: checkOptionsRef,
       mergedTableLayout: mergedTableLayoutRef,
       headerCheckboxDisabled: headerCheckboxDisabledRef,
-      handleMouseenter,
-      handleMouseleave,
       handleCheckboxUpdateChecked,
       handleColHeaderClick,
       handleTableHeaderScroll,
@@ -2709,10 +2741,10 @@ const TableHeader = defineComponent({
     if (!discrete) {
       return theadVNode;
     }
-    const { handleTableHeaderScroll, handleMouseenter, handleMouseleave, scrollX } = this;
+    const { handleTableHeaderScroll, scrollX } = this;
     return h(
       "div",
-      { class: `${mergedClsPrefix}-data-table-base-table-header`, onScroll: handleTableHeaderScroll, onMouseenter: handleMouseenter, onMouseleave: handleMouseleave },
+      { class: `${mergedClsPrefix}-data-table-base-table-header`, onScroll: handleTableHeaderScroll },
       h(
         "table",
         { ref: "body", class: `${mergedClsPrefix}-data-table-table`, style: {
@@ -2767,6 +2799,9 @@ const Cell = defineComponent({
     if (ellipsis) {
       if (typeof ellipsis === "object") {
         const { mergedTheme } = this;
+        if (column.ellipsisComponent === "performant-ellipsis") {
+          return h(NPerformantEllipsis, Object.assign({}, ellipsis, { theme: mergedTheme.peers.Ellipsis, themeOverrides: mergedTheme.peerOverrides.Ellipsis }), { default: () => cell });
+        }
         return h(NEllipsis, Object.assign({}, ellipsis, { theme: mergedTheme.peers.Ellipsis, themeOverrides: mergedTheme.peerOverrides.Ellipsis }), { default: () => cell });
       } else {
         return h("span", { class: `${this.clsPrefix}-data-table-td__ellipsis` }, cell);
@@ -2799,7 +2834,9 @@ const ExpandTrigger = defineComponent({
       { class: [
         `${clsPrefix}-data-table-expand-trigger`,
         this.expanded && `${clsPrefix}-data-table-expand-trigger--expanded`
-      ], onClick: this.onClick },
+      ], onClick: this.onClick, onMousedown: (e) => {
+        e.preventDefault();
+      } },
       h(NIconSwitchTransition, null, {
         default: () => {
           return this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: this.clsPrefix, radius: 85, strokeWidth: 15, scale: 0.88 }) : this.renderExpandIcon ? this.renderExpandIcon({
@@ -2959,7 +2996,6 @@ const TableBody = defineComponent({
       mergedSortStateRef,
       virtualScrollRef,
       componentId,
-      scrollPartRef,
       mergedTableLayoutRef,
       childTriggerColIndexRef,
       indentRef,
@@ -3090,9 +3126,6 @@ const TableBody = defineComponent({
     }
     function handleMouseleaveTable() {
       hoverKeyRef.value = null;
-    }
-    function handleMouseenterTable() {
-      scrollPartRef.value = "body";
     }
     function virtualListContainer() {
       const { value } = virtualListRef;
@@ -3239,7 +3272,6 @@ const TableBody = defineComponent({
       renderExpandIcon: renderExpandIconRef,
       scrollbarProps: scrollbarPropsRef,
       setHeaderScrollLeft,
-      handleMouseenterTable,
       handleVirtualListScroll,
       handleVirtualListResize,
       handleMouseleaveTable,
@@ -3266,7 +3298,7 @@ const TableBody = defineComponent({
       default: () => {
         const cordToPass = {};
         const cordKey = {};
-        const { cols, paginatedDataAndInfo, mergedTheme: mergedTheme2, fixedColumnLeftMap, fixedColumnRightMap, currentPage, rowClassName, mergedSortState, mergedExpandedRowKeySet, stickyExpandedRows, componentId, childTriggerColIndex, expandable, rowProps, handleMouseenterTable, handleMouseleaveTable, renderExpand, summary, handleCheckboxUpdateChecked, handleRadioUpdateChecked, handleUpdateExpanded } = this;
+        const { cols, paginatedDataAndInfo, mergedTheme: mergedTheme2, fixedColumnLeftMap, fixedColumnRightMap, currentPage, rowClassName, mergedSortState, mergedExpandedRowKeySet, stickyExpandedRows, componentId, childTriggerColIndex, expandable, rowProps, handleMouseleaveTable, renderExpand, summary, handleCheckboxUpdateChecked, handleRadioUpdateChecked, handleUpdateExpanded } = this;
         const { length: colCount } = cols;
         let mergedData;
         const { data: paginatedData, hasChildren } = paginatedDataAndInfo;
@@ -3326,7 +3358,7 @@ const TableBody = defineComponent({
             const { tmNode: { key, rawNode } } = rowInfo;
             return h(
               "tr",
-              { class: `${mergedClsPrefix}-data-table-tr`, key: `${key}__expand` },
+              { class: `${mergedClsPrefix}-data-table-tr ${mergedClsPrefix}-data-table-tr--expanded`, key: `${key}__expand` },
               h("td", { class: [
                 `${mergedClsPrefix}-data-table-td`,
                 `${mergedClsPrefix}-data-table-td--last-col`,
@@ -3349,6 +3381,7 @@ const TableBody = defineComponent({
             `${mergedClsPrefix}-data-table-tr`,
             isSummary && `${mergedClsPrefix}-data-table-tr--summary`,
             striped && `${mergedClsPrefix}-data-table-tr--striped`,
+            expanded && `${mergedClsPrefix}-data-table-tr--expanded`,
             mergedRowClassName
           ] }, props), cols.map((col, colIndex) => {
             var _a, _b, _c, _d, _e;
@@ -3393,6 +3426,9 @@ const TableBody = defineComponent({
             const hoverKey = isCrossRowTd ? this.hoverKey : null;
             const { cellProps } = column;
             const resolvedCellProps = cellProps === null || cellProps === void 0 ? void 0 : cellProps(rowData, actualRowIndex);
+            const indentOffsetStyle = {
+              "--indent-offset": ""
+            };
             return h(
               "td",
               Object.assign({}, resolvedCellProps, { key: colKey, style: [
@@ -3401,6 +3437,7 @@ const TableBody = defineComponent({
                   left: pxfy((_c = fixedColumnLeftMap[colKey]) === null || _c === void 0 ? void 0 : _c.start),
                   right: pxfy((_d = fixedColumnRightMap[colKey]) === null || _d === void 0 ? void 0 : _d.start)
                 },
+                indentOffsetStyle,
                 (resolvedCellProps === null || resolvedCellProps === void 0 ? void 0 : resolvedCellProps.style) || ""
               ], colspan: mergedColSpan, rowspan: isVirtual ? void 0 : mergedRowSpan, "data-col-key": colKey, class: [
                 `${mergedClsPrefix}-data-table-td`,
@@ -3416,7 +3453,7 @@ const TableBody = defineComponent({
                 isLastRow && `${mergedClsPrefix}-data-table-td--last-row`
               ] }),
               hasChildren && colIndex === childTriggerColIndex ? [
-                repeat(isSummary ? 0 : rowInfo.tmNode.level, h("div", { class: `${mergedClsPrefix}-data-table-indent`, style: indentStyle })),
+                repeat(indentOffsetStyle["--indent-offset"] = isSummary ? 0 : rowInfo.tmNode.level, h("div", { class: `${mergedClsPrefix}-data-table-indent`, style: indentStyle })),
                 isSummary || rowInfo.tmNode.isLeaf ? h("div", { class: `${mergedClsPrefix}-data-table-expand-placeholder` }) : h(ExpandTrigger, { class: `${mergedClsPrefix}-data-table-expand-trigger`, clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, loading: loadingKeySet.has(rowInfo.key), onClick: () => {
                   handleUpdateExpanded(rowKey, rowInfo.tmNode);
                 } })
@@ -3435,7 +3472,7 @@ const TableBody = defineComponent({
         if (!virtualScroll) {
           return h(
             "table",
-            { class: `${mergedClsPrefix}-data-table-table`, onMouseleave: handleMouseleaveTable, onMouseenter: handleMouseenterTable, style: {
+            { class: `${mergedClsPrefix}-data-table-table`, onMouseleave: handleMouseleaveTable, style: {
               tableLayout: this.mergedTableLayout
             } },
             h("colgroup", null, cols.map((col) => h("col", { key: col.key, style: col.style }))),
@@ -3449,7 +3486,6 @@ const TableBody = defineComponent({
             clsPrefix: mergedClsPrefix,
             id: componentId,
             cols,
-            onMouseenter: handleMouseenterTable,
             onMouseleave: handleMouseleaveTable
           }, showScrollbar: false, onResize: this.handleVirtualListResize, onScroll: this.handleVirtualListScroll, itemsStyle: contentStyle, itemResizable: true }, {
             default: ({ item, index }) => renderRow(item, index, true)
@@ -4157,8 +4193,9 @@ function useTableData(props, { dataRelatedColsRef }) {
     sort
   };
 }
-function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef, scrollPartRef }) {
-  let scrollLeft = 0;
+function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef }) {
+  let lastScrollLeft = 0;
+  const scrollPartRef = ref();
   const leftActiveFixedColKeyRef = ref(null);
   const leftActiveFixedChildrenColKeysRef = ref([]);
   const rightActiveFixedColKeyRef = ref(null);
@@ -4219,7 +4256,7 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     let leftActiveFixedColKey = null;
     for (let i = 0; i < leftFixedColumns.length; ++i) {
       const key = getColKey(leftFixedColumns[i]);
-      if (scrollLeft > (((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) - leftWidth) {
+      if (lastScrollLeft > (((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) - leftWidth) {
         leftActiveFixedColKey = key;
         leftWidth = ((_b = fixedColumnLeftMap[key]) === null || _b === void 0 ? void 0 : _b.end) || 0;
       } else {
@@ -4252,7 +4289,7 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     const { value: fixedColumnRightMap } = fixedColumnRightMapRef;
     for (let i = rightFixedColumns.length - 1; i >= 0; --i) {
       const key = getColKey(rightFixedColumns[i]);
-      if (Math.round(scrollLeft + (((_a = fixedColumnRightMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) + tableWidth - rightWidth) < scrollWidth) {
+      if (Math.round(lastScrollLeft + (((_a = fixedColumnRightMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) + tableWidth - rightWidth) < scrollWidth) {
         rightActiveFixedColKey = key;
         rightWidth = ((_b = fixedColumnRightMap[key]) === null || _b === void 0 ? void 0 : _b.end) || 0;
       } else {
@@ -4285,15 +4322,19 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     }
   }
   function handleTableHeaderScroll() {
-    if (scrollPartRef.value === "head") {
+    if (scrollPartRef.value !== "body") {
       beforeNextFrameOnce(syncScrollState);
+    } else {
+      scrollPartRef.value = void 0;
     }
   }
   function handleTableBodyScroll(e) {
     var _a;
     (_a = props.onScroll) === null || _a === void 0 ? void 0 : _a.call(props, e);
-    if (scrollPartRef.value === "body") {
+    if (scrollPartRef.value !== "head") {
       beforeNextFrameOnce(syncScrollState);
+    } else {
+      scrollPartRef.value = void 0;
     }
   }
   function syncScrollState() {
@@ -4303,19 +4344,20 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     const { value: tableWidth } = bodyWidthRef;
     if (tableWidth === null)
       return;
-    const { value: scrollPart } = scrollPartRef;
     if (props.maxHeight || props.flexHeight) {
       if (!header)
         return;
-      if (scrollPart === "head") {
-        scrollLeft = header.scrollLeft;
-        body.scrollLeft = scrollLeft;
+      const directionHead = lastScrollLeft - header.scrollLeft;
+      scrollPartRef.value = directionHead !== 0 ? "head" : "body";
+      if (scrollPartRef.value === "head") {
+        lastScrollLeft = header.scrollLeft;
+        body.scrollLeft = lastScrollLeft;
       } else {
-        scrollLeft = body.scrollLeft;
-        header.scrollLeft = scrollLeft;
+        lastScrollLeft = body.scrollLeft;
+        header.scrollLeft = lastScrollLeft;
       }
     } else {
-      scrollLeft = body.scrollLeft;
+      lastScrollLeft = body.scrollLeft;
     }
     deriveActiveLeftFixedColumn();
     deriveActiveLeftFixedChildrenColumns();
@@ -4755,6 +4797,7 @@ const style$1 = c([cB("data-table", `
  white-space: nowrap;
  max-width: 100%;
  vertical-align: bottom;
+ max-width: calc(100% - var(--indent-offset, -1.5) * 16px - 24px);
  `), cM("selection, expand", `
  text-align: center;
  padding: 0;
@@ -4918,10 +4961,6 @@ const NDataTable = defineComponent({
     });
     const themeRef = useTheme("DataTable", "-data-table", style$1, dataTableLight, props, mergedClsPrefixRef);
     const bodyWidthRef = ref(null);
-    const scrollPartRef = ref("body");
-    onDeactivated(() => {
-      scrollPartRef.value = "body";
-    });
     const mainTableInstRef = ref(null);
     const { getResizableWidth, clearResizableWidth, doUpdateResizableWidth } = useResizable();
     const { rowsRef, colsRef, dataRelatedColsRef, hasEllipsisRef } = useGroupHeader(props, getResizableWidth);
@@ -4933,7 +4972,6 @@ const NDataTable = defineComponent({
     });
     const { stickyExpandedRowsRef, mergedExpandedRowKeysRef, renderExpandRef, expandableRef, doUpdateExpandedRowKeys } = useExpand(props, treeMateRef);
     const { handleTableBodyScroll, handleTableHeaderScroll, syncScrollState, setHeaderScrollLeft, leftActiveFixedColKeyRef, leftActiveFixedChildrenColKeysRef, rightActiveFixedColKeyRef, rightActiveFixedChildrenColKeysRef, leftFixedColumnsRef, rightFixedColumnsRef, fixedColumnLeftMapRef, fixedColumnRightMapRef } = useScroll(props, {
-      scrollPartRef,
       bodyWidthRef,
       mainTableInstRef,
       mergedCurrentPageRef
@@ -4981,7 +5019,6 @@ const NDataTable = defineComponent({
       mergedExpandedRowKeysRef,
       mergedInderminateRowKeySetRef,
       localeRef,
-      scrollPartRef,
       expandableRef,
       stickyExpandedRowsRef,
       rowKeyRef: toRef(props, "rowKey"),
@@ -5167,171 +5204,6 @@ const NUploadDragger = defineComponent({
     };
   }
 });
-var __awaiter$2 = globalThis && globalThis.__awaiter || function(thisArg, _arguments, P, generator) {
-  function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve) {
-      resolve(value);
-    });
-  }
-  return new (P || (P = Promise))(function(resolve, reject) {
-    function fulfilled(value) {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function rejected(value) {
-      try {
-        step(generator["throw"](value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function step(result) {
-      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-    }
-    step((generator = generator.apply(thisArg, _arguments || [])).next());
-  });
-};
-const isImageFileType = (type) => type.includes("image/");
-const getExtname = (url = "") => {
-  const temp = url.split("/");
-  const filename = temp[temp.length - 1];
-  const filenameWithoutSuffix = filename.split(/#|\?/)[0];
-  return (/\.[^./\\]*$/.exec(filenameWithoutSuffix) || [""])[0];
-};
-const imageExtensionRegex = /(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i;
-const isImageFile = (file) => {
-  if (file.type) {
-    return isImageFileType(file.type);
-  }
-  const fileNameExtension = getExtname(file.name || "");
-  if (imageExtensionRegex.test(fileNameExtension)) {
-    return true;
-  }
-  const url = file.thumbnailUrl || file.url || "";
-  const urlExtension = getExtname(url);
-  if (/^data:image\//.test(url) || imageExtensionRegex.test(urlExtension)) {
-    return true;
-  }
-  return false;
-};
-function createImageDataUrl(file) {
-  return __awaiter$2(this, void 0, void 0, function* () {
-    return yield new Promise((resolve) => {
-      if (!file.type || !isImageFileType(file.type)) {
-        resolve("");
-        return;
-      }
-      resolve(window.URL.createObjectURL(file));
-    });
-  });
-}
-const environmentSupportFile = isBrowser && window.FileReader && window.File;
-function isFileSystemDirectoryEntry(item) {
-  return item.isDirectory;
-}
-function isFileSystemFileEntry(item) {
-  return item.isFile;
-}
-function getFilesFromEntries(entries, directory) {
-  return __awaiter$2(this, void 0, void 0, function* () {
-    const fileAndEntries = [];
-    let _resolve;
-    let requestCallbackCount = 0;
-    function lock() {
-      requestCallbackCount++;
-    }
-    function unlock() {
-      requestCallbackCount--;
-      if (!requestCallbackCount) {
-        _resolve(fileAndEntries);
-      }
-    }
-    function _getFilesFromEntries(entries2) {
-      entries2.forEach((entry) => {
-        if (!entry)
-          return;
-        lock();
-        if (directory && isFileSystemDirectoryEntry(entry)) {
-          const directoryReader = entry.createReader();
-          lock();
-          directoryReader.readEntries((entries3) => {
-            _getFilesFromEntries(entries3);
-            unlock();
-          }, () => {
-            unlock();
-          });
-        } else if (isFileSystemFileEntry(entry)) {
-          lock();
-          entry.file((file) => {
-            fileAndEntries.push({ file, entry, source: "dnd" });
-            unlock();
-          }, () => {
-            unlock();
-          });
-        }
-        unlock();
-      });
-    }
-    yield new Promise((resolve) => {
-      _resolve = resolve;
-      _getFilesFromEntries(entries);
-    });
-    return fileAndEntries;
-  });
-}
-function createSettledFileInfo(fileInfo) {
-  const { id, name, percentage, status, url, file, thumbnailUrl, type, fullPath, batchId } = fileInfo;
-  return {
-    id,
-    name,
-    percentage: percentage !== null && percentage !== void 0 ? percentage : null,
-    status,
-    url: url !== null && url !== void 0 ? url : null,
-    file: file !== null && file !== void 0 ? file : null,
-    thumbnailUrl: thumbnailUrl !== null && thumbnailUrl !== void 0 ? thumbnailUrl : null,
-    type: type !== null && type !== void 0 ? type : null,
-    fullPath: fullPath !== null && fullPath !== void 0 ? fullPath : null,
-    batchId: batchId !== null && batchId !== void 0 ? batchId : null
-  };
-}
-function matchType(name, mimeType, accept) {
-  name = name.toLowerCase();
-  mimeType = mimeType.toLocaleLowerCase();
-  accept = accept.toLocaleLowerCase();
-  const acceptAtoms = accept.split(",").map((acceptAtom) => acceptAtom.trim()).filter(Boolean);
-  return acceptAtoms.some((acceptAtom) => {
-    if (acceptAtom.startsWith(".")) {
-      if (name.endsWith(acceptAtom))
-        return true;
-    } else if (acceptAtom.includes("/")) {
-      const [type, subtype] = mimeType.split("/");
-      const [acceptType, acceptSubtype] = acceptAtom.split("/");
-      if (acceptType === "*" || type && acceptType && acceptType === type) {
-        if (acceptSubtype === "*" || subtype && acceptSubtype && acceptSubtype === subtype) {
-          return true;
-        }
-      }
-    } else {
-      return true;
-    }
-    return false;
-  });
-}
-const download = (url, name) => {
-  if (!url)
-    return;
-  const a = document.createElement("a");
-  a.href = url;
-  if (name !== void 0) {
-    a.download = name;
-  }
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-};
 const NUploadTrigger = defineComponent({
   name: "UploadTrigger",
   props: {
@@ -6215,7 +6087,7 @@ const uploadProps = Object.assign(Object.assign({}, useTheme.props), {
   imageGroupProps: Object,
   inputProps: Object,
   triggerStyle: [String, Object],
-  renderIcon: Object
+  renderIcon: Function
 });
 const NUpload = defineComponent({
   name: "Upload",

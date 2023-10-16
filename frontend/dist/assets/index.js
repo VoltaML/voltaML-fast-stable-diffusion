@@ -6614,10 +6614,10 @@ function normalizeContainer(container) {
 }
 var isVue2 = false;
 /*!
-  * pinia v2.1.3
-  * (c) 2023 Eduardo San Martin Morote
-  * @license MIT
-  */
+ * pinia v2.1.7
+ * (c) 2023 Eduardo San Martin Morote
+ * @license MIT
+ */
 let activePinia;
 const setActivePinia = (pinia) => activePinia = pinia;
 const piniaSymbol = (
@@ -6871,10 +6871,7 @@ function createSetupStore($id, setup, options = {}, pinia, hot, isOptionsStore) 
   const store = reactive(partialStore);
   pinia._s.set($id, store);
   const runWithContext = pinia._a && pinia._a.runWithContext || fallbackRunWithContext;
-  const setupStore = pinia._e.run(() => {
-    scope = effectScope();
-    return runWithContext(() => scope.run(setup));
-  });
+  const setupStore = runWithContext(() => pinia._e.run(() => (scope = effectScope()).run(setup)));
   for (const key in setupStore) {
     const prop = setupStore[key];
     if (isRef(prop) && !isComputed(prop) || isReactive(prop)) {
@@ -13739,12 +13736,13 @@ function useConfig(props = {}, options = {
         return bordered;
       return (_b = (_a2 = NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedBorderedRef.value) !== null && _a2 !== void 0 ? _a2 : options.defaultBordered) !== null && _b !== void 0 ? _b : true;
     }),
-    mergedClsPrefixRef: computed(() => {
-      const clsPrefix = NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedClsPrefixRef.value;
-      return clsPrefix || defaultClsPrefix;
-    }),
+    mergedClsPrefixRef: NConfigProvider2 ? NConfigProvider2.mergedClsPrefixRef : shallowRef(defaultClsPrefix),
     namespaceRef: computed(() => NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedNamespaceRef.value)
   };
+}
+function useMergedClsPrefix() {
+  const NConfigProvider2 = inject(configProviderInjectionKey, null);
+  return NConfigProvider2 ? NConfigProvider2.mergedClsPrefixRef : shallowRef(defaultClsPrefix);
 }
 const enUS = {
   name: "en-US",
@@ -13861,6 +13859,7 @@ const enUS = {
     tipClockwise: "Clockwise",
     tipZoomOut: "Zoom out",
     tipZoomIn: "Zoom in",
+    tipDownload: "Download",
     tipClose: "Close (Esc)",
     // TODO: translation
     tipOriginalSize: "Zoom to original size"
@@ -14346,7 +14345,7 @@ function useStyle(mountId, style2, clsPrefixRef) {
   const ssrAdapter2 = useSsrAdapter();
   const NConfigProvider2 = inject(configProviderInjectionKey, null);
   const mountStyle = () => {
-    const clsPrefix = clsPrefixRef === null || clsPrefixRef === void 0 ? void 0 : clsPrefixRef.value;
+    const clsPrefix = clsPrefixRef.value;
     style2.mount({
       id: clsPrefix === void 0 ? mountId : clsPrefix + mountId,
       head: true,
@@ -16260,6 +16259,7 @@ const style$u = cB("scrollbar", `
  width: 100%;
  overflow: scroll;
  height: 100%;
+ min-height: inherit;
  max-height: inherit;
  scrollbar-width: none;
  `, [c$1("&::-webkit-scrollbar, &::-webkit-scrollbar-track-piece, &::-webkit-scrollbar-thumb", `
@@ -16828,11 +16828,11 @@ const Scrollbar$1 = defineComponent({
     if (!this.scrollable)
       return (_a2 = $slots.default) === null || _a2 === void 0 ? void 0 : _a2.call($slots);
     const triggerIsNone = this.trigger === "none";
-    const createYRail = () => {
+    const createYRail = (style2) => {
       return h("div", { ref: "yRailRef", class: [
         `${mergedClsPrefix}-scrollbar-rail`,
         `${mergedClsPrefix}-scrollbar-rail--vertical`
-      ], "data-scrollbar-rail": true, style: this.verticalRailStyle, "aria-hidden": true }, h(triggerIsNone ? Wrapper : Transition, triggerIsNone ? null : { name: "fade-in-transition" }, {
+      ], "data-scrollbar-rail": true, style: [style2 || "", this.verticalRailStyle], "aria-hiddens": true }, h(triggerIsNone ? Wrapper : Transition, triggerIsNone ? null : { name: "fade-in-transition" }, {
         default: () => this.needYBar && this.isShowYBar && !this.isIos ? h("div", { class: `${mergedClsPrefix}-scrollbar-rail__scrollbar`, style: {
           height: this.yBarSizePx,
           top: this.yBarTopPx
@@ -16872,7 +16872,7 @@ const Scrollbar$1 = defineComponent({
             ] }, $slots)
           })
         ),
-        internalHoistYRail ? null : createYRail(),
+        internalHoistYRail ? null : createYRail(void 0),
         this.xScrollable && h("div", { ref: "xRailRef", class: [
           `${mergedClsPrefix}-scrollbar-rail`,
           `${mergedClsPrefix}-scrollbar-rail--horizontal`
@@ -16893,7 +16893,7 @@ const Scrollbar$1 = defineComponent({
         Fragment,
         null,
         scrollbarNode,
-        createYRail()
+        createYRail(this.cssVars)
       );
     } else {
       return scrollbarNode;
@@ -17577,7 +17577,7 @@ const NInternalSelectMenu = defineComponent({
             paddingBottom: this.padding.bottom
           } }, this.flattenedNodes.map((tmNode) => tmNode.isGroup ? h(NSelectGroupHeader, { key: tmNode.key, clsPrefix, tmNode }) : h(NSelectOption, { clsPrefix, key: tmNode.key, tmNode })));
         }
-      }) : h("div", { class: `${clsPrefix}-base-select-menu__empty`, "data-empty": true }, resolveSlot($slots.empty, () => [
+      }) : h("div", { class: `${clsPrefix}-base-select-menu__empty`, "data-empty": true, "data-action": true }, resolveSlot($slots.empty, () => [
         h(NEmpty, { theme: mergedTheme.peers.Empty, themeOverrides: mergedTheme.peerOverrides.Empty })
       ])),
       resolveWrappedSlot($slots.action, (children) => children && [
@@ -18417,7 +18417,7 @@ const NPopover = defineComponent({
         doUpdateShow(false);
       }
     });
-    return {
+    const returned = {
       binderInstRef,
       positionManually: positionManuallyRef,
       mergedShowConsideringDisabledProp: mergedShowConsideringDisabledPropRef,
@@ -18433,6 +18433,7 @@ const NPopover = defineComponent({
       handleBlur,
       syncPosition
     };
+    return returned;
   },
   render() {
     var _a2;
@@ -19031,7 +19032,9 @@ const NBaseClear = defineComponent({
     useStyle("-base-clear", style$p, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
+        var _a2;
         e.preventDefault();
+        (_a2 = props.onClear) === null || _a2 === void 0 ? void 0 : _a2.call(props, e);
       }
     };
   },
@@ -19706,7 +19709,7 @@ const NInternalSelection = defineComponent({
         window.clearTimeout(enterTimerId);
     }
     function handleMouseEnterCounter() {
-      if (props.disabled || props.active)
+      if (props.active)
         return;
       clearEnterTimer();
       enterTimerId = window.setTimeout(() => {
@@ -19734,7 +19737,11 @@ const NInternalSelection = defineComponent({
         const patternInputWrapperEl = patternInputWrapperRef.value;
         if (!patternInputWrapperEl)
           return;
-        patternInputWrapperEl.tabIndex = props.disabled || patternInputFocusedRef.value ? -1 : 0;
+        if (props.disabled) {
+          patternInputWrapperEl.removeAttribute("tabindex");
+        } else {
+          patternInputWrapperEl.tabIndex = patternInputFocusedRef.value ? -1 : 0;
+        }
       });
     });
     useOnResize(selfRef, props.onResize);
@@ -20301,7 +20308,8 @@ const style$n = cB("alert", `
  background-color: var(--n-color);
  text-align: start;
  word-break: break-word;
-`, [cE("border", `
+`, [
+  cE("border", `
  border-radius: inherit;
  position: absolute;
  left: 0;
@@ -20311,25 +20319,30 @@ const style$n = cB("alert", `
  transition: border-color .3s var(--n-bezier);
  border: var(--n-border);
  pointer-events: none;
- `), cM("closable", [cB("alert-body", [cE("title", `
+ `),
+  cM("closable", [cB("alert-body", [cE("title", `
  padding-right: 24px;
- `)])]), cE("icon", {
-  color: "var(--n-icon-color)"
-}), cB("alert-body", {
-  padding: "var(--n-padding)"
-}, [cE("title", {
-  color: "var(--n-title-text-color)"
-}), cE("content", {
-  color: "var(--n-content-text-color)"
-})]), fadeInHeightExpandTransition({
-  originalTransition: "transform .3s var(--n-bezier)",
-  enterToProps: {
-    transform: "scale(1)"
-  },
-  leaveToProps: {
-    transform: "scale(0.9)"
-  }
-}), cE("icon", `
+ `)])]),
+  cE("icon", {
+    color: "var(--n-icon-color)"
+  }),
+  cB("alert-body", {
+    padding: "var(--n-padding)"
+  }, [cE("title", {
+    color: "var(--n-title-text-color)"
+  }), cE("content", {
+    color: "var(--n-content-text-color)"
+  })]),
+  fadeInHeightExpandTransition({
+    originalTransition: "transform .3s var(--n-bezier)",
+    enterToProps: {
+      transform: "scale(1)"
+    },
+    leaveToProps: {
+      transform: "scale(0.9)"
+    }
+  }),
+  cE("icon", `
  position: absolute;
  left: 0;
  top: 0;
@@ -20340,7 +20353,8 @@ const style$n = cB("alert", `
  height: var(--n-icon-size);
  font-size: var(--n-icon-size);
  margin: var(--n-icon-margin);
- `), cE("close", `
+ `),
+  cE("close", `
  transition:
  color .3s var(--n-bezier),
  background-color .3s var(--n-bezier);
@@ -20348,9 +20362,15 @@ const style$n = cB("alert", `
  right: 0;
  top: 0;
  margin: var(--n-close-margin);
- `), cM("show-icon", [cB("alert-body", {
-  paddingLeft: "calc(var(--n-icon-margin-left) + var(--n-icon-size) + var(--n-icon-margin-right))"
-})]), cB("alert-body", `
+ `),
+  cM("show-icon", [cB("alert-body", {
+    paddingLeft: "calc(var(--n-icon-margin-left) + var(--n-icon-size) + var(--n-icon-margin-right))"
+  })]),
+  // fix: https://github.com/tusen-ai/naive-ui/issues/4588
+  cM("right-adjust", [cB("alert-body", {
+    paddingRight: "calc(var(--n-close-size) + var(--n-padding) + 2px)"
+  })]),
+  cB("alert-body", `
  border-radius: var(--n-border-radius);
  transition: border-color .3s var(--n-bezier);
  `, [cE("title", `
@@ -20359,13 +20379,15 @@ const style$n = cB("alert", `
  line-height: 19px;
  font-weight: var(--n-title-font-weight);
  `, [c$1("& +", [cE("content", {
-  marginTop: "9px"
-})])]), cE("content", {
-  transition: "color .3s var(--n-bezier)",
-  fontSize: "var(--n-font-size)"
-})]), cE("icon", {
-  transition: "color .3s var(--n-bezier)"
-})]);
+    marginTop: "9px"
+  })])]), cE("content", {
+    transition: "color .3s var(--n-bezier)",
+    fontSize: "var(--n-font-size)"
+  })]),
+  cE("icon", {
+    transition: "color .3s var(--n-bezier)"
+  })
+]);
 const alertProps = Object.assign(Object.assign({}, useTheme.props), {
   title: String,
   showIcon: {
@@ -20479,6 +20501,8 @@ const NAlert = defineComponent({
             this.themeClass,
             this.closable && `${mergedClsPrefix}-alert--closable`,
             this.showIcon && `${mergedClsPrefix}-alert--show-icon`,
+            // fix: https://github.com/tusen-ai/naive-ui/issues/4588
+            !this.title && this.closable && `${mergedClsPrefix}-alert--right-adjust`,
             this.rtlEnabled && `${mergedClsPrefix}-alert--rtl`
           ],
           style: this.cssVars,
@@ -20990,6 +21014,7 @@ const style$m = cB("input", `
  margin: 0;
  resize: none;
  white-space: pre-wrap;
+ scroll-padding-block-end: var(--n-padding-vertical);
  `), cE("textarea-mirror", `
  width: 100%;
  pointer-events: none;
@@ -21180,7 +21205,7 @@ const inputProps = Object.assign(Object.assign({}, useTheme.props), {
   renderCount: Function,
   onMousedown: Function,
   onKeydown: Function,
-  onKeyup: Function,
+  onKeyup: [Function, Array],
   onInput: [Function, Array],
   onFocus: [Function, Array],
   onBlur: [Function, Array],
@@ -21205,7 +21230,10 @@ const inputProps = Object.assign(Object.assign({}, useTheme.props), {
   onWrapperBlur: [Function, Array],
   internalDeactivateOnEnter: Boolean,
   internalForceFocus: Boolean,
-  internalLoadingBeforeSuffix: Boolean,
+  internalLoadingBeforeSuffix: {
+    type: Boolean,
+    default: true
+  },
   /** deprecated */
   showPasswordToggle: Boolean
 });
@@ -21620,9 +21648,13 @@ const NInput = defineComponent({
       };
       on("mouseup", document, hidePassword);
     }
+    function handleWrapperKeyup(e) {
+      if (props.onKeyup)
+        call(props.onKeyup, e);
+    }
     function handleWrapperKeydown(e) {
-      var _a2;
-      (_a2 = props.onKeydown) === null || _a2 === void 0 ? void 0 : _a2.call(props, e);
+      if (props.onKeydown)
+        call(props.onKeydown, e);
       switch (e.key) {
         case "Escape":
           handleWrapperKeydownEsc();
@@ -21891,6 +21923,7 @@ const NInput = defineComponent({
       handlePasswordToggleClick,
       handlePasswordToggleMousedown,
       handleWrapperKeydown,
+      handleWrapperKeyup,
       handleTextAreaMirrorResize,
       getTextareaScrollContainer: () => {
         return textareaElRef.value;
@@ -21923,7 +21956,7 @@ const NInput = defineComponent({
           [`${mergedClsPrefix}-input--focus`]: this.mergedFocus,
           [`${mergedClsPrefix}-input--stateful`]: this.stateful
         }
-      ], style: this.cssVars, tabindex: !this.mergedDisabled && this.passivelyActivated && !this.activated ? 0 : void 0, onFocus: this.handleWrapperFocus, onBlur: this.handleWrapperBlur, onClick: this.handleClick, onMousedown: this.handleMouseDown, onMouseenter: this.handleMouseEnter, onMouseleave: this.handleMouseLeave, onCompositionstart: this.handleCompositionStart, onCompositionend: this.handleCompositionEnd, onKeyup: this.onKeyup, onKeydown: this.handleWrapperKeydown },
+      ], style: this.cssVars, tabindex: !this.mergedDisabled && this.passivelyActivated && !this.activated ? 0 : void 0, onFocus: this.handleWrapperFocus, onBlur: this.handleWrapperBlur, onClick: this.handleClick, onMousedown: this.handleMouseDown, onMouseenter: this.handleMouseEnter, onMouseleave: this.handleMouseLeave, onCompositionstart: this.handleCompositionStart, onCompositionend: this.handleCompositionEnd, onKeyup: this.handleWrapperKeyup, onKeydown: this.handleWrapperKeydown },
       h(
         "div",
         { class: `${mergedClsPrefix}-input-wrapper` },
@@ -25391,7 +25424,7 @@ const configProviderProps = {
     type: Boolean,
     default: void 0
   },
-  clsPrefix: String,
+  clsPrefix: { type: String, default: defaultClsPrefix },
   locale: Object,
   dateLocale: Object,
   namespace: String,
@@ -25472,7 +25505,9 @@ const NConfigProvider = defineComponent({
       const { clsPrefix } = props;
       if (clsPrefix !== void 0)
         return clsPrefix;
-      return NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedClsPrefixRef.value;
+      if (NConfigProvider2)
+        return NConfigProvider2.mergedClsPrefixRef.value;
+      return defaultClsPrefix;
     });
     const mergedRtlRef = computed(() => {
       var _a2;
@@ -26109,8 +26144,12 @@ const NSelect = defineComponent({
         }
         const { onCreate } = props;
         const optionBeingCreated = onCreate ? onCreate(value) : { [props.labelField]: value, [props.valueField]: value };
-        const { valueField } = props;
-        if (compitableOptionsRef.value.some((option) => option[valueField] === optionBeingCreated[valueField]) || createdOptionsRef.value.some((option) => option[valueField] === optionBeingCreated[valueField])) {
+        const { valueField, labelField } = props;
+        if (compitableOptionsRef.value.some((option) => {
+          return option[valueField] === optionBeingCreated[valueField] || option[labelField] === optionBeingCreated[labelField];
+        }) || createdOptionsRef.value.some((option) => {
+          return option[valueField] === optionBeingCreated[valueField] || option[labelField] === optionBeingCreated[labelField];
+        })) {
           beingCreatedOptionsRef.value = emptyArray;
         } else {
           beingCreatedOptionsRef.value = [optionBeingCreated];
@@ -26230,9 +26269,17 @@ const NSelect = defineComponent({
         var _a2;
         (_a2 = triggerRef.value) === null || _a2 === void 0 ? void 0 : _a2.focus();
       },
+      focusInput: () => {
+        var _a2;
+        (_a2 = triggerRef.value) === null || _a2 === void 0 ? void 0 : _a2.focusInput();
+      },
       blur: () => {
         var _a2;
         (_a2 = triggerRef.value) === null || _a2 === void 0 ? void 0 : _a2.blur();
+      },
+      blurInput: () => {
+        var _a2;
+        (_a2 = triggerRef.value) === null || _a2 === void 0 ? void 0 : _a2.blurInput();
       }
     };
     const cssVarsRef = computed(() => {
@@ -28956,6 +29003,10 @@ const NDrawerBodyWrapper = defineComponent({
       type: [Boolean, String],
       required: true
     },
+    maxWidth: Number,
+    maxHeight: Number,
+    minWidth: Number,
+    minHeight: Number,
     resizable: Boolean,
     onClickoutside: Function,
     onAfterLeave: Function,
@@ -29006,6 +29057,24 @@ const NDrawerBodyWrapper = defineComponent({
       isHoverOnResizeTriggerRef.value = false;
     };
     const { doUpdateHeight, doUpdateWidth } = NDrawer2;
+    const regulateWidth = (size2) => {
+      const { maxWidth } = props;
+      if (maxWidth && size2 > maxWidth)
+        return maxWidth;
+      const { minWidth } = props;
+      if (minWidth && size2 < minWidth)
+        return minWidth;
+      return size2;
+    };
+    const regulateHeight = (size2) => {
+      const { maxHeight } = props;
+      if (maxHeight && size2 > maxHeight)
+        return maxHeight;
+      const { minHeight } = props;
+      if (minHeight && size2 < minHeight)
+        return minHeight;
+      return size2;
+    };
     const handleBodyMousemove = (e) => {
       var _a2, _b;
       if (isDraggingRef.value) {
@@ -29013,12 +29082,14 @@ const NDrawerBodyWrapper = defineComponent({
           let height = ((_a2 = bodyRef.value) === null || _a2 === void 0 ? void 0 : _a2.offsetHeight) || 0;
           const increment = startPosition - e.clientY;
           height += props.placement === "bottom" ? increment : -increment;
+          height = regulateHeight(height);
           doUpdateHeight(height);
           startPosition = e.clientY;
         } else {
           let width = ((_b = bodyRef.value) === null || _b === void 0 ? void 0 : _b.offsetWidth) || 0;
           const increment = startPosition - e.clientX;
           width += props.placement === "right" ? increment : -increment;
+          width = regulateWidth(width);
           doUpdateWidth(width);
           startPosition = e.clientX;
         }
@@ -29097,7 +29168,7 @@ const NDrawerBodyWrapper = defineComponent({
     const { $slots, mergedClsPrefix } = this;
     return this.displayDirective === "show" || this.displayed || this.show ? withDirectives(
       /* Keep the wrapper dom. Make sure the drawer has a host.
-        Nor the detached content will disappear without transition */
+      Nor the detached content will disappear without transition */
       h(
         "div",
         { role: "none" },
@@ -29408,6 +29479,10 @@ const drawerProps = Object.assign(Object.assign({}, useTheme.props), {
     type: Boolean,
     default: true
   },
+  maxWidth: Number,
+  maxHeight: Number,
+  minWidth: Number,
+  minHeight: Number,
   resizable: Boolean,
   defaultWidth: {
     type: [Number, String],
@@ -29576,7 +29651,7 @@ const NDrawer = defineComponent({
               this.showMask === "transparent" && `${mergedClsPrefix}-drawer-mask--invisible`
             ], onClick: this.handleMaskClick }) : null
           }) : null,
-          h(NDrawerBodyWrapper, Object.assign({}, this.$attrs, { class: [this.drawerClass, this.$attrs.class], style: [this.mergedBodyStyle, this.$attrs.style], blockScroll: this.blockScroll, contentStyle: this.contentStyle, placement: this.placement, scrollbarProps: this.scrollbarProps, show: this.show, displayDirective: this.displayDirective, nativeScrollbar: this.nativeScrollbar, onAfterEnter: this.onAfterEnter, onAfterLeave: this.onAfterLeave, trapFocus: this.trapFocus, autoFocus: this.autoFocus, resizable: this.resizable, showMask: this.showMask, onEsc: this.handleEsc, onClickoutside: this.handleMaskClick }), this.$slots)
+          h(NDrawerBodyWrapper, Object.assign({}, this.$attrs, { class: [this.drawerClass, this.$attrs.class], style: [this.mergedBodyStyle, this.$attrs.style], blockScroll: this.blockScroll, contentStyle: this.contentStyle, placement: this.placement, scrollbarProps: this.scrollbarProps, show: this.show, displayDirective: this.displayDirective, nativeScrollbar: this.nativeScrollbar, onAfterEnter: this.onAfterEnter, onAfterLeave: this.onAfterLeave, trapFocus: this.trapFocus, autoFocus: this.autoFocus, resizable: this.resizable, maxHeight: this.maxHeight, minHeight: this.minHeight, maxWidth: this.maxWidth, minWidth: this.minWidth, showMask: this.showMask, onEsc: this.handleEsc, onClickoutside: this.handleMaskClick }), this.$slots)
         ), [[zindexable$1, { zIndex: this.zIndex, enabled: this.show }]]);
       }
     });
@@ -30189,7 +30264,7 @@ const NGrid = defineComponent({
       const childrenAndRawSpan = [];
       const { collapsed, collapsedRows, responsiveCols, responsiveQuery } = this;
       rawChildren.forEach((child) => {
-        var _a3, _b2, _c2, _d2;
+        var _a3, _b2, _c2, _d2, _e2;
         if (((_a3 = child === null || child === void 0 ? void 0 : child.type) === null || _a3 === void 0 ? void 0 : _a3.__GRID_ITEM__) !== true)
           return;
         if (isNodeVShowFalse(child)) {
@@ -30206,8 +30281,11 @@ const NGrid = defineComponent({
           return;
         }
         child.dirs = ((_b2 = child.dirs) === null || _b2 === void 0 ? void 0 : _b2.filter(({ dir }) => dir !== vShow)) || null;
+        if (((_c2 = child.dirs) === null || _c2 === void 0 ? void 0 : _c2.length) === 0) {
+          child.dirs = null;
+        }
         const clonedChild = cloneVNode(child);
-        const rawChildSpan = Number((_d2 = parseResponsivePropValue((_c2 = clonedChild.props) === null || _c2 === void 0 ? void 0 : _c2.span, responsiveQuery)) !== null && _d2 !== void 0 ? _d2 : defaultSpan$1);
+        const rawChildSpan = Number((_e2 = parseResponsivePropValue((_d2 = clonedChild.props) === null || _d2 === void 0 ? void 0 : _d2.span, responsiveQuery)) !== null && _e2 !== void 0 ? _e2 : defaultSpan$1);
         if (rawChildSpan === 0)
           return;
         childrenAndRawSpan.push({
@@ -30220,7 +30298,7 @@ const NGrid = defineComponent({
       if (maybeSuffixNode === null || maybeSuffixNode === void 0 ? void 0 : maybeSuffixNode.props) {
         const suffixPropValue = (_b = maybeSuffixNode.props) === null || _b === void 0 ? void 0 : _b.suffix;
         if (suffixPropValue !== void 0 && suffixPropValue !== false) {
-          suffixSpan = (_d = (_c = maybeSuffixNode.props) === null || _c === void 0 ? void 0 : _c.span) !== null && _d !== void 0 ? _d : defaultSpan$1;
+          suffixSpan = Number((_d = parseResponsivePropValue((_c = maybeSuffixNode.props) === null || _c === void 0 ? void 0 : _c.span, responsiveQuery)) !== null && _d !== void 0 ? _d : defaultSpan$1);
           maybeSuffixNode.props.privateSpan = suffixSpan;
           maybeSuffixNode.props.privateColStart = responsiveCols + 1 - suffixSpan;
           maybeSuffixNode.props.privateShow = (_e = maybeSuffixNode.props.privateShow) !== null && _e !== void 0 ? _e : true;
@@ -31423,6 +31501,9 @@ const self$7 = (vars) => {
   const { borderRadiusSmall, hoverColor, pressedColor, primaryColor, textColor3, textColor2, textColorDisabled, fontSize: fontSize2 } = vars;
   return {
     fontSize: fontSize2,
+    lineHeight: "1.5",
+    nodeHeight: "30px",
+    nodeWrapperPadding: "3px 0",
     nodeBorderRadius: borderRadiusSmall,
     nodeColorHover: hoverColor,
     nodeColorPressed: pressedColor,
@@ -32364,9 +32445,11 @@ const NLoadingBar = defineComponent({
     }
     function start(fromProgress = 0, toProgress = 80, status = "starting") {
       return __awaiter(this, void 0, void 0, function* () {
-        yield init2();
-        loadingRef.value = true;
         startedRef.value = true;
+        yield init2();
+        if (finishing)
+          return;
+        loadingRef.value = true;
         yield nextTick();
         const el = loadingBarRef.value;
         if (!el)
@@ -32380,16 +32463,21 @@ const NLoadingBar = defineComponent({
       });
     }
     function finish() {
-      if (finishing || erroringRef.value || !loadingRef.value)
-        return;
-      finishing = true;
-      const el = loadingBarRef.value;
-      if (!el)
-        return;
-      el.className = createClassName("finishing", mergedClsPrefixRef.value);
-      el.style.maxWidth = "100%";
-      void el.offsetWidth;
-      loadingRef.value = false;
+      return __awaiter(this, void 0, void 0, function* () {
+        if (finishing || erroringRef.value)
+          return;
+        if (startedRef.value) {
+          yield nextTick();
+        }
+        finishing = true;
+        const el = loadingBarRef.value;
+        if (!el)
+          return;
+        el.className = createClassName("finishing", mergedClsPrefixRef.value);
+        el.style.maxWidth = "100%";
+        void el.offsetWidth;
+        loadingRef.value = false;
+      });
     }
     function error() {
       if (finishing || erroringRef.value)
@@ -34911,14 +34999,9 @@ const Line = defineComponent({
                 height: styleHeightRef.value,
                 lineHeight: styleHeightRef.value,
                 borderRadius: styleFillBorderRadiusRef.value
-              } }, indicatorPlacement === "inside" ? h(
-                "div",
-                { class: `${clsPrefix}-progress-graph-line-indicator`, style: {
-                  color: indicatorTextColor
-                } },
-                percentage,
-                unit
-              ) : null)
+              } }, indicatorPlacement === "inside" ? h("div", { class: `${clsPrefix}-progress-graph-line-indicator`, style: {
+                color: indicatorTextColor
+              } }, slots.default ? slots.default() : `${percentage}${unit}`) : null)
             )
           )
         ),
@@ -36116,6 +36199,18 @@ const NTabs = defineComponent({
       if (tabsPaneWrapperEl) {
         tabsPaneWrapperEl.style.maxHeight = "";
         tabsPaneWrapperEl.style.height = "";
+        const { paneWrapperStyle } = props;
+        if (typeof paneWrapperStyle === "string") {
+          tabsPaneWrapperEl.style.cssText = paneWrapperStyle;
+        } else if (paneWrapperStyle) {
+          const { maxHeight, height } = paneWrapperStyle;
+          if (maxHeight !== void 0) {
+            tabsPaneWrapperEl.style.maxHeight = maxHeight;
+          }
+          if (height !== void 0) {
+            tabsPaneWrapperEl.style.height = height;
+          }
+        }
       }
     }
     const renderNameListRef = { value: [] };
@@ -37581,7 +37676,7 @@ const Wifi = defineComponent({
   }
 });
 /*!
-  * vue-router v4.2.2
+  * vue-router v4.2.5
   * (c) 2023 Eduardo San Martin Morote
   * @license MIT
   */
@@ -38466,7 +38561,7 @@ function normalizeRecordProps(record) {
     propsObject.default = props;
   } else {
     for (const name in record.components)
-      propsObject[name] = typeof props === "boolean" ? props : props[name];
+      propsObject[name] = typeof props === "object" ? props[name] : props;
   }
   return propsObject;
 }
@@ -38605,7 +38700,7 @@ function useCallbacks() {
   }
   return {
     add: add2,
-    list: () => handlers,
+    list: () => handlers.slice(),
     reset
   };
 }
@@ -39119,8 +39214,8 @@ function createRouter(options) {
       return runGuardQueue(guards);
     }).then(() => {
       guards = [];
-      for (const record of to.matched) {
-        if (record.beforeEnter && !from.matched.includes(record)) {
+      for (const record of enteringRecords) {
+        if (record.beforeEnter) {
           if (isArray(record.beforeEnter)) {
             for (const beforeEnter of record.beforeEnter)
               guards.push(guardToPromiseFn(beforeEnter, to, from));
@@ -39150,9 +39245,7 @@ function createRouter(options) {
     ) ? err : Promise.reject(err));
   }
   function triggerAfterEach(to, from, failure) {
-    for (const guard of afterGuards.list()) {
-      runWithContext(() => guard(to, from, failure));
-    }
+    afterGuards.list().forEach((guard) => runWithContext(() => guard(to, from, failure)));
   }
   function finalizeNavigation(toLocation, from, isPush, replace2, data) {
     const error = checkCanceledNavigation(toLocation, from);
@@ -39251,11 +39344,11 @@ function createRouter(options) {
     });
   }
   let readyHandlers = useCallbacks();
-  let errorHandlers = useCallbacks();
+  let errorListeners = useCallbacks();
   let ready;
   function triggerError(error, to, from) {
     markAsReady(error);
-    const list = errorHandlers.list();
+    const list = errorListeners.list();
     if (list.length) {
       list.forEach((handler) => handler(error, to, from));
     } else {
@@ -39306,7 +39399,7 @@ function createRouter(options) {
     beforeEach: beforeGuards.add,
     beforeResolve: beforeResolveGuards.add,
     afterEach: afterGuards.add,
-    onError: errorHandlers.add,
+    onError: errorListeners.add,
     isReady,
     install(app2) {
       const router3 = this;
@@ -39326,10 +39419,13 @@ function createRouter(options) {
       }
       const reactiveRoute = {};
       for (const key in START_LOCATION_NORMALIZED) {
-        reactiveRoute[key] = computed(() => currentRoute.value[key]);
+        Object.defineProperty(reactiveRoute, key, {
+          get: () => currentRoute.value[key],
+          enumerable: true
+        });
       }
       app2.provide(routerKey, router3);
-      app2.provide(routeLocationKey, reactive(reactiveRoute));
+      app2.provide(routeLocationKey, shallowReactive(reactiveRoute));
       app2.provide(routerViewLocationKey, currentRoute);
       const unmountApp = app2.unmount;
       installedApps.add(app2);
@@ -42041,7 +42137,14 @@ const __vitePreload = function preload(baseModule, deps, importerUrl) {
         link.addEventListener("error", () => rej(new Error(`Unable to preload CSS for ${dep}`)));
       });
     }
-  })).then(() => baseModule());
+  })).then(() => baseModule()).catch((err) => {
+    const e = new Event("vite:preloadError", { cancelable: true });
+    e.payload = err;
+    window.dispatchEvent(e);
+    if (!e.defaultPrevented) {
+      throw err;
+    }
+  });
 };
 const router = createRouter({
   history: createWebHistory("/"),
@@ -42138,7 +42241,7 @@ export {
   useThemeClass as Z,
   _export_sfc as _,
   createElementBlock as a,
-  throwError as a$,
+  dataTableLight$1 as a$,
   createTreeMate as a0,
   happensIn as a1,
   call as a2,
@@ -42149,33 +42252,33 @@ export {
   keep as a7,
   createRefSetter as a8,
   mergeEventHandlers as a9,
-  formatLength as aA,
-  NScrollbar$1 as aB,
-  onBeforeUnmount as aC,
-  off as aD,
-  on as aE,
-  ChevronDownIcon as aF,
-  NDropdown as aG,
-  pxfy as aH,
-  get as aI,
-  NIconSwitchTransition as aJ,
-  NBaseLoading as aK,
-  ChevronRightIcon as aL,
-  VResizeObserver as aM,
-  warn$2 as aN,
-  cssrAnchorMetaName as aO,
-  VVirtualList as aP,
-  NEmpty as aQ,
-  repeat as aR,
-  beforeNextFrameOnce as aS,
-  fadeInScaleUpTransition as aT,
-  iconSwitchTransition as aU,
-  insideModal as aV,
-  insidePopover as aW,
-  createId as aX,
-  Transition as aY,
-  dataTableLight$1 as aZ,
-  loadingBarApiInjectionKey as a_,
+  getSlot$1 as aA,
+  depx as aB,
+  formatLength as aC,
+  NScrollbar$1 as aD,
+  onBeforeUnmount as aE,
+  off as aF,
+  on as aG,
+  ChevronDownIcon as aH,
+  NDropdown as aI,
+  pxfy as aJ,
+  get as aK,
+  NIconSwitchTransition as aL,
+  NBaseLoading as aM,
+  ChevronRightIcon as aN,
+  VResizeObserver as aO,
+  warn$2 as aP,
+  cssrAnchorMetaName as aQ,
+  VVirtualList as aR,
+  NEmpty as aS,
+  repeat as aT,
+  beforeNextFrameOnce as aU,
+  fadeInScaleUpTransition as aV,
+  iconSwitchTransition as aW,
+  insideModal as aX,
+  insidePopover as aY,
+  createId as aZ,
+  Transition as a_,
   omit as aa,
   NPopover as ab,
   popoverBaseProps as ac,
@@ -42191,80 +42294,82 @@ export {
   useAdjustedTo as am,
   paginationLight$1 as an,
   createKey as ao,
-  ellipsisLight$1 as ap,
-  onDeactivated as aq,
-  mergeProps as ar,
-  useFormItem as as,
-  useMemo as at,
-  cE as au,
-  radioLight$1 as av,
-  resolveWrappedSlot as aw,
-  flatten$2 as ax,
-  getSlot$1 as ay,
-  depx as az,
+  useMergedClsPrefix as ap,
+  ellipsisLight$1 as aq,
+  onDeactivated as ar,
+  mergeProps as as,
+  useStyle as at,
+  useFormItem as au,
+  useMemo as av,
+  cE as aw,
+  radioLight$1 as ax,
+  resolveWrappedSlot as ay,
+  flatten$2 as az,
   createBaseVNode as b,
-  isBrowser$3 as b0,
-  AddIcon as b1,
-  NProgress as b2,
-  NFadeInExpandTransition as b3,
-  EyeIcon as b4,
-  fadeInHeightExpandTransition as b5,
-  Teleport as b6,
-  uploadLight$1 as b7,
-  useCssVars as b8,
-  reactive as b9,
-  formLight$1 as bA,
-  commonVariables$m as bB,
-  formItemInjectionKey as bC,
-  useNotification as bD,
-  defaultSettings as bE,
-  urlFromPath as bF,
-  useRouter as bG,
-  fadeInTransition as bH,
-  imageLight as bI,
-  isMounted as bJ,
-  LazyTeleport as bK,
-  zindexable$1 as bL,
-  kebabCase$1 as bM,
-  useCompitable as bN,
-  descriptionsLight$1 as bO,
-  withModifiers as bP,
-  NAlert as bQ,
-  inputNumberLight$1 as bR,
-  rgba as bS,
-  XButton as bT,
-  VBinder as bU,
-  VTarget as bV,
-  VFollower as bW,
-  sliderLight$1 as bX,
-  isSlotEmpty as bY,
-  switchLight$1 as bZ,
-  onMounted as ba,
-  normalizeStyle as bb,
-  NText as bc,
-  huggingfaceModelsFile as bd,
-  NDivider as be,
-  Backends as bf,
-  checkboxLight$1 as bg,
-  stepsLight$1 as bh,
-  FinishedIcon as bi,
-  ErrorIcon$1 as bj,
-  upperFirst$1 as bk,
-  toString as bl,
-  createCompounder as bm,
-  cloneVNode as bn,
-  onBeforeUpdate as bo,
-  indexMap as bp,
-  onUpdated as bq,
-  resolveSlotWithProps as br,
-  withDirectives as bs,
-  vShow as bt,
-  carouselLight$1 as bu,
-  getPreciseEventTarget as bv,
-  rateLight as bw,
-  color2Class as bx,
-  NTag as by,
-  getCurrentInstance as bz,
+  switchLight$1 as b$,
+  loadingBarApiInjectionKey as b0,
+  throwError as b1,
+  AddIcon as b2,
+  NProgress as b3,
+  NFadeInExpandTransition as b4,
+  EyeIcon as b5,
+  fadeInHeightExpandTransition as b6,
+  Teleport as b7,
+  uploadLight$1 as b8,
+  useCssVars as b9,
+  getCurrentInstance as bA,
+  formLight$1 as bB,
+  commonVariables$m as bC,
+  formItemInjectionKey as bD,
+  useNotification as bE,
+  defaultSettings as bF,
+  urlFromPath as bG,
+  useRouter as bH,
+  isBrowser$3 as bI,
+  fadeInTransition as bJ,
+  imageLight as bK,
+  isMounted as bL,
+  LazyTeleport as bM,
+  zindexable$1 as bN,
+  kebabCase$1 as bO,
+  useCompitable as bP,
+  descriptionsLight$1 as bQ,
+  withModifiers as bR,
+  NAlert as bS,
+  inputNumberLight$1 as bT,
+  rgba as bU,
+  XButton as bV,
+  VBinder as bW,
+  VTarget as bX,
+  VFollower as bY,
+  sliderLight$1 as bZ,
+  isSlotEmpty as b_,
+  reactive as ba,
+  onMounted as bb,
+  normalizeStyle as bc,
+  NText as bd,
+  huggingfaceModelsFile as be,
+  NDivider as bf,
+  Backends as bg,
+  checkboxLight$1 as bh,
+  stepsLight$1 as bi,
+  FinishedIcon as bj,
+  ErrorIcon$1 as bk,
+  upperFirst$1 as bl,
+  toString as bm,
+  createCompounder as bn,
+  cloneVNode as bo,
+  onBeforeUpdate as bp,
+  indexMap as bq,
+  onUpdated as br,
+  resolveSlotWithProps as bs,
+  withDirectives as bt,
+  vShow as bu,
+  carouselLight$1 as bv,
+  getPreciseEventTarget as bw,
+  rateLight as bx,
+  color2Class as by,
+  NTag as bz,
   computed as c,
   defineComponent as d,
   createVNode as e,
