@@ -24,11 +24,9 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 - Clean and simple Web UI
 - Supports PyTorch as well as AITemplate for inference
 - Support for Windows and Linux
-- xFormers supported out of the box
-- GPU cluster load balancing
+- xFormers support
 - Discord bot
-- Documented API
-- Clean source code that should be easy to understand
+- Built-in CivitAI browser
 
 ## Speed comparison
 

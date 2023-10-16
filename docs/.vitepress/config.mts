@@ -80,8 +80,6 @@ export default defineConfig({
 				text: "Introduction",
 				items: [
 					{ text: "Introduction", link: "/getting-started/introduction" },
-					{ text: "Features", link: "/getting-started/features" },
-					{ text: "First image", link: "/getting-started/first-image" },
 				],
 				collapsed: false,
 			},
@@ -112,6 +110,11 @@ export default defineConfig({
 				collapsed: false,
 			},
 			{
+				text: "Guides",
+				items: [{ text: "First image", link: "/guides/first-image" }],
+				collapsed: false,
+			},
+			{
 				text: "Basics",
 				items: [
 					{ text: "Models", link: "/basics/models" },
@@ -128,12 +131,9 @@ export default defineConfig({
 			{
 				text: "WebUI",
 				items: [
-					{ text: "Models", link: "/webui/models" },
 					{ text: "Image to Image", link: "/webui/img2img" },
-					{ text: "Extra", link: "/webui/extra" },
 					{ text: "Downloading Models", link: "/webui/download" },
 					{ text: "Image browser", link: "/webui/imagebrowser" },
-					{ text: "Convert", link: "/webui/convert" },
 				],
 				collapsed: false,
 			},
@@ -151,6 +151,7 @@ export default defineConfig({
 			{
 				text: "Settings",
 				items: [{ text: "Settings", link: "/settings/settings" }],
+				collapsed: false,
 			},
 			{
 				text: "Experimental",
@@ -160,7 +161,7 @@ export default defineConfig({
 			{
 				text: "API",
 				items: [{ text: "API", link: "/api/" }],
-				collapsed: false,
+				collapsed: true,
 			},
 			{
 				text: "Developers",
@@ -179,7 +180,7 @@ export default defineConfig({
 						link: "/developers/testing",
 					},
 				],
-				collapsed: false,
+				collapsed: true,
 			},
 			{
 				text: "Troubleshooting",
@@ -194,7 +195,7 @@ export default defineConfig({
 						link: "/troubleshooting/docker",
 					},
 				],
-				collapsed: false,
+				collapsed: true,
 			},
 		],
 	},
