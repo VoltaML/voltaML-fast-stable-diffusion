@@ -54,7 +54,7 @@ torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
     try:
-        import aitemplate  # pylint: disable=unused-import
+        import aitemplate  # noqa: F401
 
         return True
     except ImportError:
@@ -64,7 +64,7 @@ def is_aitemplate_available():
 def is_ipex_available():
     "Checks whether Intel Pytorch EXtensions are available/installed."
     try:
-        import intel_extension_for_pytorch  # pylint: disable=unused-import
+        import intel_extension_for_pytorch  # noqa: F401
 
         return True
     except ImportError:
@@ -74,7 +74,7 @@ def is_ipex_available():
 def is_onnxconverter_available():
     "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
     try:
-        import onnxconverter_common  # pylint: disable=unused-import
+        import onnxconverter_common  # noqa: F401
 
         return True
     except ImportError:
@@ -84,11 +84,8 @@ def is_onnxconverter_available():
 def is_onnx_available():
     "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
     try:
-        import onnx  # pylint: disable=unused-import
-        from onnxruntime.quantization import (  # pylint: disable=unused-import
-            QuantType,
-            quantize_dynamic,
-        )
+        import onnx  # noqa: F401
+        from onnxruntime.quantization import QuantType, quantize_dynamic  # noqa: F401
 
         return True
     except ImportError:
@@ -98,7 +95,7 @@ def is_onnx_available():
 def is_onnxscript_available():
     "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
     try:
-        import onnxscript  # pylint: disable=unused-import
+        import onnxscript  # noqa: F401
 
         return True
     except ImportError:
@@ -108,7 +105,7 @@ def is_onnxscript_available():
 def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
-        from onnxsim import simplify  # pylint: disable=import-error,unused-import
+        from onnxsim import simplify  # noqa: F401
 
         return True
     except ImportError:

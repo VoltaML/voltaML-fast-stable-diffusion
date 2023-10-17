@@ -593,18 +593,18 @@ class PyTorchStableDiffusion(InferenceModel):
             self.memory_cleanup()
             raise e
         if len(self.unload_loras) != 0:
-            for l in self.unload_loras:
+            for lora in self.unload_loras:
                 try:
-                    self.lora_injector.remove_lora(l)  # type: ignore
-                    logger.debug(f"Unloading LoRA: {l}")
+                    self.lora_injector.remove_lora(lora)  # type: ignore
+                    logger.debug(f"Unloading LoRA: {lora}")
                 except KeyError:
                     pass
             self.unload_loras.clear()
         if len(self.unload_lycoris) != 0:  # type: ignore
-            for l in self.unload_lycoris:  # type: ignore
+            for lora in self.unload_lycoris:  # type: ignore
                 try:
-                    self.lora_injector.remove_lycoris(l)  # type: ignore
-                    logger.debug(f"Unloading LyCORIS: {l}")
+                    self.lora_injector.remove_lycoris(lora)  # type: ignore
+                    logger.debug(f"Unloading LyCORIS: {lora}")
                 except KeyError:
                     pass
 
@@ -633,7 +633,7 @@ class PyTorchStableDiffusion(InferenceModel):
             f"Loading textual inversion model {textual_inversion} onto {self.model_id}..."
         )
 
-        if any(textual_inversion in l for l in self.textual_inversions):
+        if any(textual_inversion in lora for lora in self.textual_inversions):
             logger.info(
                 f"Textual inversion model {textual_inversion} already loaded onto {self.model_id}"
             )

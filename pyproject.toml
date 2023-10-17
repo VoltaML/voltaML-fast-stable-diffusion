@@ -30,11 +30,11 @@ ignore = [
     "D300",
     "D100",
     "COM812",
+    "E731",
+    "F401",
 ]
+target-version = "py39"
 
-select = ["ALL"]
-format = "grouped"
-target-version = "py38"
 [tool.ruff.flake8-quotes]
 docstring-quotes = "double"
 

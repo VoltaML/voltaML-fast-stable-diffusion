@@ -18,7 +18,7 @@ if is_hypertile_available():
 
 
 def hypertile(unet, height: int, width: int) -> ExitStack:
-    from hyper_tile import split_attention  # pylint: disable=redefined-outer-name
+    from hyper_tile import split_attention  # noqa: F811
 
     s = ExitStack()
     s.enter_context(

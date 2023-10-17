@@ -541,7 +541,7 @@ def _rebuild_weight(module, orig_weight: torch.Tensor, dyn_dim: int = None) -> t
             "You may have other lyco extension that conflict with locon extension."
         )
 
-    if hasattr(module, "bias") and module.bias != None:
+    if hasattr(module, "bias") and module.bias is not None:
         updown = updown.reshape(module.bias.shape)
         updown += module.bias.to(orig_weight.device, dtype=orig_weight.dtype)
         updown = updown.reshape(output_shape)

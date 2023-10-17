@@ -8,8 +8,8 @@ from fastapi import WebSocket
 from psutil import NoSuchProcess
 
 from api.websockets.data import Data
+from core import shared
 from core.config import config
-from core.shared import all_gpus, amd
 
 logger = logging.getLogger(__name__)
 
@@ -23,11 +23,10 @@ class WebSocketManager:
 
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
-        global amd, all_gpus  # pylint: disable=global-statement
         try:
             from gpustat.core import GPUStatCollection
 
-            all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
+            shared.all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
         except Exception as e:  # pylint: disable=broad-except
             logger.info(
                 f"GPUStat failed to initialize - probably not an NVIDIA GPU: {e}"
@@ -40,10 +39,10 @@ class WebSocketManager:
                     raise ImportError(  # pylint: disable=raise-missing-from
                         "User doesn't have an AMD gpu"
                     )
-                all_gpus = [
+                shared.all_gpus = [
                     pyamdgpuinfo.get_gpu(x) for x in range(pyamdgpuinfo.detect_gpus())
                 ]
-                amd = True
+                shared.amd = True
             except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "User doesn't have an AMD nor an NVIDIA card. GPU info will be unavailable."
@@ -52,8 +51,8 @@ class WebSocketManager:
 
         while True:
             data = []
-            if amd:
-                for stat in all_gpus:
+            if shared.amd:
+                for stat in shared.all_gpus:
                     data.append(
                         {
                             "index": stat.gpu_id,
@@ -79,8 +78,10 @@ class WebSocketManager:
                 try:
                     from gpustat.core import GPUStatCollection
 
-                    all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
-                    for stat in all_gpus:
+                    shared.all_gpus = [
+                        i.entry for i in GPUStatCollection.new_query().gpus
+                    ]
+                    for stat in shared.all_gpus:
                         data.append(
                             {
                                 "index": stat["index"],

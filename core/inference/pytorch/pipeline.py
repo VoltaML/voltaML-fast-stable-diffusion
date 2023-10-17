@@ -12,7 +12,6 @@ from diffusers.utils import logging
 from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
-from core.config import config
 from core.inference.utilities import (
     full_vae,
     get_timesteps,

@@ -44,7 +44,7 @@ class CachedModelList:
             logger.debug(f"Found model {model_name}")
 
             # Skip if it is not a huggingface model
-            if not "model" in model_name:
+            if "model" not in model_name:
                 continue
 
             name: str = "/".join(model_name.split("--")[1:3])
