@@ -42,6 +42,7 @@ test.docker-compose.yml
 
 # Other
 **/**.pyc
+poetry.lock
 .pytest_cache
 .coverage
 /.ruff_cache
