@@ -136,8 +136,9 @@ class PyTorchStableDiffusion(InferenceModel):
             setattr(self, "original_vae", self.vae)
 
         old_vae = getattr(self, "original_vae")
-        dtype = self.unet.dtype
-        device = self.unet.device
+        # Not sure what I needed this for, but whatever
+        # dtype = self.unet.dtype
+        # device = self.unet.device
         if vae == "default":
             self.vae = old_vae
         else:

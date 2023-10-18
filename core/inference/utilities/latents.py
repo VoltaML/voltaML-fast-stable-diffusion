@@ -295,20 +295,8 @@ def prepare_latents(
             )
 
         # add noise to latents using the timesteps
-<<<<<<< HEAD
-        if device.type == "mps" or config.api.device_type == "directml":
-            noise = torch.randn(
-                shape, generator=generator, device="cpu", dtype=dtype
-            ).to(device)
-        else:
-            noise = torch.randn(
-                shape, generator=generator, device=device, dtype=dtype
-            ).to(device)
-        latents = pipe.scheduler.add_noise(init_latents.to(device), noise, timestep.to(device))  # type: ignore
-=======
         noise = randn(shape, generator, device=device, dtype=dtype)
         latents = pipe.scheduler.add_noise(init_latents.to(device), noise.to(device), timestep.to(device))  # type: ignore
->>>>>>> origin/experimental
         return latents, init_latents_orig, noise
 
 
@@ -431,13 +419,7 @@ def scale_latents(
 ):
     "Interpolate the latents to the desired scale."
 
-<<<<<<< HEAD
-    align_to = 32 if latent_scale_mode == "bislerp" else 8
-
-=======
->>>>>>> origin/experimental
     s = time()
-
     logger.debug(f"Scaling latents with shape {list(latents.shape)}, scale: {scale}")
 
     # Scale and round to multiple of 32

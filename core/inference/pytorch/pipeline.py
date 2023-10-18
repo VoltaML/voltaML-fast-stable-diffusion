@@ -29,6 +29,7 @@ from core.optimizations import autocast, upcast_vae, ensure_correct_device, unlo
 from core.inference.utilities.philox import PhiloxGenerator
 from core.optimizations import inference_context
 from core.scheduling import KdiffusionSchedulerAdapter
+from core.config import config
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 

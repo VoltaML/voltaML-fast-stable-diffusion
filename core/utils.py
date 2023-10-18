@@ -94,9 +94,9 @@ def determine_model_type(
     if file.suffix == ".safetensors":
         with open(file, "rb") as f:
             length = struct.unpack("<Q", f.read(8))[0]
-            metadata: Dict[str, Dict[str, str]] = json.loads(f.read(length))
+            _metadata: Dict[str, Dict[str, str]] = json.loads(f.read(length))
 
-            keys: Dict[str, str] = metadata.get("__metadata__", {})
+            keys: Dict[str, str] = _metadata.get("__metadata__", {})
             if "format" in keys:
                 # Model is A1111-style
                 merge_recipe: str = keys.get("sd_merge_recipe", None)  # type: ignore
@@ -110,23 +110,23 @@ def determine_model_type(
                         name = f"{name} ({og})"
             if (
                 "conditioner.embedders.0.transformer.text_model.encoder.layers.3.layer_norm1.bias"
-                in metadata
+                in _metadata
             ):
                 model_type = "SDXL"
             elif (
                 "cond_stage_model.transformer.text_model.encoder.layers.0.layer_norm1.weight"
-                in metadata
+                in _metadata
             ):
                 model_type = "SD2.x"
             elif (
-                "encoder.block.20.layer.1.DenseReluDense.wo.weight" in metadata
-                or "encoder.block.0.layer.0.SelfAttention.k.SCB" in metadata
+                "encoder.block.20.layer.1.DenseReluDense.wo.weight" in _metadata
+                or "encoder.block.0.layer.0.SelfAttention.k.SCB" in _metadata
             ):
                 model_type = "IF"
                 model_stage = "text_encoding"
-            elif "add_embedding.norm1.weight" in metadata:
+            elif "add_embedding.norm1.weight" in _metadata:
                 model_type = "IF"
-                if "class_embedding.linear_1.bias" not in metadata:
+                if "class_embedding.linear_1.bias" not in _metadata:
                     model_stage = "first_stage"
     elif file.is_dir():
         with open(file / "model_index.json", "r") as f:

@@ -2,7 +2,8 @@ import io
 import json
 import logging
 import os
-from typing import Any, Dict, Tuple, Union
+from pathlib import Path
+from typing import Any, Dict, Tuple, Union, Optional
 
 import requests
 import torch
@@ -384,7 +385,6 @@ def load_pytorch_pipeline(
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),
-                pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=True,
                 load_safety_checker=False,
@@ -393,7 +393,6 @@ def load_pytorch_pipeline(
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),
-                pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=False,
                 load_safety_checker=False,

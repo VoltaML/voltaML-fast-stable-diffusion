@@ -48,15 +48,6 @@ def optimize_model(
         )
 
     offload = config.api.offload and is_pytorch_pipe(pipe) and not is_for_aitemplate
-    can_offload = (
-        config.api.device_type
-        not in [
-            "cpu",
-            "vulkan",
-            "mps",
-        ]
-        and offload
-    )
     can_offload = any(
         map(lambda x: x not in config.api.device, ["cpu", "vulkan", "mps"])
     ) and (offload != "disabled" and offload is not None)

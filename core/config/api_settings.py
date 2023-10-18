@@ -88,6 +88,7 @@ class APIConfig:
     live_preview_delay: float = 2.0
     vae_slicing: bool = True
     vae_tiling: bool = False
+    upcast_vae: bool = False  # Fixes issues on 10xx-series and RX cards
 
     @property
     def dtype(self):
