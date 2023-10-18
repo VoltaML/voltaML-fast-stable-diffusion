@@ -44,7 +44,9 @@ export interface Capabilities {
   supported_precisions_gpu: string[];
   supported_precisions_cpu: string[];
   supported_torch_compile_backends: string[];
+  supported_self_attentions: string[][];
   supports_xformers: boolean;
+  supports_triton: boolean;
   supports_int8: boolean;
   has_tensor_cores: boolean;
   has_tensorfloat: boolean;

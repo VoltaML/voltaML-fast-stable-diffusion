@@ -6,7 +6,6 @@ from core.config import config
 from .autocast_utils import autocast
 from .hypertile import is_hypertile_available, hypertile
 
-
 class InferenceContext(ExitStack):
     """inference context"""
 

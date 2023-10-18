@@ -1,20 +1,12 @@
 from contextlib import ExitStack
+from importlib.util import find_spec
 
 from core.config import config
 
 
 def is_hypertile_available():
     "Checks whether hypertile is available"
-    try:
-        import hyper_tile  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
-
-
-if is_hypertile_available():
-    from hyper_tile import split_attention  # noqa: F401
+    return find_spec("hyper_tile") is not None
 
 
 def hypertile(unet, height: int, width: int) -> ExitStack:
