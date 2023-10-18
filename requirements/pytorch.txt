@@ -22,4 +22,3 @@ cpufeature==0.2.1
 pyamdgpuinfo; platform_system == "Linux"
 piexif==1.1.3
 invisible-watermark==0.2.0
-git+https://github.com/Dao-AILab/flash-attention.git@7f31e7c16a58227e04e0a7aed9ca0066ec8126fe; platform_system == "Linux"

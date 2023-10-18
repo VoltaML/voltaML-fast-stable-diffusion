@@ -8,6 +8,8 @@ from enum import Enum
 from io import BytesIO
 from pathlib import Path
 from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
+import struct
+import json
 
 import requests
 from PIL import Image
@@ -15,6 +17,7 @@ from requests.adapters import HTTPAdapter, Retry
 from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
+from .types import PyTorchModelBase, PyTorchModelStage
 
 logger = logging.getLogger(__name__)
 
@@ -75,6 +78,69 @@ def convert_to_image(
         return im
 
     return image
+
+
+def determine_model_type(
+    file: Path,
+) -> Tuple[str, PyTorchModelBase, PyTorchModelStage]:
+    name = file.name
+    model_type: PyTorchModelBase = "SD1.x"
+    model_stage: PyTorchModelStage = "last_stage"
+    if file.suffix == ".safetensors":
+        with open(file, "rb") as f:
+            length = struct.unpack("<Q", f.read(8))[0]
+            metadata: Dict[str, Dict[str, str]] = json.loads(f.read(length))
+
+            keys: Dict[str, str] = metadata.get("__metadata__", {})
+            if "format" in keys:
+                # Model is A1111-style
+                merge_recipe: str = keys.get("sd_merge_recipe", None)  # type: ignore
+                if merge_recipe is not None:
+                    merge_recipe_json: dict = json.loads(merge_recipe)
+                    og = name
+                    name = merge_recipe_json.get("custom_name", None)
+                    if name is None:
+                        name = og
+                    else:
+                        name = f"{name} ({og})"
+            if (
+                "conditioner.embedders.0.transformer.text_model.encoder.layers.3.layer_norm1.bias"
+                in metadata
+            ):
+                model_type = "SDXL"
+            elif (
+                "cond_stage_model.transformer.text_model.encoder.layers.0.layer_norm1.weight"
+                in metadata
+            ):
+                model_type = "SD2.x"
+            elif (
+                "encoder.block.20.layer.1.DenseReluDense.wo.weight" in metadata
+                or "encoder.block.0.layer.0.SelfAttention.k.SCB" in metadata
+            ):
+                model_type = "IF"
+                model_stage = "text_encoding"
+            elif "add_embedding.norm1.weight" in metadata:
+                model_type = "IF"
+                if "class_embedding.linear_1.bias" not in metadata:
+                    model_stage = "first_stage"
+    elif file.is_dir():
+        with open(file / "model_index.json", "r") as f:
+            metadata: Dict[str, str] = json.loads(f.read())
+            class_name = metadata.get("_class_name")
+            if class_name == "KandinskyV22PriorPipeline":
+                model_type = "Kandinsky 2.2"
+                model_stage = "text_encoding"
+            elif (
+                class_name == "KandinskyV22ControlnetPipeline"
+                or class_name == "KandinskyV22Pipeline"
+            ):
+                model_type = "Kandinsky 2.2"
+            elif class_name == "KandinskyPipeline":
+                model_type = "Kandinsky 2.1"
+            elif class_name == "KandinskyPriorPipeline":
+                model_type = "Kandinsky 2.1"
+                model_stage = "text_encoding"
+    return (name, model_type, model_stage)
 
 
 def convert_image_to_base64(

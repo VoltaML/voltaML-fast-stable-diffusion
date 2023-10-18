@@ -28,6 +28,10 @@ Backend = Literal[
     "VAE",
     "Upscaler",
 ]
+PyTorchModelBase = Literal[
+    "SD1.x", "SD2.x", "SDXL", "Kandinsky 2.1", "Kandinsky 2.2", "Wuerstchen", "IF"
+]
+PyTorchModelStage = Literal["text_encoding", "first_stage", "last_stage"]
 
 
 @dataclass
@@ -286,6 +290,8 @@ class ModelResponse:
     vae: str
     state: Literal["loading", "loaded", "not loaded"] = field(default="not loaded")
     textual_inversions: List[str] = field(default_factory=list)
+    type: PyTorchModelBase = "SD1.x"
+    stage: PyTorchModelStage = "last_stage"
 
 
 @dataclass
