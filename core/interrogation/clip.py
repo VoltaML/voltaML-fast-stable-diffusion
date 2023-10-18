@@ -306,9 +306,7 @@ class LabelTable:
         if is_cpu(self.device):
             self.embeds = [e.astype(np.float32) for e in self.embeds]
 
-    def _load_cached(
-        self, descriptor: str, hash_: str, sanitized_name: str
-    ) -> bool:  # pylint: disable=redefined-builtin
+    def _load_cached(self, descriptor: str, hash_: str, sanitized_name: str) -> bool:
         cached_safetensors = self.cache_path.joinpath(
             f"{sanitized_name}_{descriptor}.safetensors"
         )

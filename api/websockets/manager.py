@@ -27,23 +27,21 @@ class WebSocketManager:
             from gpustat.core import GPUStatCollection
 
             shared.all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             logger.info(
                 f"GPUStat failed to initialize - probably not an NVIDIA GPU: {e}"
             )
             logger.debug("Trying pyamdgpuinfo...")
             try:
-                import pyamdgpuinfo  # pylint: disable=import-error
+                import pyamdgpuinfo
 
                 if pyamdgpuinfo.detect_gpus() == 0:
-                    raise ImportError(  # pylint: disable=raise-missing-from
-                        "User doesn't have an AMD gpu"
-                    )
+                    raise ImportError("User doesn't have an AMD gpu")
                 shared.all_gpus = [
                     pyamdgpuinfo.get_gpu(x) for x in range(pyamdgpuinfo.detect_gpus())
                 ]
                 shared.amd = True
-            except Exception:  # pylint: disable=broad-except
+            except Exception:
                 logger.warning(
                     "User doesn't have an AMD nor an NVIDIA card. GPU info will be unavailable."
                 )

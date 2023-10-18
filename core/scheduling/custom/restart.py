@@ -1,8 +1,8 @@
 # Taken from https://github.com/AUTOMATIC1111/stable-diffusion-webui/blob/master/modules/sd_samplers_extra.py
 
+import k_diffusion.sampling
 import torch
 import tqdm
-import k_diffusion.sampling
 
 
 @torch.no_grad()
@@ -25,7 +25,7 @@ def restart_sampler(
     extra_args = {} if extra_args is None else extra_args
     s_in = x.new_ones([x.shape[0]])
     step_id = 0
-    from k_diffusion.sampling import to_d, get_sigmas_karras
+    from k_diffusion.sampling import get_sigmas_karras, to_d
 
     def heun_step(x, old_sigma, new_sigma, second_order=True):
         nonlocal step_id
@@ -110,7 +110,7 @@ def restart_sampler(
         elif last_sigma < old_sigma:
             x = (
                 x
-                + k_diffusion.sampling.torch.randn_like(x)  # pylint: disable=E1101
+                + k_diffusion.sampling.torch.randn_like(x)
                 * s_noise
                 * (old_sigma**2 - last_sigma**2) ** 0.5
             )

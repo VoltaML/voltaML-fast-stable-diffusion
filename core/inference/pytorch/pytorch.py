@@ -111,7 +111,7 @@ class PyTorchStableDiffusion(InferenceModel):
             for textural_inversion in config.api.autoloaded_textual_inversions:
                 try:
                     self.load_textual_inversion(textural_inversion)
-                except Exception as e:  # pylint: disable=broad-except
+                except Exception as e:
                     logger.warning(
                         f"Failed to load textual inversion {textural_inversion}: {e}"
                     )
@@ -143,7 +143,7 @@ class PyTorchStableDiffusion(InferenceModel):
             self.vae = old_vae
         else:
             if len(vae.split("/")) == 2:
-                cont = requests.get(  # pylint: disable=W3101
+                cont = requests.get(
                     f"https://huggingface.co/{vae}/raw/main/config.json"
                 ).json()["_class_name"]
                 cont = getattr(importlib.import_module("diffusers"), cont)

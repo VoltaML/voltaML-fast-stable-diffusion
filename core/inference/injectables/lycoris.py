@@ -1,4 +1,3 @@
-# pylint: disable=attribute-defined-outside-init
 import logging
 from typing import Any, Dict, Sized
 

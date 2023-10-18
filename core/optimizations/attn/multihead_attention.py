@@ -30,7 +30,7 @@ class MultiheadAttention(torch.nn.MultiheadAttention):
             vdim=cross_attention_dim,
         )
 
-    def forward(  # pylint: disable=arguments-differ
+    def forward(
         self,
         hidden_states: torch.Tensor,
         encoder_hidden_states: Optional[torch.Tensor] = None,

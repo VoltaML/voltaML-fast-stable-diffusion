@@ -225,7 +225,7 @@ def pad_tokens_and_weights(
     weights_length = (
         max_length if no_boseos_middle else max_embeddings_multiples * chunk_length
     )
-    for i in range(len(tokens)):  # pylint: disable=consider-using-enumerate
+    for i in range(len(tokens)):
         tokens[i] = [bos] + tokens[i] + [eos] * (max_length - 1 - len(tokens[i]))
         if no_boseos_middle:
             weights[i] = [1.0] + weights[i] + [1.0] * (max_length - 1 - len(weights[i]))
@@ -432,8 +432,7 @@ def get_weighted_text_embeddings(
                 old_l = loralist
                 loralist = list(
                     filter(
-                        lambda x: Path(x[0]).stem.casefold()
-                        in prompt_.casefold(),  # pylint: disable=cell-var-from-loop
+                        lambda x: Path(x[0]).stem.casefold() in prompt_.casefold(),
                         loralist,
                     )
                 )
@@ -501,7 +500,7 @@ def get_weighted_text_embeddings(
     # round up the longest length of tokens to a multiple of (model_max_length - 2)
     max_length = max([len(token) for token in prompt_tokens])
     if uncond_prompt is not None:
-        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore # pylint: disable=nested-min-max
+        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore
 
     max_embeddings_multiples = min(
         max_embeddings_multiples,  # type: ignore

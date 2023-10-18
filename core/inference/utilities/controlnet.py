@@ -225,7 +225,7 @@ def _segmentation(input_image: Image.Image) -> Image.Image:
     from core import shared_dependent
 
     if isinstance(shared_dependent.cached_controlnet_preprocessor, Tuple):
-        (  # pylint: disable=unpacking-non-sequence
+        (
             image_processor,
             image_segmentor,
         ) = shared_dependent.cached_controlnet_preprocessor

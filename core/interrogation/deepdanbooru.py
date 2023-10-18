@@ -76,7 +76,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
             else:
                 try:
                     self.model = convert_to_reference_fx(prepared, backend_config=get_tensorrt_backend_config_dict())  # type: ignore
-                except Exception:  # pylint: disable=broad-except
+                except Exception:
                     pass
             del prepared
         else:

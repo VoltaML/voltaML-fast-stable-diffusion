@@ -43,7 +43,7 @@ class ThreadWithReturnValue(Thread):
                     )
                     try:
                         self._return = target(*self._args, **self._kwargs)  # type: ignore
-                    except Exception as err:  # pylint: disable=broad-except
+                    except Exception as err:
                         self._err = err
                 else:
                     logger.debug(
@@ -56,7 +56,7 @@ class ThreadWithReturnValue(Thread):
                             ).result()
                         else:
                             raise Exception("Asyncio loop not found")
-                    except Exception as err:  # pylint: disable=broad-except
+                    except Exception as err:
                         self._err = err
 
     def join(self, *args) -> Tuple[Union[Any, None], Union[Exception, None]]:

@@ -4,7 +4,6 @@ import numpy as np
 import torch
 from PIL import Image
 
-from core import shared
 from core.config import config
 
 taesd_model = None
@@ -13,7 +12,7 @@ taesd_model = None
 def taesd(
     samples: torch.Tensor, height: Optional[int] = None, width: Optional[int] = None
 ) -> torch.Tensor:
-    global taesd_model  # pylint: disable=global-statement
+    global taesd_model
 
     if taesd_model is None:
         from diffusers import AutoencoderTiny

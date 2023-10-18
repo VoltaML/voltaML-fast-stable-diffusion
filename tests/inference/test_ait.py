@@ -15,11 +15,11 @@ from tests.const import KDIFF_SAMPLERS
 from tests.functions import generate_random_image_base64
 
 try:
-    import aitemplate  # pylint: disable=unused-import
+    import aitemplate  # noqa: F401
 except ModuleNotFoundError:
     pytest.skip("Skipping aitemplate tests, ait not installed", allow_module_level=True)
 
-# pylint: disable=ungrouped-imports
+
 from core.inference.ait import AITemplateStableDiffusion
 
 model = "Azher--Anything-v4.5-vae-fp16-diffuser__512-1024x512-1024x1-1"

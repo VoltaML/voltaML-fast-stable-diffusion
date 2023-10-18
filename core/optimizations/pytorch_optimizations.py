@@ -168,7 +168,7 @@ def optimize_model(
         )
 
         if is_ipex_available():
-            import intel_extension_for_pytorch as ipex  # pylint: disable=import-error
+            import intel_extension_for_pytorch as ipex
 
             logger.info("Optimization: Running IPEX optimizations")
 

@@ -1,7 +1,5 @@
-# pylint: disable=not-callable
-
 import torch
-from k_diffusion.external import CompVisVDenoiser, CompVisDenoiser
+from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 
 from .types import Denoiser
 

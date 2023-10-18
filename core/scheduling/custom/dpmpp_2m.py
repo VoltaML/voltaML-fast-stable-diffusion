@@ -1,8 +1,7 @@
-# pylint: disable=C3001
 # God bless this guy: https://github.com/AUTOMATIC1111/stable-diffusion-webui/discussions/8457
 
-from tqdm import trange
 import torch
+from tqdm import trange
 
 
 @torch.no_grad()

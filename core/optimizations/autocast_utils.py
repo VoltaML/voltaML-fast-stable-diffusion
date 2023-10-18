@@ -40,7 +40,7 @@ def autocast(
 ):
     "Context manager to autocast tensors to desired dtype for all supported backends"
 
-    global _initialized_directml  # pylint: disable=global-statement
+    global _initialized_directml
 
     if dtype == torch.float32 or disable:
         return contextlib.nullcontext()

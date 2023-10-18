@@ -23,7 +23,7 @@ from ..modeling.unet_2d_condition import (
 )
 
 
-def compile_unet(  # pylint: disable=dangerous-default-value
+def compile_unet(
     pt_mod,
     batch_size=(1, 8),
     height=(64, 2048),

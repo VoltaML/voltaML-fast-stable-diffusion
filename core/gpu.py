@@ -21,6 +21,7 @@ from core.inference.functions import is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.inference.sdxl import SDXLStableDiffusion
 from core.interrogation.base_interrogator import InterrogationResult
+from core.optimizations import is_hypertile_available
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
@@ -40,7 +41,6 @@ from core.types import (
     VaeLoadRequest,
 )
 from core.utils import convert_to_image, image_grid
-from core.optimizations import is_hypertile_available
 
 if TYPE_CHECKING:
     from core.inference.onnx import OnnxStableDiffusion
@@ -72,7 +72,7 @@ class GPU:
                     [f"(CUDA) {torch.cuda.get_device_name(i)}", f"cuda:{i}"]
                 )
         try:
-            import torch_directml  # pylint: disable=unused-import
+            import torch_directml
 
             for i in range(torch_directml.device_count()):
                 cap.supported_backends.append(
@@ -107,22 +107,22 @@ class GPU:
                 cap.supported_precisions_gpu = ["float32"] + s
         try:
             cap.supported_torch_compile_backends = (
-                torch._dynamo.list_backends()  # type: ignore # pylint: disable=protected-access
+                torch._dynamo.list_backends()  # type: ignore
             )
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             pass
 
         if torch.cuda.is_available():
             try:
-                import bitsandbytes as bnb  # pylint: disable=import-error
-                import bitsandbytes.functional as F  # pylint: disable=import-error
+                import bitsandbytes as bnb
+                import bitsandbytes.functional as F
 
                 a = torch.tensor([1.0]).cuda()
                 b, b_state = F.quantize_fp4(torch.tensor([2.0]).cuda())
                 bnb.matmul_4bit(a, b, quant_state=b_state)  # type: ignore
                 cap.supports_int8 = True
                 logger.debug("GPU supports int8")
-            except Exception:  # pylint: disable=broad-except
+            except Exception:
                 logger.debug("GPU does not support int8")
 
         cap.supports_xformers = is_xformers_available()
@@ -268,7 +268,7 @@ class GPU:
                         logger.debug(f"Strings returned from R2: {len(out)}")
                         images = out
 
-            except Exception as err:  # pylint: disable=broad-except
+            except Exception as err:
                 self.memory_cleanup()
                 await self.queue.mark_finished(job.data.id)
                 raise err
@@ -301,7 +301,7 @@ class GPU:
                 )
             return ([], 0.0)
 
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             if not isinstance(e, ModelNotLoadedError):
                 await websocket_manager.broadcast(
                     Notification(

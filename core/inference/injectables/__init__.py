@@ -122,7 +122,7 @@ class HookManager(object):
         "Redirect lora forward to this hook manager"
         d = self
 
-        def lora_forward(self, input):  # pylint: disable=redefined-builtin
+        def lora_forward(self, input):
             d.apply_weights(self)
 
             return self.old_forward(input)

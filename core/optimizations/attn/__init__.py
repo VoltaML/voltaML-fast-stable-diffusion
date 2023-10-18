@@ -20,7 +20,7 @@ def _xf(pipe):
             return False
         pipe.enable_xformers_memory_efficient_attention()
         return True
-    except Exception:  # pylint: disable=broad-except
+    except Exception:
         pass
     return False
 

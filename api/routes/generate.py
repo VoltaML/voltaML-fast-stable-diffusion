@@ -35,9 +35,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
@@ -55,9 +53,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
@@ -79,9 +75,7 @@ async def inpaint_job(job: InpaintQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
@@ -99,9 +93,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
@@ -119,9 +111,7 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
         time: float
         image, time = await gpu.upscale(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return {
         "time": time,

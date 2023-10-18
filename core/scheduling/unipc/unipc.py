@@ -1,15 +1,14 @@
-# pylint: disable=used-before-assignment
 # Taken from https://github.com/wl-zhao/UniPC/blob/main/uni_pc.py#L236
 
 import logging
-from typing import Callable, Optional, List, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import torch
 from tqdm import tqdm
 
-from .utility import expand_dims
+from ..types import AlgorithmType, Method, SkipType, Variant
 from .noise_scheduler import NoiseScheduleVP
-from ..types import Variant, Method, AlgorithmType, SkipType
+from .utility import expand_dims
 
 logger = logging.getLogger(__name__)
 
@@ -63,7 +62,7 @@ class UniPC:
     def dynamic_thresholding_fn(
         self,
         x0: torch.Tensor,
-        t: Optional[torch.Tensor] = None,  # pylint: disable=unused-argument
+        t: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
         """
         The dynamic thresholding method.

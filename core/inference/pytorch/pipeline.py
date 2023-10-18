@@ -35,7 +35,7 @@ from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
 # ------------------------------------------------------------------------------
 
-logger = logging.get_logger(__name__)  # pylint: disable=invalid-name
+logger = logging.get_logger(__name__)
 
 
 class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
@@ -74,9 +74,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         tokenizer: CLIPTokenizer,
         unet: UNet2DConditionModel,
         scheduler: SchedulerMixin,
-        safety_checker: Any = None,  # pylint: disable=unused-argument
-        feature_extractor: Any = None,  # pylint: disable=unused-argument
-        requires_safety_checker: bool = False,  # pylint: disable=unused-argument
+        safety_checker: Any = None,
+        feature_extractor: Any = None,
+        requires_safety_checker: bool = False,
         controlnet: Optional[ControlNetModel] = None,
     ):
         super().__init__(
@@ -823,7 +823,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self.__call__(  # pylint: disable=unnecessary-dunder-call
+        return self.__call__(
             prompt=prompt,
             generator=generator,
             negative_prompt=negative_prompt,
@@ -932,7 +932,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self.__call__(  # pylint: disable=unnecessary-dunder-call
+        return self.__call__(
             prompt=prompt,
             generator=generator,
             negative_prompt=negative_prompt,
