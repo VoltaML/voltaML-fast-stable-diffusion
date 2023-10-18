@@ -8,7 +8,7 @@ import torch
 class HookObject(ABC):
     "Module containing information on this subset of injectables."
 
-    def __init__(  # pylint: disable=dangerous-default-value
+    def __init__(
         self,
         name: str,
         prompt_key: str,

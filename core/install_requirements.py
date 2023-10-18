@@ -242,7 +242,7 @@ def install_deps(force_distribution: int = -1):
                     (c.windows_supported if platform.system() == "Windows" else True)
                     and (
                         (
-                            subprocess.run(  # pylint: disable=subprocess-run-check
+                            subprocess.run(
                                 c.check_command,
                                 stdout=subprocess.DEVNULL,
                                 stderr=subprocess.DEVNULL,
@@ -375,9 +375,7 @@ def version_check(commit: str):
             .strip()
         )
         username = origin.split("/")[-2]
-        project = origin.split("/")[-1].split(".")[  # pylint: disable=use-maxsplit-arg
-            0
-        ]
+        project = origin.split("/")[-1].split(".")[0]
 
         commits = requests.get(
             f"https://api.github.com/repos/{username}/{project}/branches/{current_branch}",
@@ -393,7 +391,7 @@ def version_check(commit: str):
             print("You are up to date with the most recent release.")
         else:
             print("Not a git clone, can't perform version check.")
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         logger.debug(f"Version check failed: {e}")
         logger.info(
             "No git repo found, assuming that we are in containerized environment"

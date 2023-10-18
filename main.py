@@ -10,7 +10,7 @@ from argparse import ArgumentParser
 from datetime import datetime, timedelta
 from pathlib import Path
 
-from core.install_requirements import (  # pylint: disable=wrong-import-position
+from core.install_requirements import (
     commit_hash,
     create_environment,
     in_virtualenv,
@@ -263,7 +263,7 @@ def checks():
             ),
         ],
     )
-    logger = logging.getLogger()  # pylint: disable=redefined-outer-name
+    logger = logging.getLogger()
 
     if args_with_extras.bot and not args_with_extras.install_only:
         if not os.getenv("DISCORD_BOT_TOKEN"):

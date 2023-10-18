@@ -62,7 +62,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self.safety_checker: Any
         self.feature_extractor: CLIPFeatureExtractor
 
-        from aitemplate.compiler import Model  # pylint: disable=E0611,E0401
+        from aitemplate.compiler import Model
 
         self.clip_ait_exe: Model
         self.unet_ait_exe: Model
@@ -80,7 +80,6 @@ class AITemplateStableDiffusion(InferenceModel):
         return os.path.join("data", "aitemplate", self.model_id)
 
     def load(self):
-        # pylint: disable=redefined-outer-name,reimported
         from .pipeline import StableDiffusionAITPipeline
 
         pipe = load_pytorch_pipeline(
@@ -175,9 +174,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         mapping.map_unet(self.unet)
                     )
                     self.unet_ait_exe.fold_constants()
-                    self.current_unet = (  # pylint: disable=attribute-defined-outside-init
-                        "unet"
-                    )
+                    self.current_unet = "unet"
 
                     # self.unet.cpu()
 
@@ -206,9 +203,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         mapping.map_unet(self.unet)
                     )
                     self.unet_ait_exe.fold_constants()
-                    self.current_unet = (  # pylint: disable=attribute-defined-outside-init
-                        "controlnet_unet"
-                    )
+                    self.current_unet = "controlnet_unet"
 
                     # self.unet.cpu()
 
@@ -247,7 +242,6 @@ class AITemplateStableDiffusion(InferenceModel):
 
         self.manage_optional_components(target_controlnet=controlnet)
 
-        # pylint: disable=redefined-outer-name,reimported
         from .pipeline import StableDiffusionAITPipeline
 
         pipe = StableDiffusionAITPipeline(

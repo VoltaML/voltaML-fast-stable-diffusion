@@ -28,9 +28,7 @@ def get_timestep_embedding(
     dtype: str = "float16",
     arange_name: str = "arange",
 ) -> Tensor:
-    assert (
-        timesteps._rank() == 1  # pylint: disable=protected-access
-    ), "Timesteps should be a 1d-array"
+    assert timesteps._rank() == 1, "Timesteps should be a 1d-array"
 
     half_dim = embedding_dim // 2
 
@@ -63,7 +61,7 @@ class TimestepEmbedding(nn.Module):
         self,
         channel: int,
         time_embed_dim: int,
-        act_fn: str = "silu",  # pylint: disable=unused-argument
+        act_fn: str = "silu",
         dtype: str = "float16",
     ) -> None:
         super().__init__()

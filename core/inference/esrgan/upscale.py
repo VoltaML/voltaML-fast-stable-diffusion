@@ -12,7 +12,7 @@ import cv2
 import numpy as np
 import torch
 from PIL import Image
-from rich import print  # pylint: disable=redefined-builtin
+from rich import print
 from rich.progress import BarColumn, Progress, TaskID, TimeRemainingColumn
 
 from .utils import dataops as ops

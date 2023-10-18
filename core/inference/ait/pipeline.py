@@ -57,14 +57,14 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
     Pipeline for everything
     """
 
-    def __init__(  # pylint: disable=super-init-not-called
+    def __init__(
         self,
         vae: AutoencoderKL,
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
         scheduler: KarrasDiffusionSchedulers,
         controlnet: Optional[ControlNetModel],
-        unet: Optional[UNet2DConditionModel],  # type: ignore # pylint: disable=unused-argument
+        unet: Optional[UNet2DConditionModel],  # type: ignore
         directory: str = "",
         clip_ait_exe: Optional[Any] = None,
         unet_ait_exe: Optional[Any] = None,
@@ -128,7 +128,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
         self.unet_in_channels = get_unet_in_channels(directory=Path(directory))
 
-    def unet_inference(  # pylint: disable=dangerous-default-value
+    def unet_inference(
         self,
         latent_model_input,
         timesteps,

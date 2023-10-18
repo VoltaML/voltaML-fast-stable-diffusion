@@ -140,7 +140,7 @@ def compile_diffusers(
         else:
             logger.info("CLIP already compiled. Skipping...")
 
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         logger.error(e)
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"clip": "error"})
@@ -212,7 +212,7 @@ def compile_diffusers(
             Data(data_type="aitemplate_compile", data={"unet": "finish"})
         )
 
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         logger.error(e)
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"unet": "error"})
@@ -286,7 +286,7 @@ def compile_diffusers(
             Data(data_type="aitemplate_compile", data={"controlnet_unet": "finish"})
         )
 
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         logger.error(e)
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"controlnet_unet": "error"})
@@ -347,7 +347,7 @@ def compile_diffusers(
             Data(data_type="aitemplate_compile", data={"vae": "finish"})
         )
 
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         logger.error(e)
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"vae": "error"})
@@ -381,7 +381,7 @@ def compile_diffusers(
             Data(data_type="aitemplate_compile", data={"cleanup": "finish"})
         )
 
-    except Exception as e:  # pylint: disable=broad-except
+    except Exception as e:
         logger.error(e)
         websocket_manager.broadcast_sync(
             Data(data_type="aitemplate_compile", data={"cleanup": "error"})

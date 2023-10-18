@@ -101,9 +101,7 @@ async def load_model(
         )
     except torch.cuda.OutOfMemoryError:  # type: ignore
         logger.warning(traceback.format_exc())
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=500, detail="Out of memory"
-        )
+        raise HTTPException(status_code=500, detail="Out of memory")
     return {"message": "Model loaded"}
 
 

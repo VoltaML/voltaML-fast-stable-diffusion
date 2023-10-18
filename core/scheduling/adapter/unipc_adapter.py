@@ -1,5 +1,3 @@
-# pylint: disable=W0613
-
 import functools
 from typing import Any, Callable, Optional, Union
 

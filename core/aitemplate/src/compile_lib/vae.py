@@ -21,7 +21,7 @@ from ..modeling.mapping import map_vae
 from ..modeling.vae import AutoencoderKL as ait_AutoencoderKL
 
 
-def compile_vae(  # pylint: disable=dangerous-default-value
+def compile_vae(
     pt_mod,
     batch_size=(1, 8),
     height=(64, 2048),

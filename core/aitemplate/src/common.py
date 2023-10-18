@@ -1,5 +1,3 @@
-# pylint: disable=protected-access
-
 import torch
 
 
@@ -8,7 +6,7 @@ def torch_dtype_from_str(dtype: str):
 
 
 def get_shape(x):
-    shape = [it.value() for it in x._attrs["shape"]]  # pylint: disable=protected-access
+    shape = [it.value() for it in x._attrs["shape"]]
     return shape
 
 

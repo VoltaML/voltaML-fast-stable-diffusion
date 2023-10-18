@@ -6,7 +6,7 @@ from core.config import config
 def is_hypertile_available():
     "Checks whether hypertile is available"
     try:
-        import hyper_tile  # pylint: disable=unused-import
+        import hyper_tile  # noqa: F401
 
         return True
     except ImportError:
@@ -14,7 +14,7 @@ def is_hypertile_available():
 
 
 if is_hypertile_available():
-    from hyper_tile import split_attention  # pylint: disable=unused-import
+    from hyper_tile import split_attention  # noqa: F401
 
 
 def hypertile(unet, height: int, width: int) -> ExitStack:

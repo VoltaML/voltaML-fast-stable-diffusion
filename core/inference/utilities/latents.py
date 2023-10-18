@@ -25,7 +25,7 @@ def _randn_tensor(
     generator: Union[PhiloxGenerator, torch.Generator],
     device: Optional["torch.device"] = None,
     dtype: Optional["torch.dtype"] = None,
-    layout: Optional["torch.layout"] = None,  # pylint: disable=unused-argument
+    layout: Optional["torch.layout"] = None,
 ):
     return randn(shape, generator, device, dtype)
 
@@ -214,7 +214,7 @@ def prepare_image(
     return image
 
 
-def preprocess_mask(mask):  # pylint: disable=unused-argument
+def preprocess_mask(mask):
     mask = mask.convert("L")
     # w, h = mask.size
     # w, h = map(lambda x: x - x % 32, (w, h))  # resize to integer multiple of 32

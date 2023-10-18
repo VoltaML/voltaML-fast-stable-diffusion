@@ -9,8 +9,8 @@ from api.websockets.data import Data
 from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError
+from core.inference.utilities import cheap_approximation, numpy_to_pil, taesd
 from core.utils import convert_images_to_base64_grid
-from core.inference.utilities import taesd, cheap_approximation, numpy_to_pil
 
 last_image_time = time.time()
 
@@ -18,7 +18,7 @@ last_image_time = time.time()
 def callback(step: int, _timestep: int, tensor: torch.Tensor):
     "Callback for all processes that have steps and partial images."
 
-    global last_image_time  # pylint: disable=global-statement
+    global last_image_time
 
     if shared.interrupt:
         shared.interrupt = False

@@ -14,29 +14,16 @@ repository = "https://github.com/voltaML/voltaML-fast-stable-diffusion"
 
 [tool.ruff]
 ignore = [
-    "E501",
-    "G004",
-    "PGH003",
-    "S101",
-    "FBT001",
-    "FBT002",
-    "PTH123",
-    "PTH118",
-    "D202",
-    "TRY003",
-    "EM102",
-    "PTH112",
-    "B008",
-    "D300",
-    "D100",
-    "COM812",
-    "E731",
-    "F401",
+    "E501", # line too long
+    "E731", # do not assign a lambda expression, use a def
 ]
 target-version = "py39"
 
 [tool.ruff.flake8-quotes]
 docstring-quotes = "double"
+
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["F401"]
 
 [tool.poetry]
 name = "voltaml-fast-stable-diffusion"
