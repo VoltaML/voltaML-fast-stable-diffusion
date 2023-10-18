@@ -7,7 +7,9 @@
       :loading="modelsLoading"
       placeholder=""
       :value="
-        conf.data.settings.model !== null ? conf.data.settings.model?.name : ''
+        settings.data.settings.model !== null
+          ? settings.data.settings.model?.name
+          : ''
       "
       :consistent-menu-width="false"
       filterable
@@ -15,7 +17,7 @@
     <NButton
       @click="showModal = true"
       :loading="modelsLoading"
-      :type="conf.data.settings.model ? 'default' : 'success'"
+      :type="settings.data.settings.model ? 'default' : 'success'"
     >
       Load Model</NButton
     >
@@ -59,11 +61,19 @@
             justify-content: center;
             flex-direction: column;
           "
+          status="404"
         >
-          <template #icon>
-            <NIcon size="64">
-              <CubeSharp />
-            </NIcon>
+          <template #footer>
+            <NButton
+              type="success"
+              @click="
+                () => {
+                  router.push('/models');
+                  showModal = false;
+                }
+              "
+              >Get model</NButton
+            >
           </template>
         </NResult>
       </div>
@@ -444,11 +454,10 @@
           :type="websocketState.color"
           quaternary
           icon-placement="left"
-          :render-icon="renderIcon(WifiSharp)"
+          :render-icon="renderIcon(Wifi)"
           :loading="websocketState.loading"
           @click="startWebsocket(message)"
-          >{{ websocketState.text }}</NButton
-        >
+        ></NButton>
       </NDropdown>
       <NButton
         type="success"
@@ -464,8 +473,8 @@
         :render-icon="themeIcon"
         style="margin-right: 8px"
         @click="
-          conf.data.settings.frontend.theme =
-            conf.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
+          settings.data.settings.frontend.theme =
+            settings.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
         "
       />
     </div>
@@ -495,12 +504,11 @@ import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
   ContrastSharp,
-  CubeSharp,
   PowerSharp,
   SettingsSharp,
   StatsChart,
   SyncSharp,
-  WifiSharp,
+  Wifi,
 } from "@vicons/ionicons5";
 import { NAlert, NButton, NProgress, NResult, useMessage } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
@@ -512,7 +520,7 @@ const router = useRouter();
 
 const websocketState = useWebsocket();
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 
 const modelsLoading = ref(false);
 const filter = ref("");
@@ -575,6 +583,24 @@ const vaeModels = computed(() => {
       valid: true,
       state: "not loaded",
       vae: "default",
+      textual_inversions: [],
+    } as ModelEntry,
+    {
+      name: "Tiny VAE (fast)",
+      path: "madebyollin/taesd",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "madebyollin/taesd",
+      textual_inversions: [],
+    } as ModelEntry,
+    {
+      name: "Asymmetric VAE",
+      path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+      backend: "VAE",
+      valid: true,
+      state: "not loaded",
+      vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
       textual_inversions: [],
     } as ModelEntry,
     ...filteredModels.value
@@ -648,14 +674,14 @@ function refreshModels() {
       fetch(`${serverUrl}/api/models/loaded`).then((res) => {
         res.json().then((data: Array<ModelEntry>) => {
           // Check if the current model is still loaded, if not, set it to null
-          if (conf.data.settings.model) {
+          if (settings.data.settings.model) {
             if (
               !data.find((model) => {
-                return model.path === conf.data.settings.model?.path;
+                return model.path === settings.data.settings.model?.path;
               })
             ) {
               console.log("Current model is not loaded anymore");
-              conf.data.settings.model = null;
+              settings.data.settings.model = null;
             }
           }
 
@@ -671,7 +697,7 @@ function refreshModels() {
           });
 
           // Set the current model to the first available model if it was null
-          if (!conf.data.settings.model) {
+          if (!settings.data.settings.model) {
             const allLoaded = [
               ...loadedPyTorchModels.value,
               ...loadedAitModels.value,
@@ -683,24 +709,22 @@ function refreshModels() {
             console.log("All loaded models: ", allLoaded);
 
             if (allLoaded.length > 0) {
-              conf.data.settings.model = allLoaded[0];
+              settings.data.settings.model = allLoaded[0];
               console.log(
                 "Set current model to first available model: ",
-                conf.data.settings.model
+                settings.data.settings.model
               );
             } else {
               console.log("No models available");
-              conf.data.settings.model = null;
+              settings.data.settings.model = null;
             }
           }
           try {
-            if (conf.data.settings.model) {
-              const spl = conf.data.settings.model.name.split("__")[1];
+            if (settings.data.settings.model) {
+              const spl = settings.data.settings.model.name.split("__")[1];
 
               const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
               const matches = regex.exec(spl);
-
-              console.log("Match: ", matches);
 
               if (matches) {
                 const width = matches[1].split("-").map((x) => parseInt(x));
@@ -709,9 +733,9 @@ function refreshModels() {
                   .split("-")
                   .map((x) => parseInt(x));
 
-                conf.data.settings.aitDim.width = width;
-                conf.data.settings.aitDim.height = height;
-                conf.data.settings.aitDim.batch_size = batch_size;
+                settings.data.settings.aitDim.width = width;
+                settings.data.settings.aitDim.height = height;
+                settings.data.settings.aitDim.batch_size = batch_size;
               } else {
                 throw new Error("Invalid model name for AIT dimensions parser");
               }
@@ -719,10 +743,9 @@ function refreshModels() {
               throw new Error("No model, cannot parse AIT dimensions");
             }
           } catch (e) {
-            console.warn(e);
-            conf.data.settings.aitDim.width = undefined;
-            conf.data.settings.aitDim.height = undefined;
-            conf.data.settings.aitDim.batch_size = undefined;
+            settings.data.settings.aitDim.width = undefined;
+            settings.data.settings.aitDim.height = undefined;
+            settings.data.settings.aitDim.batch_size = undefined;
           }
 
           const autofillKeys = [];
@@ -735,7 +758,7 @@ function refreshModels() {
             }*/
           }
 
-          global.state.autofill = autofillKeys;
+          global.state.autofill_special = autofillKeys;
         });
       });
     })
@@ -844,14 +867,14 @@ async function onModelChange(modelStr: string) {
   });
 
   if (model) {
-    conf.data.settings.model = model;
+    settings.data.settings.model = model;
   } else {
     message.error("Model not found");
   }
 
   try {
-    if (conf.data.settings.model) {
-      const spl = conf.data.settings.model.name.split("__")[1];
+    if (settings.data.settings.model) {
+      const spl = settings.data.settings.model.name.split("__")[1];
 
       const regex = /([\d]+-[\d]+)x([\d]+-[\d]+)x([\d]+-[\d]+)/g;
       const match = spl.match(regex);
@@ -861,9 +884,9 @@ async function onModelChange(modelStr: string) {
         const height = match[1].split("-").map((x) => parseInt(x));
         const batch_size = match[2].split("-").map((x) => parseInt(x));
 
-        conf.data.settings.aitDim.width = width;
-        conf.data.settings.aitDim.height = height;
-        conf.data.settings.aitDim.batch_size = batch_size;
+        settings.data.settings.aitDim.width = width;
+        settings.data.settings.aitDim.height = height;
+        settings.data.settings.aitDim.batch_size = batch_size;
       } else {
         throw new Error("Invalid model name for AIT dimensions parser");
       }
@@ -872,9 +895,9 @@ async function onModelChange(modelStr: string) {
     }
   } catch (e) {
     console.warn(e);
-    conf.data.settings.aitDim.width = undefined;
-    conf.data.settings.aitDim.height = undefined;
-    conf.data.settings.aitDim.batch_size = undefined;
+    settings.data.settings.aitDim.width = undefined;
+    settings.data.settings.aitDim.height = undefined;
+    settings.data.settings.aitDim.batch_size = undefined;
   }
 }
 
@@ -1070,7 +1093,7 @@ async function dropdownSelected(key: string) {
 startWebsocket(message);
 
 const backgroundColor = computed(() => {
-  if (conf.data.settings.frontend.theme === "dark") {
+  if (settings.data.settings.frontend.theme === "dark") {
     return "#121215";
   } else {
     return "#fff";

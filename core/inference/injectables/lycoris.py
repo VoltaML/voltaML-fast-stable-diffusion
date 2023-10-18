@@ -222,9 +222,9 @@ class LyCORISManager(HookObject):
                             module = torch.nn.Conv2d(
                                 v.shape[1],  # type: ignore
                                 v.shape[0],  # type: ignore
-                                sd_module.kernel_size,
-                                sd_module.stride,
-                                sd_module.padding,
+                                sd_module.kernel_size,  # type: ignore
+                                sd_module.stride,  # type: ignore
+                                sd_module.padding,  # type: ignore
                                 bias=False,
                             )
                         else:
@@ -235,9 +235,9 @@ class LyCORISManager(HookObject):
                         module = torch.nn.Conv2d(
                             v.shape[1],  # type: ignore
                             v.shape[0],  # type: ignore
-                            sd_module.kernel_size,
-                            sd_module.stride,
-                            sd_module.padding,
+                            sd_module.kernel_size,  # type: ignore
+                            sd_module.stride,  # type: ignore
+                            sd_module.padding,  # type: ignore
                             bias=False,
                         )
                     elif lyco_key == "lora_up.weight" or lyco_key == "dyn_down":
@@ -541,7 +541,7 @@ def _rebuild_weight(module, orig_weight: torch.Tensor, dyn_dim: int = None) -> t
             "You may have other lyco extension that conflict with locon extension."
         )
 
-    if hasattr(module, "bias") and module.bias != None:
+    if hasattr(module, "bias") and module.bias is not None:
         updown = updown.reshape(module.bias.shape)
         updown += module.bias.to(orig_weight.device, dtype=orig_weight.dtype)
         updown = updown.reshape(output_shape)

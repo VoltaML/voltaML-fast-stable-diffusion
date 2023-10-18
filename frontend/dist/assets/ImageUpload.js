@@ -1,6 +1,10 @@
+<<<<<<< HEAD
 import { d as defineComponent, E as ref, c as computed, b9 as onMounted, e as openBlock, x as createBlock, w as withCtx, n as createBaseVNode, bM as withModifiers, f as createElementBlock, g as createVNode, h as unref, G as NIcon, t as toDisplayString, i as NCard, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
+=======
+import { d as defineComponent, r as ref, c as computed, bb as onMounted, o as openBlock, k as createBlock, w as withCtx, b as createBaseVNode, bR as withModifiers, a as createElementBlock, e as createVNode, f as unref, q as NIcon, t as toDisplayString, N as NCard, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
+>>>>>>> origin/experimental
 import { C as CloudUpload } from "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-4f5be896"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-b7a1d9cc"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "image-container" };
 const _hoisted_2 = {
   for: "file-upload",
@@ -30,11 +34,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const image = ref();
     const width = computed(() => {
       var _a;
-      return image.value ? (_a = image.value) == null ? void 0 : _a.width : 0;
+      return image.value ? (_a = image.value) == null ? void 0 : _a.naturalWidth : 0;
     });
     const height = computed(() => {
       var _a;
-      return image.value ? (_a = image.value) == null ? void 0 : _a.height : 0;
+      return image.value ? (_a = image.value) == null ? void 0 : _a.naturalHeight : 0;
     });
     function previewImage(event) {
       const input = event.target;
@@ -134,8 +138,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageUpload_vue_vue_type_style_index_0_scoped_4f5be896_lang = "";
-const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-4f5be896"]]);
+const ImageUpload_vue_vue_type_style_index_0_scoped_b7a1d9cc_lang = "";
+const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-b7a1d9cc"]]);
 export {
   ImageUpload as I
 };

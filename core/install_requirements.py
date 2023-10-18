@@ -1,6 +1,7 @@
 import importlib.metadata
 import importlib.util
 import logging
+import os
 import platform
 import subprocess
 import sys
@@ -16,6 +17,8 @@ renamed_requirements = {
     "open_clip_torch": "open_clip",
     "python-multipart": "multipart",
     "invisible-watermark": "imwatermark",
+    "discord.py": "discord",
+    "HyperTile": "hyper-tile",
 }
 logger = logging.getLogger(__name__)
 
@@ -44,8 +47,11 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
                     continue
 
             if "git+http" in i:
-                logger.debug(f"Skipping git requirement (cannot check version): {i}")
-                continue
+                tmp = i.split("@")[0].split("/")[-1].replace(".git", "").strip()
+                logger.debug(
+                    f"Rewrote git requirement (cannot check hash, but proceeding): {i} => {tmp}"
+                )
+                i = tmp
 
             if "==" in i:
                 requirements[i.split("==")[0]] = i.replace(i.split("==")[0], "").strip()
@@ -209,7 +215,7 @@ _pytorch_distributions = [
 ]
 
 
-def install_pytorch(force_distribution: int = -1):
+def install_deps(force_distribution: int = -1):
     "Install necessary requirements for inference"
 
     # Install pytorch
@@ -259,6 +265,9 @@ def install_pytorch(force_distribution: int = -1):
     install_requirements("requirements/pytorch.txt")
     install_requirements("requirements/api.txt")
     install_requirements("requirements/interrogation.txt")
+
+    if os.environ.get("DISCORD_BOT_TOKEN"):
+        install_requirements("requirements/bot.txt")
 
 
 def install_bot():

@@ -65,12 +65,8 @@ const menuOptionsMain: MenuOption[] = [
   },
   {
     label: () =>
-      h(
-        RouterLink,
-        { to: "/image2image" },
-        { default: () => "Image to Image" }
-      ),
-    key: "image2image",
+      h(RouterLink, { to: "/img2img" }, { default: () => "Image to Image" }),
+    key: "img2img",
     icon: renderIcon(Images),
   },
   {

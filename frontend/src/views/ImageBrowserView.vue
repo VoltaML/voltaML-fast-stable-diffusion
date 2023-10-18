@@ -1,151 +1,154 @@
 <template>
-  <div
-    style="
-      width: calc(100vw - 98px);
-      height: 48px;
-      border-bottom: #505050 1px solid;
-      margin-top: 53px;
-      display: flex;
-      justify-content: end;
-      align-items: center;
-      padding-right: 24px;
-      position: fixed;
-      top: 0;
-      z-index: 1;
-    "
-    class="top-bar"
-  >
-    <NInput
-      v-model:value="itemFilter"
-      style="margin: 0 12px"
-      placeholder="Filter"
-    />
-    <NIcon style="margin-right: 12px" size="22">
-      <GridOutline />
-    </NIcon>
-    <NSlider
-      style="width: 50vw"
-      :min="1"
-      :max="10"
-      v-model:value="conf.data.settings.frontend.image_browser_columns"
+  <div>
+    <div
+      style="
+        width: calc(100vw - 98px);
+        height: 48px;
+        border-bottom: #505050 1px solid;
+        margin-top: 53px;
+        display: flex;
+        justify-content: end;
+        align-items: center;
+        padding-right: 24px;
+        position: fixed;
+        top: 0;
+        z-index: 1;
+      "
+      class="top-bar"
     >
-    </NSlider>
-  </div>
-  <div class="main-container" style="margin-top: 114px">
-    <NModal
-      v-model:show="showDeleteModal"
-      :mask-closable="false"
-      preset="confirm"
-      type="error"
-      title="Delete Image"
-      content="Do you want to delete this image? This action cannot be undone."
-      positive-text="Confirm"
-      negative-text="Cancel"
-      transform-origin="center"
-      @positive-click="deleteImage"
-      @negative-click="showDeleteModal = false"
-    />
-    <NModal
-      v-model:show="showImageModal"
-      closable
-      mask-closable
-      preset="card"
-      style="width: 85vw"
-      title="Image Info"
-      id="image-modal"
-    >
-      <NGrid cols="1 m:2" x-gap="12" y-gap="12" responsive="screen">
-        <!-- Left side -->
-        <NGi>
-          <NImage
-            :src="imageSrc"
-            object-fit="contain"
-            style="width: 100%; height: auto; justify-content: center"
-            :img-props="{ style: { width: '40vw', maxHeight: '70vh' } }"
-          />
-          <NGrid cols="2" x-gap="4" y-gap="4" style="margin-top: 12px">
-            <NGi>
-              <NButton
-                type="success"
-                @click="downloadImage"
-                style="width: 100%"
-                ghost
-                ><template #icon>
-                  <NIcon>
-                    <Download />
-                  </NIcon> </template
-                >Download</NButton
-              >
-            </NGi>
+      <NInput
+        v-model:value="itemFilter"
+        style="margin: 0 12px"
+        placeholder="Filter"
+      />
+      <NIcon style="margin-right: 12px" size="22">
+        <GridOutline />
+      </NIcon>
+      <NSlider
+        style="width: 50vw"
+        :min="1"
+        :max="10"
+        v-model:value="settings.data.settings.frontend.image_browser_columns"
+      >
+      </NSlider>
+    </div>
+    <div class="main-container" style="margin-top: 114px">
+      <NModal
+        v-model:show="showDeleteModal"
+        :mask-closable="false"
+        preset="confirm"
+        type="error"
+        title="Delete Image"
+        content="Do you want to delete this image? This action cannot be undone."
+        positive-text="Confirm"
+        negative-text="Cancel"
+        transform-origin="center"
+        @positive-click="deleteImage"
+        @negative-click="showDeleteModal = false"
+      />
+      <NModal
+        v-model:show="showImageModal"
+        closable
+        mask-closable
+        preset="card"
+        style="width: 85vw"
+        title="Image Info"
+        id="image-modal"
+      >
+        <NGrid cols="1 m:2" x-gap="12" y-gap="12" responsive="screen">
+          <!-- Left side -->
+          <NGi>
+            <NImage
+              :src="imageSrc"
+              object-fit="contain"
+              style="width: 100%; height: auto; justify-content: center"
+              :img-props="{ style: { width: '40vw', maxHeight: '70vh' } }"
+            />
+            <NGrid cols="2" x-gap="4" y-gap="4" style="margin-top: 12px">
+              <NGi>
+                <NButton
+                  type="success"
+                  @click="downloadImage"
+                  style="width: 100%"
+                  ghost
+                  ><template #icon>
+                    <NIcon>
+                      <Download />
+                    </NIcon> </template
+                  >Download</NButton
+                >
+              </NGi>
 
-            <NGi>
-              <NButton
-                type="error"
-                @click="showDeleteModal = true"
-                style="width: 100%"
-                ghost
-              >
-                <template #icon>
-                  <NIcon>
-                    <TrashBin />
-                  </NIcon>
-                </template>
-                Delete</NButton
-              >
-            </NGi>
-            <NGi span="2">
-              <SendOutputTo
-                :output="global.state.imageBrowser.currentImageByte64"
-                :card="false"
-              />
-            </NGi>
-          </NGrid>
-        </NGi>
+              <NGi>
+                <NButton
+                  type="error"
+                  @click="showDeleteModal = true"
+                  style="width: 100%"
+                  ghost
+                >
+                  <template #icon>
+                    <NIcon>
+                      <TrashBin />
+                    </NIcon>
+                  </template>
+                  Delete</NButton
+                >
+              </NGi>
+              <NGi span="2">
+                <SendOutputTo
+                  :output="global.state.imageBrowser.currentImageByte64"
+                  :card="false"
+                  :data="global.state.imageBrowser.currentImageMetadata"
+                />
+              </NGi>
+            </NGrid>
+          </NGi>
 
-        <!-- Right side -->
-        <NGi>
-          <NScrollbar>
-            <NDescriptions
-              v-if="global.state.imageBrowser.currentImageMetadata.size !== 0"
-              :column="2"
-              size="large"
-            >
-              <NDescriptionsItem
-                :label="toDescriptionString(key.toString())"
-                content-style="max-width: 100px; word-wrap: break-word;"
-                style="margin: 4px"
-                v-for="(item, key) of global.state.imageBrowser
-                  .currentImageMetadata"
-                v-bind:key="item.toString()"
+          <!-- Right side -->
+          <NGi>
+            <NScrollbar>
+              <NDescriptions
+                v-if="global.state.imageBrowser.currentImageMetadata.size !== 0"
+                :column="2"
+                size="large"
               >
-                {{ item }}
-              </NDescriptionsItem>
-            </NDescriptions>
-          </NScrollbar>
-        </NGi>
-      </NGrid>
-    </NModal>
-    <div ref="scrollComponent">
-      <div class="image-grid">
-        <div
-          v-for="(column, column_index) in columns"
-          v-bind:key="column_index"
-          class="image-column"
-          ref="gridColumnRefs"
-        >
-          <img
-            v-for="(item, item_index) in column"
-            :src="urlFromPath(item.path)"
-            v-bind:key="item_index"
-            style="
-              width: 100%;
-              height: auto;
-              border-radius: 8px;
-              cursor: pointer;
-              margin-bottom: 6px;
-            "
-            @click="imgClick(column_index, item_index)"
-          />
+                <NDescriptionsItem
+                  :label="convertToTextString(key.toString())"
+                  content-style="max-width: 100px; word-wrap: break-word;"
+                  style="margin: 4px"
+                  v-for="(item, key) of global.state.imageBrowser
+                    .currentImageMetadata"
+                  v-bind:key="item.toString()"
+                >
+                  {{ item }}
+                </NDescriptionsItem>
+              </NDescriptions>
+            </NScrollbar>
+          </NGi>
+        </NGrid>
+      </NModal>
+      <div ref="scrollComponent">
+        <div class="image-grid">
+          <div
+            v-for="(column, column_index) in columns"
+            v-bind:key="column_index"
+            class="image-column"
+            ref="gridColumnRefs"
+          >
+            <img
+              v-for="(item, item_index) in column"
+              :src="urlFromPath(item.path)"
+              v-bind:key="item_index"
+              style="
+                width: 100%;
+                height: auto;
+                border-radius: 8px;
+                cursor: pointer;
+                margin-bottom: 6px;
+              "
+              @click="imgClick(column_index, item_index)"
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -156,7 +159,7 @@
 import SendOutputTo from "@/components/SendOutputTo.vue";
 import type { imgData as IImgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
-import { urlFromPath } from "@/functions";
+import { convertToTextString, urlFromPath } from "@/functions";
 import { Download, GridOutline, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
@@ -176,7 +179,7 @@ import { useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const showDeleteModal = ref(false);
 
 const showImageModal = ref(false);
@@ -193,7 +196,7 @@ const imageSrc = computed(() => {
 });
 
 function deleteImage() {
-  const url = new URL(`${serverUrl}/api/output/delete/`);
+  const url = new URL(`${serverUrl}/api/outputs/delete/`);
   url.searchParams.append(
     "filename",
     global.state.imageBrowser.currentImage.path
@@ -216,22 +219,14 @@ function deleteImage() {
         time: 0,
       };
       global.state.imageBrowser.currentImageByte64 = "";
-      global.state.imageBrowser.currentImageMetadata = new Map<
-        string,
-        string
-      >();
+      global.state.imageBrowser.currentImageMetadata = {};
     });
-}
-
-function toDescriptionString(str: string): string {
-  const upper = str.charAt(0).toUpperCase() + str.slice(1);
-  return upper.replace(/_/g, " ");
 }
 
 function downloadImage() {
   const url = urlFromPath(global.state.imageBrowser.currentImage.path);
 
-  fetch(url)
+  fetch(url, { mode: "no-cors" })
     .then((res) => res.blob())
     .then((blob) => {
       const reader = new FileReader();
@@ -275,18 +270,43 @@ function setByte64FromImage(path: string) {
 const currentColumn = ref(0);
 const currentRowIndex = ref(0);
 
+function parseMetadataFromString(key: string, value: string) {
+  value = value.trim().toLowerCase();
+
+  if (value === "true") {
+    return true;
+  } else if (value === "false") {
+    return false;
+  } else {
+    if (isFinite(+value)) {
+      return +value;
+    } else {
+      return value;
+    }
+  }
+}
+
 function imgClick(column_index: number, item_index: number) {
   currentRowIndex.value = item_index;
   currentColumn.value = column_index;
   const item = columns.value[column_index][item_index];
   global.state.imageBrowser.currentImage = item;
   setByte64FromImage(item.path);
-  const url = new URL(`${serverUrl}/api/output/data/`);
+  const url = new URL(`${serverUrl}/api/outputs/data/`);
   url.searchParams.append("filename", item.path);
   fetch(url)
     .then((res) => res.json())
     .then((data) => {
-      global.state.imageBrowser.currentImageMetadata = data;
+      global.state.imageBrowser.currentImageMetadata = JSON.parse(
+        JSON.stringify(data),
+        (key, value) => {
+          if (typeof value === "string") {
+            return parseMetadataFromString(key, value);
+          }
+          return value;
+        }
+      );
+      console.log(global.state.imageBrowser.currentImageMetadata);
     });
   showImageModal.value = true;
 }
@@ -308,11 +328,15 @@ const computedImgDataLimit = computed(() => {
 
 const columns = computed(() => {
   const cols: IImgData[][] = [];
-  for (let i = 0; i < conf.data.settings.frontend.image_browser_columns; i++) {
+  for (
+    let i = 0;
+    i < settings.data.settings.frontend.image_browser_columns;
+    i++
+  ) {
     cols.push([]);
   }
   for (let i = 0; i < computedImgDataLimit.value; i++) {
-    cols[i % conf.data.settings.frontend.image_browser_columns].push(
+    cols[i % settings.data.settings.frontend.image_browser_columns].push(
       filteredImgData.value[i]
     );
   }
@@ -324,7 +348,7 @@ async function refreshImages() {
   imgData.splice(0, imgData.length);
 
   // Fetch new data
-  await fetch(`${serverUrl}/api/output/txt2img`)
+  await fetch(`${serverUrl}/api/outputs/txt2img`)
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item: IImgData) => {
@@ -332,7 +356,7 @@ async function refreshImages() {
       });
     });
 
-  await fetch(`${serverUrl}/api/output/img2img`)
+  await fetch(`${serverUrl}/api/outputs/img2img`)
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item: IImgData) => {
@@ -340,7 +364,7 @@ async function refreshImages() {
       });
     });
 
-  await fetch(`${serverUrl}/api/output/extra`)
+  await fetch(`${serverUrl}/api/outputs/extra`)
     .then((res) => res.json())
     .then((data) => {
       data.forEach((item: IImgData) => {
@@ -385,7 +409,7 @@ const handleScroll = (e: Event) => {
 };
 
 function moveImage(direction: number) {
-  const numColumns = conf.data.settings.frontend.image_browser_columns;
+  const numColumns = settings.data.settings.frontend.image_browser_columns;
 
   if (direction === -1) {
     // Traverse all the columns before removing one from the currentIndexOfColumn
@@ -435,7 +459,7 @@ onUnmounted(() => {
 refreshImages();
 
 const backgroundColor = computed(() => {
-  if (conf.data.settings.frontend.theme === "dark") {
+  if (settings.data.settings.frontend.theme === "dark") {
     return "#121215";
   } else {
     return "#fff";
@@ -453,7 +477,7 @@ const backgroundColor = computed(() => {
 .image-grid {
   display: grid;
   grid-template-columns: repeat(
-    v-bind("conf.data.settings.frontend.image_browser_columns"),
+    v-bind("settings.data.settings.frontend.image_browser_columns"),
     1fr
   );
   grid-gap: 8px;

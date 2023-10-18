@@ -1,3 +1,4 @@
+import functools
 import importlib
 import inspect
 import logging
@@ -20,9 +21,7 @@ from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.models.vae import DecoderOutput
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
-from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
-    StableDiffusionPipelineOutput,
-)
+from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
 from diffusers.utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
 from PIL import Image
@@ -43,11 +42,8 @@ from core.inference.functions import (
     is_onnxsim_available,
     torch_newer_than_201,
 )
-from core.inference_callbacks import (
-    img2img_callback,
-    inpaint_callback,
-    txt2img_callback,
-)
+from core.inference_callbacks import callback
+from core.scheduling import KdiffusionSchedulerAdapter
 from core.types import (
     Backend,
     Img2ImgQueueEntry,
@@ -126,6 +122,7 @@ class OnnxStableDiffusion(InferenceModel):
         autoload: bool = True,
     ) -> None:
         if is_onnx_available():
+            # pylint: disable=import-error
             import onnxruntime as ort
 
             super().__init__(model_id)
@@ -145,6 +142,7 @@ class OnnxStableDiffusion(InferenceModel):
 
     def load(self):
         if is_onnx_available():
+            # pylint: disable=import-error
             import onnxruntime as ort
 
             def _load(
@@ -446,6 +444,7 @@ class OnnxStableDiffusion(InferenceModel):
             quantize_success = False if signed != "no-quant" else True
             try:
                 if not quantize_success:
+                    # pylint: disable=import-error
                     from onnxruntime.quantization import QuantType, quantize_dynamic
 
                     t = time()
@@ -1028,51 +1027,80 @@ class OnnxStableDiffusion(InferenceModel):
 
         logger.debug("timestep start")
         rt = time()
-        timesteps = self.scheduler.timesteps if timesteps is None else timesteps
-        for i, t in enumerate(tqdm(timesteps)):
+
+        def do_inference(x: torch.Tensor, t: torch.Tensor, call) -> torch.Tensor:
             if kw is not None:
-                latent_model_input = kw(latents, do_classifier_free_guidance, t)
+                latent_model_input = kw(x.numpy(), do_classifier_free_guidance, t)
             else:
                 latent_model_input = _init_latent_model(
-                    latents, do_classifier_free_guidance, t
+                    x.numpy(), do_classifier_free_guidance, t
                 )
 
             timestep = np.array([t], dtype=timestep_dtype)
             if class_labels is None:  # rookie mistake
-                noise_pred = self._run_model(
-                    self.unet,
+                noise_pred = call(
                     sample=latent_model_input,
                     timestep=timestep,
-                    encoder_hidden_states=prompt_embeds,
+                    cond=prompt_embeds,
                 )
             else:
-                noise_pred = self._run_model(
-                    self.unet,
+                noise_pred = call(
                     sample=latent_model_input,
                     timestep=timestep,
-                    encoder_hidden_states=prompt_embeds,
+                    cond=prompt_embeds,
                     class_labels=class_labels,
                 )
-            noise_pred = noise_pred[0]
 
             if do_classifier_free_guidance:
                 noise_pred_uncond, noise_pred_text = np.split(noise_pred, 2)
                 noise_pred = noise_pred_uncond + guidance_scale * (
                     noise_pred_text - noise_pred_uncond
                 )
-            scheduler_output = self.scheduler.step(
-                torch.from_numpy(noise_pred),  # type: ignore
-                t,  # type: ignore
-                torch.from_numpy(latents),  # type: ignore
-                **extra_step_kwargs,
-            )
-            latents = scheduler_output.prev_sample  # type: ignore
+            if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                scheduler_output = self.scheduler.step(
+                    torch.from_numpy(noise_pred),  # type: ignore
+                    t,  # type: ignore
+                    torch.from_numpy(x),  # type: ignore
+                    **extra_step_kwargs,
+                )
+                latents = scheduler_output.prev_sample  # type: ignore
+            else:
+                latents = torch.from_numpy(noise_pred)
 
             if callback is not None:
                 callback(i, t, latents)
-            latents = latents.numpy()
-            logger.debug("timestep end (%.2fs)", time() - rt)
             return latents
+
+        timesteps = self.scheduler.timesteps if timesteps is None else timesteps
+
+        if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+            latents = self.scheduler.do_inference(
+                latents,
+                functools.partial(self._run_model, self.unet),
+                do_inference,
+                torch.Generator(),
+                callback,
+                1,
+            ).numpy()
+        else:
+
+            def _call(*args, **kwargs):
+                if len(args) == 3:
+                    encoder_hidden_states = args[-1]
+                    args = args[:2]
+                if kwargs.get("cond", None) is not None:
+                    encoder_hidden_states = kwargs.pop("cond")
+                return self._run_model(
+                    self.unet,
+                    *args,
+                    encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                    **kwargs,
+                )[0]
+
+            for i, t in enumerate(tqdm(timesteps)):
+                latents = do_inference(latents, t, _call)
+        logger.debug("timestep end (%.2fs)", time() - rt)
+        return latents
 
     def _extra_args(self):
         accepts_eta = "eta" in set(
@@ -1094,7 +1122,7 @@ class OnnxStableDiffusion(InferenceModel):
             ]
         )
         logger.debug("vae_decoder end (%.2fs)", time() - t)
-        image = np.clip(image / 2 + 0.5, 0, 1)
+        image = np.clip(image / 2 + 0.5, 0, 1)  # type: ignore
         image = image.transpose((0, 2, 3, 1))
         return image
 
@@ -1115,7 +1143,7 @@ class OnnxStableDiffusion(InferenceModel):
         seed: int = -1,
         generator: RandomState = None,  # type: ignore pylint: disable=no-member
         latents: np.ndarray = None,  # type: ignore
-    ) -> StableDiffusionPipelineOutput:
+    ):
         if generator is None:
             generator = RandomState(MT19937(SeedSequence(seed)))
         do_classifier_free_guidance = guidance_scale > 1.0
@@ -1168,7 +1196,7 @@ class OnnxStableDiffusion(InferenceModel):
             else masked_image_latents
         )
 
-        latents = latents * np.float64(self.scheduler.init_noise_sigma)
+        latents = latents * np.float64(self.scheduler.init_noise_sigma)  # type: ignore
         extra_step_kwargs = self._extra_args()
         timestep_dtype = self._get_timestep_dtype()
 
@@ -1216,7 +1244,7 @@ class OnnxStableDiffusion(InferenceModel):
         seed: int = -1,
         generator: RandomState = None,  # type: ignore pylint: disable=no-member
         latents: np.ndarray = None,  # type: ignore
-    ) -> StableDiffusionPipelineOutput:
+    ):
         if generator is None:
             generator = RandomState(MT19937(SeedSequence(seed)))
         do_classifier_free_guidance = guidance_scale > 1.0
@@ -1229,7 +1257,7 @@ class OnnxStableDiffusion(InferenceModel):
         latents = generator.randn(*latents_shape).astype(latents_dtype)
 
         self.scheduler.set_timesteps(num_inference_steps)
-        latents = latents * np.float64(self.scheduler.init_noise_sigma)
+        latents = latents * np.float64(self.scheduler.init_noise_sigma)  # type: ignore
 
         extra_step_kwargs = self._extra_args()
         timestep_dtype = self._get_timestep_dtype()
@@ -1262,7 +1290,7 @@ class OnnxStableDiffusion(InferenceModel):
         num_images_per_prompt: int = 1,
         callback=None,
         seed: int = -1,
-    ) -> StableDiffusionPipelineOutput:
+    ):
         do_classifier_free_guidance = guidance_scale > 1.0
 
         width, height = (
@@ -1361,7 +1389,7 @@ class OnnxStableDiffusion(InferenceModel):
                         job.data.guidance_scale,
                         job.data.negative_prompt,
                         job.data.batch_size,
-                        txt2img_callback,
+                        callback,
                         job.data.seed,
                     ).images
                 )
@@ -1391,7 +1419,7 @@ class OnnxStableDiffusion(InferenceModel):
                         job.data.guidance_scale,
                         job.data.negative_prompt,
                         job.data.batch_size,
-                        img2img_callback,
+                        callback,
                         job.data.seed,
                     ).images
                 )
@@ -1421,7 +1449,7 @@ class OnnxStableDiffusion(InferenceModel):
                         job.data.guidance_scale,
                         job.data.negative_prompt,
                         job.data.batch_size,
-                        inpaint_callback,
+                        callback,
                         job.data.seed,
                     ).images
                 )

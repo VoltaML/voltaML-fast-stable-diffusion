@@ -42,9 +42,12 @@ test.docker-compose.yml
 
 # Other
 **/**.pyc
+poetry.lock
 .pytest_cache
 .coverage
 /.ruff_cache
+voltaml-manager
+voltaml-manager.exe
 
 # Manager
 /manager

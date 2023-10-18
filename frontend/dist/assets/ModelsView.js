@@ -1,9 +1,14 @@
+<<<<<<< HEAD
 import { d as defineComponent, D as h, P as replaceable, Q as useConfig, R as useFormItem, E as ref, c as computed, S as useMergedState, T as provide, U as toRef, V as createInjectionKey, W as call, X as c, Y as cB, Z as cE, $ as cM, a0 as iconSwitchTransition, a1 as insideModal, a2 as insidePopover, a3 as inject, a4 as useMemo, a5 as useTheme, a6 as checkboxLight, a7 as useRtl, a8 as createKey, a9 as useThemeClass, aa as createId, ab as NIconSwitchTransition, ac as on, ad as popselectLight, K as watch, ae as NInternalSelectMenu, af as createTreeMate, ag as happensIn, ah as nextTick, ai as keysOf, aj as createTmOptions, ak as keep, al as createRefSetter, am as mergeEventHandlers, an as omit, ao as NPopover, ap as popoverBaseProps, aq as cNotM, ar as useLocale, as as watchEffect, at as resolveSlot, k as NInput, r as NSelect, J as Fragment, au as NBaseIcon, av as useAdjustedTo, aw as paginationLight, ax as ellipsisLight, ay as onDeactivated, q as NTooltip, az as mergeProps, aA as radioLight, aB as resolveWrappedSlot, aC as flatten$1, aD as getSlot, aE as depx, aF as formatLength, F as NButton, aG as NScrollbar, aH as onBeforeUnmount, aI as off, aJ as ChevronDownIcon, aK as NDropdown, aL as pxfy, aM as get, aN as NBaseLoading, aO as ChevronRightIcon, o as onUnmounted, aP as VResizeObserver, aQ as warn, aR as cssrAnchorMetaName, aS as VVirtualList, aT as NEmpty, aU as repeat, aV as beforeNextFrameOnce, aW as fadeInScaleUpTransition, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as isBrowser, b0 as AddIcon, b1 as NProgress, b2 as NFadeInExpandTransition, b3 as EyeIcon, b4 as fadeInHeightExpandTransition, b5 as Teleport, b6 as uploadLight, e as openBlock, f as createElementBlock, n as createBaseVNode, b7 as useCssVars, h as unref, a as useSettings, b8 as reactive, b9 as onMounted, g as createVNode, w as withCtx, G as NIcon, M as renderList, ba as normalizeStyle, m as createTextVNode, t as toDisplayString, bb as NText, _ as _export_sfc, u as useState, b as useMessage, bc as huggingfaceModelsFile, i as NCard, s as serverUrl, A as pushScopeId, B as popScopeId, j as NSpace, bd as NModal, N as NGi, y as NGrid, x as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { _ as _sfc_main$5 } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
+=======
+import { d as defineComponent, s as h, R as replaceable, S as createInjectionKey, T as cB, U as inject, V as useConfig, W as useTheme, X as popselectLight, c as computed, O as watch, Y as toRef, Z as useThemeClass, $ as NInternalSelectMenu, a0 as createTreeMate, a1 as happensIn, a2 as call, a3 as nextTick, a4 as keysOf, a5 as createTmOptions, r as ref, a6 as provide, a7 as keep, a8 as createRefSetter, a9 as mergeEventHandlers, aa as omit, ab as NPopover, ac as popoverBaseProps, ad as c, ae as cM, af as cNotM, ag as useLocale, ah as useMergedState, ai as watchEffect, aj as useRtl, ak as resolveSlot, C as NInput, p as NSelect, F as Fragment, al as NBaseIcon, am as useAdjustedTo, an as paginationLight, ao as createKey, ap as useMergedClsPrefix, aq as ellipsisLight, ar as onDeactivated, n as NTooltip, as as mergeProps, at as useStyle, au as useFormItem, av as useMemo, aw as cE, ax as radioLight, ay as resolveWrappedSlot, az as flatten$1, aA as getSlot, aB as depx, aC as formatLength, h as NButton, aD as NScrollbar, aE as onBeforeUnmount, aF as off, aG as on, aH as ChevronDownIcon, aI as NDropdown, aJ as pxfy, aK as get, aL as NIconSwitchTransition, aM as NBaseLoading, aN as ChevronRightIcon, y as onUnmounted, aO as VResizeObserver, aP as warn, aQ as cssrAnchorMetaName, aR as VVirtualList, aS as NEmpty, aT as repeat, aU as beforeNextFrameOnce, aV as fadeInScaleUpTransition, aW as iconSwitchTransition, aX as insideModal, aY as insidePopover, aZ as createId, a_ as Transition, a$ as dataTableLight, b0 as loadingBarApiInjectionKey, b1 as throwError, b2 as AddIcon, b3 as NProgress, b4 as NFadeInExpandTransition, b5 as EyeIcon, b6 as fadeInHeightExpandTransition, b7 as Teleport, b8 as uploadLight, o as openBlock, a as createElementBlock, b as createBaseVNode, b9 as useCssVars, f as unref, u as useSettings, ba as reactive, bb as onMounted, e as createVNode, w as withCtx, q as NIcon, g as renderList, bc as normalizeStyle, i as createTextVNode, t as toDisplayString, bd as NText, _ as _export_sfc, v as useState, x as useMessage, be as huggingfaceModelsFile, N as NCard, z as serverUrl, J as pushScopeId, K as popScopeId, B as NSpace, m as NModal, k as createBlock, A as NGi, H as NGrid, bf as NDivider, bg as Backends, L as NTabPane, M as NTabs } from "./index.js";
+import { _ as _sfc_main$5, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
+>>>>>>> origin/experimental
 import { G as GridOutline } from "./GridOutline.js";
-import { N as NSlider } from "./Slider.js";
-import { N as NSwitch } from "./Switch.js";
-import { N as NImage, a as NImageGroup, T as TrashBin } from "./TrashBin.js";
+import { N as NSlider, a as NSwitch } from "./Switch.js";
+import { a as NCheckboxGroup, N as NCheckbox, S as Settings } from "./Settings.js";
+import { g as getFilesFromEntries, i as isImageFile, N as NImage, d as download, a as NImageGroup, e as environmentSupportFile, c as createSettledFileInfo, m as matchType, b as createImageDataUrl, T as TrashBin } from "./TrashBin.js";
 import { C as CloudUpload } from "./CloudUpload.js";
 import "./DescriptionsItem.js";
 function smallerSize(size) {
@@ -184,526 +189,6 @@ const RetryIcon = replaceable("retry", h(
   h("path", { d: "M320,146s24.36-12-64-12A160,160,0,1,0,416,294", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-miterlimit: 10; stroke-width: 32px;" }),
   h("polyline", { points: "256 58 336 138 256 218", style: "fill: none; stroke: currentcolor; stroke-linecap: round; stroke-linejoin: round; stroke-width: 32px;" })
 ));
-const CheckMark = h(
-  "svg",
-  { viewBox: "0 0 64 64", class: "check-icon" },
-  h("path", { d: "M50.42,16.76L22.34,39.45l-8.1-11.46c-1.12-1.58-3.3-1.96-4.88-0.84c-1.58,1.12-1.95,3.3-0.84,4.88l10.26,14.51  c0.56,0.79,1.42,1.31,2.38,1.45c0.16,0.02,0.32,0.03,0.48,0.03c0.8,0,1.57-0.27,2.2-0.78l30.99-25.03c1.5-1.21,1.74-3.42,0.52-4.92  C54.13,15.78,51.93,15.55,50.42,16.76z" })
-);
-const LineMark = h(
-  "svg",
-  { viewBox: "0 0 100 100", class: "line-icon" },
-  h("path", { d: "M80.2,55.5H21.4c-2.8,0-5.1-2.5-5.1-5.5l0,0c0-3,2.3-5.5,5.1-5.5h58.7c2.8,0,5.1,2.5,5.1,5.5l0,0C85.2,53.1,82.9,55.5,80.2,55.5z" })
-);
-const checkboxGroupInjectionKey = createInjectionKey("n-checkbox-group");
-const checkboxGroupProps = {
-  min: Number,
-  max: Number,
-  size: String,
-  value: Array,
-  defaultValue: {
-    type: Array,
-    default: null
-  },
-  disabled: {
-    type: Boolean,
-    default: void 0
-  },
-  "onUpdate:value": [Function, Array],
-  onUpdateValue: [Function, Array],
-  // deprecated
-  onChange: [Function, Array]
-};
-const NCheckboxGroup = defineComponent({
-  name: "CheckboxGroup",
-  props: checkboxGroupProps,
-  setup(props) {
-    const { mergedClsPrefixRef } = useConfig(props);
-    const formItem = useFormItem(props);
-    const { mergedSizeRef, mergedDisabledRef } = formItem;
-    const uncontrolledValueRef = ref(props.defaultValue);
-    const controlledValueRef = computed(() => props.value);
-    const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
-    const checkedCount = computed(() => {
-      var _a;
-      return ((_a = mergedValueRef.value) === null || _a === void 0 ? void 0 : _a.length) || 0;
-    });
-    const valueSetRef = computed(() => {
-      if (Array.isArray(mergedValueRef.value)) {
-        return new Set(mergedValueRef.value);
-      }
-      return /* @__PURE__ */ new Set();
-    });
-    function toggleCheckbox(checked, checkboxValue) {
-      const { nTriggerFormInput, nTriggerFormChange } = formItem;
-      const { onChange, "onUpdate:value": _onUpdateValue, onUpdateValue } = props;
-      if (Array.isArray(mergedValueRef.value)) {
-        const groupValue = Array.from(mergedValueRef.value);
-        const index = groupValue.findIndex((value) => value === checkboxValue);
-        if (checked) {
-          if (!~index) {
-            groupValue.push(checkboxValue);
-            if (onUpdateValue) {
-              call(onUpdateValue, groupValue, {
-                actionType: "check",
-                value: checkboxValue
-              });
-            }
-            if (_onUpdateValue) {
-              call(_onUpdateValue, groupValue, {
-                actionType: "check",
-                value: checkboxValue
-              });
-            }
-            nTriggerFormInput();
-            nTriggerFormChange();
-            uncontrolledValueRef.value = groupValue;
-            if (onChange)
-              call(onChange, groupValue);
-          }
-        } else {
-          if (~index) {
-            groupValue.splice(index, 1);
-            if (onUpdateValue) {
-              call(onUpdateValue, groupValue, {
-                actionType: "uncheck",
-                value: checkboxValue
-              });
-            }
-            if (_onUpdateValue) {
-              call(_onUpdateValue, groupValue, {
-                actionType: "uncheck",
-                value: checkboxValue
-              });
-            }
-            if (onChange)
-              call(onChange, groupValue);
-            uncontrolledValueRef.value = groupValue;
-            nTriggerFormInput();
-            nTriggerFormChange();
-          }
-        }
-      } else {
-        if (checked) {
-          if (onUpdateValue) {
-            call(onUpdateValue, [checkboxValue], {
-              actionType: "check",
-              value: checkboxValue
-            });
-          }
-          if (_onUpdateValue) {
-            call(_onUpdateValue, [checkboxValue], {
-              actionType: "check",
-              value: checkboxValue
-            });
-          }
-          if (onChange)
-            call(onChange, [checkboxValue]);
-          uncontrolledValueRef.value = [checkboxValue];
-          nTriggerFormInput();
-          nTriggerFormChange();
-        } else {
-          if (onUpdateValue) {
-            call(onUpdateValue, [], {
-              actionType: "uncheck",
-              value: checkboxValue
-            });
-          }
-          if (_onUpdateValue) {
-            call(_onUpdateValue, [], {
-              actionType: "uncheck",
-              value: checkboxValue
-            });
-          }
-          if (onChange)
-            call(onChange, []);
-          uncontrolledValueRef.value = [];
-          nTriggerFormInput();
-          nTriggerFormChange();
-        }
-      }
-    }
-    provide(checkboxGroupInjectionKey, {
-      checkedCountRef: checkedCount,
-      maxRef: toRef(props, "max"),
-      minRef: toRef(props, "min"),
-      valueSetRef,
-      disabledRef: mergedDisabledRef,
-      mergedSizeRef,
-      toggleCheckbox
-    });
-    return {
-      mergedClsPrefix: mergedClsPrefixRef
-    };
-  },
-  render() {
-    return h("div", { class: `${this.mergedClsPrefix}-checkbox-group`, role: "group" }, this.$slots);
-  }
-});
-const style$7 = c([
-  cB("checkbox", `
- line-height: var(--n-label-line-height);
- font-size: var(--n-font-size);
- outline: none;
- cursor: pointer;
- display: inline-flex;
- flex-wrap: nowrap;
- align-items: flex-start;
- word-break: break-word;
- --n-merged-color-table: var(--n-color-table);
- `, [c("&:hover", [cB("checkbox-box", [cE("border", {
-    border: "var(--n-border-checked)"
-  })])]), c("&:focus:not(:active)", [cB("checkbox-box", [cE("border", `
- border: var(--n-border-focus);
- box-shadow: var(--n-box-shadow-focus);
- `)])]), cM("inside-table", [cB("checkbox-box", `
- background-color: var(--n-merged-color-table);
- `)]), cM("checked", [cB("checkbox-box", `
- background-color: var(--n-color-checked);
- `, [cB("checkbox-icon", [
-    // if not set width to 100%, safari & old chrome won't display the icon
-    c(".check-icon", `
- opacity: 1;
- transform: scale(1);
- `)
-  ])])]), cM("indeterminate", [cB("checkbox-box", [cB("checkbox-icon", [c(".check-icon", `
- opacity: 0;
- transform: scale(.5);
- `), c(".line-icon", `
- opacity: 1;
- transform: scale(1);
- `)])])]), cM("checked, indeterminate", [c("&:focus:not(:active)", [cB("checkbox-box", [cE("border", `
- border: var(--n-border-checked);
- box-shadow: var(--n-box-shadow-focus);
- `)])]), cB("checkbox-box", `
- background-color: var(--n-color-checked);
- border-left: 0;
- border-top: 0;
- `, [cE("border", {
-    border: "var(--n-border-checked)"
-  })])]), cM("disabled", {
-    cursor: "not-allowed"
-  }, [cM("checked", [cB("checkbox-box", `
- background-color: var(--n-color-disabled-checked);
- `, [cE("border", {
-    border: "var(--n-border-disabled-checked)"
-  }), cB("checkbox-icon", [c(".check-icon, .line-icon", {
-    fill: "var(--n-check-mark-color-disabled-checked)"
-  })])])]), cB("checkbox-box", `
- background-color: var(--n-color-disabled);
- `, [cE("border", {
-    border: "var(--n-border-disabled)"
-  }), cB("checkbox-icon", [c(".check-icon, .line-icon", {
-    fill: "var(--n-check-mark-color-disabled)"
-  })])]), cE("label", {
-    color: "var(--n-text-color-disabled)"
-  })]), cB("checkbox-box-wrapper", `
- position: relative;
- width: var(--n-size);
- flex-shrink: 0;
- flex-grow: 0;
- user-select: none;
- -webkit-user-select: none;
- `), cB("checkbox-box", `
- position: absolute;
- left: 0;
- top: 50%;
- transform: translateY(-50%);
- height: var(--n-size);
- width: var(--n-size);
- display: inline-block;
- box-sizing: border-box;
- border-radius: var(--n-border-radius);
- background-color: var(--n-color);
- transition: background-color 0.3s var(--n-bezier);
- `, [cE("border", `
- transition:
- border-color .3s var(--n-bezier),
- box-shadow .3s var(--n-bezier);
- border-radius: inherit;
- position: absolute;
- left: 0;
- right: 0;
- top: 0;
- bottom: 0;
- border: var(--n-border);
- `), cB("checkbox-icon", `
- display: flex;
- align-items: center;
- justify-content: center;
- position: absolute;
- left: 1px;
- right: 1px;
- top: 1px;
- bottom: 1px;
- `, [c(".check-icon, .line-icon", `
- width: 100%;
- fill: var(--n-check-mark-color);
- opacity: 0;
- transform: scale(0.5);
- transform-origin: center;
- transition:
- fill 0.3s var(--n-bezier),
- transform 0.3s var(--n-bezier),
- opacity 0.3s var(--n-bezier),
- border-color 0.3s var(--n-bezier);
- `), iconSwitchTransition({
-    left: "1px",
-    top: "1px"
-  })])]), cE("label", `
- color: var(--n-text-color);
- transition: color .3s var(--n-bezier);
- user-select: none;
- -webkit-user-select: none;
- padding: var(--n-label-padding);
- font-weight: var(--n-label-font-weight);
- `, [c("&:empty", {
-    display: "none"
-  })])]),
-  // modal table header checkbox
-  insideModal(cB("checkbox", `
- --n-merged-color-table: var(--n-color-table-modal);
- `)),
-  // popover table header checkbox
-  insidePopover(cB("checkbox", `
- --n-merged-color-table: var(--n-color-table-popover);
- `))
-]);
-const checkboxProps = Object.assign(Object.assign({}, useTheme.props), {
-  size: String,
-  checked: {
-    type: [Boolean, String, Number],
-    default: void 0
-  },
-  defaultChecked: {
-    type: [Boolean, String, Number],
-    default: false
-  },
-  value: [String, Number],
-  disabled: {
-    type: Boolean,
-    default: void 0
-  },
-  indeterminate: Boolean,
-  label: String,
-  focusable: {
-    type: Boolean,
-    default: true
-  },
-  checkedValue: {
-    type: [Boolean, String, Number],
-    default: true
-  },
-  uncheckedValue: {
-    type: [Boolean, String, Number],
-    default: false
-  },
-  "onUpdate:checked": [Function, Array],
-  onUpdateChecked: [Function, Array],
-  // private
-  privateInsideTable: Boolean,
-  // deprecated
-  onChange: [Function, Array]
-});
-const NCheckbox = defineComponent({
-  name: "Checkbox",
-  props: checkboxProps,
-  setup(props) {
-    const selfRef = ref(null);
-    const { mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const formItem = useFormItem(props, {
-      mergedSize(NFormItem) {
-        const { size } = props;
-        if (size !== void 0)
-          return size;
-        if (NCheckboxGroup2) {
-          const { value: mergedSize } = NCheckboxGroup2.mergedSizeRef;
-          if (mergedSize !== void 0) {
-            return mergedSize;
-          }
-        }
-        if (NFormItem) {
-          const { mergedSize } = NFormItem;
-          if (mergedSize !== void 0)
-            return mergedSize.value;
-        }
-        return "medium";
-      },
-      mergedDisabled(NFormItem) {
-        const { disabled } = props;
-        if (disabled !== void 0)
-          return disabled;
-        if (NCheckboxGroup2) {
-          if (NCheckboxGroup2.disabledRef.value)
-            return true;
-          const { maxRef: { value: max }, checkedCountRef } = NCheckboxGroup2;
-          if (max !== void 0 && checkedCountRef.value >= max && !renderedCheckedRef.value) {
-            return true;
-          }
-          const { minRef: { value: min } } = NCheckboxGroup2;
-          if (min !== void 0 && checkedCountRef.value <= min && renderedCheckedRef.value) {
-            return true;
-          }
-        }
-        if (NFormItem) {
-          return NFormItem.disabled.value;
-        }
-        return false;
-      }
-    });
-    const { mergedDisabledRef, mergedSizeRef } = formItem;
-    const NCheckboxGroup2 = inject(checkboxGroupInjectionKey, null);
-    const uncontrolledCheckedRef = ref(props.defaultChecked);
-    const controlledCheckedRef = toRef(props, "checked");
-    const mergedCheckedRef = useMergedState(controlledCheckedRef, uncontrolledCheckedRef);
-    const renderedCheckedRef = useMemo(() => {
-      if (NCheckboxGroup2) {
-        const groupValueSet = NCheckboxGroup2.valueSetRef.value;
-        if (groupValueSet && props.value !== void 0) {
-          return groupValueSet.has(props.value);
-        }
-        return false;
-      } else {
-        return mergedCheckedRef.value === props.checkedValue;
-      }
-    });
-    const themeRef = useTheme("Checkbox", "-checkbox", style$7, checkboxLight, props, mergedClsPrefixRef);
-    function toggle(e) {
-      if (NCheckboxGroup2 && props.value !== void 0) {
-        NCheckboxGroup2.toggleCheckbox(!renderedCheckedRef.value, props.value);
-      } else {
-        const { onChange, "onUpdate:checked": _onUpdateCheck, onUpdateChecked } = props;
-        const { nTriggerFormInput, nTriggerFormChange } = formItem;
-        const nextChecked = renderedCheckedRef.value ? props.uncheckedValue : props.checkedValue;
-        if (_onUpdateCheck) {
-          call(_onUpdateCheck, nextChecked, e);
-        }
-        if (onUpdateChecked) {
-          call(onUpdateChecked, nextChecked, e);
-        }
-        if (onChange)
-          call(onChange, nextChecked, e);
-        nTriggerFormInput();
-        nTriggerFormChange();
-        uncontrolledCheckedRef.value = nextChecked;
-      }
-    }
-    function handleClick(e) {
-      if (!mergedDisabledRef.value) {
-        toggle(e);
-      }
-    }
-    function handleKeyUp(e) {
-      if (mergedDisabledRef.value)
-        return;
-      switch (e.key) {
-        case " ":
-        case "Enter":
-          toggle(e);
-      }
-    }
-    function handleKeyDown(e) {
-      switch (e.key) {
-        case " ":
-          e.preventDefault();
-      }
-    }
-    const exposedMethods = {
-      focus: () => {
-        var _a;
-        (_a = selfRef.value) === null || _a === void 0 ? void 0 : _a.focus();
-      },
-      blur: () => {
-        var _a;
-        (_a = selfRef.value) === null || _a === void 0 ? void 0 : _a.blur();
-      }
-    };
-    const rtlEnabledRef = useRtl("Checkbox", mergedRtlRef, mergedClsPrefixRef);
-    const cssVarsRef = computed(() => {
-      const { value: mergedSize } = mergedSizeRef;
-      const { common: { cubicBezierEaseInOut }, self: { borderRadius, color, colorChecked, colorDisabled, colorTableHeader, colorTableHeaderModal, colorTableHeaderPopover, checkMarkColor, checkMarkColorDisabled, border, borderFocus, borderDisabled, borderChecked, boxShadowFocus, textColor, textColorDisabled, checkMarkColorDisabledChecked, colorDisabledChecked, borderDisabledChecked, labelPadding, labelLineHeight, labelFontWeight, [createKey("fontSize", mergedSize)]: fontSize, [createKey("size", mergedSize)]: size } } = themeRef.value;
-      return {
-        "--n-label-line-height": labelLineHeight,
-        "--n-label-font-weight": labelFontWeight,
-        "--n-size": size,
-        "--n-bezier": cubicBezierEaseInOut,
-        "--n-border-radius": borderRadius,
-        "--n-border": border,
-        "--n-border-checked": borderChecked,
-        "--n-border-focus": borderFocus,
-        "--n-border-disabled": borderDisabled,
-        "--n-border-disabled-checked": borderDisabledChecked,
-        "--n-box-shadow-focus": boxShadowFocus,
-        "--n-color": color,
-        "--n-color-checked": colorChecked,
-        "--n-color-table": colorTableHeader,
-        "--n-color-table-modal": colorTableHeaderModal,
-        "--n-color-table-popover": colorTableHeaderPopover,
-        "--n-color-disabled": colorDisabled,
-        "--n-color-disabled-checked": colorDisabledChecked,
-        "--n-text-color": textColor,
-        "--n-text-color-disabled": textColorDisabled,
-        "--n-check-mark-color": checkMarkColor,
-        "--n-check-mark-color-disabled": checkMarkColorDisabled,
-        "--n-check-mark-color-disabled-checked": checkMarkColorDisabledChecked,
-        "--n-font-size": fontSize,
-        "--n-label-padding": labelPadding
-      };
-    });
-    const themeClassHandle = inlineThemeDisabled ? useThemeClass("checkbox", computed(() => mergedSizeRef.value[0]), cssVarsRef, props) : void 0;
-    return Object.assign(formItem, exposedMethods, {
-      rtlEnabled: rtlEnabledRef,
-      selfRef,
-      mergedClsPrefix: mergedClsPrefixRef,
-      mergedDisabled: mergedDisabledRef,
-      renderedChecked: renderedCheckedRef,
-      mergedTheme: themeRef,
-      labelId: createId(),
-      handleClick,
-      handleKeyUp,
-      handleKeyDown,
-      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
-      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
-      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
-    });
-  },
-  render() {
-    var _a;
-    const { $slots, renderedChecked, mergedDisabled, indeterminate, privateInsideTable, cssVars, labelId, label, mergedClsPrefix, focusable, handleKeyUp, handleKeyDown, handleClick } = this;
-    (_a = this.onRender) === null || _a === void 0 ? void 0 : _a.call(this);
-    return h(
-      "div",
-      { ref: "selfRef", class: [
-        `${mergedClsPrefix}-checkbox`,
-        this.themeClass,
-        this.rtlEnabled && `${mergedClsPrefix}-checkbox--rtl`,
-        renderedChecked && `${mergedClsPrefix}-checkbox--checked`,
-        mergedDisabled && `${mergedClsPrefix}-checkbox--disabled`,
-        indeterminate && `${mergedClsPrefix}-checkbox--indeterminate`,
-        privateInsideTable && `${mergedClsPrefix}-checkbox--inside-table`
-      ], tabindex: mergedDisabled || !focusable ? void 0 : 0, role: "checkbox", "aria-checked": indeterminate ? "mixed" : renderedChecked, "aria-labelledby": labelId, style: cssVars, onKeyup: handleKeyUp, onKeydown: handleKeyDown, onClick: handleClick, onMousedown: () => {
-        on("selectstart", window, (e) => {
-          e.preventDefault();
-        }, {
-          once: true
-        });
-      } },
-      h(
-        "div",
-        { class: `${mergedClsPrefix}-checkbox-box-wrapper` },
-        " ",
-        h(
-          "div",
-          { class: `${mergedClsPrefix}-checkbox-box` },
-          h(NIconSwitchTransition, null, {
-            default: () => this.indeterminate ? h("div", { key: "indeterminate", class: `${mergedClsPrefix}-checkbox-icon` }, LineMark) : h("div", { key: "check", class: `${mergedClsPrefix}-checkbox-icon` }, CheckMark)
-          }),
-          h("div", { class: `${mergedClsPrefix}-checkbox-box__border` })
-        )
-      ),
-      label !== null || $slots.default ? h("span", { class: `${mergedClsPrefix}-checkbox__label`, id: labelId }, $slots.default ? $slots.default() : label) : null
-    );
-  }
-});
 const popselectInjectionKey = createInjectionKey("n-popselect");
 const style$6 = cB("popselect-menu", `
  box-shadow: var(--n-menu-box-shadow);
@@ -1738,7 +1223,7 @@ const NEllipsis = defineComponent({
   inheritAttrs: false,
   props: ellipsisProps,
   setup(props, { slots, attrs }) {
-    const { mergedClsPrefixRef } = useConfig(props);
+    const mergedClsPrefixRef = useMergedClsPrefix();
     const mergedTheme = useTheme("Ellipsis", "-ellipsis", style$4, ellipsisLight, props, mergedClsPrefixRef);
     const triggerRef = ref(null);
     const triggerInnerRef = ref(null);
@@ -1865,6 +1350,45 @@ const NEllipsis = defineComponent({
       return renderTrigger();
   }
 });
+const NPerformantEllipsis = defineComponent({
+  name: "PerformantEllipsis",
+  props: ellipsisProps,
+  inheritAttrs: false,
+  setup(props, { attrs, slots }) {
+    const mouseEnteredRef = ref(false);
+    const mergedClsPrefixRef = useMergedClsPrefix();
+    useStyle("-ellipsis", style$4, mergedClsPrefixRef);
+    const renderTrigger = () => {
+      const { lineClamp } = props;
+      const mergedClsPrefix = mergedClsPrefixRef.value;
+      return h("span", Object.assign({}, mergeProps(attrs, {
+        class: [
+          `${mergedClsPrefix}-ellipsis`,
+          lineClamp !== void 0 ? createLineClampClass(mergedClsPrefix) : void 0,
+          props.expandTrigger === "click" ? createCursorClass(mergedClsPrefix, "pointer") : void 0
+        ],
+        style: lineClamp === void 0 ? {
+          textOverflow: "ellipsis"
+        } : {
+          "-webkit-line-clamp": lineClamp
+        }
+      }), { onMouseenter: () => {
+        mouseEnteredRef.value = true;
+      } }), lineClamp ? slots : h("span", null, slots));
+    };
+    return {
+      mouseEntered: mouseEnteredRef,
+      renderTrigger
+    };
+  },
+  render() {
+    if (this.mouseEntered) {
+      return h(NEllipsis, mergeProps({}, this.$attrs, this.$props), this.$slots);
+    } else {
+      return this.renderTrigger();
+    }
+  }
+});
 const RenderSorter = defineComponent({
   name: "DataTableRenderSorter",
   props: {
@@ -1879,8 +1403,8 @@ const RenderSorter = defineComponent({
     }
   },
   render() {
-    const { render: render5, order } = this;
-    return render5({
+    const { render: render4, order } = this;
+    return render4({
       order
     });
   }
@@ -2056,14 +1580,14 @@ const RenderFilter = defineComponent({
     }
   },
   render() {
-    const { render: render5, active, show } = this;
-    return render5({
+    const { render: render4, active, show } = this;
+    return render4({
       active,
       show
     });
   }
 });
-const radioProps = {
+const radioBaseProps = {
   name: String,
   value: {
     type: [String, Number, Boolean],
@@ -2272,9 +1796,10 @@ const style$3 = cB("radio", `
 }), cB("radio-input", `
  cursor: not-allowed;
  `)])]);
+const radioProps = Object.assign(Object.assign({}, useTheme.props), radioBaseProps);
 const NRadio = defineComponent({
   name: "Radio",
-  props: Object.assign(Object.assign({}, useTheme.props), radioProps),
+  props: radioProps,
   setup(props) {
     const radio = setup(props);
     const themeRef = useTheme("Radio", "-radio", style$3, radioLight, props, radio.mergedClsPrefix);
@@ -2951,6 +2476,7 @@ const ResizeButton = defineComponent({
     }
     function handleMousedown(e) {
       var _a;
+      e.preventDefault();
       const alreadyStarted = activeRef.value;
       startX = getMouseX(e);
       activeRef.value = true;
@@ -3090,7 +2616,6 @@ const TableHeader = defineComponent({
       checkOptionsRef,
       mergedSortStateRef,
       componentId,
-      scrollPartRef,
       mergedTableLayoutRef,
       headerCheckboxDisabledRef,
       onUnstableColumnResize,
@@ -3123,12 +2648,6 @@ const TableHeader = defineComponent({
       const nextSorter = createNextSorter(column, activeSorter);
       deriveNextSorter(nextSorter);
     }
-    function handleMouseenter() {
-      scrollPartRef.value = "head";
-    }
-    function handleMouseleave() {
-      scrollPartRef.value = "body";
-    }
     const resizeStartWidthMap = /* @__PURE__ */ new Map();
     function handleColumnResizeStart(column) {
       resizeStartWidthMap.set(column.key, getCellActualWidth(column.key));
@@ -3160,8 +2679,6 @@ const TableHeader = defineComponent({
       checkOptions: checkOptionsRef,
       mergedTableLayout: mergedTableLayoutRef,
       headerCheckboxDisabled: headerCheckboxDisabledRef,
-      handleMouseenter,
-      handleMouseleave,
       handleCheckboxUpdateChecked,
       handleColHeaderClick,
       handleTableHeaderScroll,
@@ -3229,10 +2746,10 @@ const TableHeader = defineComponent({
     if (!discrete) {
       return theadVNode;
     }
-    const { handleTableHeaderScroll, handleMouseenter, handleMouseleave, scrollX } = this;
+    const { handleTableHeaderScroll, scrollX } = this;
     return h(
       "div",
-      { class: `${mergedClsPrefix}-data-table-base-table-header`, onScroll: handleTableHeaderScroll, onMouseenter: handleMouseenter, onMouseleave: handleMouseleave },
+      { class: `${mergedClsPrefix}-data-table-base-table-header`, onScroll: handleTableHeaderScroll },
       h(
         "table",
         { ref: "body", class: `${mergedClsPrefix}-data-table-table`, style: {
@@ -3274,9 +2791,9 @@ const Cell = defineComponent({
   render() {
     const { isSummary, column, row, renderCell } = this;
     let cell;
-    const { render: render5, key, ellipsis } = column;
-    if (render5 && !isSummary) {
-      cell = render5(row, this.index);
+    const { render: render4, key, ellipsis } = column;
+    if (render4 && !isSummary) {
+      cell = render4(row, this.index);
     } else {
       if (isSummary) {
         cell = row[key].value;
@@ -3287,6 +2804,9 @@ const Cell = defineComponent({
     if (ellipsis) {
       if (typeof ellipsis === "object") {
         const { mergedTheme } = this;
+        if (column.ellipsisComponent === "performant-ellipsis") {
+          return h(NPerformantEllipsis, Object.assign({}, ellipsis, { theme: mergedTheme.peers.Ellipsis, themeOverrides: mergedTheme.peerOverrides.Ellipsis }), { default: () => cell });
+        }
         return h(NEllipsis, Object.assign({}, ellipsis, { theme: mergedTheme.peers.Ellipsis, themeOverrides: mergedTheme.peerOverrides.Ellipsis }), { default: () => cell });
       } else {
         return h("span", { class: `${this.clsPrefix}-data-table-td__ellipsis` }, cell);
@@ -3319,7 +2839,9 @@ const ExpandTrigger = defineComponent({
       { class: [
         `${clsPrefix}-data-table-expand-trigger`,
         this.expanded && `${clsPrefix}-data-table-expand-trigger--expanded`
-      ], onClick: this.onClick },
+      ], onClick: this.onClick, onMousedown: (e) => {
+        e.preventDefault();
+      } },
       h(NIconSwitchTransition, null, {
         default: () => {
           return this.loading ? h(NBaseLoading, { key: "loading", clsPrefix: this.clsPrefix, radius: 85, strokeWidth: 15, scale: 0.88 }) : this.renderExpandIcon ? this.renderExpandIcon({
@@ -3479,7 +3001,6 @@ const TableBody = defineComponent({
       mergedSortStateRef,
       virtualScrollRef,
       componentId,
-      scrollPartRef,
       mergedTableLayoutRef,
       childTriggerColIndexRef,
       indentRef,
@@ -3610,9 +3131,6 @@ const TableBody = defineComponent({
     }
     function handleMouseleaveTable() {
       hoverKeyRef.value = null;
-    }
-    function handleMouseenterTable() {
-      scrollPartRef.value = "body";
     }
     function virtualListContainer() {
       const { value } = virtualListRef;
@@ -3759,7 +3277,6 @@ const TableBody = defineComponent({
       renderExpandIcon: renderExpandIconRef,
       scrollbarProps: scrollbarPropsRef,
       setHeaderScrollLeft,
-      handleMouseenterTable,
       handleVirtualListScroll,
       handleVirtualListResize,
       handleMouseleaveTable,
@@ -3786,7 +3303,7 @@ const TableBody = defineComponent({
       default: () => {
         const cordToPass = {};
         const cordKey = {};
-        const { cols, paginatedDataAndInfo, mergedTheme: mergedTheme2, fixedColumnLeftMap, fixedColumnRightMap, currentPage, rowClassName, mergedSortState, mergedExpandedRowKeySet, stickyExpandedRows, componentId, childTriggerColIndex, expandable, rowProps, handleMouseenterTable, handleMouseleaveTable, renderExpand, summary, handleCheckboxUpdateChecked, handleRadioUpdateChecked, handleUpdateExpanded } = this;
+        const { cols, paginatedDataAndInfo, mergedTheme: mergedTheme2, fixedColumnLeftMap, fixedColumnRightMap, currentPage, rowClassName, mergedSortState, mergedExpandedRowKeySet, stickyExpandedRows, componentId, childTriggerColIndex, expandable, rowProps, handleMouseleaveTable, renderExpand, summary, handleCheckboxUpdateChecked, handleRadioUpdateChecked, handleUpdateExpanded } = this;
         const { length: colCount } = cols;
         let mergedData;
         const { data: paginatedData, hasChildren } = paginatedDataAndInfo;
@@ -3846,7 +3363,7 @@ const TableBody = defineComponent({
             const { tmNode: { key, rawNode } } = rowInfo;
             return h(
               "tr",
-              { class: `${mergedClsPrefix}-data-table-tr`, key: `${key}__expand` },
+              { class: `${mergedClsPrefix}-data-table-tr ${mergedClsPrefix}-data-table-tr--expanded`, key: `${key}__expand` },
               h("td", { class: [
                 `${mergedClsPrefix}-data-table-td`,
                 `${mergedClsPrefix}-data-table-td--last-col`,
@@ -3869,6 +3386,7 @@ const TableBody = defineComponent({
             `${mergedClsPrefix}-data-table-tr`,
             isSummary && `${mergedClsPrefix}-data-table-tr--summary`,
             striped && `${mergedClsPrefix}-data-table-tr--striped`,
+            expanded && `${mergedClsPrefix}-data-table-tr--expanded`,
             mergedRowClassName
           ] }, props), cols.map((col, colIndex) => {
             var _a, _b, _c, _d, _e;
@@ -3913,6 +3431,9 @@ const TableBody = defineComponent({
             const hoverKey = isCrossRowTd ? this.hoverKey : null;
             const { cellProps } = column;
             const resolvedCellProps = cellProps === null || cellProps === void 0 ? void 0 : cellProps(rowData, actualRowIndex);
+            const indentOffsetStyle = {
+              "--indent-offset": ""
+            };
             return h(
               "td",
               Object.assign({}, resolvedCellProps, { key: colKey, style: [
@@ -3921,6 +3442,7 @@ const TableBody = defineComponent({
                   left: pxfy((_c = fixedColumnLeftMap[colKey]) === null || _c === void 0 ? void 0 : _c.start),
                   right: pxfy((_d = fixedColumnRightMap[colKey]) === null || _d === void 0 ? void 0 : _d.start)
                 },
+                indentOffsetStyle,
                 (resolvedCellProps === null || resolvedCellProps === void 0 ? void 0 : resolvedCellProps.style) || ""
               ], colspan: mergedColSpan, rowspan: isVirtual ? void 0 : mergedRowSpan, "data-col-key": colKey, class: [
                 `${mergedClsPrefix}-data-table-td`,
@@ -3936,7 +3458,7 @@ const TableBody = defineComponent({
                 isLastRow && `${mergedClsPrefix}-data-table-td--last-row`
               ] }),
               hasChildren && colIndex === childTriggerColIndex ? [
-                repeat(isSummary ? 0 : rowInfo.tmNode.level, h("div", { class: `${mergedClsPrefix}-data-table-indent`, style: indentStyle })),
+                repeat(indentOffsetStyle["--indent-offset"] = isSummary ? 0 : rowInfo.tmNode.level, h("div", { class: `${mergedClsPrefix}-data-table-indent`, style: indentStyle })),
                 isSummary || rowInfo.tmNode.isLeaf ? h("div", { class: `${mergedClsPrefix}-data-table-expand-placeholder` }) : h(ExpandTrigger, { class: `${mergedClsPrefix}-data-table-expand-trigger`, clsPrefix: mergedClsPrefix, expanded, renderExpandIcon: this.renderExpandIcon, loading: loadingKeySet.has(rowInfo.key), onClick: () => {
                   handleUpdateExpanded(rowKey, rowInfo.tmNode);
                 } })
@@ -3955,7 +3477,7 @@ const TableBody = defineComponent({
         if (!virtualScroll) {
           return h(
             "table",
-            { class: `${mergedClsPrefix}-data-table-table`, onMouseleave: handleMouseleaveTable, onMouseenter: handleMouseenterTable, style: {
+            { class: `${mergedClsPrefix}-data-table-table`, onMouseleave: handleMouseleaveTable, style: {
               tableLayout: this.mergedTableLayout
             } },
             h("colgroup", null, cols.map((col) => h("col", { key: col.key, style: col.style }))),
@@ -3969,7 +3491,6 @@ const TableBody = defineComponent({
             clsPrefix: mergedClsPrefix,
             id: componentId,
             cols,
-            onMouseenter: handleMouseenterTable,
             onMouseleave: handleMouseleaveTable
           }, showScrollbar: false, onResize: this.handleVirtualListResize, onScroll: this.handleVirtualListScroll, itemsStyle: contentStyle, itemResizable: true }, {
             default: ({ item, index }) => renderRow(item, index, true)
@@ -4677,8 +4198,9 @@ function useTableData(props, { dataRelatedColsRef }) {
     sort
   };
 }
-function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef, scrollPartRef }) {
-  let scrollLeft = 0;
+function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef }) {
+  let lastScrollLeft = 0;
+  const scrollPartRef = ref();
   const leftActiveFixedColKeyRef = ref(null);
   const leftActiveFixedChildrenColKeysRef = ref([]);
   const rightActiveFixedColKeyRef = ref(null);
@@ -4739,7 +4261,7 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     let leftActiveFixedColKey = null;
     for (let i = 0; i < leftFixedColumns.length; ++i) {
       const key = getColKey(leftFixedColumns[i]);
-      if (scrollLeft > (((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) - leftWidth) {
+      if (lastScrollLeft > (((_a = fixedColumnLeftMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) - leftWidth) {
         leftActiveFixedColKey = key;
         leftWidth = ((_b = fixedColumnLeftMap[key]) === null || _b === void 0 ? void 0 : _b.end) || 0;
       } else {
@@ -4772,7 +4294,7 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     const { value: fixedColumnRightMap } = fixedColumnRightMapRef;
     for (let i = rightFixedColumns.length - 1; i >= 0; --i) {
       const key = getColKey(rightFixedColumns[i]);
-      if (Math.round(scrollLeft + (((_a = fixedColumnRightMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) + tableWidth - rightWidth) < scrollWidth) {
+      if (Math.round(lastScrollLeft + (((_a = fixedColumnRightMap[key]) === null || _a === void 0 ? void 0 : _a.start) || 0) + tableWidth - rightWidth) < scrollWidth) {
         rightActiveFixedColKey = key;
         rightWidth = ((_b = fixedColumnRightMap[key]) === null || _b === void 0 ? void 0 : _b.end) || 0;
       } else {
@@ -4805,15 +4327,19 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     }
   }
   function handleTableHeaderScroll() {
-    if (scrollPartRef.value === "head") {
+    if (scrollPartRef.value !== "body") {
       beforeNextFrameOnce(syncScrollState);
+    } else {
+      scrollPartRef.value = void 0;
     }
   }
   function handleTableBodyScroll(e) {
     var _a;
     (_a = props.onScroll) === null || _a === void 0 ? void 0 : _a.call(props, e);
-    if (scrollPartRef.value === "body") {
+    if (scrollPartRef.value !== "head") {
       beforeNextFrameOnce(syncScrollState);
+    } else {
+      scrollPartRef.value = void 0;
     }
   }
   function syncScrollState() {
@@ -4823,19 +4349,20 @@ function useScroll(props, { mainTableInstRef, mergedCurrentPageRef, bodyWidthRef
     const { value: tableWidth } = bodyWidthRef;
     if (tableWidth === null)
       return;
-    const { value: scrollPart } = scrollPartRef;
     if (props.maxHeight || props.flexHeight) {
       if (!header)
         return;
-      if (scrollPart === "head") {
-        scrollLeft = header.scrollLeft;
-        body.scrollLeft = scrollLeft;
+      const directionHead = lastScrollLeft - header.scrollLeft;
+      scrollPartRef.value = directionHead !== 0 ? "head" : "body";
+      if (scrollPartRef.value === "head") {
+        lastScrollLeft = header.scrollLeft;
+        body.scrollLeft = lastScrollLeft;
       } else {
-        scrollLeft = body.scrollLeft;
-        header.scrollLeft = scrollLeft;
+        lastScrollLeft = body.scrollLeft;
+        header.scrollLeft = lastScrollLeft;
       }
     } else {
-      scrollLeft = body.scrollLeft;
+      lastScrollLeft = body.scrollLeft;
     }
     deriveActiveLeftFixedColumn();
     deriveActiveLeftFixedChildrenColumns();
@@ -5275,6 +4802,7 @@ const style$1 = c([cB("data-table", `
  white-space: nowrap;
  max-width: 100%;
  vertical-align: bottom;
+ max-width: calc(100% - var(--indent-offset, -1.5) * 16px - 24px);
  `), cM("selection, expand", `
  text-align: center;
  padding: 0;
@@ -5438,10 +4966,6 @@ const NDataTable = defineComponent({
     });
     const themeRef = useTheme("DataTable", "-data-table", style$1, dataTableLight, props, mergedClsPrefixRef);
     const bodyWidthRef = ref(null);
-    const scrollPartRef = ref("body");
-    onDeactivated(() => {
-      scrollPartRef.value = "body";
-    });
     const mainTableInstRef = ref(null);
     const { getResizableWidth, clearResizableWidth, doUpdateResizableWidth } = useResizable();
     const { rowsRef, colsRef, dataRelatedColsRef, hasEllipsisRef } = useGroupHeader(props, getResizableWidth);
@@ -5453,7 +4977,6 @@ const NDataTable = defineComponent({
     });
     const { stickyExpandedRowsRef, mergedExpandedRowKeysRef, renderExpandRef, expandableRef, doUpdateExpandedRowKeys } = useExpand(props, treeMateRef);
     const { handleTableBodyScroll, handleTableHeaderScroll, syncScrollState, setHeaderScrollLeft, leftActiveFixedColKeyRef, leftActiveFixedChildrenColKeysRef, rightActiveFixedColKeyRef, rightActiveFixedChildrenColKeysRef, leftFixedColumnsRef, rightFixedColumnsRef, fixedColumnLeftMapRef, fixedColumnRightMapRef } = useScroll(props, {
-      scrollPartRef,
       bodyWidthRef,
       mainTableInstRef,
       mergedCurrentPageRef
@@ -5501,7 +5024,6 @@ const NDataTable = defineComponent({
       mergedExpandedRowKeysRef,
       mergedInderminateRowKeySetRef,
       localeRef,
-      scrollPartRef,
       expandableRef,
       stickyExpandedRowsRef,
       rowKeyRef: toRef(props, "rowKey"),
@@ -5687,171 +5209,6 @@ const NUploadDragger = defineComponent({
     };
   }
 });
-var __awaiter$2 = globalThis && globalThis.__awaiter || function(thisArg, _arguments, P, generator) {
-  function adopt(value) {
-    return value instanceof P ? value : new P(function(resolve) {
-      resolve(value);
-    });
-  }
-  return new (P || (P = Promise))(function(resolve, reject) {
-    function fulfilled(value) {
-      try {
-        step(generator.next(value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function rejected(value) {
-      try {
-        step(generator["throw"](value));
-      } catch (e) {
-        reject(e);
-      }
-    }
-    function step(result) {
-      result.done ? resolve(result.value) : adopt(result.value).then(fulfilled, rejected);
-    }
-    step((generator = generator.apply(thisArg, _arguments || [])).next());
-  });
-};
-const isImageFileType = (type) => type.includes("image/");
-const getExtname = (url = "") => {
-  const temp = url.split("/");
-  const filename = temp[temp.length - 1];
-  const filenameWithoutSuffix = filename.split(/#|\?/)[0];
-  return (/\.[^./\\]*$/.exec(filenameWithoutSuffix) || [""])[0];
-};
-const imageExtensionRegex = /(webp|svg|png|gif|jpg|jpeg|jfif|bmp|dpg|ico)$/i;
-const isImageFile = (file) => {
-  if (file.type) {
-    return isImageFileType(file.type);
-  }
-  const fileNameExtension = getExtname(file.name || "");
-  if (imageExtensionRegex.test(fileNameExtension)) {
-    return true;
-  }
-  const url = file.thumbnailUrl || file.url || "";
-  const urlExtension = getExtname(url);
-  if (/^data:image\//.test(url) || imageExtensionRegex.test(urlExtension)) {
-    return true;
-  }
-  return false;
-};
-function createImageDataUrl(file) {
-  return __awaiter$2(this, void 0, void 0, function* () {
-    return yield new Promise((resolve) => {
-      if (!file.type || !isImageFileType(file.type)) {
-        resolve("");
-        return;
-      }
-      resolve(window.URL.createObjectURL(file));
-    });
-  });
-}
-const environmentSupportFile = isBrowser && window.FileReader && window.File;
-function isFileSystemDirectoryEntry(item) {
-  return item.isDirectory;
-}
-function isFileSystemFileEntry(item) {
-  return item.isFile;
-}
-function getFilesFromEntries(entries, directory) {
-  return __awaiter$2(this, void 0, void 0, function* () {
-    const fileAndEntries = [];
-    let _resolve;
-    let requestCallbackCount = 0;
-    function lock() {
-      requestCallbackCount++;
-    }
-    function unlock() {
-      requestCallbackCount--;
-      if (!requestCallbackCount) {
-        _resolve(fileAndEntries);
-      }
-    }
-    function _getFilesFromEntries(entries2) {
-      entries2.forEach((entry) => {
-        if (!entry)
-          return;
-        lock();
-        if (directory && isFileSystemDirectoryEntry(entry)) {
-          const directoryReader = entry.createReader();
-          lock();
-          directoryReader.readEntries((entries3) => {
-            _getFilesFromEntries(entries3);
-            unlock();
-          }, () => {
-            unlock();
-          });
-        } else if (isFileSystemFileEntry(entry)) {
-          lock();
-          entry.file((file) => {
-            fileAndEntries.push({ file, entry, source: "dnd" });
-            unlock();
-          }, () => {
-            unlock();
-          });
-        }
-        unlock();
-      });
-    }
-    yield new Promise((resolve) => {
-      _resolve = resolve;
-      _getFilesFromEntries(entries);
-    });
-    return fileAndEntries;
-  });
-}
-function createSettledFileInfo(fileInfo) {
-  const { id, name, percentage, status, url, file, thumbnailUrl, type, fullPath, batchId } = fileInfo;
-  return {
-    id,
-    name,
-    percentage: percentage !== null && percentage !== void 0 ? percentage : null,
-    status,
-    url: url !== null && url !== void 0 ? url : null,
-    file: file !== null && file !== void 0 ? file : null,
-    thumbnailUrl: thumbnailUrl !== null && thumbnailUrl !== void 0 ? thumbnailUrl : null,
-    type: type !== null && type !== void 0 ? type : null,
-    fullPath: fullPath !== null && fullPath !== void 0 ? fullPath : null,
-    batchId: batchId !== null && batchId !== void 0 ? batchId : null
-  };
-}
-function matchType(name, mimeType, accept) {
-  name = name.toLowerCase();
-  mimeType = mimeType.toLocaleLowerCase();
-  accept = accept.toLocaleLowerCase();
-  const acceptAtoms = accept.split(",").map((acceptAtom) => acceptAtom.trim()).filter(Boolean);
-  return acceptAtoms.some((acceptAtom) => {
-    if (acceptAtom.startsWith(".")) {
-      if (name.endsWith(acceptAtom))
-        return true;
-    } else if (acceptAtom.includes("/")) {
-      const [type, subtype] = mimeType.split("/");
-      const [acceptType, acceptSubtype] = acceptAtom.split("/");
-      if (acceptType === "*" || type && acceptType && acceptType === type) {
-        if (acceptSubtype === "*" || subtype && acceptSubtype && acceptSubtype === subtype) {
-          return true;
-        }
-      }
-    } else {
-      return true;
-    }
-    return false;
-  });
-}
-const download = (url, name) => {
-  if (!url)
-    return;
-  const a = document.createElement("a");
-  a.href = url;
-  if (name !== void 0) {
-    a.download = name;
-  }
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-};
 const NUploadTrigger = defineComponent({
   name: "UploadTrigger",
   props: {
@@ -6735,7 +6092,7 @@ const uploadProps = Object.assign(Object.assign({}, useTheme.props), {
   imageGroupProps: Object,
   inputProps: Object,
   triggerStyle: [String, Object],
-  renderIcon: Object
+  renderIcon: Function
 });
 const NUpload = defineComponent({
   name: "Upload",
@@ -7046,12 +6403,12 @@ const NUpload = defineComponent({
     );
   }
 });
-const _hoisted_1$7 = {
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M261.56 101.28a8 8 0 0 0-11.06 0L66.4 277.15a8 8 0 0 0-2.47 5.79L63.9 448a32 32 0 0 0 32 32H192a16 16 0 0 0 16-16V328a8 8 0 0 1 8-8h80a8 8 0 0 1 8 8v136a16 16 0 0 0 16 16h96.06a32 32 0 0 0 32-32V282.94a8 8 0 0 0-2.47-5.79z",
@@ -7061,7 +6418,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M490.91 244.15l-74.8-71.56V64a16 16 0 0 0-16-16h-48a16 16 0 0 0-16 16v32l-57.92-55.38C272.77 35.14 264.71 32 256 32c-8.68 0-16.72 3.14-22.14 8.63l-212.7 203.5c-6.22 6-7 15.87-1.34 22.37A16 16 0 0 0 43 267.56L250.5 69.28a8 8 0 0 1 11.06 0l207.52 198.28a16 16 0 0 0 22.59-.44c6.14-6.36 5.63-16.86-.76-22.97z",
@@ -7071,19 +6428,19 @@ const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$7 = [_hoisted_2$7, _hoisted_3$7];
+const _hoisted_4$5 = [_hoisted_2$6, _hoisted_3$6];
 const Home = defineComponent({
   name: "Home",
   render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_4$5);
   }
 });
-const _hoisted_1$6 = {
+const _hoisted_1$5 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -7097,7 +6454,7 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -7111,7 +6468,7 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -7125,19 +6482,19 @@ const _hoisted_4$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = [_hoisted_2$6, _hoisted_3$6, _hoisted_4$6];
+const _hoisted_5$2 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$4];
 const Menu = defineComponent({
   name: "Menu",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$2);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$4 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M221.09 64a157.09 157.09 0 1 0 157.09 157.09A157.1 157.1 0 0 0 221.09 64z",
@@ -7150,7 +6507,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -7164,45 +6521,11 @@ const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = [_hoisted_2$5, _hoisted_3$5];
+const _hoisted_4$3 = [_hoisted_2$4, _hoisted_3$4];
 const SearchOutline = defineComponent({
   name: "SearchOutline",
   render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_4$5);
-  }
-});
-const _hoisted_1$4 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
-  "circle",
-  {
-    cx: "256",
-    cy: "256",
-    r: "48",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M470.39 300l-.47-.38l-31.56-24.75a16.11 16.11 0 0 1-6.1-13.33v-11.56a16 16 0 0 1 6.11-13.22L469.92 212l.47-.38a26.68 26.68 0 0 0 5.9-34.06l-42.71-73.9a1.59 1.59 0 0 1-.13-.22A26.86 26.86 0 0 0 401 92.14l-.35.13l-37.1 14.93a15.94 15.94 0 0 1-14.47-1.29q-4.92-3.1-10-5.86a15.94 15.94 0 0 1-8.19-11.82l-5.59-39.59l-.12-.72A27.22 27.22 0 0 0 298.76 26h-85.52a26.92 26.92 0 0 0-26.45 22.39l-.09.56l-5.57 39.67a16 16 0 0 1-8.13 11.82a175.21 175.21 0 0 0-10 5.82a15.92 15.92 0 0 1-14.43 1.27l-37.13-15l-.35-.14a26.87 26.87 0 0 0-32.48 11.34l-.13.22l-42.77 73.95a26.71 26.71 0 0 0 5.9 34.1l.47.38l31.56 24.75a16.11 16.11 0 0 1 6.1 13.33v11.56a16 16 0 0 1-6.11 13.22L42.08 300l-.47.38a26.68 26.68 0 0 0-5.9 34.06l42.71 73.9a1.59 1.59 0 0 1 .13.22a26.86 26.86 0 0 0 32.45 11.3l.35-.13l37.07-14.93a15.94 15.94 0 0 1 14.47 1.29q4.92 3.11 10 5.86a15.94 15.94 0 0 1 8.19 11.82l5.56 39.59l.12.72A27.22 27.22 0 0 0 213.24 486h85.52a26.92 26.92 0 0 0 26.45-22.39l.09-.56l5.57-39.67a16 16 0 0 1 8.18-11.82c3.42-1.84 6.76-3.79 10-5.82a15.92 15.92 0 0 1 14.43-1.27l37.13 14.95l.35.14a26.85 26.85 0 0 0 32.48-11.34a2.53 2.53 0 0 1 .13-.22l42.71-73.89a26.7 26.7 0 0 0-5.89-34.11zm-134.48-40.24a80 80 0 1 1-83.66-83.67a80.21 80.21 0 0 1 83.66 83.67z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$4 = [_hoisted_2$4, _hoisted_3$4];
-const Settings = defineComponent({
-  name: "Settings",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_4$4);
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_4$3);
   }
 });
 const _hoisted_1$3 = {
@@ -7214,16 +6537,16 @@ const _hoisted_2$3 = {
   style: { "margin": "12px", "margin-top": "8px" }
 };
 const _hoisted_3$3 = { class: "image-grid" };
-const _hoisted_4$3 = ["src", "onClick"];
-const _hoisted_5$2 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)" } };
+const _hoisted_4$2 = ["src", "onClick"];
+const _hoisted_5$1 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)" } };
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "CivitAIDownload",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "6525a2a0": unref(conf).data.settings.frontend.image_browser_columns,
-      "56cf4784": backgroundColor.value
+      "9fc29920": unref(settings).data.settings.frontend.image_browser_columns,
+      "714c7f6d": backgroundColor.value
     }));
-    const conf = useSettings();
+    const settings = useSettings();
     const loadingLock = ref(false);
     const currentPage = ref(1);
     const sortBy = ref("Most Downloaded");
@@ -7246,11 +6569,11 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     const modelData = reactive([]);
     const columns = computed(() => {
       const cols = [];
-      for (let i = 0; i < conf.data.settings.frontend.image_browser_columns; i++) {
+      for (let i = 0; i < settings.data.settings.frontend.image_browser_columns; i++) {
         cols.push([]);
       }
       for (let i = 0; i < modelData.length; i++) {
-        cols[i % conf.data.settings.frontend.image_browser_columns].push(
+        cols[i % settings.data.settings.frontend.image_browser_columns].push(
           modelData[i]
         );
       }
@@ -7322,7 +6645,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       }
     };
     function moveImage(direction) {
-      const numColumns = conf.data.settings.frontend.image_browser_columns;
+      const numColumns = settings.data.settings.frontend.image_browser_columns;
       if (direction === -1) {
         if (currentColumn.value > 0) {
           imgClick(currentColumn.value - 1, currentRowIndex.value);
@@ -7369,7 +6692,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     });
     refreshImages();
     const backgroundColor = computed(() => {
-      if (conf.data.settings.frontend.theme === "dark") {
+      if (settings.data.settings.frontend.theme === "dark") {
         return "#121215";
       } else {
         return "#fff";
@@ -7459,8 +6782,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             style: { "width": "30vw" },
             min: 1,
             max: 10,
-            value: unref(conf).data.settings.frontend.image_browser_columns,
-            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.frontend.image_browser_columns = $event)
+            value: unref(settings).data.settings.frontend.image_browser_columns,
+            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.frontend.image_browser_columns = $event)
           }, null, 8, ["value"])
         ]),
         createBaseVNode("div", _hoisted_2$3, [
@@ -7489,11 +6812,11 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                           height: "auto",
                           borderRadius: "8px",
                           cursor: "pointer",
-                          filter: item.modelVersions[0].images[0].nsfw !== "None" ? "blur(12px)" : "none"
+                          filter: unref(nsfwIndex)(item.modelVersions[0].images[0].nsfw) > unref(settings).data.settings.frontend.nsfw_ok_threshold ? "blur(12px)" : "none"
                         }),
                         onClick: ($event) => imgClick(column_index, item_index)
-                      }, null, 12, _hoisted_4$3),
-                      createBaseVNode("div", _hoisted_5$2, [
+                      }, null, 12, _hoisted_4$2),
+                      createBaseVNode("div", _hoisted_5$1, [
                         createVNode(unref(NText), { depth: 2 }, {
                           default: withCtx(() => [
                             createTextVNode(toDisplayString(item.name), 1)
@@ -7512,17 +6835,17 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const CivitAIDownload_vue_vue_type_style_index_0_scoped_097ab352_lang = "";
-const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-097ab352"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-6a6fb4b4"), n = n(), popScopeId(), n);
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_07574b72_lang = "";
+const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-07574b72"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-0d48785f"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
-const _hoisted_4$2 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4$1 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "HuggingfaceDownload",
   setup(__props) {
-    const conf = useState();
+    const settings = useState();
     const message = useMessage();
     const customModel = ref("");
     function downloadModel(model) {
@@ -7530,14 +6853,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       const modelName = typeof model === "string" ? model : model.value;
       url.searchParams.append("model", modelName);
       console.log(url);
-      conf.state.downloading = true;
+      settings.state.downloading = true;
       customModel.value = "";
       message.info(`Downloading model: ${modelName}`);
       fetch(url, { method: "POST" }).then(() => {
-        conf.state.downloading = false;
+        settings.state.downloading = false;
         message.success(`Downloaded model: ${modelName}`);
       }).catch(() => {
-        conf.state.downloading = false;
+        settings.state.downloading = false;
         message.error(`Failed to download model: ${modelName}`);
       });
     }
@@ -7590,7 +6913,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               round: true,
               block: true,
               bordered: false,
-              disabled: conf.state.downloading,
+              disabled: settings.state.downloading,
               onClick: () => {
                 downloadModel(row.huggingface_id);
               }
@@ -7609,7 +6932,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             {
               trigger: "hover",
               options: getPluginOptions(row),
-              disabled: conf.state.downloading
+              disabled: settings.state.downloading
             },
             { default: renderIcon(Menu) }
           );
@@ -7643,7 +6966,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           default: withCtx(() => [
             createBaseVNode("div", _hoisted_2$2, [
               _hoisted_3$2,
-              createBaseVNode("div", _hoisted_4$2, [
+              createBaseVNode("div", _hoisted_4$1, [
                 createVNode(unref(NInput), {
                   value: customModel.value,
                   "onUpdate:value": _cache[0] || (_cache[0] = ($event) => customModel.value = $event),
@@ -7654,8 +6977,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   type: "primary",
                   bordered: "",
                   onClick: _cache[1] || (_cache[1] = ($event) => downloadModel(customModel.value)),
-                  loading: unref(conf).state.downloading,
-                  disabled: unref(conf).state.downloading || customModel.value === "",
+                  loading: unref(settings).state.downloading,
+                  disabled: unref(settings).state.downloading || customModel.value === "",
                   secondary: "",
                   style: { "margin-right": "16px", "margin-left": "4px" }
                 }, {
@@ -7696,15 +7019,15 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_6a6fb4b4_lang = "";
-const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-6a6fb4b4"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_0d48785f_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-0d48785f"]]);
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "FP32", -1);
-const _hoisted_4$1 = { class: "flex-container" };
-const _hoisted_5$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Output in safetensors format", -1);
-const _hoisted_6$1 = { class: "flex-container" };
-const _hoisted_7$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
+const _hoisted_4 = { class: "flex-container" };
+const _hoisted_5 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Output in safetensors format", -1);
+const _hoisted_6 = { class: "flex-container" };
+const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ModelConvert",
   setup(__props) {
@@ -7773,15 +7096,15 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 "onUpdate:value": _cache[0] || (_cache[0] = ($event) => use_fp32.value = $event)
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_4$1, [
-              _hoisted_5$1,
+            createBaseVNode("div", _hoisted_4, [
+              _hoisted_5,
               createVNode(unref(NSwitch), {
                 value: safetensors.value,
                 "onUpdate:value": _cache[1] || (_cache[1] = ($event) => safetensors.value = $event)
               }, null, 8, ["value"])
             ]),
-            createBaseVNode("div", _hoisted_6$1, [
-              _hoisted_7$1,
+            createBaseVNode("div", _hoisted_6, [
+              _hoisted_7,
               createVNode(unref(NSelect), {
                 value: model.value,
                 "onUpdate:value": _cache[2] || (_cache[2] = ($event) => model.value = $event),
@@ -7833,19 +7156,25 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1 = { style: { "padding": "12px" } };
+const _hoisted_1 = { style: { "padding": "0px 12px 12px 12px" } };
 const _hoisted_2 = { style: { "margin-bottom": "12px", "display": "block" } };
 const _hoisted_3 = { style: { "display": "inline-flex" } };
-const _hoisted_4 = { style: { "margin-bottom": "12px", "display": "block" } };
-const _hoisted_5 = { style: { "display": "inline-flex" } };
-const _hoisted_6 = { style: { "margin-bottom": "12px", "display": "block" } };
-const _hoisted_7 = { style: { "display": "inline-flex" } };
+const allowedExtensions = ".safetensors,.ckpt,.pth,.pt,.bin";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "ModelManager",
   setup(__props) {
     const global = useState();
     const filter = ref("");
     const message = useMessage();
+    const modelTypes = {
+      PyTorch: "models",
+      LoRA: "lora",
+      LyCORIS: "lycoris",
+      "Textual Inversion": "textual-inversion",
+      VAE: "vae",
+      AITemplate: "aitemplate",
+      ONNX: "onnx"
+    };
     const renderIcon = (icon) => {
       return () => {
         return h(NIcon, null, {
@@ -7858,41 +7187,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         return model.path.toLowerCase().includes(filter.value.toLowerCase()) || filter.value === "";
       }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
     });
-    const pyTorchModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "PyTorch" && model.valid === true;
-      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-    });
-    const loraModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "LoRA";
-      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-    });
-    const textualInversionModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "Textual Inversion";
-      }).sort((a, b) => a.name.toLowerCase() < b.name.toLowerCase() ? -1 : 1);
-    });
-    function createPyTorchOptions(model_path) {
-      return [
-        {
-          label: "Delete",
-          key: `delete:${model_path}`,
-          icon: renderIcon(TrashBin)
-        }
-        // {
-        //   label: "Convert",
-        //   key: `convert:${model_path}`,
-        //   icon: renderIcon(GitCompare),
-        // },
-        // {
-        //   label: "Accelerate",
-        //   key: `accelerate:${model_path}`,
-        //   icon: renderIcon(PlayForward),
-        // },
-      ];
-    }
-    function createLoraOptions(model_path) {
+    function createOptions(model_path) {
       return [
         {
           label: "Delete",
@@ -7901,51 +7196,28 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         }
       ];
     }
-    function createTextualInversionOptions(model_path) {
-      return [
-        {
-          label: "Delete",
-          key: `delete:${model_path}`,
-          icon: renderIcon(TrashBin)
-        }
-      ];
-    }
-    function deleteModel(model_path, model_type) {
-      fetch(`${serverUrl}/api/models/delete-model`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model_path,
-          model_type
-        })
-      }).then((response) => response.json()).then(() => {
+    async function deleteModel(model_path, model_type) {
+      try {
+        const res = await fetch(`${serverUrl}/api/models/delete-model`, {
+          method: "DELETE",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            model_path,
+            model_type
+          })
+        });
+        await res.json();
         message.success("Model deleted");
-      }).catch((error) => {
+      } catch (error) {
         message.error(error);
-      });
-    }
-    function handlePyTorchModelAction(key) {
-      const [action, model_path] = key.split(":");
-      if (action === "delete") {
-        deleteModel(model_path, "pytorch");
-      } else if (action === "convert") {
-        message.success(key);
-      } else if (action === "accelerate") {
-        message.success(key);
       }
     }
-    function handleLoraModelAction(key) {
+    async function handleAction(key, modelType, model) {
       const [action, model_path] = key.split(":");
       if (action === "delete") {
-        deleteModel(model_path, "lora");
-      }
-    }
-    function handleTextualInversionModelAction(key) {
-      const [action, model_path] = key.split(":");
-      if (action === "delete") {
-        deleteModel(model_path, "textual-inversion");
+        await deleteModel(model_path, modelType);
       }
     }
     return (_ctx, _cache) => {
@@ -7958,226 +7230,113 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           clearable: ""
         }, null, 8, ["value"]),
         createVNode(unref(NGrid), {
-          cols: "3",
-          "x-gap": "12"
+          cols: "1 600:2 900:3",
+          "x-gap": "8",
+          "y-gap": "8"
         }, {
           default: withCtx(() => [
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "Model" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NUpload), {
-                      multiple: "",
-                      "directory-dnd": "",
-                      action: `${unref(serverUrl)}/api/models/upload-model`,
-                      max: 5,
-                      accept: ".ckpt,.safetensors",
-                      style: { "border-bottom": "1px solid rgb(66, 66, 71)", "padding-bottom": "12px" }
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
-                          default: withCtx(() => [
-                            createBaseVNode("div", _hoisted_2, [
-                              createVNode(unref(NIcon), {
-                                size: "48",
-                                depth: 3
-                              }, {
+            (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(modelTypes).filter((item) => item !== "AITemplate" && item !== "ONNX"), (key) => {
+              return openBlock(), createBlock(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NCard), { title: key }, {
+                    default: withCtx(() => [
+                      createVNode(unref(NUpload), {
+                        multiple: "",
+                        "directory-dnd": "",
+                        action: `${unref(serverUrl)}/api/models/upload-model?type=${modelTypes[key]}`,
+                        accept: allowedExtensions
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
+                            default: withCtx(() => [
+                              createBaseVNode("div", _hoisted_2, [
+                                createVNode(unref(NIcon), {
+                                  size: "48",
+                                  depth: 3
+                                }, {
+                                  default: withCtx(() => [
+                                    createVNode(unref(CloudUpload))
+                                  ]),
+                                  _: 1
+                                })
+                              ]),
+                              createVNode(unref(NText), { style: { "font-size": "24px" } }, {
                                 default: withCtx(() => [
-                                  createVNode(unref(CloudUpload))
+                                  createTextVNode(toDisplayString(key), 1)
+                                ]),
+                                _: 2
+                              }, 1024),
+                              createVNode(unref(NText), { style: { "font-size": "14px" } }, {
+                                default: withCtx(() => [
+                                  createTextVNode(" Click or Drag a model here ")
                                 ]),
                                 _: 1
                               })
                             ]),
-                            createVNode(unref(NText), { style: { "font-size": "24px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Model ")
-                              ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NText), { style: { "font-size": "16px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Click or drag a model to this area to upload it to the server ")
-                              ]),
-                              _: 1
-                            })
-                          ]),
-                          _: 1
-                        })
-                      ]),
-                      _: 1
-                    }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(pyTorchModels.value, (model) => {
-                      return openBlock(), createElementBlock("div", {
-                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                        key: model.path
-                      }, [
-                        createBaseVNode("p", null, toDisplayString(model.name), 1),
-                        createBaseVNode("div", _hoisted_3, [
-                          createVNode(unref(NDropdown), {
-                            options: createPyTorchOptions(model.path),
-                            placement: "right",
-                            onSelect: handlePyTorchModelAction
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(unref(NButton), {
-                                "render-icon": renderIcon(unref(Settings))
-                              }, null, 8, ["render-icon"])
-                            ]),
                             _: 2
-                          }, 1032, ["options"])
-                        ])
-                      ]);
-                    }), 128))
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "LoRA" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NUpload), {
-                      multiple: "",
-                      "directory-dnd": "",
-                      action: `${unref(serverUrl)}/api/models/upload-model?type=lora`,
-                      max: 5,
-                      accept: ".ckpt,.safetensors",
-                      style: { "border-bottom": "1px solid rgb(66, 66, 71)", "padding-bottom": "12px" }
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
-                          default: withCtx(() => [
-                            createBaseVNode("div", _hoisted_4, [
-                              createVNode(unref(NIcon), {
-                                size: "48",
-                                depth: 3
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(unref(CloudUpload))
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            createVNode(unref(NText), { style: { "font-size": "24px" } }, {
+                          }, 1024)
+                        ]),
+                        _: 2
+                      }, 1032, ["action"])
+                    ]),
+                    _: 2
+                  }, 1032, ["title"])
+                ]),
+                _: 2
+              }, 1024);
+            }), 256))
+          ]),
+          _: 1
+        }),
+        createVNode(unref(NDivider)),
+        createVNode(unref(NGrid), {
+          style: { "margin-top": "12px" },
+          cols: "1 900:2 1100:3",
+          "x-gap": "12",
+          "y-gap": "12"
+        }, {
+          default: withCtx(() => [
+            (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(unref(Backends)).filter(
+              (item) => isNaN(Number(item))
+            ), (modelType) => {
+              return openBlock(), createBlock(unref(NGi), null, {
+                default: withCtx(() => [
+                  createVNode(unref(NCard), {
+                    title: modelType,
+                    style: { "width": "100%" }
+                  }, {
+                    default: withCtx(() => [
+                      (openBlock(true), createElementBlock(Fragment, null, renderList(filteredModels.value.filter(
+                        (item) => item.backend === modelType
+                      ), (model) => {
+                        return openBlock(), createElementBlock("div", {
+                          style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
+                          key: model.path
+                        }, [
+                          createBaseVNode("p", null, toDisplayString(model.name), 1),
+                          createBaseVNode("div", _hoisted_3, [
+                            createVNode(unref(NDropdown), {
+                              options: createOptions(model.path),
+                              placement: "right",
+                              onSelect: (key) => handleAction(key, modelTypes[modelType], model)
+                            }, {
                               default: withCtx(() => [
-                                createTextVNode(" LoRA ")
+                                createVNode(unref(NButton), {
+                                  "render-icon": renderIcon(unref(Settings))
+                                }, null, 8, ["render-icon"])
                               ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NText), { style: { "font-size": "16px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Click or drag a model to this area to upload it to the server ")
-                              ]),
-                              _: 1
-                            })
-                          ]),
-                          _: 1
-                        })
-                      ]),
-                      _: 1
-                    }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(loraModels.value, (model) => {
-                      return openBlock(), createElementBlock("div", {
-                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                        key: model.path
-                      }, [
-                        createBaseVNode("p", null, toDisplayString(model.name), 1),
-                        createBaseVNode("div", _hoisted_5, [
-                          createVNode(unref(NDropdown), {
-                            options: createLoraOptions(model.path),
-                            placement: "right",
-                            onSelect: handleLoraModelAction
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(unref(NButton), {
-                                "render-icon": renderIcon(unref(Settings))
-                              }, null, 8, ["render-icon"])
-                            ]),
-                            _: 2
-                          }, 1032, ["options"])
-                        ])
-                      ]);
-                    }), 128))
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            }),
-            createVNode(unref(NGi), null, {
-              default: withCtx(() => [
-                createVNode(unref(NCard), { title: "Textual Inversion" }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NUpload), {
-                      multiple: "",
-                      "directory-dnd": "",
-                      action: `${unref(serverUrl)}/api/models/upload-model?type=textual-inversion`,
-                      max: 5,
-                      accept: ".pt,.safetensors",
-                      style: { "border-bottom": "1px solid rgb(66, 66, 71)", "padding-bottom": "12px" }
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NUploadDragger), { style: { "display": "flex", "flex-direction": "column", "align-items": "center", "justify-content": "center" } }, {
-                          default: withCtx(() => [
-                            createBaseVNode("div", _hoisted_6, [
-                              createVNode(unref(NIcon), {
-                                size: "48",
-                                depth: 3
-                              }, {
-                                default: withCtx(() => [
-                                  createVNode(unref(CloudUpload))
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            createVNode(unref(NText), { style: { "font-size": "24px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Textual Inversion ")
-                              ]),
-                              _: 1
-                            }),
-                            createVNode(unref(NText), { style: { "font-size": "16px" } }, {
-                              default: withCtx(() => [
-                                createTextVNode(" Click or drag a model to this area to upload it to the server ")
-                              ]),
-                              _: 1
-                            })
-                          ]),
-                          _: 1
-                        })
-                      ]),
-                      _: 1
-                    }, 8, ["action"]),
-                    (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (model) => {
-                      return openBlock(), createElementBlock("div", {
-                        style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                        key: model.path
-                      }, [
-                        createBaseVNode("p", null, toDisplayString(model.name), 1),
-                        createBaseVNode("div", _hoisted_7, [
-                          createVNode(unref(NDropdown), {
-                            options: createTextualInversionOptions(model.path),
-                            placement: "right",
-                            onSelect: handleTextualInversionModelAction
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(unref(NButton), {
-                                "render-icon": renderIcon(unref(Settings))
-                              }, null, 8, ["render-icon"])
-                            ]),
-                            _: 2
-                          }, 1032, ["options"])
-                        ])
-                      ]);
-                    }), 128))
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            })
+                              _: 2
+                            }, 1032, ["options", "onSelect"])
+                          ])
+                        ]);
+                      }), 128))
+                    ]),
+                    _: 2
+                  }, 1032, ["title"])
+                ]),
+                _: 2
+              }, 1024);
+            }), 256))
           ]),
           _: 1
         })

@@ -44,15 +44,15 @@ def autocast(
 
     if dtype == torch.float32 or disable:
         return contextlib.nullcontext()
-    if config.api.device_type == "directml":
+    if "privateuseone" in config.api.device:
         if not _initialized_directml:
             for p in _patch_list:
                 _patch(p)
             _initialized_directml = True
         return torch.dml.autocast(dtype=dtype, disable=False)  # type: ignore
-    if config.api.device_type == "intel":
+    if "xpu" in config.api.device:
         return torch.xpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
-    if config.api.device_type == "cpu":
+    if "cpu" in config.api.device:
         return torch.cpu.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
     return torch.cuda.amp.autocast(enabled=True, dtype=dtype, cache_enabled=False)  # type: ignore
 
@@ -62,11 +62,11 @@ def without_autocast(disable: bool = False):
 
     if disable:
         return contextlib.nullcontext()
-    if config.api.device_type == "directml":
+    if "privateuseone" in config.api.device:
         return torch.dml.autocast(disable=True)  # type: ignore
-    if config.api.device_type == "intel":
+    if "xpu" in config.api.device:
         return torch.xpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
-    if config.api.device_type == "cpu":
+    if "cpu" in config.api.device:
         return torch.cpu.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
     return torch.cuda.amp.autocast(enabled=False, cache_enabled=False)  # type: ignore
 

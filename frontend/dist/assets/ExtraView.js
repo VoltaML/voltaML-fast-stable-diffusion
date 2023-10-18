@@ -1,13 +1,18 @@
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
+<<<<<<< HEAD
 import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, q as NTooltip, m as createTextVNode, y as NGrid, L as upscalerOptions, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, x as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { N as NSlider } from "./Slider.js";
+=======
+import { d as defineComponent, v as useState, u as useSettings, x as useMessage, c as computed, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, A as NGi, N as NCard, B as NSpace, b as createBaseVNode, p as NSelect, n as NTooltip, i as createTextVNode, H as NGrid, P as upscalerOptions, z as serverUrl, J as pushScopeId, K as popScopeId, _ as _export_sfc, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
+import { N as NSlider } from "./Switch.js";
+>>>>>>> origin/experimental
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-2a772a2b"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-1e141a2e"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
@@ -21,10 +26,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "Upscale",
   setup(__props) {
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const messageHandler = useMessage();
     const imageSelectCallback = (base64Image) => {
-      conf.data.settings.upscale.image = base64Image;
+      settings.data.settings.upscale.image = base64Image;
     };
     const upscalerOptionsFull = computed(() => {
       const localModels = global.state.models.filter(
@@ -44,13 +49,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         },
         body: JSON.stringify({
           data: {
-            image: conf.data.settings.upscale.image,
-            upscale_factor: conf.data.settings.upscale.upscale_factor,
-            model: conf.data.settings.upscale.model,
-            tile_size: conf.data.settings.upscale.tile_size,
-            tile_padding: conf.data.settings.upscale.tile_padding
+            image: settings.data.settings.upscale.image,
+            upscale_factor: settings.data.settings.upscale.upscale_factor,
+            model: settings.data.settings.upscale.model,
+            tile_size: settings.data.settings.upscale.tile_size,
+            tile_padding: settings.data.settings.upscale.tile_padding
           },
-          model: conf.data.settings.upscale.model
+          model: settings.data.settings.upscale.model
         })
       }).then((res) => {
         global.state.generating = false;
@@ -79,9 +84,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(ImageUpload, {
                   callback: imageSelectCallback,
-                  preview: unref(conf).data.settings.upscale.image,
+                  preview: unref(settings).data.settings.upscale.image,
                   style: { "margin-bottom": "12px" },
-                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.upscale.image = $event)
+                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.upscale.image = $event)
                 }, null, 8, ["preview"]),
                 createVNode(unref(NCard), {
                   title: "Settings",
@@ -96,8 +101,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                         createBaseVNode("div", _hoisted_2, [
                           _hoisted_3,
                           createVNode(unref(NSelect), {
-                            value: unref(conf).data.settings.upscale.model,
-                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.upscale.model = $event),
+                            value: unref(settings).data.settings.upscale.model,
+                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.upscale.model = $event),
                             style: { "margin-right": "12px" },
                             filterable: "",
                             tag: "",
@@ -115,16 +120,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.upscale.upscale_factor,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.upscale.upscale_factor = $event),
+                            value: unref(settings).data.settings.upscale.upscale_factor,
+                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.upscale.upscale_factor = $event),
                             min: 1,
                             max: 4,
                             step: 0.1,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.upscale.upscale_factor,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.upscale.upscale_factor = $event),
+                            value: unref(settings).data.settings.upscale.upscale_factor,
+                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.upscale.upscale_factor = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 1,
@@ -143,15 +148,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.upscale.tile_size,
-                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(conf).data.settings.upscale.tile_size = $event),
+                            value: unref(settings).data.settings.upscale.tile_size,
+                            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.upscale.tile_size = $event),
                             min: 32,
                             max: 2048,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.upscale.tile_size,
-                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(conf).data.settings.upscale.tile_size = $event),
+                            value: unref(settings).data.settings.upscale.tile_size,
+                            "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).data.settings.upscale.tile_size = $event),
                             size: "small",
                             min: 32,
                             max: 2048,
@@ -169,13 +174,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.upscale.tile_padding,
-                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(conf).data.settings.upscale.tile_padding = $event),
+                            value: unref(settings).data.settings.upscale.tile_padding,
+                            "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).data.settings.upscale.tile_padding = $event),
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.upscale.tile_padding,
-                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(conf).data.settings.upscale.tile_padding = $event),
+                            value: unref(settings).data.settings.upscale.tile_padding,
+                            "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).data.settings.upscale.tile_padding = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
@@ -210,8 +215,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Upscale_vue_vue_type_style_index_0_scoped_2a772a2b_lang = "";
-const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-2a772a2b"]]);
+const Upscale_vue_vue_type_style_index_0_scoped_1e141a2e_lang = "";
+const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-1e141a2e"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ExtraView",
   setup(__props) {
@@ -223,7 +228,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(state).state.extra.tab = $event)
       }, {
         default: withCtx(() => [
-          createVNode(unref(NTabPane), { name: "Upscale" }, {
+          createVNode(unref(NTabPane), {
+            tab: "Upscale",
+            name: "upscale"
+          }, {
             default: withCtx(() => [
               createVNode(Upscale)
             ]),

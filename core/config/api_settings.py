@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Literal, Union
+from typing import Dict, List, Literal, Union
 
 import torch
 
@@ -10,6 +10,8 @@ class APIConfig:
 
     # Autoload
     autoloaded_textual_inversions: List[str] = field(default_factory=list)
+    autoloaded_models: List[str] = field(default_factory=list)
+    autoloaded_vae: Dict[str, str] = field(default_factory=dict)
 
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
@@ -20,21 +22,17 @@ class APIConfig:
     tomesd_ratio: float = 0.25  # had to tone this down, 0.4 is too big of a context loss even on short prompts
     tomesd_downsample_layers: Literal[1, 2, 4, 8] = 1
 
-    image_preview_delay: float = 2.0
-
     # General optimizations
     autocast: bool = False
     attention_processor: Literal[
-        "xformers", "sdpa", "cross-attention", "subquadratic", "flashattention", "multihead"
+        "xformers", "sdpa", "cross-attention", "subquadratic", "multihead"
     ] = "sdpa"
     subquadratic_size: int = 512
     attention_slicing: Union[int, Literal["auto", "disabled"]] = "disabled"
     channels_last: bool = True
-    vae_slicing: bool = True
-    vae_tiling: bool = False
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
-    offload: bool = False
+    offload: Literal["module", "model", "disabled"] = "disabled"
     data_type: Literal["float32", "float16", "bfloat16"] = "float16"
 
     # CUDA specific optimizations
@@ -43,14 +41,10 @@ class APIConfig:
     deterministic_generation: bool = False
 
     # Device settings
-    device_id: int = 0
-    device_type: Literal["cpu", "cuda", "mps", "directml", "intel", "vulkan"] = "cuda"
+    device: str = "cuda:0"
 
     # Critical
     enable_shutdown: bool = True
-
-    # VAE
-    upcast_vae: bool = False
 
     # CLIP
     clip_skip: int = 1
@@ -78,6 +72,23 @@ class APIConfig:
         "max-autotune",
     ] = "reduce-overhead"
 
+    # Hypertile
+    hypertile: bool = False
+    hypertile_unet_chunk: int = 256
+
+    # K_Diffusion
+    sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
+    kdiffusers_quantization: bool = True  # improves sampling quality
+
+    # "philox" is what a "cuda" generator would be, except, it's on cpu
+    generator: Literal["device", "cpu", "philox"] = "device"
+
+    # VAE
+    live_preview_method: Literal["disabled", "approximation", "taesd"] = "approximation"
+    live_preview_delay: float = 2.0
+    vae_slicing: bool = True
+    vae_tiling: bool = False
+
     @property
     def dtype(self):
         "Return selected data type"
@@ -88,23 +99,9 @@ class APIConfig:
         return torch.float32
 
     @property
-    def device(self):
-        "Return the device"
+    def overwrite_generator(self) -> bool:
+        "Whether the generator needs to be overwritten with 'cpu.'"
 
-        if self.device_type == "intel":
-            from core.inference.functions import is_ipex_available
-
-            return torch.device("xpu" if is_ipex_available() else "cpu")
-
-        if self.device_type in ["cpu", "mps"]:
-            return torch.device(self.device_type)
-
-        if self.device_type in ["vulkan", "cuda"]:
-            return torch.device(f"{self.device_type}:{self.device_id}")
-
-        if self.device_type == "directml":
-            import torch_directml  # pylint: disable=import-error
-
-            return torch_directml.device()
-        else:
-            raise ValueError(f"Device type {self.device_type} not supported")
+        return any(
+            map(lambda x: x in self.device, ["mps", "directml", "vulkan", "intel"])
+        )

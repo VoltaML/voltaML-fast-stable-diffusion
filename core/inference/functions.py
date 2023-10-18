@@ -15,7 +15,17 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
 )
-from diffusers.utils.constants import DIFFUSERS_CACHE, HUGGINGFACE_CO_RESOLVE_ENDPOINT
+from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
+from diffusers.utils.constants import (
+    CONFIG_NAME,
+    DIFFUSERS_CACHE,
+    HUGGINGFACE_CO_RESOLVE_ENDPOINT,
+    ONNX_WEIGHTS_NAME,
+    WEIGHTS_NAME,
+)
+from diffusers.utils.hub_utils import HF_HUB_OFFLINE
+from huggingface_hub import model_info  # type: ignore
+from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download
 from huggingface_hub.hf_api import ModelInfo
 from huggingface_hub.utils._errors import (
@@ -42,7 +52,7 @@ torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
     try:
-        import aitemplate
+        import aitemplate  # noqa: F401
 
         return True
     except ImportError:
@@ -52,7 +62,7 @@ def is_aitemplate_available():
 def is_ipex_available():
     "Checks whether Intel Pytorch EXtensions are available/installed."
     try:
-        import intel_extension_for_pytorch  # pylint: disable=unused-import
+        import intel_extension_for_pytorch  # noqa: F401
 
         return True
     except ImportError:
@@ -62,7 +72,7 @@ def is_ipex_available():
 def is_onnxconverter_available():
     "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
     try:
-        import onnxconverter_common  # pylint: disable=unused-import
+        import onnxconverter_common  # noqa: F401
 
         return True
     except ImportError:
@@ -72,11 +82,8 @@ def is_onnxconverter_available():
 def is_onnx_available():
     "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
     try:
-        import onnx  # pylint: disable=unused-import
-        from onnxruntime.quantization import (  # pylint: disable=unused-import
-            QuantType,
-            quantize_dynamic,
-        )
+        import onnx  # noqa: F401
+        from onnxruntime.quantization import QuantType, quantize_dynamic  # noqa: F401
 
         return True
     except ImportError:
@@ -86,7 +93,7 @@ def is_onnx_available():
 def is_onnxscript_available():
     "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
     try:
-        import onnxscript  # pylint: disable=unused-import
+        import onnxscript  # noqa: F401
 
         return True
     except ImportError:
@@ -96,7 +103,7 @@ def is_onnxscript_available():
 def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
-        from onnxsim import simplify  # pylint: disable=import-error,unused-import
+        from onnxsim import simplify  # noqa: F401
 
         return True
     except ImportError:
@@ -267,6 +274,64 @@ def load_config(
     return config_dict
 
 
+def download_model(
+    pretrained_model_name: str,
+    cache_dir: Path = Path(DIFFUSERS_CACHE),
+    resume_download: bool = True,
+    revision: Optional[str] = None,
+    local_files_only: bool = HF_HUB_OFFLINE,
+    force_download: bool = False,
+):
+    "Download a model from the Hugging Face Hub"
+
+    if not os.path.isdir(pretrained_model_name):
+        config_dict = load_config(
+            pretrained_model_name_or_path=pretrained_model_name,
+            cache_dir=cache_dir,
+            resume_download=resume_download,
+            force_download=force_download,
+            local_files_only=local_files_only,
+            revision=revision,
+        )
+        # make sure we only download sub-folders and `diffusers` filenames
+        folder_names = [k for k in config_dict.keys() if not k.startswith("_")]  # type: ignore
+        allow_patterns = [os.path.join(k, "*") for k in folder_names]
+        allow_patterns += [
+            WEIGHTS_NAME,
+            SCHEDULER_CONFIG_NAME,
+            CONFIG_NAME,
+            ONNX_WEIGHTS_NAME,
+            config_name,
+        ]
+
+        # # make sure we don't download flax weights
+        ignore_patterns = ["*.msgpack"]
+
+        if not local_files_only:
+            info = model_info(
+                repo_id=pretrained_model_name,
+                revision=revision,
+            )
+            if is_safetensors_compatible(info):
+                ignore_patterns.append("*.bin")
+            else:
+                # as a safety mechanism we also don't download safetensors if
+                # not all safetensors files are there
+                ignore_patterns.append("*.safetensors")
+        else:
+            ignore_patterns.append("*.safetensors")
+
+        snapshot_download(
+            repo_id=pretrained_model_name,
+            cache_dir=cache_dir,
+            resume_download=resume_download,
+            local_files_only=local_files_only,
+            revision=revision,
+            allow_patterns=allow_patterns,
+            ignore_patterns=ignore_patterns,
+        )
+
+
 def is_safetensors_compatible(info: ModelInfo) -> bool:
     "Check if the model is compatible with safetensors"
 
@@ -318,7 +383,8 @@ def load_pytorch_pipeline(
         # cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                str(get_full_model_path(model_id_or_path)),
+                pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=True,
                 load_safety_checker=False,
@@ -326,7 +392,8 @@ def load_pytorch_pipeline(
             )
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
+                str(get_full_model_path(model_id_or_path)),
+                pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=False,
                 load_safety_checker=False,
@@ -337,7 +404,6 @@ def load_pytorch_pipeline(
             pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
             torch_dtype=config.api.dtype,
             safety_checker=None,
-            requires_safety_checker=False,
             feature_extractor=None,
             low_cpu_mem_usage=True,
         )

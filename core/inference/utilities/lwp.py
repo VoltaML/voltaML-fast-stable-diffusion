@@ -7,6 +7,8 @@ import torch
 from diffusers import StableDiffusionPipeline, DiffusionPipeline
 from transformers import CLIPTextModel, CLIPTokenizer
 
+from core.utils import download_file
+
 from ...config import config
 from ...files import get_full_model_path
 
@@ -39,7 +41,7 @@ class Placebo:
 
 
 special_parser = re.compile(
-    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>"
+    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>|\<(lora|ti):(http[^\(\)\<\>\[\]]+\/[^:]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>"
 )
 
 
@@ -58,11 +60,23 @@ def parse_prompt_special(
     load_map = {}
 
     def replace(match):
-        type_: str = match.group(1)  # type: ignore
+        type_: str = match.group(4) or match.group(1)
         name = match.group(2)
-        strength = match.group(3)
+        strength = match.group(6) or match.group(3)
+        url: str = match.group(5)
 
-        load_map[type_] = load_map.get(type_, list())
+        if url:
+            filename = url.split("/")[-1]
+            file = Path("data/lora") / filename
+            name = file.stem
+
+            # Check if file exists
+            if not file.exists():
+                name = download_file(url, Path("data/lora"), add_filename=True).stem
+            else:
+                logger.debug(f"File {file} already cached")
+
+        load_map[type_] = load_map.get(type_, [])
         if type_ == "ti":
             load_map[type_].append(name)
             return f"({name}:{strength if strength else '1.0'})"
@@ -245,6 +259,9 @@ def get_unweighted_text_embeddings(
     When the length of tokens is a multiple of the capacity of the text encoder,
     it should be split into chunks and sent to the text encoder individually.
     """
+
+    # TODO: when SDXL releases, refactor CLIP_stop_at_last_layer here.
+
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
 
     if not isinstance(pipe, Placebo):

@@ -37,7 +37,7 @@
         style="margin-bottom: 4px"
       />
 
-      <SendOutputTo :output="props.currentImage" :card="false" />
+      <SendOutputTo :output="props.currentImage" :card="false" :data="data" />
     </div>
   </NCard>
 </template>
@@ -57,6 +57,11 @@ const props = defineProps({
     type: Array<String>,
     required: false,
     default: () => [],
+  },
+  data: {
+    type: Object,
+    required: false,
+    default: () => ({}),
   },
 });
 

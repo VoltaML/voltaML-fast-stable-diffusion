@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 def _xf(pipe):
     try:
-        if is_xformers_available() and config.api.device_type != "directml":
+        if is_xformers_available() and config.api.device != "directml":
             return False
         pipe.enable_xformers_memory_efficient_attention()
         return True

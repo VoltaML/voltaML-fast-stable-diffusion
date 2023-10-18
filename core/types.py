@@ -1,5 +1,4 @@
 from dataclasses import dataclass, field
-from enum import Enum
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 from uuid import uuid4
 
@@ -15,7 +14,8 @@ from diffusers import (
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
-InferenceBackend = Literal["PyTorch", "SDXL", "AITemplate", "ONNX"]
+InferenceBackend = Literal["PyTorch", "AITemplate", "SDXL", "ONNX"]
+SigmaScheduler = Literal["automatic", "karras", "exponential", "polyexponential", "vp"]
 Backend = Literal[
     "PyTorch",
     "SDXL",
@@ -32,6 +32,7 @@ PyTorchModelBase = Literal[
     "SD1.x", "SD2.x", "SDXL", "Kandinsky 2.1", "Kandinsky 2.2", "Wuerstchen", "IF"
 ]
 PyTorchModelStage = Literal["text_encoding", "first_stage", "last_stage"]
+ImageFormats = Literal["png", "jpeg", "webp"]
 
 
 @dataclass
@@ -43,21 +44,6 @@ class Job:
     websocket_id: Union[str, None] = field(default=None)
     save_image: Literal[True, False, "r2"] = True
     flags: Dict[str, Dict] = field(default_factory=dict)
-
-
-class SupportedModel(Enum):
-    "Enum of models supported by the API"
-
-    AnythingV3 = "Linaqruf/anything-v3.0"
-    StableDiffusion2_1 = "stabilityai/stable-diffusion-2-1"
-    OpenJourney = "prompthero/openjourney"
-    DreamlikeDiffusion = "dreamlike-art/dreamlike-diffusion-1.0"
-    DreamlikePhotoreal = "dreamlike-art/dreamlike-photoreal-2.0"
-    Protogen5_8_Anime = "darkstorm2150/Protogen_x5.8_Official_Release"
-    SynthWave = "ItsJayQz/SynthwavePunk-v2"
-    InkpunkDiffusion = "Envvi/Inkpunk-Diffusion"
-    Protogen5_3_Realism = "darkstorm2150/Protogen_v5.3_Official_Release"
-    AnythingV4 = "andite/anything-v4.0"
 
 
 @dataclass
@@ -75,7 +61,7 @@ class Txt2imgData:
     "Dataclass for the data of a txt2img request"
 
     prompt: str
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -83,10 +69,11 @@ class Txt2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaScheduler = field(default="automatic")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
+    sampler_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -95,7 +82,7 @@ class Img2imgData:
 
     prompt: str
     image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -103,11 +90,12 @@ class Img2imgData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaScheduler = field(default="automatic")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
     strength: float = field(default=0.6)
+    sampler_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -117,7 +105,7 @@ class InpaintData:
     prompt: str
     image: Union[bytes, str]
     mask_image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
     width: int = field(default=512)
@@ -125,10 +113,11 @@ class InpaintData:
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
     self_attention_scale: float = field(default=0.0)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaScheduler = field(default="automatic")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
+    sampler_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -137,7 +126,7 @@ class ControlNetData:
 
     prompt: str
     image: Union[bytes, str]
-    scheduler: KarrasDiffusionSchedulers
+    scheduler: Union[str, KarrasDiffusionSchedulers]
     controlnet: str
     id: str = field(default_factory=lambda: uuid4().hex)
     negative_prompt: str = field(default="")
@@ -145,12 +134,13 @@ class ControlNetData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
-    use_karras_sigmas: bool = field(default=False)
+    sigmas: SigmaScheduler = field(default="automatic")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
     controlnet_conditioning_scale: float = field(default=1.0)
     detection_resolution: int = field(default=512)
+    sampler_settings: Dict = field(default_factory=dict)
 
     canny_low_threshold: int = field(default=100)
     canny_high_threshold: int = field(default=200)
@@ -332,7 +322,9 @@ class DeleteModelRequest:
     "Dataclass for requesting a deletion of a model"
 
     model_path: str
-    model_type: Literal["pytorch", "lora", "textual-inversion", "aitemplate"]
+    model_type: Literal[
+        "models", "lora", "textual-inversion", "lycoris", "vae", "aitemplate"
+    ]
 
 
 @dataclass
@@ -340,7 +332,9 @@ class Capabilities:
     "Dataclass for capabilities of a GPU"
 
     # ["cpu", "cuda", "directml", "mps", "xpu", "vulkan"]
-    supported_backends: List[str] = field(default_factory=lambda: ["cpu"])
+    supported_backends: List[List[str]] = field(
+        default_factory=lambda: [["CPU", "cpu"]]
+    )
     # ["float16", "float32", "bfloat16"]
     supported_precisions_gpu: List[str] = field(default_factory=lambda: ["float32"])
     # ["float16", "float32", "bfloat16"]
@@ -362,3 +356,5 @@ class Capabilities:
 
     # Ampere+ (>=8.6)
     has_tensorfloat: bool = False
+
+    hypertile_available: bool = False

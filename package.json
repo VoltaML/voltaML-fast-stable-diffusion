@@ -1,15 +1,16 @@
 {
   "name": "voltaml-fast-stable-diffusion",
-  "version": "0.0.3",
+  "version": "0.4.0-alpha.1",
   "description": "Fast Stable Diffusion",
-  "main": "index.js",
   "license": "GPL-3.0",
   "private": false,
   "devDependencies": {
-    "vitepress": "^1.0.0-alpha.36",
+    "concurrently": "^8.2.1",
+    "vitepress": "^1.0.0-rc.17",
     "vue": "^3.2.45"
   },
   "scripts": {
+    "dev": "concurrently -n \"API,Frontend\" -c \"bgBlue,bgGreen\" --kill-others \"python main.py\" \"cd frontend && yarn dev\"",
     "docs:dev": "vitepress dev docs",
     "docs:build": "vitepress build docs",
     "docs:preview": "vitepress preview docs",
@@ -28,6 +29,7 @@
     "docker:build": "docker build -t volta -f ./dockerfile . && docker tag volta:latest stax124/volta:experimental && docker rmi $(docker images --filter \"dangling=true\" -q --no-trunc)",
     "docker:clean": "docker rm $(docker ps -aq) -f && docker rmi $(docker images --filter \"dangling=true\" -q --no-trunc)",
     "docker:test-compose": "docker compose -f test.docker-compose.yml up --force-recreate --remove-orphans",
+    "docker:test-compose-no-mount": "docker compose -f test-no-mount.docker-compose.yml up --force-recreate --remove-orphans",
     "docker:run": "docker compose run --service-ports --rm voltaml",
     "docker:push": "docker push stax124/volta:experimental"
   }

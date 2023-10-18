@@ -1,17 +1,8 @@
-# Download
+# Model Downloader
 
-This page will teach you how to download models with the power of HuggingFace🤗.
+## Huggingface
 
-## Upsides
-
-- Models can be easily searched for and downloaded without having to copy over huge model files to and from Docker
-- HuggingFace uses modular structure, so some components of the model can be swapped out for other ones
-
-## Drawbacks
-
-- Only models from HuggingFace are supported (no CivitAI yet)
-
-## How to use
+### How to use
 
 Select something from the curated models (will be updated soon) and click the `Download` button.
 
@@ -22,3 +13,21 @@ Select something from the curated models (will be updated soon) and click the `D
 3. Paste the model name into the `Model name` input
 4. Click `Download` button
 5. See the terminal output for progress feedback
+
+## CivitAI
+
+### How to use
+
+![CivitAI](../static/frontend/model-downloader/civitai-landing.webp)
+
+1. Click on the `Model` tab
+2. Click on the `CivitAI` section
+3. Select a model you want to download (optionally, you can filter the models using the dropdowns and filter input)
+
+![CivitAI](../static/frontend/model-downloader/civitai-popup.webp)
+
+1. Select the version of the model you want to download
+2. Feel free to check out provided images (drag to switch between them)
+3. Select correct format and click `Download` button
+
+Model should get downloaded, but might require clicking on Refresh button in the model loader. You can check the terminal output for progress feedback.

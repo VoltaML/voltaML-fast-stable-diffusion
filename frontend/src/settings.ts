@@ -15,13 +15,21 @@ export enum Sampler {
   KDPM2AncestralDiscrete = 11,
   DEISMultistep = 12,
   UniPCMultistep = 13,
+  DPMSolverSDEScheduler = 14,
 }
 
+export type SigmaType =
+  | "automatic"
+  | "karras"
+  | "exponential"
+  | "polyexponential"
+  | "vp";
+
 export interface IQuantDict {
-  vae_decoder: "no-quant" | "uint8" | "int8";
-  vae_encoder: "no-quant" | "uint8" | "int8";
-  unet: "no-quant" | "uint8" | "int8";
-  text_encoder: "no-quant" | "uint8" | "int8";
+  vae_decoder: boolean | null;
+  vae_encoder: boolean | null;
+  unet: boolean | null;
+  text_encoder: boolean | null;
 }
 
 export interface ISettings {
@@ -60,12 +68,12 @@ export interface ISettings {
     height: number;
     seed: number;
     cfg_scale: number;
-    sampler: Sampler;
+    sampler: Sampler | string;
     steps: number;
     batch_count: number;
     batch_size: number;
     self_attention_scale: number;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   img2img: {
     prompt: string;
@@ -74,14 +82,14 @@ export interface ISettings {
     height: number;
     seed: number;
     cfg_scale: number;
-    sampler: Sampler;
+    sampler: Sampler | string;
     steps: number;
     batch_count: number;
     batch_size: number;
     denoising_strength: number;
     image: string;
     self_attention_scale: number;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   inpainting: {
     prompt: string;
@@ -93,11 +101,11 @@ export interface ISettings {
     steps: number;
     batch_count: number;
     batch_size: number;
-    sampler: Sampler;
+    sampler: Sampler | string;
     image: string;
     mask_image: string;
     self_attention_scale: number;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   controlnet: {
     prompt: string;
@@ -109,7 +117,7 @@ export interface ISettings {
     steps: number;
     batch_count: number;
     batch_size: number;
-    sampler: Sampler;
+    sampler: Sampler | string;
     controlnet: ControlNetType;
     controlnet_conditioning_scale: number;
     detection_resolution: number;
@@ -117,7 +125,7 @@ export interface ISettings {
     is_preprocessed: boolean;
     save_preprocessed: boolean;
     return_preprocessed: boolean;
-    use_karras_sigmas: boolean;
+    sigmas: SigmaType;
   };
   upscale: {
     image: string;
@@ -160,10 +168,15 @@ export interface ISettings {
     vae_slicing: boolean;
     vae_tiling: boolean;
     trace_model: boolean;
+<<<<<<< HEAD
     offload: boolean;
     image_preview_delay: number;
     device_id: number;
     device_type: "cpu" | "cuda" | "mps" | "directml";
+=======
+    offload: "module" | "model" | "disabled";
+    device: string;
+>>>>>>> origin/experimental
     data_type: "float16" | "float32" | "bfloat16";
     deterministic_generation: boolean;
     reduced_precision: boolean;
@@ -173,6 +186,8 @@ export interface ISettings {
     huggingface_style_parsing: boolean;
 
     autoloaded_textual_inversions: string[];
+    autoloaded_models: string[];
+    autoloaded_vae: Record<string, string>;
 
     save_path_template: string;
     image_extension: "webp" | "png" | "jpeg";
@@ -185,6 +200,16 @@ export interface ISettings {
     torch_compile_dynamic: boolean;
     torch_compile_backend: string;
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
+
+    hypertile: boolean;
+    hypertile_unet_chunk: number;
+
+    sgm_noise_multiplier: boolean;
+    kdiffusers_quantization: boolean;
+
+    generator: "device" | "cpu" | "philox";
+    live_preview_method: "disabled" | "approximation" | "taesd";
+    live_preview_delay: number;
   };
   aitemplate: {
     num_threads: number;
@@ -204,7 +229,9 @@ export interface ISettings {
     enable_theme_editor: boolean;
     image_browser_columns: number;
     on_change_timer: number;
+    nsfw_ok_threshold: number;
   };
+  sampler_config: Record<string, Record<string, any>>;
 }
 
 export const defaultSettings: ISettings = {
@@ -242,7 +269,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     negative_prompt: "",
     self_attention_scale: 0,
-    use_karras_sigmas: false,
+    sigmas: "automatic",
   },
   img2img: {
     width: 512,
@@ -258,7 +285,7 @@ export const defaultSettings: ISettings = {
     denoising_strength: 0.6,
     image: "",
     self_attention_scale: 0,
-    use_karras_sigmas: false,
+    sigmas: "automatic",
   },
   inpainting: {
     prompt: "",
@@ -274,7 +301,7 @@ export const defaultSettings: ISettings = {
     batch_size: 1,
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
-    use_karras_sigmas: false,
+    sigmas: "automatic",
   },
   controlnet: {
     prompt: "",
@@ -294,7 +321,7 @@ export const defaultSettings: ISettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
-    use_karras_sigmas: false,
+    sigmas: "automatic",
   },
   upscale: {
     image: "",
@@ -311,7 +338,6 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
-    image_preview_delay: 2.0,
 
     clip_skip: 1,
     clip_quantization: "full",
@@ -327,8 +353,7 @@ export const defaultSettings: ISettings = {
     cudnn_benchmark: false,
     offload: false,
 
-    device_id: 0,
-    device_type: "cuda",
+    device: "cuda:0",
     data_type: "float16",
 
     use_tomesd: true,
@@ -341,6 +366,8 @@ export const defaultSettings: ISettings = {
 
     huggingface_style_parsing: false,
     autoloaded_textual_inversions: [],
+    autoloaded_models: [],
+    autoloaded_vae: {},
 
     save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
     image_extension: "png",
@@ -353,16 +380,26 @@ export const defaultSettings: ISettings = {
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
+
+    hypertile: false,
+    hypertile_unet_chunk: 256,
+
+    sgm_noise_multiplier: false,
+    kdiffusers_quantization: true,
+
+    generator: "device",
+    live_preview_method: "approximation",
+    live_preview_delay: 2.0,
   },
   aitemplate: {
     num_threads: 8,
   },
   onnx: {
     quant_dict: {
-      text_encoder: "no-quant",
-      unet: "no-quant",
-      vae_decoder: "no-quant",
-      vae_encoder: "no-quant",
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null,
     },
     convert_to_fp16: true,
     simplify_unet: false,
@@ -377,7 +414,9 @@ export const defaultSettings: ISettings = {
     enable_theme_editor: false,
     image_browser_columns: 5,
     on_change_timer: 2000,
+    nsfw_ok_threshold: 0,
   },
+  sampler_config: {},
 };
 
 let rSettings: ISettings = JSON.parse(JSON.stringify(defaultSettings));

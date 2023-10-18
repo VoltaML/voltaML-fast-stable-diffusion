@@ -7,12 +7,20 @@
   z-index: 2;
 }
 
+<<<<<<< HEAD
 .progress-container[data-v-4f1de4f1] {
+=======
+.progress-container[data-v-4aa96a77] {
+>>>>>>> origin/experimental
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
+<<<<<<< HEAD
 .top-bar[data-v-4f1de4f1] {
+=======
+.top-bar[data-v-4aa96a77] {
+>>>>>>> origin/experimental
   display: inline-flex;
   align-items: center;
   border-bottom: #505050 1px solid;
@@ -23,15 +31,21 @@
   position: fixed;
   top: 0;
   z-index: 1;
+<<<<<<< HEAD
   background-color: var(--6a9a0e00);
 }
 .logo[data-v-4f1de4f1] {
+=======
+  background-color: var(--37a4cfa2);
+}
+.logo[data-v-4aa96a77] {
+>>>>>>> origin/experimental
   margin-right: 16px;
   margin-left: 16px;
 }
 
 .main {
-  background-color: var(--16223ad6);
+  background-color: var(--da5fb46e);
 }
 .autocomplete {
   position: relative;
@@ -40,18 +54,18 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--1fedac06);
-  border-radius: var(--ba9033c6);
+  background-color: var(--ce1f7da0);
+  border-radius: var(--4b9efd50);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--ba9033c6);
+  border-radius: var(--4b9efd50);
 }
 .autocomplete-active {
-  background-color: var(--3119c2a0) !important;
-  color: var(--aca37748) !important;
+  background-color: var(--4bfe4c5a) !important;
+  color: var(--0fa4b509) !important;
 }
 body {
   min-height: 100vh;

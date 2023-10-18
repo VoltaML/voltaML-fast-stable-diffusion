@@ -7,13 +7,14 @@ import sys
 import threading
 import warnings
 from argparse import ArgumentParser
+from datetime import datetime, timedelta
 from pathlib import Path
 
 from core.install_requirements import (  # pylint: disable=wrong-import-position
     commit_hash,
     create_environment,
     in_virtualenv,
-    install_pytorch,
+    install_deps,
     is_installed,
     version_check,
 )
@@ -80,6 +81,7 @@ logger: logging.Logger = logging.getLogger()
 logging.getLogger("PIL.PngImagePlugin").setLevel(logging.INFO)
 logging.getLogger("urllib3.connectionpool").setLevel(logging.WARNING)
 logging.getLogger("PIL.Image").setLevel(logging.INFO)
+logging.getLogger("uvicorn.error").setLevel(logging.INFO)
 
 # Create necessary folders
 for directory in [
@@ -91,11 +93,23 @@ for directory in [
     "vae",
     "upscaler",
     "textual-inversion",
+    "lycoris",
+    "logs",
 ]:
     Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
 # Suppress some annoying warnings
 warnings.filterwarnings("ignore", category=UserWarning)
+
+
+def cleanup_old_logs():
+    "Cleanup old logs"
+
+    for file in Path("data/logs").glob("*.log"):
+        if datetime.fromtimestamp(file.stat().st_mtime) < datetime.now() - timedelta(
+            days=7
+        ):
+            file.unlink()
 
 
 def is_root():
@@ -119,7 +133,7 @@ def main(exit_after_init: bool = False):
         import nest_asyncio
         from pyngrok import ngrok
 
-        ngrok_tunnel = ngrok.connect(5003)
+        ngrok_tunnel = ngrok.connect(args.port)
         logger.info(f"Public URL: {ngrok_tunnel.public_url}")
         nest_asyncio.apply()
 
@@ -143,8 +157,15 @@ def main(exit_after_init: bool = False):
     from core import shared
 
     host = "0.0.0.0" if args.host else "127.0.0.1"
+    shared.api_port = args.port
 
-    uvi_config = Config(app=api_app, host=host, port=args.port)
+    uvi_config = Config(
+        app=api_app,
+        host=host,
+        port=args.port,
+        workers=4,
+        log_config=None,
+    )
     uvi_server = Server(config=uvi_config)
 
     uvi_config.setup_event_loop()
@@ -223,14 +244,24 @@ def checks():
     # Inject better logger
     from rich.logging import RichHandler
 
+    print(f"Log level: {args_with_extras.log_level}")
     args_with_extras.log_level = args_with_extras.log_level or os.getenv(
         "LOG_LEVEL", "INFO"
     )
+
+    cleanup_old_logs()
     logging.basicConfig(
         level=args_with_extras.log_level,
         format="%(asctime)s | %(name)s » %(message)s",
         datefmt="%H:%M:%S",
-        handlers=[RichHandler(rich_tracebacks=True, show_time=False)],
+        handlers=[
+            RichHandler(rich_tracebacks=True, show_time=False),
+            logging.FileHandler(
+                f"data/logs/{datetime.now().strftime('%d-%m-%Y_%H-%M-%S')}.log",
+                mode="w",
+                encoding="utf-8",
+            ),
+        ],
     )
     logger = logging.getLogger()  # pylint: disable=redefined-outer-name
 
@@ -245,9 +276,7 @@ def checks():
     version_check(commit_hash())
 
     # Install pytorch and api requirements
-    install_pytorch(
-        args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1
-    )
+    install_deps(args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1)
 
     if not os.getenv("HUGGINGFACE_TOKEN"):
         logger.info(

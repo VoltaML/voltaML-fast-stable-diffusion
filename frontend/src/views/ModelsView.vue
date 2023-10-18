@@ -1,7 +1,7 @@
 <template>
   <NTabs type="segment">
     <NTabPane name="Manager">
-      <UploadModel />
+      <ModelManager />
     </NTabPane>
     <NTabPane name="Huggingface">
       <HuggingfaceDownload />
@@ -19,6 +19,6 @@
 import CivitAIDownload from "@/components/models/CivitAIDownload.vue";
 import HuggingfaceDownload from "@/components/models/HuggingfaceDownload.vue";
 import ModelConvert from "@/components/models/ModelConvert.vue";
-import UploadModel from "@/components/models/ModelManager.vue";
+import ModelManager from "@/components/models/ModelManager.vue";
 import { NTabPane, NTabs } from "naive-ui";
 </script>

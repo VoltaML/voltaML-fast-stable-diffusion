@@ -1,6 +1,6 @@
 <template>
   <NTabs type="segment" v-model:value="state.state.extra.tab">
-    <NTabPane name="Upscale">
+    <NTabPane tab="Upscale" name="upscale">
       <Upscale />
     </NTabPane>
   </NTabs>

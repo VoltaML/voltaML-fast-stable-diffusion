@@ -2,7 +2,6 @@ import logging
 from typing import Optional, Tuple, Union
 
 import torch
-from cpufeature import CPUFeature as cpu
 from diffusers import (
     DiffusionPipeline,
     StableDiffusionPipeline,
@@ -58,6 +57,9 @@ def optimize_model(
         ]
         and offload
     )
+    can_offload = any(
+        map(lambda x: x not in config.api.device, ["cpu", "vulkan", "mps"])
+    ) and (offload != "disabled" and offload is not None)
 
     # Took me an hour to understand why CPU stopped working...
     # Turns out AMD just lacks support for BF16...
@@ -67,7 +69,7 @@ def optimize_model(
     else:
         pipe.to(torch_dtype=config.api.dtype)
 
-    if config.api.device_type == "cuda" and not is_for_aitemplate:
+    if "cuda" in config.api.device and not is_for_aitemplate:
         supports_tf = supports_tf32(device)
         if config.api.reduced_precision:
             if supports_tf:
@@ -109,8 +111,8 @@ def optimize_model(
     # Disable for IPEX as well, they don't like torch's way of setting memory format
     if (
         config.api.channels_last
-        and config.api.device_type != "directml"
-        and (not is_ipex_available() and config.api.device_type != "cpu")
+        and "privateuseone" not in config.api.device
+        and (not is_ipex_available() and "cpu" not in config.api.device)
         and not is_for_aitemplate
     ):
         pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
@@ -163,7 +165,9 @@ def optimize_model(
             )
 
     ipexed = False
-    if config.api.device_type == "cpu":
+    if "cpu" in config.api.device:
+        from cpufeature import CPUFeature as cpu
+
         n = (cpu["num_virtual_cores"] // 4) * 3
         torch.set_num_threads(n)
         torch.set_num_interop_threads(n)

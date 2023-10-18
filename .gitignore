@@ -53,6 +53,7 @@ converted
 
 # Docker
 test.docker-compose.yml
+test-no-mount.docker-compose.yml
 
 # Docs
 node_modules/

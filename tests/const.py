@@ -1,0 +1,18 @@
+KDIFF_SAMPLERS = [
+    "euler_a",
+    "euler",
+    "lms",
+    "heun",
+    "dpm_fast",
+    "dpm_adaptive",
+    "dpm2",
+    "dpm2_a",
+    "dpmpp_2s_a",
+    "dpmpp_2m",
+    "dpmpp_2m_sharp",
+    "dpmpp_sde",
+    "dpmpp_2m_sde",
+    "dpmpp_3m_sde",
+    "unipc_multistep",
+    "restart",
+]

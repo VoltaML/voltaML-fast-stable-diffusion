@@ -518,7 +518,7 @@ class CrossAttnUpBlock2D(nn.Module):
     ) -> Tensor:
         for resnet, attn in zip(self.resnets, self.attentions):
             res_hidden_states = res_hidden_states_tuple[-1]
-            res_hidden_states_tuple = res_hidden_states_tuple[:-1]
+            res_hidden_states_tuple = res_hidden_states_tuple[:-1]  # type: ignore
             hidden_states = ops.concatenate()(  # type: ignore
                 [hidden_states, res_hidden_states], dim=-1
             )
@@ -598,7 +598,7 @@ class UpBlock2D(nn.Module):
     ):
         for resnet in self.resnets:
             res_hidden_states = res_hidden_states_tuple[-1]
-            res_hidden_states_tuple = res_hidden_states_tuple[:-1]
+            res_hidden_states_tuple = res_hidden_states_tuple[:-1]  # type: ignore
             hidden_states = ops.concatenate()(  # type: ignore
                 [hidden_states, res_hidden_states], dim=-1
             )

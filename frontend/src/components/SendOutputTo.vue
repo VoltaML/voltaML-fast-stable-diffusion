@@ -1,67 +1,127 @@
 <template>
-  <!-- Generate button -->
-  <NCard style="margin: 12px 0" title="Send To" v-if="output && card">
-    <NGrid cols="4" x-gap="4" y-gap="4">
-      <NGi>
-        <NButton type="default" @click="toImg2Img" style="width: 100%" ghost
-          >Img2Img</NButton
+  <NModal :show="showModal">
+    <NCard style="max-width: 700px" title="Copy additional properties">
+      <div
+        style="
+          display: flex;
+          flex-direction: row;
+          justify-content: flex-end;
+          margin-bottom: 8px;
+        "
+      >
+        <NButton
+          type="success"
+          ghost
+          style="margin-right: 4px"
+          @click="selectAll"
+          >Select All</NButton
         >
-      </NGi>
-      <NGi>
-        <NButton type="default" @click="toControlNet" style="width: 100%" ghost
-          >ControlNet</NButton
+        <NButton type="warning" ghost @click="selectNone">Select None</NButton>
+      </div>
+      <NScrollbar style="max-height: 70vh; margin-bottom: 8px">
+        <div style="margin: 0 24px">
+          <div v-for="item in valuesToCopyFiltered" v-bind:key="item">
+            <div
+              style="
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+              "
+            >
+              {{ capitalizeAndReplace(item) }}
+              <NSwitch
+                :value="valuesToCopy[item]"
+                @update:value="(v) => (valuesToCopy[item] = v)"
+              />
+            </div>
+            <NDivider style="margin: 12px 0" />
+          </div>
+        </div>
+      </NScrollbar>
+      <div
+        style="display: flex; flex-direction: row; justify-content: flex-end"
+      >
+        <NButton
+          type="default"
+          @click="() => (showModal = false)"
+          style="margin-right: 4px; flex-grow: 1"
         >
-      </NGi>
-      <NGi>
-        <NButton type="default" @click="toInpainting" style="width: 100%" ghost
-          >Inpainting</NButton
-        >
-      </NGi>
-      <NGi>
-        <NButton type="default" @click="toUpscale" style="width: 100%" ghost
-          >Upscale</NButton
+          <template #icon>
+            <CloseOutline />
+          </template>
+          Cancel
+        </NButton>
+        <NButton type="primary" @click="modalCopyClick" style="flex-grow: 1">
+          <template #icon>
+            <CopyOutline />
+          </template>
+          Copy
+        </NButton>
+      </div>
+    </NCard>
+  </NModal>
+
+  <div v-if="output">
+    <NCard style="margin: 12px 0" title="Send To" v-if="output && card">
+      <NGrid cols="4" x-gap="4" y-gap="4">
+        <NGi v-for="target in Object.keys(targets)" v-bind:key="target">
+          <NButton
+            type="default"
+            @click="() => handleClick(target as keyof typeof targets)"
+            style="width: 100%"
+            ghost
+            >{{ capitalizeAndReplace(target) }}</NButton
+          >
+        </NGi>
+      </NGrid>
+    </NCard>
+    <NGrid cols="3" x-gap="4" y-gap="4" v-else>
+      <NGi v-for="target in Object.keys(targets)" v-bind:key="target">
+        <NButton
+          type="default"
+          @click="() => handleClick(target as keyof typeof targets)"
+          style="width: 100%"
+          ghost
+          >-> {{ capitalizeAndReplace(target) }}</NButton
         >
       </NGi>
     </NGrid>
-  </NCard>
-  <NGrid cols="3" x-gap="4" y-gap="4" v-else-if="output">
-    <NGi>
-      <NButton type="default" @click="toImg2Img" style="width: 100%" ghost
-        >Img2Img</NButton
-      >
-    </NGi>
-    <NGi>
-      <NButton type="default" @click="toControlNet" style="width: 100%" ghost
-        >ControlNet</NButton
-      >
-    </NGi>
-    <NGi>
-      <NButton type="default" @click="toInpainting" style="width: 100%" ghost
-        >Inpainting</NButton
-      >
-    </NGi>
-    <NGi>
-      <NButton type="default" @click="toUpscale" style="width: 100%" ghost
-        >Upscale</NButton
-      >
-    </NGi>
-    <NGi>
-      <NButton type="default" @click="toTagger" style="width: 100%" ghost
-        >Tagger</NButton
-      >
-    </NGi>
-  </NGrid>
+  </div>
 </template>
 
 <script lang="ts" setup>
 import { useState } from "@/store/state";
-import { NButton, NCard, NGi, NGrid } from "naive-ui";
+import { CloseOutline, CopyOutline } from "@vicons/ionicons5";
+import {
+  NButton,
+  NCard,
+  NDivider,
+  NGi,
+  NGrid,
+  NModal,
+  NScrollbar,
+  NSwitch,
+} from "naive-ui";
+import { computed, reactive, ref, watch } from "vue";
 import { useRouter } from "vue-router";
 import { useSettings } from "../store/settings";
 const router = useRouter();
 
-const conf = useSettings();
+const settings = useSettings();
 const state = useState();
+
+const showModal = ref(false);
+const maybeTarget = ref<keyof typeof targets | null>(null);
+
+// Key is both name and tab name, value is target url
+const targets = {
+  txt2img: "txt2img",
+  img2img: "img2img",
+  controlnet: "img2img",
+  inpainting: "img2img",
+  upscale: "extra",
+  tagger: "tagger",
+} as const;
 
 const props = defineProps({
   output: {
@@ -72,34 +132,97 @@ const props = defineProps({
     type: Boolean,
     default: true,
   },
+  data: {
+    type: Object,
+    required: false,
+    default: () => ({}),
+  },
 });
 
-async function toImg2Img() {
-  conf.data.settings.img2img.image = props.output;
-  state.state.img2img.tab = "Image to Image";
-  await router.push("/image2image");
+function handleClick(target: keyof typeof targets) {
+  if (props.data) {
+    maybeTarget.value = target;
+    showModal.value = true;
+  } else {
+    toTarget(target);
+  }
 }
 
-async function toControlNet() {
-  conf.data.settings.controlnet.image = props.output;
-  state.state.img2img.tab = "ControlNet";
-  await router.push("/image2image");
+function modalCopyClick() {
+  showModal.value = false;
+  if (maybeTarget.value) {
+    const tmp = maybeTarget.value;
+    maybeTarget.value = null;
+    toTarget(tmp);
+  }
 }
 
-async function toInpainting() {
-  conf.data.settings.inpainting.image = props.output;
-  state.state.img2img.tab = "Inpainting";
-  await router.push("/image2image");
+// Boolean map of settings to copy
+const valuesToCopy = reactive(
+  Object.fromEntries(Object.keys(props.data).map((key) => [key, false]))
+);
+
+watch(
+  () => props.data,
+  (newData) => {
+    Object.keys(newData).forEach((key) => {
+      // eslint-disable-next-line no-prototype-builtins
+      if (!valuesToCopy.hasOwnProperty(key)) {
+        valuesToCopy[key] = false;
+      }
+    });
+  }
+);
+
+const valuesToCopyFiltered = computed(() => {
+  return Object.keys(valuesToCopy).filter((key) => {
+    if (maybeTarget.value) {
+      return Object.keys(settings.data.settings[maybeTarget.value]).includes(
+        key
+      );
+    }
+  });
+});
+
+async function toTarget(target: keyof typeof targets) {
+  const targetPage = targets[target];
+
+  if (target !== "txt2img") {
+    settings.data.settings[target].image = props.output;
+  }
+
+  if (targetPage !== "txt2img" && target !== "txt2img") {
+    state.state[targetPage].tab = target;
+  }
+
+  Object.keys(props.data).forEach((key) => {
+    if (valuesToCopy[key]) {
+      if (Object.keys(settings.data.settings[target]).includes(key)) {
+        // @ts-ignore
+        settings.data.settings[target][key] = props.data[key];
+      }
+    }
+  });
+
+  await router.push("/" + targetPage);
 }
 
-async function toUpscale() {
-  conf.data.settings.upscale.image = props.output;
-  state.state.extra.tab = "Upscale";
-  await router.push("/extra");
+function capitalizeAndReplace(target: string) {
+  return target
+    .split("_")
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
 }
 
-async function toTagger() {
-  conf.data.settings.tagger.image = props.output;
-  await router.push("/tagger");
+function selectAll() {
+  for (const key in valuesToCopy) {
+    valuesToCopy[key] = true;
+  }
+}
+
+function selectNone() {
+  for (const key in valuesToCopy) {
+    valuesToCopy[key] = false;
+  }
 }
 </script>

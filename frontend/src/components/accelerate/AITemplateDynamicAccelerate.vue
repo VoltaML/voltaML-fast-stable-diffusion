@@ -112,7 +112,7 @@
         ghost
         :loading="building"
         :disabled="building || modelOptions.length === 0"
-        @click="showUnloadModal = true"
+        @click="onAccelerateClick"
         >Accelerate</NButton
       >
     </NSpace>
@@ -183,6 +183,18 @@ const modelOptions = computed(() => {
 });
 
 model.value = modelOptions.value[0]?.value?.toString() ?? "";
+
+const numLoadedModels = computed(() => {
+  return global.state.models.filter((model) => model.state === "loaded").length;
+});
+
+function onAccelerateClick() {
+  if (numLoadedModels.value >= 1) {
+    showUnloadModal.value = true;
+  } else {
+    accelerate();
+  }
+}
 
 const accelerateUnload = async () => {
   try {

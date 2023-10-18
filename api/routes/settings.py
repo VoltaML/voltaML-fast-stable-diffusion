@@ -16,11 +16,8 @@ async def save_configuration(settings: config.Configuration):
     "Receive settings from the frontend and save them to the config file"
 
     reload_required = False
-    if config.config.api.device_id != settings.api.device_id:
-        logger.info(f"Device ID was changed to {settings.api.device_id}")
-        reload_required = True
-    if config.config.api.device_type != settings.api.device_type:
-        logger.info(f"Device type was changed to {settings.api.device_type}")
+    if config.config.api.device != settings.api.device:
+        logger.info(f"Device was changed to {settings.api.device}")
         reload_required = True
     if config.config.api.data_type != settings.api.data_type:
         logger.info(f"Precision changed to {settings.api.data_type}")

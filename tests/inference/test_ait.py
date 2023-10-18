@@ -1,3 +1,5 @@
+from copy import deepcopy
+
 import pytest
 from diffusers.schedulers import KarrasDiffusionSchedulers
 
@@ -9,14 +11,20 @@ from core.types import (
     Txt2imgData,
     Txt2ImgQueueEntry,
 )
+from tests.const import KDIFF_SAMPLERS
 from tests.functions import generate_random_image_base64
 
 try:
-    from core.inference.ait import AITemplateStableDiffusion
+    import aitemplate  # pylint: disable=unused-import
 except ModuleNotFoundError:
     pytest.skip("Skipping aitemplate tests, ait not installed", allow_module_level=True)
 
+# pylint: disable=ungrouped-imports
+from core.inference.ait import AITemplateStableDiffusion
+
 model = "Azher--Anything-v4.5-vae-fp16-diffuser__512-1024x512-1024x1-1"
+MODIFIED_KDIFF_SAMPLERS = deepcopy(KDIFF_SAMPLERS)
+MODIFIED_KDIFF_SAMPLERS.remove("unipc_multistep")
 
 
 @pytest.fixture(name="pipe")
@@ -26,7 +34,9 @@ def pipe_fixture():
     )
 
 
-@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+@pytest.mark.parametrize(
+    "scheduler", list(KarrasDiffusionSchedulers) + MODIFIED_KDIFF_SAMPLERS
+)
 def test_aitemplate_txt2img(
     pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):
@@ -42,7 +52,9 @@ def test_aitemplate_txt2img(
     pipe.generate(job)
 
 
-@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+@pytest.mark.parametrize(
+    "scheduler", list(KarrasDiffusionSchedulers) + MODIFIED_KDIFF_SAMPLERS
+)
 def test_aitemplate_img2img(
     pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):
@@ -59,7 +71,9 @@ def test_aitemplate_img2img(
     pipe.generate(job)
 
 
-@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers))
+@pytest.mark.parametrize(
+    "scheduler", list(KarrasDiffusionSchedulers) + MODIFIED_KDIFF_SAMPLERS
+)
 def test_aitemplate_controlnet(
     pipe: AITemplateStableDiffusion, scheduler: KarrasDiffusionSchedulers
 ):

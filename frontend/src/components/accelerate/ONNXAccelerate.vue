@@ -26,21 +26,20 @@
       <!-- Simplify UNet -->
       <div class="flex-container">
         <p class="slider-label">Simplify UNet</p>
-        <NSwitch v-model:value="conf.data.settings.onnx.simplify_unet" />
+        <NSwitch v-model:value="settings.data.settings.onnx.simplify_unet" />
       </div>
 
       <!-- Downcast to FP16 operations -->
       <div class="flex-container">
         <p class="slider-label">Downcast to FP16</p>
-        <NSwitch v-model:value="conf.data.settings.onnx.convert_to_fp16" />
+        <NSwitch v-model:value="settings.data.settings.onnx.convert_to_fp16" />
       </div>
 
-      <!-- Quantization -->
-      <h3>Quantization</h3>
+      <!-- <h3>Quantization</h3>
       <div class="flex-container">
         <p class="slider-label">Text Encoder</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.text_encoder"
+          v-model:value="settings.data.settings.onnx.quant_dict.text_encoder"
           :options="[
             { label: 'No quantization', value: 'no-quant' },
             { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
@@ -52,7 +51,7 @@
       <div class="flex-container">
         <p class="slider-label">UNet</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.unet"
+          v-model:value="settings.data.settings.onnx.quant_dict.unet"
           :options="[
             { label: 'No quantization', value: 'no-quant' },
             { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
@@ -64,7 +63,7 @@
       <div class="flex-container">
         <p class="slider-label">VAE Encoder</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.vae_encoder"
+          v-model:value="settings.data.settings.onnx.quant_dict.vae_encoder"
           :options="[
             { label: 'No quantization', value: 'no-quant' },
             { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
@@ -76,7 +75,7 @@
       <div class="flex-container">
         <p class="slider-label">VAE Decoder</p>
         <NSelect
-          v-model:value="conf.data.settings.onnx.quant_dict.vae_decoder"
+          v-model:value="settings.data.settings.onnx.quant_dict.vae_decoder"
           :options="[
             { label: 'No quantization', value: 'no-quant' },
             { label: 'Unsigned int8 (cpu only)', value: 'uint8' },
@@ -84,7 +83,7 @@
           ]"
           style="margin-right: 12px"
         />
-      </div>
+      </div> -->
     </NCard>
 
     <NSpace vertical justify="center" style="width: 100%" align="center">
@@ -135,7 +134,7 @@ import { useSettings } from "../../store/settings";
 
 const message = useMessage();
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 
 const model = ref("");
 
@@ -186,9 +185,9 @@ const accelerate = async () => {
     },
     body: JSON.stringify({
       model_id: model.value,
-      quant_dict: conf.data.settings.onnx.quant_dict,
-      simplify_unet: conf.data.settings.onnx.simplify_unet,
-      convert_to_fp16: conf.data.settings.onnx.convert_to_fp16,
+      quant_dict: settings.data.settings.onnx.quant_dict,
+      simplify_unet: settings.data.settings.onnx.simplify_unet,
+      convert_to_fp16: settings.data.settings.onnx.convert_to_fp16,
     }),
   })
     .then(() => {

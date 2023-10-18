@@ -4,6 +4,16 @@ from typing import Any, Tuple
 
 import numpy as np
 import torch
+from controlnet_aux import (
+    CannyDetector,
+    HEDdetector,
+    LineartAnimeDetector,
+    LineartDetector,
+    MidasDetector,
+    MLSDdetector,
+    NormalBaeDetector,
+    OpenposeDetector,
+)
 from PIL import Image
 from transformers.models.auto.image_processing_auto import AutoImageProcessor
 from transformers.models.upernet import UperNetForSemanticSegmentation
@@ -12,22 +22,6 @@ from core.config import config
 from core.types import ControlNetData
 
 logger = logging.getLogger(__name__)
-
-try:
-    from controlnet_aux import (
-        CannyDetector,
-        HEDdetector,
-        LineartAnimeDetector,
-        LineartDetector,
-        MidasDetector,
-        MLSDdetector,
-        NormalBaeDetector,
-        OpenposeDetector,
-    )
-except ImportError:
-    logger.warning(
-        "You have old version of controlnet-aux, please run `pip uninstall controlnet-aux && pip install controlnet-aux` to update it to the lates version."
-    )
 
 
 def _wipe_old():
@@ -38,7 +32,7 @@ def _wipe_old():
     logger.debug("Did not find this controlnet preprocessor cached, wiping old ones")
     shared_dependent.cached_controlnet_preprocessor = None
 
-    if config.api.device_type == "cuda":
+    if "cuda" in config.api.device:
         torch.cuda.empty_cache()
         torch.cuda.ipc_collect()
     gc.collect()

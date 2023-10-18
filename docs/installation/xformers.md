@@ -16,5 +16,5 @@ pip install xformers
 
 ## Usage
 
-Volta should automatically detect if xFormers is installed and it will automatically apply the optimizations.
-If that isn't the case, it will attempt to use SDP Attention, that is build into PyTorch 2.0.
+Head over to `Settings > API` and select `xFormers` in `Attention processor`.
+You need to reload the model after changing this setting to apply the changes.

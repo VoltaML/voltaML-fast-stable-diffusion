@@ -4,6 +4,10 @@ Textual Inversion (Embedding) is a way to define new keywords in a model without
 
 ## Downloading
 
+::: tip
+We now have CivitAI downloader, head to Models -> CivitAI to download Models, LoRAs and Textual Inversions.
+:::
+
 Textual Inversion is available to download from [Civit.ai](https://civit.ai/). You can download them from there and then upload them to Volta via the Model Manager:
 
 ![Textual Inversion](../static/basics/textual-inversion-download.webp)
@@ -17,6 +21,10 @@ Textual Inversion is available to download from [Civit.ai](https://civit.ai/). Y
 
 ::: tip
 You can use multiple Textual Inversion models at once.
+:::
+
+::: tip
+Textual Inversions can be set to autoload in settings.
 :::
 
 ## Usage

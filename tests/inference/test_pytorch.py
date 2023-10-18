@@ -14,7 +14,8 @@ from core.types import (
     Txt2imgData,
     Txt2ImgQueueEntry,
 )
-from core.utils import convert_image_to_base64
+from core.utils import convert_image_to_base64, unwrap_enum
+from tests.const import KDIFF_SAMPLERS
 from tests.functions import generate_random_image, generate_random_image_base64
 
 
@@ -25,13 +26,16 @@ def pipe_fixture():
     return PyTorchStableDiffusion("Azher/Anything-v4.5-vae-fp16-diffuser")
 
 
-def test_txt2img(pipe: PyTorchStableDiffusion):
-    "Generate an image with Text to Image"
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers) + KDIFF_SAMPLERS)
+def test_txt2img_scheduler_sweep(
+    pipe: PyTorchStableDiffusion, scheduler: KarrasDiffusionSchedulers
+):
+    "Sweep all schedulers with Text to Image"
 
     job = Txt2ImgQueueEntry(
         data=Txt2imgData(
             prompt="This is a test",
-            scheduler=KarrasDiffusionSchedulers.UniPCMultistepScheduler,
+            scheduler=str(unwrap_enum(scheduler)),
             id="test",
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
@@ -40,7 +44,59 @@ def test_txt2img(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
+@pytest.mark.parametrize("height", [256, 512, 1024])
+@pytest.mark.parametrize("width", [256, 512, 1024])
+def test_txt2img_res_sweep(pipe: PyTorchStableDiffusion, height: int, width: int):
+    "Sweep multiple resolutions with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+            id="test",
+            height=height,
+            width=width,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
+def test_txt2img_multi(pipe: PyTorchStableDiffusion):
+    "Generating multiple images with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+            id="test",
+            batch_size=2,
+            batch_count=2,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    assert len(pipe.generate(job)) == 4
+
+
+def test_txt2img_self_attention(pipe: PyTorchStableDiffusion):
+    "Generate an image with Text to Image"
+
+    job = Txt2ImgQueueEntry(
+        data=Txt2imgData(
+            prompt="This is a test",
+            scheduler=KarrasDiffusionSchedulers.DPMSolverMultistepScheduler,
+            id="test",
+            self_attention_scale=1,
+        ),
+        model="Azher/Anything-v4.5-vae-fp16-diffuser",
+    )
+
+    pipe.generate(job)
+
+
+def test_txt2img_karras_sigmas_diffusers(pipe: PyTorchStableDiffusion):
     "Generate an image with Text to Image"
 
     job = Txt2ImgQueueEntry(
@@ -48,7 +104,7 @@ def test_txt2img_karras_sigmas(pipe: PyTorchStableDiffusion):
             prompt="This is a test",
             scheduler=KarrasDiffusionSchedulers.KDPM2AncestralDiscreteScheduler,
             id="test",
-            use_karras_sigmas=True,
+            sigmas="karras",
         ),
         model="Azher/Anything-v4.5-vae-fp16-diffuser",
     )

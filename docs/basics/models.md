@@ -7,7 +7,7 @@ Models are what is responsible for the main aesthetics of the output image. They
 
 Both of these formats are supported by the UI, but **Diffusers is the preffered way**.
 
-Checkpoints are the raw files that you can download from sites like [CivitAI](https://civit.ai/).
+Checkpoints are the raw files that you can download from sites like [CivitAI](https://civit.ai/) or from `Models -> CivitAI` tab.
 
 Diffusers is unwrapped format that stores all the parts of the model separately. This allows for a more modular approach to loading the models, where you can just load the parts you need. You can browse these models on [HuggingFace](https://huggingface.co/).
 
@@ -95,4 +95,4 @@ Select the model you just downloaded:
 
 ### VAE swapping
 
-VAE swapping is not available yet. Please try to use the model with baked in VAE instead.
+VAE swapping can be done in the Model Loader. This allows you to use the VAE from another model.

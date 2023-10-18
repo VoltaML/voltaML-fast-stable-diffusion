@@ -117,7 +117,7 @@ class UNet2DConditionModel(nn.Module):
         self.up_blocks = nn.ModuleList([])
 
         if isinstance(attention_head_dim, int):
-            attention_head_dim = (attention_head_dim,) * len(down_block_types)
+            attention_head_dim = (attention_head_dim,) * len(down_block_types)  # type: ignore
 
         output_channel = block_out_channels[0]
         for i, down_block_type in enumerate(down_block_types):
@@ -134,7 +134,7 @@ class UNet2DConditionModel(nn.Module):
                 add_downsample=not is_final_block,
                 resnet_eps=norm_eps,
                 resnet_act_fn=act_fn,
-                attn_num_head_channels=attention_head_dim[i],
+                attn_num_head_channels=attention_head_dim[i],  # type: ignore
                 cross_attention_dim=cross_attention_dim,
                 downsample_padding=downsample_padding,
                 use_linear_projection=use_linear_projection,
@@ -152,14 +152,14 @@ class UNet2DConditionModel(nn.Module):
             output_scale_factor=mid_block_scale_factor,
             resnet_time_scale_shift="default",
             cross_attention_dim=cross_attention_dim,
-            attn_num_head_channels=attention_head_dim[-1],
+            attn_num_head_channels=attention_head_dim[-1],  # type: ignore
             resnet_groups=norm_num_groups,
             use_linear_projection=use_linear_projection,
             dtype=dtype,
         )
 
-        reversed_block_out_channels = list(reversed(block_out_channels))
-        reversed_attention_head_dim = list(reversed(attention_head_dim))
+        reversed_block_out_channels = list(reversed(block_out_channels))  # type: ignore
+        reversed_attention_head_dim = list(reversed(attention_head_dim))  # type: ignore
         reversed_transformer_layers_per_block = list(
             reversed(transformer_layers_per_block)  # type: ignore
         )

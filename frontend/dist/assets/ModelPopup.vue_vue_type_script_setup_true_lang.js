@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { bh as upperFirst, bi as toString, bj as createCompounder, bk as cloneVNode, T as provide, V as createInjectionKey, a3 as inject, a_ as throwError, d as defineComponent, Q as useConfig, E as ref, bl as onBeforeUpdate, D as h, bm as indexMap, c as computed, b9 as onMounted, aH as onBeforeUnmount, Y as cB, Z as cE, X as c, $ as cM, S as useMergedState, U as toRef, as as watchEffect, bn as onUpdated, K as watch, a5 as useTheme, a9 as useThemeClass, aC as flatten, aP as VResizeObserver, bo as resolveSlotWithProps, bp as withDirectives, bq as vShow, aX as Transition, ak as keep, aI as off, ah as nextTick, br as carouselLight, ba as normalizeStyle, bs as getPreciseEventTarget, ac as on, aq as cNotM, R as useFormItem, M as renderList, au as NBaseIcon, bt as rateLight, a8 as createKey, bu as color2Class, W as call, b as useMessage, b8 as reactive, e as openBlock, x as createBlock, w as withCtx, h as unref, g as createVNode, f as createElementBlock, H as NTabPane, y as NGrid, N as NGi, J as Fragment, n as createBaseVNode, i as NCard, m as createTextVNode, t as toDisplayString, bv as NTag, r as NSelect, F as NButton, I as NTabs, bd as NModal, s as serverUrl } from "./index.js";
+=======
+import { bl as upperFirst, bm as toString, bn as createCompounder, bo as cloneVNode, a6 as provide, S as createInjectionKey, U as inject, b1 as throwError, d as defineComponent, V as useConfig, r as ref, bp as onBeforeUpdate, s as h, bq as indexMap, c as computed, bb as onMounted, aE as onBeforeUnmount, T as cB, aw as cE, ad as c, ae as cM, ah as useMergedState, Y as toRef, ai as watchEffect, br as onUpdated, O as watch, W as useTheme, Z as useThemeClass, az as flatten, aO as VResizeObserver, bs as resolveSlotWithProps, bt as withDirectives, bu as vShow, a_ as Transition, a7 as keep, aF as off, a3 as nextTick, bv as carouselLight, bc as normalizeStyle, bw as getPreciseEventTarget, aG as on, af as cNotM, au as useFormItem, g as renderList, al as NBaseIcon, bx as rateLight, ao as createKey, by as color2Class, a2 as call, x as useMessage, u as useSettings, ba as reactive, o as openBlock, k as createBlock, w as withCtx, f as unref, e as createVNode, a as createElementBlock, L as NTabPane, H as NGrid, A as NGi, F as Fragment, b as createBaseVNode, N as NCard, i as createTextVNode, t as toDisplayString, bz as NTag, p as NSelect, h as NButton, M as NTabs, m as NModal, z as serverUrl } from "./index.js";
+>>>>>>> origin/experimental
 import { a as NDescriptions, N as NDescriptionsItem } from "./DescriptionsItem.js";
 function capitalize(string) {
   return upperFirst(toString(string).toLowerCase());
@@ -1433,6 +1437,18 @@ const NRate = defineComponent({
     }));
   }
 });
+function nsfwIndex(nsfwLevel) {
+  switch (nsfwLevel) {
+    case "None":
+      return 0;
+    case "Soft":
+      return 1;
+    case "Mature":
+      return 2;
+    case "X":
+      return 3;
+  }
+}
 const _hoisted_1 = ["src"];
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("i", null, [
   /* @__PURE__ */ createTextVNode("Data provided by "),
@@ -1454,6 +1470,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props, { emit }) {
     const props = __props;
     const message = useMessage();
+    const settings = useSettings();
     const tabValue = ref("");
     const tabsInstRef = ref(null);
     const selectedModel = reactive(/* @__PURE__ */ new Map());
@@ -1530,23 +1547,22 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 style: { "height": "70vh", "width": "100%" },
                                 draggable: "",
                                 "slides-per-view": 2,
+                                "centered-slides": true,
                                 effect: "card",
                                 "dot-type": "line",
-                                "centered-slides": "",
                                 keyboard: "",
                                 mousewheel: ""
                               }, {
                                 default: withCtx(() => [
                                   (openBlock(true), createElementBlock(Fragment, null, renderList(subModel.images.length > 1 ? subModel.images : [subModel.images[0], subModel.images[0]], (image) => {
                                     return openBlock(), createElementBlock("div", {
-                                      key: image.hash,
-                                      style: { "border-radius": "20px", "overflow": "hidden" }
+                                      key: image.hash
                                     }, [
                                       createBaseVNode("img", {
                                         src: image.url,
                                         style: normalizeStyle({
-                                          width: "100%"
-                                          // filter: image.nsfw !== 'None' ? 'blur(4px)' : 'none',
+                                          width: "100%",
+                                          filter: unref(nsfwIndex)(image.nsfw) > unref(settings).data.settings.frontend.nsfw_ok_threshold ? "blur(12px)" : "none"
                                         })
                                       }, null, 12, _hoisted_1)
                                     ]);
@@ -1685,5 +1701,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
-  _sfc_main as _
+  _sfc_main as _,
+  nsfwIndex as n
 };

@@ -3,6 +3,7 @@ from dataclasses import Field, dataclass, field, fields
 
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 
+from core.config.samplers.sampler_config import SamplerConfig
 from .api_settings import APIConfig
 from .bot_settings import BotConfig
 from .default_settings import (
@@ -36,6 +37,7 @@ class Configuration(DataClassJsonMixin):
     onnx: ONNXConfig = field(default_factory=ONNXConfig)
     bot: BotConfig = field(default_factory=BotConfig)
     frontend: FrontendConfig = field(default_factory=FrontendConfig)
+    sampler_config: SamplerConfig = field(default_factory=SamplerConfig)
     extra: CatchAll = field(default_factory=dict)
 
 

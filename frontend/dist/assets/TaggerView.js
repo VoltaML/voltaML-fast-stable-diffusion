@@ -1,12 +1,11 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, E as ref, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, r as NSelect, q as NTooltip, m as createTextVNode, k as NInput, t as toDisplayString, y as NGrid, s as serverUrl, z as spaceRegex, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, v as useState, u as useSettings, x as useMessage, r as ref, c as computed, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, A as NGi, N as NCard, B as NSpace, b as createBaseVNode, p as NSelect, n as NTooltip, i as createTextVNode, C as NInput, t as toDisplayString, H as NGrid, z as serverUrl, I as spaceRegex, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
 import { v as v4 } from "./v4.js";
-import { N as NSlider } from "./Slider.js";
+import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSwitch } from "./Switch.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-e404f3d8"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-a772e913"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -18,10 +17,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "TaggerView",
   setup(__props) {
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const messageHandler = useMessage();
     const imageSelectCallback = (base64Image) => {
-      conf.data.settings.tagger.image = base64Image;
+      settings.data.settings.tagger.image = base64Image;
     };
     const generate = () => {
       global.state.generating = true;
@@ -32,11 +31,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         },
         body: JSON.stringify({
           data: {
-            image: conf.data.settings.tagger.image,
+            image: settings.data.settings.tagger.image,
             id: v4(),
-            threshold: conf.data.settings.tagger.threshold
+            threshold: settings.data.settings.tagger.threshold
           },
-          model: conf.data.settings.tagger.model
+          model: settings.data.settings.tagger.model
         })
       }).then((res) => {
         if (!res.ok) {
@@ -107,9 +106,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(ImageUpload, {
                   callback: imageSelectCallback,
-                  preview: unref(conf).data.settings.tagger.image,
+                  preview: unref(settings).data.settings.tagger.image,
                   style: { "margin-bottom": "12px" },
-                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(conf).data.settings.tagger.image = $event)
+                  onFileDropped: _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.tagger.image = $event)
                 }, null, 8, ["preview"]),
                 createVNode(unref(NCard), {
                   title: "Settings",
@@ -138,8 +137,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                 value: "flamingo"
                               }
                             ],
-                            value: unref(conf).data.settings.tagger.model,
-                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.tagger.model = $event),
+                            value: unref(settings).data.settings.tagger.model,
+                            "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.tagger.model = $event),
                             style: { "flex-grow": "1" }
                           }, null, 8, ["value"])
                         ]),
@@ -154,16 +153,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
-                            value: unref(conf).data.settings.tagger.threshold,
-                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.tagger.threshold = $event),
+                            value: unref(settings).data.settings.tagger.threshold,
+                            "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.tagger.threshold = $event),
                             min: 0.1,
                             max: 1,
                             style: { "margin-right": "12px" },
                             step: 0.025
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
-                            value: unref(conf).data.settings.tagger.threshold,
-                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(conf).data.settings.tagger.threshold = $event),
+                            value: unref(settings).data.settings.tagger.threshold,
+                            "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.tagger.threshold = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 0.1,
@@ -232,8 +231,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_e404f3d8_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-e404f3d8"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_a772e913_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-a772e913"]]);
 export {
   TaggerView as default
 };

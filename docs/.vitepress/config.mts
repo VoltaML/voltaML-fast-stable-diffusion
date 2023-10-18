@@ -1,5 +1,6 @@
 import { defineConfig } from "vitepress";
 
+// https://vitepress.dev/reference/site-config
 export default defineConfig({
 	title: "VoltaML",
 	description: "Easy to use, yet feature-rich WebUI",
@@ -7,6 +8,12 @@ export default defineConfig({
 	appearance: "dark",
 	lastUpdated: true,
 	base: "/voltaML-fast-stable-diffusion/",
+	locales: {
+		root: {
+			lang: "en-US",
+			label: "English",
+		},
+	},
 	head: [
 		[
 			"link",
@@ -23,6 +30,18 @@ export default defineConfig({
 				content: "/voltaML-fast-stable-diffusion/volta-og-image.webp",
 			},
 		],
+		[
+			"script",
+			{
+				async: "",
+				src: "https://www.googletagmanager.com/gtag/js?id=G-WZPQL8HDP0",
+			},
+		],
+		[
+			"script",
+			{},
+			"window.dataLayer = window.dataLayer || [];\nfunction gtag(){dataLayer.push(arguments);}\ngtag('js', new Date());\ngtag('config', 'G-WZPQL8HDP0');",
+		],
 	],
 	themeConfig: {
 		search: {
@@ -31,6 +50,7 @@ export default defineConfig({
 		nav: [
 			{ text: "Home", link: "/" },
 			{ text: "Docs", link: "/getting-started/introduction" },
+			{ text: "Changelog", link: "/changelog" },
 		],
 		editLink: {
 			pattern:
@@ -60,21 +80,38 @@ export default defineConfig({
 				text: "Introduction",
 				items: [
 					{ text: "Introduction", link: "/getting-started/introduction" },
-					{ text: "Features", link: "/getting-started/features" },
-					{ text: "First image", link: "/getting-started/first-image" },
 				],
 				collapsed: false,
 			},
 			{
 				text: "Installation",
 				items: [
-					{ text: "Windows", link: "/installation/windows" },
-					{ text: "Linux", link: "/installation/linux" },
-					{ text: "WSL", link: "/installation/wsl" },
-					{ text: "Docker", link: "/installation/docker" },
-					{ text: "Old", link: "/installation/old" },
-					{ text: "xFormers", link: "/installation/xformers" },
+					{
+						text: "Local",
+						items: [
+							{ text: "Windows", link: "/installation/windows" },
+							{ text: "Linux", link: "/installation/linux" },
+							{ text: "WSL", link: "/installation/wsl" },
+							{ text: "Docker", link: "/installation/docker" },
+						],
+					},
+					{
+						text: "Cloud",
+						items: [{ text: "Vast.ai", link: "/installation/vast" }],
+					},
+					{
+						text: "Extra",
+						items: [
+							{ text: "Old", link: "/installation/old" },
+							{ text: "xFormers", link: "/installation/xformers" },
+						],
+					},
 				],
+				collapsed: false,
+			},
+			{
+				text: "Guides",
+				items: [{ text: "First image", link: "/guides/first-image" }],
 				collapsed: false,
 			},
 			{
@@ -87,21 +124,16 @@ export default defineConfig({
 						text: "AITemplate Acceleration",
 						link: "/basics/aitemplate",
 					},
+					{ text: "Autoload", link: "/basics/autoload" },
 				],
 				collapsed: false,
 			},
 			{
 				text: "WebUI",
 				items: [
-					{ text: "Models", link: "/webui/models" },
-					{ text: "Text to Image", link: "/webui/txt2img" },
 					{ text: "Image to Image", link: "/webui/img2img" },
-					{ text: "Extra", link: "/webui/extra" },
-					{ text: "Download", link: "/webui/download" },
-					{ text: "Accelerate", link: "/webui/accelerate" },
+					{ text: "Downloading Models", link: "/webui/download" },
 					{ text: "Image browser", link: "/webui/imagebrowser" },
-					{ text: "Convert", link: "/webui/convert" },
-					{ text: "Settings", link: "/webui/settings" },
 				],
 				collapsed: false,
 			},
@@ -119,16 +151,17 @@ export default defineConfig({
 			{
 				text: "Settings",
 				items: [{ text: "Settings", link: "/settings/settings" }],
+				collapsed: false,
 			},
 			{
 				text: "Experimental",
-				items: [{ text: "Model browser", link: "/experimental/model-browser" }],
+				items: [],
 				collapsed: false,
 			},
 			{
 				text: "API",
 				items: [{ text: "API", link: "/api/" }],
-				collapsed: false,
+				collapsed: true,
 			},
 			{
 				text: "Developers",
@@ -147,7 +180,7 @@ export default defineConfig({
 						link: "/developers/testing",
 					},
 				],
-				collapsed: false,
+				collapsed: true,
 			},
 			{
 				text: "Troubleshooting",
@@ -162,7 +195,7 @@ export default defineConfig({
 						link: "/troubleshooting/docker",
 					},
 				],
-				collapsed: false,
+				collapsed: true,
 			},
 		],
 	},

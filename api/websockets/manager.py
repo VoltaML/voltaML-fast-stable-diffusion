@@ -1,15 +1,15 @@
 import asyncio
 import logging
 from asyncio import AbstractEventLoop
-from typing import Coroutine, List, Optional
+from typing import List, Optional
 
 import torch
 from fastapi import WebSocket
 from psutil import NoSuchProcess
 
 from api.websockets.data import Data
+from core import shared
 from core.config import config
-from core.shared import all_gpus, amd
 
 logger = logging.getLogger(__name__)
 
@@ -20,25 +20,13 @@ class WebSocketManager:
     def __init__(self):
         self.active_connections: List[WebSocket] = []
         self.loop: Optional[AbstractEventLoop] = None
-        self.to_run: List[Coroutine] = []
-
-    async def sync_loop(self):
-        "Infinite loop that runs all coroutines in the to_run list"
-
-        while True:
-            for task in self.to_run:
-                await task
-                self.to_run.remove(task)
-
-            await asyncio.sleep(config.api.websocket_sync_interval)
 
     async def perf_loop(self):
         "Infinite loop that sends performance data to all active websocket connections"
-        global amd, all_gpus  # pylint: disable=global-statement
         try:
             from gpustat.core import GPUStatCollection
 
-            all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
+            shared.all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
         except Exception as e:  # pylint: disable=broad-except
             logger.info(
                 f"GPUStat failed to initialize - probably not an NVIDIA GPU: {e}"
@@ -51,10 +39,10 @@ class WebSocketManager:
                     raise ImportError(  # pylint: disable=raise-missing-from
                         "User doesn't have an AMD gpu"
                     )
-                all_gpus = [
+                shared.all_gpus = [
                     pyamdgpuinfo.get_gpu(x) for x in range(pyamdgpuinfo.detect_gpus())
                 ]
-                amd = True
+                shared.amd = True
             except Exception:  # pylint: disable=broad-except
                 logger.warning(
                     "User doesn't have an AMD nor an NVIDIA card. GPU info will be unavailable."
@@ -63,8 +51,8 @@ class WebSocketManager:
 
         while True:
             data = []
-            if amd:
-                for stat in all_gpus:
+            if shared.amd:
+                for stat in shared.all_gpus:
                     data.append(
                         {
                             "index": stat.gpu_id,
@@ -90,8 +78,10 @@ class WebSocketManager:
                 try:
                     from gpustat.core import GPUStatCollection
 
-                    all_gpus = [i.entry for i in GPUStatCollection.new_query().gpus]
-                    for stat in all_gpus:
+                    shared.all_gpus = [
+                        i.entry for i in GPUStatCollection.new_query().gpus
+                    ]
+                    for stat in shared.all_gpus:
                         data.append(
                             {
                                 "index": stat["index"],
@@ -130,9 +120,9 @@ class WebSocketManager:
             and config.api.clear_memory_policy == "after_disconnect"
         ):
             if torch.cuda.is_available():
-                logger.debug(f"Cleaning up GPU memory: {config.api.device_id}")
+                logger.debug(f"Cleaning up GPU memory: {config.api.device}")
 
-                with torch.cuda.device(config.api.device_id):
+                with torch.device(config.api.device):
                     torch.cuda.empty_cache()
                     torch.cuda.ipc_collect()
 
@@ -160,9 +150,23 @@ class WebSocketManager:
     def broadcast_sync(self, data: Data):
         "Broadcasts data message to all active websocket connections synchronously"
 
+        loop_error_message = "No event loop found, please inject it in the code"
+
+        try:
+            assert self.loop is not None, loop_error_message
+            asyncio.get_event_loop()
+        except RuntimeError:
+            assert self.loop is not None  # For type safety
+            asyncio.set_event_loop(self.loop)
+        except AssertionError:
+            logger.info("WARNING: No event loop found, assuming we are running tests")
+            return
+
         for connection in self.active_connections:
             if connection.application_state.CONNECTED:
-                self.to_run.append(connection.send_json(data.to_json()))
+                asyncio.run_coroutine_threadsafe(
+                    connection.send_json(data.to_json()), self.loop
+                )
             else:
                 self.active_connections.remove(connection)
 
@@ -174,9 +178,9 @@ class WebSocketManager:
 
         if config.api.clear_memory_policy == "after_disconnect":
             if torch.cuda.is_available():
-                logger.debug(f"Cleaning up GPU memory: {config.api.device_id}")
+                logger.debug(f"Cleaning up GPU memory: {config.api.device}")
 
-                with torch.cuda.device(config.api.device_id):
+                with torch.cuda.device(config.api.device):
                     torch.cuda.empty_cache()
                     torch.cuda.ipc_collect()
 

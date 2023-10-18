@@ -20,8 +20,8 @@
             type="primary"
             bordered
             @click="downloadModel(customModel)"
-            :loading="conf.state.downloading"
-            :disabled="conf.state.downloading || customModel === ''"
+            :loading="settings.state.downloading"
+            :disabled="settings.state.downloading || customModel === ''"
             secondary
             style="margin-right: 16px; margin-left: 4px"
             >Install</NButton
@@ -49,7 +49,7 @@
 </template>
 
 <script lang="ts" setup>
-import type { Model } from "@/core/models";
+import type { IHuggingFaceModel } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 import { Home, Menu } from "@vicons/ionicons5";
 import {
@@ -66,7 +66,7 @@ import type { DropdownMixedOption } from "naive-ui/es/dropdown/src/interface";
 import { computed, h, reactive, ref, type Component, type Ref } from "vue";
 import { huggingfaceModelsFile } from "../../env";
 import { useState } from "../../store/state";
-const conf = useState();
+const settings = useState();
 const message = useMessage();
 
 const customModel = ref("");
@@ -76,16 +76,16 @@ function downloadModel(model: Ref<string> | string) {
   const modelName = typeof model === "string" ? model : model.value;
   url.searchParams.append("model", modelName);
   console.log(url);
-  conf.state.downloading = true;
+  settings.state.downloading = true;
   customModel.value = "";
   message.info(`Downloading model: ${modelName}`);
   fetch(url, { method: "POST" })
     .then(() => {
-      conf.state.downloading = false;
+      settings.state.downloading = false;
       message.success(`Downloaded model: ${modelName}`);
     })
     .catch(() => {
-      conf.state.downloading = false;
+      settings.state.downloading = false;
       message.error(`Failed to download model: ${modelName}`);
     });
 }
@@ -107,7 +107,7 @@ const renderIcon = (
   };
 };
 
-function getPluginOptions(row: Model) {
+function getPluginOptions(row: IHuggingFaceModel) {
   const options: DropdownMixedOption[] = [
     {
       label: "Hugging Face",
@@ -121,7 +121,7 @@ function getPluginOptions(row: Model) {
   return options;
 }
 
-const columns: DataTableColumns<Model> = [
+const columns: DataTableColumns<IHuggingFaceModel> = [
   {
     title: "Name",
     key: "name",
@@ -144,7 +144,7 @@ const columns: DataTableColumns<Model> = [
           round: true,
           block: true,
           bordered: false,
-          disabled: conf.state.downloading,
+          disabled: settings.state.downloading,
           onClick: () => {
             downloadModel(row.huggingface_id);
           },
@@ -163,7 +163,7 @@ const columns: DataTableColumns<Model> = [
         {
           trigger: "hover",
           options: getPluginOptions(row),
-          disabled: conf.state.downloading,
+          disabled: settings.state.downloading,
         },
         { default: renderIcon(Menu) }
       );
@@ -172,7 +172,7 @@ const columns: DataTableColumns<Model> = [
   },
 ];
 
-const modelData = reactive<Model[]>([]);
+const modelData = reactive<IHuggingFaceModel[]>([]);
 const modelFilter = ref("");
 
 const dataRef = computed(() => {
@@ -187,7 +187,7 @@ const dataRef = computed(() => {
 const pagination = reactive({ pageSize: 10 });
 
 fetch(huggingfaceModelsFile).then((res) => {
-  res.json().then((data: { models: Model[] }) => {
+  res.json().then((data: { models: IHuggingFaceModel[] }) => {
     modelData.push(...data["models"]);
   });
 });

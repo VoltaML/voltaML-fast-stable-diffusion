@@ -28,7 +28,7 @@ Select the latest release and download `voltaml-manger`:
 
 ### 3. Put this file into the created folder
 
-Simply drag and drop this executable into the created folder and double click it to run.
+Simply drag and drop this executable into the created folder.
 
 ### 4. Enable execution
 

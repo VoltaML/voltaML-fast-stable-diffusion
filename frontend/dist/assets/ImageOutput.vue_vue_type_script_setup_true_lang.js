@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 import { d as defineComponent, E as ref, u as useState, e as openBlock, x as createBlock, w as withCtx, h as unref, N as NGi, g as createVNode, G as NIcon, m as createTextVNode, F as NButton, v as createCommentVNode, y as NGrid, c as computed, n as createBaseVNode, f as createElementBlock, J as Fragment, M as renderList, O as NScrollbar, i as NCard } from "./index.js";
+=======
+import { d as defineComponent, r as ref, v as useState, o as openBlock, k as createBlock, w as withCtx, f as unref, A as NGi, e as createVNode, q as NIcon, i as createTextVNode, h as NButton, G as createCommentVNode, H as NGrid, c as computed, b as createBaseVNode, a as createElementBlock, F as Fragment, g as renderList, Q as NScrollbar, N as NCard } from "./index.js";
+>>>>>>> origin/experimental
 import { D as Download, _ as _sfc_main$2 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { T as TrashBin, N as NImage } from "./TrashBin.js";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
@@ -107,6 +111,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       type: Array,
       required: false,
       default: () => []
+    },
+    data: {
+      type: Object,
+      required: false,
+      default: () => ({})
     }
   },
   emits: ["image-clicked"],
@@ -164,8 +173,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             }, null, 8, ["base64image"]),
             createVNode(_sfc_main$2, {
               output: props.currentImage,
-              card: false
-            }, null, 8, ["output"])
+              card: false,
+              data: __props.data
+            }, null, 8, ["output", "data"])
           ])) : createCommentVNode("", true)
         ]),
         _: 1

@@ -38,7 +38,7 @@ class InterrogationModel(ABC):
     def memory_cleanup(self) -> None:
         "Cleanup the GPU memory"
 
-        if config.api.device_type == "cpu" or config.api.device_type == "directml":
+        if "cpu" in config.api.device or "privateuseone" in config.api.device:
             gc.collect()
         else:
             torch.cuda.empty_cache()
