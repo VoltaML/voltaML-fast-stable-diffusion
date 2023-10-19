@@ -12,5 +12,5 @@ __all__ = [
     "InferenceContext",
     "is_hypertile_available",
     "hypertile",
-    "compile_sfast"
+    "compile_sfast",
 ]
