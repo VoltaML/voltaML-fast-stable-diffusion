@@ -609,8 +609,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         return self.unet(
                             *args,
                             encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                            return_dict=True,
                             **kwargs,
-                        ).sample
+                        )[0]
 
                     for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
                         latents = do_denoise(latents, t, _call)  # type: ignore
