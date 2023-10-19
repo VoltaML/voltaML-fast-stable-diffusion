@@ -50,6 +50,7 @@
         v-model:show="showImageModal"
         closable
         mask-closable
+        close-on-esc
         preset="card"
         style="width: 85vw"
         title="Image Info"
@@ -120,7 +121,11 @@
                     .currentImageMetadata"
                   v-bind:key="item.toString()"
                 >
-                  {{ item }}
+                  {{
+                    key.toString() === "scheduler"
+                      ? getNamedSampler(item.toString())
+                      : item
+                  }}
                 </NDescriptionsItem>
               </NDescriptions>
             </NScrollbar>
@@ -175,7 +180,7 @@ import {
   NSlider,
 } from "naive-ui";
 import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
-import { useSettings } from "../store/settings";
+import { diffusersSchedulerTuple, useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
@@ -306,7 +311,6 @@ function imgClick(column_index: number, item_index: number) {
           return value;
         }
       );
-      console.log(global.state.imageBrowser.currentImageMetadata);
     });
   showImageModal.value = true;
 }
@@ -455,6 +459,22 @@ onUnmounted(() => {
     }
   });
 });
+
+function getNamedSampler(value: string) {
+  const parsed_string = +value;
+
+  for (const objectKey of Object.keys(diffusersSchedulerTuple)) {
+    const val =
+      diffusersSchedulerTuple[
+        objectKey as keyof typeof diffusersSchedulerTuple
+      ];
+    if (val === parsed_string) {
+      return objectKey;
+    }
+  }
+
+  return value;
+}
 
 refreshImages();
 

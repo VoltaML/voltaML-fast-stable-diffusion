@@ -1,5 +1,5 @@
 <template>
-  <NModal :show="showModal">
+  <NModal v-model:show="showModal" mask-closable close-on-esc>
     <NCard style="max-width: 700px" title="Copy additional properties">
       <div
         style="

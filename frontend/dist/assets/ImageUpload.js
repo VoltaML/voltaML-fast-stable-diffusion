@@ -1,4 +1,4 @@
-import { d as defineComponent, r as ref, c as computed, bb as onMounted, o as openBlock, k as createBlock, w as withCtx, b as createBaseVNode, bR as withModifiers, a as createElementBlock, e as createVNode, f as unref, q as NIcon, t as toDisplayString, N as NCard, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, r as ref, c as computed, bb as onMounted, o as openBlock, k as createBlock, w as withCtx, b as createBaseVNode, bS as withModifiers, a as createElementBlock, e as createVNode, f as unref, q as NIcon, t as toDisplayString, N as NCard, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
 import { C as CloudUpload } from "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-b7a1d9cc"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "image-container" };

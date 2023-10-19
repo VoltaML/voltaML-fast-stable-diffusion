@@ -40850,6 +40850,22 @@ class Settings {
     return JSON.stringify(this.settings);
   }
 }
+const diffusersSchedulerTuple = {
+  DDIM: 1,
+  DDPM: 2,
+  PNDM: 3,
+  LMSD: 4,
+  EulerDiscrete: 5,
+  HeunDiscrete: 6,
+  EulerAncestralDiscrete: 7,
+  DPMSolverMultistep: 8,
+  DPMSolverSinglestep: 9,
+  KDPM2Discrete: 10,
+  KDPM2AncestralDiscrete: 11,
+  DEISMultistep: 12,
+  UniPCMultistep: 13,
+  DPMSolverSDEScheduler: 14
+};
 const upscalerOptions = [
   {
     label: "RealESRGAN_x4plus",
@@ -40901,64 +40917,12 @@ function getSchedulerOptions() {
       type: "group",
       label: "Diffusers",
       key: "diffusers",
-      children: [
-        {
-          label: "DDIM",
-          value: 1
-        },
-        {
-          label: "DDPM",
-          value: 2
-        },
-        {
-          label: "PNDM",
-          value: 3
-        },
-        {
-          label: "LMSD",
-          value: 4
-        },
-        {
-          label: "EulerDiscrete",
-          value: 5
-        },
-        {
-          label: "HeunDiscrete",
-          value: 6
-        },
-        {
-          label: "EulerAncestralDiscrete",
-          value: 7
-        },
-        {
-          label: "DPMSolverMultistep",
-          value: 8
-        },
-        {
-          label: "DPMSolverSinglestep",
-          value: 9
-        },
-        {
-          label: "KDPM2Discrete",
-          value: 10
-        },
-        {
-          label: "KDPM2AncestralDiscrete",
-          value: 11
-        },
-        {
-          label: "DEISMultistep",
-          value: 12
-        },
-        {
-          label: "UniPCMultistep",
-          value: 13
-        },
-        {
-          label: "DPMSolverSDE",
-          value: 14
-        }
-      ]
+      children: Object.keys(diffusersSchedulerTuple).map((key) => {
+        return {
+          label: key,
+          value: diffusersSchedulerTuple[key]
+        };
+      })
     }
   ];
   return scheduler_options;
@@ -42316,7 +42280,7 @@ export {
   resolveWrappedSlot as ay,
   flatten$2 as az,
   createBaseVNode as b,
-  switchLight$1 as b$,
+  isSlotEmpty as b$,
   loadingBarApiInjectionKey as b0,
   throwError as b1,
   AddIcon as b2,
@@ -42334,26 +42298,26 @@ export {
   useNotification as bE,
   defaultSettings as bF,
   urlFromPath as bG,
-  useRouter as bH,
-  isBrowser$3 as bI,
-  fadeInTransition as bJ,
-  imageLight as bK,
-  isMounted as bL,
-  LazyTeleport as bM,
-  zindexable$1 as bN,
-  kebabCase$1 as bO,
-  useCompitable as bP,
-  descriptionsLight$1 as bQ,
-  withModifiers as bR,
-  NAlert as bS,
-  inputNumberLight$1 as bT,
-  rgba as bU,
-  XButton as bV,
-  VBinder as bW,
-  VTarget as bX,
-  VFollower as bY,
-  sliderLight$1 as bZ,
-  isSlotEmpty as b_,
+  diffusersSchedulerTuple as bH,
+  useRouter as bI,
+  isBrowser$3 as bJ,
+  fadeInTransition as bK,
+  imageLight as bL,
+  isMounted as bM,
+  LazyTeleport as bN,
+  zindexable$1 as bO,
+  kebabCase$1 as bP,
+  useCompitable as bQ,
+  descriptionsLight$1 as bR,
+  withModifiers as bS,
+  NAlert as bT,
+  inputNumberLight$1 as bU,
+  rgba as bV,
+  XButton as bW,
+  VBinder as bX,
+  VTarget as bY,
+  VFollower as bZ,
+  sliderLight$1 as b_,
   reactive as ba,
   onMounted as bb,
   normalizeStyle as bc,
@@ -42381,6 +42345,7 @@ export {
   color2Class as by,
   NTag as bz,
   computed as c,
+  switchLight$1 as c0,
   defineComponent as d,
   createVNode as e,
   unref as f,

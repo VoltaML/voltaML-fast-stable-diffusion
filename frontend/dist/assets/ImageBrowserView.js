@@ -1,4 +1,4 @@
-import { d as defineComponent, b9 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, ba as reactive, bb as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, w as withCtx, F as Fragment, g as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, h as NButton, i as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bG as urlFromPath, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b9 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, ba as reactive, bb as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, w as withCtx, F as Fragment, g as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, h as NButton, i as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bG as urlFromPath, bH as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
@@ -18,8 +18,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
     useCssVars((_ctx) => ({
-      "c641501e": unref(settings).data.settings.frontend.image_browser_columns,
-      "0c6c1cae": backgroundColor.value
+      "c2a2aeae": unref(settings).data.settings.frontend.image_browser_columns,
+      "152d3766": backgroundColor.value
     }));
     const global = useState();
     const settings = useSettings();
@@ -124,7 +124,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             return value;
           }
         );
-        console.log(global.state.imageBrowser.currentImageMetadata);
       });
       showImageModal.value = true;
     }
@@ -233,6 +232,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       });
     });
+    function getNamedSampler(value) {
+      const parsed_string = +value;
+      for (const objectKey of Object.keys(diffusersSchedulerTuple)) {
+        const val = diffusersSchedulerTuple[objectKey];
+        if (val === parsed_string) {
+          return objectKey;
+        }
+      }
+      return value;
+    }
     refreshImages();
     const backgroundColor = computed(() => {
       if (settings.data.settings.frontend.theme === "dark") {
@@ -287,6 +296,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:show": _cache[5] || (_cache[5] = ($event) => showImageModal.value = $event),
             closable: "",
             "mask-closable": "",
+            "close-on-esc": "",
             preset: "card",
             style: { "width": "85vw" },
             title: "Image Info",
@@ -397,7 +407,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   key: item.toString()
                                 }, {
                                   default: withCtx(() => [
-                                    createTextVNode(toDisplayString(item), 1)
+                                    createTextVNode(toDisplayString(key.toString() === "scheduler" ? getNamedSampler(item.toString()) : item), 1)
                                   ]),
                                   _: 2
                                 }, 1032, ["label"]);
@@ -447,8 +457,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_59d31164_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-59d31164"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_6c702fed_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-6c702fed"]]);
 export {
   ImageBrowserView as default
 };
