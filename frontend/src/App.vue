@@ -89,4 +89,8 @@ const overrides: GlobalThemeOverrides = {
   background-color: v-bind("theme.common.pressedColor") !important;
   color: v-bind("theme.common.primaryColorHover") !important;
 }
+#autocomplete-list {
+  max-height: min(600px, 70vh);
+  overflow-y: auto;
+}
 </style>
