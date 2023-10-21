@@ -69,11 +69,6 @@ export interface StateInterface {
     images: string[];
     genData: GenerationData;
   };
-  sd_upscale: {
-    currentImage: string;
-    images: string[];
-    genData: GenerationData;
-  };
   imageProcessing: {
     currentImage: string;
     images: string[];
@@ -161,14 +156,6 @@ export const useState = defineStore("state", () => {
       },
     },
     controlnet: {
-      images: [],
-      currentImage: "",
-      genData: {
-        time_taken: null,
-        seed: null,
-      },
-    },
-    sd_upscale: {
       images: [],
       currentImage: "",
       genData: {

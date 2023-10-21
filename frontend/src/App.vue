@@ -19,6 +19,7 @@
 </template>
 
 <script setup lang="ts">
+import { themeOverridesKey } from "@/injectionKeys";
 import {
   NConfigProvider,
   NLoadingBarProvider,
@@ -27,9 +28,8 @@ import {
   NThemeEditor,
   darkTheme,
   lightTheme,
-  type GlobalThemeOverrides,
 } from "naive-ui";
-import { computed, ref, watch } from "vue";
+import { computed, provide, ref, watch } from "vue";
 import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
 import InitHandler from "./components/InitHandler.vue";
 import PerformanceDrawer from "./components/PerformanceDrawer.vue";
@@ -38,16 +38,9 @@ import TopBarVue from "./components/TopBar.vue";
 import { serverUrl } from "./env";
 import routerContainerVue from "./router/router-container.vue";
 import { useSettings } from "./store/settings";
+import { type ExtendedThemeOverrides } from "./types";
 
 const settings = useSettings();
-
-type ExtendedThemeOverrides = GlobalThemeOverrides & {
-  volta: {
-    base: "light" | "dark" | undefined;
-    blur: string | undefined;
-    backgroundImage: string | undefined;
-  };
-};
 
 const overrides = ref<ExtendedThemeOverrides | null>(null);
 const theme = computed(() => {
@@ -57,6 +50,8 @@ const theme = computed(() => {
     return darkTheme;
   }
 });
+
+provide(themeOverridesKey, overrides);
 
 function updateTheme() {
   fetch(`${serverUrl}/themes/${settings.data.settings.frontend.theme}.json`)
