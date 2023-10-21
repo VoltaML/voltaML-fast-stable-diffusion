@@ -506,7 +506,6 @@ const generate = () => {
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 
@@ -585,9 +584,7 @@ function redo() {
 }
 
 function toggleEraser() {
-  console.log(eraser.value);
   eraser.value = !eraser.value;
-  console.log(eraser.value);
 }
 
 function generateMask() {
@@ -613,7 +610,6 @@ if (settings.data.settings.inpainting.image !== "") {
   const img = new Image();
   img.src = settings.data.settings.inpainting.image;
   img.onload = () => {
-    console.log(img);
     handleImageUpdate(img);
   };
 }

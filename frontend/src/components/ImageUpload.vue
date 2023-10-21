@@ -95,8 +95,6 @@ function previewImage(event: Event) {
 const emit = defineEmits(["file-dropped"]);
 
 function onDrop(e: DragEvent) {
-  console.log(e.dataTransfer?.files);
-
   // Emit file as string
   if (e.dataTransfer?.files) {
     const reader = new FileReader();

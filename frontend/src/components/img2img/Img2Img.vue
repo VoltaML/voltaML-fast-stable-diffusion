@@ -394,7 +394,6 @@ const generate = () => {
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 

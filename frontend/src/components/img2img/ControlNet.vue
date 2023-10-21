@@ -439,7 +439,6 @@ const generate = () => {
         throw new Error(res.statusText);
       }
       global.state.generating = false;
-      console.log(res);
       res.json().then((data) => {
         global.state.controlnet.images = data.images;
         global.state.controlnet.currentImage = data.images[0];
@@ -456,7 +455,6 @@ const generate = () => {
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 

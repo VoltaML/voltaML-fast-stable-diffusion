@@ -1,4 +1,4 @@
-import { T as cB, ae as cM, ad as c, aw as cE, aW as iconSwitchTransition, af as cNotM, d as defineComponent, V as useConfig, aj as useRtl, W as useTheme, a6 as provide, s as h, az as flatten, aA as getSlot, S as createInjectionKey, bi as stepsLight, U as inject, b1 as throwError, c as computed, Z as useThemeClass, ay as resolveWrappedSlot, ak as resolveSlot, aL as NIconSwitchTransition, ao as createKey, a2 as call, al as NBaseIcon, bj as FinishedIcon, bk as ErrorIcon, x as useMessage, v as useState, r as ref, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, B as NSpace, N as NCard, b as createBaseVNode, p as NSelect, h as NButton, i as createTextVNode, m as NModal, z as serverUrl, u as useSettings, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
+import { T as cB, ae as cM, ad as c, aw as cE, aW as iconSwitchTransition, af as cNotM, d as defineComponent, V as useConfig, aj as useRtl, W as useTheme, a6 as provide, s as h, az as flatten, aA as getSlot, S as createInjectionKey, bj as stepsLight, U as inject, b1 as throwError, c as computed, Z as useThemeClass, ay as resolveWrappedSlot, ak as resolveSlot, aL as NIconSwitchTransition, ao as createKey, a2 as call, al as NBaseIcon, bk as FinishedIcon, bl as ErrorIcon, x as useMessage, v as useState, r as ref, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, B as NSpace, N as NCard, b as createBaseVNode, p as NSelect, h as NButton, i as createTextVNode, m as NModal, z as serverUrl, u as useSettings, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 const style = cB("steps", `
@@ -494,30 +494,30 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 options: modelOptions.value,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
-            ])
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NSpace), {
-          vertical: "",
-          justify: "center",
-          style: { "width": "100%" },
-          align: "center"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NButton), {
-              style: { "margin-top": "16px", "padding": "0 92px" },
-              type: "success",
-              ghost: "",
-              loading: building.value,
-              disabled: building.value || modelOptions.value.length === 0,
-              onClick: onAccelerateClick
+            ]),
+            createVNode(unref(NSpace), {
+              vertical: "",
+              justify: "center",
+              style: { "width": "100%" },
+              align: "center"
             }, {
               default: withCtx(() => [
-                createTextVNode("Accelerate")
+                createVNode(unref(NButton), {
+                  style: { "margin-top": "16px", "padding": "0 92px" },
+                  type: "success",
+                  ghost: "",
+                  loading: building.value,
+                  disabled: building.value || modelOptions.value.length === 0,
+                  onClick: onAccelerateClick
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Accelerate")
+                  ]),
+                  _: 1
+                }, 8, ["loading", "disabled"])
               ]),
               _: 1
-            }, 8, ["loading", "disabled"])
+            })
           ]),
           _: 1
         }),

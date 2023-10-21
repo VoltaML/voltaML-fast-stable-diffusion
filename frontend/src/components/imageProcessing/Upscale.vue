@@ -183,7 +183,6 @@ const generate = () => {
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
-        console.log(data);
         global.state.imageProcessing.images = [data.images];
         global.state.progress = 0;
         global.state.total_steps = 0;
@@ -193,7 +192,6 @@ const generate = () => {
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 </script>

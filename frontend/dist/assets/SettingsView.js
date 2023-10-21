@@ -1,4 +1,4 @@
-import { U as inject, bA as getCurrentInstance, O as watch, aE as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bB as formLight, a4 as keysOf, c as computed, aC as formatLength, aK as get, bC as commonVariables, aw as cE, Y as toRef, aZ as createId, bD as formItemInjectionKey, bb as onMounted, Z as useThemeClass, a_ as Transition, ay as resolveWrappedSlot, ao as createKey, aP as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, bd as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, h as NButton, n as NTooltip, x as useMessage, bE as useNotification, y as onUnmounted, z as serverUrl, bF as defaultSettings } from "./index.js";
+import { U as inject, bB as getCurrentInstance, O as watch, aE as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bC as formLight, a4 as keysOf, c as computed, aC as formatLength, aK as get, bD as commonVariables, aw as cE, Y as toRef, aZ as createId, bE as formItemInjectionKey, bc as onMounted, Z as useThemeClass, a_ as Transition, ay as resolveWrappedSlot, ao as createKey, aP as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, be as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, h as NButton, n as NTooltip, x as useMessage, bF as useNotification, y as onUnmounted, z as serverUrl, bG as defaultSettings } from "./index.js";
 import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -1894,7 +1894,6 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
           if (!value || value === "default") {
             delete settings.defaultSettings.api.autoloaded_vae[model];
           } else {
-            console.log("Setting", model, "to", value);
             settings.defaultSettings.api.autoloaded_vae[model] = value;
           }
         }

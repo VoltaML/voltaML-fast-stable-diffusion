@@ -561,11 +561,11 @@ function refreshModels() {
             if (allLoaded.length > 0) {
               settings.data.settings.model = allLoaded[0];
               console.log(
-                "Set current model to first available model: ",
+                "Setting current model to first available model: ",
                 settings.data.settings.model
               );
             } else {
-              console.log("No models available");
+              console.log("No models available, setting current model to null");
               settings.data.settings.model = null;
             }
           }

@@ -6957,6 +6957,7 @@ function defineStore(idOrOptions, setup, setupOptions) {
   useStore.$id = id;
   return useStore;
 }
+const themeOverridesKey = Symbol("theme");
 let onceCbs = [];
 const paramsMap = /* @__PURE__ */ new WeakMap();
 function flushOnceCallbacks() {
@@ -37205,7 +37206,7 @@ const NThemeEditor = defineComponent({
     });
   }
 });
-const _hoisted_1$g = {
+const _hoisted_1$h = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37230,7 +37231,7 @@ const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -37240,14 +37241,14 @@ const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$a];
+const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_5$7);
   }
 });
-const _hoisted_1$f = {
+const _hoisted_1$g = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37255,21 +37256,36 @@ const _hoisted_1$f = {
 const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 32C132.29 32 32 132.29 32 256s100.29 224 224 224s224-100.29 224-224S379.71 32 256 32zM128.72 383.28A180 180 0 0 1 256 76v360a178.82 178.82 0 0 1-127.28-52.72z",
+    d: "M64 164v244a56 56 0 0 0 56 56h272a56 56 0 0 0 56-56V164a4 4 0 0 0-4-4H68a4 4 0 0 0-4 4zm267 151.63l-63.69 63.68a16 16 0 0 1-22.62 0L181 315.63c-6.09-6.09-6.65-16-.85-22.38a16 16 0 0 1 23.16-.56L240 329.37V224.45c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 272 224v105.37l36.69-36.68a16 16 0 0 1 23.16.56c5.8 6.37 5.24 16.29-.85 22.38z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$d = [_hoisted_2$e];
-const ContrastSharp = defineComponent({
-  name: "ContrastSharp",
+const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
+  "rect",
+  {
+    x: "32",
+    y: "48",
+    width: "448",
+    height: "80",
+    rx: "32",
+    ry: "32",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$a = [_hoisted_2$e, _hoisted_3$d];
+const Archive = defineComponent({
+  name: "Archive",
   render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_3$d);
+    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_4$a);
   }
 });
-const _hoisted_1$e = {
+const _hoisted_1$f = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37308,10 +37324,10 @@ const _hoisted_5$6 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
 const Create = defineComponent({
   name: "Create",
   render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_5$6);
+    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$6);
   }
 });
-const _hoisted_1$d = {
+const _hoisted_1$e = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37350,10 +37366,10 @@ const _hoisted_5$5 = [_hoisted_2$c, _hoisted_3$b, _hoisted_4$8];
 const Cube = defineComponent({
   name: "Cube",
   render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_5$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_5$5);
   }
 });
-const _hoisted_1$c = {
+const _hoisted_1$d = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37382,10 +37398,10 @@ const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
 const Duplicate = defineComponent({
   name: "Duplicate",
   render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
   }
 });
-const _hoisted_1$b = {
+const _hoisted_1$c = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37404,10 +37420,10 @@ const _hoisted_3$9 = [_hoisted_2$a];
 const Image$1 = defineComponent({
   name: "Image",
   render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_3$9);
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_3$9);
   }
 });
-const _hoisted_1$a = {
+const _hoisted_1$b = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37436,10 +37452,10 @@ const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
 const Images = defineComponent({
   name: "Images",
   render: function render8(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$6);
+    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
-const _hoisted_1$9 = {
+const _hoisted_1$a = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37468,10 +37484,10 @@ const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
 const PowerSharp = defineComponent({
   name: "PowerSharp",
   render: function render9(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
   }
 });
-const _hoisted_1$8 = {
+const _hoisted_1$9 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37490,10 +37506,10 @@ const _hoisted_3$6 = [_hoisted_2$7];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
   render: function render10(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$6);
+    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
   }
 });
-const _hoisted_1$7 = {
+const _hoisted_1$8 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37512,10 +37528,10 @@ const _hoisted_3$5 = [_hoisted_2$6];
 const Speedometer = defineComponent({
   name: "Speedometer",
   render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$5);
   }
 });
-const _hoisted_1$6 = {
+const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37564,10 +37580,10 @@ const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
 const StatsChart = defineComponent({
   name: "StatsChart",
   render: function render12(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_6$2);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37618,10 +37634,10 @@ const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
   render: function render13(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$3);
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
   }
 });
-const _hoisted_1$4 = {
+const _hoisted_1$5 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37672,7 +37688,7 @@ const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
 const Wifi = defineComponent({
   name: "Wifi",
   render: function render14(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$1);
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$1);
   }
 });
 /*!
@@ -39473,7 +39489,7 @@ function extractChangingRecords(to, from) {
 function useRouter() {
   return inject(routerKey);
 }
-const _hoisted_1$3 = { class: "navbar" };
+const _hoisted_1$4 = { class: "navbar" };
 const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
   setup(__props) {
@@ -39492,8 +39508,12 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Images)
       },
       {
-        label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-        key: "extra",
+        label: () => h(
+          RouterLink,
+          { to: "/imageProcessing" },
+          { default: () => "Image Processing" }
+        ),
+        key: "imageProcessing",
         icon: renderIcon(Duplicate)
       },
       {
@@ -39521,6 +39541,11 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Speedometer)
       },
       {
+        label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+        key: "extra",
+        icon: renderIcon(Archive)
+      },
+      {
         label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
         key: "settings",
         icon: renderIcon(SettingsSharp)
@@ -39528,7 +39553,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     ];
     let collapsed = ref(true);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$3, [
+      return openBlock(), createElementBlock("div", _hoisted_1$4, [
         createVNode(unref(NLayout), {
           style: { "height": "100%", "overflow": "visible" },
           "has-sider": "",
@@ -39669,18 +39694,13 @@ const useState = defineStore("state", () => {
         seed: null
       }
     },
-    sd_upscale: {
-      images: [],
-      currentImage: "",
-      genData: {
-        time_taken: null,
-        seed: null
-      }
-    },
-    extra: {
+    imageProcessing: {
       images: [],
       currentImage: "",
       tab: "upscale"
+    },
+    extra: {
+      tab: "dependencies"
     },
     tagger: {
       positivePrompt: /* @__PURE__ */ new Map(),
@@ -39751,7 +39771,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
 const _hoisted_3$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
@@ -39793,7 +39813,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 2
                     }, 1024),
-                    createBaseVNode("div", _hoisted_1$2, [
+                    createBaseVNode("div", _hoisted_1$3, [
                       _hoisted_2$2,
                       createVNode(unref(NProgress), {
                         percentage: gpu.utilization,
@@ -39826,7 +39846,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("a", {
+const _hoisted_1$2 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://huggingface.co/settings/tokens"
 }, "this page", -1);
@@ -39872,7 +39892,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           createVNode(unref(NText), null, {
             default: withCtx(() => [
               createTextVNode(" API does not have a HuggingFace token. Please enter a valid token to continue. You can get a token from "),
-              _hoisted_1$1
+              _hoisted_1$2
             ]),
             _: 1
           }),
@@ -39903,128 +39923,13 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-function progressForward(progress, global2) {
-  if (progress === 0) {
-    return 0;
-  } else if (global2.state.progress <= progress) {
-    return progress;
-  } else {
-    return global2.state.progress;
-  }
-}
-function currentStepForward(currentStep, global2) {
-  if (currentStep === 0) {
-    return 0;
-  } else if (global2.state.current_step <= currentStep) {
-    return currentStep;
-  } else {
-    return global2.state.current_step;
-  }
-}
-function processWebSocket(message, global2, notificationProvider) {
-  switch (message.type) {
-    case "test": {
-      break;
-    }
-    case "progress": {
-      global2.state.progress = message.data.progress;
-      break;
-    }
-    case "txt2img": {
-      global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "img2img": {
-      global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "inpainting": {
-      global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "controlnet": {
-      global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "notification": {
-      message.data.timeout = message.data.timeout || 5e3;
-      console.log(message.data.message);
-      notificationProvider.create({
-        type: message.data.severity,
-        title: message.data.title,
-        content: message.data.message,
-        duration: message.data.timeout
-      });
-      break;
-    }
-    case "aitemplate_compile": {
-      global2.state.aitBuildStep = {
-        ...global2.state.aitBuildStep,
-        ...message.data
-      };
-      break;
-    }
-    case "onnx_compile": {
-      global2.state.onnxBuildStep = {
-        ...global2.state.onnxBuildStep,
-        ...message.data
-      };
-      break;
-    }
-    case "cluster_stats": {
-      global2.state.perf_drawer.gpus = message.data;
-      break;
-    }
-    case "token": {
-      if (message.data.huggingface === "missing") {
-        global2.state.secrets.huggingface = "missing";
-      }
-      break;
-    }
-    case "refresh_capabilities": {
-      global2.fetchCapabilites().then(() => {
-        console.log("Capabilities refreshed");
-      }).catch((error) => {
-        console.error(error);
-      });
-      break;
-    }
-    default: {
-      console.log(message);
-    }
-  }
-}
 var _a;
 const isClient = typeof window !== "undefined";
 const isFunction = (val) => typeof val === "function";
 const isString = (val) => typeof val === "string";
 const noop = () => {
 };
-isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
 function resolveUnref(r) {
   return typeof r === "function" ? r() : unref(r);
 }
@@ -40129,6 +40034,55 @@ function useEventListener(...args) {
     cleanup();
   };
   tryOnScopeDispose(stop);
+  return stop;
+}
+let _iOSWorkaround = false;
+function onClickOutside(target, handler, options = {}) {
+  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
+  if (!window2)
+    return;
+  if (isIOS && !_iOSWorkaround) {
+    _iOSWorkaround = true;
+    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop));
+  }
+  let shouldListen = true;
+  const shouldIgnore = (event) => {
+    return ignore.some((target2) => {
+      if (typeof target2 === "string") {
+        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event.target || event.composedPath().includes(el));
+      } else {
+        const el = unrefElement(target2);
+        return el && (event.target === el || event.composedPath().includes(el));
+      }
+    });
+  };
+  const listener = (event) => {
+    const el = unrefElement(target);
+    if (!el || el === event.target || event.composedPath().includes(el))
+      return;
+    if (event.detail === 0)
+      shouldListen = !shouldIgnore(event);
+    if (!shouldListen) {
+      shouldListen = true;
+      return;
+    }
+    handler(event);
+  };
+  const cleanup = [
+    useEventListener(window2, "click", listener, { passive: true, capture }),
+    useEventListener(window2, "pointerdown", (e) => {
+      const el = unrefElement(target);
+      if (el)
+        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
+    }, { passive: true }),
+    detectIframe && useEventListener(window2, "blur", (event) => {
+      var _a2;
+      const el = unrefElement(target);
+      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
+        handler(event);
+    })
+  ].filter(Boolean);
+  const stop = () => cleanup.forEach((fn) => fn());
   return stop;
 }
 const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
@@ -40326,6 +40280,121 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
+function progressForward(progress, global2) {
+  if (progress === 0) {
+    return 0;
+  } else if (global2.state.progress <= progress) {
+    return progress;
+  } else {
+    return global2.state.progress;
+  }
+}
+function currentStepForward(currentStep, global2) {
+  if (currentStep === 0) {
+    return 0;
+  } else if (global2.state.current_step <= currentStep) {
+    return currentStep;
+  } else {
+    return global2.state.current_step;
+  }
+}
+function processWebSocket(message, global2, notificationProvider) {
+  switch (message.type) {
+    case "test": {
+      break;
+    }
+    case "progress": {
+      global2.state.progress = message.data.progress;
+      break;
+    }
+    case "txt2img": {
+      global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "img2img": {
+      global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "inpainting": {
+      global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "controlnet": {
+      global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "notification": {
+      message.data.timeout = message.data.timeout || 5e3;
+      console.log(message.data.message);
+      notificationProvider.create({
+        type: message.data.severity,
+        title: message.data.title,
+        content: message.data.message,
+        duration: message.data.timeout
+      });
+      break;
+    }
+    case "aitemplate_compile": {
+      global2.state.aitBuildStep = {
+        ...global2.state.aitBuildStep,
+        ...message.data
+      };
+      break;
+    }
+    case "onnx_compile": {
+      global2.state.onnxBuildStep = {
+        ...global2.state.onnxBuildStep,
+        ...message.data
+      };
+      break;
+    }
+    case "cluster_stats": {
+      global2.state.perf_drawer.gpus = message.data;
+      break;
+    }
+    case "token": {
+      if (message.data.huggingface === "missing") {
+        global2.state.secrets.huggingface = "missing";
+      }
+      break;
+    }
+    case "refresh_capabilities": {
+      global2.fetchCapabilites().then(() => {
+        console.log("Capabilities refreshed");
+      }).catch((error) => {
+        console.error(error);
+      });
+      break;
+    }
+    default: {
+      console.log(message);
+    }
+  }
+}
 const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
   const messageProvider = useMessage();
@@ -40452,7 +40521,7 @@ async function startWebsocket(messageProvider) {
 }
 function getTextBoundaries(elem) {
   if (elem === null) {
-    console.log("Element is null");
+    console.error("Element is null");
     return [0, 0];
   }
   if (elem.tagName === "INPUT" && elem.type === "text" || elem.tagName === "TEXTAREA") {
@@ -40461,7 +40530,7 @@ function getTextBoundaries(elem) {
       elem.selectionEnd === null ? 0 : elem.selectionEnd
     ];
   }
-  console.log("Element is not input");
+  console.error("Element is not input");
   return [0, 0];
 }
 function promptHandleKeyUp(e, data, key, globalState) {
@@ -40566,20 +40635,23 @@ function promptHandleKeyUp(e, data, key, globalState) {
         toAppend.push(b);
       }
     }
-    for (let i = 0; i < globalState.state.autofill.length; i++) {
-      if (globalState.state.autofill[i].toLowerCase().includes(currentTokenStripped.toLowerCase())) {
-        if (toAppend.length >= 30) {
-          break;
+    const lowercaseStrippedToken = currentTokenStripped.toLowerCase();
+    if (lowercaseStrippedToken.length >= 3) {
+      for (let i = 0; i < globalState.state.autofill.length; i++) {
+        if (globalState.state.autofill[i].toLowerCase().includes(lowercaseStrippedToken)) {
+          if (toAppend.length >= 30) {
+            break;
+          }
+          const b = document.createElement("DIV");
+          b.innerText = globalState.state.autofill[i];
+          b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
+          b.addEventListener("click", function() {
+            input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
+            data[key] = input.value;
+            closeAllLists(void 0, input);
+          });
+          toAppend.push(b);
         }
-        const b = document.createElement("DIV");
-        b.innerText = globalState.state.autofill[i];
-        b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
-        b.addEventListener("click", function() {
-          input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
-          data[key] = input.value;
-          closeAllLists(void 0, input);
-        });
-        toAppend.push(b);
       }
     }
     if (toAppend.length === 0) {
@@ -40592,6 +40664,9 @@ function promptHandleKeyUp(e, data, key, globalState) {
     for (let i = 0; i < toAppend.length; i++) {
       div.appendChild(toAppend[i]);
     }
+    onClickOutside(div, () => {
+      closeAllLists(void 0, input);
+    });
     const autocompleteList = document.getElementById("autocomplete-list");
     const x = autocompleteList == null ? void 0 : autocompleteList.getElementsByTagName("div");
     if (e.key === "ArrowDown") {
@@ -41041,8 +41116,8 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-4aa96a77"), n = n(), popScopeId(), n);
-const _hoisted_1 = { class: "top-bar" };
+const _withScopeId = (n) => (pushScopeId("data-v-a7240cb6"), n = n(), popScopeId(), n);
+const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
 const _hoisted_4 = { key: 2 };
@@ -41060,9 +41135,6 @@ const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center"
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
-    useCssVars((_ctx) => ({
-      "37a4cfa2": backgroundColor.value
-    }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
     const global2 = useState();
@@ -41183,11 +41255,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               if (allLoaded.length > 0) {
                 settings.data.settings.model = allLoaded[0];
                 console.log(
-                  "Set current model to first available model: ",
+                  "Setting current model to first available model: ",
                   settings.data.settings.model
                 );
               } else {
-                console.log("No models available");
+                console.log("No models available, setting current model to null");
                 settings.data.settings.model = null;
               }
             }
@@ -41351,9 +41423,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const perfIcon = () => {
       return h(StatsChart);
     };
-    const themeIcon = () => {
-      return h(ContrastSharp);
-    };
     websocketState.onConnectedCallbacks.push(() => {
       refreshModels();
     });
@@ -41490,16 +41559,9 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     }
     startWebsocket(message);
-    const backgroundColor = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        return "#121215";
-      } else {
-        return "#fff";
-      }
-    });
     return (_ctx, _cache) => {
       var _a2;
-      return openBlock(), createElementBlock("div", _hoisted_1, [
+      return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
           options: generatedModelOptions.value,
@@ -41959,20 +42021,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             "render-icon": perfIcon,
             onClick: _cache[6] || (_cache[6] = ($event) => unref(global2).state.perf_drawer.enabled = true),
             disabled: unref(global2).state.perf_drawer.enabled
-          }, null, 8, ["disabled"]),
-          createVNode(unref(NButton), {
-            quaternary: "",
-            "icon-placement": "left",
-            "render-icon": themeIcon,
-            style: { "margin-right": "8px" },
-            onClick: _cache[7] || (_cache[7] = ($event) => unref(settings).data.settings.frontend.theme = unref(settings).data.settings.frontend.theme === "dark" ? "light" : "dark")
-          })
+          }, null, 8, ["disabled"])
         ])
       ]);
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_4aa96a77_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_a7240cb6_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41980,69 +42035,85 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-4aa96a77"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-a7240cb6"]]);
 const _sfc_main$1 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
   return openBlock(), createBlock(_component_RouterView);
 }
 const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
+const _hoisted_1 = /* @__PURE__ */ createBaseVNode("div", { id: "background" }, null, -1);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
-    useCssVars((_ctx) => ({
-      "da5fb46e": backgroundColor.value,
-      "ce1f7da0": theme.value.common.popoverColor,
-      "4b9efd50": theme.value.common.borderRadius,
-      "4bfe4c5a": theme.value.common.pressedColor,
-      "0fa4b509": theme.value.common.primaryColorHover
-    }));
+    useCssVars((_ctx) => {
+      var _a2, _b;
+      return {
+        "e6dd6658": theme.value.common.popoverColor,
+        "3f4008f4": theme.value.common.borderRadius,
+        "64bc3512": theme.value.common.pressedColor,
+        "15cd4fe5": theme.value.common.primaryColorHover,
+        "0c3447cf": blur.value,
+        "faba7994": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
+        "9167af36": backgroundImage.value
+      };
+    });
     const settings = useSettings();
+    const overrides = ref(null);
     const theme = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        document.body.style.backgroundColor = "#121215";
-        return darkTheme;
-      } else {
-        document.body.style.backgroundColor = "white";
+      var _a2, _b;
+      if (((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.base) === "light") {
         return lightTheme;
-      }
-    });
-    const backgroundColor = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        return "#121215";
       } else {
-        return "#fff";
+        return darkTheme;
       }
     });
-    const overrides = {
-      common: {
-        fontSize: "15px",
-        fontWeight: "600"
+    provide(themeOverridesKey, overrides);
+    function updateTheme() {
+      fetch(`${serverUrl}/themes/${settings.data.settings.frontend.theme}.json`).then((res) => res.json()).then((data) => {
+        overrides.value = data;
+      });
+    }
+    updateTheme();
+    watch(() => settings.data.settings.frontend.theme, updateTheme);
+    const backgroundImage = computed(
+      () => {
+        var _a2, _b, _c, _d;
+        return ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.backgroundImage) ? `url(${(_d = (_c = overrides.value) == null ? void 0 : _c.volta) == null ? void 0 : _d.backgroundImage})` : void 0;
       }
-    };
+    );
+    const blur = computed(() => {
+      var _a2, _b;
+      return `blur(${((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.blur) ?? "6px"})`;
+    });
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NConfigProvider), {
         theme: theme.value,
-        "theme-overrides": overrides,
+        "theme-overrides": overrides.value,
         class: "main"
       }, {
         default: withCtx(() => [
-          unref(settings).data.settings.frontend.enable_theme_editor ? (openBlock(), createBlock(unref(NThemeEditor), { key: 0 })) : createCommentVNode("", true),
-          createVNode(unref(NNotificationProvider), {
-            placement: "bottom-right",
-            max: 3
-          }, {
+          unref(settings).data.settings.frontend.enable_theme_editor ? (openBlock(), createBlock(unref(NThemeEditor), { key: 0 }, {
             default: withCtx(() => [
-              createVNode(unref(NLoadingBarProvider), null, {
+              createVNode(unref(NNotificationProvider), {
+                placement: "bottom-right",
+                max: 3
+              }, {
                 default: withCtx(() => [
-                  createVNode(unref(NMessageProvider), null, {
+                  createVNode(unref(NLoadingBarProvider), null, {
                     default: withCtx(() => [
-                      createVNode(_sfc_main$3),
-                      createVNode(_sfc_main$6),
-                      createVNode(TopBarVue),
-                      createVNode(_sfc_main$5),
-                      createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
-                      createVNode(_sfc_main$4)
+                      createVNode(unref(NMessageProvider), null, {
+                        default: withCtx(() => [
+                          _hoisted_1,
+                          createVNode(_sfc_main$3),
+                          createVNode(_sfc_main$6),
+                          createVNode(TopBarVue),
+                          createVNode(_sfc_main$5),
+                          createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
+                          createVNode(_sfc_main$4)
+                        ]),
+                        _: 1
+                      })
                     ]),
                     _: 1
                   })
@@ -42051,10 +42122,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               })
             ]),
             _: 1
-          })
+          })) : createCommentVNode("", true)
         ]),
         _: 1
-      }, 8, ["theme"]);
+      }, 8, ["theme", "theme-overrides"]);
     };
   }
 });
@@ -42129,9 +42200,9 @@ const router = createRouter({
       component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Image2ImageView.css"] : void 0)
     },
     {
-      path: "/extra",
-      name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+      path: "/imageProcessing",
+      name: "imageProcessing",
+      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ImageProcessingView.css"] : void 0)
     },
     {
       path: "/models",
@@ -42147,6 +42218,11 @@ const router = createRouter({
       path: "/accelerate",
       name: "accelerate",
       component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
+    },
+    {
+      path: "/extra",
+      name: "extra",
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? [] : void 0)
     },
     {
       path: "/test",
@@ -42167,6 +42243,11 @@ const router = createRouter({
       path: "/tagger",
       name: "tagger",
       component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
+    },
+    {
+      path: "/:pathMatch(.*)",
+      name: "notFound",
+      component: () => __vitePreload(() => import("./404View.js"), true ? [] : void 0)
     }
   ]
 });
@@ -42270,7 +42351,7 @@ export {
   resolveWrappedSlot as ay,
   flatten$2 as az,
   createBaseVNode as b,
-  isSlotEmpty as b$,
+  sliderLight$1 as b$,
   loadingBarApiInjectionKey as b0,
   throwError as b1,
   AddIcon as b2,
@@ -42281,61 +42362,63 @@ export {
   Teleport as b7,
   uploadLight$1 as b8,
   useCssVars as b9,
-  getCurrentInstance as bA,
-  formLight$1 as bB,
-  commonVariables$m as bC,
-  formItemInjectionKey as bD,
-  useNotification as bE,
-  defaultSettings as bF,
-  urlFromPath as bG,
-  diffusersSchedulerTuple as bH,
-  useRouter as bI,
-  isBrowser$3 as bJ,
-  fadeInTransition as bK,
-  imageLight as bL,
-  isMounted as bM,
-  LazyTeleport as bN,
-  zindexable$1 as bO,
-  kebabCase$1 as bP,
-  useCompitable as bQ,
-  descriptionsLight$1 as bR,
-  withModifiers as bS,
-  NAlert as bT,
-  inputNumberLight$1 as bU,
-  rgba as bV,
-  XButton as bW,
-  VBinder as bX,
-  VTarget as bY,
-  VFollower as bZ,
-  sliderLight$1 as b_,
-  reactive as ba,
-  onMounted as bb,
-  normalizeStyle as bc,
-  NText as bd,
-  huggingfaceModelsFile as be,
-  NDivider as bf,
-  Backends as bg,
-  checkboxLight$1 as bh,
-  stepsLight$1 as bi,
-  FinishedIcon as bj,
-  ErrorIcon$1 as bk,
-  upperFirst$1 as bl,
-  toString as bm,
-  createCompounder as bn,
-  cloneVNode as bo,
-  onBeforeUpdate as bp,
-  indexMap as bq,
-  onUpdated as br,
-  resolveSlotWithProps as bs,
-  withDirectives as bt,
-  vShow as bu,
-  carouselLight$1 as bv,
-  getPreciseEventTarget as bw,
-  rateLight as bx,
-  color2Class as by,
-  NTag as bz,
+  NTag as bA,
+  getCurrentInstance as bB,
+  formLight$1 as bC,
+  commonVariables$m as bD,
+  formItemInjectionKey as bE,
+  useNotification as bF,
+  defaultSettings as bG,
+  urlFromPath as bH,
+  diffusersSchedulerTuple as bI,
+  useRouter as bJ,
+  isBrowser$3 as bK,
+  fadeInTransition as bL,
+  imageLight as bM,
+  isMounted as bN,
+  LazyTeleport as bO,
+  zindexable$1 as bP,
+  kebabCase$1 as bQ,
+  useCompitable as bR,
+  descriptionsLight$1 as bS,
+  withModifiers as bT,
+  NAlert as bU,
+  inputNumberLight$1 as bV,
+  rgba as bW,
+  XButton as bX,
+  VBinder as bY,
+  VTarget as bZ,
+  VFollower as b_,
+  themeOverridesKey as ba,
+  reactive as bb,
+  onMounted as bc,
+  normalizeStyle as bd,
+  NText as be,
+  huggingfaceModelsFile as bf,
+  NDivider as bg,
+  Backends as bh,
+  checkboxLight$1 as bi,
+  stepsLight$1 as bj,
+  FinishedIcon as bk,
+  ErrorIcon$1 as bl,
+  upperFirst$1 as bm,
+  toString as bn,
+  createCompounder as bo,
+  cloneVNode as bp,
+  onBeforeUpdate as bq,
+  indexMap as br,
+  onUpdated as bs,
+  resolveSlotWithProps as bt,
+  withDirectives as bu,
+  vShow as bv,
+  carouselLight$1 as bw,
+  getPreciseEventTarget as bx,
+  rateLight as by,
+  color2Class as bz,
   computed as c,
-  switchLight$1 as c0,
+  isSlotEmpty as c0,
+  switchLight$1 as c1,
+  NResult as c2,
   defineComponent as d,
   createVNode as e,
   unref as f,

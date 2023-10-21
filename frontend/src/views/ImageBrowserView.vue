@@ -250,7 +250,7 @@ function downloadImage() {
           a.click();
           document.body.removeChild(a);
         } else {
-          console.log("base64data is null!");
+          console.error("base64data is null!");
         }
       };
     });
@@ -268,7 +268,7 @@ function setByte64FromImage(path: string) {
         if (base64data !== null) {
           global.state.imageBrowser.currentImageByte64 = base64data.toString();
         } else {
-          console.log("base64data is null!");
+          console.error("base64data is null!");
         }
       };
     });

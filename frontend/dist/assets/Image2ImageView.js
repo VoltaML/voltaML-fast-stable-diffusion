@@ -143,7 +143,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$3);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-e523beb7"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-b67b540a"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -243,7 +243,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           throw new Error(res.statusText);
         }
         global.state.generating = false;
-        console.log(res);
         res.json().then((data) => {
           global.state.controlnet.images = data.images;
           global.state.controlnet.currentImage = data.images[0];
@@ -258,7 +257,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       }).catch((err) => {
         global.state.generating = false;
         messageHandler.error(err);
-        console.log(err);
       });
     };
     const burner = new BurnerClock(
@@ -589,9 +587,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_e523beb7_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-e523beb7"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-0fc30559"), n = n(), popScopeId(), n);
+const ControlNet_vue_vue_type_style_index_0_scoped_b67b540a_lang = "";
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-b67b540a"]]);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-1b03ec02"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "Sampler", -1));
@@ -692,7 +690,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }).catch((err) => {
         global.state.generating = false;
         messageHandler.error(err);
-        console.log(err);
       });
     };
     const burner = new BurnerClock(
@@ -986,8 +983,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_0fc30559_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-0fc30559"]]);
+const Img2Img_vue_vue_type_style_index_0_scoped_1b03ec02_lang = "";
+const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-1b03ec02"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1563,7 +1560,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-5f9c8b43"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-b9006daf"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1680,7 +1677,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       }).catch((err) => {
         global.state.generating = false;
         messageHandler.error(err);
-        console.log(err);
       });
     };
     const canvas = ref();
@@ -1744,9 +1740,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       (_a = canvas.value) == null ? void 0 : _a.redo();
     }
     function toggleEraser() {
-      console.log(eraser.value);
       eraser.value = !eraser.value;
-      console.log(eraser.value);
     }
     function generateMask() {
       var _a;
@@ -1769,7 +1763,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
       const img = new Image();
       img.src = settings.data.settings.inpainting.image;
       img.onload = () => {
-        console.log(img);
         handleImageUpdate(img);
       };
     }
@@ -2210,8 +2203,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_5f9c8b43_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-5f9c8b43"]]);
+const Inpainting_vue_vue_type_style_index_0_scoped_b9006daf_lang = "";
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-b9006daf"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

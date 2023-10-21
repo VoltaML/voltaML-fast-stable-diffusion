@@ -119,7 +119,7 @@ const targets = {
   img2img: "img2img",
   controlnet: "img2img",
   inpainting: "img2img",
-  upscale: "extra",
+  upscale: "imageProcessing",
   tagger: "tagger",
 } as const;
 

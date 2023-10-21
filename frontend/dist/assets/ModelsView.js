@@ -1,4 +1,4 @@
-import { d as defineComponent, s as h, R as replaceable, S as createInjectionKey, T as cB, U as inject, V as useConfig, W as useTheme, X as popselectLight, c as computed, O as watch, Y as toRef, Z as useThemeClass, $ as NInternalSelectMenu, a0 as createTreeMate, a1 as happensIn, a2 as call, a3 as nextTick, a4 as keysOf, a5 as createTmOptions, r as ref, a6 as provide, a7 as keep, a8 as createRefSetter, a9 as mergeEventHandlers, aa as omit, ab as NPopover, ac as popoverBaseProps, ad as c, ae as cM, af as cNotM, ag as useLocale, ah as useMergedState, ai as watchEffect, aj as useRtl, ak as resolveSlot, C as NInput, p as NSelect, F as Fragment, al as NBaseIcon, am as useAdjustedTo, an as paginationLight, ao as createKey, ap as useMergedClsPrefix, aq as ellipsisLight, ar as onDeactivated, n as NTooltip, as as mergeProps, at as useStyle, au as useFormItem, av as useMemo, aw as cE, ax as radioLight, ay as resolveWrappedSlot, az as flatten$1, aA as getSlot, aB as depx, aC as formatLength, h as NButton, aD as NScrollbar, aE as onBeforeUnmount, aF as off, aG as on, aH as ChevronDownIcon, aI as NDropdown, aJ as pxfy, aK as get, aL as NIconSwitchTransition, aM as NBaseLoading, aN as ChevronRightIcon, y as onUnmounted, aO as VResizeObserver, aP as warn, aQ as cssrAnchorMetaName, aR as VVirtualList, aS as NEmpty, aT as repeat, aU as beforeNextFrameOnce, aV as fadeInScaleUpTransition, aW as iconSwitchTransition, aX as insideModal, aY as insidePopover, aZ as createId, a_ as Transition, a$ as dataTableLight, b0 as loadingBarApiInjectionKey, b1 as throwError, b2 as AddIcon, b3 as NProgress, b4 as NFadeInExpandTransition, b5 as EyeIcon, b6 as fadeInHeightExpandTransition, b7 as Teleport, b8 as uploadLight, o as openBlock, a as createElementBlock, b as createBaseVNode, b9 as useCssVars, f as unref, u as useSettings, ba as reactive, bb as onMounted, e as createVNode, w as withCtx, q as NIcon, g as renderList, bc as normalizeStyle, i as createTextVNode, t as toDisplayString, bd as NText, _ as _export_sfc, v as useState, x as useMessage, be as huggingfaceModelsFile, N as NCard, z as serverUrl, J as pushScopeId, K as popScopeId, B as NSpace, m as NModal, k as createBlock, A as NGi, H as NGrid, bf as NDivider, bg as Backends, L as NTabPane, M as NTabs } from "./index.js";
+import { d as defineComponent, s as h, R as replaceable, S as createInjectionKey, T as cB, U as inject, V as useConfig, W as useTheme, X as popselectLight, c as computed, O as watch, Y as toRef, Z as useThemeClass, $ as NInternalSelectMenu, a0 as createTreeMate, a1 as happensIn, a2 as call, a3 as nextTick, a4 as keysOf, a5 as createTmOptions, r as ref, a6 as provide, a7 as keep, a8 as createRefSetter, a9 as mergeEventHandlers, aa as omit, ab as NPopover, ac as popoverBaseProps, ad as c, ae as cM, af as cNotM, ag as useLocale, ah as useMergedState, ai as watchEffect, aj as useRtl, ak as resolveSlot, C as NInput, p as NSelect, F as Fragment, al as NBaseIcon, am as useAdjustedTo, an as paginationLight, ao as createKey, ap as useMergedClsPrefix, aq as ellipsisLight, ar as onDeactivated, n as NTooltip, as as mergeProps, at as useStyle, au as useFormItem, av as useMemo, aw as cE, ax as radioLight, ay as resolveWrappedSlot, az as flatten$1, aA as getSlot, aB as depx, aC as formatLength, h as NButton, aD as NScrollbar, aE as onBeforeUnmount, aF as off, aG as on, aH as ChevronDownIcon, aI as NDropdown, aJ as pxfy, aK as get, aL as NIconSwitchTransition, aM as NBaseLoading, aN as ChevronRightIcon, y as onUnmounted, aO as VResizeObserver, aP as warn, aQ as cssrAnchorMetaName, aR as VVirtualList, aS as NEmpty, aT as repeat, aU as beforeNextFrameOnce, aV as fadeInScaleUpTransition, aW as iconSwitchTransition, aX as insideModal, aY as insidePopover, aZ as createId, a_ as Transition, a$ as dataTableLight, b0 as loadingBarApiInjectionKey, b1 as throwError, b2 as AddIcon, b3 as NProgress, b4 as NFadeInExpandTransition, b5 as EyeIcon, b6 as fadeInHeightExpandTransition, b7 as Teleport, b8 as uploadLight, o as openBlock, a as createElementBlock, b as createBaseVNode, b9 as useCssVars, f as unref, u as useSettings, ba as themeOverridesKey, bb as reactive, bc as onMounted, e as createVNode, w as withCtx, q as NIcon, g as renderList, bd as normalizeStyle, i as createTextVNode, t as toDisplayString, be as NText, _ as _export_sfc, v as useState, x as useMessage, bf as huggingfaceModelsFile, N as NCard, z as serverUrl, J as pushScopeId, K as popScopeId, B as NSpace, m as NModal, k as createBlock, A as NGi, H as NGrid, bg as NDivider, bh as Backends, L as NTabPane, M as NTabs } from "./index.js";
 import { _ as _sfc_main$5, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
@@ -6537,11 +6537,15 @@ const _hoisted_5$1 = { style: { "position": "absolute", "width": "100%", "bottom
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "CivitAIDownload",
   setup(__props) {
-    useCssVars((_ctx) => ({
-      "9fc29920": unref(settings).data.settings.frontend.image_browser_columns,
-      "714c7f6d": backgroundColor.value
-    }));
+    useCssVars((_ctx) => {
+      var _a, _b;
+      return {
+        "52455add": unref(settings).data.settings.frontend.image_browser_columns,
+        "5509ecf2": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+      };
+    });
     const settings = useSettings();
+    const theme = inject(themeOverridesKey);
     const loadingLock = ref(false);
     const currentPage = ref(1);
     const sortBy = ref("Most Downloaded");
@@ -6577,6 +6581,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     async function refreshImages() {
       currentPage.value = 1;
       modelData.splice(0, modelData.length);
+      loadingBar.start();
       const url = new URL("https://civitai.com/api/v1/models");
       url.searchParams.append("sort", sortBy.value);
       if (itemFilter.value !== "") {
@@ -6589,6 +6594,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         data.items.forEach((item) => {
           modelData.push(item);
         });
+        loadingBar.finish();
       });
     }
     const handleScroll = (e) => {
@@ -6625,7 +6631,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
         if (types.value) {
           url.searchParams.append("types", types.value);
         }
-        console.log("Fetching page: " + url.toString());
         fetch(url).then((res) => res.json()).then((data) => {
           data.items.forEach((item) => {
             modelData.push(item);
@@ -6686,13 +6691,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       });
     });
     refreshImages();
-    const backgroundColor = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        return "#121215";
-      } else {
-        return "#fff";
-      }
-    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
         createVNode(_sfc_main$5, {
@@ -6830,9 +6828,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const CivitAIDownload_vue_vue_type_style_index_0_scoped_07574b72_lang = "";
-const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-07574b72"]]);
-const _withScopeId = (n) => (pushScopeId("data-v-0d48785f"), n = n(), popScopeId(), n);
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_f55237b7_lang = "";
+const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-f55237b7"]]);
+const _withScopeId = (n) => (pushScopeId("data-v-b405f046"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("div", null, "Install custom models from Hugging Face", -1));
@@ -6847,7 +6845,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       const url = new URL(`${serverUrl}/api/models/download`);
       const modelName = typeof model === "string" ? model : model.value;
       url.searchParams.append("model", modelName);
-      console.log(url);
       settings.state.downloading = true;
       customModel.value = "";
       message.info(`Downloading model: ${modelName}`);
@@ -7014,8 +7011,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_0d48785f_lang = "";
-const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-0d48785f"]]);
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
+const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-b405f046"]]);
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "FP32", -1);

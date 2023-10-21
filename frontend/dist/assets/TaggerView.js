@@ -5,7 +5,7 @@ import { v as v4 } from "./v4.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-a772e913"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-95e673e5"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -46,13 +46,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           (data) => {
             global.state.tagger.positivePrompt = data.positive;
             global.state.tagger.negativePrompt = data.negative;
-            console.log(data);
           }
         );
       }).catch((err) => {
         global.state.generating = false;
         messageHandler.error(err);
-        console.log(err);
       });
     };
     const weighted = ref(false);
@@ -231,8 +229,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_a772e913_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-a772e913"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_95e673e5_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-95e673e5"]]);
 export {
   TaggerView as default
 };

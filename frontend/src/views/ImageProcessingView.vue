@@ -12,6 +12,4 @@ import { useState } from "@/store/state";
 import { NTabPane, NTabs } from "naive-ui";
 
 const state = useState();
-
-console.log("Processing", state.state);
 </script>

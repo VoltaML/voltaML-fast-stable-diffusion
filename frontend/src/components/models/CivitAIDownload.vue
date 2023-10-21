@@ -286,7 +286,6 @@ const handleScroll = (e: Event) => {
       url.searchParams.append("types", types.value);
     }
 
-    console.log("Fetching page: " + url.toString());
     fetch(url)
       .then((res) => res.json())
       .then((data: ICivitAIModels) => {

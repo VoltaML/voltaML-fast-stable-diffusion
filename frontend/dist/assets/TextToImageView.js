@@ -327,7 +327,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }).catch((err) => {
         global.state.generating = false;
         messageHandler.error(err);
-        console.log(err);
       });
     };
     const burner = new BurnerClock(
