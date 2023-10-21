@@ -6957,7 +6957,8 @@ function defineStore(idOrOptions, setup, setupOptions) {
   useStore.$id = id;
   return useStore;
 }
-const themeOverridesKey = Symbol("theme");
+const themeOverridesKey = Symbol("themeOverrides");
+const themeKey = Symbol("theme");
 let onceCbs = [];
 const paramsMap = /* @__PURE__ */ new WeakMap();
 function flushOnceCallbacks() {
@@ -37147,10 +37148,10 @@ const NThemeEditor = defineComponent({
                   const compNamePatternLower = compNamePattern.toLowerCase();
                   const varNamePatternLower = varNamePattern.toLowerCase();
                   let filteredItemsCount = 0;
-                  const collapsedItems = themeKeys.filter((themeKey) => {
-                    return themeKey.toLowerCase().includes(compNamePatternLower);
-                  }).map((themeKey) => {
-                    const componentTheme = themeKey === "common" ? this.themeCommonDefault : theme[themeKey];
+                  const collapsedItems = themeKeys.filter((themeKey2) => {
+                    return themeKey2.toLowerCase().includes(compNamePatternLower);
+                  }).map((themeKey2) => {
+                    const componentTheme = themeKey2 === "common" ? this.themeCommonDefault : theme[themeKey2];
                     if (componentTheme === void 0) {
                       return null;
                     }
@@ -37161,7 +37162,7 @@ const NThemeEditor = defineComponent({
                       return null;
                     }
                     filteredItemsCount += 1;
-                    return h(NCollapseItem, { title: themeKey, name: themeKey }, {
+                    return h(NCollapseItem, { title: themeKey2, name: themeKey2 }, {
                       default: () => h(NGrid, { xGap: 32, yGap: 16, responsive: "screen", cols: this.isMaximized ? "1 xs:1 s:2 m:3 l:4" : 1 }, {
                         default: () => varKeys.map((varKey) => h(NGi, null, {
                           default: () => {
@@ -37172,21 +37173,21 @@ const NThemeEditor = defineComponent({
                               h("div", { key: `${varKey}Label`, style: {
                                 wordBreak: "break-word"
                               } }, varKey),
-                              showColorPicker(varKey) ? h(NColorPicker, { key: varKey, modes: ["rgb", "hex"], value: ((_b2 = (_a3 = this.tempOverrides) === null || _a3 === void 0 ? void 0 : _a3[themeKey]) === null || _b2 === void 0 ? void 0 : _b2[varKey]) || componentTheme[varKey], onComplete: this.applyTempOverrides, onUpdateValue: (value) => {
-                                this.setTempOverrides(themeKey, varKey, value);
+                              showColorPicker(varKey) ? h(NColorPicker, { key: varKey, modes: ["rgb", "hex"], value: ((_b2 = (_a3 = this.tempOverrides) === null || _a3 === void 0 ? void 0 : _a3[themeKey2]) === null || _b2 === void 0 ? void 0 : _b2[varKey]) || componentTheme[varKey], onComplete: this.applyTempOverrides, onUpdateValue: (value) => {
+                                this.setTempOverrides(themeKey2, varKey, value);
                               } }, {
                                 action: () => {
                                   var _a4, _b3;
-                                  return h(NButton, { size: "small", disabled: componentTheme[varKey] === ((_b3 = (_a4 = this.tempOverrides) === null || _a4 === void 0 ? void 0 : _a4[themeKey]) === null || _b3 === void 0 ? void 0 : _b3[varKey]), onClick: () => {
-                                    this.setTempOverrides(themeKey, varKey, componentTheme[varKey]);
+                                  return h(NButton, { size: "small", disabled: componentTheme[varKey] === ((_b3 = (_a4 = this.tempOverrides) === null || _a4 === void 0 ? void 0 : _a4[themeKey2]) === null || _b3 === void 0 ? void 0 : _b3[varKey]), onClick: () => {
+                                    this.setTempOverrides(themeKey2, varKey, componentTheme[varKey]);
                                     this.applyTempOverrides();
                                   } }, {
                                     default: () => this.locale.restore
                                   });
                                 }
                               }) : h(NInput, { key: varKey, onChange: this.applyTempOverrides, onUpdateValue: (value) => {
-                                this.setTempOverrides(themeKey, varKey, value);
-                              }, value: ((_d = (_c = this.tempOverrides) === null || _c === void 0 ? void 0 : _c[themeKey]) === null || _d === void 0 ? void 0 : _d[varKey]) || "", placeholder: componentTheme[varKey] })
+                                this.setTempOverrides(themeKey2, varKey, value);
+                              }, value: ((_d = (_c = this.tempOverrides) === null || _c === void 0 ? void 0 : _c[themeKey2]) === null || _d === void 0 ? void 0 : _d[varKey]) || "", placeholder: componentTheme[varKey] })
                             );
                           }
                         }))
@@ -42050,13 +42051,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b;
       return {
-        "0e8f91a0": theme.value.common.popoverColor,
-        "a9321960": theme.value.common.borderRadius,
-        "39c8cfd3": theme.value.common.pressedColor,
-        "3c667f09": theme.value.common.primaryColorHover,
-        "f96fc81a": blur.value,
-        "7fdf565a": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
-        "584715c1": backgroundImage.value
+        "e41f41c0": theme.value.common.popoverColor,
+        "409f1b40": theme.value.common.borderRadius,
+        "61fe107a": theme.value.common.pressedColor,
+        "50b9cd19": theme.value.common.primaryColorHover,
+        "27d8de03": blur.value,
+        "1929b46a": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
+        "542369b1": backgroundImage.value
       };
     });
     const settings = useSettings();
@@ -42070,6 +42071,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     });
     provide(themeOverridesKey, overrides);
+    provide(themeKey, theme);
     function updateTheme() {
       fetch(`${serverUrl}/themes/${settings.data.settings.frontend.theme}.json`).then((res) => res.json()).then((data) => {
         overrides.value = data;
@@ -42364,7 +42366,7 @@ export {
   resolveWrappedSlot as ay,
   flatten$2 as az,
   createBaseVNode as b,
-  sliderLight$1 as b$,
+  VFollower as b$,
   loadingBarApiInjectionKey as b0,
   throwError as b1,
   AddIcon as b2,
@@ -42380,28 +42382,28 @@ export {
   formLight$1 as bC,
   commonVariables$m as bD,
   formItemInjectionKey as bE,
-  useNotification as bF,
-  defaultSettings as bG,
-  urlFromPath as bH,
-  diffusersSchedulerTuple as bI,
-  useRouter as bJ,
-  isBrowser$3 as bK,
-  fadeInTransition as bL,
-  imageLight as bM,
-  isMounted as bN,
-  LazyTeleport as bO,
-  zindexable$1 as bP,
-  kebabCase$1 as bQ,
-  useCompitable as bR,
-  descriptionsLight$1 as bS,
-  withModifiers as bT,
-  NAlert as bU,
-  inputNumberLight$1 as bV,
-  rgba as bW,
-  XButton as bX,
-  VBinder as bY,
-  VTarget as bZ,
-  VFollower as b_,
+  themeKey as bF,
+  useNotification as bG,
+  defaultSettings as bH,
+  urlFromPath as bI,
+  diffusersSchedulerTuple as bJ,
+  useRouter as bK,
+  isBrowser$3 as bL,
+  fadeInTransition as bM,
+  imageLight as bN,
+  isMounted as bO,
+  LazyTeleport as bP,
+  zindexable$1 as bQ,
+  kebabCase$1 as bR,
+  useCompitable as bS,
+  descriptionsLight$1 as bT,
+  withModifiers as bU,
+  NAlert as bV,
+  inputNumberLight$1 as bW,
+  rgba as bX,
+  XButton as bY,
+  VBinder as bZ,
+  VTarget as b_,
   themeOverridesKey as ba,
   reactive as bb,
   onMounted as bc,
@@ -42429,9 +42431,10 @@ export {
   rateLight as by,
   color2Class as bz,
   computed as c,
-  isSlotEmpty as c0,
-  switchLight$1 as c1,
-  NResult as c2,
+  sliderLight$1 as c0,
+  isSlotEmpty as c1,
+  switchLight$1 as c2,
+  NResult as c3,
   defineComponent as d,
   createVNode as e,
   unref as f,

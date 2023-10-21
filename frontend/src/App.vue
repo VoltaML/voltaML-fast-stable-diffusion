@@ -19,7 +19,7 @@
 </template>
 
 <script setup lang="ts">
-import { themeOverridesKey } from "@/injectionKeys";
+import { themeKey, themeOverridesKey } from "@/injectionKeys";
 import {
   NConfigProvider,
   NLoadingBarProvider,
@@ -52,6 +52,7 @@ const theme = computed(() => {
 });
 
 provide(themeOverridesKey, overrides);
+provide(themeKey, theme);
 
 function updateTheme() {
   fetch(`${serverUrl}/themes/${settings.data.settings.frontend.theme}.json`)

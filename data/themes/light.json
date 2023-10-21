@@ -14,5 +14,8 @@
     "Layout": {
         "color": "rgba(255, 255, 255, 0.6)",
         "siderColor": "rgba(24, 24, 28, 0)"
+    },
+    "Tabs": {
+        "colorSegment": "rgba(255, 255, 255, 0.6)"
     }
 }
