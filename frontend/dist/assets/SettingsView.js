@@ -2020,6 +2020,68 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
   }
 });
 const _sfc_main$e = /* @__PURE__ */ defineComponent({
+  __name: "ThemeSettings",
+  setup(__props) {
+    const settings = useSettings();
+    const themeOptions = [
+      { label: "Dark", value: "dark" },
+      { label: "Light", value: "light" }
+    ];
+    watch(settings.defaultSettings.frontend, () => {
+      settings.data.settings.frontend = settings.defaultSettings.frontend;
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), null, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Theme",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSelect), {
+                    options: themeOptions,
+                    value: unref(settings).defaultSettings.frontend.theme,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Background Image Override",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInput), {
+                    value: unref(settings).defaultSettings.frontend.background_image_override,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.background_image_override = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Enable Theme Editor",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.frontend.enable_theme_editor,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "ExtraSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2127,7 +2189,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$d = /* @__PURE__ */ defineComponent({
+const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "FilesSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2206,7 +2268,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$c = /* @__PURE__ */ defineComponent({
+const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "ControlNetSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2402,7 +2464,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$b = /* @__PURE__ */ defineComponent({
+const _sfc_main$a = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2432,7 +2494,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$a = /* @__PURE__ */ defineComponent({
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   __name: "ImageToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2588,7 +2650,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "InpaintingSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2731,7 +2793,7 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "TextToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2874,55 +2936,70 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
-  __name: "ThemeSettings",
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+  __name: "FrontendSettings",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NTabs), null, {
+        default: withCtx(() => [
+          createVNode(unref(NTabPane), { name: "Text to Image" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$7)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "Image to Image" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$9)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "ControlNet" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$b)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "Inpainting" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$8)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "Image Browser" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$a)
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+  __name: "GeneralSettings",
   setup(__props) {
     const settings = useSettings();
-    const themeOptions = [
-      { label: "Dark", value: "dark" },
-      { label: "Light", value: "light" }
-    ];
     watch(settings.defaultSettings.frontend, () => {
-      settings.data.settings.frontend = settings.defaultSettings.frontend;
+      settings.data.settings.frontend.on_change_timer = settings.defaultSettings.frontend.on_change_timer;
     });
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), null, {
+      return openBlock(), createBlock(unref(NCard), { title: "Timings" }, {
         default: withCtx(() => [
           createVNode(unref(NForm), null, {
             default: withCtx(() => [
               createVNode(unref(NFormItem), {
-                label: "Theme",
+                label: "Continuous generation timeout (0 for disabled) [ms]",
                 "label-placement": "left"
               }, {
                 default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: themeOptions,
-                    value: unref(settings).defaultSettings.frontend.theme,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Background Image Override",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.frontend.background_image_override,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.background_image_override = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Enable Theme Editor",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.frontend.enable_theme_editor,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.frontend.on_change_timer,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
+                    min: 0,
+                    step: 50
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2936,7 +3013,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "NSFWSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2977,95 +3054,6 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
                         value: 3
                       }
                     ]
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
-  __name: "FrontendSettings",
-  setup(__props) {
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NTabs), null, {
-        default: withCtx(() => [
-          createVNode(unref(NTabPane), { name: "Text to Image" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$8)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Image to Image" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$a)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "ControlNet" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$c)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Inpainting" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$9)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Image Browser" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$b)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Theme" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$7)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "NSFW" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$6)
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
-  __name: "GeneralSettings",
-  setup(__props) {
-    const settings = useSettings();
-    watch(settings.defaultSettings.frontend, () => {
-      settings.data.settings.frontend.on_change_timer = settings.defaultSettings.frontend.on_change_timer;
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { title: "Timings" }, {
-        default: withCtx(() => [
-          createVNode(unref(NForm), null, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Continuous generation timeout (0 for disabled) [ms]",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.frontend.on_change_timer,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
-                    min: 0,
-                    step: 50
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -3862,7 +3850,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "Files & Saving" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$d)
+                    createVNode(_sfc_main$c)
                   ]),
                   _: 1
                 }),
@@ -3886,7 +3874,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "Defaults" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$5)
+                    createVNode(_sfc_main$6)
                   ]),
                   _: 1
                 }),
@@ -3898,13 +3886,25 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "General" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$4)
+                    createVNode(_sfc_main$5)
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Extra" }, {
                   default: withCtx(() => [
+                    createVNode(_sfc_main$d)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Theme" }, {
+                  default: withCtx(() => [
                     createVNode(_sfc_main$e)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "NSFW" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$4)
                   ]),
                   _: 1
                 })
