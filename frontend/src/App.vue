@@ -74,6 +74,13 @@ const backgroundImage = computed(() => {
   return undefined;
 });
 const blur = computed(() => `blur(${overrides.value?.volta?.blur ?? "6px"})`);
+
+watch(
+  () => overrides.value?.Card?.color,
+  () => {
+    document.body.style.backgroundColor = theme.value.common.baseColor;
+  }
+);
 </script>
 
 <style lang="scss">
