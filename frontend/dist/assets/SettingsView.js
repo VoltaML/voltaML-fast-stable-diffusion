@@ -2904,13 +2904,25 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(NFormItem), {
+                label: "Background Image Override",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInput), {
+                    value: unref(settings).defaultSettings.frontend.background_image_override,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.background_image_override = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
                 label: "Enable Theme Editor",
                 "label-placement": "left"
               }, {
                 default: withCtx(() => [
                   createVNode(unref(NSwitch), {
                     value: unref(settings).defaultSettings.frontend.enable_theme_editor,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1

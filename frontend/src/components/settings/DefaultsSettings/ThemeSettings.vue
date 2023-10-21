@@ -7,6 +7,13 @@
           v-model:value="settings.defaultSettings.frontend.theme"
         />
       </NFormItem>
+      <NFormItem label="Background Image Override" label-placement="left">
+        <NInput
+          v-model:value="
+            settings.defaultSettings.frontend.background_image_override
+          "
+        />
+      </NFormItem>
       <NFormItem label="Enable Theme Editor" label-placement="left">
         <NSwitch
           v-model:value="settings.defaultSettings.frontend.enable_theme_editor"
@@ -22,6 +29,7 @@ import {
   NCard,
   NForm,
   NFormItem,
+  NInput,
   NSelect,
   NSwitch,
   type SelectOption,

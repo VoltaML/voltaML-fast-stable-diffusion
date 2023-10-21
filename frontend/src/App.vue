@@ -64,11 +64,15 @@ function updateTheme() {
 updateTheme();
 watch(() => settings.data.settings.frontend.theme, updateTheme);
 
-const backgroundImage = computed(() =>
-  overrides.value?.volta?.backgroundImage
-    ? `url(${overrides.value?.volta?.backgroundImage})`
-    : undefined
-);
+const backgroundImage = computed(() => {
+  if (settings.data.settings.frontend.background_image_override) {
+    return `url(${settings.data.settings.frontend.background_image_override})`;
+  } else if (overrides.value?.volta?.backgroundImage) {
+    return `url(${overrides.value?.volta?.backgroundImage})`;
+  }
+
+  return undefined;
+});
 const blur = computed(() => `blur(${overrides.value?.volta?.blur ?? "6px"})`);
 </script>
 

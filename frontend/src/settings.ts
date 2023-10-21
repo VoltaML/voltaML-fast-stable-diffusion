@@ -219,6 +219,7 @@ export interface ISettings {
     image_browser_columns: number;
     on_change_timer: number;
     nsfw_ok_threshold: number;
+    background_image_override: string;
   };
   sampler_config: Record<string, Record<string, any>>;
 }
@@ -399,6 +400,7 @@ export const defaultSettings: ISettings = {
     image_browser_columns: 5,
     on_change_timer: 2000,
     nsfw_ok_threshold: 0,
+    background_image_override: "",
   },
   sampler_config: {},
 };

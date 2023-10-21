@@ -40889,7 +40889,8 @@ const defaultSettings = {
     enable_theme_editor: false,
     image_browser_columns: 5,
     on_change_timer: 2e3,
-    nsfw_ok_threshold: 0
+    nsfw_ok_threshold: 0,
+    background_image_override: ""
   },
   sampler_config: {}
 };
@@ -42049,13 +42050,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b;
       return {
-        "e6dd6658": theme.value.common.popoverColor,
-        "3f4008f4": theme.value.common.borderRadius,
-        "64bc3512": theme.value.common.pressedColor,
-        "15cd4fe5": theme.value.common.primaryColorHover,
-        "0c3447cf": blur.value,
-        "faba7994": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
-        "9167af36": backgroundImage.value
+        "74647254": theme.value.common.popoverColor,
+        "27132e74": theme.value.common.borderRadius,
+        "9515ea12": theme.value.common.pressedColor,
+        "17959a65": theme.value.common.primaryColorHover,
+        "cef69b62": blur.value,
+        "06c4e494": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
+        "7f6fa436": backgroundImage.value
       };
     });
     const settings = useSettings();
@@ -42076,12 +42077,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     updateTheme();
     watch(() => settings.data.settings.frontend.theme, updateTheme);
-    const backgroundImage = computed(
-      () => {
-        var _a2, _b, _c, _d;
-        return ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.backgroundImage) ? `url(${(_d = (_c = overrides.value) == null ? void 0 : _c.volta) == null ? void 0 : _d.backgroundImage})` : void 0;
+    const backgroundImage = computed(() => {
+      var _a2, _b, _c, _d;
+      if (settings.data.settings.frontend.background_image_override) {
+        return `url(${settings.data.settings.frontend.background_image_override})`;
+      } else if ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.backgroundImage) {
+        return `url(${(_d = (_c = overrides.value) == null ? void 0 : _c.volta) == null ? void 0 : _d.backgroundImage})`;
       }
-    );
+      return void 0;
+    });
     const blur = computed(() => {
       var _a2, _b;
       return `blur(${((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.blur) ?? "6px"})`;
