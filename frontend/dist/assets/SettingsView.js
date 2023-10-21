@@ -1,4 +1,4 @@
-import { U as inject, bB as getCurrentInstance, O as watch, aE as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bC as formLight, a4 as keysOf, c as computed, aC as formatLength, aK as get, bD as commonVariables, aw as cE, Y as toRef, aZ as createId, bE as formItemInjectionKey, bc as onMounted, Z as useThemeClass, a_ as Transition, ay as resolveWrappedSlot, ao as createKey, aP as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, be as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, bF as themeKey, h as NButton, n as NTooltip, x as useMessage, bG as useNotification, y as onUnmounted, z as serverUrl, bH as defaultSettings } from "./index.js";
+import { U as inject, bB as getCurrentInstance, O as watch, aE as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bC as formLight, a4 as keysOf, c as computed, aC as formatLength, aK as get, bD as commonVariables, aw as cE, Y as toRef, aZ as createId, bE as formItemInjectionKey, bc as onMounted, Z as useThemeClass, a_ as Transition, ay as resolveWrappedSlot, ao as createKey, aP as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, be as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, bb as reactive, z as serverUrl, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, bF as themeKey, h as NButton, n as NTooltip, x as useMessage, bG as useNotification, y as onUnmounted, bH as defaultSettings } from "./index.js";
 import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
@@ -2023,10 +2023,26 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
   __name: "ThemeSettings",
   setup(__props) {
     const settings = useSettings();
-    const themeOptions = [
-      { label: "Dark", value: "dark" },
-      { label: "Light", value: "light" }
-    ];
+    const extraThemes = reactive([]);
+    const themeOptions = computed(() => {
+      const base = [
+        { label: "Dark", value: "dark" },
+        { label: "Light", value: "light" }
+      ];
+      const extra = extraThemes.map((theme) => {
+        return { label: theme, value: theme };
+      });
+      return base.concat(extra);
+    });
+    const themesLoading = ref(true);
+    fetch(`${serverUrl}/api/general/themes`).then(async (res) => {
+      const data = await res.json();
+      extraThemes.push(...data);
+      themesLoading.value = false;
+    }).catch((err) => {
+      console.error(err);
+      themesLoading.value = false;
+    });
     watch(settings.defaultSettings.frontend, () => {
       settings.data.settings.frontend = settings.defaultSettings.frontend;
     });
@@ -2041,10 +2057,11 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
               }, {
                 default: withCtx(() => [
                   createVNode(unref(NSelect), {
-                    options: themeOptions,
+                    options: themeOptions.value,
                     value: unref(settings).defaultSettings.frontend.theme,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event)
-                  }, null, 8, ["value"])
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event),
+                    loading: themesLoading.value
+                  }, null, 8, ["options", "value", "loading"])
                 ]),
                 _: 1
               }),

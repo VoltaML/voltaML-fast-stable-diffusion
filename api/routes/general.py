@@ -1,5 +1,6 @@
 import logging
 import sys
+from pathlib import Path
 
 from fastapi import APIRouter
 
@@ -83,3 +84,16 @@ async def queue_clear():
     queue.clear()
 
     return {"message": "Queue cleared"}
+
+
+@router.get("/themes")
+async def themes():
+    "Get all available themes"
+
+    path = Path("data/themes")
+    files = []
+    for file in path.glob("*.json"):
+        if file.stem not in ["dark", "light"]:
+            files.append(file.stem)
+
+    return files

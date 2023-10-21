@@ -5,6 +5,7 @@
         <NSelect
           :options="themeOptions"
           v-model:value="settings.defaultSettings.frontend.theme"
+          :loading="themesLoading"
         />
       </NFormItem>
       <NFormItem label="Background Image Override" label-placement="left">
@@ -24,6 +25,7 @@
 </template>
 
 <script lang="ts" setup>
+import { serverUrl } from "@/env";
 import { useSettings } from "@/store/settings";
 import {
   NCard,
@@ -34,14 +36,34 @@ import {
   NSwitch,
   type SelectOption,
 } from "naive-ui";
-import { watch } from "vue";
+import { computed, reactive, ref, watch } from "vue";
 
 const settings = useSettings();
+const extraThemes = reactive<string[]>([]);
 
-const themeOptions: SelectOption[] = [
-  { label: "Dark", value: "dark" },
-  { label: "Light", value: "light" },
-];
+const themeOptions = computed<SelectOption[]>(() => {
+  const base = [
+    { label: "Dark", value: "dark" },
+    { label: "Light", value: "light" },
+  ];
+  const extra = extraThemes.map((theme) => {
+    return { label: theme, value: theme };
+  });
+
+  return base.concat(extra);
+});
+
+const themesLoading = ref(true);
+fetch(`${serverUrl}/api/general/themes`)
+  .then(async (res) => {
+    const data = await res.json();
+    extraThemes.push(...data);
+    themesLoading.value = false;
+  })
+  .catch((err) => {
+    console.error(err);
+    themesLoading.value = false;
+  });
 
 watch(settings.defaultSettings.frontend, () => {
   settings.data.settings.frontend = settings.defaultSettings.frontend;
