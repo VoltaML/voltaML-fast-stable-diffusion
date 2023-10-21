@@ -74,10 +74,13 @@ export interface StateInterface {
     images: string[];
     genData: GenerationData;
   };
-  extra: {
+  imageProcessing: {
     currentImage: string;
     images: string[];
     tab: "upscale";
+  };
+  extra: {
+    tab: "dependencies";
   };
   tagger: {
     positivePrompt: Map<string, number>;
@@ -173,10 +176,13 @@ export const useState = defineStore("state", () => {
         seed: null,
       },
     },
-    extra: {
+    imageProcessing: {
       images: [],
       currentImage: "",
       tab: "upscale",
+    },
+    extra: {
+      tab: "dependencies",
     },
     tagger: {
       positivePrompt: new Map<string, number>(),

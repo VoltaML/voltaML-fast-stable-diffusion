@@ -95,6 +95,7 @@ for directory in [
     "textual-inversion",
     "lycoris",
     "logs",
+    "themes",
 ]:
     Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 

@@ -369,16 +369,6 @@
         @click="global.state.perf_drawer.enabled = true"
         :disabled="global.state.perf_drawer.enabled"
       />
-      <NButton
-        quaternary
-        icon-placement="left"
-        :render-icon="themeIcon"
-        style="margin-right: 8px"
-        @click="
-          settings.data.settings.frontend.theme =
-            settings.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
-        "
-      />
     </div>
   </div>
 </template>
@@ -405,7 +395,6 @@ import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
-  ContrastSharp,
   PowerSharp,
   SettingsSharp,
   StatsChart,
@@ -771,10 +760,6 @@ const perfIcon = () => {
   return h(StatsChart);
 };
 
-const themeIcon = () => {
-  return h(ContrastSharp);
-};
-
 websocketState.onConnectedCallbacks.push(() => {
   refreshModels();
 });
@@ -932,14 +917,6 @@ async function dropdownSelected(key: string) {
 }
 
 startWebsocket(message);
-
-const backgroundColor = computed(() => {
-  if (settings.data.settings.frontend.theme === "dark") {
-    return "#121215";
-  } else {
-    return "#fff";
-  }
-});
 </script>
 
 <style scoped>
@@ -952,7 +929,6 @@ const backgroundColor = computed(() => {
 .top-bar {
   display: inline-flex;
   align-items: center;
-  border-bottom: #505050 1px solid;
   padding-top: 10px;
   padding-bottom: 10px;
   width: calc(100% - 64px);
@@ -960,7 +936,6 @@ const backgroundColor = computed(() => {
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: v-bind(backgroundColor);
 }
 
 .logo {

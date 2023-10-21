@@ -1,8 +1,6 @@
 body {
-  min-height: 100vh;
   margin-left: 64px;
   color: #fff;
-  background-color: rgb(18, 18, 21);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;
