@@ -234,7 +234,7 @@ class InterrogatorConfig:
 class FrontendConfig:
     "Configuration for the frontend"
 
-    theme: Union[Literal["dark", "light"], str] = "dark"
+    theme: str = "dark"
     background_image_override: str = ""
     enable_theme_editor: bool = False
     image_browser_columns: int = 5

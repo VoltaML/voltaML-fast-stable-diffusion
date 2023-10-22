@@ -214,7 +214,7 @@ export interface ISettings {
     use_default_negative_prompt: boolean;
   };
   frontend: {
-    theme: "dark" | "light";
+    theme: string;
     enable_theme_editor: boolean;
     image_browser_columns: number;
     on_change_timer: number;
