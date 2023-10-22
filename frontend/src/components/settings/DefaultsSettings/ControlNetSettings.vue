@@ -37,12 +37,6 @@
           :step="8"
         />
       </NFormItem>
-      <NFormItem label="Sampler" label-placement="left">
-        <NSelect
-          :options="settings.scheduler_options"
-          v-model:value="settings.defaultSettings.controlnet.sampler"
-        />
-      </NFormItem>
       <NFormItem label="ControlNet" label-placement="left">
         <NSelect
           :options="settings.controlnet_options"
@@ -83,11 +77,13 @@
           :step="8"
         />
       </NFormItem>
+      <SamplerPicker type="controlnet" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
+import SamplerPicker from "@/components/generate/SamplerPicker.vue";
 import { useSettings } from "@/store/settings";
 import {
   NCard,

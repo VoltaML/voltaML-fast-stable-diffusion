@@ -49,29 +49,7 @@
             </NInput>
 
             <!-- Sampler -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="margin-right: 12px; width: 150px">Sampler</p>
-                </template>
-                The sampler is the method used to generate the image. Your
-                result may vary drastically depending on the sampler you choose.
-                <b class="highlight"
-                  >We recommend using DPMSolverMultistep for the best results .
-                </b>
-                <a
-                  target="_blank"
-                  href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
-                  >Learn more</a
-                >
-              </NTooltip>
-
-              <NSelect
-                :options="settings.scheduler_options"
-                v-model:value="settings.data.settings.img2img.sampler"
-                style="flex-grow: 1"
-              />
-            </div>
+            <SamplerPicker type="img2img" />
 
             <DimensionsInput
               :dimensions-object="settings.data.settings.img2img"
@@ -141,7 +119,7 @@
             <div
               class="flex-container"
               v-if="
-                Number.isInteger(settings.data.settings.txt2img.sampler) &&
+                Number.isInteger(settings.data.settings.img2img.sampler) &&
                 settings.data.settings.model?.backend === 'PyTorch'
               "
             >
@@ -158,7 +136,7 @@
 
               <NSlider
                 v-model:value="
-                  settings.data.settings.txt2img.self_attention_scale
+                  settings.data.settings.img2img.self_attention_scale
                 "
                 :min="0"
                 :max="1"
@@ -167,7 +145,7 @@
               />
               <NInputNumber
                 v-model:value="
-                  settings.data.settings.txt2img.self_attention_scale
+                  settings.data.settings.img2img.self_attention_scale
                 "
                 size="small"
                 style="min-width: 96px; width: 96px"
@@ -288,6 +266,7 @@ import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
 import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
 import DimensionsInput from "@/components/generate/DimensionsInput.vue";
+import SamplerPicker from "@/components/generate/SamplerPicker.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -300,7 +279,6 @@ import {
   NGrid,
   NInput,
   NInputNumber,
-  NSelect,
   NSlider,
   NSpace,
   NTooltip,
@@ -367,8 +345,12 @@ const generate = () => {
         strength: settings.data.settings.img2img.denoising_strength,
         scheduler: settings.data.settings.img2img.sampler,
         self_attention_scale:
-          settings.data.settings.txt2img.self_attention_scale,
+          settings.data.settings.img2img.self_attention_scale,
         sigmas: settings.data.settings.img2img.sigmas,
+        sampler_settings:
+          settings.data.settings.sampler_config[
+            settings.data.settings.img2img.sampler
+          ],
       },
       model: settings.data.settings.model?.name,
     }),

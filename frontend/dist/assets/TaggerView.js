@@ -1,6 +1,6 @@
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, v as useState, u as useSettings, x as useMessage, r as ref, c as computed, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, A as NGi, N as NCard, B as NSpace, b as createBaseVNode, p as NSelect, n as NTooltip, i as createTextVNode, C as NInput, t as toDisplayString, H as NGrid, z as serverUrl, I as spaceRegex, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, D as ref, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, x as NSelect, q as NTooltip, m as createTextVNode, k as NInput, t as toDisplayString, y as NGrid, s as serverUrl, z as spaceRegex, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";

@@ -37,12 +37,6 @@
           :step="1"
         />
       </NFormItem>
-      <NFormItem label="Sampler" label-placement="left">
-        <NSelect
-          :options="settings.scheduler_options"
-          v-model:value="settings.defaultSettings.txt2img.sampler"
-        />
-      </NFormItem>
       <NFormItem label="Seed" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.txt2img.seed"
@@ -52,19 +46,14 @@
       <NFormItem label="Steps" label-placement="left">
         <NInputNumber v-model:value="settings.defaultSettings.txt2img.steps" />
       </NFormItem>
+      <SamplerPicker type="txt2img" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import {
-  NCard,
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
-  NSelect,
-} from "naive-ui";
+import SamplerPicker from "@/components/generate/SamplerPicker.vue";
+import { NCard, NForm, NFormItem, NInput, NInputNumber } from "naive-ui";
 import { useSettings } from "../../../store/settings";
 
 const settings = useSettings();

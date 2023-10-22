@@ -1,4 +1,4 @@
-import { s as h, d as defineComponent, V as useConfig, au as useFormItem, r as ref, c as computed, ah as useMergedState, a6 as provide, Y as toRef, S as createInjectionKey, a2 as call, ad as c, T as cB, ae as cM, aw as cE, aW as iconSwitchTransition, aX as insideModal, aY as insidePopover, U as inject, av as useMemo, W as useTheme, bi as checkboxLight, aj as useRtl, ao as createKey, Z as useThemeClass, aZ as createId, ay as resolveWrappedSlot, aL as NIconSwitchTransition, aG as on, o as openBlock, a as createElementBlock, b as createBaseVNode } from "./index.js";
+import { C as h, d as defineComponent, S as useConfig, ar as useFormItem, D as ref, c as computed, ae as useMergedState, a3 as provide, V as toRef, P as createInjectionKey, $ as call, aa as c, Q as cB, ab as cM, at as cE, aT as iconSwitchTransition, aU as insideModal, aV as insidePopover, R as inject, as as useMemo, T as useTheme, bH as checkboxLight, ag as useRtl, al as createKey, W as useThemeClass, aW as createId, av as resolveWrappedSlot, aI as NIconSwitchTransition, aD as on, e as openBlock, f as createElementBlock, n as createBaseVNode } from "./index.js";
 const CheckMark = h(
   "svg",
   { viewBox: "0 0 64 64", class: "check-icon" },
@@ -559,7 +559,7 @@ const Settings = defineComponent({
   }
 });
 export {
-  NCheckbox as N,
+  NCheckboxGroup as N,
   Settings as S,
-  NCheckboxGroup as a
+  NCheckbox as a
 };
