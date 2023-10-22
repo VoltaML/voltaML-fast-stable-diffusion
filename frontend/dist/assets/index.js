@@ -41118,7 +41118,7 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-a7240cb6"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-4aebc073"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -41152,21 +41152,54 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       return filteredModels.value.filter((model) => {
         return model.backend === "PyTorch" && model.valid === true;
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
+      }).sort((a, b) => {
+        if (a.state === "loaded" && b.state === "loaded") {
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
       });
     });
     const aitModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "AITemplate";
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
+      }).sort((a, b) => {
+        if (a.state === "loaded" && b.state === "loaded") {
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
       });
     });
     const onnxModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "ONNX";
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
+      }).sort((a, b) => {
+        if (a.state === "loaded" && b.state === "loaded") {
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
       });
     });
     const vaeModels = computed(() => {
@@ -41209,7 +41242,18 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       return filteredModels.value.filter((model) => {
         return model.backend === "Textual Inversion";
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
+      }).sort((a, b) => {
+        if (a.state === "loaded" && b.state === "loaded") {
+          return a.name.localeCompare(b.name);
+        }
+        return 0;
       });
     });
     function refreshModels() {
@@ -42029,7 +42073,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_a7240cb6_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_4aebc073_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42037,7 +42081,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-a7240cb6"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-4aebc073"]]);
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

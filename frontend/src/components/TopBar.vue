@@ -431,7 +431,21 @@ const pyTorchModels = computed(() => {
       return model.backend === "PyTorch" && model.valid === true;
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
+    })
+    .sort((a, b) => {
+      // Sort again to ensure alphabetical sorting within each group
+      if (a.state === "loaded" && b.state === "loaded") {
+        return a.name.localeCompare(b.name);
+      }
+      return 0;
     });
 });
 
@@ -441,7 +455,21 @@ const aitModels = computed(() => {
       return model.backend === "AITemplate";
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
+    })
+    .sort((a, b) => {
+      // Sort again to ensure alphabetical sorting within each group
+      if (a.state === "loaded" && b.state === "loaded") {
+        return a.name.localeCompare(b.name);
+      }
+      return 0;
     });
 });
 
@@ -451,7 +479,21 @@ const onnxModels = computed(() => {
       return model.backend === "ONNX";
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
+    })
+    .sort((a, b) => {
+      // Sort again to ensure alphabetical sorting within each group
+      if (a.state === "loaded" && b.state === "loaded") {
+        return a.name.localeCompare(b.name);
+      }
+      return 0;
     });
 });
 
@@ -500,7 +542,21 @@ const textualInversionModels = computed(() => {
       return model.backend === "Textual Inversion";
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
+    })
+    .sort((a, b) => {
+      // Sort again to ensure alphabetical sorting within each group
+      if (a.state === "loaded" && b.state === "loaded") {
+        return a.name.localeCompare(b.name);
+      }
+      return 0;
     });
 });
 
