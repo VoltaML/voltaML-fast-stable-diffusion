@@ -1,42 +1,19 @@
 <template>
   <NConfigProvider :theme="theme" :theme-overrides="overrides" class="main">
     <NThemeEditor v-if="settings.data.settings.frontend.enable_theme_editor">
-      <NNotificationProvider placement="bottom-right" :max="3">
-        <NLoadingBarProvider>
-          <NMessageProvider>
-            <div id="background"></div>
-            <SecretsHandlerVue />
-            <CollapsileNavbarVue />
-            <TopBarVue />
-            <InitHandler />
-            <routerContainerVue style="margin-top: 52px" />
-            <PerformanceDrawer />
-          </NMessageProvider>
-        </NLoadingBarProvider>
-      </NNotificationProvider>
+      <Content />
     </NThemeEditor>
+
+    <Content v-else />
   </NConfigProvider>
 </template>
 
 <script setup lang="ts">
 import { themeKey, themeOverridesKey } from "@/injectionKeys";
-import {
-  NConfigProvider,
-  NLoadingBarProvider,
-  NMessageProvider,
-  NNotificationProvider,
-  NThemeEditor,
-  darkTheme,
-  lightTheme,
-} from "naive-ui";
+import { NConfigProvider, NThemeEditor, darkTheme, lightTheme } from "naive-ui";
 import { computed, provide, ref, watch } from "vue";
-import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
-import InitHandler from "./components/InitHandler.vue";
-import PerformanceDrawer from "./components/PerformanceDrawer.vue";
-import SecretsHandlerVue from "./components/SecretsHandler.vue";
-import TopBarVue from "./components/TopBar.vue";
+import Content from "./Content.vue";
 import { serverUrl } from "./env";
-import routerContainerVue from "./router/router-container.vue";
 import { useSettings } from "./store/settings";
 import { type ExtendedThemeOverrides } from "./types";
 

@@ -39491,7 +39491,7 @@ function useRouter() {
   return inject(routerKey);
 }
 const _hoisted_1$4 = { class: "navbar" };
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
   setup(__props) {
     function renderIcon(icon) {
@@ -39749,7 +39749,7 @@ const useState = defineStore("state", () => {
   }
   return { state, fetchCapabilites, fetchAutofill };
 });
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "InitHandler",
   setup(__props) {
     console.log(
@@ -39777,7 +39777,7 @@ const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "1
 const _hoisted_3$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
 const _hoisted_5$1 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
   setup(__props) {
     const global2 = useState();
@@ -39852,7 +39852,7 @@ const _hoisted_1$2 = /* @__PURE__ */ createBaseVNode("a", {
   href: "https://huggingface.co/settings/tokens"
 }, "this page", -1);
 const _hoisted_2$1 = { style: { "margin-top": "8px", "width": "100%", "display": "flex", "justify-content": "end" } };
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "SecretsHandler",
   setup(__props) {
     const message = useMessage();
@@ -41134,7 +41134,7 @@ const _hoisted_12 = { style: { "display": "inline-flex" } };
 const _hoisted_13 = { key: 1 };
 const _hoisted_14 = { class: "progress-container" };
 const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center" } };
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     const router2 = useRouter();
@@ -42037,27 +42037,59 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-a7240cb6"]]);
-const _sfc_main$1 = {};
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-a7240cb6"]]);
+const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
   return openBlock(), createBlock(_component_RouterView);
 }
-const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
+const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render]]);
 const _hoisted_1 = /* @__PURE__ */ createBaseVNode("div", { id: "background" }, null, -1);
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "Content",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NNotificationProvider), {
+        placement: "bottom-right",
+        max: 3
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NLoadingBarProvider), null, {
+            default: withCtx(() => [
+              createVNode(unref(NMessageProvider), null, {
+                default: withCtx(() => [
+                  _hoisted_1,
+                  createVNode(_sfc_main$4),
+                  createVNode(_sfc_main$7),
+                  createVNode(TopBarVue),
+                  createVNode(_sfc_main$6),
+                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
+                  createVNode(_sfc_main$5)
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => {
       var _a2, _b;
       return {
-        "e41f41c0": theme.value.common.popoverColor,
-        "409f1b40": theme.value.common.borderRadius,
-        "61fe107a": theme.value.common.pressedColor,
-        "50b9cd19": theme.value.common.primaryColorHover,
-        "27d8de03": blur.value,
-        "1929b46a": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
-        "542369b1": backgroundImage.value
+        "58032858": theme.value.common.popoverColor,
+        "0ab1e478": theme.value.common.borderRadius,
+        "cdd87e0a": theme.value.common.pressedColor,
+        "5f8c06e1": theme.value.common.primaryColorHover,
+        "53fbc1cb": blur.value,
+        "02963632": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
+        "272dd8e9": backgroundImage.value
       };
     });
     const settings = useSettings();
@@ -42110,34 +42142,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           unref(settings).data.settings.frontend.enable_theme_editor ? (openBlock(), createBlock(unref(NThemeEditor), { key: 0 }, {
             default: withCtx(() => [
-              createVNode(unref(NNotificationProvider), {
-                placement: "bottom-right",
-                max: 3
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NLoadingBarProvider), null, {
-                    default: withCtx(() => [
-                      createVNode(unref(NMessageProvider), null, {
-                        default: withCtx(() => [
-                          _hoisted_1,
-                          createVNode(_sfc_main$3),
-                          createVNode(_sfc_main$6),
-                          createVNode(TopBarVue),
-                          createVNode(_sfc_main$5),
-                          createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
-                          createVNode(_sfc_main$4)
-                        ]),
-                        _: 1
-                      })
-                    ]),
-                    _: 1
-                  })
-                ]),
-                _: 1
-              })
+              createVNode(_sfc_main$1)
             ]),
             _: 1
-          })) : createCommentVNode("", true)
+          })) : (openBlock(), createBlock(_sfc_main$1, { key: 1 }))
         ]),
         _: 1
       }, 8, ["theme", "theme-overrides"]);
