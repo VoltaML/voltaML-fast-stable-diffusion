@@ -7,12 +7,12 @@
   z-index: 2;
 }
 
-.progress-container[data-v-4aebc073] {
+.progress-container[data-v-e92af350] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-4aebc073] {
+.top-bar[data-v-e92af350] {
   display: inline-flex;
   align-items: center;
   padding-top: 10px;
@@ -23,7 +23,7 @@
   top: 0;
   z-index: 1;
 }
-.logo[data-v-4aebc073] {
+.logo[data-v-e92af350] {
   margin-right: 16px;
   margin-left: 16px;
 }

@@ -439,13 +439,6 @@ const pyTorchModels = computed(() => {
         // If 'state' is the same, sort alphabetically by 'name'
         return a.name.localeCompare(b.name);
       }
-    })
-    .sort((a, b) => {
-      // Sort again to ensure alphabetical sorting within each group
-      if (a.state === "loaded" && b.state === "loaded") {
-        return a.name.localeCompare(b.name);
-      }
-      return 0;
     });
 });
 
@@ -463,13 +456,6 @@ const aitModels = computed(() => {
         // If 'state' is the same, sort alphabetically by 'name'
         return a.name.localeCompare(b.name);
       }
-    })
-    .sort((a, b) => {
-      // Sort again to ensure alphabetical sorting within each group
-      if (a.state === "loaded" && b.state === "loaded") {
-        return a.name.localeCompare(b.name);
-      }
-      return 0;
     });
 });
 
@@ -487,13 +473,6 @@ const onnxModels = computed(() => {
         // If 'state' is the same, sort alphabetically by 'name'
         return a.name.localeCompare(b.name);
       }
-    })
-    .sort((a, b) => {
-      // Sort again to ensure alphabetical sorting within each group
-      if (a.state === "loaded" && b.state === "loaded") {
-        return a.name.localeCompare(b.name);
-      }
-      return 0;
     });
 });
 
@@ -550,13 +529,6 @@ const textualInversionModels = computed(() => {
         // If 'state' is the same, sort alphabetically by 'name'
         return a.name.localeCompare(b.name);
       }
-    })
-    .sort((a, b) => {
-      // Sort again to ensure alphabetical sorting within each group
-      if (a.state === "loaded" && b.state === "loaded") {
-        return a.name.localeCompare(b.name);
-      }
-      return 0;
     });
 });
 
