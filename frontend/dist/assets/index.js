@@ -42081,15 +42081,15 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "App",
   setup(__props) {
     useCssVars((_ctx) => {
-      var _a2, _b;
+      var _a2, _b, _c;
       return {
-        "58032858": theme.value.common.popoverColor,
-        "0ab1e478": theme.value.common.borderRadius,
-        "cdd87e0a": theme.value.common.pressedColor,
-        "5f8c06e1": theme.value.common.primaryColorHover,
-        "53fbc1cb": blur.value,
-        "02963632": (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color,
-        "272dd8e9": backgroundImage.value
+        "fe524422": theme.value.common.popoverColor,
+        "33859a0f": theme.value.common.borderRadius,
+        "7c3112dc": theme.value.common.pressedColor,
+        "bd2590ac": theme.value.common.primaryColorHover,
+        "d1604858": blur.value,
+        "1df3ef1b": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "d1376180": backgroundImage.value
       };
     });
     const settings = useSettings();
@@ -42125,12 +42125,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       return `blur(${((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.blur) ?? "6px"})`;
     });
     watch(
+      () => overrides.value,
       () => {
         var _a2, _b;
-        return (_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color;
-      },
-      () => {
-        document.body.style.backgroundColor = theme.value.common.baseColor;
+        document.body.style.backgroundColor = ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.common) == null ? void 0 : _b.baseColor) ?? theme.value.common.baseColor;
       }
     );
     return (_ctx, _cache) => {

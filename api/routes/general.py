@@ -93,7 +93,7 @@ async def themes():
     path = Path("data/themes")
     files = []
     for file in path.glob("*.json"):
-        if file.stem not in ["dark", "light"]:
-            files.append(file.stem)
+        files.append(file.stem)
 
+    files.sort()
     return files

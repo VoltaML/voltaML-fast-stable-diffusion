@@ -51,12 +51,14 @@ const backgroundImage = computed(() => {
 
   return undefined;
 });
+
 const blur = computed(() => `blur(${overrides.value?.volta?.blur ?? "6px"})`);
 
 watch(
-  () => overrides.value?.Card?.color,
+  () => overrides.value,
   () => {
-    document.body.style.backgroundColor = theme.value.common.baseColor;
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? theme.value.common.baseColor;
   }
 );
 </script>
@@ -103,7 +105,9 @@ watch(
 
 .top-bar {
   backdrop-filter: v-bind(blur);
-  background-color: v-bind("overrides?.Card?.color");
+  background-color: v-bind(
+    "overrides?.Card?.color ?? theme.Card.common?.cardColor"
+  );
 }
 
 .navbar {

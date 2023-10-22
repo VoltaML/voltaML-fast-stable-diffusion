@@ -6,6 +6,7 @@
           :options="themeOptions"
           v-model:value="settings.defaultSettings.frontend.theme"
           :loading="themesLoading"
+          filterable
         />
       </NFormItem>
       <NFormItem label="Background Image Override" label-placement="left">
@@ -26,6 +27,7 @@
 
 <script lang="ts" setup>
 import { serverUrl } from "@/env";
+import { convertToTextString } from "@/functions";
 import { useSettings } from "@/store/settings";
 import {
   NCard,
@@ -42,15 +44,9 @@ const settings = useSettings();
 const extraThemes = reactive<string[]>([]);
 
 const themeOptions = computed<SelectOption[]>(() => {
-  const base = [
-    { label: "Dark", value: "dark" },
-    { label: "Light", value: "light" },
-  ];
-  const extra = extraThemes.map((theme) => {
-    return { label: theme, value: theme };
+  return extraThemes.map((theme) => {
+    return { label: convertToTextString(theme), value: theme };
   });
-
-  return base.concat(extra);
 });
 
 const themesLoading = ref(true);
