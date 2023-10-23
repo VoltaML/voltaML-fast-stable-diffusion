@@ -15,7 +15,7 @@ import { computed, provide, ref, watch } from "vue";
 import Content from "./Content.vue";
 import { serverUrl } from "./env";
 import { useSettings } from "./store/settings";
-import { type ExtendedThemeOverrides } from "./types";
+import type { ExtendedThemeOverrides } from "./types";
 
 const settings = useSettings();
 

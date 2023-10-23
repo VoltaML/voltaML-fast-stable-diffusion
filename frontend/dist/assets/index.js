@@ -42762,13 +42762,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "fe524422": theme.value.common.popoverColor,
-        "33859a0f": theme.value.common.borderRadius,
-        "7c3112dc": theme.value.common.pressedColor,
-        "bd2590ac": theme.value.common.primaryColorHover,
-        "d1604858": blur.value,
-        "1df3ef1b": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "d1376180": backgroundImage.value
+        "2441c648": theme.value.common.popoverColor,
+        "521efb30": theme.value.common.borderRadius,
+        "65525eeb": theme.value.common.pressedColor,
+        "0c729ef1": theme.value.common.primaryColorHover,
+        "15a84ddb": blur.value,
+        "2259b162": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "f8e7ba4e": backgroundImage.value
       };
     });
     const settings = useSettings();
