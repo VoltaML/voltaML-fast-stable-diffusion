@@ -95,6 +95,7 @@ class APIConfig:
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
+    enable_websocket_logging: bool = True
 
     # TomeSD
     use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit

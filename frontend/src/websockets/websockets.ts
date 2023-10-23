@@ -140,6 +140,18 @@ export function processWebSocket(
         });
       break;
     }
+    case "log": {
+      const messages = message.data.message.split("\n");
+      for (const msg of messages) {
+        global.state.log_drawer.logs.splice(0, 0, msg);
+
+        // Limit the number of logs to 500
+        if (global.state.log_drawer.logs.length > 500) {
+          global.state.log_drawer.logs.pop();
+        }
+      }
+      break;
+    }
     default: {
       console.log(message);
     }

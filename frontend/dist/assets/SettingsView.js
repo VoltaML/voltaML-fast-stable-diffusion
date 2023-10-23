@@ -2982,6 +2982,18 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   }, null, 8, ["value"])
                 ]),
                 _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Enable sending logs to UI",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.api.enable_websocket_logging,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.enable_websocket_logging = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
               })
             ]),
             _: 1

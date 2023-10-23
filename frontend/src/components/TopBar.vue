@@ -361,14 +361,6 @@
           @click="startWebsocket(message)"
         ></NButton>
       </NDropdown>
-      <NButton
-        type="success"
-        quaternary
-        icon-placement="left"
-        :render-icon="perfIcon"
-        @click="global.state.perf_drawer.enabled = true"
-        :disabled="global.state.perf_drawer.enabled"
-      />
     </div>
   </div>
 </template>
@@ -395,6 +387,7 @@ import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
+  DocumentText,
   PowerSharp,
   SettingsSharp,
   StatsChart,
@@ -784,10 +777,6 @@ function resetModels() {
   console.log("Reset models");
 }
 
-const perfIcon = () => {
-  return h(StatsChart);
-};
-
 websocketState.onConnectedCallbacks.push(() => {
   refreshModels();
 });
@@ -916,6 +905,16 @@ const renderIcon = (icon: Component) => {
 
 const dropdownOptions: DropdownOption[] = [
   {
+    label: "Log",
+    key: "log",
+    icon: renderIcon(DocumentText),
+  },
+  {
+    label: "Performance",
+    key: "performance",
+    icon: renderIcon(StatsChart),
+  },
+  {
     label: "Reconnect",
     key: "reconnect",
     icon: renderIcon(SyncSharp),
@@ -933,14 +932,24 @@ const dropdownOptions: DropdownOption[] = [
 ];
 
 async function dropdownSelected(key: string) {
-  if (key === "reconnect") {
-    await startWebsocket(message);
-  } else if (key === "settings") {
-    router.push("/settings");
-  } else if (key === "shutdown") {
-    await fetch(`${serverUrl}/api/general/shutdown`, {
-      method: "POST",
-    });
+  switch (key) {
+    case "reconnect":
+      await startWebsocket(message);
+      break;
+    case "settings":
+      router.push("/settings");
+      break;
+    case "shutdown":
+      await fetch(`${serverUrl}/api/general/shutdown`, {
+        method: "POST",
+      });
+      break;
+    case "performance":
+      global.state.perf_drawer.enabled = true;
+      break;
+    case "log":
+      global.state.log_drawer.enabled = true;
+      break;
   }
 }
 

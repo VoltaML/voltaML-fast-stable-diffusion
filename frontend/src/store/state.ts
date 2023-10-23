@@ -93,6 +93,10 @@ export interface StateInterface {
     enabled: boolean;
     gpus: GPU[];
   };
+  log_drawer: {
+    enabled: boolean;
+    logs: string[];
+  };
   models: Array<ModelEntry>;
   selected_model: ModelEntry | null;
   secrets: {
@@ -190,6 +194,10 @@ export const useState = defineStore("state", () => {
     perf_drawer: {
       enabled: false,
       gpus: [],
+    },
+    log_drawer: {
+      enabled: false,
+      logs: [],
     },
     models: [],
     selected_model: ref(null),

@@ -143,6 +143,7 @@ export interface ISettings {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
+    enable_websocket_logging: boolean;
 
     use_tomesd: boolean;
     tomesd_ratio: number;
@@ -323,6 +324,7 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    enable_websocket_logging: true,
 
     clip_skip: 1,
     clip_quantization: "full",

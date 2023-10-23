@@ -245,10 +245,14 @@ def checks():
     # Inject better logger
     from rich.logging import RichHandler
 
+    from core.logger.websocket_logging import WebSocketLoggingHandler
+
     print(f"Log level: {args_with_extras.log_level}")
     args_with_extras.log_level = args_with_extras.log_level or os.getenv(
         "LOG_LEVEL", "INFO"
     )
+
+    websocket_logging_handler = WebSocketLoggingHandler(config=None)
 
     cleanup_old_logs()
     logging.basicConfig(
@@ -262,6 +266,7 @@ def checks():
                 mode="w",
                 encoding="utf-8",
             ),
+            websocket_logging_handler,
         ],
     )
     logger = logging.getLogger()
@@ -290,6 +295,8 @@ def checks():
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
 
     from core.config import config
+
+    websocket_logging_handler.config = config
 
     logger.info(f"Device: {config.api.device}")
     logger.info(f"Precision: {config.api.data_type}")
