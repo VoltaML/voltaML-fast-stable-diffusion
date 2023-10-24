@@ -69,15 +69,13 @@ export interface StateInterface {
     images: string[];
     genData: GenerationData;
   };
-  sd_upscale: {
-    currentImage: string;
-    images: string[];
-    genData: GenerationData;
-  };
-  extra: {
+  imageProcessing: {
     currentImage: string;
     images: string[];
     tab: "upscale";
+  };
+  extra: {
+    tab: "dependencies";
   };
   tagger: {
     positivePrompt: Map<string, number>;
@@ -94,6 +92,10 @@ export interface StateInterface {
   perf_drawer: {
     enabled: boolean;
     gpus: GPU[];
+  };
+  log_drawer: {
+    enabled: boolean;
+    logs: string[];
   };
   models: Array<ModelEntry>;
   selected_model: ModelEntry | null;
@@ -165,18 +167,13 @@ export const useState = defineStore("state", () => {
         seed: null,
       },
     },
-    sd_upscale: {
-      images: [],
-      currentImage: "",
-      genData: {
-        time_taken: null,
-        seed: null,
-      },
-    },
-    extra: {
+    imageProcessing: {
       images: [],
       currentImage: "",
       tab: "upscale",
+    },
+    extra: {
+      tab: "dependencies",
     },
     tagger: {
       positivePrompt: new Map<string, number>(),
@@ -197,6 +194,10 @@ export const useState = defineStore("state", () => {
     perf_drawer: {
       enabled: false,
       gpus: [],
+    },
+    log_drawer: {
+      enabled: false,
+      logs: [],
     },
     models: [],
     selected_model: ref(null),

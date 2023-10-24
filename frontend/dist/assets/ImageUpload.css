@@ -1,14 +1,14 @@
 
-.hidden-input[data-v-b7a1d9cc] {
+.hidden-input[data-v-9ed1514f] {
   display: none;
 }
-.image-container img[data-v-b7a1d9cc] {
+.image-container img[data-v-9ed1514f] {
   width: 100%;
   height: 100%;
   object-fit: contain;
   overflow: hidden;
 }
-.image-container[data-v-b7a1d9cc] {
+.image-container[data-v-9ed1514f] {
   height: 70vh;
   width: 100%;
   display: flex;

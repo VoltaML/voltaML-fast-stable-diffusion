@@ -38,6 +38,7 @@
 <script lang="ts" setup>
 import {
   Albums,
+  Archive,
   Create,
   Cube,
   Duplicate,
@@ -70,8 +71,13 @@ const menuOptionsMain: MenuOption[] = [
     icon: renderIcon(Images),
   },
   {
-    label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-    key: "extra",
+    label: () =>
+      h(
+        RouterLink,
+        { to: "/imageProcessing" },
+        { default: () => "Image Processing" }
+      ),
+    key: "imageProcessing",
     icon: renderIcon(Duplicate),
   },
   {
@@ -99,6 +105,11 @@ const menuOptionsMain: MenuOption[] = [
       h(RouterLink, { to: "/accelerate" }, { default: () => "Accelerate" }),
     key: "plugins",
     icon: renderIcon(Speedometer),
+  },
+  {
+    label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+    key: "extra",
+    icon: renderIcon(Archive),
   },
   {
     label: () =>

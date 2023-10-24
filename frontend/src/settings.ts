@@ -143,6 +143,7 @@ export interface ISettings {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
+    enable_websocket_logging: boolean;
 
     use_tomesd: boolean;
     tomesd_ratio: number;
@@ -214,11 +215,12 @@ export interface ISettings {
     use_default_negative_prompt: boolean;
   };
   frontend: {
-    theme: "dark" | "light";
+    theme: string;
     enable_theme_editor: boolean;
     image_browser_columns: number;
     on_change_timer: number;
     nsfw_ok_threshold: number;
+    background_image_override: string;
   };
   sampler_config: Record<string, Record<string, any>>;
 }
@@ -322,6 +324,7 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    enable_websocket_logging: true,
 
     clip_skip: 1,
     clip_quantization: "full",
@@ -399,6 +402,7 @@ export const defaultSettings: ISettings = {
     image_browser_columns: 5,
     on_change_timer: 2000,
     nsfw_ok_threshold: 0,
+    background_image_override: "",
   },
   sampler_config: {},
 };

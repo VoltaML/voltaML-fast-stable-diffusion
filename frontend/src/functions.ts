@@ -75,7 +75,7 @@ export async function startWebsocket(messageProvider: any) {
 
 export function getTextBoundaries(elem: HTMLInputElement | null) {
   if (elem === null) {
-    console.log("Element is null");
+    console.error("Element is null");
     return [0, 0];
   }
   if (
@@ -87,7 +87,7 @@ export function getTextBoundaries(elem: HTMLInputElement | null) {
       elem.selectionEnd === null ? 0 : elem.selectionEnd,
     ];
   }
-  console.log("Element is not input");
+  console.error("Element is not input");
   return [0, 0];
 }
 

@@ -174,8 +174,6 @@ for file in Path("api/routes").iterdir():
 app.include_router(ws.router, prefix="/api/websockets")
 
 # Mount outputs folder
-output_folder = Path("data/outputs")
-output_folder.mkdir(exist_ok=True)
 app.mount("/data/outputs", StaticFiles(directory="data/outputs"), name="outputs")
 
 # Mount static files (css, js, images, etc.)
@@ -184,7 +182,10 @@ static_app.add_middleware(
     CacheControlMiddleware, cache_control=CacheControl("no-cache")
 )
 static_app.mount("/", StaticFiles(directory="frontend/dist/assets"), name="assets")
+
 app.mount("/assets", static_app)
+app.mount("/static", StaticFiles(directory="static"), name="extra_static_files")
+app.mount("/themes", StaticFiles(directory="data/themes"), name="themes")
 
 origins = ["*"]
 

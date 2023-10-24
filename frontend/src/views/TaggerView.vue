@@ -161,14 +161,12 @@ const generate = () => {
           }) => {
             global.state.tagger.positivePrompt = data.positive;
             global.state.tagger.negativePrompt = data.negative;
-            console.log(data);
           }
         );
     })
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 

@@ -95,6 +95,7 @@ class APIConfig:
     # Websockets and intervals
     websocket_sync_interval: float = 0.02
     websocket_perf_interval: float = 1.0
+    enable_websocket_logging: bool = True
 
     # TomeSD
     use_tomesd: bool = False  # really extreme, probably will have to wait around until tome improves a bit
@@ -234,7 +235,8 @@ class InterrogatorConfig:
 class FrontendConfig:
     "Configuration for the frontend"
 
-    theme: Literal["dark", "light"] = "dark"
+    theme: str = "dark"
+    background_image_override: str = ""
     enable_theme_editor: bool = False
     image_browser_columns: int = 5
     on_change_timer: int = 0

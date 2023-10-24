@@ -37,12 +37,6 @@
           :step="8"
         />
       </NFormItem>
-      <NFormItem label="Sampler" label-placement="left">
-        <NSelect
-          :options="settings.scheduler_options"
-          v-model:value="settings.defaultSettings.inpainting.sampler"
-        />
-      </NFormItem>
       <NFormItem label="Seed" label-placement="left">
         <NInputNumber
           v-model:value="settings.defaultSettings.inpainting.seed"
@@ -54,20 +48,15 @@
           v-model:value="settings.defaultSettings.inpainting.steps"
         />
       </NFormItem>
+      <SamplerPicker type="inpainting" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
+import SamplerPicker from "@/components/generate/SamplerPicker.vue";
 import { useSettings } from "@/store/settings";
-import {
-  NCard,
-  NForm,
-  NFormItem,
-  NInput,
-  NInputNumber,
-  NSelect,
-} from "naive-ui";
+import { NCard, NForm, NFormItem, NInput, NInputNumber } from "naive-ui";
 
 const settings = useSettings();
 </script>

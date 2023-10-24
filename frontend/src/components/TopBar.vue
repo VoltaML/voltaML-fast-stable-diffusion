@@ -361,24 +361,6 @@
           @click="startWebsocket(message)"
         ></NButton>
       </NDropdown>
-      <NButton
-        type="success"
-        quaternary
-        icon-placement="left"
-        :render-icon="perfIcon"
-        @click="global.state.perf_drawer.enabled = true"
-        :disabled="global.state.perf_drawer.enabled"
-      />
-      <NButton
-        quaternary
-        icon-placement="left"
-        :render-icon="themeIcon"
-        style="margin-right: 8px"
-        @click="
-          settings.data.settings.frontend.theme =
-            settings.data.settings.frontend.theme === 'dark' ? 'light' : 'dark'
-        "
-      />
     </div>
   </div>
 </template>
@@ -405,7 +387,7 @@ import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
-  ContrastSharp,
+  DocumentText,
   PowerSharp,
   SettingsSharp,
   StatsChart,
@@ -442,7 +424,14 @@ const pyTorchModels = computed(() => {
       return model.backend === "PyTorch" && model.valid === true;
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
     });
 });
 
@@ -452,7 +441,14 @@ const aitModels = computed(() => {
       return model.backend === "AITemplate";
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
     });
 });
 
@@ -462,7 +458,14 @@ const onnxModels = computed(() => {
       return model.backend === "ONNX";
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
     });
 });
 
@@ -511,7 +514,14 @@ const textualInversionModels = computed(() => {
       return model.backend === "Textual Inversion";
     })
     .sort((a, b) => {
-      return a.name.localeCompare(b.name);
+      if (a.state === "loaded" && b.state !== "loaded") {
+        return -1; // a should come before b
+      } else if (a.state !== "loaded" && b.state === "loaded") {
+        return 1; // b should come before a
+      } else {
+        // If 'state' is the same, sort alphabetically by 'name'
+        return a.name.localeCompare(b.name);
+      }
     });
 });
 
@@ -572,11 +582,11 @@ function refreshModels() {
             if (allLoaded.length > 0) {
               settings.data.settings.model = allLoaded[0];
               console.log(
-                "Set current model to first available model: ",
+                "Setting current model to first available model: ",
                 settings.data.settings.model
               );
             } else {
-              console.log("No models available");
+              console.log("No models available, setting current model to null");
               settings.data.settings.model = null;
             }
           }
@@ -767,14 +777,6 @@ function resetModels() {
   console.log("Reset models");
 }
 
-const perfIcon = () => {
-  return h(StatsChart);
-};
-
-const themeIcon = () => {
-  return h(ContrastSharp);
-};
-
 websocketState.onConnectedCallbacks.push(() => {
   refreshModels();
 });
@@ -903,6 +905,16 @@ const renderIcon = (icon: Component) => {
 
 const dropdownOptions: DropdownOption[] = [
   {
+    label: "Log",
+    key: "log",
+    icon: renderIcon(DocumentText),
+  },
+  {
+    label: "Performance",
+    key: "performance",
+    icon: renderIcon(StatsChart),
+  },
+  {
     label: "Reconnect",
     key: "reconnect",
     icon: renderIcon(SyncSharp),
@@ -920,26 +932,28 @@ const dropdownOptions: DropdownOption[] = [
 ];
 
 async function dropdownSelected(key: string) {
-  if (key === "reconnect") {
-    await startWebsocket(message);
-  } else if (key === "settings") {
-    router.push("/settings");
-  } else if (key === "shutdown") {
-    await fetch(`${serverUrl}/api/general/shutdown`, {
-      method: "POST",
-    });
+  switch (key) {
+    case "reconnect":
+      await startWebsocket(message);
+      break;
+    case "settings":
+      router.push("/settings");
+      break;
+    case "shutdown":
+      await fetch(`${serverUrl}/api/general/shutdown`, {
+        method: "POST",
+      });
+      break;
+    case "performance":
+      global.state.perf_drawer.enabled = true;
+      break;
+    case "log":
+      global.state.log_drawer.enabled = true;
+      break;
   }
 }
 
 startWebsocket(message);
-
-const backgroundColor = computed(() => {
-  if (settings.data.settings.frontend.theme === "dark") {
-    return "#121215";
-  } else {
-    return "#fff";
-  }
-});
 </script>
 
 <style scoped>
@@ -952,7 +966,6 @@ const backgroundColor = computed(() => {
 .top-bar {
   display: inline-flex;
   align-items: center;
-  border-bottom: #505050 1px solid;
   padding-top: 10px;
   padding-bottom: 10px;
   width: calc(100% - 64px);
@@ -960,7 +973,6 @@ const backgroundColor = computed(() => {
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: v-bind(backgroundColor);
 }
 
 .logo {
