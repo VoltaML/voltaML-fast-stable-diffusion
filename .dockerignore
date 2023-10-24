@@ -22,9 +22,6 @@ yarn.lock
 # Frontend
 frontend/dist/
 
-# Static files
-/static
-
 # Python
 /venv
 
