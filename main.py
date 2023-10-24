@@ -96,6 +96,7 @@ for directory in [
     "lycoris",
     "logs",
     "themes",
+    "autofill",
 ]:
     Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
