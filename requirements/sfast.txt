@@ -1,3 +1,4 @@
+xformers
 ninja==1.11.1.1
 triton>=2.1.0; platform_system == "Linux"
-git+https://github.com/chengzeyi/stable-fast.git@main#egg=stable-fast
+git+https://github.com/chengzeyi/stable-fast.git@760170833143b975072eabc17bc9860ba1012000
