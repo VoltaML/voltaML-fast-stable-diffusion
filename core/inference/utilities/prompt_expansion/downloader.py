@@ -41,8 +41,8 @@ def download_model():
         if isinstance(d, tuple):
             download_file(d[0], folder, add_filename=True)
             os.rename(
-                "data/prompt-expansion/fooocus_expansion.bin",
-                "data/prompt-expansion/pytorch_model.bin",
+                (folder / "fooocus_expansion.bin").absolute().resolve().as_posix(),
+                (folder / "pytorch_model.bin").absolute().resolve().as_posix(),
             )
         else:
             download_file(d, folder, add_filename=True)
