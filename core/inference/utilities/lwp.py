@@ -8,6 +8,7 @@ from diffusers import StableDiffusionPipeline
 
 from core.utils import download_file
 
+from .prompt_expansion import expand
 from ...config import config
 from ...files import get_full_model_path
 
@@ -329,6 +330,9 @@ def get_weighted_text_embeddings(
     """
     max_length = (pipe.tokenizer.model_max_length - 2) * max_embeddings_multiples + 2  # type: ignore
     if isinstance(prompt, str):
+        if config.api.prompt_to_prompt:
+            prompt = expand(prompt, 1)
+            logger.info(f'Expanded prompt to "{prompt}"')
         prompt = [prompt]
 
     if not hasattr(pipe, "clip_inference"):

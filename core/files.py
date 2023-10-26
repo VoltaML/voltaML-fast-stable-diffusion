@@ -15,15 +15,22 @@ class CachedModelList:
     "List of models downloaded for PyTorch and (or) converted to TRT"
 
     def __init__(self):
-        self.pytorch_path = Path(DIFFUSERS_CACHE)
-        self.checkpoint_converted_path = Path("data/models")
-        self.onnx_path = Path("data/onnx")
-        self.aitemplate_path = Path("data/aitemplate")
-        self.lora_path = Path("data/lora")
-        self.lycoris_path = Path("data/lycoris")
-        self.textual_inversion_path = Path("data/textual-inversion")
-        self.vae_path = Path("data/vae")
-        self.upscaler_path = Path("data/upscaler")
+        self.paths = {
+            "pytorch": Path(DIFFUSERS_CACHE),
+            "checkpoints": Path("data/models"),
+            "onnx": Path("data/onnx"),
+            "aitemplate": Path("data/aitemplate"),
+            "lora": Path("data/lora"),
+            "lycoris": Path("data/lycoris"),
+            "textual_inversion": Path("data/textual-inversion"),
+            "vae": Path("data/vae"),
+            "upscaler": Path("data/upscaler"),
+            "prompt_expansion": Path("data/prompt-expansion"),
+        }
+
+        for _, path in self.paths.items():
+            if not path.exists():
+                path.mkdir()
 
         self.ext_whitelist = [".safetensors", ".ckpt", ".pth", ".pt", ".bin"]
 
@@ -39,8 +46,8 @@ class CachedModelList:
         models: List[ModelResponse] = []
 
         # Diffusers cached models
-        logger.debug(f"Looking for PyTorch models in {self.pytorch_path}")
-        for model_name in os.listdir(self.pytorch_path):
+        logger.debug(f"Looking for PyTorch models in {self.paths['pytorch']}")
+        for model_name in os.listdir(self.paths["pytorch"]):
             logger.debug(f"Found model {model_name}")
 
             # Skip if it is not a huggingface model
@@ -64,11 +71,11 @@ class CachedModelList:
                 continue
 
         # Localy stored models
-        logger.debug(f"Looking for local models in {self.checkpoint_converted_path}")
-        for model_name in os.listdir(self.checkpoint_converted_path):
+        logger.debug(f"Looking for local models in {self.paths['checkpoints']}")
+        for model_name in os.listdir(self.paths["checkpoints"]):
             logger.debug(f"Found model {model_name}")
 
-            if self.checkpoint_converted_path.joinpath(model_name).is_dir():
+            if self.paths["checkpoints"].joinpath(model_name).is_dir():
                 # Assuming that model is in Diffusers format
                 models.append(
                     ModelResponse(
@@ -77,7 +84,7 @@ class CachedModelList:
                         backend="PyTorch",
                         vae="default",
                         valid=is_valid_diffusers_model(
-                            self.checkpoint_converted_path.joinpath(model_name)
+                            self.paths["checkpoints"].joinpath(model_name)
                         ),
                         state="not loaded",
                     )
@@ -97,7 +104,7 @@ class CachedModelList:
             else:
                 # Junk file, notify user
                 logger.debug(
-                    f"Found junk file {model_name} in {self.checkpoint_converted_path}, skipping..."
+                    f"Found junk file {model_name} in {self.paths['checkpoints']}, skipping..."
                 )
 
         return models
@@ -107,9 +114,9 @@ class CachedModelList:
 
         models: List[ModelResponse] = []
 
-        logger.debug(f"Looking for AITemplate models in {self.aitemplate_path}")
+        logger.debug(f"Looking for AITemplate models in {self.paths['aitemplate']}")
 
-        for model in os.listdir(self.aitemplate_path):
+        for model in os.listdir(self.paths["aitemplate"]):
             logger.debug(f"Found model {model}")
             model_name = model.replace("--", "/")
 
@@ -120,7 +127,7 @@ class CachedModelList:
                     backend="AITemplate",
                     vae="default",
                     valid=is_valid_aitemplate_model(
-                        self.aitemplate_path.joinpath(model)
+                        self.paths["aitemplate"].joinpath(model)
                     ),
                     state="not loaded",
                 )
@@ -133,13 +140,13 @@ class CachedModelList:
 
         models: List[ModelResponse] = []
 
-        for model in os.listdir(self.onnx_path):
+        for model in os.listdir(self.paths["onnx"]):
             logger.debug(f"Found ONNX {model}")
 
             models.append(
                 ModelResponse(
                     name=model,
-                    path=os.path.join(self.onnx_path, model),
+                    path=os.path.join(self.paths["onnx"], model),
                     vae="default",
                     backend="ONNX",
                     valid=True,
@@ -153,7 +160,7 @@ class CachedModelList:
 
         models: List[ModelResponse] = []
 
-        for model in os.listdir(self.lora_path):
+        for model in os.listdir(self.paths["lora"]):
             logger.debug(f"Found LoRA {model}")
 
             # Skip if it is not a LoRA model
@@ -165,7 +172,7 @@ class CachedModelList:
             models.append(
                 ModelResponse(
                     name=model_name,
-                    path=os.path.join(self.lora_path, model),
+                    path=os.path.join(self.paths["lora"], model),
                     vae="default",
                     backend="LoRA",
                     valid=True,
@@ -180,7 +187,7 @@ class CachedModelList:
 
         models: List[ModelResponse] = []
 
-        for model in os.listdir(self.lycoris_path):
+        for model in os.listdir(self.paths["lycoris"]):
             logger.debug(f"Found LyCORIS {model}")
 
             # Skip if it is not a LyCORIS model
@@ -192,7 +199,7 @@ class CachedModelList:
             models.append(
                 ModelResponse(
                     name=model_name,
-                    path=os.path.join(self.lycoris_path, model),
+                    path=os.path.join(self.paths["lycoris"], model),
                     vae="default",
                     backend="LyCORIS",
                     valid=True,
@@ -207,10 +214,10 @@ class CachedModelList:
 
         models: List[ModelResponse] = []
 
-        for model in os.listdir(self.vae_path):
+        for model in os.listdir(self.paths["vae"]):
             logger.debug(f"Found VAE model {model}")
 
-            path = Path(os.path.join(self.vae_path, model))
+            path = Path(os.path.join(self.paths["vae"], model))
 
             # Skip if it is not a VAE model
             if path.suffix not in self.ext_whitelist and not path.is_dir():
@@ -236,7 +243,7 @@ class CachedModelList:
 
         models: List[ModelResponse] = []
 
-        for model in os.listdir(self.textual_inversion_path):
+        for model in os.listdir(self.paths["textual_inversion"]):
             logger.debug(f"Found textual inversion model {model}")
 
             # Skip if it is not a Texutal Inversion
@@ -248,7 +255,7 @@ class CachedModelList:
             models.append(
                 ModelResponse(
                     name=model_name,
-                    path=os.path.join(self.textual_inversion_path, model),
+                    path=os.path.join(self.paths["textual_inversion"], model),
                     vae="default",
                     backend="Textual Inversion",
                     valid=True,
@@ -263,7 +270,7 @@ class CachedModelList:
 
         models: List[ModelResponse] = []
 
-        for model in os.listdir(self.upscaler_path):
+        for model in os.listdir(self.paths["upscaler"]):
             logger.debug(f"Found upscaler model {model}")
 
             # Skip if it is not an upscaler
@@ -275,7 +282,7 @@ class CachedModelList:
             models.append(
                 ModelResponse(
                     name=model_name,
-                    path=os.path.join(self.upscaler_path, model),
+                    path=os.path.join(self.paths["upscaler"], model),
                     vae="default",
                     backend="Upscaler",
                     valid=True,
@@ -283,6 +290,20 @@ class CachedModelList:
                 )
             )
 
+        return models
+
+    def prompt_expansion(self):
+        "List of prompt-expansion (GPT-like) models"
+
+        models: List[ModelResponse] = []
+
+        for model in os.listdir(self.paths["prompt_expansion"]):
+            f = os.path.join(self.paths["prompt_expansion"], model)
+            if Path(f).is_dir():
+                if "config.json" in os.listdir(f):
+                    models.append(
+                        ModelResponse(model, f, "GPT", True, "", "not loaded", [])
+                    )
         return models
 
     def all(self):
@@ -297,6 +318,7 @@ class CachedModelList:
             + self.textual_inversion()
             + self.vae()
             + self.upscaler()
+            + self.prompt_expansion()
         )
 
 

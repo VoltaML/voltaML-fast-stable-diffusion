@@ -169,6 +169,17 @@ class APIConfig:
     vae_slicing: bool = True
     vae_tiling: bool = False
 
+    # Prompt expansion (very, and I mean VERYYYY heavily inspired/copied from Illyasviel/Fooocus)
+    prompt_to_prompt: bool = False
+    prompt_to_prompt_model: Literal[
+        "lllyasviel/Fooocus-Expansion",
+        "daspartho/prompt-extend",
+        "succinctly/text2image-prompt-generator",
+        "Gustavosta/MagicPrompt-Stable-Diffusion",
+        "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator",
+    ] = "lllyasviel/Fooocus-Expansion"
+    prompt_to_prompt_device: Literal["cpu", "gpu"] = "gpu"
+
     @property
     def dtype(self):
         "Return selected data type"

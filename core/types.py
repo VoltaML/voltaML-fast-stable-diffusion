@@ -26,6 +26,7 @@ Backend = Literal[
     "ONNX",
     "VAE",
     "Upscaler",
+    "GPT",  # for prompt-expansion
 ]
 ImageFormats = Literal["png", "jpeg", "webp"]
 
