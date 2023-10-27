@@ -30,6 +30,7 @@ from core.optimizations import inference_context
 from core.scheduling import KdiffusionSchedulerAdapter
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
+from core.config import config
 
 # ------------------------------------------------------------------------------
 
@@ -347,8 +348,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
             # corresponds to doing no classifier free guidance.
             do_classifier_free_guidance = guidance_scale > 1.0
-
-            do_self_attention_guidance = self_attention_scale > 0.0
+            split_latents_into_two = (
+                config.api.dont_merge_latents and do_classifier_free_guidance
+            )
+            do_self_attention_guidance = self_attention_scale > 0.0 and not isinstance(
+                self.scheduler, KdiffusionSchedulerAdapter
+            )
 
             # 3. Encode input prompt
             text_embeddings = self._encode_prompt(
@@ -461,7 +466,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             ):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
-                    torch.cat([x] * 2) if do_classifier_free_guidance else x  # type: ignore
+                    torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
                 )
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
@@ -470,11 +475,16 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                 # predict the noise residual
                 if self.controlnet is None:
-                    noise_pred = call(  # type: ignore
-                        latent_model_input,
-                        t,
-                        cond=text_embeddings,
-                    )
+                    if split_latents_into_two:
+                        uncond, cond = text_embeddings.chunk(2)
+                        noise_pred_text = call(latent_model_input, t, cond=cond)
+                        noise_pred_uncond = call(latent_model_input, t, cond=uncond)
+                    else:
+                        noise_pred = call(  # type: ignore
+                            latent_model_input,
+                            t,
+                            cond=text_embeddings,
+                        )
                 else:
                     if guess_mode and do_classifier_free_guidance:
                         # Infer ControlNet only for the conditional batch.
@@ -514,20 +524,26 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 mid_block_res_sample,
                             ]
                         )
-                    noise_pred = call(  # type: ignore
-                        latent_model_input,
-                        t,
-                        cond=text_embeddings,
-                        down_block_additional_residuals=down_block_res_samples,
-                        mid_block_additional_residual=mid_block_res_sample,
-                    )
+                    if split_latents_into_two:
+                        uncond, cond = text_embeddings.chunk(2)
+                        noise_pred_text = call(latent_model_input, t, cond=cond)
+                        noise_pred_uncond = call(latent_model_input, t, cond=uncond)
+                    else:
+                        noise_pred = call(  # type: ignore
+                            latent_model_input,
+                            t,
+                            cond=text_embeddings,
+                            down_block_additional_residuals=down_block_res_samples,
+                            mid_block_additional_residual=mid_block_res_sample,
+                        )
 
                 # perform guidance
                 if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (
-                        noise_pred_text - noise_pred_uncond
-                    )
+                    if not split_latents_into_two:
+                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
+                    noise_pred = noise_pred_uncond + guidance_scale * (  # type: ignore
+                        noise_pred_text - noise_pred_uncond  # type: ignore
+                    )  # type: ignore
 
                 if do_self_attention_guidance:
                     if do_classifier_free_guidance:

@@ -114,6 +114,9 @@ class APIConfig:
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
     data_type: Literal["float32", "float16", "bfloat16"] = "float16"
+    dont_merge_latents: bool = (
+        False  # Will drop performance, but could help with some VRAM issues
+    )
 
     # CUDA specific optimizations
     reduced_precision: bool = False
@@ -169,7 +172,7 @@ class APIConfig:
     vae_slicing: bool = True
     vae_tiling: bool = False
 
-    # Prompt expansion (very, and I mean VERYYYY heavily inspired/copied from Illyasviel/Fooocus)
+    # Prompt expansion (very, and I mean VERYYYY heavily inspired/copied from lllyasviel/Fooocus)
     prompt_to_prompt: bool = False
     prompt_to_prompt_model: Literal[
         "lllyasviel/Fooocus-Expansion",
