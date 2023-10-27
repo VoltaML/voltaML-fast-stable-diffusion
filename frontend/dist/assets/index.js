@@ -41510,7 +41510,10 @@ const defaultSettings = {
     kdiffusers_quantization: true,
     generator: "device",
     live_preview_method: "approximation",
-    live_preview_delay: 2
+    live_preview_delay: 2,
+    prompt_to_prompt: false,
+    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
+    prompt_to_prompt_device: "gpu"
   },
   aitemplate: {
     num_threads: 8

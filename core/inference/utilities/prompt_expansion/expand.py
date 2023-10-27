@@ -6,6 +6,7 @@
 import math
 from pathlib import Path
 from typing import Tuple
+import logging
 
 import torch
 from transformers.generation.logits_process import LogitsProcessorList
@@ -20,11 +21,14 @@ from transformers import (
 from core.config import config
 from .downloader import download_model
 
+logger = logging.getLogger(__name__)
 
 _seed_limit = 2**32
 _magic_split = [
     ", extremely",
     ", intricate,",
+    ", very",
+    ", ",
 ]
 _dangerous_patterns = "[]【】()（）|:："
 _blacklist = [
@@ -136,6 +140,7 @@ def expand(prompt, seed):
 
     seed = int(seed) % _seed_limit
     set_seed(seed)
+    logger.debug(f"Using seed {seed}")
     origin = _safe(prompt)
     prompt = origin + _magic_split[seed % len(_magic_split)]
 

@@ -302,6 +302,7 @@ def get_weighted_text_embeddings(
     no_boseos_middle: Optional[bool] = False,
     skip_parsing: Optional[bool] = False,
     skip_weighting: Optional[bool] = False,
+    seed: int = -1,
 ):
     r"""
     Prompts can be assigned with local weights using brackets. For example,
@@ -331,7 +332,7 @@ def get_weighted_text_embeddings(
     max_length = (pipe.tokenizer.model_max_length - 2) * max_embeddings_multiples + 2  # type: ignore
     if isinstance(prompt, str):
         if config.api.prompt_to_prompt:
-            prompt = expand(prompt, 1)
+            prompt = expand(prompt, seed)
             logger.info(f'Expanded prompt to "{prompt}"')
         prompt = [prompt]
 

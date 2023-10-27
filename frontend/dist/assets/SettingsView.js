@@ -3685,6 +3685,74 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }, null, 8, ["value"])
             ]),
             _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Prompt-to-Prompt preprocessing",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.prompt_to_prompt,
+                "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).defaultSettings.api.prompt_to_prompt = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Prompt-to-Prompt model",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "lllyasviel/Fooocus-Expansion",
+                    label: "lllyasviel/Fooocus-Expansion"
+                  },
+                  {
+                    value: "daspartho/prompt-extend",
+                    label: "daspartho/prompt-extend"
+                  },
+                  {
+                    value: "succinctly/text2image-prompt-generator",
+                    label: "succinctly/text2image-prompt-generator"
+                  },
+                  {
+                    value: "Gustavosta/MagicPrompt-Stable-Diffusion",
+                    label: "Gustavosta/MagicPrompt-Stable-Diffusion"
+                  },
+                  {
+                    value: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator",
+                    label: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.prompt_to_prompt_model,
+                "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.api.prompt_to_prompt_model = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Prompt-to-Prompt device",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "gpu",
+                    label: "On-Device"
+                  },
+                  {
+                    value: "cpu",
+                    label: "CPU"
+                  }
+                ],
+                value: unref(settings).defaultSettings.api.prompt_to_prompt_device,
+                "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.api.prompt_to_prompt_device = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
           })
         ]),
         _: 1

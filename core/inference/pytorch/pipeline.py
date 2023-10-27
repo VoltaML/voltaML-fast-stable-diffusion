@@ -134,6 +134,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         do_classifier_free_guidance,
         negative_prompt,
         max_embeddings_multiples,
+        seed,
     ):
         r"""
         Encodes the prompt into text encoder hidden states.
@@ -177,6 +178,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             prompt=prompt,
             uncond_prompt=negative_prompt if do_classifier_free_guidance else None,
             max_embeddings_multiples=max_embeddings_multiples,
+            seed=seed,
         )
         bs_embed, seq_len, _ = text_embeddings.shape
         text_embeddings = text_embeddings.repeat(1, num_images_per_prompt, 1)
@@ -248,6 +250,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
+        seed: int = 0,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -355,6 +358,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 do_classifier_free_guidance,
                 negative_prompt,
                 max_embeddings_multiples,
+                seed,
             ).to(device)
             dtype = text_embeddings.dtype
 
@@ -664,6 +668,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
+        seed: int = 1,
     ):
         r"""
         Function for text-to-image generation.
@@ -740,6 +745,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
+            seed=seed,
         )
 
     def img2img(
@@ -762,6 +768,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
+        seed: int = 1,
     ):
         r"""
         Function for image-to-image generation.
@@ -840,6 +847,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
+            seed=seed,
         )
 
     def inpaint(
@@ -863,6 +871,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback_steps: int = 1,
         width: int = 512,
         height: int = 512,
+        seed: int = 1,
     ):
         r"""
         Function for inpaint.
@@ -950,4 +959,5 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback_steps=callback_steps,
             width=width,
             height=height,
+            seed=seed,
         )

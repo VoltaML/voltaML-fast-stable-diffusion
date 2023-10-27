@@ -200,6 +200,10 @@ export interface ISettings {
     generator: "device" | "cpu" | "philox";
     live_preview_method: "disabled" | "approximation" | "taesd";
     live_preview_delay: number;
+
+    prompt_to_prompt: boolean;
+    prompt_to_prompt_model: string;
+    prompt_to_prompt_device: "gpu" | "cpu";
   };
   aitemplate: {
     num_threads: number;
@@ -377,6 +381,10 @@ export const defaultSettings: ISettings = {
     generator: "device",
     live_preview_method: "approximation",
     live_preview_delay: 2.0,
+
+    prompt_to_prompt: false,
+    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
+    prompt_to_prompt_device: "gpu",
   },
   aitemplate: {
     num_threads: 8,

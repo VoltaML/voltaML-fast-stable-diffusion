@@ -65,8 +65,11 @@ class PhiloxGenerator:
     """RNG that produces same outputs as torch.randn(..., device='cuda') on CPU"""
 
     def __init__(self, seed):
-        self.seed = seed
+        self._seed = seed
         self.offset = 0
+
+    def seed(self):
+        return self._seed
 
     def randn(self, shape):
         """Generate a sequence of n standard normal random variables using the Philox 4x32 random number generator and the Box-Muller transform."""
@@ -83,7 +86,7 @@ class PhiloxGenerator:
         self.offset += 1
 
         key = np.empty(n, dtype=np.uint64)
-        key.fill(self.seed)
+        key.fill(self._seed)
         key = uint32(key)
 
         g = philox4_32(counter, key)
