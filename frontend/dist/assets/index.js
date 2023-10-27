@@ -1552,7 +1552,7 @@ function renderComponentRoot(instance) {
     slots,
     attrs,
     emit: emit2,
-    render: render16,
+    render: render15,
     renderCache,
     data,
     setupState,
@@ -1566,7 +1566,7 @@ function renderComponentRoot(instance) {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
       result = normalizeVNode(
-        render16.call(
+        render15.call(
           proxyToUse,
           proxyToUse,
           renderCache,
@@ -2668,7 +2668,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render16,
+    render: render15,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2767,8 +2767,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render16 && instance.render === NOOP) {
-    instance.render = render16;
+  if (render15 && instance.render === NOOP) {
+    instance.render = render15;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3000,7 +3000,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render16, hydrate) {
+function createAppAPI(render15, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = extend({}, rootComponent);
@@ -3069,7 +3069,7 @@ function createAppAPI(render16, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render16(vnode, rootContainer, isSVG2);
+            render15(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3079,7 +3079,7 @@ function createAppAPI(render16, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render16(null, app2._container);
+          render15(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4794,7 +4794,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render16 = (vnode, container, isSVG2) => {
+  const render15 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4826,9 +4826,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     );
   }
   return {
-    render: render16,
+    render: render15,
     hydrate,
-    createApp: createAppAPI(render16, hydrate)
+    createApp: createAppAPI(render15, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -27556,8 +27556,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render16, props } } = this.tmNode;
-    return h("div", props, [render16 === null || render16 === void 0 ? void 0 : render16()]);
+    const { rawNode: { render: render15, props } } = this.tmNode;
+    return h("div", props, [render15 === null || render15 === void 0 ? void 0 : render15()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -37770,12 +37770,12 @@ const NThemeEditor = defineComponent({
     });
   }
 });
-const _hoisted_1$i = {
+const _hoisted_1$h = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -37785,7 +37785,7 @@ const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -37795,7 +37795,7 @@ const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -37805,48 +37805,11 @@ const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$7 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
+const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$i, _hoisted_5$7);
-  }
-});
-const _hoisted_1$h = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M64 164v244a56 56 0 0 0 56 56h272a56 56 0 0 0 56-56V164a4 4 0 0 0-4-4H68a4 4 0 0 0-4 4zm267 151.63l-63.69 63.68a16 16 0 0 1-22.62 0L181 315.63c-6.09-6.09-6.65-16-.85-22.38a16 16 0 0 1 23.16-.56L240 329.37V224.45c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 272 224v105.37l36.69-36.68a16 16 0 0 1 23.16.56c5.8 6.37 5.24 16.29-.85 22.38z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "32",
-    y: "48",
-    width: "448",
-    height: "80",
-    rx: "32",
-    ry: "32",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$b = [_hoisted_2$f, _hoisted_3$e];
-const Archive = defineComponent({
-  name: "Archive",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_4$b);
+    return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_5$7);
   }
 });
 const _hoisted_1$g = {
@@ -37887,7 +37850,7 @@ const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$a];
 const Create = defineComponent({
   name: "Create",
-  render: function render4(_ctx, _cache) {
+  render: function render3(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$6);
   }
 });
@@ -37929,7 +37892,7 @@ const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
 const Cube = defineComponent({
   name: "Cube",
-  render: function render5(_ctx, _cache) {
+  render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$5);
   }
 });
@@ -37961,7 +37924,7 @@ const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
 const DocumentText = defineComponent({
   name: "DocumentText",
-  render: function render6(_ctx, _cache) {
+  render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
   }
 });
@@ -37993,7 +37956,7 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
 const Duplicate = defineComponent({
   name: "Duplicate",
-  render: function render7(_ctx, _cache) {
+  render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
   }
 });
@@ -38015,7 +37978,7 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$9 = [_hoisted_2$a];
 const Image$1 = defineComponent({
   name: "Image",
-  render: function render8(_ctx, _cache) {
+  render: function render7(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_3$9);
   }
 });
@@ -38047,7 +38010,7 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
 const Images = defineComponent({
   name: "Images",
-  render: function render9(_ctx, _cache) {
+  render: function render8(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
@@ -38079,7 +38042,7 @@ const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
 const PowerSharp = defineComponent({
   name: "PowerSharp",
-  render: function render10(_ctx, _cache) {
+  render: function render9(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
   }
 });
@@ -38101,7 +38064,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$6 = [_hoisted_2$7];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
-  render: function render11(_ctx, _cache) {
+  render: function render10(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
   }
 });
@@ -38123,7 +38086,7 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$5 = [_hoisted_2$6];
 const Speedometer = defineComponent({
   name: "Speedometer",
-  render: function render12(_ctx, _cache) {
+  render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$5);
   }
 });
@@ -38175,7 +38138,7 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render13(_ctx, _cache) {
+  render: function render12(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_6$2);
   }
 });
@@ -38229,7 +38192,7 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render14(_ctx, _cache) {
+  render: function render13(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
   }
 });
@@ -38283,7 +38246,7 @@ const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
 const Wifi = defineComponent({
   name: "Wifi",
-  render: function render15(_ctx, _cache) {
+  render: function render14(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$1);
   }
 });
@@ -40136,11 +40099,11 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
         key: "plugins",
         icon: renderIcon(Speedometer)
       },
-      {
-        label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-        key: "extra",
-        icon: renderIcon(Archive)
-      },
+      // {
+      //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+      //   key: "extra",
+      //   icon: renderIcon(Archive),
+      // },
       {
         label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
         key: "settings",
