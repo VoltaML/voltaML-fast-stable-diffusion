@@ -7,15 +7,14 @@
   z-index: 2;
 }
 
-.progress-container[data-v-2cf1de9c] {
+.progress-container[data-v-44d84e0e] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-2cf1de9c] {
+.top-bar[data-v-44d84e0e] {
   display: inline-flex;
   align-items: center;
-  border-bottom: #505050 1px solid;
   padding-top: 10px;
   padding-bottom: 10px;
   width: calc(100% - 64px);
@@ -23,15 +22,10 @@
   position: fixed;
   top: 0;
   z-index: 1;
-  background-color: var(--67e22a10);
 }
-.logo[data-v-2cf1de9c] {
+.logo[data-v-44d84e0e] {
   margin-right: 16px;
   margin-left: 16px;
-}
-
-.main {
-  background-color: var(--16223ad6);
 }
 .autocomplete {
   position: relative;
@@ -40,24 +34,53 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--1fedac06);
-  border-radius: var(--ba9033c6);
+  background-color: var(--2441c648);
+  border-radius: var(--521efb30);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--ba9033c6);
+  border-radius: var(--521efb30);
 }
 .autocomplete-active {
-  background-color: var(--3119c2a0) !important;
-  color: var(--aca37748) !important;
+  background-color: var(--65525eeb);
+  color: var(--0c729ef1);
 }
-body {
-  min-height: 100vh;
+#autocomplete-list {
+  max-height: min(600px, 70vh);
+  overflow-y: auto;
+}
+.n-card {
+  backdrop-filter: var(--15a84ddb);
+}
+.navbar .n-layout {
+  backdrop-filter: var(--15a84ddb);
+}
+.navbar .n-layout-toggle-button {
+  backdrop-filter: var(--15a84ddb);
+}
+.top-bar {
+  backdrop-filter: var(--15a84ddb);
+  background-color: var(--2259b162);
+}
+.navbar {
+  backdrop-filter: var(--15a84ddb);
+}
+#background {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  background-image: var(--f8e7ba4e);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  top: 0;
+  left: 0;
+  z-index: -99;
+}body {
   margin-left: 64px;
   color: #fff;
-  background-color: rgb(18, 18, 21);
   font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
     Oxygen, Ubuntu, Cantarell, "Fira Sans", "Droid Sans", "Helvetica Neue",
     sans-serif;

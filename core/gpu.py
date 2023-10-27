@@ -15,12 +15,12 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
-from core.flags import HighResFixFlag
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
 from core.inference.functions import download_model, is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
 from core.interrogation.base_interrogator import InterrogationResult
+from core.optimizations import is_hypertile_available
 from core.png_metadata import save_images
 from core.queue import Queue
 from core.types import (
@@ -50,8 +50,7 @@ logger = logging.getLogger(__name__)
 class GPU:
     "GPU with models attached to it."
 
-    def __init__(self, torch_gpu_id: int) -> None:
-        self.gpu_id = torch_gpu_id
+    def __init__(self) -> None:
         self.queue: Queue = Queue()
         self.loaded_models: Dict[
             str,
@@ -67,23 +66,29 @@ class GPU:
         "Returns all of the capabilities of this GPU."
         cap = Capabilities()
         if torch.cuda.is_available():
-            cap.supported_backends.append("cuda")
+            for i in range(torch.cuda.device_count()):
+                cap.supported_backends.append(
+                    [f"(CUDA) {torch.cuda.get_device_name(i)}", f"cuda:{i}"]
+                )
         try:
-            import torch_directml  # pylint: disable=unused-import
+            import torch_directml
 
-            cap.supported_backends.append("directml")
+            for i in range(torch_directml.device_count()):
+                cap.supported_backends.append(
+                    [f"(DML) {torch_directml.device_name(i)}", f"privateuseone:{i}"]
+                )
         except ImportError:
             pass
         if torch.backends.mps.is_available():  # type: ignore
-            cap.supported_backends.append("mps")
+            cap.supported_backends.append(["MPS", "mps"])
         if torch.is_vulkan_available():
-            cap.supported_backends.append("vulkan")
+            cap.supported_backends.append(["Vulkan", "vulkan"])
         if is_ipex_available():
-            cap.supported_backends.append("xpu")
+            cap.supported_backends.append(["Intel CPU/GPU", "xpu"])
 
         test_suite = ["float16", "bfloat16"]
         support_map: Dict[str, List[str]] = {}
-        for device in [torch.device("cpu"), config.api.device]:
+        for device in [torch.device("cpu"), torch.device(config.api.device)]:
             support_map[device.type] = []
             for dt in test_suite:
                 dtype = getattr(torch, dt)
@@ -101,27 +106,27 @@ class GPU:
                 cap.supported_precisions_gpu = ["float32"] + s
         try:
             cap.supported_torch_compile_backends = (
-                torch._dynamo.list_backends()  # type: ignore # pylint: disable=protected-access
+                torch._dynamo.list_backends()  # type: ignore
             )
-        except Exception:  # pylint: disable=broad-exception-caught
+        except Exception:
             pass
 
         if torch.cuda.is_available():
             try:
-                import bitsandbytes as bnb  # pylint: disable=import-error
-                import bitsandbytes.functional as F  # pylint: disable=import-error
+                import bitsandbytes as bnb
+                import bitsandbytes.functional as F
 
                 a = torch.tensor([1.0]).cuda()
                 b, b_state = F.quantize_fp4(torch.tensor([2.0]).cuda())
                 bnb.matmul_4bit(a, b, quant_state=b_state)  # type: ignore
                 cap.supports_int8 = True
                 logger.debug("GPU supports int8")
-            except Exception:  # pylint: disable=broad-except
+            except Exception:
                 logger.debug("GPU does not support int8")
 
         cap.supports_xformers = is_xformers_available()
         if torch.cuda.is_available():
-            caps = torch.cuda.get_device_capability(self.gpu_id)
+            caps = torch.cuda.get_device_capability(0)
             if caps[0] < 7:
                 cap.has_tensor_cores = False
 
@@ -130,18 +135,23 @@ class GPU:
             elif caps[0] >= 9:
                 cap.has_tensorfloat = True
 
+        if is_hypertile_available():
+            cap.hypertile_available = True
+
         return cap
 
     def vram_free(self) -> float:
         "Returns the amount of free VRAM on the GPU in MB."
+        index = torch.device(config.api.device).index
         return (
-            torch.cuda.get_device_properties(self.gpu_id).total_memory
-            - torch.cuda.memory_allocated(self.gpu_id)
+            torch.cuda.get_device_properties(index).total_memory
+            - torch.cuda.memory_allocated(index)
         ) / 1024**2
 
     def vram_used(self) -> float:
         "Returns the amount of used VRAM on the GPU in MB."
-        return torch.cuda.memory_allocated(self.gpu_id) / 1024**2
+        index = torch.device(config.api.device).index
+        return torch.cuda.memory_allocated(index) / 1024**2
 
     async def generate(
         self,
@@ -183,14 +193,6 @@ class GPU:
             strength: float = getattr(job.data, "strength", 1.0)
             steps = math.floor(steps * strength)
 
-            extra_steps: int = 0
-            if "highres_fix" in job.flags:
-                flag = HighResFixFlag.from_dict(job.flags["highres_fix"])
-                extra_steps = math.floor(
-                    flag.steps * flag.strength * job.data.batch_count
-                )
-
-            shared.current_steps = steps * job.data.batch_count + extra_steps
             shared.current_done_steps = 0
 
             if not isinstance(job, ControlNetQueueEntry):
@@ -200,6 +202,8 @@ class GPU:
                     # Wipe cached controlnet preprocessor
                     shared_dependent.cached_controlnet_preprocessor = None
                     self.memory_cleanup()
+
+            # shared.current_model = model
 
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
@@ -259,7 +263,7 @@ class GPU:
                         logger.debug(f"Strings returned from R2: {len(out)}")
                         images = out
 
-            except Exception as err:  # pylint: disable=broad-except
+            except Exception as err:
                 self.memory_cleanup()
                 await self.queue.mark_finished(job.data.id)
                 raise err
@@ -292,7 +296,7 @@ class GPU:
                 )
             return ([], 0.0)
 
-        except Exception as e:  # pylint: disable=broad-except
+        except Exception as e:
             if not isinstance(e, ModelNotLoadedError):
                 await websocket_manager.broadcast(
                     Notification(
@@ -409,9 +413,10 @@ class GPU:
         "Release all unused memory"
         if config.api.clear_memory_policy == "always":
             if torch.cuda.is_available():
-                logger.debug(f"Cleaning up GPU memory: {self.gpu_id}")
+                index = torch.device(config.api.device).index
+                logger.debug(f"Cleaning up GPU memory: {index}")
 
-                with torch.cuda.device(self.gpu_id):
+                with torch.cuda.device(index):
                     torch.cuda.empty_cache()
                     torch.cuda.ipc_collect()
 
@@ -671,8 +676,8 @@ class GPU:
             else:
                 pipe = Upscaler(
                     model=job.model,
-                    device_id=config.api.device_id,
-                    cpu=config.api.device_type == "cpu",
+                    device_id=torch.device(config.api.device).index,
+                    cpu=config.api.device == "cpu",
                     fp16=True,
                 )
 

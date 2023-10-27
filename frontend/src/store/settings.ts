@@ -8,6 +8,23 @@ import {
   type ISettings,
 } from "../settings";
 
+export const diffusersSchedulerTuple = {
+  DDIM: 1,
+  DDPM: 2,
+  PNDM: 3,
+  LMSD: 4,
+  EulerDiscrete: 5,
+  HeunDiscrete: 6,
+  EulerAncestralDiscrete: 7,
+  DPMSolverMultistep: 8,
+  DPMSolverSinglestep: 9,
+  KDPM2Discrete: 10,
+  KDPM2AncestralDiscrete: 11,
+  DEISMultistep: 12,
+  UniPCMultistep: 13,
+  DPMSolverSDEScheduler: 14,
+} as const;
+
 export const upscalerOptions: SelectMixedOption[] = [
   {
     label: "RealESRGAN_x4plus",
@@ -34,56 +51,41 @@ export const upscalerOptions: SelectMixedOption[] = [
 export function getSchedulerOptions() {
   const scheduler_options: SelectMixedOption[] = [
     {
-      label: "DDIM",
-      value: 1,
+      type: "group",
+      label: "k-diffusion",
+      key: "K-Diffusion",
+      children: [
+        { label: "Euler a", value: "euler_a" },
+        { label: "Euler", value: "euler" },
+        { label: "LMS", value: "lms" },
+        { label: "Heun", value: "heun" },
+        { label: "DPM Fast", value: "dpm_fast" },
+        { label: "DPM Adaptive", value: "dpm_adaptive" },
+        { label: "DPM2", value: "dpm2" },
+        { label: "DPM2 a", value: "dpm2_a" },
+        { label: "DPM++ 2S a", value: "dpmpp_2s_a" },
+        { label: "DPM++ 2M", value: "dpmpp_2m" },
+        { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
+        { label: "DPM++ SDE", value: "dpmpp_sde" },
+        { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
+        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
+        { label: "UniPC Multistep", value: "unipc_multistep" },
+        { label: "Restart", value: "restart" },
+      ],
     },
     {
-      label: "DDPM",
-      value: 2,
-    },
-    {
-      label: "PNDM",
-      value: 3,
-    },
-    {
-      label: "LMSD",
-      value: 4,
-    },
-    {
-      label: "EulerDiscrete",
-      value: 5,
-    },
-    {
-      label: "HeunDiscrete",
-      value: 6,
-    },
-    {
-      label: "EulerAncestralDiscrete",
-      value: 7,
-    },
-    {
-      label: "DPMSolverMultistep",
-      value: 8,
-    },
-    {
-      label: "DPMSolverSinglestep",
-      value: 9,
-    },
-    {
-      label: "KDPM2Discrete",
-      value: 10,
-    },
-    {
-      label: "KDPM2AncestralDiscrete",
-      value: 11,
-    },
-    {
-      label: "DEISMultistep",
-      value: 12,
-    },
-    {
-      label: "UniPCMultistep",
-      value: 13,
+      type: "group",
+      label: "Diffusers",
+      key: "diffusers",
+      children: Object.keys(diffusersSchedulerTuple).map((key) => {
+        return {
+          label: key,
+          value:
+            diffusersSchedulerTuple[
+              key as keyof typeof diffusersSchedulerTuple
+            ],
+        };
+      }),
     },
   ];
   return scheduler_options;

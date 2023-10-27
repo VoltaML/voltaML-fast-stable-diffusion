@@ -1,4 +1,4 @@
-import { d as defineComponent, D as h, X as c, Y as cB, Q as useConfig, a5 as useTheme, ar as useLocale, R as useFormItem, E as ref, U as toRef, S as useMergedState, a4 as useMemo, K as watch, a7 as useRtl, c as computed, k as NInput, aB as resolveWrappedSlot, bO as inputNumberLight, ac as on, bP as rgba, at as resolveSlot, au as NBaseIcon, bQ as XButton, b0 as AddIcon, W as call, ah as nextTick } from "./index.js";
+import { d as defineComponent, C as h, aa as c, Q as cB, S as useConfig, T as useTheme, ad as useLocale, ar as useFormItem, D as ref, V as toRef, ae as useMergedState, as as useMemo, J as watch, ag as useRtl, c as computed, k as NInput, av as resolveWrappedSlot, bW as inputNumberLight, aD as on, bX as rgba, ah as resolveSlot, ai as NBaseIcon, bY as XButton, a$ as AddIcon, $ as call, a0 as nextTick } from "./index.js";
 const RemoveIcon = defineComponent({
   name: "Remove",
   render() {
@@ -519,6 +519,10 @@ const NInputNumber = defineComponent({
       blur: () => {
         var _a;
         return (_a = inputInstRef.value) === null || _a === void 0 ? void 0 : _a.blur();
+      },
+      select: () => {
+        var _a;
+        return (_a = inputInstRef.value) === null || _a === void 0 ? void 0 : _a.select();
       }
     };
     const rtlEnabledRef = useRtl("InputNumber", mergedRtlRef, mergedClsPrefixRef);

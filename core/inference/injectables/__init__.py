@@ -59,17 +59,46 @@ class HookManager(object):
     ):
         target_modules = []
         for name, module in root_module.named_modules():
-            if (
-                module.__class__.__name__ in target_replace_modules
-                and not "transformer_blocks" in name
-            ):  # to adapt latest diffusers:
+            if module.__class__.__name__ in target_replace_modules:
                 for child_name, child_module in module.named_modules():
-                    is_linear = child_module.__class__.__name__ == "Linear"
-                    is_conv2d = child_module.__class__.__name__ == "Conv2d"
-                    if is_linear or is_conv2d:
-                        lora_name = prefix + "." + name + "." + child_name
-                        lora_name = lora_name.replace(".", "_")
-                        target_modules.append((lora_name, child_module))
+                    # retarded change, revert pliz diffusers
+                    name = name.replace(".", "_")
+                    name = name.replace("input_blocks", "down_blocks")
+                    name = name.replace("middle_block", "mid_block")
+                    name = name.replace("output_blocks", "out_blocks")
+
+                    name = name.replace("to_out_0_lora", "to_out_lora")
+                    name = name.replace("emb_layers", "time_emb_proj")
+
+                    name = name.replace("q_proj_lora", "to_q_lora")
+                    name = name.replace("k_proj_lora", "to_k_lora")
+                    name = name.replace("v_proj_lora", "to_v_lora")
+                    name = name.replace("out_proj_lora", "to_out_lora")
+
+                    # Prepare for SDXL
+                    if "emb" in name:
+                        import re
+
+                        pattern = r"\_\d+(?=\D*$)"
+                        name = re.sub(pattern, "", name, count=1)
+                    if "in_layers_2" in name:
+                        name = name.replace("in_layers_2", "conv1")
+                    if "out_layers_3" in name:
+                        name = name.replace("out_layers_3", "conv2")
+                    if "downsamplers" in name or "upsamplers" in name:
+                        name = name.replace("op", "conv")
+                    if "skip" in name:
+                        name = name.replace("skip_connection", "conv_shortcut")
+
+                    if "transformer_blocks" in name:
+                        if "attn1" in name or "attn2" in name:
+                            name = name.replace("attn1", "attn1_processor")
+                            name = name.replace("attn2", "attn2_processor")
+                    elif "mlp" in name:
+                        name = name.replace("_lora_", "_lora_linear_layer_")
+                    lora_name = prefix + "." + name + "." + child_name
+                    lora_name = lora_name.replace(".", "_")
+                    target_modules.append((lora_name, child_module))
         return target_modules
 
     def _load_state_dict(self, file: Union[Path, str]) -> Dict[str, torch.nn.Module]:
@@ -93,7 +122,7 @@ class HookManager(object):
         "Redirect lora forward to this hook manager"
         d = self
 
-        def lora_forward(self, input):  # pylint: disable=redefined-builtin
+        def lora_forward(self, input):
             d.apply_weights(self)
 
             return self.old_forward(input)
@@ -104,7 +133,18 @@ class HookManager(object):
     def install_hooks(self, pipe):
         """Install LoRAHook to the pipe"""
         assert len(self.modules) == 0
-        text_encoder_targets = self._get_target_modules(
+        text_encoder_targets = []
+        if hasattr(pipe, "text_encoder_2"):
+            text_encoder_targets = (
+                text_encoder_targets
+                + self._get_target_modules(
+                    pipe.text_encoder_2, "lora_te2", ["CLIPAttention", "CLIPMLP"]
+                )
+                + self._get_target_modules(
+                    pipe.text_encoder, "lora_te1", ["CLIPAttention", "CLIPMLP"]
+                )
+            )
+        text_encoder_targets = text_encoder_targets + self._get_target_modules(
             pipe.text_encoder, "lora_te", ["CLIPAttention", "CLIPMLP"]
         )
         targets = []

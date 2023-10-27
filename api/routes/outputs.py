@@ -15,6 +15,12 @@ logger = logging.getLogger(__name__)
 valid_extensions = ["png", "jpeg", "webp"]
 
 
+def sort_images(images: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    "Sort images by time"
+
+    return sorted(images, key=lambda x: x["time"], reverse=True)
+
+
 @router.get("/txt2img")
 def txt2img() -> List[Dict[str, Any]]:
     "List all generated images"
@@ -31,7 +37,7 @@ def txt2img() -> List[Dict[str, Any]]:
                 {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
             )
 
-    return data
+    return sort_images(data)
 
 
 @router.get("/img2img")
@@ -50,7 +56,7 @@ def img2img() -> List[Dict[str, Any]]:
                 {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
             )
 
-    return data
+    return sort_images(data)
 
 
 @router.get("/extra")
@@ -69,7 +75,7 @@ def extra() -> List[Dict[str, Any]]:
                 {"path": i.as_posix(), "time": os.path.getmtime(i), "id": Path(i).stem}
             )
 
-    return data
+    return sort_images(data)
 
 
 @router.get("/data")

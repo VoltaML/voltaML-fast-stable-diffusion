@@ -1,6 +1,4 @@
 import type { NotificationApiInjection } from "naive-ui/es/notification/src/NotificationProvider";
-import type { Store, _UnwrapAll } from "pinia";
-import type { StateInterface } from "../store/state";
 
 export interface WebSocketMessage {
   type: string;
@@ -9,29 +7,7 @@ export interface WebSocketMessage {
 
 function progressForward(
   progress: number,
-  global: Store<
-    "state",
-    _UnwrapAll<
-      Pick<
-        {
-          state: StateInterface;
-        },
-        "state"
-      >
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >
-  >
+  global: ReturnType<typeof import("@/store/state")["useState"]>
 ) {
   if (progress === 0) {
     return 0;
@@ -44,29 +20,7 @@ function progressForward(
 
 function currentStepForward(
   currentStep: number,
-  global: Store<
-    "state",
-    _UnwrapAll<
-      Pick<
-        {
-          state: StateInterface;
-        },
-        "state"
-      >
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >,
-    Pick<
-      {
-        state: StateInterface;
-      },
-      never
-    >
-  >
+  global: ReturnType<typeof import("@/store/state")["useState"]>
 ) {
   if (currentStep === 0) {
     return 0;
@@ -141,6 +95,8 @@ export function processWebSocket(
     case "notification": {
       message.data.timeout = message.data.timeout || 5000;
 
+      console.log(message.data.message);
+
       notificationProvider.create({
         type: message.data.severity,
         title: message.data.title,
@@ -182,6 +138,18 @@ export function processWebSocket(
         .catch((error) => {
           console.error(error);
         });
+      break;
+    }
+    case "log": {
+      const messages = message.data.message.split("\n");
+      for (const msg of messages) {
+        global.state.log_drawer.logs.splice(0, 0, msg);
+
+        // Limit the number of logs to 500
+        if (global.state.log_drawer.logs.length > 500) {
+          global.state.log_drawer.logs.pop();
+        }
+      }
       break;
     }
     default: {

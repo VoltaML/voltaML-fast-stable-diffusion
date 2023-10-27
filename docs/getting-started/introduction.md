@@ -1,15 +1,15 @@
 # Welcome to VoltaML
 
 <h2 align="center" style="border-bottom: 1px solid var(--vp-c-divider); padding-bottom: 24px;">
-Made with ❤️ by <a href="https://github.com/Stax124" target="_blank">Stax124</a>
+Made with ❤️ by <a href="https://github.com/Stax124" target="_blank">Stax124</a> and <a href="https://github.com/gabe56f" target="_blank">Gabe</a>
 </h2>
 
 ::: danger IMPORTANT
-For all Pull Requests, please make sure to target the `experimental` branch. The `main` branch is only used for releases (or in some situations, issues and PRs with high priority - marked as `Fast-Forward`).
+For all Pull Requests, please make sure to target the `experimental` branch. The `main` branch is only used for releases (or in some situations, PRs with high priority - marked as `Fast-Forward`)
 :::
 
 ::: info
-Documentation is still a work in progress, if you have any questions, feel free to join our [Discord server](https://discord.gg/pY5SVyHmWm) or open an issue on GitHub.
+Feel free to join our [Discord server](https://discord.gg/pY5SVyHmWm)
 :::
 
 Stable Diffusion WebUI accelerated by <a href="https://github.com/facebookincubator/AITemplate">AITemplate</a>
@@ -24,11 +24,9 @@ There is also a dedicated section to the **Discord bot, API** and a section for 
 - Clean and simple Web UI
 - Supports PyTorch as well as AITemplate for inference
 - Support for Windows and Linux
-- xFormers supported out of the box
-- GPU cluster load balancing
+- xFormers support
 - Discord bot
-- Documented API
-- Clean source code that should be easy to understand
+- Built-in CivitAI browser
 
 ## Speed comparison
 

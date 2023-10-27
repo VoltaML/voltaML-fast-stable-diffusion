@@ -67,8 +67,8 @@ const props = defineProps({
 });
 
 const image = ref<HTMLImageElement>();
-const width = computed(() => (image.value ? image.value?.width : 0));
-const height = computed(() => (image.value ? image.value?.height : 0));
+const width = computed(() => (image.value ? image.value?.naturalWidth : 0));
+const height = computed(() => (image.value ? image.value?.naturalHeight : 0));
 
 function previewImage(event: Event) {
   const input = event.target as HTMLInputElement;
@@ -95,8 +95,6 @@ function previewImage(event: Event) {
 const emit = defineEmits(["file-dropped"]);
 
 function onDrop(e: DragEvent) {
-  console.log(e.dataTransfer?.files);
-
   // Emit file as string
   if (e.dataTransfer?.files) {
     const reader = new FileReader();

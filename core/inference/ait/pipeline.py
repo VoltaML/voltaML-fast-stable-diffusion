@@ -12,6 +12,7 @@
 #  See the License for the specific language governing permissions and
 #  limitations under the License.
 #
+import inspect
 import logging
 import math
 from pathlib import Path
@@ -41,6 +42,8 @@ from core.inference.utilities import (
     prepare_latents,
     preprocess_image,
 )
+from core.inference.utilities.philox import PhiloxGenerator
+from core.scheduling import KdiffusionSchedulerAdapter
 
 if is_aitemplate_available():
     from core.aitemplate.config import get_unet_in_channels
@@ -54,14 +57,14 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
     Pipeline for everything
     """
 
-    def __init__(  # pylint: disable=super-init-not-called
+    def __init__(
         self,
         vae: AutoencoderKL,
         text_encoder: CLIPTextModel,
         tokenizer: CLIPTokenizer,
         scheduler: KarrasDiffusionSchedulers,
         controlnet: Optional[ControlNetModel],
-        unet: Optional[UNet2DConditionModel],  # type: ignore # pylint: disable=unused-argument
+        unet: Optional[UNet2DConditionModel],  # type: ignore
         directory: str = "",
         clip_ait_exe: Optional[Any] = None,
         unet_ait_exe: Optional[Any] = None,
@@ -125,7 +128,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
         self.unet_in_channels = get_unet_in_channels(directory=Path(directory))
 
-    def unet_inference(  # pylint: disable=dangerous-default-value
+    def unet_inference(
         self,
         latent_model_input,
         timesteps,
@@ -134,6 +137,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         width,
         down_block: list = [None],
         mid_block=None,
+        **kwargs,
     ):
         "Execute AIT#UNet module"
         exe_module = self.unet_ait_exe
@@ -204,8 +208,9 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
     @torch.no_grad()
     def __call__(
         self,
+        generator: Union[PhiloxGenerator, torch.Generator],
         prompt: Optional[Union[str, List[str]]] = None,
-        image: Optional[Image.Image] = None,  # type: ignore
+        image: Union[torch.FloatTensor, Image.Image, None] = None,  # type: ignore
         prompt_embeds: Optional[torch.Tensor] = None,
         negative_prompt_embeds: Optional[torch.Tensor] = None,
         height: int = 512,
@@ -217,7 +222,6 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         strength: Optional[float] = 0.7,
         negative_prompt: Optional[Union[str, List[str]]] = None,
         eta: Optional[float] = 0.0,
-        generator: Optional[torch.Generator] = None,
         latents: Optional[torch.FloatTensor] = None,
         output_type: Optional[str] = "pil",
         return_dict: bool = True,
@@ -279,18 +283,22 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             text_embeddings = prompt_embeds
 
         self.scheduler.set_timesteps(num_inference_steps, device=self.device)  # type: ignore
-        txt2img = image is None or self.controlnet is not None
         timesteps, num_inference_steps = get_timesteps(
-            self.scheduler, num_inference_steps, strength or 0.7, self.device, txt2img
+            self.scheduler,
+            num_inference_steps,
+            strength or 0.7,
+            self.device,
+            image is None or self.controlnet is not None,
         )
         latent_timestep = timesteps[:1].repeat(self.batch * num_images_per_prompt)  # type: ignore
 
-        if image is not None:
+        if isinstance(image, Image.Image):
             if isinstance(image, Image.Image):
                 width, height = image.size  # type: ignore
 
             if self.controlnet is None:
                 image = preprocess_image(image)
+                image = image.to(device=self.device, dtype=text_embeddings.dtype)
             else:
                 ctrl_image = prepare_image(
                     image,
@@ -314,11 +322,14 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
             prompt_embeds.dtype,
             self.device,
             generator,
+            latents,
             align_to=64,
         )
-        extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, generator, eta)  # type: ignore
+        extra_step_kwargs = prepare_extra_step_kwargs(
+            self.scheduler, eta, generator=generator
+        )
         # Necessary for controlnet to function
-        text_embeddings = text_embeddings.half()  # type: ignore
+        text_embeddings = text_embeddings.half()
 
         controlnet_keep = []
         if self.controlnet is not None:
@@ -328,19 +339,19 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     - float(i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0)
                 )
 
-        for i, t in enumerate(tqdm(timesteps, desc="AITemplate")):
+        def do_denoise(x, t, call: Callable) -> torch.Tensor:
             latent_model_input = (
-                torch.cat([latents] * 2) if do_classifier_free_guidance else latents  # type: ignore
+                torch.cat([x] * 2) if do_classifier_free_guidance else x
             )
-            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t).half()  # type: ignore
+            latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
             # predict the noise residual
-            if self.controlnet is not None and ctrl_image is not None:  # type: ignore
+            if self.controlnet is not None and ctrl_image is not None:
                 if guess_mode and do_classifier_free_guidance:
                     # Infer ControlNet only for the conditional batch.
-                    control_model_input = latents
+                    control_model_input = x
                     control_model_input = self.scheduler.scale_model_input(
-                        control_model_input, t
+                        control_model_input, t  # type: ignore
                     ).half()
                     controlnet_prompt_embeds = text_embeddings.chunk(2)[1]
                 else:
@@ -349,7 +360,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
                 cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
                 down_block_res_samples, mid_block_res_sample = self.controlnet(
-                    control_model_input,
+                    control_model_input.half(),
                     t,
                     encoder_hidden_states=controlnet_prompt_embeds.half(),
                     controlnet_cond=ctrl_image,  # type: ignore
@@ -373,20 +384,20 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                         ]
                     )
 
-                noise_pred = self.unet_inference(
+                noise_pred = call(
                     latent_model_input,
                     t,
-                    encoder_hidden_states=text_embeddings,
+                    cond=text_embeddings,
                     height=height,
                     width=width,
                     down_block=down_block_res_samples,
                     mid_block=mid_block_res_sample,
                 )
             else:
-                noise_pred = self.unet_inference(
+                noise_pred = call(
                     latent_model_input,
                     t,
-                    encoder_hidden_states=text_embeddings,
+                    cond=text_embeddings,
                     height=height,
                     width=width,
                 )
@@ -397,12 +408,65 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     noise_pred_text - noise_pred_uncond
                 )
 
-            latents = self.scheduler.step(
-                noise_pred, t, latents, **extra_step_kwargs, return_dict=False  # type: ignore
-            )[0]
+            if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                x = self.scheduler.step(
+                    noise_pred, t, x, **extra_step_kwargs, return_dict=False  # type: ignore
+                )[0]
+            else:
+                x = noise_pred
+            return x
 
-            if callback is not None:
-                callback(i, t, latents)  # type: ignore
+        if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+            func_param_keys = inspect.signature(
+                self.scheduler.do_inference
+            ).parameters.keys()
+
+            if (
+                "optional_device" in func_param_keys
+                and "optional_dtype" in func_param_keys
+            ):
+                latents = self.scheduler.do_inference(
+                    latents,  # type: ignore
+                    generator=generator,
+                    call=self.unet_inference,
+                    apply_model=do_denoise,
+                    callback=callback,
+                    callback_steps=1,
+                    optional_device=self.device,  # type: ignore
+                    optional_dtype=latents.dtype,  # type: ignore
+                )
+            else:
+                latents = self.scheduler.do_inference(
+                    latents,  # type: ignore
+                    generator=generator,
+                    call=self.unet_inference,
+                    apply_model=do_denoise,
+                    callback=callback,
+                    callback_steps=1,
+                )
+        else:
+
+            def _call(*args, **kwargs):
+                if len(args) == 3:
+                    encoder_hidden_states = args[-1]
+                    args = args[:2]
+                if kwargs.get("cond", None) is not None:
+                    encoder_hidden_states = kwargs.pop("cond")
+                return self.unet_inference(
+                    *args,
+                    encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                    **kwargs,
+                )
+
+            for i, t in enumerate(tqdm(timesteps, desc="AITemplate")):
+                latents = do_denoise(latents, t, _call)  # type: ignore
+
+                # call the callback, if provided
+                if callback is not None:
+                    callback(i, t, latents)  # type: ignore
+
+        if output_type == "latent":
+            return latents, None
 
         latents = 1 / 0.18215 * latents  # type: ignore
         image: torch.Tensor = self.vae_inference(latents, height=height, width=width)
@@ -413,9 +477,6 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
         if output_type == "pil":
             image = self.numpy_to_pil(image)  # type: ignore
 
-            has_nsfw_concept = None
-        elif output_type == "latent":
-            image = latents  # type: ignore
             has_nsfw_concept = None
         else:
             raise ValueError(f"Invalid output_type {output_type}")

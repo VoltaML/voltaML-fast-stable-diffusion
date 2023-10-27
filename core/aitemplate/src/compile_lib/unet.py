@@ -23,7 +23,7 @@ from ..modeling.unet_2d_condition import (
 )
 
 
-def compile_unet(  # pylint: disable=dangerous-default-value
+def compile_unet(
     pt_mod,
     batch_size=(1, 8),
     height=(64, 2048),
@@ -82,7 +82,7 @@ def compile_unet(  # pylint: disable=dangerous-default-value
     ait_mod = ait_UNet2DConditionModel(
         sample_size=sample_size,
         cross_attention_dim=hidden_dim,
-        attention_head_dim=attention_head_dim,
+        attention_head_dim=attention_head_dim,  # type: ignore
         use_linear_projection=use_linear_projection,
         up_block_types=up_block_types,
         down_block_types=down_block_types,

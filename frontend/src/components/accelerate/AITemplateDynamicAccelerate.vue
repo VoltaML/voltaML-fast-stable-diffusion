@@ -103,19 +103,19 @@
           style="margin-right: 12px"
         />
       </div>
-    </NCard>
 
-    <NSpace vertical justify="center" style="width: 100%" align="center">
-      <NButton
-        style="margin-top: 16px; padding: 0 92px"
-        type="success"
-        ghost
-        :loading="building"
-        :disabled="building || modelOptions.length === 0"
-        @click="showUnloadModal = true"
-        >Accelerate</NButton
-      >
-    </NSpace>
+      <NSpace vertical justify="center" style="width: 100%" align="center">
+        <NButton
+          style="margin-top: 16px; padding: 0 92px"
+          type="success"
+          ghost
+          :loading="building"
+          :disabled="building || modelOptions.length === 0"
+          @click="onAccelerateClick"
+          >Accelerate</NButton
+        >
+      </NSpace>
+    </NCard>
 
     <NModal
       v-model:show="showUnloadModal"
@@ -183,6 +183,18 @@ const modelOptions = computed(() => {
 });
 
 model.value = modelOptions.value[0]?.value?.toString() ?? "";
+
+const numLoadedModels = computed(() => {
+  return global.state.models.filter((model) => model.state === "loaded").length;
+});
+
+function onAccelerateClick() {
+  if (numLoadedModels.value >= 1) {
+    showUnloadModal.value = true;
+  } else {
+    accelerate();
+  }
+}
 
 const accelerateUnload = async () => {
   try {

@@ -1,6 +1,5 @@
 from fastapi import APIRouter
-from fastapi.websockets import WebSocket
-from starlette.websockets import WebSocketDisconnect
+from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 from api import websocket_manager
 from api.websockets.data import Data

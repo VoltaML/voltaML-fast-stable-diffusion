@@ -12,28 +12,31 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets.data import Data
+from core import shared
 from core.config import config
+from core.flags import HighResFixFlag
 from core.inference.ait.pipeline import StableDiffusionAITPipeline
 from core.inference.base_model import InferenceModel
 from core.inference.functions import load_pytorch_pipeline
-from core.inference_callbacks import (
-    controlnet_callback,
-    img2img_callback,
-    txt2img_callback,
-)
+from core.inference.utilities.latents import scale_latents
+from core.inference_callbacks import callback
 from core.types import (
     Backend,
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     Job,
+    SigmaScheduler,
     Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
-from ..utilities.aitemplate import init_ait_module
-from ..utilities.controlnet import image_to_controlnet_input
-from ..utilities.lwp import get_weighted_text_embeddings
-from ..utilities.scheduling import change_scheduler
+from ..utilities import (
+    change_scheduler,
+    create_generator,
+    get_weighted_text_embeddings,
+    image_to_controlnet_input,
+    init_ait_module,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -59,7 +62,7 @@ class AITemplateStableDiffusion(InferenceModel):
         self.safety_checker: Any
         self.feature_extractor: CLIPFeatureExtractor
 
-        from aitemplate.compiler import Model  # pylint: disable=E0611,E0401
+        from aitemplate.compiler import Model
 
         self.clip_ait_exe: Model
         self.unet_ait_exe: Model
@@ -77,7 +80,6 @@ class AITemplateStableDiffusion(InferenceModel):
         return os.path.join("data", "aitemplate", self.model_id)
 
     def load(self):
-        # pylint: disable=redefined-outer-name,reimported
         from .pipeline import StableDiffusionAITPipeline
 
         pipe = load_pytorch_pipeline(
@@ -172,9 +174,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         mapping.map_unet(self.unet)
                     )
                     self.unet_ait_exe.fold_constants()
-                    self.current_unet = (  # pylint: disable=attribute-defined-outside-init
-                        "unet"
-                    )
+                    self.current_unet = "unet"
 
                     # self.unet.cpu()
 
@@ -203,9 +203,7 @@ class AITemplateStableDiffusion(InferenceModel):
                         mapping.map_unet(self.unet)
                     )
                     self.unet_ait_exe.fold_constants()
-                    self.current_unet = (  # pylint: disable=attribute-defined-outside-init
-                        "controlnet_unet"
-                    )
+                    self.current_unet = "controlnet_unet"
 
                     # self.unet.cpu()
 
@@ -237,14 +235,13 @@ class AITemplateStableDiffusion(InferenceModel):
     def create_pipe(
         self,
         controlnet: str = "",
-        seed: int = -1,
-        scheduler: Optional[Tuple[Any, bool]] = None,
-    ) -> Tuple["StableDiffusionAITPipeline", torch.Generator]:
+        scheduler: Optional[Tuple[Any, SigmaScheduler]] = None,
+        sampler_settings: Optional[dict] = None,
+    ) -> "StableDiffusionAITPipeline":
         "Centralized way to create new pipelines."
 
         self.manage_optional_components(target_controlnet=controlnet)
 
-        # pylint: disable=redefined-outer-name,reimported
         from .pipeline import StableDiffusionAITPipeline
 
         pipe = StableDiffusionAITPipeline(
@@ -260,15 +257,14 @@ class AITemplateStableDiffusion(InferenceModel):
             vae_ait_exe=self.vae_ait_exe,
         )
 
-        generator = torch.Generator(self.device).manual_seed(seed)
-
         if scheduler:
             change_scheduler(
                 model=pipe,
                 scheduler=scheduler[0],
-                use_karras_sigmas=scheduler[1],
+                sigma_type=scheduler[1],
+                sampler_settings=sampler_settings,
             )
-        return pipe, generator
+        return pipe
 
     def generate(self, job: Job) -> List[Image.Image]:
         logging.info(f"Adding job {job.data.id} to queue")
@@ -291,18 +287,27 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Txt2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from text"
-        pipe, generator = self.create_pipe(
-            seed=job.data.seed,
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+        pipe = self.create_pipe(
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
 
+        generator = create_generator(seed=job.data.seed)
+
         total_images: List[Image.Image] = []
+        shared.current_method = "txt2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
+            output_type = "pil"
+
+            if "highres_fix" in job.flags:
+                output_type = "latent"
+
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                 pipe, job.data.prompt, job.data.negative_prompt
             )
             data = pipe(
+                generator=generator,
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
                 height=job.data.height,
@@ -310,11 +315,41 @@ class AITemplateStableDiffusion(InferenceModel):
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
-                output_type="pil",
-                generator=generator,
-                callback=txt2img_callback,
+                output_type=output_type,
+                callback=callback,
                 num_images_per_prompt=job.data.batch_size,
             )
+
+            if output_type == "latent":
+                latents = data[0]  # type: ignore
+                assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
+
+                flag = job.flags["highres_fix"]
+                flag = HighResFixFlag.from_dict(flag)
+
+                latents = scale_latents(
+                    latents=latents,
+                    scale=flag.scale,
+                    latent_scale_mode=flag.latent_scale_mode,
+                )
+
+                data = pipe(
+                    generator=generator,
+                    prompt=job.data.prompt,
+                    image=latents,
+                    height=latents.shape[2] * 8,
+                    width=latents.shape[3] * 8,
+                    num_inference_steps=flag.steps,
+                    guidance_scale=job.data.guidance_scale,
+                    self_attention_scale=job.data.self_attention_scale,
+                    negative_prompt=job.data.negative_prompt,
+                    output_type="pil",
+                    callback=callback,
+                    strength=flag.strength,
+                    return_dict=False,
+                    num_images_per_prompt=job.data.batch_size,
+                )
+
             images: list[Image.Image] = data[0]  # type: ignore
 
             total_images.extend(images)
@@ -327,7 +362,9 @@ class AITemplateStableDiffusion(InferenceModel):
                     "current_step": 0,
                     "total_steps": 0,
                     "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
+                        total_images,
+                        quality=config.api.image_quality,
+                        image_format=config.api.image_extension,
                     ),
                 },
             )
@@ -340,21 +377,25 @@ class AITemplateStableDiffusion(InferenceModel):
         job: Img2ImgQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from images"
-        pipe, generator = self.create_pipe(
-            seed=job.data.seed,
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+        pipe = self.create_pipe(
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
+
+        generator = create_generator(seed=job.data.seed)
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
+        shared.current_method = "img2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                 pipe, job.data.prompt, job.data.negative_prompt
             )
             data = pipe(
+                generator=generator,
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
                 image=input_image,  # type: ignore
@@ -362,8 +403,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
-                callback=img2img_callback,
+                callback=callback,
                 strength=job.data.strength,  # type: ignore
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
@@ -382,7 +422,9 @@ class AITemplateStableDiffusion(InferenceModel):
                     "current_step": 0,
                     "total_steps": 0,
                     "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
+                        total_images,
+                        quality=config.api.image_quality,
+                        image_format=config.api.image_extension,
                     ),
                 },
             )
@@ -395,11 +437,13 @@ class AITemplateStableDiffusion(InferenceModel):
         job: ControlNetQueueEntry,
     ) -> List[Image.Image]:
         "Generates images from images"
-        pipe, generator = self.create_pipe(
+        pipe = self.create_pipe(
             controlnet=job.data.controlnet,
-            seed=job.data.seed,
-            scheduler=(job.data.scheduler, job.data.use_karras_sigmas),
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
+
+        generator = create_generator(seed=job.data.seed)
 
         input_image = convert_to_image(job.data.image)
         input_image = resize(input_image, job.data.width, job.data.height)
@@ -409,12 +453,14 @@ class AITemplateStableDiffusion(InferenceModel):
             input_image = image_to_controlnet_input(input_image, job.data)
 
         total_images: List[Image.Image] = [input_image]
+        shared.current_method = "controlnet"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
                 pipe, job.data.prompt, job.data.negative_prompt
             )
             data = pipe(
+                generator=generator,
                 prompt_embeds=prompt_embeds,
                 negative_prompt_embeds=negative_prompt_embeds,
                 image=input_image,  # type: ignore
@@ -422,8 +468,7 @@ class AITemplateStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
-                callback=controlnet_callback,
+                callback=callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
                 controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,  # type: ignore
@@ -444,7 +489,11 @@ class AITemplateStableDiffusion(InferenceModel):
                     "current_step": 0,
                     "total_steps": 0,
                     "image": convert_images_to_base64_grid(
-                        total_images, quality=90, image_format="webp"
+                        total_images
+                        if job.data.return_preprocessed
+                        else total_images[1:],
+                        quality=config.api.image_quality,
+                        image_format=config.api.image_extension,
                     ),
                 },
             )

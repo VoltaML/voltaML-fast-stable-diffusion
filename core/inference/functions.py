@@ -26,7 +26,6 @@ from diffusers.utils.constants import (
     WEIGHTS_NAME,
 )
 from diffusers.utils.hub_utils import HF_HUB_OFFLINE
-from diffusers.utils.import_utils import is_safetensors_available
 from huggingface_hub import model_info  # type: ignore
 from huggingface_hub._snapshot_download import snapshot_download
 from huggingface_hub.file_download import hf_hub_download
@@ -55,7 +54,7 @@ torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
     try:
-        import aitemplate
+        import aitemplate  # noqa: F401
 
         return True
     except ImportError:
@@ -65,7 +64,7 @@ def is_aitemplate_available():
 def is_ipex_available():
     "Checks whether Intel Pytorch EXtensions are available/installed."
     try:
-        import intel_extension_for_pytorch  # pylint: disable=unused-import
+        import intel_extension_for_pytorch  # noqa: F401
 
         return True
     except ImportError:
@@ -75,7 +74,7 @@ def is_ipex_available():
 def is_onnxconverter_available():
     "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
     try:
-        import onnxconverter_common  # pylint: disable=unused-import
+        import onnxconverter_common  # noqa: F401
 
         return True
     except ImportError:
@@ -85,11 +84,8 @@ def is_onnxconverter_available():
 def is_onnx_available():
     "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
     try:
-        import onnx  # pylint: disable=unused-import
-        from onnxruntime.quantization import (  # pylint: disable=unused-import
-            QuantType,
-            quantize_dynamic,
-        )
+        import onnx  # noqa: F401
+        from onnxruntime.quantization import QuantType, quantize_dynamic  # noqa: F401
 
         return True
     except ImportError:
@@ -99,7 +95,7 @@ def is_onnx_available():
 def is_onnxscript_available():
     "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
     try:
-        import onnxscript  # pylint: disable=unused-import
+        import onnxscript  # noqa: F401
 
         return True
     except ImportError:
@@ -109,7 +105,7 @@ def is_onnxscript_available():
 def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
     try:
-        from onnxsim import simplify  # pylint: disable=import-error,unused-import
+        from onnxsim import simplify  # noqa: F401
 
         return True
     except ImportError:
@@ -313,7 +309,7 @@ def download_model(
         # # make sure we don't download flax weights
         ignore_patterns = ["*.msgpack"]
 
-        if is_safetensors_available() and not local_files_only:
+        if not local_files_only:
             info = model_info(
                 repo_id=pretrained_model_name,
                 revision=revision,
@@ -390,8 +386,8 @@ def load_pytorch_pipeline(
         cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
+                str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
                 extract_ema=True,
                 load_safety_checker=False,
@@ -399,8 +395,8 @@ def load_pytorch_pipeline(
             )
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
+                str(get_full_model_path(model_id_or_path)),
                 pipeline_class=cl,  # type: ignore
-                checkpoint_path=str(get_full_model_path(model_id_or_path)),
                 from_safetensors=use_safetensors,
                 extract_ema=False,
                 load_safety_checker=False,
@@ -411,7 +407,6 @@ def load_pytorch_pipeline(
             pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
             torch_dtype=config.api.dtype,
             safety_checker=None,
-            requires_safety_checker=False,
             feature_extractor=None,
             low_cpu_mem_usage=True,
         )

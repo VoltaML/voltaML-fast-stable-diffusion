@@ -12,13 +12,13 @@ def pred_x0(pipe, sample, model_output, timestep):
     ]
 
     beta_prod_t = 1 - alpha_prod_t
-    if pipe.scheduler.config.prediction_type == "epsilon":
+    if pipe.scheduler.config["prediction_type"] == "epsilon":
         pred_original_sample = (
             sample - beta_prod_t ** (0.5) * model_output
         ) / alpha_prod_t ** (0.5)
-    elif pipe.scheduler.config.prediction_type == "sample":
+    elif pipe.scheduler.config["prediction_type"] == "sample":
         pred_original_sample = model_output
-    elif pipe.scheduler.config.prediction_type == "v_prediction":
+    elif pipe.scheduler.config["prediction_type"] == "v_prediction":
         pred_original_sample = (alpha_prod_t**0.5) * sample - (
             beta_prod_t**0.5
         ) * model_output
@@ -28,7 +28,7 @@ def pred_x0(pipe, sample, model_output, timestep):
         ) * sample
     else:
         raise ValueError(
-            f"prediction_type given as {pipe.scheduler.config.prediction_type} must be one of `epsilon`, `sample`,"
+            f"prediction_type given as {pipe.scheduler.config['prediction_type']} must be one of `epsilon`, `sample`,"
             " or `v_prediction`"
         )
 
@@ -74,17 +74,17 @@ def pred_epsilon(pipe, sample, model_output, timestep):
     ]
 
     beta_prod_t = 1 - alpha_prod_t
-    if pipe.scheduler.config.prediction_type == "epsilon":
+    if pipe.scheduler.config["prediction_type"] == "epsilon":
         pred_eps = model_output
-    elif pipe.scheduler.config.prediction_type == "sample":
+    elif pipe.scheduler.config["prediction_type"] == "sample":
         pred_eps = (sample - (alpha_prod_t**0.5) * model_output) / (
             beta_prod_t**0.5
         )
-    elif pipe.scheduler.config.prediction_type == "v_prediction":
+    elif pipe.scheduler.config["prediction_type"] == "v_prediction":
         pred_eps = (beta_prod_t**0.5) * sample + (alpha_prod_t**0.5) * model_output
     else:
         raise ValueError(
-            f"prediction_type given as {pipe.scheduler.config.prediction_type} must be one of `epsilon`, `sample`,"
+            f"prediction_type given as {pipe.scheduler.config['prediction_type']} must be one of `epsilon`, `sample`,"
             " or `v_prediction`"
         )
 

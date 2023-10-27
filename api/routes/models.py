@@ -13,6 +13,7 @@ from streaming_form_data.targets import FileTarget
 
 from api import websocket_manager
 from api.websockets.data import Data
+from api.websockets.notification import Notification
 from core.files import get_full_model_path
 from core.shared_dependent import cached_model_list, gpu
 from core.types import (
@@ -27,9 +28,15 @@ from core.utils import download_file
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
 
-model_upload_dir = Path("data/models")
-lora_upload_dir = Path("data/lora")
-textual_inversions_UploadDir = Path("data/textual-inversion")
+possible_dirs = [
+    "models",
+    "lora",
+    "textual-inversion",
+    "lycoris",
+    "vae",
+    "aitemplate",
+    "onnx",
+]
 
 
 class UploadFileTarget(FileTarget):
@@ -41,10 +48,11 @@ class UploadFileTarget(FileTarget):
             filename=None, file=NamedTemporaryFile(delete=False, dir=dir_)  # type: ignore
         )
         self._fd = self.file.file
+        self.dir = dir_
 
     def on_start(self):
         self.file.filename = self.filename = self.multipart_filename  # type: ignore
-        if model_upload_dir.joinpath(self.filename).exists():  # type: ignore
+        if self.dir.joinpath(self.filename).exists():  # type: ignore
             raise HTTPException(409, "File already exists")
 
 
@@ -93,9 +101,7 @@ async def load_model(
         )
     except torch.cuda.OutOfMemoryError:  # type: ignore
         logger.warning(traceback.format_exc())
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=500, detail="Out of memory"
-        )
+        raise HTTPException(status_code=500, detail="Out of memory")
     return {"message": "Model loaded"}
 
 
@@ -173,11 +179,15 @@ async def get_current_cached_preprocessor():
 async def upload_model(request: Request):
     "Upload a model file to the server"
 
-    upload_type = request.query_params.get("type", "model")
-    logger.info(f"Recieving model of type {upload_type}")
+    upload_type = request.query_params.get("type")
+    assert upload_type in possible_dirs, f"Invalid upload type '{upload_type}'"
+
+    logger.info(f"Recieving model of type '{upload_type}'")
+
+    upload_dir = Path("data") / upload_type
 
     parser = StreamingFormDataParser(request.headers)
-    target = UploadFileTarget(model_upload_dir)
+    target = UploadFileTarget(upload_dir)
     try:
         parser.register("file", target)
 
@@ -185,19 +195,7 @@ async def upload_model(request: Request):
             parser.data_received(chunk)
 
         if target.filename:
-            if upload_type == "lora":
-                logger.info("Moving file to lora upload dir")
-                folder = lora_upload_dir
-            elif upload_type == "textual-inversion":
-                logger.info("Moving file to textual inversion upload dir")
-                folder = textual_inversions_UploadDir
-            elif upload_type == "model":
-                logger.info("Moving file to model upload dir")
-                folder = model_upload_dir
-            else:
-                raise HTTPException(422, "Invalid upload type")
-
-            shutil.move(target.file.file.name, folder.joinpath(target.filename))
+            shutil.move(target.file.file.name, upload_dir.joinpath(target.filename))
         else:
             raise HTTPException(422, "Could not find file in body")
     finally:
@@ -215,19 +213,24 @@ async def upload_model(request: Request):
 async def delete_model(req: DeleteModelRequest):
     "Delete a model from the server"
 
-    if req.model_type == "pytorch":
+    assert req.model_type in possible_dirs, f"Invalid upload type {req.model_type}"
+
+    if req.model_type == "models":
         path = get_full_model_path(req.model_path, diffusers_skip_ref_follow=True)
-    elif req.model_type == "lora":
-        path = lora_upload_dir.joinpath(req.model_path)
-    elif req.model_type == "textual-inversion":
-        path = textual_inversions_UploadDir.joinpath(req.model_path)
     else:
-        raise HTTPException(422, "Invalid model type")
+        path = Path(req.model_path)
 
-    logger.warning(f"Deleting model {path} of type {req.model_type}")
+    logger.warning(f"Deleting model '{path}' of type '{req.model_type}'")
 
-    if not path.exists():
-        raise HTTPException(404, "Model not found")
+    if not path.is_symlink():
+        if not path.exists():
+            await websocket_manager.broadcast(
+                data=Notification(
+                    severity="error",
+                    message="Model not found",
+                )
+            )
+            raise HTTPException(404, "Model not found")
 
     if path.is_dir():
         shutil.rmtree(path)

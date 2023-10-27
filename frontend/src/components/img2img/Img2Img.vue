@@ -5,23 +5,23 @@
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="conf.data.settings.img2img.image"
+          :preview="settings.data.settings.img2img.image"
           style="margin-bottom: 12px"
-          @file-dropped="conf.data.settings.img2img.image = $event"
+          @file-dropped="settings.data.settings.img2img.image = $event"
         />
 
         <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
-              v-model:value="conf.data.settings.img2img.prompt"
+              v-model:value="settings.data.settings.img2img.prompt"
               type="textarea"
               placeholder="Prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.img2img,
+                  settings.data.settings.img2img,
                   'prompt',
                   global
                 )
@@ -31,14 +31,14 @@
               <template #count>{{ promptCount }}</template>
             </NInput>
             <NInput
-              v-model:value="conf.data.settings.img2img.negative_prompt"
+              v-model:value="settings.data.settings.img2img.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  conf.data.settings.img2img,
+                  settings.data.settings.img2img,
                   'negative_prompt',
                   global
                 )
@@ -49,50 +49,11 @@
             </NInput>
 
             <!-- Sampler -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="margin-right: 12px; width: 150px">Sampler</p>
-                </template>
-                The sampler is the method used to generate the image. Your
-                result may vary drastically depending on the sampler you choose.
-                <b class="highlight"
-                  >We recommend using DPMSolverMultistep for the best results .
-                </b>
-                <a
-                  target="_blank"
-                  href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
-                  >Learn more</a
-                >
-              </NTooltip>
+            <SamplerPicker type="img2img" />
 
-              <NSelect
-                :options="conf.scheduler_options"
-                v-model:value="conf.data.settings.img2img.sampler"
-                style="flex-grow: 1"
-              />
-            </div>
-
-            <!-- Karras Sigmas -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="width: 120px">Karras Sigmas</p>
-                </template>
-                Changes the sigmas used in the Karras diffusion process. Might
-                provide better results for some images.
-                <b class="highlight"
-                  >Works only with KDPM samplers. Ignored by other samplers.</b
-                >
-              </NTooltip>
-
-              <NSwitch
-                v-model:value="conf.data.settings.txt2img.use_karras_sigmas"
-                style="justify-self: flex-end"
-              />
-            </div>
-
-            <DimensionsInput :dimensions-object="conf.data.settings.img2img" />
+            <DimensionsInput
+              :dimensions-object="settings.data.settings.img2img"
+            />
 
             <!-- Steps -->
             <div class="flex-container">
@@ -109,13 +70,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.steps"
+                v-model:value="settings.data.settings.img2img.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.steps"
+                v-model:value="settings.data.settings.img2img.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="5"
@@ -138,14 +99,14 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.cfg_scale"
+                v-model:value="settings.data.settings.img2img.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.cfg_scale"
+                v-model:value="settings.data.settings.img2img.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -155,7 +116,13 @@
             </div>
 
             <!-- Self Attention Scale -->
-            <div class="flex-container">
+            <div
+              class="flex-container"
+              v-if="
+                Number.isInteger(settings.data.settings.img2img.sampler) &&
+                settings.data.settings.model?.backend === 'PyTorch'
+              "
+            >
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Self Attention Scale</p>
@@ -168,14 +135,18 @@
               </NTooltip>
 
               <NSlider
-                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                v-model:value="
+                  settings.data.settings.img2img.self_attention_scale
+                "
                 :min="0"
                 :max="1"
                 :step="0.05"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.txt2img.self_attention_scale"
+                v-model:value="
+                  settings.data.settings.img2img.self_attention_scale
+                "
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0"
@@ -193,13 +164,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.batch_count"
+                v-model:value="settings.data.settings.img2img.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.batch_count"
+                v-model:value="settings.data.settings.img2img.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -207,7 +178,9 @@
               />
             </div>
 
-            <BatchSizeInput :batch-size-object="conf.data.settings.img2img" />
+            <BatchSizeInput
+              :batch-size-object="settings.data.settings.img2img"
+            />
 
             <!-- Denoising Strength -->
             <div class="flex-container">
@@ -219,14 +192,18 @@
                 ideal
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.img2img.denoising_strength"
+                v-model:value="
+                  settings.data.settings.img2img.denoising_strength
+                "
                 :min="0.1"
                 :max="1"
                 style="margin-right: 12px"
                 :step="0.025"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.denoising_strength"
+                v-model:value="
+                  settings.data.settings.img2img.denoising_strength
+                "
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
@@ -247,7 +224,7 @@
                 <b class="highlight">For random seed use -1.</b>
               </NTooltip>
               <NInputNumber
-                v-model:value="conf.data.settings.img2img.seed"
+                v-model:value="settings.data.settings.img2img.seed"
                 size="small"
                 :min="-1"
                 :max="999_999_999_999"
@@ -267,6 +244,7 @@
         <ImageOutput
           :current-image="global.state.img2img.currentImage"
           :images="global.state.img2img.images"
+          :data="settings.data.settings.img2img"
           @image-clicked="global.state.img2img.currentImage = $event"
         />
 
@@ -288,6 +266,7 @@ import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
 import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
 import DimensionsInput from "@/components/generate/DimensionsInput.vue";
+import SamplerPicker from "@/components/generate/SamplerPicker.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -300,7 +279,6 @@ import {
   NGrid,
   NInput,
   NInputNumber,
-  NSelect,
   NSlider,
   NSpace,
   NTooltip,
@@ -312,15 +290,15 @@ import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
-const conf = useSettings();
+const settings = useSettings();
 const messageHandler = useMessage();
 
 const promptCount = computed(() => {
-  return conf.data.settings.img2img.prompt.split(spaceRegex).length - 1;
+  return settings.data.settings.img2img.prompt.split(spaceRegex).length - 1;
 });
 const negativePromptCount = computed(() => {
   return (
-    conf.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1
+    settings.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1
   );
 });
 
@@ -334,17 +312,17 @@ const checkSeed = (seed: number) => {
 };
 
 const imageSelectCallback = (base64Image: string) => {
-  conf.data.settings.img2img.image = base64Image;
+  settings.data.settings.img2img.image = base64Image;
 };
 
 const generate = () => {
-  if (conf.data.settings.img2img.seed === null) {
+  if (settings.data.settings.img2img.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
   global.state.generating = true;
 
-  const seed = checkSeed(conf.data.settings.img2img.seed);
+  const seed = checkSeed(settings.data.settings.img2img.seed);
 
   fetch(`${serverUrl}/api/generate/img2img`, {
     method: "POST",
@@ -353,23 +331,28 @@ const generate = () => {
     },
     body: JSON.stringify({
       data: {
-        prompt: conf.data.settings.img2img.prompt,
-        image: conf.data.settings.img2img.image,
+        prompt: settings.data.settings.img2img.prompt,
+        image: settings.data.settings.img2img.image,
         id: uuidv4(),
-        negative_prompt: conf.data.settings.img2img.negative_prompt,
-        width: conf.data.settings.img2img.width,
-        height: conf.data.settings.img2img.height,
-        steps: conf.data.settings.img2img.steps,
-        guidance_scale: conf.data.settings.img2img.cfg_scale,
+        negative_prompt: settings.data.settings.img2img.negative_prompt,
+        width: settings.data.settings.img2img.width,
+        height: settings.data.settings.img2img.height,
+        steps: settings.data.settings.img2img.steps,
+        guidance_scale: settings.data.settings.img2img.cfg_scale,
         seed: seed,
-        batch_size: conf.data.settings.img2img.batch_size,
-        batch_count: conf.data.settings.img2img.batch_count,
-        strength: conf.data.settings.img2img.denoising_strength,
-        scheduler: conf.data.settings.img2img.sampler,
-        self_attention_scale: conf.data.settings.txt2img.self_attention_scale,
-        use_karras_sigmas: conf.data.settings.img2img.use_karras_sigmas,
+        batch_size: settings.data.settings.img2img.batch_size,
+        batch_count: settings.data.settings.img2img.batch_count,
+        strength: settings.data.settings.img2img.denoising_strength,
+        scheduler: settings.data.settings.img2img.sampler,
+        self_attention_scale:
+          settings.data.settings.img2img.self_attention_scale,
+        sigmas: settings.data.settings.img2img.sigmas,
+        sampler_settings:
+          settings.data.settings.sampler_config[
+            settings.data.settings.img2img.sampler
+          ],
       },
-      model: conf.data.settings.model?.name,
+      model: settings.data.settings.model?.name,
     }),
   })
     .then((res) => {
@@ -393,12 +376,15 @@ const generate = () => {
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 
 // Burner clock
-const burner = new BurnerClock(conf.data.settings.img2img, conf, generate);
+const burner = new BurnerClock(
+  settings.data.settings.img2img,
+  settings,
+  generate
+);
 onUnmounted(() => {
   burner.cleanup();
 });

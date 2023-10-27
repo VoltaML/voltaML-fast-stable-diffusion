@@ -1,5 +1,5 @@
 <template>
-  <div class="flex-container" v-if="conf.data.settings.aitDim.batch_size">
+  <div class="flex-container" v-if="settings.data.settings.aitDim.batch_size">
     <NTooltip style="max-width: 600px">
       <template #trigger>
         <p class="slider-label">Batch Size</p>
@@ -8,15 +8,15 @@
     </NTooltip>
     <NSlider
       v-model:value="props.batchSizeObject.batch_size"
-      :min="conf.data.settings.aitDim.batch_size[0]"
-      :max="conf.data.settings.aitDim.batch_size[1]"
+      :min="settings.data.settings.aitDim.batch_size[0]"
+      :max="settings.data.settings.aitDim.batch_size[1]"
       style="margin-right: 12px"
     />
     <NInputNumber
       v-model:value="props.batchSizeObject.batch_size"
       size="small"
-      :min="conf.data.settings.aitDim.batch_size[0]"
-      :max="conf.data.settings.aitDim.batch_size[1]"
+      :min="settings.data.settings.aitDim.batch_size[0]"
+      :max="settings.data.settings.aitDim.batch_size[1]"
       style="min-width: 96px; width: 96px"
     />
   </div>
@@ -50,7 +50,7 @@ interface DimensionsObject {
   batch_size: number;
 }
 
-const conf = useSettings();
+const settings = useSettings();
 
 const props = defineProps({
   batchSizeObject: {

@@ -2,7 +2,7 @@ import os
 
 os.environ["TESTING"] = "1"
 
-from main import checks, main  # pylint: disable=wrong-import-position
+from main import checks, main  # noqa: E402
 
 
 def test_checks():

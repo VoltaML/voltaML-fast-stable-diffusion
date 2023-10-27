@@ -1,4 +1,4 @@
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, E as ref, b9 as onMounted, o as onUnmounted, s as serverUrl, v as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, G as NIcon, m as createTextVNode, y as NGrid, bN as NAlert, x as createCommentVNode, i as NCard } from "./index.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, D as ref, b9 as onMounted, o as onUnmounted, s as serverUrl, v as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, E as NButton, F as NIcon, m as createTextVNode, y as NGrid, bV as NAlert, r as createCommentVNode, i as NCard } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -59,7 +59,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const props = __props;
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const generateButton = ref(null);
     onMounted(() => {
       window.addEventListener("keydown", handleKeyDown);
@@ -109,7 +109,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                         ref_key: "generateButton",
                         ref: generateButton,
                         onClick: props.generate,
-                        disabled: !props.doNotDisableGenerate && (unref(global).state.generating || ((_a2 = unref(conf).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(conf).data.settings.model) == null ? void 0 : _b2.name) === void 0),
+                        disabled: !props.doNotDisableGenerate && (unref(global).state.generating || ((_a2 = unref(settings).data.settings.model) == null ? void 0 : _a2.name) === "" || ((_b2 = unref(settings).data.settings.model) == null ? void 0 : _b2.name) === void 0),
                         loading: unref(global).state.generating,
                         style: { "width": "100%" },
                         ghost: ""
@@ -159,7 +159,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               ]),
               _: 1
             }),
-            !props.doNotDisableGenerate && (((_a = unref(conf).data.settings.model) == null ? void 0 : _a.name) === "" || ((_b = unref(conf).data.settings.model) == null ? void 0 : _b.name) === void 0) ? (openBlock(), createBlock(unref(NAlert), {
+            !props.doNotDisableGenerate && (((_a = unref(settings).data.settings.model) == null ? void 0 : _a.name) === "" || ((_b = unref(settings).data.settings.model) == null ? void 0 : _b.name) === void 0) ? (openBlock(), createBlock(unref(NAlert), {
               key: 0,
               style: { "margin-top": "12px" },
               type: "warning",

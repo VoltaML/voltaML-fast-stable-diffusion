@@ -1,16 +1,15 @@
 <template>
-  <NCard>
-    <NForm>
-      <h2>Default settings</h2>
-      <NFormItem label="Number of columns">
+  <NForm>
+    <NCard>
+      <NFormItem label="Number of columns" label-placement="left">
         <NInputNumber
           v-model:value="
             settings.defaultSettings.frontend.image_browser_columns
           "
         />
       </NFormItem>
-    </NForm>
-  </NCard>
+    </NCard>
+  </NForm>
 </template>
 
 <script lang="ts" setup>

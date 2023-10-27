@@ -7,7 +7,7 @@ import re
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple, Union
 
 import requests
 from PIL import Image
@@ -15,11 +15,12 @@ from requests.adapters import HTTPAdapter, Retry
 from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
+from core.types import ImageFormats
 
 logger = logging.getLogger(__name__)
 
 
-def unwrap_enum(possible_enum: Union[Enum, Any]):
+def unwrap_enum(possible_enum: Union[Enum, Any]) -> Any:
     "Unwrap an enum to its value"
 
     if isinstance(possible_enum, Enum):
@@ -43,11 +44,13 @@ def get_grid_dimension(length: int) -> Tuple[int, int]:
     return cols, rows
 
 
-def convert_image_to_stream(image: Image.Image, quality: int = 95) -> BytesIO:
+def convert_image_to_stream(
+    image: Image.Image, quality: int = 95, _format: ImageFormats = "webp"
+) -> BytesIO:
     "Convert an image to a stream of bytes"
 
     stream = BytesIO()
-    image.save(stream, format="webp", quality=quality)
+    image.save(stream, format=_format, quality=quality)
     stream.seek(0)
     return stream
 
@@ -74,24 +77,23 @@ def convert_to_image(
 
         return im
 
-    return image
+    if isinstance(image, Image.Image):
+        return image
+
+    raise ValueError(f"Type {type(image)} not supported yet")
 
 
 def convert_image_to_base64(
     image: Image.Image,
     quality: int = 95,
-    image_format: Literal["png", "webp"] = "png",
+    image_format: ImageFormats = "webp",
     prefix_js: bool = True,
 ) -> str:
     "Convert an image to a base64 string"
 
     stream = convert_image_to_stream(image, quality=quality)
     if prefix_js:
-        prefix = (
-            f"data:image/{image_format};base64,"
-            if image_format == "png"
-            else "data:image/webp;base64,"
-        )
+        prefix = f"data:image/{image_format};base64,"
     else:
         prefix = ""
     return prefix + base64.b64encode(stream.read()).decode("utf-8")
@@ -147,7 +149,7 @@ def image_grid(imgs: List[Image.Image]):
 def convert_images_to_base64_grid(
     images: List[Image.Image],
     quality: int = 95,
-    image_format: Literal["png", "webp"] = "png",
+    image_format: ImageFormats = "png",
 ) -> str:
     "Convert a list of images to a list of base64 strings"
 
@@ -184,12 +186,20 @@ def download_file(url: str, file: Path, add_filename: bool = False):
     session.mount("https://", HTTPAdapter(max_retries=retries))
 
     with session.get(url, stream=True, timeout=30) as r:
-        file_name = r.headers["Content-Disposition"].split('"')[1]
+        try:
+            file_name = r.headers["Content-Disposition"].split('"')[1]
+        except KeyError:
+            file_name = url.split("/")[-1]
+
         if add_filename:
             file = file / file_name
         total = int(r.headers["Content-Length"])
-        logger.info(f"Downloading {file_name} into {file.as_posix()}")
 
+        if file.exists():
+            logger.debug(f"File {file.as_posix()} already exists, skipping")
+            return file
+
+        logger.info(f"Downloading {file_name} into {file.as_posix()}")
         # AFAIK Windows doesn't like big buffers
         s = (64 if os.name == "nt" else 1024) * 1024
         with open(file, mode="wb+") as f:

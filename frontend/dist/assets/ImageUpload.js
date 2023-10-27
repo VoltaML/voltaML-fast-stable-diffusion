@@ -1,6 +1,6 @@
-import { d as defineComponent, E as ref, c as computed, b9 as onMounted, e as openBlock, v as createBlock, w as withCtx, n as createBaseVNode, bM as withModifiers, f as createElementBlock, g as createVNode, h as unref, G as NIcon, t as toDisplayString, i as NCard, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, D as ref, c as computed, b9 as onMounted, e as openBlock, v as createBlock, w as withCtx, n as createBaseVNode, bU as withModifiers, f as createElementBlock, g as createVNode, h as unref, F as NIcon, t as toDisplayString, i as NCard, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
 import { C as CloudUpload } from "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-4f5be896"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-9ed1514f"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "image-container" };
 const _hoisted_2 = {
   for: "file-upload",
@@ -30,11 +30,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const image = ref();
     const width = computed(() => {
       var _a;
-      return image.value ? (_a = image.value) == null ? void 0 : _a.width : 0;
+      return image.value ? (_a = image.value) == null ? void 0 : _a.naturalWidth : 0;
     });
     const height = computed(() => {
       var _a;
-      return image.value ? (_a = image.value) == null ? void 0 : _a.height : 0;
+      return image.value ? (_a = image.value) == null ? void 0 : _a.naturalHeight : 0;
     });
     function previewImage(event) {
       const input = event.target;
@@ -59,9 +59,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     }
     function onDrop(e) {
-      var _a, _b;
-      console.log((_a = e.dataTransfer) == null ? void 0 : _a.files);
-      if ((_b = e.dataTransfer) == null ? void 0 : _b.files) {
+      var _a;
+      if ((_a = e.dataTransfer) == null ? void 0 : _a.files) {
         const reader = new FileReader();
         reader.onload = (e2) => {
           var _a2;
@@ -134,8 +133,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageUpload_vue_vue_type_style_index_0_scoped_4f5be896_lang = "";
-const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-4f5be896"]]);
+const ImageUpload_vue_vue_type_style_index_0_scoped_9ed1514f_lang = "";
+const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-9ed1514f"]]);
 export {
   ImageUpload as I
 };

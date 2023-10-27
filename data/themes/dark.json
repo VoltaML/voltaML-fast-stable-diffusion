@@ -1,0 +1,21 @@
+{
+    "volta": {
+        "base": "dark",
+        "blur": "6px",
+        "backgroundImage": "https://raw.githubusercontent.com/VoltaML/voltaML-fast-stable-diffusion/2cf7a8abf1e5035a0dc57a67cd13505653c492f6/static/volta-dark-background.svg"
+    },
+    "common": {
+        "fontSize": "15px",
+        "fontWeight": "600"
+    },
+    "Card": {
+        "color": "rgba(24, 24, 28, 0.6)"
+    },
+    "Layout": {
+        "color": "rgba(16, 16, 20, 0.6)",
+        "siderColor": "rgba(24, 24, 28, 0)"
+    },
+    "Tabs": {
+        "colorSegment": "rgba(24, 24, 28, 0.6)"
+    }
+}

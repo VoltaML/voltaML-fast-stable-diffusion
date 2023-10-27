@@ -44,7 +44,7 @@ class CachedModelList:
             logger.debug(f"Found model {model_name}")
 
             # Skip if it is not a huggingface model
-            if not "model" in model_name:
+            if "model" not in model_name:
                 continue
 
             name: str = "/".join(model_name.split("--")[1:3])
@@ -428,7 +428,7 @@ def get_full_model_path(
 
     # 2. Check if model is stored in local storage
     alt_path = Path("data") / model_folder / repo_id
-    if alt_path.exists() or force:
+    if alt_path.exists() or force or alt_path.is_symlink():
         logger.debug(f"Found model in {alt_path}")
         return alt_path
 

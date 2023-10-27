@@ -1,3 +1,4 @@
+import { serverUrl } from "@/env";
 import { getCapabilities } from "@/helper/capabilities";
 import { defineStore } from "pinia";
 import { reactive, ref } from "vue";
@@ -50,7 +51,7 @@ export interface StateInterface {
   img2img: {
     currentImage: string;
     images: string[];
-    tab: string;
+    tab: "img2img" | "controlnet" | "inpainting";
     genData: GenerationData;
   };
   inpainting: {
@@ -68,30 +69,33 @@ export interface StateInterface {
     images: string[];
     genData: GenerationData;
   };
-  sd_upscale: {
+  imageProcessing: {
     currentImage: string;
     images: string[];
-    genData: GenerationData;
+    tab: "upscale";
   };
   extra: {
-    currentImage: string;
-    images: string[];
-    tab: string;
+    tab: "dependencies";
   };
   tagger: {
     positivePrompt: Map<string, number>;
     negativePrompt: Map<string, number>;
+    tab: "tagger";
   };
   current_step: number;
   total_steps: number;
   imageBrowser: {
     currentImage: imgData;
     currentImageByte64: string;
-    currentImageMetadata: Map<string, string>;
+    currentImageMetadata: Record<string, string | number | boolean>;
   };
   perf_drawer: {
     enabled: boolean;
     gpus: GPU[];
+  };
+  log_drawer: {
+    enabled: boolean;
+    logs: string[];
   };
   models: Array<ModelEntry>;
   selected_model: ModelEntry | null;
@@ -99,6 +103,7 @@ export interface StateInterface {
     huggingface: "missing" | "ok";
   };
   autofill: Array<string>;
+  autofill_special: Array<string>;
   capabilities: Capabilities;
 }
 
@@ -132,7 +137,7 @@ export const useState = defineStore("state", () => {
     img2img: {
       images: [],
       currentImage: "",
-      tab: "Image to Image",
+      tab: "img2img",
       genData: {
         time_taken: null,
         seed: null,
@@ -162,22 +167,18 @@ export const useState = defineStore("state", () => {
         seed: null,
       },
     },
-    sd_upscale: {
+    imageProcessing: {
       images: [],
       currentImage: "",
-      genData: {
-        time_taken: null,
-        seed: null,
-      },
+      tab: "upscale",
     },
     extra: {
-      images: [],
-      currentImage: "",
-      tab: "Upscale",
+      tab: "dependencies",
     },
     tagger: {
       positivePrompt: new Map<string, number>(),
       negativePrompt: new Map<string, number>(),
+      tab: "tagger",
     },
     current_step: 0,
     total_steps: 0,
@@ -188,11 +189,15 @@ export const useState = defineStore("state", () => {
         time: 0,
       },
       currentImageByte64: "",
-      currentImageMetadata: new Map(),
+      currentImageMetadata: {},
     },
     perf_drawer: {
       enabled: false,
       gpus: [],
+    },
+    log_drawer: {
+      enabled: false,
+      logs: [],
     },
     models: [],
     selected_model: ref(null),
@@ -200,6 +205,7 @@ export const useState = defineStore("state", () => {
       huggingface: "ok",
     },
     autofill: [],
+    autofill_special: [],
     capabilities: defaultCapabilities, // Should get replaced at runtime
   });
 
@@ -207,5 +213,17 @@ export const useState = defineStore("state", () => {
     state.capabilities = await getCapabilities();
   }
 
-  return { state, fetchCapabilites };
+  async function fetchAutofill() {
+    fetch(`${serverUrl}/api/autofill`).then(async (response) => {
+      if (response.status === 200) {
+        const arr: string[] = await response.json();
+        state.autofill = arr;
+        console.log("Autofill data successfully fetched from the server");
+      } else {
+        console.error("Failed to fetch autofill data");
+      }
+    });
+  }
+
+  return { state, fetchCapabilites, fetchAutofill };
 });

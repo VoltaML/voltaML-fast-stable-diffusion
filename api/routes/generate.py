@@ -35,9 +35,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
@@ -55,9 +53,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
@@ -79,16 +75,14 @@ async def inpaint_job(job: InpaintQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
 
 @router.post("/controlnet")
 async def controlnet_job(job: ControlNetQueueEntry):
-    "Generate variations of the image"
+    "Generate images based on a reference image"
 
     image_bytes = job.data.image
     assert isinstance(image_bytes, bytes)
@@ -99,9 +93,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
         time: float
         images, time = await gpu.generate(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return images_to_response(images, time)
 
@@ -119,9 +111,7 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
         time: float
         image, time = await gpu.upscale(job)
     except ModelNotLoadedError:
-        raise HTTPException(  # pylint: disable=raise-missing-from
-            status_code=400, detail="Model is not loaded"
-        )
+        raise HTTPException(status_code=400, detail="Model is not loaded")
 
     return {
         "time": time,
@@ -133,7 +123,7 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
 
 @router.post("/generate-aitemplate")
 async def generate_aitemplate(request: AITemplateBuildRequest):
-    "Generate a AITemplate model from a local model"
+    "Generate an AITemplate model from a local model"
 
     await gpu.build_aitemplate_engine(request)
 
@@ -142,7 +132,7 @@ async def generate_aitemplate(request: AITemplateBuildRequest):
 
 @router.post("/generate-dynamic-aitemplate")
 async def generate_dynamic_aitemplate(request: AITemplateDynamicBuildRequest):
-    "Generate a AITemplate engine from a local model"
+    "Generate an AITemplate engine from a local model"
 
     await gpu.build_dynamic_aitemplate_engine(request)
 

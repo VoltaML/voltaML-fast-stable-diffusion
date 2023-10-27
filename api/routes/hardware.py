@@ -45,9 +45,7 @@ async def gpu_memory(gpu_id: int):
             gpu_data = GPUStatCollection.new_query().gpus[gpu_id]
             return (gpu_data.memory_total, gpu_data.memory_free, "MB")
         except IndexError:
-            raise HTTPException(  # pylint: disable=raise-missing-from
-                status_code=400, detail="GPU not found"
-            )
+            raise HTTPException(status_code=400, detail="GPU not found")
 
 
 @router.get("/capabilities")

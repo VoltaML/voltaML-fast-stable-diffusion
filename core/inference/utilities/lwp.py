@@ -6,6 +6,8 @@ from typing import Dict, List, Optional, Tuple, Union
 import torch
 from diffusers import StableDiffusionPipeline
 
+from core.utils import download_file
+
 from ...config import config
 from ...files import get_full_model_path
 
@@ -31,7 +33,7 @@ re_attention = re.compile(
 )
 
 special_parser = re.compile(
-    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>"
+    r"\<(lora|ti):([^\:\(\)\<\>\[\]]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>|\<(lora|ti):(http[^\(\)\<\>\[\]]+\/[^:]+)(?::[\s]*([+-]?(?:[0-9]*[.])?[0-9]+))?\>"
 )
 
 
@@ -50,11 +52,23 @@ def parse_prompt_special(
     load_map = {}
 
     def replace(match):
-        type_: str = match.group(1)  # type: ignore
+        type_: str = match.group(4) or match.group(1)
         name = match.group(2)
-        strength = match.group(3)
+        strength = match.group(6) or match.group(3)
+        url: str = match.group(5)
 
-        load_map[type_] = load_map.get(type_, list())
+        if url:
+            filename = url.split("/")[-1]
+            file = Path("data/lora") / filename
+            name = file.stem
+
+            # Check if file exists
+            if not file.exists():
+                name = download_file(url, Path("data/lora"), add_filename=True).stem
+            else:
+                logger.debug(f"File {file} already cached")
+
+        load_map[type_] = load_map.get(type_, [])
         if type_ == "ti":
             load_map[type_].append(name)
             return f"({name}:{strength if strength else '1.0'})"
@@ -203,7 +217,7 @@ def pad_tokens_and_weights(
     weights_length = (
         max_length if no_boseos_middle else max_embeddings_multiples * chunk_length
     )
-    for i in range(len(tokens)):  # pylint: disable=consider-using-enumerate
+    for i in range(len(tokens)):
         tokens[i] = [bos] + tokens[i] + [eos] * (max_length - 1 - len(tokens[i]))
         if no_boseos_middle:
             weights[i] = [1.0] + weights[i] + [1.0] * (max_length - 1 - len(weights[i]))
@@ -237,6 +251,9 @@ def get_unweighted_text_embeddings(
     When the length of tokens is a multiple of the capacity of the text encoder,
     it should be split into chunks and sent to the text encoder individually.
     """
+
+    # TODO: when SDXL releases, refactor CLIP_stop_at_last_layer here.
+
     max_embeddings_multiples = (text_input.shape[1] - 2) // (chunk_length - 2)
 
     if max_embeddings_multiples > 1:
@@ -366,8 +383,7 @@ def get_weighted_text_embeddings(
                 old_l = loralist
                 loralist = list(
                     filter(
-                        lambda x: Path(x[0]).stem.casefold()
-                        in prompt_.casefold(),  # pylint: disable=cell-var-from-loop
+                        lambda x: Path(x[0]).stem.casefold() in prompt_.casefold(),
                         loralist,
                     )
                 )
@@ -435,7 +451,7 @@ def get_weighted_text_embeddings(
     # round up the longest length of tokens to a multiple of (model_max_length - 2)
     max_length = max([len(token) for token in prompt_tokens])
     if uncond_prompt is not None:
-        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore # pylint: disable=nested-min-max
+        max_length = max(max_length, max([len(token) for token in uncond_tokens]))  # type: ignore
 
     max_embeddings_multiples = min(
         max_embeddings_multiples,  # type: ignore

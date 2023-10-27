@@ -1,7 +1,6 @@
-import { Y as cB, $ as cM, X as c, Z as cE, a0 as iconSwitchTransition, aq as cNotM, d as defineComponent, Q as useConfig, a7 as useRtl, a5 as useTheme, T as provide, D as h, aC as flatten, aD as getSlot, V as createInjectionKey, be as stepsLight, a3 as inject, a_ as throwError, c as computed, a9 as useThemeClass, aB as resolveWrappedSlot, at as resolveSlot, ab as NIconSwitchTransition, a8 as createKey, W as call, au as NBaseIcon, bf as FinishedIcon, bg as ErrorIcon, b as useMessage, u as useState, E as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, r as NSelect, F as NButton, m as createTextVNode, bd as NModal, s as serverUrl, a as useSettings, v as createBlock, H as NTabPane, I as NTabs } from "./index.js";
-import { N as NSlider } from "./Slider.js";
+import { Q as cB, ab as cM, aa as c, at as cE, aT as iconSwitchTransition, ac as cNotM, d as defineComponent, S as useConfig, ag as useRtl, T as useTheme, a3 as provide, C as h, aw as flatten, ax as getSlot, P as createInjectionKey, bg as stepsLight, R as inject, a_ as throwError, c as computed, W as useThemeClass, av as resolveWrappedSlot, ah as resolveSlot, aI as NIconSwitchTransition, al as createKey, $ as call, ai as NBaseIcon, bh as FinishedIcon, bi as ErrorIcon, b as useMessage, u as useState, D as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, x as NSelect, E as NButton, m as createTextVNode, bd as NModal, s as serverUrl, a as useSettings, v as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSwitch } from "./Switch.js";
 const style = cB("steps", `
  width: 100%;
  display: flex;
@@ -68,6 +67,7 @@ const style = cB("steps", `
  position: absolute;
  left: 0;
  top: 0;
+ white-space: nowrap;
  font-size: var(--n-indicator-index-font-size);
  width: var(--n-indicator-icon-size);
  height: var(--n-indicator-icon-size);
@@ -284,252 +284,6 @@ const NStep = defineComponent({
     );
   }
 });
-const _hoisted_1$2 = { style: { "margin": "16px" } };
-const _hoisted_2$2 = { class: "flex-container" };
-const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
-const _hoisted_4$2 = { class: "flex-container" };
-const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _hoisted_6$2 = { class: "flex-container" };
-const _hoisted_7$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _hoisted_8$1 = { class: "flex-container" };
-const _hoisted_9$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CPU Threads (affects RAM usage)", -1);
-const _hoisted_10$1 = { class: "flex-container" };
-const _hoisted_11$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1);
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
-  __name: "AITemplateAccelerate",
-  setup(__props) {
-    var _a, _b;
-    const message = useMessage();
-    const global = useState();
-    const width = ref(512);
-    const height = ref(512);
-    const batchSize = ref(1);
-    const model = ref("");
-    const threads = ref(8);
-    const building = ref(false);
-    const showUnloadModal = ref(false);
-    const modelOptions = computed(() => {
-      const options = [];
-      for (const model2 of global.state.models) {
-        if (model2.backend === "PyTorch" && model2.valid && !model2.name.endsWith(".safetensors") && !model2.name.endsWith(".ckpt")) {
-          options.push({
-            label: model2.name,
-            value: model2.path
-          });
-        }
-      }
-      return options;
-    });
-    model.value = ((_b = (_a = modelOptions.value[0]) == null ? void 0 : _a.value) == null ? void 0 : _b.toString()) ?? "";
-    const accelerateUnload = async () => {
-      try {
-        await fetch(`${serverUrl}/api/models/unload-all`, {
-          method: "POST"
-        });
-        showUnloadModal.value = false;
-        await accelerate();
-      } catch {
-        showUnloadModal.value = false;
-        message.error("Failed to unload, check the console for more info.");
-      }
-    };
-    const accelerate = async () => {
-      showUnloadModal.value = false;
-      building.value = true;
-      await fetch(`${serverUrl}/api/generate/generate-aitemplate`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({
-          model_id: model.value,
-          width: width.value,
-          height: height.value,
-          batch_size: batchSize.value,
-          threads: threads.value
-        })
-      }).then(() => {
-        building.value = false;
-      }).catch(() => {
-        building.value = false;
-        message.error("Failed to accelerate, check the console for more info.");
-      });
-    };
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$2, [
-        createVNode(unref(NCard), { title: "Acceleration progress (around 20 minutes)" }, {
-          default: withCtx(() => [
-            createVNode(unref(NSpace), {
-              vertical: "",
-              justify: "center"
-            }, {
-              default: withCtx(() => [
-                createVNode(unref(NSteps), null, {
-                  default: withCtx(() => [
-                    createVNode(unref(NStep), {
-                      title: "CLIP",
-                      status: unref(global).state.aitBuildStep.clip
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
-                      title: "UNet",
-                      status: unref(global).state.aitBuildStep.unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
-                      title: "ControlNet UNet",
-                      status: unref(global).state.aitBuildStep.controlnet_unet
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
-                      title: "VAE",
-                      status: unref(global).state.aitBuildStep.vae
-                    }, null, 8, ["status"]),
-                    createVNode(unref(NStep), {
-                      title: "Cleanup",
-                      status: unref(global).state.aitBuildStep.cleanup
-                    }, null, 8, ["status"])
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            })
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NCard), { style: { "margin-top": "16px" } }, {
-          default: withCtx(() => [
-            createBaseVNode("div", _hoisted_2$2, [
-              _hoisted_3$2,
-              createVNode(unref(NSlider), {
-                value: width.value,
-                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => width.value = $event),
-                min: 128,
-                max: 2048,
-                step: 64,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value"]),
-              createVNode(unref(NInputNumber), {
-                value: width.value,
-                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => width.value = $event),
-                size: "small",
-                style: { "min-width": "96px", "width": "96px" },
-                step: 64,
-                min: 128,
-                max: 2048
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_4$2, [
-              _hoisted_5$2,
-              createVNode(unref(NSlider), {
-                value: height.value,
-                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => height.value = $event),
-                min: 128,
-                max: 2048,
-                step: 64,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value"]),
-              createVNode(unref(NInputNumber), {
-                value: height.value,
-                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => height.value = $event),
-                size: "small",
-                style: { "min-width": "96px", "width": "96px" },
-                step: 64,
-                min: 128,
-                max: 2048
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_6$2, [
-              _hoisted_7$2,
-              createVNode(unref(NSlider), {
-                value: batchSize.value,
-                "onUpdate:value": _cache[4] || (_cache[4] = ($event) => batchSize.value = $event),
-                min: 1,
-                max: 9,
-                step: 1,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value"]),
-              createVNode(unref(NInputNumber), {
-                value: batchSize.value,
-                "onUpdate:value": _cache[5] || (_cache[5] = ($event) => batchSize.value = $event),
-                size: "small",
-                style: { "min-width": "96px", "width": "96px" },
-                step: 1,
-                min: 1,
-                max: 9
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_8$1, [
-              _hoisted_9$1,
-              createVNode(unref(NSlider), {
-                value: threads.value,
-                "onUpdate:value": _cache[6] || (_cache[6] = ($event) => threads.value = $event),
-                step: 1,
-                min: 1,
-                max: 64,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value"]),
-              createVNode(unref(NInputNumber), {
-                value: threads.value,
-                "onUpdate:value": _cache[7] || (_cache[7] = ($event) => threads.value = $event),
-                size: "small",
-                style: { "min-width": "96px", "width": "96px" },
-                step: 1,
-                min: 1,
-                max: 64
-              }, null, 8, ["value"])
-            ]),
-            createBaseVNode("div", _hoisted_10$1, [
-              _hoisted_11$1,
-              createVNode(unref(NSelect), {
-                value: model.value,
-                "onUpdate:value": _cache[8] || (_cache[8] = ($event) => model.value = $event),
-                options: modelOptions.value,
-                style: { "margin-right": "12px" }
-              }, null, 8, ["value", "options"])
-            ])
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NSpace), {
-          vertical: "",
-          justify: "center",
-          style: { "width": "100%" },
-          align: "center"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NButton), {
-              style: { "margin-top": "16px", "padding": "0 92px" },
-              type: "success",
-              ghost: "",
-              loading: building.value,
-              disabled: building.value || modelOptions.value.length === 0,
-              onClick: _cache[9] || (_cache[9] = ($event) => showUnloadModal.value = true)
-            }, {
-              default: withCtx(() => [
-                createTextVNode("Accelerate")
-              ]),
-              _: 1
-            }, 8, ["loading", "disabled"])
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NModal), {
-          show: showUnloadModal.value,
-          "onUpdate:show": _cache[10] || (_cache[10] = ($event) => showUnloadModal.value = $event),
-          preset: "dialog",
-          title: "Unload other models",
-          width: "400px",
-          closable: false,
-          "show-close": false,
-          content: "Acceleration can be done with the other models loaded as well, but it will take a lot of resources. It is recommended to unload the other models before accelerating. Do you want to unload the other models?",
-          "positive-text": "Unload models",
-          "negative-text": "Keep models",
-          onPositiveClick: accelerateUnload,
-          onNegativeClick: accelerate
-        }, null, 8, ["show"])
-      ]);
-    };
-  }
-});
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
@@ -570,6 +324,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       return options;
     });
     model.value = ((_b = (_a = modelOptions.value[0]) == null ? void 0 : _a.value) == null ? void 0 : _b.toString()) ?? "";
+    const numLoadedModels = computed(() => {
+      return global.state.models.filter((model2) => model2.state === "loaded").length;
+    });
+    function onAccelerateClick() {
+      if (numLoadedModels.value >= 1) {
+        showUnloadModal.value = true;
+      } else {
+        accelerate();
+      }
+    }
     const accelerateUnload = async () => {
       try {
         await fetch(`${serverUrl}/api/models/unload-all`, {
@@ -730,36 +494,36 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 options: modelOptions.value,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
-            ])
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NSpace), {
-          vertical: "",
-          justify: "center",
-          style: { "width": "100%" },
-          align: "center"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NButton), {
-              style: { "margin-top": "16px", "padding": "0 92px" },
-              type: "success",
-              ghost: "",
-              loading: building.value,
-              disabled: building.value || modelOptions.value.length === 0,
-              onClick: _cache[8] || (_cache[8] = ($event) => showUnloadModal.value = true)
+            ]),
+            createVNode(unref(NSpace), {
+              vertical: "",
+              justify: "center",
+              style: { "width": "100%" },
+              align: "center"
             }, {
               default: withCtx(() => [
-                createTextVNode("Accelerate")
+                createVNode(unref(NButton), {
+                  style: { "margin-top": "16px", "padding": "0 92px" },
+                  type: "success",
+                  ghost: "",
+                  loading: building.value,
+                  disabled: building.value || modelOptions.value.length === 0,
+                  onClick: onAccelerateClick
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Accelerate")
+                  ]),
+                  _: 1
+                }, 8, ["loading", "disabled"])
               ]),
               _: 1
-            }, 8, ["loading", "disabled"])
+            })
           ]),
           _: 1
         }),
         createVNode(unref(NModal), {
           show: showUnloadModal.value,
-          "onUpdate:show": _cache[9] || (_cache[9] = ($event) => showUnloadModal.value = $event),
+          "onUpdate:show": _cache[8] || (_cache[8] = ($event) => showUnloadModal.value = $event),
           preset: "dialog",
           title: "Unload other models",
           width: "400px",
@@ -788,7 +552,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     var _a, _b;
     const message = useMessage();
     const global = useState();
-    const conf = useSettings();
+    const settings = useSettings();
     const model = ref("");
     const building = ref(false);
     const showUnloadModal = ref(false);
@@ -827,9 +591,9 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         },
         body: JSON.stringify({
           model_id: model.value,
-          quant_dict: conf.data.settings.onnx.quant_dict,
-          simplify_unet: conf.data.settings.onnx.simplify_unet,
-          convert_to_fp16: conf.data.settings.onnx.convert_to_fp16
+          quant_dict: settings.data.settings.onnx.quant_dict,
+          simplify_unet: settings.data.settings.onnx.simplify_unet,
+          convert_to_fp16: settings.data.settings.onnx.convert_to_fp16
         })
       }).then(() => {
         building.value = false;
@@ -888,15 +652,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             createBaseVNode("div", _hoisted_4, [
               _hoisted_5,
               createVNode(unref(NSwitch), {
-                value: unref(conf).data.settings.onnx.simplify_unet,
-                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(conf).data.settings.onnx.simplify_unet = $event)
+                value: unref(settings).data.settings.onnx.simplify_unet,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.onnx.simplify_unet = $event)
               }, null, 8, ["value"])
             ]),
             createBaseVNode("div", _hoisted_6, [
               _hoisted_7,
               createVNode(unref(NSwitch), {
-                value: unref(conf).data.settings.onnx.convert_to_fp16,
-                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(conf).data.settings.onnx.convert_to_fp16 = $event)
+                value: unref(settings).data.settings.onnx.convert_to_fp16,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.onnx.convert_to_fp16 = $event)
               }, null, 8, ["value"])
             ])
           ]),
@@ -949,12 +713,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     return (_ctx, _cache) => {
       return openBlock(), createBlock(unref(NTabs), { type: "segment" }, {
         default: withCtx(() => [
-          createVNode(unref(NTabPane), { name: "AITemplate" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$3)
-            ]),
-            _: 1
-          }),
           createVNode(unref(NTabPane), { name: "Dynamic AITemplate" }, {
             default: withCtx(() => [
               createVNode(_sfc_main$2)

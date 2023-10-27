@@ -15,19 +15,24 @@ export interface imgMetadata {
   model: string;
 }
 
+export enum Backends {
+  "PyTorch",
+  "AITemplate",
+  "ONNX",
+  "unknown",
+  "LoRA",
+  "LyCORIS",
+  "VAE",
+  "Textual Inversion",
+  "Upscaler",
+}
+
+export type Backend = keyof typeof Backends;
+
 export interface ModelEntry {
   name: string;
   path: string;
-  backend:
-    | "PyTorch"
-    | "AITemplate"
-    | "ONNX"
-    | "unknown"
-    | "LoRA"
-    | "LyCORIS"
-    | "VAE"
-    | "Textual Inversion"
-    | "Upscaler";
+  backend: Backend;
   valid: boolean;
   vae: string;
   state: "loading" | "loaded" | "not loaded";
@@ -35,7 +40,7 @@ export interface ModelEntry {
 }
 
 export interface Capabilities {
-  supported_backends: string[];
+  supported_backends: string[][];
   supported_precisions_gpu: string[];
   supported_precisions_cpu: string[];
   supported_torch_compile_backends: string[];

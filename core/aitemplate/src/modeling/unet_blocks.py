@@ -447,7 +447,7 @@ class CrossAttnUpBlock2D(nn.Module):
         cross_attention_dim: int = 1280,
         attention_type: str = "default",
         output_scale_factor: float = 1.0,
-        downsample_padding: int = 1,  # pylint: disable=unused-argument
+        downsample_padding: int = 1,
         add_upsample: bool = True,
         use_linear_projection: bool = False,
         only_cross_attention: bool = False,
@@ -518,7 +518,7 @@ class CrossAttnUpBlock2D(nn.Module):
     ) -> Tensor:
         for resnet, attn in zip(self.resnets, self.attentions):
             res_hidden_states = res_hidden_states_tuple[-1]
-            res_hidden_states_tuple = res_hidden_states_tuple[:-1]
+            res_hidden_states_tuple = res_hidden_states_tuple[:-1]  # type: ignore
             hidden_states = ops.concatenate()(  # type: ignore
                 [hidden_states, res_hidden_states], dim=-1
             )
@@ -598,7 +598,7 @@ class UpBlock2D(nn.Module):
     ):
         for resnet in self.resnets:
             res_hidden_states = res_hidden_states_tuple[-1]
-            res_hidden_states_tuple = res_hidden_states_tuple[:-1]
+            res_hidden_states_tuple = res_hidden_states_tuple[:-1]  # type: ignore
             hidden_states = ops.concatenate()(  # type: ignore
                 [hidden_states, res_hidden_states], dim=-1
             )
@@ -616,7 +616,7 @@ def shape_to_list(shape):
     return [
         sample["symbolic_value"]  # type: ignore
         if isinstance(sample, Tensor)
-        else sample._attrs["symbolic_value"]  # pylint: disable=protected-access
+        else sample._attrs["symbolic_value"]
         for sample in shape
     ]
 
@@ -837,7 +837,7 @@ class UNetMidBlock2D(nn.Module):
         self,
         hidden_states: Tensor,
         temb: Optional[Tensor] = None,
-        encoder_states: Optional[Tensor] = None,  # pylint: disable=unused-argument
+        encoder_states: Optional[Tensor] = None,
     ) -> Tensor:
         hidden_states = self.resnets[0](hidden_states, temb)
         for attn, resnet in zip(self.attentions, self.resnets[1:]):  # type: ignore
