@@ -53,6 +53,7 @@ class LoRAManager(HookObject):
             key, lora_key = k.split(".", 1)
             module = modules.get(key, None)
             if module is None:
+                print(key, lora_key)
                 continue
             lora_module = lora.modules.get(key, None)
             if lora_module is None:
@@ -68,12 +69,13 @@ class LoRAManager(HookObject):
                 module = torch.nn.Conv2d(v.shape[1], v.shape[0], (1, 1), bias=False)  # type: ignore
 
             with torch.no_grad():
-                module.weight.copy_(v)  # type: ignore
+                module.weight.copy_(v, True)  # type: ignore
             module.to(device=torch.device("cpu"), dtype=config.api.dtype)
             if lora_key == "lora_up.weight":
                 lora_module.up = module
             else:
                 lora_module.down = module
+        print(*lora.modules.keys(), sep="\n")
         return lora
 
     def apply_hooks(self, p: Union[torch.nn.Conv2d, torch.nn.Linear]) -> None:
