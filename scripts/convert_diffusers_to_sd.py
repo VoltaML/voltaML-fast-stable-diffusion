@@ -155,6 +155,10 @@ vae_conversion_map_attn = [
     ("k.", "key."),
     ("v.", "value."),
     ("proj_out.", "proj_attn."),
+    # Required for SonicDiffusion
+    ("k.", "to_k."),
+    ("q.", "to_q."),
+    ("v.", "to_v."),
 ]
 
 
@@ -198,6 +202,7 @@ if __name__ == "__main__":
     parser = argparse.ArgumentParser()
 
     parser.add_argument(
+        "-i",
         "--model-path",
         default=None,
         type=str,
@@ -205,6 +210,7 @@ if __name__ == "__main__":
         help="Path to the model to convert.",
     )
     parser.add_argument(
+        "-o",
         "--checkpoint-path",
         default=None,
         type=str,
