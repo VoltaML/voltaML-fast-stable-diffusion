@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
-from diffusers.models.lora import LoRACompatibleConv, LoRACompatibleLinear
+from diffusers.models.lora import LoRACompatibleConv
 import torch
 
 from ...config import config
@@ -9,7 +9,7 @@ from .lora import LoRAManager
 from .lycoris import LyCORISManager
 from .utils import HookObject
 
-LoRACompatibleLinear.old_forward = LoRACompatibleLinear.forward  # type: ignore
+torch.nn.Linear.old_forward = torch.nn.Linear.forward  # type: ignore
 LoRACompatibleConv.old_forward = LoRACompatibleConv.forward  # type: ignore
 
 
@@ -18,7 +18,7 @@ def load_lora_utilities(pipe):
     if hasattr(pipe, "lora_injector"):
         pipe.lora_injector.change_forwards()
     else:
-        LoRACompatibleLinear.forward = LoRACompatibleLinear.old_forward  # type: ignore
+        torch.nn.Linear.forward = torch.nn.Linear.old_forward  # type: ignore
         LoRACompatibleConv.forward = LoRACompatibleConv.old_forward  # type: ignore
 
 
@@ -130,13 +130,20 @@ class HookManager(object):
         "Redirect lora forward to this hook manager"
         d = self
 
-        def lora_forward(self, hidden_states: torch.Tensor, scale: float = 1.0):
+        def lora_forward(self, input):
+            d.apply_weights(self)
+
+            return self.old_forward(input)
+
+        def diffusers_lora_forward(
+            self, hidden_states: torch.Tensor, scale: float = 1.0
+        ):
             d.apply_weights(self)
 
             return self.old_forward(hidden_states, scale)
 
-        LoRACompatibleLinear.forward = lora_forward
-        LoRACompatibleConv.forward = lora_forward
+        torch.nn.Linear.forward = lora_forward
+        LoRACompatibleConv.forward = diffusers_lora_forward
 
     def install_hooks(self, pipe):
         """Install LoRAHook to the pipe"""
