@@ -75,7 +75,7 @@ class LoRAManager(HookObject):
                 lora_module.up = module
             else:
                 lora_module.down = module
-        print(*lora.modules.keys(), sep="\n")
+        # print(*lora.modules.keys(), sep="\n")
         return lora
 
     def apply_hooks(self, p: Union[torch.nn.Conv2d, torch.nn.Linear]) -> None:
