@@ -5,32 +5,6 @@ export interface WebSocketMessage {
   data: any;
 }
 
-function progressForward(
-  progress: number,
-  global: ReturnType<typeof import("@/store/state")["useState"]>
-) {
-  if (progress === 0) {
-    return 0;
-  } else if (global.state.progress <= progress) {
-    return progress;
-  } else {
-    return global.state.progress;
-  }
-}
-
-function currentStepForward(
-  currentStep: number,
-  global: ReturnType<typeof import("@/store/state")["useState"]>
-) {
-  if (currentStep === 0) {
-    return 0;
-  } else if (global.state.current_step <= currentStep) {
-    return currentStep;
-  } else {
-    return global.state.current_step;
-  }
-}
-
 export function processWebSocket(
   message: WebSocketMessage,
   global: ReturnType<typeof import("@/store/state")["useState"]>,
@@ -48,11 +22,8 @@ export function processWebSocket(
       global.state.txt2img.currentImage = message.data.image
         ? message.data.image
         : global.state.txt2img.currentImage;
-      global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = currentStepForward(
-        message.data.current_step,
-        global
-      );
+      global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
       global.state.total_steps = message.data.total_steps;
       break;
     }
@@ -60,11 +31,8 @@ export function processWebSocket(
       global.state.img2img.currentImage = message.data.image
         ? message.data.image
         : global.state.img2img.currentImage;
-      global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = currentStepForward(
-        message.data.current_step,
-        global
-      );
+      global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
       global.state.total_steps = message.data.total_steps;
       break;
     }
@@ -72,11 +40,8 @@ export function processWebSocket(
       global.state.inpainting.currentImage = message.data.image
         ? message.data.image
         : global.state.inpainting.currentImage;
-      global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = currentStepForward(
-        message.data.current_step,
-        global
-      );
+      global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
       global.state.total_steps = message.data.total_steps;
       break;
     }
@@ -84,11 +49,8 @@ export function processWebSocket(
       global.state.controlnet.currentImage = message.data.image
         ? message.data.image
         : global.state.controlnet.currentImage;
-      global.state.progress = progressForward(message.data.progress, global);
-      global.state.current_step = currentStepForward(
-        message.data.current_step,
-        global
-      );
+      global.state.progress = message.data.progress;
+      global.state.current_step = message.data.current_step;
       global.state.total_steps = message.data.total_steps;
       break;
     }
