@@ -1,21 +1,21 @@
 
-.img-slider[data-v-f55237b7] {
+.img-slider[data-v-ebbb8366] {
   aspect-ratio: 1/1;
   height: 182px;
   width: auto;
 }
-.image-grid[data-v-f55237b7] {
+.image-grid[data-v-ebbb8366] {
   display: grid;
   grid-template-columns: repeat(
-    var(--52455add),
+    var(--f556ecec),
     1fr
   );
   grid-gap: 8px;
 }
-.top-bar[data-v-f55237b7] {
-  background-color: var(--5509ecf2);
+.top-bar[data-v-ebbb8366] {
+  background-color: var(--166fadfa);
 }
-.image-column[data-v-f55237b7] {
+.image-column[data-v-ebbb8366] {
   display: flex;
   flex-direction: column;
 }

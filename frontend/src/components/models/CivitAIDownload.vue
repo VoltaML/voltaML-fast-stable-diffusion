@@ -102,36 +102,39 @@
               margin-bottom: 8px;
             "
           >
-            <img
-              :src="item.modelVersions[0].images[0].url"
-              :style="{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                filter:
-                  nsfwIndex(item.modelVersions[0].images[0].nsfw) >
-                  settings.data.settings.frontend.nsfw_ok_threshold
-                    ? 'blur(12px)'
-                    : 'none',
-              }"
-              @click="imgClick(column_index, item_index)"
-            />
-            <div
-              style="
-                position: absolute;
-                width: 100%;
-                bottom: 0;
-                padding: 0 8px;
-                min-height: 32px;
-                overflow: hidden;
-                box-sizing: border-box;
-                backdrop-filter: blur(12px);
-              "
-            >
-              <NText :depth="2">
-                {{ item.name }}
-              </NText>
+            <div v-if="item.modelVersions[0].images[0]?.url">
+              <img
+                :src="item.modelVersions[0].images[0].url"
+                :style="{
+                  width: '100%',
+                  height: 'auto',
+                  minHeight: '200px',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  filter:
+                    nsfwIndex(item.modelVersions[0].images[0].nsfw) >
+                    settings.data.settings.frontend.nsfw_ok_threshold
+                      ? 'blur(12px)'
+                      : 'none',
+                }"
+                @click="imgClick(column_index, item_index)"
+              />
+              <div
+                style="
+                  position: absolute;
+                  width: 100%;
+                  bottom: 0;
+                  padding: 0 8px;
+                  min-height: 32px;
+                  overflow: hidden;
+                  box-sizing: border-box;
+                  backdrop-filter: blur(12px);
+                "
+              >
+                <NText :depth="2">
+                  {{ item.name }}
+                </NText>
+              </div>
             </div>
           </div>
         </div>
