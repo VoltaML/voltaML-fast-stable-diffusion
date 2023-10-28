@@ -3065,6 +3065,9 @@ const _hoisted_1$2 = {
 const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Subquadratic chunk size (affects VRAM usage)", -1);
 const _hoisted_3$1 = { "flex-direction": "row" };
 const _hoisted_4$1 = { key: 1 };
+const _hoisted_5$1 = { class: "flex-container" };
+const _hoisted_6$1 = /* @__PURE__ */ createBaseVNode("p", { class: "switch-label" }, "Don't merge latents", -1);
+const _hoisted_7 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "PyTorch ONLY.", -1);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "OptimizationSettings",
   setup(__props) {
@@ -3396,7 +3399,23 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
               }, null, 8, ["value"])
             ]),
             _: 1
-          })
+          }),
+          createBaseVNode("div", _hoisted_5$1, [
+            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+              trigger: withCtx(() => [
+                _hoisted_6$1
+              ]),
+              default: withCtx(() => [
+                _hoisted_7,
+                createTextVNode(" Doesn't merge latents into a single one during UNet inference, and instead does both the negatives and positives separately. Saves around 200-300mBs of VRAM during inference for a ~10% speed regression. ")
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NSwitch), {
+              value: unref(settings).defaultSettings.api.dont_merge_latents,
+              "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).defaultSettings.api.dont_merge_latents = $event)
+            }, null, 8, ["value"])
+          ])
         ]),
         _: 1
       });

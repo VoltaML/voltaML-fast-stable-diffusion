@@ -331,15 +331,12 @@ def get_weighted_text_embeddings(
     """
     max_length = (pipe.tokenizer.model_max_length - 2) * max_embeddings_multiples + 2  # type: ignore
     if isinstance(prompt, str):
-        if config.api.prompt_to_prompt:
-            prompt = expand(prompt, seed)
-            logger.info(f'Expanded prompt to "{prompt}"')
         prompt = [prompt]
 
     if not hasattr(pipe, "clip_inference"):
         loralist = []
-        for i, prompt_ in enumerate(prompt):
-            prompt[i], load_map = parse_prompt_special(prompt_)
+        for i, p in enumerate(prompt):
+            prompt[i], load_map = parse_prompt_special(p)
             if len(load_map.keys()) != 0:
                 logger.debug(load_map)
                 if "lora" in load_map:
@@ -423,6 +420,12 @@ def get_weighted_text_embeddings(
                     pipe.lora_injector.apply_lora(lora, alpha)
             pipe.unload_lycoris = remove_lycoris
             pipe.unload_loras = remove_loras
+
+    # Move after loras to purge <lora:...> and <ti:...>
+    for i, p in enumerate(prompt):
+        if config.api.prompt_to_prompt:
+            prompt[i] = expand(p, seed)
+            logger.info(f'Expanded prompt to "{prompt[i]}"')
 
     if not skip_parsing:
         prompt_tokens, prompt_weights = get_prompts_with_weights(

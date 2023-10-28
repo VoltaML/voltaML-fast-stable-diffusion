@@ -41483,6 +41483,7 @@ const defaultSettings = {
     trace_model: false,
     cudnn_benchmark: false,
     offload: "disabled",
+    dont_merge_latents: false,
     device: "cuda:0",
     data_type: "float16",
     use_tomesd: true,

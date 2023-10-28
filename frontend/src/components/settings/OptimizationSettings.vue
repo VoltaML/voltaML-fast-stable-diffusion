@@ -152,6 +152,20 @@
       >
       </NSelect>
     </NFormItem>
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="switch-label">Don't merge latents</p>
+        </template>
+        <b class="highlight">PyTorch ONLY.</b>
+        Doesn't merge latents into a single one during UNet inference, and
+        instead does both the negatives and positives separately. Saves around
+        200-300mBs of VRAM during inference for a ~10% speed regression.
+      </NTooltip>
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.dont_merge_latents"
+      />
+    </div>
   </NForm>
 </template>
 
@@ -165,6 +179,7 @@ import {
   NSelect,
   NSlider,
   NSwitch,
+  NTooltip,
 } from "naive-ui";
 import { computed, inject } from "vue";
 import { useSettings } from "../../store/settings";

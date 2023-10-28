@@ -172,6 +172,7 @@ export interface ISettings {
     reduced_precision: boolean;
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
+    dont_merge_latents: boolean;
 
     huggingface_style_parsing: boolean;
 
@@ -343,6 +344,7 @@ export const defaultSettings: ISettings = {
     trace_model: false,
     cudnn_benchmark: false,
     offload: "disabled",
+    dont_merge_latents: false,
 
     device: "cuda:0",
     data_type: "float16",
