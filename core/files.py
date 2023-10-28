@@ -394,10 +394,13 @@ def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
 def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
     "Return the current ref of the diffusers model"
 
-    if not os.path.exists(os.path.join(path, "refs", revision)):
+    rev_path = os.path.join(path, "refs", revision)
+    snapshot_path = os.path.join(path, "snapshots")
+
+    if not os.path.exists(rev_path) or not os.path.exists(snapshot_path):
         return None
 
-    snapshots = os.listdir(os.path.join(path, "snapshots"))
+    snapshots = os.listdir(snapshot_path)
     ref = ""
 
     with open(os.path.join(path, "refs", revision), "r", encoding="utf-8") as f:
