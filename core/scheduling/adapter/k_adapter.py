@@ -34,7 +34,7 @@ class KdiffusionSchedulerAdapter:
     alphas_cumprod: torch.Tensor
 
     sigma_range: Tuple[float, float] = (0, 1.0)
-    sigma_rho: float = 1
+    sigma_rho: Optional[float] = None
     sigma_always_discard_next_to_last: bool = False
 
     sampler_eta: Optional[float] = None
@@ -91,6 +91,9 @@ class KdiffusionSchedulerAdapter:
 
         self.device = device
         self.dtype = dtype
+
+        self.sigma_rho = sigma_rho
+        self.sigma_always_discard_next_to_last = sigma_discard
 
     def set_timesteps(
         self,
