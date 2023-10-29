@@ -95,7 +95,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self.tokenizer: CLIPTokenizer
         self.unet: UNet2DConditionModel
         self.scheduler: LMSDiscreteScheduler
-        self.controlnet: Optional[ControlNetModel] = controlnet
+        if controlnet is not None:
+            self.controlnet: Optional[ControlNetModel] = controlnet
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
@@ -331,7 +332,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 1. Check inputs. Raise error if not correct
             self._check_inputs(prompt, strength, callback_steps)
-            if self.controlnet is not None:
+            if hasattr(self, "controlnet"):
                 global_pool_conditions = self.controlnet.config.global_pool_conditions  # type: ignore
                 guess_mode = guess_mode or global_pool_conditions
 
@@ -361,7 +362,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 4. Preprocess image and mask
             if isinstance(image, PIL.Image.Image):  # type: ignore
                 width, height = image.size  # type: ignore
-                if self.controlnet is None:
+                if not hasattr(self, "controlnet"):
                     image = preprocess_image(image)
                 else:
                     image = prepare_image(
@@ -403,7 +404,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 num_inference_steps,
                 strength,
                 device,
-                image is None or self.controlnet is not None,
+                image is None or hasattr(self, "controlnet"),
             )
             if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                 self.scheduler.timesteps = timesteps
@@ -413,7 +414,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 6. Prepare latent variables
             latents, image_latents, noise = prepare_latents(
                 self,
-                image if self.controlnet is None else None,
+                image if not hasattr(self, "controlnet") else None,
                 latent_timestep,
                 batch_size * num_images_per_prompt,  # type: ignore
                 height,
@@ -429,7 +430,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
 
             controlnet_keep = []
-            if self.controlnet is not None:
+            if hasattr(self, "controlnet"):
                 for i in range(len(timesteps)):
                     controlnet_keep.append(
                         1.0
@@ -465,7 +466,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
 
                 # predict the noise residual
-                if self.controlnet is None:
+                if not hasattr(self, "controlnet"):
                     noise_pred = call(  # type: ignore
                         latent_model_input,
                         t,

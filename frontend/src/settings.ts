@@ -191,6 +191,11 @@ export interface ISettings {
     torch_compile_backend: string;
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
 
+    sfast_compile: boolean;
+    sfast_xformers: boolean;
+    sfast_triton: boolean;
+    sfast_cuda_graph: boolean;
+
     hypertile: boolean;
     hypertile_unet_chunk: number;
 
@@ -367,6 +372,11 @@ export const defaultSettings: ISettings = {
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
+
+    sfast_compile: false,
+    sfast_xformers: true,
+    sfast_triton: true,
+    sfast_cuda_graph: false,
 
     hypertile: false,
     hypertile_unet_chunk: 256,

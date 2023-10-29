@@ -152,6 +152,11 @@ class APIConfig:
         "max-autotune",
     ] = "reduce-overhead"
 
+    sfast_compile: bool = False
+    sfast_xformers: bool = True
+    sfast_triton: bool = True
+    sfast_cuda_graph: bool = True
+
     # Hypertile
     hypertile: bool = False
     hypertile_unet_chunk: int = 256
