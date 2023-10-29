@@ -40267,6 +40267,9 @@ const useState = defineStore("state", () => {
     extra: {
       tab: "dependencies"
     },
+    modelManager: {
+      tab: "manager"
+    },
     tagger: {
       positivePrompt: /* @__PURE__ */ new Map(),
       negativePrompt: /* @__PURE__ */ new Map(),
@@ -41706,22 +41709,26 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-44d84e0e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-2589676e"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
-const _hoisted_4 = { key: 2 };
-const _hoisted_5 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_6 = { style: { "display": "inline-flex" } };
-const _hoisted_7 = { key: 0 };
-const _hoisted_8 = { style: { "display": "inline-flex" } };
-const _hoisted_9 = { key: 1 };
-const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_11 = { key: 0 };
-const _hoisted_12 = { style: { "display": "inline-flex" } };
-const _hoisted_13 = { key: 1 };
-const _hoisted_14 = { class: "progress-container" };
-const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+  src: "https://i.imgflip.com/84840n.jpg",
+  style: { "max-width": "30vw", "max-height": "30vh" }
+}, null, -1));
+const _hoisted_5 = { key: 2 };
+const _hoisted_6 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_7 = { style: { "display": "inline-flex" } };
+const _hoisted_8 = { key: 0 };
+const _hoisted_9 = { style: { "display": "inline-flex" } };
+const _hoisted_10 = { key: 1 };
+const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_12 = { key: 0 };
+const _hoisted_13 = { style: { "display": "inline-flex" } };
+const _hoisted_14 = { key: 1 };
+const _hoisted_15 = { class: "progress-container" };
+const _hoisted_16 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -42247,28 +42254,36 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_3, [
               createVNode(unref(NResult), {
                 title: "No models found",
-                description: "Click on this icon in the LEFT MENU to access the model download page",
                 style: { "height": "70vh", "display": "flex", "align-items": "center", "justify-content": "center", "flex-direction": "column" },
                 status: "404"
               }, {
                 footer: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: _cache[2] || (_cache[2] = () => {
-                      unref(router2).push("/models");
-                      showModal.value = false;
-                    })
-                  }, {
+                  createVNode(unref(NTooltip), null, {
+                    trigger: withCtx(() => [
+                      createVNode(unref(NButton), {
+                        type: "success",
+                        onClick: _cache[2] || (_cache[2] = () => {
+                          unref(global2).state.modelManager.tab = "civitai";
+                          unref(router2).push("/models");
+                          showModal.value = false;
+                        })
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode("Get some models")
+                        ]),
+                        _: 1
+                      })
+                    ]),
                     default: withCtx(() => [
-                      createTextVNode("Get model")
+                      _hoisted_4
                     ]),
                     _: 1
                   })
                 ]),
                 _: 1
               })
-            ])) : (openBlock(), createElementBlock("div", _hoisted_4, [
-              createBaseVNode("div", _hoisted_5, [
+            ])) : (openBlock(), createElementBlock("div", _hoisted_5, [
+              createBaseVNode("div", _hoisted_6, [
                 createVNode(unref(NInput), {
                   value: filter.value,
                   "onUpdate:value": _cache[3] || (_cache[3] = ($event) => filter.value = $event),
@@ -42319,7 +42334,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           key: model.path
                                         }, [
                                           createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                          createBaseVNode("div", _hoisted_6, [
+                                          createBaseVNode("div", _hoisted_7, [
                                             model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
@@ -42367,7 +42382,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: vae_title.value }, {
                                     default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_8, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42375,7 +42390,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: vae.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_8, [
+                                            createBaseVNode("div", _hoisted_9, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
                                                 key: 0,
                                                 type: "error",
@@ -42402,7 +42417,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_9, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_10, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42431,12 +42446,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_10,
+                                          _hoisted_11,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_11, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_12, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42444,7 +42459,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_12, [
+                                            createBaseVNode("div", _hoisted_13, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -42473,7 +42488,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_13, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_14, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42608,7 +42623,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_14, [
+        createBaseVNode("div", _hoisted_15, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -42628,7 +42643,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_15, [
+        createBaseVNode("div", _hoisted_16, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -42650,7 +42665,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_44d84e0e_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_2589676e_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42658,7 +42673,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-44d84e0e"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");

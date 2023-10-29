@@ -7233,7 +7233,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         }, {
           default: withCtx(() => [
             (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(modelTypes).filter((item) => item !== "AITemplate" && item !== "ONNX"), (key) => {
-              return openBlock(), createBlock(unref(NGi), null, {
+              return openBlock(), createBlock(unref(NGi), { key }, {
                 default: withCtx(() => [
                   createVNode(unref(NCard), { title: key }, {
                     default: withCtx(() => [
@@ -7281,7 +7281,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 2
               }, 1024);
-            }), 256))
+            }), 128))
           ]),
           _: 1
         }),
@@ -7296,7 +7296,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             (openBlock(true), createElementBlock(Fragment, null, renderList(Object.keys(unref(Backends)).filter(
               (item) => isNaN(Number(item))
             ), (modelType) => {
-              return openBlock(), createBlock(unref(NGi), null, {
+              return openBlock(), createBlock(unref(NGi), { key: modelType }, {
                 default: withCtx(() => [
                   createVNode(unref(NCard), {
                     title: modelType,
@@ -7333,7 +7333,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 2
               }, 1024);
-            }), 256))
+            }), 128))
           ]),
           _: 1
         })
@@ -7344,23 +7344,35 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ModelsView",
   setup(__props) {
+    const state = useState();
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NTabs), { type: "segment" }, {
+      return openBlock(), createBlock(unref(NTabs), {
+        type: "segment",
+        value: unref(state).state.modelManager.tab,
+        "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(state).state.modelManager.tab = $event)
+      }, {
         default: withCtx(() => [
-          createVNode(unref(NTabPane), { name: "Manager" }, {
+          createVNode(unref(NTabPane), {
+            name: "manager",
+            tab: "Manager"
+          }, {
             default: withCtx(() => [
               createVNode(_sfc_main$1)
             ]),
             _: 1
           }),
-          createVNode(unref(NTabPane), { name: "Huggingface" }, {
+          createVNode(unref(NTabPane), {
+            name: "huggingface",
+            tab: "Huggingface"
+          }, {
             default: withCtx(() => [
               createVNode(HuggingfaceDownload)
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), {
-            name: "CivitAI",
+            name: "civitai",
+            tab: "CivitAI",
             style: { "padding-top": "0" }
           }, {
             default: withCtx(() => [
@@ -7368,7 +7380,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
-          createVNode(unref(NTabPane), { name: "Convert" }, {
+          createVNode(unref(NTabPane), {
+            name: "convert",
+            tab: "Convert"
+          }, {
             default: withCtx(() => [
               createVNode(_sfc_main$2)
             ]),
@@ -7376,7 +7391,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           })
         ]),
         _: 1
-      });
+      }, 8, ["value"]);
     };
   }
 });
