@@ -53,7 +53,6 @@
       <div v-else-if="global.state.models.length === 0">
         <NResult
           title="No models found"
-          description="Click on this icon in the LEFT MENU to access the model download page"
           style="
             height: 70vh;
             display: flex;
@@ -64,16 +63,26 @@
           status="404"
         >
           <template #footer>
-            <NButton
-              type="success"
-              @click="
-                () => {
-                  router.push('/models');
-                  showModal = false;
-                }
-              "
-              >Get model</NButton
-            >
+            <NTooltip>
+              <template #trigger>
+                <NButton
+                  type="success"
+                  @click="
+                    () => {
+                      global.state.modelManager.tab = 'civitai';
+                      router.push('/models');
+                      showModal = false;
+                    }
+                  "
+                  >Get some models</NButton
+                >
+              </template>
+
+              <img
+                src="https://i.imgflip.com/84840n.jpg"
+                style="max-width: 30vw; max-height: 30vh"
+              />
+            </NTooltip>
           </template>
         </NResult>
       </div>
@@ -394,7 +403,14 @@ import {
   SyncSharp,
   Wifi,
 } from "@vicons/ionicons5";
-import { NAlert, NButton, NProgress, NResult, useMessage } from "naive-ui";
+import {
+  NAlert,
+  NButton,
+  NProgress,
+  NResult,
+  NTooltip,
+  useMessage,
+} from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
 import { useRouter } from "vue-router";
