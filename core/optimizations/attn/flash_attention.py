@@ -1,5 +1,6 @@
-import torch
 from typing import Optional
+
+import torch
 from diffusers.models.attention import Attention
 
 
@@ -9,7 +10,7 @@ def apply_flash_attention(module: torch.nn.Module):
 
     def set(mod: torch.nn.Module) -> None:
         if isinstance(mod, Attention):
-            if mod.to_k.in_features == mod.to_q.in_features:
+            if mod.to_k.in_features == mod.to_q.in_features:  # type: ignore
                 mod.to_qkv = torch.nn.Linear(
                     mod.to_q.in_features,
                     mod.to_q.out_features * 3,
@@ -17,12 +18,12 @@ def apply_flash_attention(module: torch.nn.Module):
                     device=mod.to_q.weight.data.device,
                 )
                 mod.to_qkv.weight.data = torch.cat(
-                    [mod.to_q.weight, mod.to_k.weight, mod.to_v.weight]
+                    [mod.to_q.weight, mod.to_k.weight, mod.to_v.weight]  # type: ignore
                 ).detach()
                 del mod.to_q, mod.to_k, mod.to_v
-                mod.set_processor(self_attn)
+                mod.set_processor(self_attn)  # type: ignore
             else:
-                mod.set_processor(cross_attn)
+                mod.set_processor(cross_attn)  # type: ignore
 
     module.apply(set)
 
@@ -45,7 +46,7 @@ class FlashAttentionBaseAttention:
 
         if input_ndim == 4:
             batch_size, channel, height, width = hidden_states.shape
-            hidden_states = hidden_states.view(
+            hidden_states = hidden_states.view(  # type: ignore
                 batch_size, channel, height * width
             ).transpose(1, 2)
 
@@ -55,7 +56,7 @@ class FlashAttentionBaseAttention:
             else encoder_hidden_states.shape
         )
 
-        attention_mask = attn.prepare_attention_mask(
+        attention_mask = attn.prepare_attention_mask(  # type: ignore
             attention_mask, key_tokens, batch_size
         )
         if attention_mask is not None:
@@ -66,7 +67,7 @@ class FlashAttentionBaseAttention:
             #   [batch*heads, query_tokens, key_tokens]
             # we do this explicitly because xformers doesn't broadcast the singleton dimension for us.
             _, query_tokens, _ = hidden_states.shape
-            attention_mask = attention_mask.expand(-1, query_tokens, -1)
+            attention_mask = attention_mask.expand(-1, query_tokens, -1)  # type: ignore
 
         if attn.group_norm is not None:
             hidden_states = attn.group_norm(hidden_states.transpose(1, 2)).transpose(
@@ -82,23 +83,23 @@ class FlashAttentionBaseAttention:
                 encoder_hidden_states
             )
 
-        hidden_states = self.do(attn, hidden_states, encoder_hidden_states, query)
-        hidden_states = hidden_states.flatten(-2)
+        hidden_states = self.do(attn, hidden_states, encoder_hidden_states, query)  # type: ignore
+        hidden_states = hidden_states.flatten(-2)  # type: ignore
 
         out_proj, dropout = attn.to_out
         hidden_states = out_proj(hidden_states)
         hidden_states = dropout(hidden_states)
 
         if input_ndim == 4:
-            hidden_states = hidden_states.transpose(-1, -2).reshape(
-                batch_size, channel, height, width
+            hidden_states = hidden_states.transpose(-1, -2).reshape(  # type: ignore
+                batch_size, channel, height, width  # type: ignore - unbound, might be a problem later
             )
 
         if attn.residual_connection:
-            hidden_states = hidden_states + residual
+            hidden_states = hidden_states + residual  # type: ignore
 
         if attn.rescale_output_factor != 1:
-            hidden_states = hidden_states / attn.rescale_output_factor
+            hidden_states = hidden_states / attn.rescale_output_factor  # type: ignore
 
         return hidden_states
 

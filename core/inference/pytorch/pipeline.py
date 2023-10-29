@@ -473,6 +473,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         cond=text_embeddings,
                     )
                 else:
+                    assert self.controlnet is not None
+
                     if guess_mode and do_classifier_free_guidance:
                         # Infer ControlNet only for the conditional batch.
                         control_model_input = x
