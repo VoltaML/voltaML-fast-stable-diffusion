@@ -82,7 +82,7 @@ async def inpaint_job(job: InpaintQueueEntry):
 
 @router.post("/controlnet")
 async def controlnet_job(job: ControlNetQueueEntry):
-    "Generate variations of the image"
+    "Generate images based on a reference image"
 
     image_bytes = job.data.image
     assert isinstance(image_bytes, bytes)
@@ -123,7 +123,7 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
 
 @router.post("/generate-aitemplate")
 async def generate_aitemplate(request: AITemplateBuildRequest):
-    "Generate a AITemplate model from a local model"
+    "Generate an AITemplate model from a local model"
 
     await gpu.build_aitemplate_engine(request)
 
@@ -132,7 +132,7 @@ async def generate_aitemplate(request: AITemplateBuildRequest):
 
 @router.post("/generate-dynamic-aitemplate")
 async def generate_dynamic_aitemplate(request: AITemplateDynamicBuildRequest):
-    "Generate a AITemplate engine from a local model"
+    "Generate an AITemplate engine from a local model"
 
     await gpu.build_dynamic_aitemplate_engine(request)
 

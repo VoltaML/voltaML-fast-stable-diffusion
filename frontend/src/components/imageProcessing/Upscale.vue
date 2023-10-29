@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/multi-word-component-names -->
 <template>
   <div style="margin: 0 12px">
     <!-- Main -->
@@ -103,9 +104,9 @@
         <GenerateSection :generate="generate" do-not-disable-generate />
 
         <ImageOutput
-          :current-image="global.state.extra.currentImage"
-          :images="global.state.extra.images"
-          @image-clicked="global.state.extra.currentImage = $event"
+          :current-image="global.state.imageProcessing.currentImage"
+          :images="global.state.imageProcessing.images"
+          @image-clicked="global.state.imageProcessing.currentImage = $event"
         />
       </NGi>
     </NGrid>
@@ -182,8 +183,7 @@ const generate = () => {
     .then((res) => {
       global.state.generating = false;
       res.json().then((data) => {
-        console.log(data);
-        global.state.extra.images = [data.images];
+        global.state.imageProcessing.images = [data.images];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
@@ -192,7 +192,6 @@ const generate = () => {
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 </script>

@@ -10,6 +10,10 @@ pyproject.toml
 # User generated files
 /converted
 /data
+!/data/themes/dark.json
+!/data/themes/dark_flat.json
+!/data/themes/light.json
+!/data/themes/light_flat.json
 /engine
 /onnx
 /traced_unet
@@ -21,9 +25,6 @@ yarn.lock
 
 # Frontend
 frontend/dist/
-
-# Static files
-/static
 
 # Python
 /venv

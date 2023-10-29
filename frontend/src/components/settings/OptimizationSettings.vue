@@ -178,6 +178,7 @@
 </template>
 
 <script lang="ts" setup>
+import { themeKey } from "@/injectionKeys";
 import {
   NButton,
   NForm,
@@ -187,20 +188,23 @@ import {
   NSlider,
   NSwitch,
 } from "naive-ui";
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const settings = useSettings();
 const global = useState();
+const theme = inject(themeKey);
 
 const compileColor = computed(() => {
-  if (settings.defaultSettings.api.torch_compile) return "#f1f1f1";
+  if (settings.defaultSettings.api.torch_compile)
+    return theme?.value.Button.common?.successColor;
   return undefined;
 });
 
 const traceColor = computed(() => {
-  if (settings.defaultSettings.api.trace_model) return "#f1f1f1";
+  if (settings.defaultSettings.api.trace_model)
+    return theme?.value.Button.common?.successColor;
   return undefined;
 });
 
@@ -216,7 +220,7 @@ const disableColor = computed(() => {
     settings.defaultSettings.api.sfast_compile
   )
     return undefined;
-  return "#ffffff";
+  return theme?.value.Button.common?.successColor;
 });
 
 function change_compilation(a: string) {

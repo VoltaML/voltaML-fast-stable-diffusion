@@ -1552,7 +1552,7 @@ function renderComponentRoot(instance) {
     slots,
     attrs,
     emit: emit2,
-    render: render15,
+    render: render16,
     renderCache,
     data,
     setupState,
@@ -1566,7 +1566,7 @@ function renderComponentRoot(instance) {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
       result = normalizeVNode(
-        render15.call(
+        render16.call(
           proxyToUse,
           proxyToUse,
           renderCache,
@@ -2668,7 +2668,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render15,
+    render: render16,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2767,8 +2767,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render15 && instance.render === NOOP) {
-    instance.render = render15;
+  if (render16 && instance.render === NOOP) {
+    instance.render = render16;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3000,7 +3000,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render15, hydrate) {
+function createAppAPI(render16, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = extend({}, rootComponent);
@@ -3069,7 +3069,7 @@ function createAppAPI(render15, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render15(vnode, rootContainer, isSVG2);
+            render16(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3079,7 +3079,7 @@ function createAppAPI(render15, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render15(null, app2._container);
+          render16(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4794,7 +4794,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render15 = (vnode, container, isSVG2) => {
+  const render16 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4826,9 +4826,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     );
   }
   return {
-    render: render15,
+    render: render16,
     hydrate,
-    createApp: createAppAPI(render15, hydrate)
+    createApp: createAppAPI(render16, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -6957,6 +6957,8 @@ function defineStore(idOrOptions, setup, setupOptions) {
   useStore.$id = id;
   return useStore;
 }
+const themeOverridesKey = Symbol("themeOverrides");
+const themeKey = Symbol("theme");
 let onceCbs = [];
 const paramsMap = /* @__PURE__ */ new WeakMap();
 function flushOnceCallbacks() {
@@ -9828,7 +9830,7 @@ function getOffset(placement, offsetRect, targetRect, offsetTopToStandardPlaceme
       };
   }
 }
-const style$A = c([
+const style$C = c([
   c(".v-binder-follower-container", {
     position: "absolute",
     left: "0",
@@ -9910,7 +9912,7 @@ const VFollower = defineComponent({
       }
     });
     const ssrAdapter2 = useSsrAdapter();
-    style$A.mount({
+    style$C.mount({
       id: "vueuc/binder",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -11105,7 +11107,7 @@ const VXScroll = defineComponent({
   }
 });
 const hiddenAttr = "v-hidden";
-const style$z = c("[v-hidden]", {
+const style$B = c("[v-hidden]", {
   display: "none!important"
 });
 const VOverflow = defineComponent({
@@ -11195,7 +11197,7 @@ const VOverflow = defineComponent({
       }
     }
     const ssrAdapter2 = useSsrAdapter();
-    style$z.mount({
+    style$B.mount({
       id: "vueuc/overflow",
       head: true,
       anchorMetaName: cssrAnchorMetaName$1,
@@ -14370,6 +14372,12 @@ function useStyle(mountId, style2, clsPrefixRef) {
     onBeforeMount(mountStyle);
   }
 }
+function useHljs(props, shouldHighlightRef) {
+  const NConfigProvider2 = inject(configProviderInjectionKey, null);
+  return computed(() => {
+    return props.hljs || (NConfigProvider2 === null || NConfigProvider2 === void 0 ? void 0 : NConfigProvider2.mergedHljsRef.value);
+  });
+}
 function useThemeClass(componentName, hashRef, cssVarsRef, props) {
   var _a2;
   if (!cssVarsRef)
@@ -14757,7 +14765,7 @@ const NFadeInExpandTransition = defineComponent({
     };
   }
 });
-const style$y = cB("base-icon", `
+const style$A = cB("base-icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -14792,13 +14800,13 @@ const NBaseIcon = defineComponent({
     onMouseup: Function
   },
   setup(props) {
-    useStyle("-base-icon", style$y, toRef(props, "clsPrefix"));
+    useStyle("-base-icon", style$A, toRef(props, "clsPrefix"));
   },
   render() {
     return h("i", { class: `${this.clsPrefix}-base-icon`, onClick: this.onClick, onMousedown: this.onMousedown, onMouseup: this.onMouseup, role: this.role, "aria-label": this.ariaLabel, "aria-hidden": this.ariaHidden, "aria-disabled": this.ariaDisabled }, this.$slots);
   }
 });
-const style$x = cB("base-close", `
+const style$z = cB("base-close", `
  display: flex;
  align-items: center;
  justify-content: center;
@@ -14867,7 +14875,7 @@ const NBaseClose = defineComponent({
     absolute: Boolean
   },
   setup(props) {
-    useStyle("-base-close", style$x, toRef(props, "clsPrefix"));
+    useStyle("-base-close", style$z, toRef(props, "clsPrefix"));
     return () => {
       const { clsPrefix, disabled, absolute, round, isButtonTag } = props;
       const Tag = isButtonTag ? "button" : "div";
@@ -14926,7 +14934,7 @@ function iconSwitchTransition({
     transition
   })];
 }
-const style$w = c$1([c$1("@keyframes loading-container-rotate", `
+const style$y = c$1([c$1("@keyframes loading-container-rotate", `
  to {
  -webkit-transform: rotate(360deg);
  transform: rotate(360deg);
@@ -15089,7 +15097,7 @@ const NBaseLoading = defineComponent({
     default: 100
   } }, exposedLoadingProps),
   setup(props) {
-    useStyle("-base-loading", style$w, toRef(props, "clsPrefix"));
+    useStyle("-base-loading", style$y, toRef(props, "clsPrefix"));
   },
   render() {
     const { clsPrefix, radius, strokeWidth, stroke, scale } = this;
@@ -16119,7 +16127,7 @@ const emptyDark = {
   self: self$1d
 };
 const emptyDark$1 = emptyDark;
-const style$v = cB("empty", `
+const style$x = cB("empty", `
  display: flex;
  flex-direction: column;
  align-items: center;
@@ -16158,7 +16166,7 @@ const NEmpty = defineComponent({
   props: emptyProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Empty", "-empty", style$v, emptyLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Empty", "-empty", style$x, emptyLight$1, props, mergedClsPrefixRef);
     const { localeRef } = useLocale("Empty");
     const NConfigProvider2 = inject(configProviderInjectionKey, null);
     const mergedDescriptionRef = computed(() => {
@@ -16249,7 +16257,7 @@ function fadeInTransition({
     opacity: 1
   })];
 }
-const style$u = cB("scrollbar", `
+const style$w = cB("scrollbar", `
  overflow: hidden;
  position: relative;
  z-index: auto;
@@ -16773,7 +16781,7 @@ const Scrollbar$1 = defineComponent({
       off("mousemove", window, handleYScrollMouseMove, true);
       off("mouseup", window, handleYScrollMouseUp, true);
     });
-    const themeRef = useTheme("Scrollbar", "-scrollbar", style$u, scrollbarLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Scrollbar", "-scrollbar", style$w, scrollbarLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, scrollbarBorderRadius, scrollbarHeight, scrollbarWidth }, self: { color, colorHover } } = themeRef.value;
       return {
@@ -17119,7 +17127,7 @@ function fadeInScaleUpTransition({
     transform: `${originalTransform} scale(1)`
   })];
 }
-const style$t = cB("base-select-menu", `
+const style$v = cB("base-select-menu", `
  line-height: 1.5;
  outline: none;
  z-index: 0;
@@ -17288,7 +17296,7 @@ const NInternalSelectMenu = defineComponent({
     onToggle: Function
   }),
   setup(props) {
-    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$t, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelectMenu", "-internal-select-menu", style$v, internalSelectMenuLight$1, props, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const virtualListRef = ref(null);
     const scrollbarRef = ref(null);
@@ -17587,7 +17595,7 @@ const NInternalSelectMenu = defineComponent({
     );
   }
 });
-const style$s = cB("base-wave", `
+const style$u = cB("base-wave", `
  position: absolute;
  left: 0;
  right: 0;
@@ -17604,7 +17612,7 @@ const NBaseWave = defineComponent({
     }
   },
   setup(props) {
-    useStyle("-base-wave", style$s, toRef(props, "clsPrefix"));
+    useStyle("-base-wave", style$u, toRef(props, "clsPrefix"));
     const selfRef = ref(null);
     const activeRef = ref(false);
     let animationTimerId = null;
@@ -17680,7 +17688,7 @@ const oppositePlacement = {
   right: "left"
 };
 const arrowSize = "var(--n-arrow-height) * 1.414";
-const style$r = c$1([cB("popover", `
+const style$t = c$1([cB("popover", `
  transition:
  box-shadow .3s var(--n-bezier),
  background-color .3s var(--n-bezier),
@@ -17872,7 +17880,7 @@ const NPopoverBody = defineComponent({
   props: popoverBodyProps,
   setup(props, { slots, attrs }) {
     const { namespaceRef, mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Popover", "-popover", style$r, popoverLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Popover", "-popover", style$t, popoverLight$1, props, mergedClsPrefixRef);
     const followerRef = ref(null);
     const NPopover2 = inject("NPopover");
     const bodyRef = ref(null);
@@ -18755,7 +18763,7 @@ const commonProps = {
     default: void 0
   }
 };
-const style$q = cB("tag", `
+const style$s = cB("tag", `
  white-space: nowrap;
  position: relative;
  box-sizing: border-box;
@@ -18858,7 +18866,7 @@ const NTag = defineComponent({
   setup(props) {
     const contentRef = ref(null);
     const { mergedBorderedRef, mergedClsPrefixRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Tag", "-tag", style$q, tagLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Tag", "-tag", style$s, tagLight$1, props, mergedClsPrefixRef);
     provide(tagInjectionKey, {
       roundRef: toRef(props, "round")
     });
@@ -18989,7 +18997,7 @@ const NTag = defineComponent({
     );
   }
 });
-const style$p = cB("base-clear", `
+const style$r = cB("base-clear", `
  flex-shrink: 0;
  height: 1em;
  width: 1em;
@@ -19029,7 +19037,7 @@ const NBaseClear = defineComponent({
     onClear: Function
   },
   setup(props) {
-    useStyle("-base-clear", style$p, toRef(props, "clsPrefix"));
+    useStyle("-base-clear", style$r, toRef(props, "clsPrefix"));
     return {
       handleMouseDown(e) {
         var _a2;
@@ -19251,7 +19259,7 @@ const internalSelectionDark = {
   }
 };
 const internalSelectionDark$1 = internalSelectionDark;
-const style$o = c$1([cB("base-selection", `
+const style$q = c$1([cB("base-selection", `
  position: relative;
  z-index: auto;
  box-shadow: none;
@@ -19491,7 +19499,7 @@ const NInternalSelection = defineComponent({
     const showTagsPopoverRef = ref(false);
     const patternInputFocusedRef = ref(false);
     const hoverRef = ref(false);
-    const themeRef = useTheme("InternalSelection", "-internal-selection", style$o, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
+    const themeRef = useTheme("InternalSelection", "-internal-selection", style$q, internalSelectionLight$1, props, toRef(props, "clsPrefix"));
     const mergedClearableRef = computed(() => {
       return props.clearable && !props.disabled && (hoverRef.value || props.active);
     });
@@ -20300,7 +20308,7 @@ function fadeInHeightExpandTransition({
  ${originalTransition ? "," + originalTransition : ""}
  `)];
 }
-const style$n = cB("alert", `
+const style$p = cB("alert", `
  line-height: var(--n-line-height);
  border-radius: var(--n-border-radius);
  position: relative;
@@ -20414,7 +20422,7 @@ const NAlert = defineComponent({
   props: alertProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Alert", "-alert", style$n, alertLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Alert", "-alert", style$p, alertLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Alert", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -20883,7 +20891,7 @@ const WordCount = defineComponent({
     };
   }
 });
-const style$m = cB("input", `
+const style$o = cB("input", `
  max-width: 100%;
  cursor: text;
  line-height: 1.5;
@@ -21242,7 +21250,7 @@ const NInput = defineComponent({
   props: inputProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, inlineThemeDisabled, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Input", "-input", style$m, inputLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Input", "-input", style$o, inputLight$1, props, mergedClsPrefixRef);
     if (isSafari) {
       useStyle("-input-safari", safariStyle, mergedClsPrefixRef);
     }
@@ -22092,7 +22100,7 @@ const NInput = defineComponent({
     );
   }
 });
-const style$l = cB("input-group", `
+const style$n = cB("input-group", `
  display: inline-flex;
  width: 100%;
  flex-wrap: nowrap;
@@ -22154,7 +22162,7 @@ const NInputGroup = defineComponent({
   props: inputGroupProps,
   setup(props) {
     const { mergedClsPrefixRef } = useConfig(props);
-    useStyle("-input-group", style$l, mergedClsPrefixRef);
+    useStyle("-input-group", style$n, mergedClsPrefixRef);
     return {
       mergedClsPrefix: mergedClsPrefixRef
     };
@@ -22564,7 +22572,7 @@ const buttonDark = {
   }
 };
 const buttonDark$1 = buttonDark;
-const style$k = c$1([cB("button", `
+const style$m = c$1([cB("button", `
  margin: 0;
  font-weight: var(--n-font-weight);
  line-height: 1;
@@ -22821,7 +22829,7 @@ const Button = defineComponent({
       enterPressedRef.value = false;
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Button", "-button", style$k, buttonLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Button", "-button", style$m, buttonLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Button", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const theme = themeRef.value;
@@ -23989,7 +23997,7 @@ const ColorPreview = defineComponent({
     );
   }
 });
-const style$j = c$1([cB("color-picker", `
+const style$l = c$1([cB("color-picker", `
  display: inline-block;
  box-sizing: border-box;
  height: var(--n-height);
@@ -24200,7 +24208,7 @@ const NColorPicker = defineComponent({
     const { mergedSizeRef, mergedDisabledRef } = formItem;
     const { localeRef } = useLocale("global");
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("ColorPicker", "-color-picker", style$j, colorPickerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("ColorPicker", "-color-picker", style$l, colorPickerLight$1, props, mergedClsPrefixRef);
     provide(colorPickerInjectionKey, {
       themeRef,
       renderLabelRef: toRef(props, "renderLabel"),
@@ -24658,7 +24666,7 @@ const cardDark = {
   }
 };
 const cardDark$1 = cardDark;
-const style$i = c$1([cB("card", `
+const style$k = c$1([cB("card", `
  font-size: var(--n-font-size);
  line-height: var(--n-line-height);
  display: flex;
@@ -24803,7 +24811,7 @@ const NCard = defineComponent({
         call(onClose);
     };
     const { inlineThemeDisabled, mergedClsPrefixRef, mergedRtlRef } = useConfig(props);
-    const themeRef = useTheme("Card", "-card", style$i, cardLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Card", "-card", style$k, cardLight$1, props, mergedClsPrefixRef);
     const rtlEnabledRef = useRtl("Card", mergedRtlRef, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { size: size2 } = props;
@@ -25064,6 +25072,255 @@ const codeLight = {
   self: self$T
 };
 const codeLight$1 = codeLight;
+const style$j = c$1([cB("code", `
+ font-size: var(--n-font-size);
+ font-family: var(--n-font-family);
+ `, [cM("show-line-numbers", `
+ display: flex;
+ `), cE("line-numbers", `
+ user-select: none;
+ padding-right: 12px;
+ text-align: right;
+ transition: color .3s var(--n-bezier);
+ color: var(--n-line-number-text-color);
+ `), cM("word-wrap", [c$1("pre", `
+ white-space: pre-wrap;
+ word-break: break-all;
+ `)]), c$1("pre", `
+ margin: 0;
+ line-height: inherit;
+ font-size: inherit;
+ font-family: inherit;
+ `), c$1("[class^=hljs]", `
+ color: var(--n-text-color);
+ transition: 
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier);
+ `)]), ({
+  props
+}) => {
+  const codeClass = `${props.bPrefix}code`;
+  return [`${codeClass} .hljs-comment,
+ ${codeClass} .hljs-quote {
+ color: var(--n-mono-3);
+ font-style: italic;
+ }`, `${codeClass} .hljs-doctag,
+ ${codeClass} .hljs-keyword,
+ ${codeClass} .hljs-formula {
+ color: var(--n-hue-3);
+ }`, `${codeClass} .hljs-section,
+ ${codeClass} .hljs-name,
+ ${codeClass} .hljs-selector-tag,
+ ${codeClass} .hljs-deletion,
+ ${codeClass} .hljs-subst {
+ color: var(--n-hue-5);
+ }`, `${codeClass} .hljs-literal {
+ color: var(--n-hue-1);
+ }`, `${codeClass} .hljs-string,
+ ${codeClass} .hljs-regexp,
+ ${codeClass} .hljs-addition,
+ ${codeClass} .hljs-attribute,
+ ${codeClass} .hljs-meta-string {
+ color: var(--n-hue-4);
+ }`, `${codeClass} .hljs-built_in,
+ ${codeClass} .hljs-class .hljs-title {
+ color: var(--n-hue-6-2);
+ }`, `${codeClass} .hljs-attr,
+ ${codeClass} .hljs-variable,
+ ${codeClass} .hljs-template-variable,
+ ${codeClass} .hljs-type,
+ ${codeClass} .hljs-selector-class,
+ ${codeClass} .hljs-selector-attr,
+ ${codeClass} .hljs-selector-pseudo,
+ ${codeClass} .hljs-number {
+ color: var(--n-hue-6);
+ }`, `${codeClass} .hljs-symbol,
+ ${codeClass} .hljs-bullet,
+ ${codeClass} .hljs-link,
+ ${codeClass} .hljs-meta,
+ ${codeClass} .hljs-selector-id,
+ ${codeClass} .hljs-title {
+ color: var(--n-hue-2);
+ }`, `${codeClass} .hljs-emphasis {
+ font-style: italic;
+ }`, `${codeClass} .hljs-strong {
+ font-weight: var(--n-font-weight-strong);
+ }`, `${codeClass} .hljs-link {
+ text-decoration: underline;
+ }`];
+}]);
+const codeProps = Object.assign(Object.assign({}, useTheme.props), {
+  language: String,
+  code: {
+    type: String,
+    default: ""
+  },
+  trim: {
+    type: Boolean,
+    default: true
+  },
+  hljs: Object,
+  uri: Boolean,
+  inline: Boolean,
+  wordWrap: Boolean,
+  showLineNumbers: Boolean,
+  // In n-log, we only need to mount code's style for highlight
+  internalFontSize: Number,
+  internalNoHighlight: Boolean
+});
+const NCode = defineComponent({
+  name: "Code",
+  props: codeProps,
+  setup(props, { slots }) {
+    const { internalNoHighlight } = props;
+    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig();
+    const codeRef = ref(null);
+    const hljsRef = internalNoHighlight ? { value: void 0 } : useHljs(props);
+    const createCodeHtml = (language, code, trim) => {
+      const { value: hljs } = hljsRef;
+      if (!hljs) {
+        return null;
+      }
+      if (!(language && hljs.getLanguage(language))) {
+        return null;
+      }
+      return hljs.highlight(trim ? code.trim() : code, {
+        language
+      }).value;
+    };
+    const mergedShowLineNumbersRef = computed(() => {
+      if (props.inline || props.wordWrap)
+        return false;
+      return props.showLineNumbers;
+    });
+    const setCode = () => {
+      if (slots.default)
+        return;
+      const { value: codeEl } = codeRef;
+      if (!codeEl)
+        return;
+      const { language } = props;
+      const code = props.uri ? window.decodeURIComponent(props.code) : props.code;
+      if (language) {
+        const html = createCodeHtml(language, code, props.trim);
+        if (html !== null) {
+          if (props.inline) {
+            codeEl.innerHTML = html;
+          } else {
+            const prevPreEl = codeEl.querySelector(".__code__");
+            if (prevPreEl)
+              codeEl.removeChild(prevPreEl);
+            const preEl = document.createElement("pre");
+            preEl.className = "__code__";
+            preEl.innerHTML = html;
+            codeEl.appendChild(preEl);
+          }
+          return;
+        }
+      }
+      if (props.inline) {
+        codeEl.textContent = code;
+        return;
+      }
+      const maybePreEl = codeEl.querySelector(".__code__");
+      if (maybePreEl) {
+        maybePreEl.textContent = code;
+      } else {
+        const wrap = document.createElement("pre");
+        wrap.className = "__code__";
+        wrap.textContent = code;
+        codeEl.innerHTML = "";
+        codeEl.appendChild(wrap);
+      }
+    };
+    onMounted(setCode);
+    watch(toRef(props, "language"), setCode);
+    watch(toRef(props, "code"), setCode);
+    if (!internalNoHighlight)
+      watch(hljsRef, setCode);
+    const themeRef = useTheme("Code", "-code", style$j, codeLight$1, props, mergedClsPrefixRef);
+    const cssVarsRef = computed(() => {
+      const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2, fontFamilyMono }, self: {
+        textColor,
+        fontSize: fontSize2,
+        fontWeightStrong,
+        lineNumberTextColor,
+        // extracted from hljs atom-one-light.scss
+        "mono-3": $1,
+        "hue-1": $2,
+        "hue-2": $3,
+        "hue-3": $4,
+        "hue-4": $5,
+        "hue-5": $6,
+        "hue-5-2": $7,
+        "hue-6": $8,
+        "hue-6-2": $9
+      } } = themeRef.value;
+      const { internalFontSize } = props;
+      return {
+        "--n-font-size": internalFontSize ? `${internalFontSize}px` : fontSize2,
+        "--n-font-family": fontFamilyMono,
+        "--n-font-weight-strong": fontWeightStrong,
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-text-color": textColor,
+        "--n-mono-3": $1,
+        "--n-hue-1": $2,
+        "--n-hue-2": $3,
+        "--n-hue-3": $4,
+        "--n-hue-4": $5,
+        "--n-hue-5": $6,
+        "--n-hue-5-2": $7,
+        "--n-hue-6": $8,
+        "--n-hue-6-2": $9,
+        "--n-line-number-text-color": lineNumberTextColor
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("code", computed(() => {
+      return `${props.internalFontSize || "a"}`;
+    }), cssVarsRef, props) : void 0;
+    return {
+      mergedClsPrefix: mergedClsPrefixRef,
+      codeRef,
+      mergedShowLineNumbers: mergedShowLineNumbersRef,
+      lineNumbers: computed(() => {
+        let number = 1;
+        const numbers = [];
+        let lastIsLineWrap = false;
+        for (const char of props.code) {
+          if (char === "\n") {
+            lastIsLineWrap = true;
+            numbers.push(number++);
+          } else {
+            lastIsLineWrap = false;
+          }
+        }
+        if (!lastIsLineWrap) {
+          numbers.push(number++);
+        }
+        return numbers.join("\n");
+      }),
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    };
+  },
+  render() {
+    var _a2, _b;
+    const { mergedClsPrefix, wordWrap, mergedShowLineNumbers, onRender } = this;
+    onRender === null || onRender === void 0 ? void 0 : onRender();
+    return h(
+      "code",
+      { class: [
+        `${mergedClsPrefix}-code`,
+        this.themeClass,
+        wordWrap && `${mergedClsPrefix}-code--word-wrap`,
+        mergedShowLineNumbers && `${mergedClsPrefix}-code--show-line-numbers`
+      ], style: this.cssVars, ref: "codeRef" },
+      mergedShowLineNumbers ? h("pre", { class: `${mergedClsPrefix}-code__line-numbers` }, this.lineNumbers) : null,
+      (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)
+    );
+  }
+});
 const self$S = (vars) => {
   const { fontWeight, textColor1, textColor2, textColorDisabled, dividerColor, fontSize: fontSize2 } = vars;
   return {
@@ -25092,7 +25349,7 @@ const collapseDark = {
   self: self$S
 };
 const collapseDark$1 = collapseDark;
-const style$h = cB("collapse", "width: 100%;", [cB("collapse-item", `
+const style$i = cB("collapse", "width: 100%;", [cB("collapse-item", `
  font-size: var(--n-font-size);
  color: var(--n-text-color);
  transition:
@@ -25175,7 +25432,7 @@ const NCollapse = defineComponent({
     const uncontrolledExpandedNamesRef = ref(props.defaultExpandedNames);
     const controlledExpandedNamesRef = computed(() => props.expandedNames);
     const mergedExpandedNamesRef = useMergedState(controlledExpandedNamesRef, uncontrolledExpandedNamesRef);
-    const themeRef = useTheme("Collapse", "-collapse", style$h, collapseLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Collapse", "-collapse", style$i, collapseLight$1, props, mergedClsPrefixRef);
     function doUpdateExpandedNames(names) {
       const { "onUpdate:expandedNames": _onUpdateExpandedNames, onUpdateExpandedNames, onExpandedNamesChange } = props;
       if (onUpdateExpandedNames) {
@@ -25648,7 +25905,7 @@ const selectDark = {
   self: self$P
 };
 const selectDark$1 = selectDark;
-const style$g = c$1([cB("select", `
+const style$h = c$1([cB("select", `
  z-index: auto;
  outline: none;
  width: 100%;
@@ -25777,7 +26034,7 @@ const NSelect = defineComponent({
   props: selectProps,
   setup(props) {
     const { mergedClsPrefixRef, mergedBorderedRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Select", "-select", style$g, selectLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Select", "-select", style$h, selectLight$1, props, mergedClsPrefixRef);
     const uncontrolledValueRef = ref(props.defaultValue);
     const controlledValueRef = toRef(props, "value");
     const mergedValueRef = useMergedState(controlledValueRef, uncontrolledValueRef);
@@ -26867,7 +27124,7 @@ const iconDark$1 = {
   self: self$J
 };
 const iconDark$2 = iconDark$1;
-const style$f = cB("icon", `
+const style$g = cB("icon", `
  height: 1em;
  width: 1em;
  line-height: 1em;
@@ -26895,7 +27152,7 @@ const NIcon = defineComponent({
   props: iconProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Icon", "-icon", style$f, iconLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Icon", "-icon", style$g, iconLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { depth } = props;
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: self2 } = themeRef.value;
@@ -27299,8 +27556,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render15, props } } = this.tmNode;
-    return h("div", props, [render15 === null || render15 === void 0 ? void 0 : render15()]);
+    const { rawNode: { render: render16, props } } = this.tmNode;
+    return h("div", props, [render16 === null || render16 === void 0 ? void 0 : render16()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -27389,7 +27646,7 @@ const NDropdownMenu = defineComponent({
     );
   }
 });
-const style$e = cB("dropdown-menu", `
+const style$f = cB("dropdown-menu", `
  transform-origin: var(--v-transform-origin);
  background-color: var(--n-color);
  border-radius: var(--n-border-radius);
@@ -27617,7 +27874,7 @@ const NDropdown = defineComponent({
       }
     }, keyboardEnabledRef);
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Dropdown", "-dropdown", style$e, dropdownLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dropdown", "-dropdown", style$f, dropdownLight$1, props, mergedClsPrefixRef);
     provide(dropdownInjectionKey, {
       labelFieldRef: toRef(props, "labelField"),
       childrenFieldRef: toRef(props, "childrenField"),
@@ -28103,7 +28360,7 @@ const dialogProps = {
   onClose: Function
 };
 const dialogPropKeys = keysOf(dialogProps);
-const style$d = c$1([cB("dialog", `
+const style$e = c$1([cB("dialog", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: relative;
@@ -28211,7 +28468,7 @@ const NDialog = defineComponent({
       if (onClose)
         onClose();
     }
-    const themeRef = useTheme("Dialog", "-dialog", style$d, dialogLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Dialog", "-dialog", style$e, dialogLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { type } = props;
       const iconPlacement = mergedIconPlacementRef.value;
@@ -28537,7 +28794,7 @@ const NModalBodyWrapper = defineComponent({
     ]) : null;
   }
 });
-const style$c = c$1([cB("modal-container", `
+const style$d = c$1([cB("modal-container", `
  position: fixed;
  left: 0;
  top: 0;
@@ -28629,7 +28886,7 @@ const NModal = defineComponent({
   setup(props) {
     const containerRef = ref(null);
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Modal", "-modal", style$c, modalLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Modal", "-modal", style$d, modalLight$1, props, mergedClsPrefixRef);
     const clickedRef = useClicked(64);
     const clickedPositionRef = useClickPosition();
     const isMountedRef = isMounted();
@@ -28819,7 +29076,7 @@ const dividerDark = {
   self: self$D
 };
 const dividerDark$1 = dividerDark;
-const style$b = cB("divider", `
+const style$c = cB("divider", `
  position: relative;
  display: flex;
  width: 100%;
@@ -28880,7 +29137,7 @@ const NDivider = defineComponent({
   props: dividerProps,
   setup(props) {
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Divider", "-divider", style$b, dividerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Divider", "-divider", style$c, dividerLight$1, props, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 }, self: { color, textColor, fontWeight } } = themeRef.value;
       return {
@@ -29300,7 +29557,7 @@ function slideInFromBottomTransition({ duration = "0.3s", leaveDuration = "0.2s"
     })
   ];
 }
-const style$a = c$1([cB("drawer", `
+const style$b = c$1([cB("drawer", `
  word-break: break-word;
  line-height: var(--n-line-height);
  position: absolute;
@@ -29514,7 +29771,7 @@ const NDrawer = defineComponent({
   setup(props) {
     const { mergedClsPrefixRef, namespaceRef, inlineThemeDisabled } = useConfig(props);
     const isMountedRef = isMounted();
-    const themeRef = useTheme("Drawer", "-drawer", style$a, drawerLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Drawer", "-drawer", style$b, drawerLight$1, props, mergedClsPrefixRef);
     const uncontrolledWidthRef = ref(props.defaultWidth);
     const uncontrolledHeightRef = ref(props.defaultHeight);
     const mergedWidthRef = useMergedState(toRef(props, "width"), uncontrolledWidthRef);
@@ -31724,7 +31981,7 @@ const positionProp = {
   type: String,
   default: "static"
 };
-const style$9 = cB("layout", `
+const style$a = cB("layout", `
  color: var(--n-text-color);
  background-color: var(--n-color);
  box-sizing: border-box;
@@ -31775,7 +32032,7 @@ function createLayoutComponent(isContent) {
       const scrollableElRef = ref(null);
       const scrollbarInstRef = ref(null);
       const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-      const themeRef = useTheme("Layout", "-layout", style$9, layoutLight$1, props, mergedClsPrefixRef);
+      const themeRef = useTheme("Layout", "-layout", style$a, layoutLight$1, props, mergedClsPrefixRef);
       function scrollTo(options, y) {
         if (props.nativeScrollbar) {
           const { value: scrollableEl } = scrollableElRef;
@@ -31860,7 +32117,7 @@ function createLayoutComponent(isContent) {
   });
 }
 const NLayout = createLayoutComponent(false);
-const style$8 = cB("layout-sider", `
+const style$9 = cB("layout-sider", `
  flex-shrink: 0;
  box-sizing: border-box;
  position: relative;
@@ -32164,7 +32421,7 @@ const NLayoutSider = defineComponent({
       collapseModeRef: toRef(props, "collapseMode")
     });
     const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
-    const themeRef = useTheme("Layout", "-layout-sider", style$8, layoutLight$1, props, mergedClsPrefixRef);
+    const themeRef = useTheme("Layout", "-layout-sider", style$9, layoutLight$1, props, mergedClsPrefixRef);
     function handleTransitionend(e) {
       var _a2, _b;
       if (e.propertyName === "max-width") {
@@ -32348,7 +32605,7 @@ const transferLight = createTheme({
 const legacyTransferLight = transferLight;
 const loadingBarProviderInjectionKey = createInjectionKey("n-loading-bar");
 const loadingBarApiInjectionKey = createInjectionKey("n-loading-bar-api");
-const style$7 = cB("loading-bar-container", `
+const style$8 = cB("loading-bar-container", `
  z-index: 5999;
  position: fixed;
  top: 0;
@@ -32514,7 +32771,7 @@ const NLoadingBar = defineComponent({
         yield init2();
       });
     }
-    const themeRef = useTheme("LoadingBar", "-loading-bar", style$7, loadingBarLight$1, providerProps, mergedClsPrefixRef);
+    const themeRef = useTheme("LoadingBar", "-loading-bar", style$8, loadingBarLight$1, providerProps, mergedClsPrefixRef);
     const cssVarsRef = computed(() => {
       const { self: { height, colorError, colorLoading } } = themeRef.value;
       return {
@@ -32643,6 +32900,314 @@ const NLoadingBarProvider = defineComponent({
       ),
       (_b = (_a2 = this.$slots).default) === null || _b === void 0 ? void 0 : _b.call(_a2)
     );
+  }
+});
+const NLogLoader = defineComponent({
+  name: "LogLoader",
+  props: {
+    clsPrefix: {
+      type: String,
+      required: true
+    }
+  },
+  setup() {
+    return {
+      locale: useLocale("Log").localeRef
+    };
+  },
+  render() {
+    const { clsPrefix } = this;
+    return h(
+      "div",
+      { class: `${clsPrefix}-log-loader` },
+      h(NBaseLoading, { clsPrefix, strokeWidth: 24, scale: 0.85 }),
+      h("span", { class: `${clsPrefix}-log-loader__content` }, this.locale.loading)
+    );
+  }
+});
+const logInjectionKey = createInjectionKey("n-log");
+const NLogLine = defineComponent({
+  props: {
+    line: {
+      type: String,
+      default: ""
+    }
+  },
+  setup(props) {
+    const { trimRef, highlightRef, languageRef, mergedHljsRef } = (
+      // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+      inject(logInjectionKey)
+    );
+    const selfRef = ref(null);
+    const maybeTrimmedLinesRef = computed(() => {
+      return trimRef.value ? props.line.trim() : props.line;
+    });
+    function setInnerHTML() {
+      if (selfRef.value) {
+        selfRef.value.innerHTML = generateCodeHTML(languageRef.value, maybeTrimmedLinesRef.value);
+      }
+    }
+    function generateCodeHTML(language, code) {
+      const { value: hljs } = mergedHljsRef;
+      if (hljs) {
+        if (language && hljs.getLanguage(language)) {
+          return hljs.highlight(code, { language }).value;
+        }
+      }
+      return code;
+    }
+    onMounted(() => {
+      if (highlightRef.value) {
+        setInnerHTML();
+      }
+    });
+    watch(toRef(props, "line"), () => {
+      if (highlightRef.value) {
+        setInnerHTML();
+      }
+    });
+    return {
+      highlight: highlightRef,
+      selfRef,
+      maybeTrimmedLines: maybeTrimmedLinesRef
+    };
+  },
+  render() {
+    const { highlight, maybeTrimmedLines } = this;
+    return h("pre", { ref: "selfRef" }, highlight ? null : maybeTrimmedLines);
+  }
+});
+const style$7 = cB("log", `
+ position: relative;
+ box-sizing: border-box;
+ transition: border-color .3s var(--n-bezier);
+`, [c$1("pre", `
+ white-space: pre-wrap;
+ word-break: break-word;
+ margin: 0;
+ `), cB("log-loader", `
+ transition:
+ color .3s var(--n-bezier),
+ background-color .3s var(--n-bezier),
+ border-color .3s var(--n-bezier);
+ box-sizing: border-box;
+ position: absolute;
+ right: 16px;
+ top: 8px;
+ height: 34px;
+ border-radius: 17px;
+ line-height: 34px;
+ white-space: nowrap;
+ overflow: hidden;
+ border: var(--n-loader-border);
+ color: var(--n-loader-text-color);
+ background-color: var(--n-loader-color);
+ font-size: var(--n-loader-font-size);
+ `, [fadeInScaleUpTransition(), cE("content", `
+ display: inline-block;
+ vertical-align: bottom;
+ line-height: 34px;
+ padding-left: 40px;
+ padding-right: 20px;
+ white-space: nowrap;
+ `), cB("base-loading", `
+ color: var(--n-loading-color);
+ position: absolute;
+ left: 12px;
+ top: calc(50% - 10px);
+ font-size: 20px;
+ width: 20px;
+ height: 20px;
+ display: inline-block;
+ `)])]);
+const logProps = Object.assign(Object.assign({}, useTheme.props), { loading: Boolean, trim: Boolean, log: String, fontSize: {
+  type: Number,
+  default: 14
+}, lines: {
+  type: Array,
+  default: () => []
+}, lineHeight: {
+  type: Number,
+  default: 1.25
+}, language: String, rows: {
+  type: Number,
+  default: 15
+}, offsetTop: {
+  type: Number,
+  default: 0
+}, offsetBottom: {
+  type: Number,
+  default: 0
+}, hljs: Object, onReachTop: Function, onReachBottom: Function, onRequireMore: Function });
+const NLog = defineComponent({
+  name: "Log",
+  props: logProps,
+  setup(props) {
+    const { mergedClsPrefixRef, inlineThemeDisabled } = useConfig(props);
+    const silentRef = ref(false);
+    const highlightRef = computed(() => {
+      return props.language !== void 0;
+    });
+    const styleHeightRef = computed(() => {
+      return `calc(${Math.round(props.rows * props.lineHeight * props.fontSize)}px)`;
+    });
+    const mergedLinesRef = computed(() => {
+      const { log } = props;
+      if (log) {
+        return log.split("\n");
+      }
+      return props.lines;
+    });
+    const scrollbarRef = ref(null);
+    const themeRef = useTheme("Log", "-log", style$7, logLight$1, props, mergedClsPrefixRef);
+    function handleScroll(e) {
+      const container = e.target;
+      const content = container.firstElementChild;
+      if (silentRef.value) {
+        void nextTick(() => {
+          silentRef.value = false;
+        });
+        return;
+      }
+      const containerHeight = container.offsetHeight;
+      const containerScrollTop = container.scrollTop;
+      const contentHeight = content.offsetHeight;
+      const scrollTop = containerScrollTop;
+      const scrollBottom = contentHeight - containerScrollTop - containerHeight;
+      if (scrollTop <= props.offsetTop) {
+        const { onReachTop, onRequireMore } = props;
+        if (onRequireMore)
+          onRequireMore("top");
+        if (onReachTop)
+          onReachTop();
+      }
+      if (scrollBottom <= props.offsetBottom) {
+        const { onReachBottom, onRequireMore } = props;
+        if (onRequireMore)
+          onRequireMore("bottom");
+        if (onReachBottom)
+          onReachBottom();
+      }
+    }
+    const handleWheel = throttle(_handleWheel, 300);
+    function _handleWheel(e) {
+      if (silentRef.value) {
+        void nextTick(() => {
+          silentRef.value = false;
+        });
+        return;
+      }
+      if (scrollbarRef.value) {
+        const { containerRef, contentRef } = scrollbarRef.value;
+        if (containerRef && contentRef) {
+          const containerHeight = containerRef.offsetHeight;
+          const containerScrollTop = containerRef.scrollTop;
+          const contentHeight = contentRef.offsetHeight;
+          const scrollTop = containerScrollTop;
+          const scrollBottom = contentHeight - containerScrollTop - containerHeight;
+          const deltaY = e.deltaY;
+          if (scrollTop === 0 && deltaY < 0) {
+            const { onRequireMore } = props;
+            if (onRequireMore)
+              onRequireMore("top");
+          }
+          if (scrollBottom <= 0 && deltaY > 0) {
+            const { onRequireMore } = props;
+            if (onRequireMore)
+              onRequireMore("bottom");
+          }
+        }
+      }
+    }
+    function scrollTo(options) {
+      const { value: scrollbarInst } = scrollbarRef;
+      if (!scrollbarInst)
+        return;
+      const { silent, top, position } = options;
+      if (silent) {
+        silentRef.value = true;
+      }
+      if (top !== void 0) {
+        scrollbarInst.scrollTo({ left: 0, top });
+      } else if (position === "bottom" || position === "top") {
+        scrollbarInst.scrollTo({ position });
+      }
+    }
+    function scrollToTop(silent = false) {
+      warn$2("log", "`scrollToTop` is deprecated, please use `scrollTo({ position: 'top'})` instead.");
+      scrollTo({
+        position: "top",
+        silent
+      });
+    }
+    function scrollToBottom(silent = false) {
+      warn$2("log", "`scrollToTop` is deprecated, please use `scrollTo({ position: 'bottom'})` instead.");
+      scrollTo({
+        position: "bottom",
+        silent
+      });
+    }
+    provide(logInjectionKey, {
+      languageRef: toRef(props, "language"),
+      mergedHljsRef: useHljs(props),
+      trimRef: toRef(props, "trim"),
+      highlightRef
+    });
+    const exportedMethods = {
+      scrollTo
+    };
+    const cssVarsRef = computed(() => {
+      const { self: { loaderFontSize, loaderTextColor, loaderColor, loaderBorder, loadingColor }, common: { cubicBezierEaseInOut: cubicBezierEaseInOut2 } } = themeRef.value;
+      return {
+        "--n-bezier": cubicBezierEaseInOut2,
+        "--n-loader-font-size": loaderFontSize,
+        "--n-loader-border": loaderBorder,
+        "--n-loader-color": loaderColor,
+        "--n-loader-text-color": loaderTextColor,
+        "--n-loading-color": loadingColor
+      };
+    });
+    const themeClassHandle = inlineThemeDisabled ? useThemeClass("log", void 0, cssVarsRef, props) : void 0;
+    return Object.assign(Object.assign({}, exportedMethods), {
+      mergedClsPrefix: mergedClsPrefixRef,
+      scrollbarRef,
+      mergedTheme: themeRef,
+      styleHeight: styleHeightRef,
+      mergedLines: mergedLinesRef,
+      scrollToTop,
+      scrollToBottom,
+      handleWheel,
+      handleScroll,
+      cssVars: inlineThemeDisabled ? void 0 : cssVarsRef,
+      themeClass: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.themeClass,
+      onRender: themeClassHandle === null || themeClassHandle === void 0 ? void 0 : themeClassHandle.onRender
+    });
+  },
+  render() {
+    const { mergedClsPrefix, mergedTheme, onRender } = this;
+    onRender === null || onRender === void 0 ? void 0 : onRender();
+    return h("div", {
+      class: [`${mergedClsPrefix}-log`, this.themeClass],
+      style: [
+        {
+          lineHeight: this.lineHeight,
+          height: this.styleHeight
+        },
+        this.cssVars
+      ],
+      onWheelPassive: this.handleWheel
+    }, [
+      h(NScrollbar$1, { ref: "scrollbarRef", theme: mergedTheme.peers.Scrollbar, themeOverrides: mergedTheme.peerOverrides.Scrollbar, onScroll: this.handleScroll }, {
+        default: () => h(NCode, { internalNoHighlight: true, internalFontSize: this.fontSize, theme: mergedTheme.peers.Code, themeOverrides: mergedTheme.peerOverrides.Code }, {
+          default: () => this.mergedLines.map((line, index) => {
+            return h(NLogLine, { key: index, line });
+          })
+        })
+      }),
+      h(Transition, { name: "fade-in-scale-up-transition" }, {
+        default: () => this.loading ? h(NLogLoader, { clsPrefix: mergedClsPrefix }) : null
+      })
+    ]);
   }
 });
 const menuInjectionKey = createInjectionKey("n-menu");
@@ -37146,10 +37711,10 @@ const NThemeEditor = defineComponent({
                   const compNamePatternLower = compNamePattern.toLowerCase();
                   const varNamePatternLower = varNamePattern.toLowerCase();
                   let filteredItemsCount = 0;
-                  const collapsedItems = themeKeys.filter((themeKey) => {
-                    return themeKey.toLowerCase().includes(compNamePatternLower);
-                  }).map((themeKey) => {
-                    const componentTheme = themeKey === "common" ? this.themeCommonDefault : theme[themeKey];
+                  const collapsedItems = themeKeys.filter((themeKey2) => {
+                    return themeKey2.toLowerCase().includes(compNamePatternLower);
+                  }).map((themeKey2) => {
+                    const componentTheme = themeKey2 === "common" ? this.themeCommonDefault : theme[themeKey2];
                     if (componentTheme === void 0) {
                       return null;
                     }
@@ -37160,7 +37725,7 @@ const NThemeEditor = defineComponent({
                       return null;
                     }
                     filteredItemsCount += 1;
-                    return h(NCollapseItem, { title: themeKey, name: themeKey }, {
+                    return h(NCollapseItem, { title: themeKey2, name: themeKey2 }, {
                       default: () => h(NGrid, { xGap: 32, yGap: 16, responsive: "screen", cols: this.isMaximized ? "1 xs:1 s:2 m:3 l:4" : 1 }, {
                         default: () => varKeys.map((varKey) => h(NGi, null, {
                           default: () => {
@@ -37171,21 +37736,21 @@ const NThemeEditor = defineComponent({
                               h("div", { key: `${varKey}Label`, style: {
                                 wordBreak: "break-word"
                               } }, varKey),
-                              showColorPicker(varKey) ? h(NColorPicker, { key: varKey, modes: ["rgb", "hex"], value: ((_b2 = (_a3 = this.tempOverrides) === null || _a3 === void 0 ? void 0 : _a3[themeKey]) === null || _b2 === void 0 ? void 0 : _b2[varKey]) || componentTheme[varKey], onComplete: this.applyTempOverrides, onUpdateValue: (value) => {
-                                this.setTempOverrides(themeKey, varKey, value);
+                              showColorPicker(varKey) ? h(NColorPicker, { key: varKey, modes: ["rgb", "hex"], value: ((_b2 = (_a3 = this.tempOverrides) === null || _a3 === void 0 ? void 0 : _a3[themeKey2]) === null || _b2 === void 0 ? void 0 : _b2[varKey]) || componentTheme[varKey], onComplete: this.applyTempOverrides, onUpdateValue: (value) => {
+                                this.setTempOverrides(themeKey2, varKey, value);
                               } }, {
                                 action: () => {
                                   var _a4, _b3;
-                                  return h(NButton, { size: "small", disabled: componentTheme[varKey] === ((_b3 = (_a4 = this.tempOverrides) === null || _a4 === void 0 ? void 0 : _a4[themeKey]) === null || _b3 === void 0 ? void 0 : _b3[varKey]), onClick: () => {
-                                    this.setTempOverrides(themeKey, varKey, componentTheme[varKey]);
+                                  return h(NButton, { size: "small", disabled: componentTheme[varKey] === ((_b3 = (_a4 = this.tempOverrides) === null || _a4 === void 0 ? void 0 : _a4[themeKey2]) === null || _b3 === void 0 ? void 0 : _b3[varKey]), onClick: () => {
+                                    this.setTempOverrides(themeKey2, varKey, componentTheme[varKey]);
                                     this.applyTempOverrides();
                                   } }, {
                                     default: () => this.locale.restore
                                   });
                                 }
                               }) : h(NInput, { key: varKey, onChange: this.applyTempOverrides, onUpdateValue: (value) => {
-                                this.setTempOverrides(themeKey, varKey, value);
-                              }, value: ((_d = (_c = this.tempOverrides) === null || _c === void 0 ? void 0 : _c[themeKey]) === null || _d === void 0 ? void 0 : _d[varKey]) || "", placeholder: componentTheme[varKey] })
+                                this.setTempOverrides(themeKey2, varKey, value);
+                              }, value: ((_d = (_c = this.tempOverrides) === null || _c === void 0 ? void 0 : _c[themeKey2]) === null || _d === void 0 ? void 0 : _d[varKey]) || "", placeholder: componentTheme[varKey] })
                             );
                           }
                         }))
@@ -37205,12 +37770,12 @@ const NThemeEditor = defineComponent({
     });
   }
 });
-const _hoisted_1$g = {
+const _hoisted_1$i = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -37220,7 +37785,7 @@ const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -37230,7 +37795,7 @@ const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -37240,41 +37805,56 @@ const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$a];
+const _hoisted_5$7 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$7);
+    return openBlock(), createElementBlock("svg", _hoisted_1$i, _hoisted_5$7);
   }
 });
-const _hoisted_1$f = {
+const _hoisted_1$h = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 32C132.29 32 32 132.29 32 256s100.29 224 224 224s224-100.29 224-224S379.71 32 256 32zM128.72 383.28A180 180 0 0 1 256 76v360a178.82 178.82 0 0 1-127.28-52.72z",
+    d: "M64 164v244a56 56 0 0 0 56 56h272a56 56 0 0 0 56-56V164a4 4 0 0 0-4-4H68a4 4 0 0 0-4 4zm267 151.63l-63.69 63.68a16 16 0 0 1-22.62 0L181 315.63c-6.09-6.09-6.65-16-.85-22.38a16 16 0 0 1 23.16-.56L240 329.37V224.45c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 272 224v105.37l36.69-36.68a16 16 0 0 1 23.16.56c5.8 6.37 5.24 16.29-.85 22.38z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$d = [_hoisted_2$e];
-const ContrastSharp = defineComponent({
-  name: "ContrastSharp",
+const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
+  "rect",
+  {
+    x: "32",
+    y: "48",
+    width: "448",
+    height: "80",
+    rx: "32",
+    ry: "32",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$b = [_hoisted_2$f, _hoisted_3$e];
+const Archive = defineComponent({
+  name: "Archive",
   render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_3$d);
+    return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_4$b);
   }
 });
-const _hoisted_1$e = {
+const _hoisted_1$g = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
@@ -37284,7 +37864,7 @@ const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
@@ -37294,7 +37874,7 @@ const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
@@ -37304,19 +37884,19 @@ const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$6 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
+const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$a];
 const Create = defineComponent({
   name: "Create",
   render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_5$6);
+    return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$6);
   }
 });
-const _hoisted_1$d = {
+const _hoisted_1$f = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
@@ -37326,7 +37906,7 @@ const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
@@ -37336,7 +37916,7 @@ const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
@@ -37346,14 +37926,46 @@ const _hoisted_4$8 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$5 = [_hoisted_2$c, _hoisted_3$b, _hoisted_4$8];
+const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
 const Cube = defineComponent({
   name: "Cube",
   render: function render5(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_5$5);
+    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$5);
   }
 });
-const _hoisted_1$c = {
+const _hoisted_1$e = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M428 224H288a48 48 0 0 1-48-48V36a4 4 0 0 0-4-4h-92a64 64 0 0 0-64 64v320a64 64 0 0 0 64 64h224a64 64 0 0 0 64-64V228a4 4 0 0 0-4-4zm-92 160H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32zm0-80H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M419.22 188.59L275.41 44.78a2 2 0 0 0-3.41 1.41V176a16 16 0 0 0 16 16h129.81a2 2 0 0 0 1.41-3.41z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
+const DocumentText = defineComponent({
+  name: "DocumentText",
+  render: function render6(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
+  }
+});
+const _hoisted_1$d = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37381,11 +37993,11 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
 const Duplicate = defineComponent({
   name: "Duplicate",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$7);
+  render: function render7(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
   }
 });
-const _hoisted_1$b = {
+const _hoisted_1$c = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37403,11 +38015,11 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$9 = [_hoisted_2$a];
 const Image$1 = defineComponent({
   name: "Image",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_3$9);
+  render: function render8(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_3$9);
   }
 });
-const _hoisted_1$a = {
+const _hoisted_1$b = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37435,11 +38047,11 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
 const Images = defineComponent({
   name: "Images",
-  render: function render8(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$6);
+  render: function render9(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
-const _hoisted_1$9 = {
+const _hoisted_1$a = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37467,11 +38079,11 @@ const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
 const PowerSharp = defineComponent({
   name: "PowerSharp",
-  render: function render9(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_4$5);
+  render: function render10(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
   }
 });
-const _hoisted_1$8 = {
+const _hoisted_1$9 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37489,11 +38101,11 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$6 = [_hoisted_2$7];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
-  render: function render10(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$6);
+  render: function render11(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
   }
 });
-const _hoisted_1$7 = {
+const _hoisted_1$8 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37511,11 +38123,11 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$5 = [_hoisted_2$6];
 const Speedometer = defineComponent({
   name: "Speedometer",
-  render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_3$5);
+  render: function render12(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$5);
   }
 });
-const _hoisted_1$6 = {
+const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37563,11 +38175,11 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render12(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
+  render: function render13(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_6$2);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37617,11 +38229,11 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render13(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$3);
+  render: function render14(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
   }
 });
-const _hoisted_1$4 = {
+const _hoisted_1$5 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -37671,8 +38283,8 @@ const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
 const Wifi = defineComponent({
   name: "Wifi",
-  render: function render14(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_6$1);
+  render: function render15(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$1);
   }
 });
 /*!
@@ -39473,8 +40085,8 @@ function extractChangingRecords(to, from) {
 function useRouter() {
   return inject(routerKey);
 }
-const _hoisted_1$3 = { class: "navbar" };
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _hoisted_1$4 = { class: "navbar" };
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
   setup(__props) {
     function renderIcon(icon) {
@@ -39492,8 +40104,12 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Images)
       },
       {
-        label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-        key: "extra",
+        label: () => h(
+          RouterLink,
+          { to: "/imageProcessing" },
+          { default: () => "Image Processing" }
+        ),
+        key: "imageProcessing",
         icon: renderIcon(Duplicate)
       },
       {
@@ -39521,6 +40137,11 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         icon: renderIcon(Speedometer)
       },
       {
+        label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+        key: "extra",
+        icon: renderIcon(Archive)
+      },
+      {
         label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
         key: "settings",
         icon: renderIcon(SettingsSharp)
@@ -39528,7 +40149,7 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     ];
     let collapsed = ref(true);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$3, [
+      return openBlock(), createElementBlock("div", _hoisted_1$4, [
         createVNode(unref(NLayout), {
           style: { "height": "100%", "overflow": "visible" },
           "has-sider": "",
@@ -39675,18 +40296,13 @@ const useState = defineStore("state", () => {
         seed: null
       }
     },
-    sd_upscale: {
-      images: [],
-      currentImage: "",
-      genData: {
-        time_taken: null,
-        seed: null
-      }
-    },
-    extra: {
+    imageProcessing: {
       images: [],
       currentImage: "",
       tab: "upscale"
+    },
+    extra: {
+      tab: "dependencies"
     },
     tagger: {
       positivePrompt: /* @__PURE__ */ new Map(),
@@ -39707,6 +40323,10 @@ const useState = defineStore("state", () => {
     perf_drawer: {
       enabled: false,
       gpus: []
+    },
+    log_drawer: {
+      enabled: false,
+      logs: []
     },
     models: [],
     selected_model: ref(null),
@@ -39734,7 +40354,7 @@ const useState = defineStore("state", () => {
   }
   return { state, fetchCapabilites, fetchAutofill };
 });
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "InitHandler",
   setup(__props) {
     console.log(
@@ -39757,12 +40377,47 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+  __name: "LogDrawer",
+  setup(__props) {
+    const glob = useState();
+    const log = computed(() => glob.state.log_drawer.logs.join("\n"));
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NDrawer), {
+        placement: "bottom",
+        show: unref(glob).state.log_drawer.enabled,
+        "onUpdate:show": _cache[0] || (_cache[0] = ($event) => unref(glob).state.log_drawer.enabled = $event),
+        "auto-focus": false,
+        "show-mask": true,
+        height: "70vh"
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NDrawerContent), {
+            closable: "",
+            title: "Log - 500 latest messages"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NLog), {
+                ref: "logRef",
+                log: log.value,
+                trim: "",
+                style: { "height": "100%" }
+              }, null, 8, ["log"])
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      }, 8, ["show"]);
+    };
+  }
+});
+const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
 const _hoisted_3$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
 const _hoisted_5$1 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
   setup(__props) {
     const global2 = useState();
@@ -39799,7 +40454,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 2
                     }, 1024),
-                    createBaseVNode("div", _hoisted_1$2, [
+                    createBaseVNode("div", _hoisted_1$3, [
                       _hoisted_2$2,
                       createVNode(unref(NProgress), {
                         percentage: gpu.utilization,
@@ -39832,12 +40487,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$1 = /* @__PURE__ */ createBaseVNode("a", {
+const _hoisted_1$2 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://huggingface.co/settings/tokens"
 }, "this page", -1);
 const _hoisted_2$1 = { style: { "margin-top": "8px", "width": "100%", "display": "flex", "justify-content": "end" } };
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "SecretsHandler",
   setup(__props) {
     const message = useMessage();
@@ -39878,7 +40533,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           createVNode(unref(NText), null, {
             default: withCtx(() => [
               createTextVNode(" API does not have a HuggingFace token. Please enter a valid token to continue. You can get a token from "),
-              _hoisted_1$1
+              _hoisted_1$2
             ]),
             _: 1
           }),
@@ -39909,128 +40564,13 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-function progressForward(progress, global2) {
-  if (progress === 0) {
-    return 0;
-  } else if (global2.state.progress <= progress) {
-    return progress;
-  } else {
-    return global2.state.progress;
-  }
-}
-function currentStepForward(currentStep, global2) {
-  if (currentStep === 0) {
-    return 0;
-  } else if (global2.state.current_step <= currentStep) {
-    return currentStep;
-  } else {
-    return global2.state.current_step;
-  }
-}
-function processWebSocket(message, global2, notificationProvider) {
-  switch (message.type) {
-    case "test": {
-      break;
-    }
-    case "progress": {
-      global2.state.progress = message.data.progress;
-      break;
-    }
-    case "txt2img": {
-      global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "img2img": {
-      global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "inpainting": {
-      global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "controlnet": {
-      global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "notification": {
-      message.data.timeout = message.data.timeout || 5e3;
-      console.log(message.data.message);
-      notificationProvider.create({
-        type: message.data.severity,
-        title: message.data.title,
-        content: message.data.message,
-        duration: message.data.timeout
-      });
-      break;
-    }
-    case "aitemplate_compile": {
-      global2.state.aitBuildStep = {
-        ...global2.state.aitBuildStep,
-        ...message.data
-      };
-      break;
-    }
-    case "onnx_compile": {
-      global2.state.onnxBuildStep = {
-        ...global2.state.onnxBuildStep,
-        ...message.data
-      };
-      break;
-    }
-    case "cluster_stats": {
-      global2.state.perf_drawer.gpus = message.data;
-      break;
-    }
-    case "token": {
-      if (message.data.huggingface === "missing") {
-        global2.state.secrets.huggingface = "missing";
-      }
-      break;
-    }
-    case "refresh_capabilities": {
-      global2.fetchCapabilites().then(() => {
-        console.log("Capabilities refreshed");
-      }).catch((error) => {
-        console.error(error);
-      });
-      break;
-    }
-    default: {
-      console.log(message);
-    }
-  }
-}
 var _a;
 const isClient = typeof window !== "undefined";
 const isFunction = (val) => typeof val === "function";
 const isString = (val) => typeof val === "string";
 const noop = () => {
 };
-isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
 function resolveUnref(r) {
   return typeof r === "function" ? r() : unref(r);
 }
@@ -40135,6 +40675,55 @@ function useEventListener(...args) {
     cleanup();
   };
   tryOnScopeDispose(stop);
+  return stop;
+}
+let _iOSWorkaround = false;
+function onClickOutside(target, handler, options = {}) {
+  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
+  if (!window2)
+    return;
+  if (isIOS && !_iOSWorkaround) {
+    _iOSWorkaround = true;
+    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop));
+  }
+  let shouldListen = true;
+  const shouldIgnore = (event) => {
+    return ignore.some((target2) => {
+      if (typeof target2 === "string") {
+        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event.target || event.composedPath().includes(el));
+      } else {
+        const el = unrefElement(target2);
+        return el && (event.target === el || event.composedPath().includes(el));
+      }
+    });
+  };
+  const listener = (event) => {
+    const el = unrefElement(target);
+    if (!el || el === event.target || event.composedPath().includes(el))
+      return;
+    if (event.detail === 0)
+      shouldListen = !shouldIgnore(event);
+    if (!shouldListen) {
+      shouldListen = true;
+      return;
+    }
+    handler(event);
+  };
+  const cleanup = [
+    useEventListener(window2, "click", listener, { passive: true, capture }),
+    useEventListener(window2, "pointerdown", (e) => {
+      const el = unrefElement(target);
+      if (el)
+        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
+    }, { passive: true }),
+    detectIframe && useEventListener(window2, "blur", (event) => {
+      var _a2;
+      const el = unrefElement(target);
+      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
+        handler(event);
+    })
+  ].filter(Boolean);
+  const stop = () => cleanup.forEach((fn) => fn());
   return stop;
 }
 const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
@@ -40332,6 +40921,131 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
+function progressForward(progress, global2) {
+  if (progress === 0) {
+    return 0;
+  } else if (global2.state.progress <= progress) {
+    return progress;
+  } else {
+    return global2.state.progress;
+  }
+}
+function currentStepForward(currentStep, global2) {
+  if (currentStep === 0) {
+    return 0;
+  } else if (global2.state.current_step <= currentStep) {
+    return currentStep;
+  } else {
+    return global2.state.current_step;
+  }
+}
+function processWebSocket(message, global2, notificationProvider) {
+  switch (message.type) {
+    case "test": {
+      break;
+    }
+    case "progress": {
+      global2.state.progress = message.data.progress;
+      break;
+    }
+    case "txt2img": {
+      global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "img2img": {
+      global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "inpainting": {
+      global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "controlnet": {
+      global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
+      global2.state.progress = progressForward(message.data.progress, global2);
+      global2.state.current_step = currentStepForward(
+        message.data.current_step,
+        global2
+      );
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "notification": {
+      message.data.timeout = message.data.timeout || 5e3;
+      console.log(message.data.message);
+      notificationProvider.create({
+        type: message.data.severity,
+        title: message.data.title,
+        content: message.data.message,
+        duration: message.data.timeout
+      });
+      break;
+    }
+    case "aitemplate_compile": {
+      global2.state.aitBuildStep = {
+        ...global2.state.aitBuildStep,
+        ...message.data
+      };
+      break;
+    }
+    case "onnx_compile": {
+      global2.state.onnxBuildStep = {
+        ...global2.state.onnxBuildStep,
+        ...message.data
+      };
+      break;
+    }
+    case "cluster_stats": {
+      global2.state.perf_drawer.gpus = message.data;
+      break;
+    }
+    case "token": {
+      if (message.data.huggingface === "missing") {
+        global2.state.secrets.huggingface = "missing";
+      }
+      break;
+    }
+    case "refresh_capabilities": {
+      global2.fetchCapabilites().then(() => {
+        console.log("Capabilities refreshed");
+      }).catch((error) => {
+        console.error(error);
+      });
+      break;
+    }
+    case "log": {
+      const messages = message.data.message.split("\n");
+      for (const msg2 of messages) {
+        global2.state.log_drawer.logs.splice(0, 0, msg2);
+        if (global2.state.log_drawer.logs.length > 500) {
+          global2.state.log_drawer.logs.pop();
+        }
+      }
+      break;
+    }
+    default: {
+      console.log(message);
+    }
+  }
+}
 const useWebsocket = defineStore("websocket", () => {
   const notificationProvider = useNotification();
   const messageProvider = useMessage();
@@ -40458,7 +41172,7 @@ async function startWebsocket(messageProvider) {
 }
 function getTextBoundaries(elem) {
   if (elem === null) {
-    console.log("Element is null");
+    console.error("Element is null");
     return [0, 0];
   }
   if (elem.tagName === "INPUT" && elem.type === "text" || elem.tagName === "TEXTAREA") {
@@ -40467,7 +41181,7 @@ function getTextBoundaries(elem) {
       elem.selectionEnd === null ? 0 : elem.selectionEnd
     ];
   }
-  console.log("Element is not input");
+  console.error("Element is not input");
   return [0, 0];
 }
 function promptHandleKeyUp(e, data, key, globalState) {
@@ -40572,20 +41286,23 @@ function promptHandleKeyUp(e, data, key, globalState) {
         toAppend.push(b);
       }
     }
-    for (let i = 0; i < globalState.state.autofill.length; i++) {
-      if (globalState.state.autofill[i].toLowerCase().includes(currentTokenStripped.toLowerCase())) {
-        if (toAppend.length >= 30) {
-          break;
+    const lowercaseStrippedToken = currentTokenStripped.toLowerCase();
+    if (lowercaseStrippedToken.length >= 3) {
+      for (let i = 0; i < globalState.state.autofill.length; i++) {
+        if (globalState.state.autofill[i].toLowerCase().includes(lowercaseStrippedToken)) {
+          if (toAppend.length >= 30) {
+            break;
+          }
+          const b = document.createElement("DIV");
+          b.innerText = globalState.state.autofill[i];
+          b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
+          b.addEventListener("click", function() {
+            input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
+            data[key] = input.value;
+            closeAllLists(void 0, input);
+          });
+          toAppend.push(b);
         }
-        const b = document.createElement("DIV");
-        b.innerText = globalState.state.autofill[i];
-        b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
-        b.addEventListener("click", function() {
-          input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
-          data[key] = input.value;
-          closeAllLists(void 0, input);
-        });
-        toAppend.push(b);
       }
     }
     if (toAppend.length === 0) {
@@ -40598,6 +41315,9 @@ function promptHandleKeyUp(e, data, key, globalState) {
     for (let i = 0; i < toAppend.length; i++) {
       div.appendChild(toAppend[i]);
     }
+    onClickOutside(div, () => {
+      closeAllLists(void 0, input);
+    });
     const autocompleteList = document.getElementById("autocomplete-list");
     const x = autocompleteList == null ? void 0 : autocompleteList.getElementsByTagName("div");
     if (e.key === "ArrowDown") {
@@ -40756,6 +41476,7 @@ const defaultSettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    enable_websocket_logging: true,
     clip_skip: 1,
     clip_quantization: "full",
     autocast: true,
@@ -40824,7 +41545,8 @@ const defaultSettings = {
     enable_theme_editor: false,
     image_browser_columns: 5,
     on_change_timer: 2e3,
-    nsfw_ok_threshold: 0
+    nsfw_ok_threshold: 0,
+    background_image_override: ""
   },
   sampler_config: {}
 };
@@ -41051,8 +41773,8 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-4aa96a77"), n = n(), popScopeId(), n);
-const _hoisted_1 = { class: "top-bar" };
+const _withScopeId = (n) => (pushScopeId("data-v-44d84e0e"), n = n(), popScopeId(), n);
+const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
 const _hoisted_4 = { key: 2 };
@@ -41067,12 +41789,9 @@ const _hoisted_12 = { style: { "display": "inline-flex" } };
 const _hoisted_13 = { key: 1 };
 const _hoisted_14 = { class: "progress-container" };
 const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center" } };
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
-    useCssVars((_ctx) => ({
-      "37a4cfa2": backgroundColor.value
-    }));
     const router2 = useRouter();
     const websocketState = useWebsocket();
     const global2 = useState();
@@ -41088,21 +41807,39 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       return filteredModels.value.filter((model) => {
         return model.backend === "PyTorch" && model.valid === true;
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       });
     });
     const aitModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "AITemplate";
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       });
     });
     const onnxModels = computed(() => {
       return filteredModels.value.filter((model) => {
         return model.backend === "ONNX";
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       });
     });
     const vaeModels = computed(() => {
@@ -41145,7 +41882,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       return filteredModels.value.filter((model) => {
         return model.backend === "Textual Inversion";
       }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
+        if (a.state === "loaded" && b.state !== "loaded") {
+          return -1;
+        } else if (a.state !== "loaded" && b.state === "loaded") {
+          return 1;
+        } else {
+          return a.name.localeCompare(b.name);
+        }
       });
     });
     function refreshModels() {
@@ -41193,11 +41936,11 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               if (allLoaded.length > 0) {
                 settings.data.settings.model = allLoaded[0];
                 console.log(
-                  "Set current model to first available model: ",
+                  "Setting current model to first available model: ",
                   settings.data.settings.model
                 );
               } else {
-                console.log("No models available");
+                console.log("No models available, setting current model to null");
                 settings.data.settings.model = null;
               }
             }
@@ -41358,12 +42101,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       global2.state.models.splice(0, global2.state.models.length);
       console.log("Reset models");
     }
-    const perfIcon = () => {
-      return h(StatsChart);
-    };
-    const themeIcon = () => {
-      return h(ContrastSharp);
-    };
     websocketState.onConnectedCallbacks.push(() => {
       refreshModels();
     });
@@ -41473,6 +42210,16 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
     const dropdownOptions = [
       {
+        label: "Log",
+        key: "log",
+        icon: renderIcon(DocumentText)
+      },
+      {
+        label: "Performance",
+        key: "performance",
+        icon: renderIcon(StatsChart)
+      },
+      {
         label: "Reconnect",
         key: "reconnect",
         icon: renderIcon(SyncSharp)
@@ -41489,27 +42236,30 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
     ];
     async function dropdownSelected(key) {
-      if (key === "reconnect") {
-        await startWebsocket(message);
-      } else if (key === "settings") {
-        router2.push("/settings");
-      } else if (key === "shutdown") {
-        await fetch(`${serverUrl}/api/general/shutdown`, {
-          method: "POST"
-        });
+      switch (key) {
+        case "reconnect":
+          await startWebsocket(message);
+          break;
+        case "settings":
+          router2.push("/settings");
+          break;
+        case "shutdown":
+          await fetch(`${serverUrl}/api/general/shutdown`, {
+            method: "POST"
+          });
+          break;
+        case "performance":
+          global2.state.perf_drawer.enabled = true;
+          break;
+        case "log":
+          global2.state.log_drawer.enabled = true;
+          break;
       }
     }
     startWebsocket(message);
-    const backgroundColor = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        return "#121215";
-      } else {
-        return "#fff";
-      }
-    });
     return (_ctx, _cache) => {
       var _a2;
-      return openBlock(), createElementBlock("div", _hoisted_1, [
+      return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
           options: generatedModelOptions.value,
@@ -41961,28 +42711,13 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }, null, 8, ["type", "render-icon", "loading"])
             ]),
             _: 1
-          }),
-          createVNode(unref(NButton), {
-            type: "success",
-            quaternary: "",
-            "icon-placement": "left",
-            "render-icon": perfIcon,
-            onClick: _cache[6] || (_cache[6] = ($event) => unref(global2).state.perf_drawer.enabled = true),
-            disabled: unref(global2).state.perf_drawer.enabled
-          }, null, 8, ["disabled"]),
-          createVNode(unref(NButton), {
-            quaternary: "",
-            "icon-placement": "left",
-            "render-icon": themeIcon,
-            style: { "margin-right": "8px" },
-            onClick: _cache[7] || (_cache[7] = ($event) => unref(settings).data.settings.frontend.theme = unref(settings).data.settings.frontend.theme === "dark" ? "light" : "dark")
           })
         ])
       ]);
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_4aa96a77_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_44d84e0e_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -41990,72 +42725,35 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-4aa96a77"]]);
-const _sfc_main$1 = {};
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-44d84e0e"]]);
+const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
   return openBlock(), createBlock(_component_RouterView);
 }
-const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["render", _sfc_render]]);
-const _sfc_main = /* @__PURE__ */ defineComponent({
-  __name: "App",
+const routerContainerVue = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["render", _sfc_render]]);
+const _hoisted_1 = /* @__PURE__ */ createBaseVNode("div", { id: "background" }, null, -1);
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "Content",
   setup(__props) {
-    useCssVars((_ctx) => ({
-      "da5fb46e": backgroundColor.value,
-      "ce1f7da0": theme.value.common.popoverColor,
-      "4b9efd50": theme.value.common.borderRadius,
-      "4bfe4c5a": theme.value.common.pressedColor,
-      "0fa4b509": theme.value.common.primaryColorHover
-    }));
-    const settings = useSettings();
-    const theme = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        document.body.style.backgroundColor = "#121215";
-        return darkTheme;
-      } else {
-        document.body.style.backgroundColor = "white";
-        return lightTheme;
-      }
-    });
-    const backgroundColor = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        return "#121215";
-      } else {
-        return "#fff";
-      }
-    });
-    const overrides = {
-      common: {
-        fontSize: "15px",
-        fontWeight: "600"
-      }
-    };
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NConfigProvider), {
-        theme: theme.value,
-        "theme-overrides": overrides,
-        class: "main"
+      return openBlock(), createBlock(unref(NNotificationProvider), {
+        placement: "bottom-right",
+        max: 3
       }, {
         default: withCtx(() => [
-          unref(settings).data.settings.frontend.enable_theme_editor ? (openBlock(), createBlock(unref(NThemeEditor), { key: 0 })) : createCommentVNode("", true),
-          createVNode(unref(NNotificationProvider), {
-            placement: "bottom-right",
-            max: 3
-          }, {
+          createVNode(unref(NLoadingBarProvider), null, {
             default: withCtx(() => [
-              createVNode(unref(NLoadingBarProvider), null, {
+              createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
-                  createVNode(unref(NMessageProvider), null, {
-                    default: withCtx(() => [
-                      createVNode(_sfc_main$3),
-                      createVNode(_sfc_main$6),
-                      createVNode(TopBarVue),
-                      createVNode(_sfc_main$5),
-                      createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
-                      createVNode(_sfc_main$4)
-                    ]),
-                    _: 1
-                  })
+                  _hoisted_1,
+                  createVNode(_sfc_main$4),
+                  createVNode(_sfc_main$8),
+                  createVNode(TopBarVue),
+                  createVNode(_sfc_main$7),
+                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
+                  createVNode(_sfc_main$5),
+                  createVNode(_sfc_main$6)
                 ]),
                 _: 1
               })
@@ -42064,7 +42762,80 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           })
         ]),
         _: 1
-      }, 8, ["theme"]);
+      });
+    };
+  }
+});
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "App",
+  setup(__props) {
+    useCssVars((_ctx) => {
+      var _a2, _b, _c;
+      return {
+        "2441c648": theme.value.common.popoverColor,
+        "521efb30": theme.value.common.borderRadius,
+        "65525eeb": theme.value.common.pressedColor,
+        "0c729ef1": theme.value.common.primaryColorHover,
+        "15a84ddb": blur.value,
+        "2259b162": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "f8e7ba4e": backgroundImage.value
+      };
+    });
+    const settings = useSettings();
+    const overrides = ref(null);
+    const theme = computed(() => {
+      var _a2, _b;
+      if (((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.base) === "light") {
+        return lightTheme;
+      } else {
+        return darkTheme;
+      }
+    });
+    provide(themeOverridesKey, overrides);
+    provide(themeKey, theme);
+    function updateTheme() {
+      fetch(`${serverUrl}/themes/${settings.data.settings.frontend.theme}.json`).then((res) => res.json()).then((data) => {
+        overrides.value = data;
+      });
+    }
+    updateTheme();
+    watch(() => settings.data.settings.frontend.theme, updateTheme);
+    const backgroundImage = computed(() => {
+      var _a2, _b, _c, _d;
+      if (settings.data.settings.frontend.background_image_override) {
+        return `url(${settings.data.settings.frontend.background_image_override})`;
+      } else if ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.backgroundImage) {
+        return `url(${(_d = (_c = overrides.value) == null ? void 0 : _c.volta) == null ? void 0 : _d.backgroundImage})`;
+      }
+      return void 0;
+    });
+    const blur = computed(() => {
+      var _a2, _b;
+      return `blur(${((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.blur) ?? "6px"})`;
+    });
+    watch(
+      () => overrides.value,
+      () => {
+        var _a2, _b;
+        document.body.style.backgroundColor = ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.common) == null ? void 0 : _b.baseColor) ?? theme.value.common.baseColor;
+      }
+    );
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NConfigProvider), {
+        theme: theme.value,
+        "theme-overrides": overrides.value,
+        class: "main"
+      }, {
+        default: withCtx(() => [
+          unref(settings).data.settings.frontend.enable_theme_editor ? (openBlock(), createBlock(unref(NThemeEditor), { key: 0 }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$1)
+            ]),
+            _: 1
+          })) : (openBlock(), createBlock(_sfc_main$1, { key: 1 }))
+        ]),
+        _: 1
+      }, 8, ["theme", "theme-overrides"]);
     };
   }
 });
@@ -42126,22 +42897,22 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js","assets/Image2ImageView.css"] : void 0)
     },
     {
-      path: "/extra",
-      name: "extra",
-      component: () => __vitePreload(() => import("./ExtraView.js"), true ? ["assets/ExtraView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ExtraView.css"] : void 0)
+      path: "/imageProcessing",
+      name: "imageProcessing",
+      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ImageProcessingView.css"] : void 0)
     },
     {
       path: "/models",
@@ -42159,6 +42930,11 @@ const router = createRouter({
       component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
     },
     {
+      path: "/extra",
+      name: "extra",
+      component: () => __vitePreload(() => import("./ExtraView.js"), true ? [] : void 0)
+    },
+    {
       path: "/test",
       name: "test",
       component: () => __vitePreload(() => import("./TestView.js"), true ? ["assets/TestView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js"] : void 0)
@@ -42166,7 +42942,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -42177,6 +42953,11 @@ const router = createRouter({
       path: "/tagger",
       name: "tagger",
       component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
+    },
+    {
+      path: "/:pathMatch(.*)",
+      name: "notFound",
+      component: () => __vitePreload(() => import("./404View.js"), true ? [] : void 0)
     }
   ]
 });
@@ -42186,187 +42967,190 @@ app.use(createPinia());
 app.use(router);
 app.mount("#app");
 export {
-  NInternalSelectMenu as $,
-  NGi as A,
-  NSpace as B,
-  NInput as C,
-  promptHandleKeyUp as D,
-  promptHandleKeyDown as E,
-  Fragment as F,
-  createCommentVNode as G,
-  NGrid as H,
-  spaceRegex as I,
-  pushScopeId as J,
-  popScopeId as K,
-  NTabPane as L,
-  NTabs as M,
-  NCard as N,
-  watch as O,
-  upscalerOptions as P,
-  NScrollbar as Q,
-  replaceable as R,
-  createInjectionKey as S,
-  cB as T,
-  inject as U,
-  useConfig as V,
-  useTheme as W,
-  popselectLight$1 as X,
-  toRef as Y,
-  useThemeClass as Z,
+  call as $,
+  pushScopeId as A,
+  popScopeId as B,
+  h as C,
+  ref as D,
+  NButton as E,
+  NIcon as F,
+  NTabPane as G,
+  NTabs as H,
+  Fragment as I,
+  watch as J,
+  upscalerOptions as K,
+  renderList as L,
+  NScrollbar as M,
+  NGi as N,
+  replaceable as O,
+  createInjectionKey as P,
+  cB as Q,
+  inject as R,
+  useConfig as S,
+  useTheme as T,
+  popselectLight$1 as U,
+  toRef as V,
+  useThemeClass as W,
+  NInternalSelectMenu as X,
+  createTreeMate as Y,
+  happensIn as Z,
   _export_sfc as _,
-  createElementBlock as a,
-  dataTableLight$1 as a$,
-  createTreeMate as a0,
-  happensIn as a1,
-  call as a2,
-  nextTick as a3,
-  keysOf as a4,
-  createTmOptions as a5,
-  provide as a6,
-  keep as a7,
-  createRefSetter as a8,
-  mergeEventHandlers as a9,
-  getSlot$1 as aA,
-  depx as aB,
-  formatLength as aC,
-  NScrollbar$1 as aD,
-  onBeforeUnmount as aE,
-  off as aF,
-  on as aG,
-  ChevronDownIcon as aH,
-  NDropdown as aI,
-  pxfy as aJ,
-  get as aK,
-  NIconSwitchTransition as aL,
-  NBaseLoading as aM,
-  ChevronRightIcon as aN,
-  VResizeObserver as aO,
-  warn$2 as aP,
-  cssrAnchorMetaName as aQ,
-  VVirtualList as aR,
-  NEmpty as aS,
-  repeat as aT,
-  beforeNextFrameOnce as aU,
-  fadeInScaleUpTransition as aV,
-  iconSwitchTransition as aW,
-  insideModal as aX,
-  insidePopover as aY,
-  createId as aZ,
-  Transition as a_,
-  omit as aa,
-  NPopover as ab,
-  popoverBaseProps as ac,
-  c$1 as ad,
-  cM as ae,
-  cNotM as af,
-  useLocale as ag,
-  useMergedState as ah,
-  watchEffect as ai,
-  useRtl as aj,
-  resolveSlot as ak,
-  NBaseIcon as al,
-  useAdjustedTo as am,
-  paginationLight$1 as an,
-  createKey as ao,
-  useMergedClsPrefix as ap,
-  ellipsisLight$1 as aq,
-  onDeactivated as ar,
-  mergeProps as as,
-  useStyle as at,
-  useFormItem as au,
-  useMemo as av,
-  cE as aw,
-  radioLight$1 as ax,
-  resolveWrappedSlot as ay,
-  flatten$2 as az,
-  createBaseVNode as b,
-  isSlotEmpty as b$,
-  loadingBarApiInjectionKey as b0,
-  throwError as b1,
-  AddIcon as b2,
-  NProgress as b3,
-  NFadeInExpandTransition as b4,
-  EyeIcon as b5,
-  fadeInHeightExpandTransition as b6,
-  Teleport as b7,
-  uploadLight$1 as b8,
-  useCssVars as b9,
-  getCurrentInstance as bA,
-  formLight$1 as bB,
-  commonVariables$m as bC,
-  formItemInjectionKey as bD,
+  useSettings as a,
+  AddIcon as a$,
+  nextTick as a0,
+  keysOf as a1,
+  createTmOptions as a2,
+  provide as a3,
+  keep as a4,
+  createRefSetter as a5,
+  mergeEventHandlers as a6,
+  omit as a7,
+  NPopover as a8,
+  popoverBaseProps as a9,
+  NScrollbar$1 as aA,
+  onBeforeUnmount as aB,
+  off as aC,
+  on as aD,
+  ChevronDownIcon as aE,
+  NDropdown as aF,
+  pxfy as aG,
+  get as aH,
+  NIconSwitchTransition as aI,
+  NBaseLoading as aJ,
+  ChevronRightIcon as aK,
+  VResizeObserver as aL,
+  warn$2 as aM,
+  cssrAnchorMetaName as aN,
+  VVirtualList as aO,
+  NEmpty as aP,
+  repeat as aQ,
+  beforeNextFrameOnce as aR,
+  fadeInScaleUpTransition as aS,
+  iconSwitchTransition as aT,
+  insideModal as aU,
+  insidePopover as aV,
+  createId as aW,
+  Transition as aX,
+  dataTableLight$1 as aY,
+  loadingBarApiInjectionKey as aZ,
+  throwError as a_,
+  c$1 as aa,
+  cM as ab,
+  cNotM as ac,
+  useLocale as ad,
+  useMergedState as ae,
+  watchEffect as af,
+  useRtl as ag,
+  resolveSlot as ah,
+  NBaseIcon as ai,
+  useAdjustedTo as aj,
+  paginationLight$1 as ak,
+  createKey as al,
+  useMergedClsPrefix as am,
+  ellipsisLight$1 as an,
+  onDeactivated as ao,
+  mergeProps as ap,
+  useStyle as aq,
+  useFormItem as ar,
+  useMemo as as,
+  cE as at,
+  radioLight$1 as au,
+  resolveWrappedSlot as av,
+  flatten$2 as aw,
+  getSlot$1 as ax,
+  depx as ay,
+  formatLength as az,
+  useMessage as b,
+  VFollower as b$,
+  NProgress as b0,
+  NFadeInExpandTransition as b1,
+  EyeIcon as b2,
+  fadeInHeightExpandTransition as b3,
+  Teleport as b4,
+  uploadLight$1 as b5,
+  useCssVars as b6,
+  themeOverridesKey as b7,
+  reactive as b8,
+  onMounted as b9,
+  commonVariables$m as bA,
+  formItemInjectionKey as bB,
+  convertToTextString as bC,
+  themeKey as bD,
   useNotification as bE,
   defaultSettings as bF,
-  urlFromPath as bG,
-  diffusersSchedulerTuple as bH,
-  useRouter as bI,
-  isBrowser$3 as bJ,
-  fadeInTransition as bK,
-  imageLight as bL,
-  isMounted as bM,
-  LazyTeleport as bN,
-  zindexable$1 as bO,
-  kebabCase$1 as bP,
-  useCompitable as bQ,
-  descriptionsLight$1 as bR,
-  withModifiers as bS,
-  NAlert as bT,
-  inputNumberLight$1 as bU,
-  rgba as bV,
-  XButton as bW,
-  VBinder as bX,
-  VTarget as bY,
-  VFollower as bZ,
-  sliderLight$1 as b_,
-  reactive as ba,
-  onMounted as bb,
-  normalizeStyle as bc,
-  NText as bd,
-  huggingfaceModelsFile as be,
-  NDivider as bf,
-  Backends as bg,
-  checkboxLight$1 as bh,
-  stepsLight$1 as bi,
-  FinishedIcon as bj,
-  ErrorIcon$1 as bk,
-  upperFirst$1 as bl,
-  toString as bm,
-  createCompounder as bn,
-  cloneVNode as bo,
-  onBeforeUpdate as bp,
-  indexMap as bq,
-  onUpdated as br,
-  resolveSlotWithProps as bs,
-  withDirectives as bt,
-  vShow as bu,
-  carouselLight$1 as bv,
-  getPreciseEventTarget as bw,
-  rateLight as bx,
-  color2Class as by,
-  NTag as bz,
+  resolveDynamicComponent as bG,
+  checkboxLight$1 as bH,
+  urlFromPath as bI,
+  diffusersSchedulerTuple as bJ,
+  useRouter as bK,
+  isBrowser$3 as bL,
+  fadeInTransition as bM,
+  imageLight as bN,
+  isMounted as bO,
+  LazyTeleport as bP,
+  zindexable$1 as bQ,
+  kebabCase$1 as bR,
+  useCompitable as bS,
+  descriptionsLight$1 as bT,
+  withModifiers as bU,
+  NAlert as bV,
+  inputNumberLight$1 as bW,
+  rgba as bX,
+  XButton as bY,
+  VBinder as bZ,
+  VTarget as b_,
+  normalizeStyle as ba,
+  NText as bb,
+  huggingfaceModelsFile as bc,
+  NModal as bd,
+  NDivider as be,
+  Backends as bf,
+  stepsLight$1 as bg,
+  FinishedIcon as bh,
+  ErrorIcon$1 as bi,
+  upperFirst$1 as bj,
+  toString as bk,
+  createCompounder as bl,
+  cloneVNode as bm,
+  onBeforeUpdate as bn,
+  indexMap as bo,
+  onUpdated as bp,
+  resolveSlotWithProps as bq,
+  withDirectives as br,
+  vShow as bs,
+  carouselLight$1 as bt,
+  getPreciseEventTarget as bu,
+  rateLight as bv,
+  color2Class as bw,
+  NTag as bx,
+  getCurrentInstance as by,
+  formLight$1 as bz,
   computed as c,
-  switchLight$1 as c0,
+  sliderLight$1 as c0,
+  isSlotEmpty as c1,
+  switchLight$1 as c2,
+  NResult as c3,
   defineComponent as d,
-  createVNode as e,
-  unref as f,
-  renderList as g,
-  NButton as h,
-  createTextVNode as i,
-  convertToTextString as j,
-  createBlock as k,
-  resolveDynamicComponent as l,
-  NModal as m,
-  NTooltip as n,
-  openBlock as o,
-  NSelect as p,
-  NIcon as q,
-  ref as r,
-  h as s,
+  openBlock as e,
+  createElementBlock as f,
+  createVNode as g,
+  unref as h,
+  NCard as i,
+  NSpace as j,
+  NInput as k,
+  promptHandleKeyDown as l,
+  createTextVNode as m,
+  createBaseVNode as n,
+  onUnmounted as o,
+  promptHandleKeyUp as p,
+  NTooltip as q,
+  createCommentVNode as r,
+  serverUrl as s,
   toDisplayString as t,
-  useSettings as u,
-  useState as v,
+  useState as u,
+  createBlock as v,
   withCtx as w,
-  useMessage as x,
-  onUnmounted as y,
-  serverUrl as z
+  NSelect as x,
+  NGrid as y,
+  spaceRegex as z
 };

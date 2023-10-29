@@ -6,6 +6,7 @@
   "private": false,
   "devDependencies": {
     "concurrently": "^8.2.1",
+    "sass": "^1.69.4",
     "vitepress": "^1.0.0-rc.17",
     "vue": "^3.2.45"
   },

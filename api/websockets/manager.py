@@ -157,7 +157,6 @@ class WebSocketManager:
             assert self.loop is not None  # For type safety
             asyncio.set_event_loop(self.loop)
         except AssertionError:
-            logger.info("WARNING: No event loop found, assuming we are running tests")
             return
 
         for connection in self.active_connections:

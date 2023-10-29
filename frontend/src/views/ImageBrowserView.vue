@@ -5,7 +5,7 @@
         width: calc(100vw - 98px);
         height: 48px;
         border-bottom: #505050 1px solid;
-        margin-top: 53px;
+        margin-top: 52px;
         display: flex;
         justify-content: end;
         align-items: center;
@@ -165,6 +165,7 @@ import SendOutputTo from "@/components/SendOutputTo.vue";
 import type { imgData as IImgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 import { convertToTextString, urlFromPath } from "@/functions";
+import { themeOverridesKey } from "@/injectionKeys";
 import { Download, GridOutline, TrashBin } from "@vicons/ionicons5";
 import {
   NButton,
@@ -179,12 +180,13 @@ import {
   NScrollbar,
   NSlider,
 } from "naive-ui";
-import { computed, onMounted, onUnmounted, reactive, ref } from "vue";
+import { computed, inject, onMounted, onUnmounted, reactive, ref } from "vue";
 import { diffusersSchedulerTuple, useSettings } from "../store/settings";
 import { useState } from "../store/state";
 
 const global = useState();
 const settings = useSettings();
+const theme = inject(themeOverridesKey);
 const showDeleteModal = ref(false);
 
 const showImageModal = ref(false);
@@ -248,7 +250,7 @@ function downloadImage() {
           a.click();
           document.body.removeChild(a);
         } else {
-          console.log("base64data is null!");
+          console.error("base64data is null!");
         }
       };
     });
@@ -266,7 +268,7 @@ function setByte64FromImage(path: string) {
         if (base64data !== null) {
           global.state.imageBrowser.currentImageByte64 = base64data.toString();
         } else {
-          console.log("base64data is null!");
+          console.error("base64data is null!");
         }
       };
     });
@@ -477,14 +479,6 @@ function getNamedSampler(value: string) {
 }
 
 refreshImages();
-
-const backgroundColor = computed(() => {
-  if (settings.data.settings.frontend.theme === "dark") {
-    return "#121215";
-  } else {
-    return "#fff";
-  }
-});
 </script>
 
 <style scoped>
@@ -504,7 +498,7 @@ const backgroundColor = computed(() => {
 }
 
 .top-bar {
-  background-color: v-bind(backgroundColor);
+  background-color: v-bind("theme?.Card?.color");
 }
 
 .image-column {

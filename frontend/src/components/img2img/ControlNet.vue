@@ -49,29 +49,7 @@
             </NInput>
 
             <!-- Sampler -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="margin-right: 12px; width: 150px">Sampler</p>
-                </template>
-                The sampler is the method used to generate the image. Your
-                result may vary drastically depending on the sampler you choose.
-                <b class="highlight"
-                  >We recommend using DPMSolverMultistep for the best results .
-                </b>
-                <a
-                  target="_blank"
-                  href="https://docs.google.com/document/d/1n0YozLAUwLJWZmbsx350UD_bwAx3gZMnRuleIZt_R1w"
-                  >Learn more</a
-                >
-              </NTooltip>
-
-              <NSelect
-                :options="settings.scheduler_options"
-                v-model:value="settings.data.settings.controlnet.sampler"
-                style="flex-grow: 1"
-              />
-            </div>
+            <SamplerPicker type="controlnet" />
 
             <!-- ControlNet mode -->
             <div class="flex-container">
@@ -336,6 +314,7 @@ import ImageUpload from "@/components/ImageUpload.vue";
 import OutputStats from "@/components/OutputStats.vue";
 import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
 import DimensionsInput from "@/components/generate/DimensionsInput.vue";
+import SamplerPicker from "@/components/generate/SamplerPicker.vue";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,
@@ -421,6 +400,10 @@ const generate = () => {
           settings.data.settings.controlnet.detection_resolution,
         scheduler: settings.data.settings.controlnet.sampler,
         sigmas: settings.data.settings.controlnet.sigmas,
+        sampler_settings:
+          settings.data.settings.sampler_config[
+            settings.data.settings.controlnet.sampler
+          ],
 
         canny_low_threshold: 100,
         canny_high_threshold: 200,
@@ -439,7 +422,6 @@ const generate = () => {
         throw new Error(res.statusText);
       }
       global.state.generating = false;
-      console.log(res);
       res.json().then((data) => {
         global.state.controlnet.images = data.images;
         global.state.controlnet.currentImage = data.images[0];
@@ -456,7 +438,6 @@ const generate = () => {
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 

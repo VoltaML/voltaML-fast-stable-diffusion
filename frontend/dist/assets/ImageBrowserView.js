@@ -1,11 +1,11 @@
-import { d as defineComponent, b9 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, ba as reactive, bb as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, w as withCtx, F as Fragment, g as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, h as NButton, i as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bG as urlFromPath, bH as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, R as inject, D as ref, c as computed, b8 as reactive, b9 as onMounted, o as onUnmounted, e as openBlock, f as createElementBlock, n as createBaseVNode, g as createVNode, h as unref, w as withCtx, I as Fragment, L as renderList, b7 as themeOverridesKey, s as serverUrl, k as NInput, F as NIcon, bd as NModal, y as NGrid, N as NGi, E as NButton, m as createTextVNode, M as NScrollbar, v as createBlock, bC as convertToTextString, t as toDisplayString, r as createCommentVNode, bI as urlFromPath, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
 import { N as NSlider } from "./Switch.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1 = {
-  style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "53px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
+  style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "52px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
   class: "top-bar"
 };
 const _hoisted_2 = {
@@ -17,12 +17,16 @@ const _hoisted_4 = ["src", "onClick"];
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
-    useCssVars((_ctx) => ({
-      "c2a2aeae": unref(settings).data.settings.frontend.image_browser_columns,
-      "152d3766": backgroundColor.value
-    }));
+    useCssVars((_ctx) => {
+      var _a, _b;
+      return {
+        "1bf86f7d": unref(settings).data.settings.frontend.image_browser_columns,
+        "6326b8e7": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+      };
+    });
     const global = useState();
     const settings = useSettings();
+    const theme = inject(themeOverridesKey);
     const showDeleteModal = ref(false);
     const showImageModal = ref(false);
     const scrollComponent = ref(null);
@@ -70,7 +74,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             a.click();
             document.body.removeChild(a);
           } else {
-            console.log("base64data is null!");
+            console.error("base64data is null!");
           }
         };
       });
@@ -85,7 +89,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           if (base64data !== null) {
             global.state.imageBrowser.currentImageByte64 = base64data.toString();
           } else {
-            console.log("base64data is null!");
+            console.error("base64data is null!");
           }
         };
       });
@@ -243,13 +247,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       return value;
     }
     refreshImages();
-    const backgroundColor = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        return "#121215";
-      } else {
-        return "#fff";
-      }
-    });
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", null, [
         createBaseVNode("div", _hoisted_1, [
@@ -457,8 +454,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_6c702fed_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-6c702fed"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_7b550fae_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7b550fae"]]);
 export {
   ImageBrowserView as default
 };

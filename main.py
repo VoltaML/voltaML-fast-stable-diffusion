@@ -95,6 +95,8 @@ for directory in [
     "textual-inversion",
     "lycoris",
     "logs",
+    "themes",
+    "autofill",
 ]:
     Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
@@ -289,7 +291,9 @@ def checks():
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
 
     from core.config import config
+    from core.logger.websocket_logging import WebSocketLoggingHandler
 
+    logger.addHandler(WebSocketLoggingHandler(config=config))
     logger.info(f"Device: {config.api.device}")
     logger.info(f"Precision: {config.api.data_type}")
 

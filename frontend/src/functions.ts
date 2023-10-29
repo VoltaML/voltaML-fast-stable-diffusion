@@ -1,3 +1,4 @@
+import { onClickOutside } from "@vueuse/core";
 import { serverUrl } from "./env";
 import { useWebsocket } from "./store/websockets";
 
@@ -74,7 +75,7 @@ export async function startWebsocket(messageProvider: any) {
 
 export function getTextBoundaries(elem: HTMLInputElement | null) {
   if (elem === null) {
-    console.log("Element is null");
+    console.error("Element is null");
     return [0, 0];
   }
   if (
@@ -86,7 +87,7 @@ export function getTextBoundaries(elem: HTMLInputElement | null) {
       elem.selectionEnd === null ? 0 : elem.selectionEnd,
     ];
   }
-  console.log("Element is not input");
+  console.error("Element is not input");
   return [0, 0];
 }
 
@@ -250,29 +251,34 @@ export function promptHandleKeyUp(
     }
 
     // Standard autocomplete
-    for (let i = 0; i < globalState.state.autofill.length; i++) {
-      if (
-        globalState.state.autofill[i]
-          .toLowerCase()
-          .includes(currentTokenStripped.toLowerCase())
-      ) {
-        if (toAppend.length >= 30) {
-          break;
+    const lowercaseStrippedToken = currentTokenStripped.toLowerCase();
+    if (lowercaseStrippedToken.length >= 3) {
+      for (let i = 0; i < globalState.state.autofill.length; i++) {
+        if (
+          globalState.state.autofill[i]
+            .toLowerCase()
+            .includes(lowercaseStrippedToken)
+        ) {
+          if (toAppend.length >= 30) {
+            break;
+          }
+
+          const b = document.createElement("DIV");
+          b.innerText = globalState.state.autofill[i];
+          b.innerHTML +=
+            "<input type='hidden' value='" +
+            globalState.state.autofill[i] +
+            "'>";
+          b.addEventListener("click", function () {
+            input.value =
+              text.substring(0, text.lastIndexOf(",") + 1) +
+              globalState.state.autofill[i];
+            data[key] = input.value;
+
+            closeAllLists(undefined, input);
+          });
+          toAppend.push(b);
         }
-
-        const b = document.createElement("DIV");
-        b.innerText = globalState.state.autofill[i];
-        b.innerHTML +=
-          "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
-        b.addEventListener("click", function () {
-          input.value =
-            text.substring(0, text.lastIndexOf(",") + 1) +
-            globalState.state.autofill[i];
-          data[key] = input.value;
-
-          closeAllLists(undefined, input);
-        });
-        toAppend.push(b);
       }
     }
 
@@ -287,6 +293,10 @@ export function promptHandleKeyUp(
     for (let i = 0; i < toAppend.length; i++) {
       div.appendChild(toAppend[i]);
     }
+
+    onClickOutside(div, () => {
+      closeAllLists(undefined, input);
+    });
 
     // Handle Special keys
     const autocompleteList = document.getElementById("autocomplete-list");

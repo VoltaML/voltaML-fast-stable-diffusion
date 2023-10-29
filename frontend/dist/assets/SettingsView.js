@@ -1,6 +1,8 @@
-import { U as inject, bA as getCurrentInstance, O as watch, aE as onBeforeUnmount, T as cB, ae as cM, ad as c, S as createInjectionKey, d as defineComponent, V as useConfig, W as useTheme, r as ref, a6 as provide, s as h, bB as formLight, a4 as keysOf, c as computed, aC as formatLength, aK as get, bC as commonVariables, aw as cE, Y as toRef, aZ as createId, bD as formItemInjectionKey, bb as onMounted, Z as useThemeClass, a_ as Transition, ay as resolveWrappedSlot, ao as createKey, aP as warn, u as useSettings, v as useState, o as openBlock, k as createBlock, w as withCtx, e as createVNode, f as unref, p as NSelect, b as createBaseVNode, a as createElementBlock, g as renderList, bd as NText, i as createTextVNode, t as toDisplayString, F as Fragment, N as NCard, C as NInput, G as createCommentVNode, L as NTabPane, M as NTabs, h as NButton, n as NTooltip, x as useMessage, bE as useNotification, y as onUnmounted, z as serverUrl, bF as defaultSettings } from "./index.js";
+import { R as inject, by as getCurrentInstance, J as watch, aB as onBeforeUnmount, Q as cB, ab as cM, aa as c, P as createInjectionKey, d as defineComponent, S as useConfig, T as useTheme, D as ref, a3 as provide, C as h, bz as formLight, a1 as keysOf, c as computed, az as formatLength, aH as get, bA as commonVariables, at as cE, V as toRef, aW as createId, bB as formItemInjectionKey, b9 as onMounted, W as useThemeClass, aX as Transition, av as resolveWrappedSlot, al as createKey, aM as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, x as NSelect, n as createBaseVNode, f as createElementBlock, L as renderList, bb as NText, m as createTextVNode, t as toDisplayString, I as Fragment, i as NCard, b8 as reactive, s as serverUrl, k as NInput, bC as convertToTextString, r as createCommentVNode, G as NTabPane, H as NTabs, bD as themeKey, E as NButton, q as NTooltip, b as useMessage, bE as useNotification, o as onUnmounted, bF as defaultSettings } from "./index.js";
 import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
+import { _ as _sfc_main$h } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+import "./Settings.js";
 function useInjectionInstanceCollection(injectionName, collectionKey, registerKeyRef) {
   var _a;
   const injection = inject(injectionName, null);
@@ -1894,7 +1896,6 @@ const _sfc_main$g = /* @__PURE__ */ defineComponent({
           if (!value || value === "default") {
             delete settings.defaultSettings.api.autoloaded_vae[model];
           } else {
-            console.log("Setting", model, "to", value);
             settings.defaultSettings.api.autoloaded_vae[model] = value;
           }
         }
@@ -2021,6 +2022,81 @@ const _sfc_main$f = /* @__PURE__ */ defineComponent({
   }
 });
 const _sfc_main$e = /* @__PURE__ */ defineComponent({
+  __name: "ThemeSettings",
+  setup(__props) {
+    const settings = useSettings();
+    const extraThemes = reactive([]);
+    const themeOptions = computed(() => {
+      return extraThemes.map((theme) => {
+        return { label: convertToTextString(theme), value: theme };
+      });
+    });
+    const themesLoading = ref(true);
+    fetch(`${serverUrl}/api/general/themes`).then(async (res) => {
+      const data = await res.json();
+      extraThemes.push(...data);
+      themesLoading.value = false;
+    }).catch((err) => {
+      console.error(err);
+      themesLoading.value = false;
+    });
+    watch(settings.defaultSettings.frontend, () => {
+      settings.data.settings.frontend = settings.defaultSettings.frontend;
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), null, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Theme",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSelect), {
+                    options: themeOptions.value,
+                    value: unref(settings).defaultSettings.frontend.theme,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event),
+                    loading: themesLoading.value,
+                    filterable: ""
+                  }, null, 8, ["options", "value", "loading"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Background Image Override",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInput), {
+                    value: unref(settings).defaultSettings.frontend.background_image_override,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.background_image_override = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Enable Theme Editor",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.frontend.enable_theme_editor,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "ExtraSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2128,7 +2204,7 @@ const _sfc_main$e = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$d = /* @__PURE__ */ defineComponent({
+const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "FilesSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2207,7 +2283,7 @@ const _sfc_main$d = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$c = /* @__PURE__ */ defineComponent({
+const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "ControlNetSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2304,19 +2380,6 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(NFormItem), {
-                label: "Sampler",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: unref(settings).scheduler_options,
-                    value: unref(settings).defaultSettings.controlnet.sampler,
-                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.controlnet.sampler = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
                 label: "ControlNet",
                 "label-placement": "left"
               }, {
@@ -2324,7 +2387,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                   createVNode(unref(NSelect), {
                     options: unref(settings).controlnet_options,
                     value: unref(settings).defaultSettings.controlnet.controlnet,
-                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.controlnet.controlnet = $event),
+                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.controlnet.controlnet = $event),
                     filterable: "",
                     tag: ""
                   }, null, 8, ["options", "value"])
@@ -2338,7 +2401,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.controlnet.seed,
-                    "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.controlnet.seed = $event),
+                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.controlnet.seed = $event),
                     min: -1
                   }, null, 8, ["value"])
                 ]),
@@ -2351,7 +2414,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NSwitch), {
                     value: unref(settings).defaultSettings.controlnet.is_preprocessed,
-                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.controlnet.is_preprocessed = $event)
+                    "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.controlnet.is_preprocessed = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2363,7 +2426,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.controlnet.steps,
-                    "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.controlnet.steps = $event)
+                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.controlnet.steps = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2375,7 +2438,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale,
-                    "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale = $event),
+                    "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.controlnet.controlnet_conditioning_scale = $event),
                     step: 0.1
                   }, null, 8, ["value"])
                 ]),
@@ -2388,11 +2451,15 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.controlnet.detection_resolution,
-                    "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.controlnet.detection_resolution = $event),
+                    "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.controlnet.detection_resolution = $event),
                     step: 8
                   }, null, 8, ["value"])
                 ]),
                 _: 1
+              }),
+              createVNode(_sfc_main$h, {
+                type: "controlnet",
+                target: "defaultSettings"
               })
             ]),
             _: 1
@@ -2403,7 +2470,7 @@ const _sfc_main$c = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$b = /* @__PURE__ */ defineComponent({
+const _sfc_main$a = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2433,7 +2500,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$a = /* @__PURE__ */ defineComponent({
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   __name: "ImageToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2530,26 +2597,13 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(NFormItem), {
-                label: "Sampler",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: unref(settings).scheduler_options,
-                    value: unref(settings).defaultSettings.img2img.sampler,
-                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.img2img.sampler = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
                 label: "Seed",
                 "label-placement": "left"
               }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.img2img.seed,
-                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.img2img.seed = $event),
+                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.img2img.seed = $event),
                     min: -1
                   }, null, 8, ["value"])
                 ]),
@@ -2562,7 +2616,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.img2img.steps,
-                    "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.img2img.steps = $event)
+                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.img2img.steps = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
@@ -2574,11 +2628,15 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.img2img.denoising_strength,
-                    "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.img2img.denoising_strength = $event),
+                    "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.img2img.denoising_strength = $event),
                     step: 0.1
                   }, null, 8, ["value"])
                 ]),
                 _: 1
+              }),
+              createVNode(_sfc_main$h, {
+                type: "img2img",
+                target: "defaultSettings"
               })
             ]),
             _: 1
@@ -2589,7 +2647,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "InpaintingSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2686,26 +2744,13 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(NFormItem), {
-                label: "Sampler",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: unref(settings).scheduler_options,
-                    value: unref(settings).defaultSettings.inpainting.sampler,
-                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.inpainting.sampler = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
                 label: "Seed",
                 "label-placement": "left"
               }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.inpainting.seed,
-                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.inpainting.seed = $event),
+                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.inpainting.seed = $event),
                     min: -1
                   }, null, 8, ["value"])
                 ]),
@@ -2718,10 +2763,14 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.inpainting.steps,
-                    "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.inpainting.steps = $event)
+                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.inpainting.steps = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
+              }),
+              createVNode(_sfc_main$h, {
+                type: "inpainting",
+                target: "defaultSettings"
               })
             ]),
             _: 1
@@ -2732,7 +2781,7 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "TextToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2829,26 +2878,13 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                 _: 1
               }),
               createVNode(unref(NFormItem), {
-                label: "Sampler",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: unref(settings).scheduler_options,
-                    value: unref(settings).defaultSettings.txt2img.sampler,
-                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.txt2img.sampler = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
                 label: "Seed",
                 "label-placement": "left"
               }, {
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.txt2img.seed,
-                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.txt2img.seed = $event),
+                    "onUpdate:value": _cache[7] || (_cache[7] = ($event) => unref(settings).defaultSettings.txt2img.seed = $event),
                     min: -1
                   }, null, 8, ["value"])
                 ]),
@@ -2861,60 +2897,14 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
                 default: withCtx(() => [
                   createVNode(unref(NInputNumber), {
                     value: unref(settings).defaultSettings.txt2img.steps,
-                    "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.txt2img.steps = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
-  __name: "ThemeSettings",
-  setup(__props) {
-    const settings = useSettings();
-    const themeOptions = [
-      { label: "Dark", value: "dark" },
-      { label: "Light", value: "light" }
-    ];
-    watch(settings.defaultSettings.frontend, () => {
-      settings.data.settings.frontend = settings.defaultSettings.frontend;
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), null, {
-        default: withCtx(() => [
-          createVNode(unref(NForm), null, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Theme",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: themeOptions,
-                    value: unref(settings).defaultSettings.frontend.theme,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event)
+                    "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.txt2img.steps = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
-              createVNode(unref(NFormItem), {
-                label: "Enable Theme Editor",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.frontend.enable_theme_editor,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
+              createVNode(_sfc_main$h, {
+                type: "txt2img",
+                target: "defaultSettings"
               })
             ]),
             _: 1
@@ -2926,6 +2916,95 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   }
 });
 const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+  __name: "FrontendSettings",
+  setup(__props) {
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NTabs), null, {
+        default: withCtx(() => [
+          createVNode(unref(NTabPane), { name: "Text to Image" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$7)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "Image to Image" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$9)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "ControlNet" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$b)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "Inpainting" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$8)
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NTabPane), { name: "Image Browser" }, {
+            default: withCtx(() => [
+              createVNode(_sfc_main$a)
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+  __name: "GeneralSettings",
+  setup(__props) {
+    const settings = useSettings();
+    watch(settings.defaultSettings.frontend, () => {
+      settings.data.settings.frontend.on_change_timer = settings.defaultSettings.frontend.on_change_timer;
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), { title: "Timings" }, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Continuous generation timeout (0 for disabled) [ms]",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.frontend.on_change_timer,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
+                    min: 0,
+                    step: 50
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Enable sending logs to UI",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.api.enable_websocket_logging,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.enable_websocket_logging = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "NSFWSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2979,95 +3058,6 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
-  __name: "FrontendSettings",
-  setup(__props) {
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NTabs), null, {
-        default: withCtx(() => [
-          createVNode(unref(NTabPane), { name: "Text to Image" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$8)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Image to Image" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$a)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "ControlNet" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$c)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Inpainting" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$9)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Image Browser" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$b)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "Theme" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$7)
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NTabPane), { name: "NSFW" }, {
-            default: withCtx(() => [
-              createVNode(_sfc_main$6)
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
-  __name: "GeneralSettings",
-  setup(__props) {
-    const settings = useSettings();
-    watch(settings.defaultSettings.frontend, () => {
-      settings.data.settings.frontend.on_change_timer = settings.defaultSettings.frontend.on_change_timer;
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { title: "Timings" }, {
-        default: withCtx(() => [
-          createVNode(unref(NForm), null, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Continuous generation timeout (0 for disabled) [ms]",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.frontend.on_change_timer,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.on_change_timer = $event),
-                    min: 0,
-                    step: 50
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
 const _hoisted_1$2 = {
   key: 0,
   class: "flex-container"
@@ -3081,14 +3071,17 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const settings = useSettings();
     const global = useState();
+    const theme = inject(themeKey);
     const compileColor = computed(() => {
+      var _a;
       if (settings.defaultSettings.api.torch_compile)
-        return "#f1f1f1";
+        return (_a = theme == null ? void 0 : theme.value.Button.common) == null ? void 0 : _a.successColor;
       return void 0;
     });
     const traceColor = computed(() => {
+      var _a;
       if (settings.defaultSettings.api.trace_model)
-        return "#f1f1f1";
+        return (_a = theme == null ? void 0 : theme.value.Button.common) == null ? void 0 : _a.successColor;
       return void 0;
     });
     const sfastColor = computed(() => {
@@ -3097,9 +3090,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       return void 0;
     });
     const disableColor = computed(() => {
+      var _a;
       if (settings.defaultSettings.api.torch_compile || settings.defaultSettings.api.trace_model || settings.defaultSettings.api.sfast_compile)
         return void 0;
-      return "#ffffff";
+      return (_a = theme == null ? void 0 : theme.value.Button.common) == null ? void 0 : _a.successColor;
     });
     function change_compilation(a) {
       settings.defaultSettings.api.torch_compile = a === "compile";
@@ -3891,7 +3885,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "Files & Saving" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$d)
+                    createVNode(_sfc_main$c)
                   ]),
                   _: 1
                 }),
@@ -3915,7 +3909,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "Defaults" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$5)
+                    createVNode(_sfc_main$6)
                   ]),
                   _: 1
                 }),
@@ -3927,13 +3921,25 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "General" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$4)
+                    createVNode(_sfc_main$5)
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Extra" }, {
                   default: withCtx(() => [
+                    createVNode(_sfc_main$d)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "Theme" }, {
+                  default: withCtx(() => [
                     createVNode(_sfc_main$e)
+                  ]),
+                  _: 1
+                }),
+                createVNode(unref(NTabPane), { name: "NSFW" }, {
+                  default: withCtx(() => [
+                    createVNode(_sfc_main$4)
                   ]),
                   _: 1
                 })

@@ -80,7 +80,6 @@ docs/.vitepress/dist
 external
 /tmp
 /data
-/data/settings.json
 /AITemplate
 
 # Ignore for black
