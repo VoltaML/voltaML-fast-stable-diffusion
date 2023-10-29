@@ -34,44 +34,44 @@
 .autocomplete-items {
   position: absolute;
   z-index: 99;
-  background-color: var(--2441c648);
-  border-radius: var(--521efb30);
+  background-color: var(--fc790420);
+  border-radius: var(--34723a10);
   padding: 2px;
 }
 .autocomplete-items div {
   padding: 8px;
   cursor: pointer;
-  border-radius: var(--521efb30);
+  border-radius: var(--34723a10);
 }
 .autocomplete-active {
-  background-color: var(--65525eeb);
-  color: var(--0c729ef1);
+  background-color: var(--7a57d2da);
+  color: var(--5d197049);
 }
 #autocomplete-list {
   max-height: min(600px, 70vh);
   overflow-y: auto;
 }
 .n-card {
-  backdrop-filter: var(--15a84ddb);
+  backdrop-filter: var(--78261d33);
 }
 .navbar .n-layout {
-  backdrop-filter: var(--15a84ddb);
+  backdrop-filter: var(--78261d33);
 }
 .navbar .n-layout-toggle-button {
-  backdrop-filter: var(--15a84ddb);
+  backdrop-filter: var(--78261d33);
 }
 .top-bar {
-  backdrop-filter: var(--15a84ddb);
-  background-color: var(--2259b162);
+  backdrop-filter: var(--78261d33);
+  background-color: var(--4077faba);
 }
 .navbar {
-  backdrop-filter: var(--15a84ddb);
+  backdrop-filter: var(--78261d33);
 }
 #background {
   width: 100vw;
   height: 100vh;
   position: fixed;
-  background-image: var(--f8e7ba4e);
+  background-image: var(--2a9066fe);
   background-size: cover;
   background-position: center;
   background-attachment: fixed;

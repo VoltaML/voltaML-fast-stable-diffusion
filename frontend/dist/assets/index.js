@@ -40878,24 +40878,6 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
-function progressForward(progress, global2) {
-  if (progress === 0) {
-    return 0;
-  } else if (global2.state.progress <= progress) {
-    return progress;
-  } else {
-    return global2.state.progress;
-  }
-}
-function currentStepForward(currentStep, global2) {
-  if (currentStep === 0) {
-    return 0;
-  } else if (global2.state.current_step <= currentStep) {
-    return currentStep;
-  } else {
-    return global2.state.current_step;
-  }
-}
 function processWebSocket(message, global2, notificationProvider) {
   switch (message.type) {
     case "test": {
@@ -40907,41 +40889,29 @@ function processWebSocket(message, global2, notificationProvider) {
     }
     case "txt2img": {
       global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "img2img": {
       global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "inpainting": {
       global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "controlnet": {
       global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
@@ -42725,22 +42695,24 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "2441c648": theme.value.common.popoverColor,
-        "521efb30": theme.value.common.borderRadius,
-        "65525eeb": theme.value.common.pressedColor,
-        "0c729ef1": theme.value.common.primaryColorHover,
-        "15a84ddb": blur.value,
-        "2259b162": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "f8e7ba4e": backgroundImage.value
+        "fc790420": theme.value.common.popoverColor,
+        "34723a10": theme.value.common.borderRadius,
+        "7a57d2da": theme.value.common.pressedColor,
+        "5d197049": theme.value.common.primaryColorHover,
+        "78261d33": blur.value,
+        "4077faba": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "2a9066fe": backgroundImage.value
       };
     });
     const settings = useSettings();
     const overrides = ref(null);
     const theme = computed(() => {
-      var _a2, _b;
+      var _a2, _b, _c, _d, _e, _f;
       if (((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.base) === "light") {
+        document.body.style.backgroundColor = ((_d = (_c = overrides.value) == null ? void 0 : _c.common) == null ? void 0 : _d.baseColor) ?? lightTheme.common.baseColor;
         return lightTheme;
       } else {
+        document.body.style.backgroundColor = ((_f = (_e = overrides.value) == null ? void 0 : _e.common) == null ? void 0 : _f.baseColor) ?? darkTheme.common.baseColor;
         return darkTheme;
       }
     });

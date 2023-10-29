@@ -22,8 +22,12 @@ const settings = useSettings();
 const overrides = ref<ExtendedThemeOverrides | null>(null);
 const theme = computed(() => {
   if (overrides.value?.volta?.base === "light") {
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? lightTheme.common.baseColor;
     return lightTheme;
   } else {
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? darkTheme.common.baseColor;
     return darkTheme;
   }
 });

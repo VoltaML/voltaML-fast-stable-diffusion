@@ -39,7 +39,7 @@ from core.types import (
     UpscaleQueueEntry,
     VaeLoadRequest,
 )
-from core.utils import convert_to_image, image_grid
+from core.utils import convert_to_image, image_grid, preprocess_job
 
 if TYPE_CHECKING:
     from core.inference.onnx import OnnxStableDiffusion
@@ -163,6 +163,8 @@ class GPU:
         ],
     ):
         "Generate images from the queue"
+
+        job = preprocess_job(job)
 
         def generate_thread_call(job: Job) -> List[Image.Image]:
             try:
