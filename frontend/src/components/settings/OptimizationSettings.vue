@@ -60,7 +60,10 @@
           :disabled="!global.state.capabilities.supports_triton"
         />
       </NFormItem>
-      <NFormItem label="Use CUDA graphs during compilation" label-placement="left">
+      <NFormItem
+        label="Use CUDA graphs during compilation"
+        label-placement="left"
+      >
         <NSwitch
           v-model:value="settings.defaultSettings.api.sfast_cuda_graph"
         />
