@@ -396,6 +396,17 @@ def version_check(commit: str):
         )
 
 
+def check_valid_python_version():
+    minor = int(platform.python_version_tuple()[1])
+    if minor >= 12:
+        print("Python 3.12 or later is not currently supported in voltaML!")
+        print("Please consider switching to an older release to use volta!")
+        raise RuntimeError("Unsupported Python version")
+    elif minor < 9:
+        print("The python release you are currently using is older than our")
+        print("official supported version! Please consider updating to Python 3.11!")
+
+
 def is_up_to_date():
     "Check if the virtual environment is up to date"
 

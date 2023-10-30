@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from core.install_requirements import (
+    check_valid_python_version,
     commit_hash,
     create_environment,
     in_virtualenv,
@@ -276,6 +277,12 @@ def checks():
 
     # Check if we are up to date with the latest release
     version_check(commit_hash())
+
+    # Check if user is running unsupported/non-working version of Python
+    try:
+        check_valid_python_version()
+    except RuntimeError:
+        exit(0)
 
     # Install pytorch and api requirements
     install_deps(args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1)
