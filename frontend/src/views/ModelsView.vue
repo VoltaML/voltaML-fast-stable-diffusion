@@ -16,10 +16,12 @@
 </template>
 
 <script lang="ts" setup>
-import CivitAIDownload from "@/components/models/CivitAIDownload.vue";
-import HuggingfaceDownload from "@/components/models/HuggingfaceDownload.vue";
-import ModelConvert from "@/components/models/ModelConvert.vue";
-import ModelManager from "@/components/models/ModelManager.vue";
+import {
+  CivitAIDownload,
+  HuggingfaceDownload,
+  ModelConvert,
+  ModelManager,
+} from "@/components";
 import { NTabPane, NTabs } from "naive-ui";
 import { useState } from "../store/state";
 

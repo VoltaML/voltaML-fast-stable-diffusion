@@ -1,4 +1,4 @@
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, D as ref, b9 as onMounted, o as onUnmounted, s as serverUrl, v as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, E as NButton, F as NIcon, m as createTextVNode, y as NGrid, bV as NAlert, r as createCommentVNode, i as NCard } from "./index.js";
+import { d as defineComponent, o as openBlock, c as createElementBlock, l as createBaseVNode, a as useState, u as useSettings, D as ref, b9 as onMounted, h as onUnmounted, s as serverUrl, r as createBlock, w as withCtx, b as createVNode, e as unref, i as NGi, E as NButton, G as NIcon, n as createTextVNode, v as NGrid, bV as NAlert, q as createCommentVNode, j as NCard } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -43,7 +43,6 @@ const Skull = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1, _hoisted_3);
   }
 });
-const _2img = "";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "GenerateSection",
   props: {

@@ -260,13 +260,15 @@
 <script setup lang="ts">
 import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
-import GenerateSection from "@/components/GenerateSection.vue";
-import ImageOutput from "@/components/ImageOutput.vue";
-import ImageUpload from "@/components/ImageUpload.vue";
-import OutputStats from "@/components/OutputStats.vue";
-import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
-import DimensionsInput from "@/components/generate/DimensionsInput.vue";
-import SamplerPicker from "@/components/generate/SamplerPicker.vue";
+import {
+  BatchSizeInput,
+  DimensionsInput,
+  GenerateSection,
+  ImageOutput,
+  ImageUpload,
+  OutputStats,
+  SamplerPicker,
+} from "@/components";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,

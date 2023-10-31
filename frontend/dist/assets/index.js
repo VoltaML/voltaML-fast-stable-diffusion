@@ -40320,6 +40320,437 @@ const useState = defineStore("state", () => {
   }
   return { state, fetchCapabilites, fetchAutofill };
 });
+var Backends = /* @__PURE__ */ ((Backends2) => {
+  Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
+  Backends2[Backends2["AITemplate"] = 1] = "AITemplate";
+  Backends2[Backends2["ONNX"] = 2] = "ONNX";
+  Backends2[Backends2["unknown"] = 3] = "unknown";
+  Backends2[Backends2["LoRA"] = 4] = "LoRA";
+  Backends2[Backends2["LyCORIS"] = 5] = "LyCORIS";
+  Backends2[Backends2["VAE"] = 6] = "VAE";
+  Backends2[Backends2["Textual Inversion"] = 7] = "Textual Inversion";
+  Backends2[Backends2["Upscaler"] = 8] = "Upscaler";
+  return Backends2;
+})(Backends || {});
+var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
+  ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
+  ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
+  ControlNetType2["HED"] = "lllyasviel/sd-controlnet-hed";
+  ControlNetType2["MLSD"] = "lllyasviel/sd-controlnet-mlsd";
+  ControlNetType2["NORMAL"] = "lllyasviel/sd-controlnet-normal";
+  ControlNetType2["OPENPOSE"] = "lllyasviel/sd-controlnet-openpose";
+  ControlNetType2["SCRIBBLE"] = "lllyasviel/sd-controlnet-scribble";
+  ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
+  return ControlNetType2;
+})(ControlNetType || {});
+const defaultSettings = {
+  $schema: "./schema/ui_data/settings.json",
+  backend: "PyTorch",
+  model: null,
+  extra: {
+    highres: {
+      scale: 2,
+      latent_scale_mode: "bilinear",
+      strength: 0.7,
+      steps: 50,
+      antialiased: false
+    }
+  },
+  aitDim: {
+    width: void 0,
+    height: void 0,
+    batch_size: void 0
+  },
+  txt2img: {
+    width: 512,
+    height: 512,
+    seed: -1,
+    cfg_scale: 7,
+    sampler: 8,
+    prompt: "",
+    steps: 25,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    self_attention_scale: 0,
+    sigmas: "automatic"
+  },
+  img2img: {
+    width: 512,
+    height: 512,
+    seed: -1,
+    cfg_scale: 7,
+    sampler: 8,
+    prompt: "",
+    steps: 25,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    denoising_strength: 0.6,
+    image: "",
+    self_attention_scale: 0,
+    sigmas: "automatic"
+  },
+  inpainting: {
+    prompt: "",
+    negative_prompt: "",
+    image: "",
+    mask_image: "",
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfg_scale: 7,
+    seed: -1,
+    batch_count: 1,
+    batch_size: 1,
+    sampler: 8,
+    self_attention_scale: 0,
+    sigmas: "automatic"
+  },
+  controlnet: {
+    prompt: "",
+    image: "",
+    sampler: 8,
+    controlnet: ControlNetType.CANNY,
+    negative_prompt: "",
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfg_scale: 7,
+    seed: -1,
+    batch_size: 1,
+    batch_count: 1,
+    controlnet_conditioning_scale: 1,
+    detection_resolution: 512,
+    is_preprocessed: false,
+    save_preprocessed: false,
+    return_preprocessed: true,
+    sigmas: "automatic"
+  },
+  upscale: {
+    image: "",
+    upscale_factor: 4,
+    model: "RealESRGAN_x4plus_anime_6B",
+    tile_size: 128,
+    tile_padding: 10
+  },
+  tagger: {
+    image: "",
+    model: "deepdanbooru",
+    threshold: 0.5
+  },
+  api: {
+    websocket_sync_interval: 0.02,
+    websocket_perf_interval: 1,
+    enable_websocket_logging: true,
+    clip_skip: 1,
+    clip_quantization: "full",
+    autocast: true,
+    attention_processor: "xformers",
+    subquadratic_size: 512,
+    attention_slicing: "disabled",
+    channels_last: true,
+    vae_slicing: false,
+    vae_tiling: false,
+    trace_model: false,
+    cudnn_benchmark: false,
+    offload: "disabled",
+    dont_merge_latents: false,
+    device: "cuda:0",
+    data_type: "float16",
+    use_tomesd: true,
+    tomesd_ratio: 0.4,
+    tomesd_downsample_layers: 1,
+    deterministic_generation: false,
+    reduced_precision: false,
+    clear_memory_policy: "always",
+    huggingface_style_parsing: false,
+    autoloaded_textual_inversions: [],
+    autoloaded_models: [],
+    autoloaded_vae: {},
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
+    image_extension: "png",
+    image_quality: 95,
+    disable_grid: false,
+    torch_compile: false,
+    torch_compile_fullgraph: false,
+    torch_compile_dynamic: false,
+    torch_compile_backend: "inductor",
+    torch_compile_mode: "default",
+    sfast_compile: false,
+    sfast_xformers: true,
+    sfast_triton: true,
+    sfast_cuda_graph: false,
+    hypertile: false,
+    hypertile_unet_chunk: 256,
+    sgm_noise_multiplier: false,
+    kdiffusers_quantization: true,
+    generator: "device",
+    live_preview_method: "approximation",
+    live_preview_delay: 2,
+    prompt_to_prompt: false,
+    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
+    prompt_to_prompt_device: "gpu"
+  },
+  aitemplate: {
+    num_threads: 8
+  },
+  onnx: {
+    quant_dict: {
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null
+    },
+    convert_to_fp16: true,
+    simplify_unet: false
+  },
+  bot: {
+    default_scheduler: 8,
+    verbose: false,
+    use_default_negative_prompt: true
+  },
+  frontend: {
+    theme: "dark",
+    enable_theme_editor: false,
+    image_browser_columns: 5,
+    on_change_timer: 2e3,
+    nsfw_ok_threshold: 0,
+    background_image_override: ""
+  },
+  sampler_config: {}
+};
+let rSettings = JSON.parse(JSON.stringify(defaultSettings));
+try {
+  const req = new XMLHttpRequest();
+  req.open("GET", `${serverUrl}/api/settings/`, false);
+  req.send();
+  const extra = rSettings.extra;
+  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
+  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
+} catch (e) {
+  console.error(e);
+}
+console.log("Settings:", rSettings);
+const recievedSettings = rSettings;
+class Settings {
+  constructor(settings_override) {
+    __publicField(this, "settings");
+    this.settings = { ...defaultSettings, ...settings_override };
+  }
+  to_json() {
+    return JSON.stringify(this.settings);
+  }
+}
+const diffusersSchedulerTuple = {
+  DDIM: 1,
+  DDPM: 2,
+  PNDM: 3,
+  LMSD: 4,
+  EulerDiscrete: 5,
+  HeunDiscrete: 6,
+  EulerAncestralDiscrete: 7,
+  DPMSolverMultistep: 8,
+  DPMSolverSinglestep: 9,
+  KDPM2Discrete: 10,
+  KDPM2AncestralDiscrete: 11,
+  DEISMultistep: 12,
+  UniPCMultistep: 13,
+  DPMSolverSDEScheduler: 14
+};
+const upscalerOptions = [
+  {
+    label: "RealESRGAN_x4plus",
+    value: "RealESRGAN_x4plus"
+  },
+  {
+    label: "RealESRNet_x4plus",
+    value: "RealESRNet_x4plus"
+  },
+  {
+    label: "RealESRGAN_x4plus_anime_6B",
+    value: "RealESRGAN_x4plus_anime_6B"
+  },
+  {
+    label: "RealESRGAN_x2plus",
+    value: "RealESRGAN_x2plus"
+  },
+  {
+    label: "RealESR-general-x4v3",
+    value: "RealESR-general-x4v3"
+  }
+];
+function getSchedulerOptions() {
+  const scheduler_options = [
+    {
+      type: "group",
+      label: "k-diffusion",
+      key: "K-Diffusion",
+      children: [
+        { label: "Euler a", value: "euler_a" },
+        { label: "Euler", value: "euler" },
+        { label: "LMS", value: "lms" },
+        { label: "Heun", value: "heun" },
+        { label: "DPM Fast", value: "dpm_fast" },
+        { label: "DPM Adaptive", value: "dpm_adaptive" },
+        { label: "DPM2", value: "dpm2" },
+        { label: "DPM2 a", value: "dpm2_a" },
+        { label: "DPM++ 2S a", value: "dpmpp_2s_a" },
+        { label: "DPM++ 2M", value: "dpmpp_2m" },
+        { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
+        { label: "DPM++ SDE", value: "dpmpp_sde" },
+        { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
+        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
+        { label: "UniPC Multistep", value: "unipc_multistep" },
+        { label: "Restart", value: "restart" }
+      ]
+    },
+    {
+      type: "group",
+      label: "Diffusers",
+      key: "diffusers",
+      children: Object.keys(diffusersSchedulerTuple).map((key) => {
+        return {
+          label: key,
+          value: diffusersSchedulerTuple[key]
+        };
+      })
+    }
+  ];
+  return scheduler_options;
+}
+function getControlNetOptions() {
+  const controlnet_options = [
+    {
+      type: "group",
+      label: "ControlNet 1.1",
+      key: "ControlNet 1.1",
+      children: [
+        {
+          label: "lllyasviel/control_v11p_sd15_canny",
+          value: "lllyasviel/control_v11p_sd15_canny"
+        },
+        {
+          label: "lllyasviel/control_v11f1p_sd15_depth",
+          value: "lllyasviel/control_v11f1p_sd15_depth"
+        },
+        {
+          label: "lllyasviel/control_v11e_sd15_ip2p",
+          value: "lllyasviel/control_v11e_sd15_ip2p"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_softedge",
+          value: "lllyasviel/control_v11p_sd15_softedge"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_openpose",
+          value: "lllyasviel/control_v11p_sd15_openpose"
+        },
+        {
+          label: "lllyasviel/control_v11f1e_sd15_tile",
+          value: "lllyasviel/control_v11f1e_sd15_tile"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_mlsd",
+          value: "lllyasviel/control_v11p_sd15_mlsd"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_scribble",
+          value: "lllyasviel/control_v11p_sd15_scribble"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_seg",
+          value: "lllyasviel/control_v11p_sd15_seg"
+        }
+      ]
+    },
+    {
+      type: "group",
+      label: "Special",
+      key: "Special",
+      children: [
+        {
+          label: "DionTimmer/controlnet_qrcode",
+          value: "DionTimmer/controlnet_qrcode"
+        },
+        {
+          label: "CrucibleAI/ControlNetMediaPipeFace",
+          value: "CrucibleAI/ControlNetMediaPipeFace"
+        }
+      ]
+    },
+    {
+      type: "group",
+      label: "Original",
+      key: "Original",
+      children: [
+        {
+          label: "lllyasviel/sd-controlnet-canny",
+          value: "lllyasviel/sd-controlnet-canny"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-depth",
+          value: "lllyasviel/sd-controlnet-depth"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-hed",
+          value: "lllyasviel/sd-controlnet-hed"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-mlsd",
+          value: "lllyasviel/sd-controlnet-mlsd"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-normal",
+          value: "lllyasviel/sd-controlnet-normal"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-openpose",
+          value: "lllyasviel/sd-controlnet-openpose"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-scribble",
+          value: "lllyasviel/sd-controlnet-scribble"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-seg",
+          value: "lllyasviel/sd-controlnet-seg"
+        }
+      ]
+    }
+  ];
+  return controlnet_options;
+}
+const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
+const useSettings = defineStore("settings", () => {
+  const data = reactive(new Settings(recievedSettings));
+  const scheduler_options = computed(() => {
+    return getSchedulerOptions();
+  });
+  const controlnet_options = computed(() => {
+    return getControlNetOptions();
+  });
+  function resetSettings() {
+    console.log("Resetting settings to default");
+    Object.assign(defaultSettings$1, defaultSettings);
+  }
+  const defaultSettings$1 = reactive(deepcopiedSettings);
+  return {
+    data,
+    scheduler_options,
+    controlnet_options,
+    defaultSettings: defaultSettings$1,
+    resetSettings
+  };
+});
+const ImageUpload_vue_vue_type_style_index_0_scoped_9ed1514f_lang = "";
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
 const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "InitHandler",
   setup(__props) {
@@ -41290,429 +41721,6 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-var Backends = /* @__PURE__ */ ((Backends2) => {
-  Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
-  Backends2[Backends2["AITemplate"] = 1] = "AITemplate";
-  Backends2[Backends2["ONNX"] = 2] = "ONNX";
-  Backends2[Backends2["unknown"] = 3] = "unknown";
-  Backends2[Backends2["LoRA"] = 4] = "LoRA";
-  Backends2[Backends2["LyCORIS"] = 5] = "LyCORIS";
-  Backends2[Backends2["VAE"] = 6] = "VAE";
-  Backends2[Backends2["Textual Inversion"] = 7] = "Textual Inversion";
-  Backends2[Backends2["Upscaler"] = 8] = "Upscaler";
-  return Backends2;
-})(Backends || {});
-var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
-  ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
-  ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
-  ControlNetType2["HED"] = "lllyasviel/sd-controlnet-hed";
-  ControlNetType2["MLSD"] = "lllyasviel/sd-controlnet-mlsd";
-  ControlNetType2["NORMAL"] = "lllyasviel/sd-controlnet-normal";
-  ControlNetType2["OPENPOSE"] = "lllyasviel/sd-controlnet-openpose";
-  ControlNetType2["SCRIBBLE"] = "lllyasviel/sd-controlnet-scribble";
-  ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
-  return ControlNetType2;
-})(ControlNetType || {});
-const defaultSettings = {
-  $schema: "./schema/ui_data/settings.json",
-  backend: "PyTorch",
-  model: null,
-  extra: {
-    highres: {
-      scale: 2,
-      latent_scale_mode: "bilinear",
-      strength: 0.7,
-      steps: 50,
-      antialiased: false
-    }
-  },
-  aitDim: {
-    width: void 0,
-    height: void 0,
-    batch_size: void 0
-  },
-  txt2img: {
-    width: 512,
-    height: 512,
-    seed: -1,
-    cfg_scale: 7,
-    sampler: 8,
-    prompt: "",
-    steps: 25,
-    batch_count: 1,
-    batch_size: 1,
-    negative_prompt: "",
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  img2img: {
-    width: 512,
-    height: 512,
-    seed: -1,
-    cfg_scale: 7,
-    sampler: 8,
-    prompt: "",
-    steps: 25,
-    batch_count: 1,
-    batch_size: 1,
-    negative_prompt: "",
-    denoising_strength: 0.6,
-    image: "",
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  inpainting: {
-    prompt: "",
-    negative_prompt: "",
-    image: "",
-    mask_image: "",
-    width: 512,
-    height: 512,
-    steps: 25,
-    cfg_scale: 7,
-    seed: -1,
-    batch_count: 1,
-    batch_size: 1,
-    sampler: 8,
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  controlnet: {
-    prompt: "",
-    image: "",
-    sampler: 8,
-    controlnet: ControlNetType.CANNY,
-    negative_prompt: "",
-    width: 512,
-    height: 512,
-    steps: 25,
-    cfg_scale: 7,
-    seed: -1,
-    batch_size: 1,
-    batch_count: 1,
-    controlnet_conditioning_scale: 1,
-    detection_resolution: 512,
-    is_preprocessed: false,
-    save_preprocessed: false,
-    return_preprocessed: true,
-    sigmas: "automatic"
-  },
-  upscale: {
-    image: "",
-    upscale_factor: 4,
-    model: "RealESRGAN_x4plus_anime_6B",
-    tile_size: 128,
-    tile_padding: 10
-  },
-  tagger: {
-    image: "",
-    model: "deepdanbooru",
-    threshold: 0.5
-  },
-  api: {
-    websocket_sync_interval: 0.02,
-    websocket_perf_interval: 1,
-    enable_websocket_logging: true,
-    clip_skip: 1,
-    clip_quantization: "full",
-    autocast: true,
-    attention_processor: "xformers",
-    subquadratic_size: 512,
-    attention_slicing: "disabled",
-    channels_last: true,
-    vae_slicing: false,
-    vae_tiling: false,
-    trace_model: false,
-    cudnn_benchmark: false,
-    offload: "disabled",
-    dont_merge_latents: false,
-    device: "cuda:0",
-    data_type: "float16",
-    use_tomesd: true,
-    tomesd_ratio: 0.4,
-    tomesd_downsample_layers: 1,
-    deterministic_generation: false,
-    reduced_precision: false,
-    clear_memory_policy: "always",
-    huggingface_style_parsing: false,
-    autoloaded_textual_inversions: [],
-    autoloaded_models: [],
-    autoloaded_vae: {},
-    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
-    image_extension: "png",
-    image_quality: 95,
-    disable_grid: false,
-    torch_compile: false,
-    torch_compile_fullgraph: false,
-    torch_compile_dynamic: false,
-    torch_compile_backend: "inductor",
-    torch_compile_mode: "default",
-    sfast_compile: false,
-    sfast_xformers: true,
-    sfast_triton: true,
-    sfast_cuda_graph: false,
-    hypertile: false,
-    hypertile_unet_chunk: 256,
-    sgm_noise_multiplier: false,
-    kdiffusers_quantization: true,
-    generator: "device",
-    live_preview_method: "approximation",
-    live_preview_delay: 2,
-    prompt_to_prompt: false,
-    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
-    prompt_to_prompt_device: "gpu"
-  },
-  aitemplate: {
-    num_threads: 8
-  },
-  onnx: {
-    quant_dict: {
-      text_encoder: null,
-      unet: null,
-      vae_decoder: null,
-      vae_encoder: null
-    },
-    convert_to_fp16: true,
-    simplify_unet: false
-  },
-  bot: {
-    default_scheduler: 8,
-    verbose: false,
-    use_default_negative_prompt: true
-  },
-  frontend: {
-    theme: "dark",
-    enable_theme_editor: false,
-    image_browser_columns: 5,
-    on_change_timer: 2e3,
-    nsfw_ok_threshold: 0,
-    background_image_override: ""
-  },
-  sampler_config: {}
-};
-let rSettings = JSON.parse(JSON.stringify(defaultSettings));
-try {
-  const req = new XMLHttpRequest();
-  req.open("GET", `${serverUrl}/api/settings/`, false);
-  req.send();
-  const extra = rSettings.extra;
-  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
-  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
-} catch (e) {
-  console.error(e);
-}
-console.log("Settings:", rSettings);
-const recievedSettings = rSettings;
-class Settings {
-  constructor(settings_override) {
-    __publicField(this, "settings");
-    this.settings = { ...defaultSettings, ...settings_override };
-  }
-  to_json() {
-    return JSON.stringify(this.settings);
-  }
-}
-const diffusersSchedulerTuple = {
-  DDIM: 1,
-  DDPM: 2,
-  PNDM: 3,
-  LMSD: 4,
-  EulerDiscrete: 5,
-  HeunDiscrete: 6,
-  EulerAncestralDiscrete: 7,
-  DPMSolverMultistep: 8,
-  DPMSolverSinglestep: 9,
-  KDPM2Discrete: 10,
-  KDPM2AncestralDiscrete: 11,
-  DEISMultistep: 12,
-  UniPCMultistep: 13,
-  DPMSolverSDEScheduler: 14
-};
-const upscalerOptions = [
-  {
-    label: "RealESRGAN_x4plus",
-    value: "RealESRGAN_x4plus"
-  },
-  {
-    label: "RealESRNet_x4plus",
-    value: "RealESRNet_x4plus"
-  },
-  {
-    label: "RealESRGAN_x4plus_anime_6B",
-    value: "RealESRGAN_x4plus_anime_6B"
-  },
-  {
-    label: "RealESRGAN_x2plus",
-    value: "RealESRGAN_x2plus"
-  },
-  {
-    label: "RealESR-general-x4v3",
-    value: "RealESR-general-x4v3"
-  }
-];
-function getSchedulerOptions() {
-  const scheduler_options = [
-    {
-      type: "group",
-      label: "k-diffusion",
-      key: "K-Diffusion",
-      children: [
-        { label: "Euler a", value: "euler_a" },
-        { label: "Euler", value: "euler" },
-        { label: "LMS", value: "lms" },
-        { label: "Heun", value: "heun" },
-        { label: "DPM Fast", value: "dpm_fast" },
-        { label: "DPM Adaptive", value: "dpm_adaptive" },
-        { label: "DPM2", value: "dpm2" },
-        { label: "DPM2 a", value: "dpm2_a" },
-        { label: "DPM++ 2S a", value: "dpmpp_2s_a" },
-        { label: "DPM++ 2M", value: "dpmpp_2m" },
-        { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
-        { label: "DPM++ SDE", value: "dpmpp_sde" },
-        { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
-        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
-        { label: "UniPC Multistep", value: "unipc_multistep" },
-        { label: "Restart", value: "restart" }
-      ]
-    },
-    {
-      type: "group",
-      label: "Diffusers",
-      key: "diffusers",
-      children: Object.keys(diffusersSchedulerTuple).map((key) => {
-        return {
-          label: key,
-          value: diffusersSchedulerTuple[key]
-        };
-      })
-    }
-  ];
-  return scheduler_options;
-}
-function getControlNetOptions() {
-  const controlnet_options = [
-    {
-      type: "group",
-      label: "ControlNet 1.1",
-      key: "ControlNet 1.1",
-      children: [
-        {
-          label: "lllyasviel/control_v11p_sd15_canny",
-          value: "lllyasviel/control_v11p_sd15_canny"
-        },
-        {
-          label: "lllyasviel/control_v11f1p_sd15_depth",
-          value: "lllyasviel/control_v11f1p_sd15_depth"
-        },
-        {
-          label: "lllyasviel/control_v11e_sd15_ip2p",
-          value: "lllyasviel/control_v11e_sd15_ip2p"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_softedge",
-          value: "lllyasviel/control_v11p_sd15_softedge"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_openpose",
-          value: "lllyasviel/control_v11p_sd15_openpose"
-        },
-        {
-          label: "lllyasviel/control_v11f1e_sd15_tile",
-          value: "lllyasviel/control_v11f1e_sd15_tile"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_mlsd",
-          value: "lllyasviel/control_v11p_sd15_mlsd"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_scribble",
-          value: "lllyasviel/control_v11p_sd15_scribble"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_seg",
-          value: "lllyasviel/control_v11p_sd15_seg"
-        }
-      ]
-    },
-    {
-      type: "group",
-      label: "Special",
-      key: "Special",
-      children: [
-        {
-          label: "DionTimmer/controlnet_qrcode",
-          value: "DionTimmer/controlnet_qrcode"
-        },
-        {
-          label: "CrucibleAI/ControlNetMediaPipeFace",
-          value: "CrucibleAI/ControlNetMediaPipeFace"
-        }
-      ]
-    },
-    {
-      type: "group",
-      label: "Original",
-      key: "Original",
-      children: [
-        {
-          label: "lllyasviel/sd-controlnet-canny",
-          value: "lllyasviel/sd-controlnet-canny"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-depth",
-          value: "lllyasviel/sd-controlnet-depth"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-hed",
-          value: "lllyasviel/sd-controlnet-hed"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-mlsd",
-          value: "lllyasviel/sd-controlnet-mlsd"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-normal",
-          value: "lllyasviel/sd-controlnet-normal"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-openpose",
-          value: "lllyasviel/sd-controlnet-openpose"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-scribble",
-          value: "lllyasviel/sd-controlnet-scribble"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-seg",
-          value: "lllyasviel/sd-controlnet-seg"
-        }
-      ]
-    }
-  ];
-  return controlnet_options;
-}
-const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
-const useSettings = defineStore("settings", () => {
-  const data = reactive(new Settings(recievedSettings));
-  const scheduler_options = computed(() => {
-    return getSchedulerOptions();
-  });
-  const controlnet_options = computed(() => {
-    return getControlNetOptions();
-  });
-  function resetSettings() {
-    console.log("Resetting settings to default");
-    Object.assign(defaultSettings$1, defaultSettings);
-  }
-  const defaultSettings$1 = reactive(deepcopiedSettings);
-  return {
-    data,
-    scheduler_options,
-    controlnet_options,
-    defaultSettings: defaultSettings$1,
-    resetSettings
-  };
-});
 const _withScopeId = (n) => (pushScopeId("data-v-2589676e"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
@@ -42670,14 +42678,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   }
 });
 const TopBar_vue_vue_type_style_index_0_scoped_2589676e_lang = "";
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
-  }
-  return target;
-};
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
+const _2img = "";
+const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_ea705b88_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_7bc38f75_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_08b8fd63_lang = "";
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42699,13 +42707,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
                   _hoisted_1,
-                  createVNode(_sfc_main$4),
-                  createVNode(_sfc_main$8),
-                  createVNode(TopBarVue),
-                  createVNode(_sfc_main$7),
+                  createVNode(unref(_sfc_main$4)),
+                  createVNode(unref(_sfc_main$8)),
+                  createVNode(unref(TopBar)),
+                  createVNode(unref(_sfc_main$7)),
                   createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
-                  createVNode(_sfc_main$5),
-                  createVNode(_sfc_main$6)
+                  createVNode(unref(_sfc_main$5)),
+                  createVNode(unref(_sfc_main$6))
                 ]),
                 _: 1
               })
@@ -42851,27 +42859,27 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
       name: "imageProcessing",
-      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ImageProcessingView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/models",
       name: "models",
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Switch.js","assets/Settings.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Switch.js","assets/Settings.js","assets/TrashBin.js","assets/CloudUpload.js"] : void 0)
     },
     {
       path: "/about",
@@ -42906,7 +42914,7 @@ const router = createRouter({
     {
       path: "/tagger",
       name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
     },
     {
       path: "/:pathMatch(.*)",
@@ -42927,15 +42935,15 @@ export {
   h as C,
   ref as D,
   NButton as E,
-  NIcon as F,
-  NTabPane as G,
-  NTabs as H,
-  Fragment as I,
+  Fragment as F,
+  NIcon as G,
+  NTabPane as H,
+  NTabs as I,
   watch as J,
   upscalerOptions as K,
   renderList as L,
   NScrollbar as M,
-  NGi as N,
+  NInput as N,
   replaceable as O,
   createInjectionKey as P,
   cB as Q,
@@ -42949,7 +42957,7 @@ export {
   createTreeMate as Y,
   happensIn as Z,
   _export_sfc as _,
-  useSettings as a,
+  useState as a,
   AddIcon as a$,
   nextTick as a0,
   keysOf as a1,
@@ -43014,7 +43022,7 @@ export {
   getSlot$1 as ax,
   depx as ay,
   formatLength as az,
-  useMessage as b,
+  createVNode as b,
   VFollower as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
@@ -43079,32 +43087,32 @@ export {
   NTag as bx,
   getCurrentInstance as by,
   formLight$1 as bz,
-  computed as c,
+  createElementBlock as c,
   sliderLight$1 as c0,
   isSlotEmpty as c1,
   switchLight$1 as c2,
   NResult as c3,
   defineComponent as d,
-  openBlock as e,
-  createElementBlock as f,
-  createVNode as g,
-  unref as h,
-  NCard as i,
-  NSpace as j,
-  NInput as k,
-  promptHandleKeyDown as l,
-  createTextVNode as m,
-  createBaseVNode as n,
-  onUnmounted as o,
+  unref as e,
+  promptHandleKeyDown as f,
+  useMessage as g,
+  onUnmounted as h,
+  NGi as i,
+  NCard as j,
+  NSpace as k,
+  createBaseVNode as l,
+  NTooltip as m,
+  createTextVNode as n,
+  openBlock as o,
   promptHandleKeyUp as p,
-  NTooltip as q,
-  createCommentVNode as r,
+  createCommentVNode as q,
+  createBlock as r,
   serverUrl as s,
-  toDisplayString as t,
-  useState as u,
-  createBlock as v,
+  NSelect as t,
+  useSettings as u,
+  NGrid as v,
   withCtx as w,
-  NSelect as x,
-  NGrid as y,
+  computed as x,
+  toDisplayString as y,
   spaceRegex as z
 };

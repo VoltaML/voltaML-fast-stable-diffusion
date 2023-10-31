@@ -1,4 +1,4 @@
-import { aa as c, Q as cB, ac as cNotM, ab as cM, at as cE, aU as insideModal, aV as insidePopover, d as defineComponent, S as useConfig, T as useTheme, c as computed, W as useThemeClass, bS as useCompitable, aw as flatten, C as h, aQ as repeat, ax as getSlot, bT as descriptionsLight, al as createKey } from "./index.js";
+import { aa as c, Q as cB, ac as cNotM, ab as cM, at as cE, aU as insideModal, aV as insidePopover, d as defineComponent, S as useConfig, T as useTheme, x as computed, W as useThemeClass, bS as useCompitable, aw as flatten, C as h, aQ as repeat, ax as getSlot, bT as descriptionsLight, al as createKey } from "./index.js";
 function getVNodeChildren(vNode, slotName = "default", fallback = []) {
   const { children } = vNode;
   if (children !== null && typeof children === "object" && !Array.isArray(children)) {

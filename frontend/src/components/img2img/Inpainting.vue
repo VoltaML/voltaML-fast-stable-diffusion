@@ -366,10 +366,12 @@
 <script setup lang="ts">
 import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
-import GenerateSection from "@/components/GenerateSection.vue";
-import ImageOutput from "@/components/ImageOutput.vue";
-import OutputStats from "@/components/OutputStats.vue";
-import SamplerPicker from "@/components/generate/SamplerPicker.vue";
+import {
+  GenerateSection,
+  ImageOutput,
+  OutputStats,
+  SamplerPicker,
+} from "@/components";
 import { serverUrl } from "@/env";
 import {
   promptHandleKeyDown,

@@ -89,6 +89,7 @@
 <script setup lang="ts">
 import { convertToTextString } from "@/functions";
 import type { ISettings } from "@/settings";
+import type { InferenceTabs } from "@/types";
 import { Settings } from "@vicons/ionicons5";
 import {
   NButton,
@@ -197,9 +198,7 @@ const target = computed<ISettings>(() => {
 
 const props = defineProps({
   type: {
-    type: String as PropType<
-      "txt2img" | "img2img" | "inpainting" | "controlnet"
-    >,
+    type: String as PropType<InferenceTabs>,
     required: true,
   },
   target: {

@@ -1,13 +1,13 @@
+import { d as defineComponent, a as useState, u as useSettings, g as useMessage, x as computed, o as openBlock, c as createElementBlock, b as createVNode, w as withCtx, e as unref, i as NGi, j as NCard, k as NSpace, l as createBaseVNode, t as NSelect, m as NTooltip, n as createTextVNode, v as NGrid, K as upscalerOptions, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, r as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, c as computed, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, n as createBaseVNode, x as NSelect, q as NTooltip, m as createTextVNode, y as NGrid, K as upscalerOptions, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, v as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-3d34d51a"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-5358ed01"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Model", -1));
@@ -75,7 +75,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(ImageUpload, {
+                createVNode(unref(ImageUpload), {
                   callback: imageSelectCallback,
                   preview: unref(settings).data.settings.upscale.image,
                   style: { "margin-bottom": "12px" },
@@ -189,11 +189,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$2, {
+                createVNode(unref(_sfc_main$2), {
                   generate,
                   "do-not-disable-generate": ""
                 }),
-                createVNode(_sfc_main$3, {
+                createVNode(unref(_sfc_main$3), {
                   "current-image": unref(global).state.imageProcessing.currentImage,
                   images: unref(global).state.imageProcessing.images,
                   onImageClicked: _cache[8] || (_cache[8] = ($event) => unref(global).state.imageProcessing.currentImage = $event)
@@ -208,8 +208,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Upscale_vue_vue_type_style_index_0_scoped_3d34d51a_lang = "";
-const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-3d34d51a"]]);
+const Upscale = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-5358ed01"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageProcessingView",
   setup(__props) {
@@ -226,7 +225,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             name: "upscale"
           }, {
             default: withCtx(() => [
-              createVNode(Upscale)
+              createVNode(unref(Upscale))
             ]),
             _: 1
           })

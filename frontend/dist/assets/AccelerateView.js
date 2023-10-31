@@ -1,4 +1,4 @@
-import { Q as cB, ab as cM, aa as c, at as cE, aT as iconSwitchTransition, ac as cNotM, d as defineComponent, S as useConfig, ag as useRtl, T as useTheme, a3 as provide, C as h, aw as flatten, ax as getSlot, P as createInjectionKey, bg as stepsLight, R as inject, a_ as throwError, c as computed, W as useThemeClass, av as resolveWrappedSlot, ah as resolveSlot, aI as NIconSwitchTransition, al as createKey, $ as call, ai as NBaseIcon, bh as FinishedIcon, bi as ErrorIcon, b as useMessage, u as useState, D as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, x as NSelect, E as NButton, m as createTextVNode, bd as NModal, s as serverUrl, a as useSettings, v as createBlock, G as NTabPane, H as NTabs } from "./index.js";
+import { Q as cB, ab as cM, aa as c, at as cE, aT as iconSwitchTransition, ac as cNotM, d as defineComponent, S as useConfig, ag as useRtl, T as useTheme, a3 as provide, C as h, aw as flatten, ax as getSlot, P as createInjectionKey, bg as stepsLight, R as inject, a_ as throwError, x as computed, W as useThemeClass, av as resolveWrappedSlot, ah as resolveSlot, aI as NIconSwitchTransition, al as createKey, $ as call, ai as NBaseIcon, bh as FinishedIcon, bi as ErrorIcon, g as useMessage, a as useState, D as ref, o as openBlock, c as createElementBlock, b as createVNode, w as withCtx, e as unref, k as NSpace, j as NCard, l as createBaseVNode, t as NSelect, E as NButton, n as createTextVNode, bd as NModal, s as serverUrl, u as useSettings, r as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 const style = cB("steps", `
@@ -715,13 +715,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           createVNode(unref(NTabPane), { name: "Dynamic AITemplate" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$2)
+              createVNode(unref(_sfc_main$2))
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "ONNX" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$1)
+              createVNode(unref(_sfc_main$1))
             ]),
             _: 1
           })

@@ -7,7 +7,7 @@
 </template>
 
 <script lang="ts" setup>
-import Upscale from "@/components/imageProcessing/Upscale.vue";
+import { Upscale } from "@/components";
 import { useState } from "@/store/state";
 import { NTabPane, NTabs } from "naive-ui";
 

@@ -1,9 +1,9 @@
-import { _ as _sfc_main$7 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, o as openBlock, c as createElementBlock, l as createBaseVNode, a as useState, u as useSettings, g as useMessage, x as computed, h as onUnmounted, b as createVNode, w as withCtx, e as unref, i as NGi, j as NCard, k as NSpace, N as NInput, p as promptHandleKeyUp, f as promptHandleKeyDown, n as createTextVNode, y as toDisplayString, m as NTooltip, t as NSelect, v as NGrid, z as spaceRegex, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, q as createCommentVNode, C as h, D as ref, E as NButton, G as NIcon, r as createBlock, H as NTabPane, I as NTabs } from "./index.js";
 import { B as BurnerClock, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$9 } from "./clock.js";
+import { _ as _sfc_main$7 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$8 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
 import { _ as _sfc_main$4 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, b as useMessage, c as computed, o as onUnmounted, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, k as NInput, p as promptHandleKeyUp, l as promptHandleKeyDown, m as createTextVNode, t as toDisplayString, q as NTooltip, x as NSelect, y as NGrid, z as spaceRegex, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, r as createCommentVNode, C as h, D as ref, E as NButton, F as NIcon, v as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -145,7 +145,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$3);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-572c2180"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-ea705b88"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "ControlNet", -1));
@@ -273,7 +273,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(ImageUpload, {
+                createVNode(unref(ImageUpload), {
                   callback: imageSelectCallback,
                   preview: unref(settings).data.settings.controlnet.image,
                   style: { "margin-bottom": "12px" },
@@ -327,7 +327,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                           ]),
                           _: 1
                         }, 8, ["value", "onKeydown"]),
-                        createVNode(_sfc_main$4, { type: "controlnet" }),
+                        createVNode(unref(_sfc_main$4), { type: "controlnet" }),
                         createBaseVNode("div", _hoisted_2$2, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
@@ -348,7 +348,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             style: { "flex-grow": "1" }
                           }, null, 8, ["options", "value"])
                         ]),
-                        createVNode(_sfc_main$5, {
+                        createVNode(unref(_sfc_main$5), {
                           "dimensions-object": unref(settings).data.settings.controlnet
                         }, null, 8, ["dimensions-object"]),
                         createBaseVNode("div", _hoisted_5$2, [
@@ -433,7 +433,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                             max: 9
                           }, null, 8, ["value"])
                         ]),
-                        createVNode(_sfc_main$6, {
+                        createVNode(unref(_sfc_main$6), {
                           "batch-size-object": unref(settings).data.settings.controlnet
                         }, null, 8, ["batch-size-object"]),
                         createBaseVNode("div", _hoisted_13$2, [
@@ -544,14 +544,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$7, { generate }),
-                createVNode(_sfc_main$8, {
+                createVNode(unref(_sfc_main$7), { generate }),
+                createVNode(unref(_sfc_main$8), {
                   "current-image": unref(global).state.controlnet.currentImage,
                   images: unref(global).state.controlnet.images,
                   data: unref(settings).data.settings.controlnet,
                   onImageClicked: _cache[20] || (_cache[20] = ($event) => unref(global).state.controlnet.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(_sfc_main$9, {
+                createVNode(unref(_sfc_main$9), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.controlnet.genData
                 }, null, 8, ["gen-data"])
@@ -565,9 +565,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet_vue_vue_type_style_index_0_scoped_572c2180_lang = "";
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-572c2180"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-fe0214b4"), n = n(), popScopeId(), n);
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-ea705b88"]]);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-7bc38f75"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
@@ -682,7 +681,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(ImageUpload, {
+                createVNode(unref(ImageUpload), {
                   callback: imageSelectCallback,
                   preview: unref(settings).data.settings.img2img.image,
                   style: { "margin-bottom": "12px" },
@@ -738,8 +737,8 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }, 8, ["value", "onKeydown"]),
-                          createVNode(_sfc_main$4, { type: "img2img" }),
-                          createVNode(_sfc_main$5, {
+                          createVNode(unref(_sfc_main$4), { type: "img2img" }),
+                          createVNode(unref(_sfc_main$5), {
                             "dimensions-object": unref(settings).data.settings.img2img
                           }, null, 8, ["dimensions-object"]),
                           createBaseVNode("div", _hoisted_2$1, [
@@ -853,7 +852,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                               max: 9
                             }, null, 8, ["value"])
                           ]),
-                          createVNode(_sfc_main$6, {
+                          createVNode(unref(_sfc_main$6), {
                             "batch-size-object": unref(settings).data.settings.img2img
                           }, null, 8, ["batch-size-object"]),
                           createBaseVNode("div", _hoisted_13$1, [
@@ -916,14 +915,14 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$7, { generate }),
-                createVNode(_sfc_main$8, {
+                createVNode(unref(_sfc_main$7), { generate }),
+                createVNode(unref(_sfc_main$8), {
                   "current-image": unref(global).state.img2img.currentImage,
                   images: unref(global).state.img2img.images,
                   data: unref(settings).data.settings.img2img,
                   onImageClicked: _cache[16] || (_cache[16] = ($event) => unref(global).state.img2img.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(_sfc_main$9, {
+                createVNode(unref(_sfc_main$9), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.img2img.genData
                 }, null, 8, ["gen-data"])
@@ -937,8 +936,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Img2Img_vue_vue_type_style_index_0_scoped_fe0214b4_lang = "";
-const Img2Img = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-fe0214b4"]]);
+const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-7bc38f75"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1514,7 +1512,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-debbedfc"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-08b8fd63"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1902,7 +1900,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             ]),
                             _: 1
                           }, 8, ["value", "onKeydown"]),
-                          createVNode(_sfc_main$4, { type: "inpainting" }),
+                          createVNode(unref(_sfc_main$4), { type: "inpainting" }),
                           createBaseVNode("div", _hoisted_5, [
                             _hoisted_6,
                             createVNode(unref(NSlider), {
@@ -2112,14 +2110,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$7, { generate }),
-                createVNode(_sfc_main$8, {
+                createVNode(unref(_sfc_main$7), { generate }),
+                createVNode(unref(_sfc_main$8), {
                   "current-image": unref(global).state.inpainting.currentImage,
                   images: unref(global).state.inpainting.images,
                   data: unref(settings).data.settings.inpainting,
                   onImageClicked: _cache[21] || (_cache[21] = ($event) => unref(global).state.inpainting.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(_sfc_main$9, {
+                createVNode(unref(_sfc_main$9), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.inpainting.genData
                 }, null, 8, ["gen-data"])
@@ -2133,8 +2131,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting_vue_vue_type_style_index_0_scoped_debbedfc_lang = "";
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-debbedfc"]]);
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-08b8fd63"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {
@@ -2151,7 +2148,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             name: "img2img"
           }, {
             default: withCtx(() => [
-              createVNode(Img2Img)
+              createVNode(unref(ImageToImage))
             ]),
             _: 1
           }),
@@ -2160,7 +2157,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             name: "controlnet"
           }, {
             default: withCtx(() => [
-              createVNode(ControlNet)
+              createVNode(unref(ControlNet))
             ]),
             _: 1
           }),
@@ -2169,7 +2166,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             name: "inpainting"
           }, {
             default: withCtx(() => [
-              createVNode(Inpainting)
+              createVNode(unref(Inpainting))
             ]),
             _: 1
           })

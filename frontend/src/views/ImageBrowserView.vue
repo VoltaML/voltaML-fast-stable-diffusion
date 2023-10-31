@@ -161,7 +161,7 @@
 </template>
 
 <script lang="ts" setup>
-import SendOutputTo from "@/components/SendOutputTo.vue";
+import { SendOutputTo } from "@/components";
 import type { imgData as IImgData } from "@/core/interfaces";
 import { serverUrl } from "@/env";
 import { convertToTextString, urlFromPath } from "@/functions";

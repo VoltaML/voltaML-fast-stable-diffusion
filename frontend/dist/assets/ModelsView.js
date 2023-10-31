@@ -1,4 +1,4 @@
-import { d as defineComponent, C as h, O as replaceable, P as createInjectionKey, Q as cB, R as inject, S as useConfig, T as useTheme, U as popselectLight, c as computed, J as watch, V as toRef, W as useThemeClass, X as NInternalSelectMenu, Y as createTreeMate, Z as happensIn, $ as call, a0 as nextTick, a1 as keysOf, a2 as createTmOptions, D as ref, a3 as provide, a4 as keep, a5 as createRefSetter, a6 as mergeEventHandlers, a7 as omit, a8 as NPopover, a9 as popoverBaseProps, aa as c, ab as cM, ac as cNotM, ad as useLocale, ae as useMergedState, af as watchEffect, ag as useRtl, ah as resolveSlot, k as NInput, x as NSelect, I as Fragment, ai as NBaseIcon, aj as useAdjustedTo, ak as paginationLight, al as createKey, am as useMergedClsPrefix, an as ellipsisLight, ao as onDeactivated, q as NTooltip, ap as mergeProps, aq as useStyle, ar as useFormItem, as as useMemo, at as cE, au as radioLight, av as resolveWrappedSlot, aw as flatten$1, ax as getSlot, ay as depx, az as formatLength, E as NButton, aA as NScrollbar, aB as onBeforeUnmount, aC as off, aD as on, aE as ChevronDownIcon, aF as NDropdown, aG as pxfy, aH as get, aI as NIconSwitchTransition, aJ as NBaseLoading, aK as ChevronRightIcon, o as onUnmounted, aL as VResizeObserver, aM as warn, aN as cssrAnchorMetaName, aO as VVirtualList, aP as NEmpty, aQ as repeat, aR as beforeNextFrameOnce, aS as fadeInScaleUpTransition, aT as iconSwitchTransition, aU as insideModal, aV as insidePopover, aW as createId, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, e as openBlock, f as createElementBlock, n as createBaseVNode, b6 as useCssVars, h as unref, a as useSettings, b7 as themeOverridesKey, b8 as reactive, b9 as onMounted, g as createVNode, w as withCtx, F as NIcon, L as renderList, ba as normalizeStyle, m as createTextVNode, t as toDisplayString, bb as NText, r as createCommentVNode, _ as _export_sfc, u as useState, b as useMessage, bc as huggingfaceModelsFile, i as NCard, s as serverUrl, A as pushScopeId, B as popScopeId, j as NSpace, bd as NModal, v as createBlock, N as NGi, y as NGrid, be as NDivider, bf as Backends, G as NTabPane, H as NTabs } from "./index.js";
+import { d as defineComponent, C as h, O as replaceable, P as createInjectionKey, Q as cB, R as inject, S as useConfig, T as useTheme, U as popselectLight, x as computed, J as watch, V as toRef, W as useThemeClass, X as NInternalSelectMenu, Y as createTreeMate, Z as happensIn, $ as call, a0 as nextTick, a1 as keysOf, a2 as createTmOptions, D as ref, a3 as provide, a4 as keep, a5 as createRefSetter, a6 as mergeEventHandlers, a7 as omit, a8 as NPopover, a9 as popoverBaseProps, aa as c, ab as cM, ac as cNotM, ad as useLocale, ae as useMergedState, af as watchEffect, ag as useRtl, ah as resolveSlot, N as NInput, t as NSelect, F as Fragment, ai as NBaseIcon, aj as useAdjustedTo, ak as paginationLight, al as createKey, am as useMergedClsPrefix, an as ellipsisLight, ao as onDeactivated, m as NTooltip, ap as mergeProps, aq as useStyle, ar as useFormItem, as as useMemo, at as cE, au as radioLight, av as resolveWrappedSlot, aw as flatten$1, ax as getSlot, ay as depx, az as formatLength, E as NButton, aA as NScrollbar, aB as onBeforeUnmount, aC as off, aD as on, aE as ChevronDownIcon, aF as NDropdown, aG as pxfy, aH as get, aI as NIconSwitchTransition, aJ as NBaseLoading, aK as ChevronRightIcon, h as onUnmounted, aL as VResizeObserver, aM as warn, aN as cssrAnchorMetaName, aO as VVirtualList, aP as NEmpty, aQ as repeat, aR as beforeNextFrameOnce, aS as fadeInScaleUpTransition, aT as iconSwitchTransition, aU as insideModal, aV as insidePopover, aW as createId, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, o as openBlock, c as createElementBlock, l as createBaseVNode, b6 as useCssVars, e as unref, u as useSettings, b7 as themeOverridesKey, b8 as reactive, b9 as onMounted, b as createVNode, w as withCtx, G as NIcon, L as renderList, ba as normalizeStyle, n as createTextVNode, y as toDisplayString, bb as NText, q as createCommentVNode, _ as _export_sfc, a as useState, g as useMessage, bc as huggingfaceModelsFile, j as NCard, s as serverUrl, A as pushScopeId, B as popScopeId, k as NSpace, bd as NModal, r as createBlock, i as NGi, v as NGrid, be as NDivider, bf as Backends, H as NTabPane, I as NTabs } from "./index.js";
 import { _ as _sfc_main$5, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
@@ -6541,8 +6541,8 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a, _b;
       return {
-        "f556ecec": unref(settings).data.settings.frontend.image_browser_columns,
-        "166fadfa": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+        "6b1de230": unref(settings).data.settings.frontend.image_browser_columns,
+        "a55b21d8": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
       };
     });
     const settings = useSettings();
@@ -6694,7 +6694,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     refreshImages();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        createVNode(_sfc_main$5, {
+        createVNode(unref(_sfc_main$5), {
           model: currentModel.value,
           "show-modal": showModal.value,
           "onUpdate:showModal": _cache[0] || (_cache[0] = ($event) => showModal.value = $event)
@@ -6833,8 +6833,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const CivitAIDownload_vue_vue_type_style_index_0_scoped_ebbb8366_lang = "";
-const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-ebbb8366"]]);
+const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-e10a07d2"]]);
 const _withScopeId = (n) => (pushScopeId("data-v-b405f046"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };
@@ -7016,7 +7015,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const HuggingfaceDownload = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-b405f046"]]);
 const _hoisted_1$1 = { style: { "margin": "16px" } };
 const _hoisted_2$1 = { class: "flex-container" };
@@ -7108,30 +7106,30 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 options: modelOptions,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
-            ])
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NSpace), {
-          vertical: "",
-          justify: "center",
-          style: { "width": "100%" },
-          align: "center"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NButton), {
-              style: { "margin-top": "16px", "padding": "0 92px" },
-              type: "success",
-              ghost: "",
-              loading: building.value,
-              disabled: building.value || modelOptions.length === 0,
-              onClick: _cache[3] || (_cache[3] = ($event) => showUnloadModal.value = true)
+            ]),
+            createVNode(unref(NSpace), {
+              vertical: "",
+              justify: "center",
+              style: { "width": "100%" },
+              align: "center"
             }, {
               default: withCtx(() => [
-                createTextVNode("Convert")
+                createVNode(unref(NButton), {
+                  style: { "margin-top": "16px", "padding": "0 92px" },
+                  type: "success",
+                  ghost: "",
+                  loading: building.value,
+                  disabled: building.value || modelOptions.length === 0,
+                  onClick: _cache[3] || (_cache[3] = ($event) => showUnloadModal.value = true)
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Convert")
+                  ]),
+                  _: 1
+                }, 8, ["loading", "disabled"])
               ]),
               _: 1
-            }, 8, ["loading", "disabled"])
+            })
           ]),
           _: 1
         }),
@@ -7357,7 +7355,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             tab: "Manager"
           }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$1)
+              createVNode(unref(_sfc_main$1))
             ]),
             _: 1
           }),
@@ -7366,7 +7364,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             tab: "Huggingface"
           }, {
             default: withCtx(() => [
-              createVNode(HuggingfaceDownload)
+              createVNode(unref(HuggingfaceDownload))
             ]),
             _: 1
           }),
@@ -7376,7 +7374,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             style: { "padding-top": "0" }
           }, {
             default: withCtx(() => [
-              createVNode(CivitAIDownload)
+              createVNode(unref(CivitAIDownload))
             ]),
             _: 1
           }),
@@ -7385,7 +7383,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             tab: "Convert"
           }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$2)
+              createVNode(unref(_sfc_main$2))
             ]),
             _: 1
           })

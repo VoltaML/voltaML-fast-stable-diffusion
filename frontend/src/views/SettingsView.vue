@@ -54,17 +54,19 @@
 </template>
 
 <script lang="ts" setup>
-import AutoloadSettings from "@/components/settings/AutoloadSettings.vue";
-import BotSettings from "@/components/settings/BotSettings.vue";
-import ThemeSettings from "@/components/settings/DefaultsSettings/ThemeSettings.vue";
-import ExtraSettings from "@/components/settings/ExtraSettings.vue";
-import FilesSettings from "@/components/settings/FilesSettings.vue";
-import FrontendSettings from "@/components/settings/FrontendSettings.vue";
-import GeneralSettings from "@/components/settings/GeneralSettings.vue";
-import NSFWSettings from "@/components/settings/NSFWSettings.vue";
-import OptimizationSettings from "@/components/settings/OptimizationSettings.vue";
-import ReproducibilitySettings from "@/components/settings/ReproducibilitySettings.vue";
-import UISettings from "@/components/settings/UISettings.vue";
+import {
+  AutoloadSettings,
+  BotSettings,
+  ExtraSettings,
+  FilesSettings,
+  FrontendSettings,
+  GeneralSettings,
+  NSFWSettings,
+  OptimizationSettings,
+  ReproducibilitySettings,
+  ThemeSettings,
+  UISettings,
+} from "@/components";
 import { serverUrl } from "@/env";
 import { defaultSettings } from "@/settings";
 import { useSettings } from "@/store/settings";

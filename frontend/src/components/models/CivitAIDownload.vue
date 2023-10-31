@@ -144,7 +144,7 @@
 </template>
 
 <script lang="ts" setup>
-import ModelPopup from "@/components/models/ModelPopup.vue";
+import { ModelPopup } from "@/components";
 import { themeOverridesKey } from "@/injectionKeys";
 import { GridOutline, SearchOutline } from "@vicons/ionicons5";
 import {

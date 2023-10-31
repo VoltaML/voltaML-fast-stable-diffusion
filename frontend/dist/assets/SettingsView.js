@@ -1,4 +1,4 @@
-import { R as inject, by as getCurrentInstance, J as watch, aB as onBeforeUnmount, Q as cB, ab as cM, aa as c, P as createInjectionKey, d as defineComponent, S as useConfig, T as useTheme, D as ref, a3 as provide, C as h, bz as formLight, a1 as keysOf, c as computed, az as formatLength, aH as get, bA as commonVariables, at as cE, V as toRef, aW as createId, bB as formItemInjectionKey, b9 as onMounted, W as useThemeClass, aX as Transition, av as resolveWrappedSlot, al as createKey, aM as warn, a as useSettings, u as useState, e as openBlock, v as createBlock, w as withCtx, g as createVNode, h as unref, x as NSelect, n as createBaseVNode, f as createElementBlock, L as renderList, bb as NText, m as createTextVNode, t as toDisplayString, I as Fragment, i as NCard, b8 as reactive, s as serverUrl, k as NInput, bC as convertToTextString, r as createCommentVNode, G as NTabPane, H as NTabs, bD as themeKey, E as NButton, q as NTooltip, b as useMessage, bE as useNotification, o as onUnmounted, bF as defaultSettings } from "./index.js";
+import { R as inject, by as getCurrentInstance, J as watch, aB as onBeforeUnmount, Q as cB, ab as cM, aa as c, P as createInjectionKey, d as defineComponent, S as useConfig, T as useTheme, D as ref, a3 as provide, C as h, bz as formLight, a1 as keysOf, x as computed, az as formatLength, aH as get, bA as commonVariables, at as cE, V as toRef, aW as createId, bB as formItemInjectionKey, b9 as onMounted, W as useThemeClass, aX as Transition, av as resolveWrappedSlot, al as createKey, aM as warn, u as useSettings, o as openBlock, r as createBlock, w as withCtx, b as createVNode, e as unref, N as NInput, t as NSelect, j as NCard, b8 as reactive, s as serverUrl, bC as convertToTextString, a as useState, l as createBaseVNode, c as createElementBlock, L as renderList, bb as NText, n as createTextVNode, y as toDisplayString, F as Fragment, q as createCommentVNode, H as NTabPane, I as NTabs, bD as themeKey, E as NButton, m as NTooltip, g as useMessage, bE as useNotification, h as onUnmounted, bF as defaultSettings } from "./index.js";
 import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { _ as _sfc_main$h } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
@@ -1840,450 +1840,7 @@ const NFormItem = defineComponent({
     );
   }
 });
-const _hoisted_1$3 = { style: { "width": "100%" } };
 const _sfc_main$g = /* @__PURE__ */ defineComponent({
-  __name: "AutoloadSettings",
-  setup(__props) {
-    const settings = useSettings();
-    const global = useState();
-    const textualInversions = computed(() => {
-      return global.state.models.filter((model) => {
-        return model.backend === "Textual Inversion";
-      });
-    });
-    const textualInversionOptions = computed(() => {
-      return textualInversions.value.map((model) => {
-        return {
-          value: model.path,
-          label: model.name
-        };
-      });
-    });
-    const availableModels = computed(() => {
-      return global.state.models.filter((model) => {
-        return model.backend === "AITemplate" || model.backend === "PyTorch" || model.backend === "ONNX";
-      });
-    });
-    const availableVaes = computed(() => {
-      return global.state.models.filter((model) => {
-        return model.backend === "VAE";
-      });
-    });
-    const autoloadModelOptions = computed(() => {
-      return availableModels.value.map((model) => {
-        return {
-          value: model.path,
-          label: model.name
-        };
-      });
-    });
-    const autoloadVaeOptions = computed(() => {
-      const arr = availableVaes.value.map((model) => {
-        return {
-          value: model.path,
-          label: model.name
-        };
-      });
-      arr.push({ value: "default", label: "Default" });
-      return arr;
-    });
-    const autoloadVaeValue = (model) => {
-      return computed({
-        get: () => {
-          return settings.defaultSettings.api.autoloaded_vae[model] ?? "default";
-        },
-        set: (value) => {
-          if (!value || value === "default") {
-            delete settings.defaultSettings.api.autoloaded_vae[model];
-          } else {
-            settings.defaultSettings.api.autoloaded_vae[model] = value;
-          }
-        }
-      });
-    };
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NForm), null, {
-        default: withCtx(() => [
-          createVNode(unref(NFormItem), {
-            label: "Model",
-            "label-placement": "left"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                multiple: "",
-                filterable: "",
-                options: autoloadModelOptions.value,
-                value: unref(settings).defaultSettings.api.autoloaded_models,
-                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.autoloaded_models = $event)
-              }, null, 8, ["options", "value"])
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NFormItem), {
-            label: "Textual Inversions",
-            "label-placement": "left"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                multiple: "",
-                filterable: "",
-                options: textualInversionOptions.value,
-                value: unref(settings).defaultSettings.api.autoloaded_textual_inversions,
-                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.autoloaded_textual_inversions = $event)
-              }, null, 8, ["options", "value"])
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NCard), { title: "VAE" }, {
-            default: withCtx(() => [
-              createBaseVNode("div", _hoisted_1$3, [
-                (openBlock(true), createElementBlock(Fragment, null, renderList(availableModels.value, (model) => {
-                  return openBlock(), createElementBlock("div", {
-                    key: model.name,
-                    style: { "display": "flex", "flex-direction": "row", "margin-bottom": "4px" }
-                  }, [
-                    createVNode(unref(NText), { style: { "width": "50%" } }, {
-                      default: withCtx(() => [
-                        createTextVNode(toDisplayString(model.name), 1)
-                      ]),
-                      _: 2
-                    }, 1024),
-                    createVNode(unref(NSelect), {
-                      filterable: "",
-                      options: autoloadVaeOptions.value,
-                      value: autoloadVaeValue(model.path).value,
-                      "onUpdate:value": ($event) => autoloadVaeValue(model.path).value = $event
-                    }, null, 8, ["options", "value", "onUpdate:value"])
-                  ]);
-                }), 128))
-              ])
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$f = /* @__PURE__ */ defineComponent({
-  __name: "BotSettings",
-  setup(__props) {
-    const settings = useSettings();
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), null, {
-        default: withCtx(() => [
-          createVNode(unref(NForm), null, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Default Scheduler",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: unref(settings).scheduler_options,
-                    value: unref(settings).defaultSettings.bot.default_scheduler,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.bot.default_scheduler = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Use Default Negative Prompt",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.bot.use_default_negative_prompt,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.bot.use_default_negative_prompt = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Verbose",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.bot.verbose,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.bot.verbose = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$e = /* @__PURE__ */ defineComponent({
-  __name: "ThemeSettings",
-  setup(__props) {
-    const settings = useSettings();
-    const extraThemes = reactive([]);
-    const themeOptions = computed(() => {
-      return extraThemes.map((theme) => {
-        return { label: convertToTextString(theme), value: theme };
-      });
-    });
-    const themesLoading = ref(true);
-    fetch(`${serverUrl}/api/general/themes`).then(async (res) => {
-      const data = await res.json();
-      extraThemes.push(...data);
-      themesLoading.value = false;
-    }).catch((err) => {
-      console.error(err);
-      themesLoading.value = false;
-    });
-    watch(settings.defaultSettings.frontend, () => {
-      settings.data.settings.frontend = settings.defaultSettings.frontend;
-    });
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), null, {
-        default: withCtx(() => [
-          createVNode(unref(NForm), null, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Theme",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: themeOptions.value,
-                    value: unref(settings).defaultSettings.frontend.theme,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event),
-                    loading: themesLoading.value,
-                    filterable: ""
-                  }, null, 8, ["options", "value", "loading"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Background Image Override",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInput), {
-                    value: unref(settings).defaultSettings.frontend.background_image_override,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.background_image_override = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Enable Theme Editor",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.frontend.enable_theme_editor,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$d = /* @__PURE__ */ defineComponent({
-  __name: "ExtraSettings",
-  setup(__props) {
-    const settings = useSettings();
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { title: "Hi-res fix" }, {
-        default: withCtx(() => [
-          createVNode(unref(NForm), null, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Scale",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.extra.highres.scale,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.extra.highres.scale = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Scaling Mode",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: [
-                      {
-                        label: "Nearest",
-                        value: "nearest"
-                      },
-                      {
-                        label: "Linear",
-                        value: "linear"
-                      },
-                      {
-                        label: "Bilinear",
-                        value: "bilinear"
-                      },
-                      {
-                        label: "Bicubic",
-                        value: "bicubic"
-                      },
-                      {
-                        label: "Bislerp (Original, slow)",
-                        value: "bislerp-original"
-                      },
-                      {
-                        label: "Bislerp (Tortured, fast)",
-                        value: "bislerp-tortured"
-                      },
-                      {
-                        label: "Nearest Exact",
-                        value: "nearest-exact"
-                      }
-                    ],
-                    value: unref(settings).defaultSettings.extra.highres.latent_scale_mode,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.extra.highres.latent_scale_mode = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Strength",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.extra.highres.strength,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.extra.highres.strength = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Steps",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.extra.highres.steps,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.extra.highres.steps = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Antialiased",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.extra.highres.antialiased,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.extra.highres.antialiased = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$c = /* @__PURE__ */ defineComponent({
-  __name: "FilesSettings",
-  setup(__props) {
-    const settings = useSettings();
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NForm), null, {
-        default: withCtx(() => [
-          createVNode(unref(NFormItem), {
-            label: "Template for saving outputs",
-            "label-placement": "left"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NInput), {
-                value: unref(settings).defaultSettings.api.save_path_template,
-                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.save_path_template = $event)
-              }, null, 8, ["value"])
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NFormItem), {
-            label: "Disable generating grid image",
-            "label-placement": "left"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NSwitch), {
-                value: unref(settings).defaultSettings.api.disable_grid,
-                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.disable_grid = $event)
-              }, null, 8, ["value"])
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NFormItem), {
-            label: "Image extension",
-            "label-placement": "left"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                value: unref(settings).defaultSettings.api.image_extension,
-                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.image_extension = $event),
-                options: [
-                  {
-                    label: "PNG",
-                    value: "png"
-                  },
-                  {
-                    label: "WebP",
-                    value: "webp"
-                  },
-                  {
-                    label: "JPEG",
-                    value: "jpeg"
-                  }
-                ]
-              }, null, 8, ["value"])
-            ]),
-            _: 1
-          }),
-          unref(settings).defaultSettings.api.image_extension != "png" ? (openBlock(), createBlock(unref(NFormItem), {
-            key: 0,
-            label: "Image quality (JPEG/WebP only)",
-            "label-placement": "left"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NInputNumber), {
-                value: unref(settings).defaultSettings.api.image_quality,
-                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.image_quality = $event),
-                min: 0,
-                max: 100,
-                step: 1
-              }, null, 8, ["value"])
-            ]),
-            _: 1
-          })) : createCommentVNode("", true)
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$b = /* @__PURE__ */ defineComponent({
   __name: "ControlNetSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2470,7 +2027,7 @@ const _sfc_main$b = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$a = /* @__PURE__ */ defineComponent({
+const _sfc_main$f = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2500,7 +2057,7 @@ const _sfc_main$a = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+const _sfc_main$e = /* @__PURE__ */ defineComponent({
   __name: "ImageToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2647,7 +2204,7 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const _sfc_main$d = /* @__PURE__ */ defineComponent({
   __name: "InpaintingSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2781,7 +2338,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const _sfc_main$c = /* @__PURE__ */ defineComponent({
   __name: "TextToImageSettings",
   setup(__props) {
     const settings = useSettings();
@@ -2915,6 +2472,449 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     };
   }
 });
+const _sfc_main$b = /* @__PURE__ */ defineComponent({
+  __name: "ThemeSettings",
+  setup(__props) {
+    const settings = useSettings();
+    const extraThemes = reactive([]);
+    const themeOptions = computed(() => {
+      return extraThemes.map((theme) => {
+        return { label: convertToTextString(theme), value: theme };
+      });
+    });
+    const themesLoading = ref(true);
+    fetch(`${serverUrl}/api/general/themes`).then(async (res) => {
+      const data = await res.json();
+      extraThemes.push(...data);
+      themesLoading.value = false;
+    }).catch((err) => {
+      console.error(err);
+      themesLoading.value = false;
+    });
+    watch(settings.defaultSettings.frontend, () => {
+      settings.data.settings.frontend = settings.defaultSettings.frontend;
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), null, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Theme",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSelect), {
+                    options: themeOptions.value,
+                    value: unref(settings).defaultSettings.frontend.theme,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.frontend.theme = $event),
+                    loading: themesLoading.value,
+                    filterable: ""
+                  }, null, 8, ["options", "value", "loading"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Background Image Override",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInput), {
+                    value: unref(settings).defaultSettings.frontend.background_image_override,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.frontend.background_image_override = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Enable Theme Editor",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.frontend.enable_theme_editor,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.enable_theme_editor = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _hoisted_1$3 = { style: { "width": "100%" } };
+const _sfc_main$a = /* @__PURE__ */ defineComponent({
+  __name: "AutoloadSettings",
+  setup(__props) {
+    const settings = useSettings();
+    const global = useState();
+    const textualInversions = computed(() => {
+      return global.state.models.filter((model) => {
+        return model.backend === "Textual Inversion";
+      });
+    });
+    const textualInversionOptions = computed(() => {
+      return textualInversions.value.map((model) => {
+        return {
+          value: model.path,
+          label: model.name
+        };
+      });
+    });
+    const availableModels = computed(() => {
+      return global.state.models.filter((model) => {
+        return model.backend === "AITemplate" || model.backend === "PyTorch" || model.backend === "ONNX";
+      });
+    });
+    const availableVaes = computed(() => {
+      return global.state.models.filter((model) => {
+        return model.backend === "VAE";
+      });
+    });
+    const autoloadModelOptions = computed(() => {
+      return availableModels.value.map((model) => {
+        return {
+          value: model.path,
+          label: model.name
+        };
+      });
+    });
+    const autoloadVaeOptions = computed(() => {
+      const arr = availableVaes.value.map((model) => {
+        return {
+          value: model.path,
+          label: model.name
+        };
+      });
+      arr.push({ value: "default", label: "Default" });
+      return arr;
+    });
+    const autoloadVaeValue = (model) => {
+      return computed({
+        get: () => {
+          return settings.defaultSettings.api.autoloaded_vae[model] ?? "default";
+        },
+        set: (value) => {
+          if (!value || value === "default") {
+            delete settings.defaultSettings.api.autoloaded_vae[model];
+          } else {
+            settings.defaultSettings.api.autoloaded_vae[model] = value;
+          }
+        }
+      });
+    };
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NForm), null, {
+        default: withCtx(() => [
+          createVNode(unref(NFormItem), {
+            label: "Model",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                multiple: "",
+                filterable: "",
+                options: autoloadModelOptions.value,
+                value: unref(settings).defaultSettings.api.autoloaded_models,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.autoloaded_models = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Textual Inversions",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                multiple: "",
+                filterable: "",
+                options: textualInversionOptions.value,
+                value: unref(settings).defaultSettings.api.autoloaded_textual_inversions,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.autoloaded_textual_inversions = $event)
+              }, null, 8, ["options", "value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NCard), { title: "VAE" }, {
+            default: withCtx(() => [
+              createBaseVNode("div", _hoisted_1$3, [
+                (openBlock(true), createElementBlock(Fragment, null, renderList(availableModels.value, (model) => {
+                  return openBlock(), createElementBlock("div", {
+                    key: model.name,
+                    style: { "display": "flex", "flex-direction": "row", "margin-bottom": "4px" }
+                  }, [
+                    createVNode(unref(NText), { style: { "width": "50%" } }, {
+                      default: withCtx(() => [
+                        createTextVNode(toDisplayString(model.name), 1)
+                      ]),
+                      _: 2
+                    }, 1024),
+                    createVNode(unref(NSelect), {
+                      filterable: "",
+                      options: autoloadVaeOptions.value,
+                      value: autoloadVaeValue(model.path).value,
+                      "onUpdate:value": ($event) => autoloadVaeValue(model.path).value = $event
+                    }, null, 8, ["options", "value", "onUpdate:value"])
+                  ]);
+                }), 128))
+              ])
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
+  __name: "BotSettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), null, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Default Scheduler",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSelect), {
+                    options: unref(settings).scheduler_options,
+                    value: unref(settings).defaultSettings.bot.default_scheduler,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.bot.default_scheduler = $event)
+                  }, null, 8, ["options", "value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Use Default Negative Prompt",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.bot.use_default_negative_prompt,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.bot.use_default_negative_prompt = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Verbose",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.bot.verbose,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.bot.verbose = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+  __name: "ExtraSettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), { title: "Hi-res fix" }, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Scale",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.extra.highres.scale,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.extra.highres.scale = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Scaling Mode",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSelect), {
+                    options: [
+                      {
+                        label: "Nearest",
+                        value: "nearest"
+                      },
+                      {
+                        label: "Linear",
+                        value: "linear"
+                      },
+                      {
+                        label: "Bilinear",
+                        value: "bilinear"
+                      },
+                      {
+                        label: "Bicubic",
+                        value: "bicubic"
+                      },
+                      {
+                        label: "Bislerp (Original, slow)",
+                        value: "bislerp-original"
+                      },
+                      {
+                        label: "Bislerp (Tortured, fast)",
+                        value: "bislerp-tortured"
+                      },
+                      {
+                        label: "Nearest Exact",
+                        value: "nearest-exact"
+                      }
+                    ],
+                    value: unref(settings).defaultSettings.extra.highres.latent_scale_mode,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.extra.highres.latent_scale_mode = $event)
+                  }, null, 8, ["options", "value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Strength",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.extra.highres.strength,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.extra.highres.strength = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Steps",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.extra.highres.steps,
+                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.extra.highres.steps = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Antialiased",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.extra.highres.antialiased,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.extra.highres.antialiased = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+  __name: "FilesSettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NForm), null, {
+        default: withCtx(() => [
+          createVNode(unref(NFormItem), {
+            label: "Template for saving outputs",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInput), {
+                value: unref(settings).defaultSettings.api.save_path_template,
+                "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.api.save_path_template = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Disable generating grid image",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.disable_grid,
+                "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.disable_grid = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Image extension",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSelect), {
+                value: unref(settings).defaultSettings.api.image_extension,
+                "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.api.image_extension = $event),
+                options: [
+                  {
+                    label: "PNG",
+                    value: "png"
+                  },
+                  {
+                    label: "WebP",
+                    value: "webp"
+                  },
+                  {
+                    label: "JPEG",
+                    value: "jpeg"
+                  }
+                ]
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          unref(settings).defaultSettings.api.image_extension != "png" ? (openBlock(), createBlock(unref(NFormItem), {
+            key: 0,
+            label: "Image quality (JPEG/WebP only)",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.api.image_quality,
+                "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.api.image_quality = $event),
+                min: 0,
+                max: 100,
+                step: 1
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          })) : createCommentVNode("", true)
+        ]),
+        _: 1
+      });
+    };
+  }
+});
 const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "FrontendSettings",
   setup(__props) {
@@ -2923,31 +2923,31 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           createVNode(unref(NTabPane), { name: "Text to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$7)
+              createVNode(unref(_sfc_main$c))
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Image to Image" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$9)
+              createVNode(unref(_sfc_main$e))
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "ControlNet" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$b)
+              createVNode(unref(_sfc_main$g))
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Inpainting" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$8)
+              createVNode(unref(_sfc_main$d))
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "Image Browser" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$a)
+              createVNode(unref(_sfc_main$f))
             ]),
             _: 1
           })
@@ -3966,67 +3966,67 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
               default: withCtx(() => [
                 createVNode(unref(NTabPane), { name: "Autoload" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$g)
+                    createVNode(unref(_sfc_main$a))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Files & Saving" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$c)
+                    createVNode(unref(_sfc_main$7))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Optimizations" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$3)
+                    createVNode(unref(_sfc_main$3))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Reproducibility & Generation" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$2)
+                    createVNode(unref(_sfc_main$2))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Live preview & UI" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$1)
+                    createVNode(unref(_sfc_main$1))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Defaults" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$6)
+                    createVNode(unref(_sfc_main$6))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Bot" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$f)
+                    createVNode(unref(_sfc_main$9))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "General" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$5)
+                    createVNode(unref(_sfc_main$5))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Extra" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$d)
+                    createVNode(unref(_sfc_main$8))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "Theme" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$e)
+                    createVNode(unref(_sfc_main$b))
                   ]),
                   _: 1
                 }),
                 createVNode(unref(NTabPane), { name: "NSFW" }, {
                   default: withCtx(() => [
-                    createVNode(_sfc_main$4)
+                    createVNode(unref(_sfc_main$4))
                   ]),
                   _: 1
                 })
