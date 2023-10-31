@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, c as createElementBlock, l as createBaseVNode } from "./index.js";
+import { d as defineComponent, o as openBlock, c as createElementBlock, a as createBaseVNode } from "./index.js";
 const _hoisted_1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",

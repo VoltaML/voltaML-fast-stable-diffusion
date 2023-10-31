@@ -1,8 +1,8 @@
-import { d as defineComponent, a as useState, u as useSettings, g as useMessage, D as ref, x as computed, o as openBlock, c as createElementBlock, b as createVNode, w as withCtx, e as unref, i as NGi, j as NCard, k as NSpace, l as createBaseVNode, t as NSelect, m as NTooltip, n as createTextVNode, N as NInput, y as toDisplayString, v as NGrid, s as serverUrl, z as spaceRegex, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b as useState, u as useSettings, k as useMessage, E as ref, y as computed, o as openBlock, c as createElementBlock, e as createVNode, w as withCtx, f as unref, m as NGi, n as NCard, q as NSpace, a as createBaseVNode, h as NSelect, N as NTooltip, r as createTextVNode, j as NInput, z as toDisplayString, v as NGrid, x as serverUrl, A as spaceRegex, B as pushScopeId, C as popScopeId, _ as _export_sfc } from "./index.js";
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
 import { v as v4 } from "./v4.js";
-import { N as NSlider, a as NSwitch } from "./Switch.js";
+import { a as NSlider, N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-94d16b9f"), n = n(), popScopeId(), n);

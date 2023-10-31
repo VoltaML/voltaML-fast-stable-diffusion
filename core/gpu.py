@@ -6,10 +6,10 @@ import time
 from importlib.util import find_spec
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
-from packaging import version
 
 import torch
 from diffusers.utils import is_xformers_available
+from packaging import version
 from PIL import Image
 
 from api import websocket_manager
@@ -32,6 +32,7 @@ from core.types import (
     ControlNetQueueEntry,
     Img2ImgQueueEntry,
     InferenceBackend,
+    InferenceJob,
     InpaintQueueEntry,
     InterrogatorQueueEntry,
     Job,
@@ -176,12 +177,7 @@ class GPU:
 
     async def generate(
         self,
-        job: Union[
-            Txt2ImgQueueEntry,
-            Img2ImgQueueEntry,
-            InpaintQueueEntry,
-            ControlNetQueueEntry,
-        ],
+        job: InferenceJob,
     ):
         "Generate images from the queue"
 

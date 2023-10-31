@@ -1,7 +1,7 @@
-import { d as defineComponent, u as useSettings, D as ref, x as computed, o as openBlock, c as createElementBlock, l as createBaseVNode, b as createVNode, w as withCtx, e as unref, j as NCard, F as Fragment, L as renderList, E as NButton, n as createTextVNode, y as toDisplayString, bC as convertToTextString, r as createBlock, bG as resolveDynamicComponent, bd as NModal, m as NTooltip, t as NSelect, G as NIcon, C as h } from "./index.js";
+import { d as defineComponent, u as useSettings, E as ref, y as computed, o as openBlock, c as createElementBlock, a as createBaseVNode, e as createVNode, w as withCtx, f as unref, n as NCard, I as Fragment, L as renderList, F as NButton, r as createTextVNode, z as toDisplayString, by as convertToTextString, t as createBlock, bG as resolveDynamicComponent, bd as NModal, N as NTooltip, h as NSelect, g as NIcon, D as h } from "./index.js";
 import { S as Settings, a as NCheckbox } from "./Settings.js";
 import { N as NInputNumber } from "./InputNumber.js";
-import { N as NSlider } from "./Switch.js";
+import { a as NSlider } from "./Switch.js";
 const _hoisted_1 = { class: "flex-container" };
 const _hoisted_2 = { style: { "margin-left": "12px", "margin-right": "12px", "white-space": "nowrap" } };
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "100px" } }, "Sampler", -1);

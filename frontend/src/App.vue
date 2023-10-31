@@ -9,6 +9,8 @@
 </template>
 
 <script setup lang="ts">
+import "@/assets/2img.css";
+
 import { themeKey, themeOverridesKey } from "@/injectionKeys";
 import { NConfigProvider, NThemeEditor, darkTheme, lightTheme } from "naive-ui";
 import { computed, provide, ref, watch } from "vue";

@@ -5,23 +5,23 @@
       <NGi>
         <ImageUpload
           :callback="imageSelectCallback"
-          :preview="settings.data.settings.controlnet.image"
+          :preview="settings.data.settings.img2img.image"
           style="margin-bottom: 12px"
-          @file-dropped="settings.data.settings.controlnet.image = $event"
+          @file-dropped="settings.data.settings.img2img.image = $event"
         />
 
         <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
             <NInput
-              v-model:value="settings.data.settings.controlnet.prompt"
+              v-model:value="settings.data.settings.img2img.prompt"
               type="textarea"
               placeholder="Prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  settings.data.settings.controlnet,
+                  settings.data.settings.img2img,
                   'prompt',
                   global
                 )
@@ -31,14 +31,14 @@
               <template #count>{{ promptCount }}</template>
             </NInput>
             <NInput
-              v-model:value="settings.data.settings.controlnet.negative_prompt"
+              v-model:value="settings.data.settings.img2img.negative_prompt"
               type="textarea"
               placeholder="Negative prompt"
               show-count
               @keyup="
                 promptHandleKeyUp(
                   $event,
-                  settings.data.settings.controlnet,
+                  settings.data.settings.img2img,
                   'negative_prompt',
                   global
                 )
@@ -49,36 +49,10 @@
             </NInput>
 
             <!-- Sampler -->
-            <SamplerPicker type="controlnet" />
-
-            <!-- ControlNet mode -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p style="margin-right: 12px; width: 150px">ControlNet</p>
-                </template>
-                ControlNet is a method of guiding the diffusion process. It
-                allows you to control the output by providing a guidance image.
-                This image will be processed automatically. You can also opt out
-                and enable "Is Preprocessed" to provide your own preprocessed
-                image.
-                <a
-                  href="https://github.com/lllyasviel/ControlNet-v1-1-nightly?tab=readme-ov-file#controlnet-11"
-                  >Learn more</a
-                >
-              </NTooltip>
-
-              <NSelect
-                :options="settings.controlnet_options"
-                v-model:value="settings.data.settings.controlnet.controlnet"
-                filterable
-                tag
-                style="flex-grow: 1"
-              />
-            </div>
+            <SamplerPicker type="img2img" />
 
             <DimensionsInput
-              :dimensions-object="settings.data.settings.controlnet"
+              :dimensions-object="settings.data.settings.img2img"
             />
 
             <!-- Steps -->
@@ -96,13 +70,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="settings.data.settings.controlnet.steps"
+                v-model:value="settings.data.settings.img2img.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="settings.data.settings.controlnet.steps"
+                v-model:value="settings.data.settings.img2img.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="5"
@@ -125,19 +99,59 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="settings.data.settings.controlnet.cfg_scale"
+                v-model:value="settings.data.settings.img2img.cfg_scale"
                 :min="1"
                 :max="30"
                 :step="0.5"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="settings.data.settings.controlnet.cfg_scale"
+                v-model:value="settings.data.settings.img2img.cfg_scale"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
                 :max="30"
                 :step="0.5"
+              />
+            </div>
+
+            <!-- Self Attention Scale -->
+            <div
+              class="flex-container"
+              v-if="
+                Number.isInteger(settings.data.settings.img2img.sampler) &&
+                settings.data.settings.model?.backend === 'PyTorch'
+              "
+            >
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Self Attention Scale</p>
+                </template>
+                <b class="highlight">PyTorch ONLY.</b> If self attention is >0,
+                SAG will guide the model and improve the quality of the image at
+                the cost of speed. Higher values will follow the guidance more
+                closely, which can lead to better, more sharp and detailed
+                outputs.
+              </NTooltip>
+
+              <NSlider
+                v-model:value="
+                  settings.data.settings.img2img.self_attention_scale
+                "
+                :min="0"
+                :max="1"
+                :step="0.05"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="
+                  settings.data.settings.img2img.self_attention_scale
+                "
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="0"
+                :max="1"
+                :step="0.05"
               />
             </div>
 
@@ -150,13 +164,13 @@
                 Number of images to generate after each other.
               </NTooltip>
               <NSlider
-                v-model:value="settings.data.settings.controlnet.batch_count"
+                v-model:value="settings.data.settings.img2img.batch_count"
                 :min="1"
                 :max="9"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="settings.data.settings.controlnet.batch_count"
+                v-model:value="settings.data.settings.img2img.batch_count"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="1"
@@ -165,68 +179,36 @@
             </div>
 
             <BatchSizeInput
-              :batch-size-object="settings.data.settings.controlnet"
+              :batch-size-object="settings.data.settings.img2img"
             />
 
-            <!-- ControlNet Conditioning Scale -->
+            <!-- Denoising Strength -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
                 <template #trigger>
-                  <p class="slider-label">ControlNet Conditioning Scale</p>
+                  <p class="slider-label">Denoising Strength</p>
                 </template>
-                How much should the ControlNet affect the image.
+                Lower values will stick more to the original image, 0.5-0.75 is
+                ideal
               </NTooltip>
               <NSlider
                 v-model:value="
-                  settings.data.settings.controlnet
-                    .controlnet_conditioning_scale
+                  settings.data.settings.img2img.denoising_strength
                 "
                 :min="0.1"
-                :max="2"
+                :max="1"
                 style="margin-right: 12px"
                 :step="0.025"
               />
               <NInputNumber
                 v-model:value="
-                  settings.data.settings.controlnet
-                    .controlnet_conditioning_scale
+                  settings.data.settings.img2img.denoising_strength
                 "
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
-                :max="2"
+                :max="1"
                 :step="0.025"
-              />
-            </div>
-
-            <!-- Detection resolution -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Detection resolution</p>
-                </template>
-                What resolution to use for the image processing. This process
-                does not affect the final result but can affect the quality of
-                the ControlNet processing.
-              </NTooltip>
-              <NSlider
-                v-model:value="
-                  settings.data.settings.controlnet.detection_resolution
-                "
-                :min="128"
-                :max="2048"
-                style="margin-right: 12px"
-                :step="8"
-              />
-              <NInputNumber
-                v-model:value="
-                  settings.data.settings.controlnet.detection_resolution
-                "
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="128"
-                :max="2048"
-                :step="8"
               />
             </div>
 
@@ -242,41 +224,11 @@
                 <b class="highlight">For random seed use -1.</b>
               </NTooltip>
               <NInputNumber
-                v-model:value="settings.data.settings.controlnet.seed"
+                v-model:value="settings.data.settings.img2img.seed"
                 size="small"
                 :min="-1"
                 :max="999_999_999_999"
                 style="flex-grow: 1"
-              />
-            </div>
-
-            <!-- Is preprocessed -->
-            <div class="flex-container">
-              <p class="slider-label">Is Preprocessed</p>
-              <NSwitch
-                v-model:value="
-                  settings.data.settings.controlnet.is_preprocessed
-                "
-              />
-            </div>
-
-            <!-- Save preprocessed -->
-            <div class="flex-container">
-              <p class="slider-label">Save Preprocessed</p>
-              <NSwitch
-                v-model:value="
-                  settings.data.settings.controlnet.save_preprocessed
-                "
-              />
-            </div>
-
-            <!-- Return preprocessed -->
-            <div class="flex-container">
-              <p class="slider-label">Return Preprocessed</p>
-              <NSwitch
-                v-model:value="
-                  settings.data.settings.controlnet.return_preprocessed
-                "
               />
             </div>
           </NSpace>
@@ -290,15 +242,15 @@
         <GenerateSection :generate="generate" />
 
         <ImageOutput
-          :current-image="global.state.controlnet.currentImage"
-          :images="global.state.controlnet.images"
-          :data="settings.data.settings.controlnet"
-          @image-clicked="global.state.controlnet.currentImage = $event"
+          :current-image="global.state.img2img.currentImage"
+          :images="global.state.img2img.images"
+          :data="settings.data.settings.img2img"
+          @image-clicked="global.state.img2img.currentImage = $event"
         />
 
         <OutputStats
           style="margin-top: 12px"
-          :gen-data="global.state.controlnet.genData"
+          :gen-data="global.state.img2img.genData"
         />
       </NGi>
     </NGrid>
@@ -329,10 +281,8 @@ import {
   NGrid,
   NInput,
   NInputNumber,
-  NSelect,
   NSlider,
   NSpace,
-  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";
@@ -346,12 +296,11 @@ const settings = useSettings();
 const messageHandler = useMessage();
 
 const promptCount = computed(() => {
-  return settings.data.settings.controlnet.prompt.split(spaceRegex).length - 1;
+  return settings.data.settings.img2img.prompt.split(spaceRegex).length - 1;
 });
 const negativePromptCount = computed(() => {
   return (
-    settings.data.settings.controlnet.negative_prompt.split(spaceRegex).length -
-    1
+    settings.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1
   );
 });
 
@@ -365,56 +314,52 @@ const checkSeed = (seed: number) => {
 };
 
 const imageSelectCallback = (base64Image: string) => {
-  settings.data.settings.controlnet.image = base64Image;
+  settings.data.settings.img2img.image = base64Image;
 };
 
 const generate = () => {
-  if (settings.data.settings.controlnet.seed === null) {
+  if (settings.data.settings.img2img.seed === null) {
     messageHandler.error("Please set a seed");
     return;
   }
   global.state.generating = true;
 
-  const seed = checkSeed(settings.data.settings.controlnet.seed);
+  const seed = checkSeed(settings.data.settings.img2img.seed);
 
-  fetch(`${serverUrl}/api/generate/controlnet`, {
+  fetch(`${serverUrl}/api/generate/img2img`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       data: {
-        prompt: settings.data.settings.controlnet.prompt,
-        image: settings.data.settings.controlnet.image,
+        prompt: settings.data.settings.img2img.prompt,
+        image: settings.data.settings.img2img.image,
         id: uuidv4(),
-        negative_prompt: settings.data.settings.controlnet.negative_prompt,
-        width: settings.data.settings.controlnet.width,
-        height: settings.data.settings.controlnet.height,
-        steps: settings.data.settings.controlnet.steps,
-        guidance_scale: settings.data.settings.controlnet.cfg_scale,
+        negative_prompt: settings.data.settings.img2img.negative_prompt,
+        width: settings.data.settings.img2img.width,
+        height: settings.data.settings.img2img.height,
+        steps: settings.data.settings.img2img.steps,
+        guidance_scale: settings.data.settings.img2img.cfg_scale,
         seed: seed,
-        batch_size: settings.data.settings.controlnet.batch_size,
-        batch_count: settings.data.settings.controlnet.batch_count,
-        controlnet: settings.data.settings.controlnet.controlnet,
-        controlnet_conditioning_scale:
-          settings.data.settings.controlnet.controlnet_conditioning_scale,
-        detection_resolution:
-          settings.data.settings.controlnet.detection_resolution,
-        scheduler: settings.data.settings.controlnet.sampler,
-        sigmas: settings.data.settings.controlnet.sigmas,
+        batch_size: settings.data.settings.img2img.batch_size,
+        batch_count: settings.data.settings.img2img.batch_count,
+        strength: settings.data.settings.img2img.denoising_strength,
+        scheduler: settings.data.settings.img2img.sampler,
+        self_attention_scale:
+          settings.data.settings.img2img.self_attention_scale,
+        sigmas: settings.data.settings.img2img.sigmas,
         sampler_settings:
           settings.data.settings.sampler_config[
-            settings.data.settings.controlnet.sampler
+            settings.data.settings.img2img.sampler
           ],
-
-        canny_low_threshold: 100,
-        canny_high_threshold: 200,
-        mlsd_thr_v: 0.1,
-        mlsd_thr_d: 0.1,
-        is_preprocessed: settings.data.settings.controlnet.is_preprocessed,
-        save_preprocessed: settings.data.settings.controlnet.save_preprocessed,
-        return_preprocessed:
-          settings.data.settings.controlnet.return_preprocessed,
+        prompt_to_prompt_settings: {
+          prompt_to_prompt_model:
+            settings.data.settings.api.prompt_to_prompt_model,
+          prompt_to_prompt_model_settings:
+            settings.data.settings.api.prompt_to_prompt_device,
+          prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
+        },
       },
       model: settings.data.settings.model?.name,
     }),
@@ -425,13 +370,13 @@ const generate = () => {
       }
       global.state.generating = false;
       res.json().then((data) => {
-        global.state.controlnet.images = data.images;
-        global.state.controlnet.currentImage = data.images[0];
+        global.state.img2img.images = data.images;
+        global.state.img2img.currentImage = data.images[0];
         global.state.progress = 0;
         global.state.total_steps = 0;
         global.state.current_step = 0;
 
-        global.state.controlnet.genData = {
+        global.state.img2img.genData = {
           time_taken: parseFloat(parseFloat(data.time as string).toFixed(4)),
           seed: seed,
         };
@@ -445,7 +390,7 @@ const generate = () => {
 
 // Burner clock
 const burner = new BurnerClock(
-  settings.data.settings.controlnet,
+  settings.data.settings.img2img,
   settings,
   generate
 );

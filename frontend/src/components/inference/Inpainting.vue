@@ -465,6 +465,13 @@ const generate = () => {
           settings.data.settings.sampler_config[
             settings.data.settings.inpainting.sampler
           ],
+        prompt_to_prompt_settings: {
+          prompt_to_prompt_model:
+            settings.data.settings.api.prompt_to_prompt_model,
+          prompt_to_prompt_model_settings:
+            settings.data.settings.api.prompt_to_prompt_device,
+          prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
+        },
       },
       model: settings.data.settings.model?.name,
     }),

@@ -16,6 +16,6 @@ export * from "./accelerate";
 export * from "./extra";
 export * from "./generate";
 export * from "./imageProcessing";
-export * from "./img2img";
+export * from "./inference";
 export * from "./models";
 export * from "./settings";

@@ -1,11 +1,11 @@
-import { d as defineComponent, o as openBlock, c as createElementBlock, l as createBaseVNode, a as useState, u as useSettings, g as useMessage, x as computed, h as onUnmounted, b as createVNode, w as withCtx, e as unref, i as NGi, j as NCard, k as NSpace, N as NInput, p as promptHandleKeyUp, f as promptHandleKeyDown, n as createTextVNode, y as toDisplayString, m as NTooltip, t as NSelect, v as NGrid, z as spaceRegex, s as serverUrl, A as pushScopeId, B as popScopeId, _ as _export_sfc, q as createCommentVNode, C as h, D as ref, E as NButton, G as NIcon, r as createBlock, H as NTabPane, I as NTabs } from "./index.js";
+import { d as defineComponent, o as openBlock, c as createElementBlock, a as createBaseVNode, b as useState, u as useSettings, k as useMessage, y as computed, l as onUnmounted, e as createVNode, w as withCtx, f as unref, m as NGi, n as NCard, q as NSpace, j as NInput, p as promptHandleKeyUp, i as promptHandleKeyDown, r as createTextVNode, z as toDisplayString, N as NTooltip, h as NSelect, v as NGrid, A as spaceRegex, x as serverUrl, B as pushScopeId, C as popScopeId, _ as _export_sfc, s as createCommentVNode, D as h, E as ref, F as NButton, g as NIcon, t as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { B as BurnerClock, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$9 } from "./clock.js";
 import { _ as _sfc_main$7 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$8 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
 import { _ as _sfc_main$4 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
 import { v as v4 } from "./v4.js";
-import { N as NSlider, a as NSwitch } from "./Switch.js";
+import { a as NSlider, N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./DescriptionsItem.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
@@ -145,7 +145,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$3);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-ea705b88"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-b80427fc"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "ControlNet", -1));
@@ -224,6 +224,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             scheduler: settings.data.settings.controlnet.sampler,
             sigmas: settings.data.settings.controlnet.sigmas,
             sampler_settings: settings.data.settings.sampler_config[settings.data.settings.controlnet.sampler],
+            prompt_to_prompt_settings: {
+              prompt_to_prompt_model: settings.data.settings.api.prompt_to_prompt_model,
+              prompt_to_prompt_model_settings: settings.data.settings.api.prompt_to_prompt_device,
+              prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
+            },
             canny_low_threshold: 100,
             canny_high_threshold: 200,
             mlsd_thr_v: 0.1,
@@ -565,8 +570,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-ea705b88"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-7bc38f75"), n = n(), popScopeId(), n);
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-b80427fc"]]);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-178bc741"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
@@ -638,7 +643,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             scheduler: settings.data.settings.img2img.sampler,
             self_attention_scale: settings.data.settings.img2img.self_attention_scale,
             sigmas: settings.data.settings.img2img.sigmas,
-            sampler_settings: settings.data.settings.sampler_config[settings.data.settings.img2img.sampler]
+            sampler_settings: settings.data.settings.sampler_config[settings.data.settings.img2img.sampler],
+            prompt_to_prompt_settings: {
+              prompt_to_prompt_model: settings.data.settings.api.prompt_to_prompt_model,
+              prompt_to_prompt_model_settings: settings.data.settings.api.prompt_to_prompt_device,
+              prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
+            }
           },
           model: (_a = settings.data.settings.model) == null ? void 0 : _a.name
         })
@@ -936,7 +946,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-7bc38f75"]]);
+const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-178bc741"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1512,7 +1522,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-08b8fd63"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-bedc0d0a"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1600,7 +1610,12 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             scheduler: settings.data.settings.inpainting.sampler,
             self_attention_scale: settings.data.settings.inpainting.self_attention_scale,
             sigmas: settings.data.settings.inpainting.sigmas,
-            sampler_settings: settings.data.settings.sampler_config[settings.data.settings.inpainting.sampler]
+            sampler_settings: settings.data.settings.sampler_config[settings.data.settings.inpainting.sampler],
+            prompt_to_prompt_settings: {
+              prompt_to_prompt_model: settings.data.settings.api.prompt_to_prompt_model,
+              prompt_to_prompt_model_settings: settings.data.settings.api.prompt_to_prompt_device,
+              prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
+            }
           },
           model: (_a = settings.data.settings.model) == null ? void 0 : _a.name
         })
@@ -2131,7 +2146,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-08b8fd63"]]);
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-bedc0d0a"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

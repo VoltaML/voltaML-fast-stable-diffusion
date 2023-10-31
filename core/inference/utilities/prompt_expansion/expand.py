@@ -3,22 +3,23 @@
 #
 # Modifications allow different GPT2 models to act as the prompt-to-prompt "expander."
 
+import logging
 import math
 from pathlib import Path
-from typing import Tuple
-import logging
+from typing import Dict, Tuple
 
 import torch
-from transformers.generation.logits_process import LogitsProcessorList
 from transformers import (
-    AutoTokenizer,
     AutoModelForCausalLM,
+    AutoTokenizer,
+    GPT2PreTrainedModel,
     PreTrainedTokenizerBase,
     set_seed,
-    GPT2PreTrainedModel,
 )
+from transformers.generation.logits_process import LogitsProcessorList
 
 from core.config import config
+
 from .downloader import download_model
 
 logger = logging.getLogger(__name__)
@@ -84,37 +85,35 @@ def _logits_processor(input_ids: torch.Tensor, scores: torch.Tensor):
     return scores + _LOGITS_BIAS
 
 
-def _get_directory() -> Path:
-    p = Path("data/prompt-expansion/") / config.api.prompt_to_prompt_model.split("/")[1]
+def _get_directory(prompt_to_prompt_model) -> Path:
+    p = Path("data/prompt-expansion/") / prompt_to_prompt_model.split("/")[1]
     if not p.exists():
         download_model()
     return p
 
 
-def _device_dtype() -> Tuple[torch.device, torch.dtype]:
+def _device_dtype(prompt_to_prompt_device) -> Tuple[torch.device, torch.dtype]:
     device = (
         torch.device(config.api.device)
-        if config.api.prompt_to_prompt_device == "gpu"
+        if prompt_to_prompt_device == "gpu"
         else torch.device("cpu")
     )
-    dtype = (
-        config.api.dtype
-        if config.api.prompt_to_prompt_device == "gpu"
-        else torch.float32
-    )
+    dtype = config.api.dtype if prompt_to_prompt_device == "gpu" else torch.float32
     return (device, dtype)
 
 
-def _load():
+def _load(prompt_to_prompt_model, prompt_to_prompt_device):
     global _CURRENT_MODEL, _LOGITS_BIAS, _GPT, _TOKENIZER
 
-    if _CURRENT_MODEL != config.api.prompt_to_prompt_model:
-        _CURRENT_MODEL = config.api.prompt_to_prompt_model
+    if _CURRENT_MODEL != prompt_to_prompt_model:
+        _CURRENT_MODEL = prompt_to_prompt_model
 
         # Setup tokenizer and logits bias according to:
         # - https://huggingface.co/blog/introducing-csearch
         # - https://huggingface.co/docs/transformers/generation_strategies
-        _TOKENIZER = AutoTokenizer.from_pretrained(_get_directory())
+        _TOKENIZER = AutoTokenizer.from_pretrained(
+            _get_directory(prompt_to_prompt_model)
+        )
         vocab: dict = _TOKENIZER.vocab  # type: ignore
         _LOGITS_BIAS = torch.zeros((1, len(vocab)), dtype=torch.float32)
         _LOGITS_BIAS[0, _TOKENIZER.eos_token_id] = -16.0
@@ -123,20 +122,29 @@ def _load():
             if k in _blacklist:
                 _LOGITS_BIAS[0, v] = -1024.0
 
-        _GPT = AutoModelForCausalLM.from_pretrained(_get_directory())
+        _GPT = AutoModelForCausalLM.from_pretrained(
+            _get_directory(prompt_to_prompt_model)
+        )
         _GPT.eval()
 
-    device, dtype = _device_dtype()
+    device, dtype = _device_dtype(prompt_to_prompt_device)
     _GPT = _GPT.to(device=device, dtype=dtype)
 
 
 @torch.inference_mode()
-def expand(prompt, seed):
+def expand(prompt, seed, prompt_expansion_settings: Dict):
     if prompt == "":
         return ""
 
+    prompt_to_prompt_model = prompt_expansion_settings.pop(
+        "prompt_to_prompt_model", config.api.prompt_to_prompt_model
+    )
+    prompt_to_prompt_device = prompt_expansion_settings.pop(
+        "prompt_to_prompt_device", config.api.prompt_to_prompt_device
+    )
+
     # Load in the model, or move to the necessary device.
-    _load()
+    _load(prompt_to_prompt_model, prompt_to_prompt_device)
 
     seed = int(seed) % _seed_limit
     set_seed(seed)
@@ -144,7 +152,7 @@ def expand(prompt, seed):
     origin = _safe(prompt)
     prompt = origin + _magic_split[seed % len(_magic_split)]
 
-    device, _ = _device_dtype()
+    device, _ = _device_dtype(prompt_to_prompt_device)
 
     tokenized_kwargs = _TOKENIZER(prompt, return_tensors="pt")
     tokenized_kwargs.data["input_ids"] = tokenized_kwargs.data["input_ids"].to(

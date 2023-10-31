@@ -70,6 +70,7 @@ class Txt2imgData:
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -92,6 +93,7 @@ class Img2imgData:
     batch_count: int = field(default=1)
     strength: float = field(default=0.6)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -114,6 +116,7 @@ class InpaintData:
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -137,6 +140,7 @@ class ControlNetData:
     controlnet_conditioning_scale: float = field(default=1.0)
     detection_resolution: int = field(default=512)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
     canny_low_threshold: int = field(default=100)
     canny_high_threshold: int = field(default=200)
@@ -363,3 +367,11 @@ class Capabilities:
     has_tensorfloat: bool = False
 
     hypertile_available: bool = False
+
+
+InferenceJob = Union[
+    Txt2ImgQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    ControlNetQueueEntry,
+]

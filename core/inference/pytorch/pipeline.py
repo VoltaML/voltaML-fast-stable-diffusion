@@ -1,7 +1,7 @@
 # HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 
 from contextlib import ExitStack
-from typing import Any, Callable, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import PIL
 import torch
@@ -137,6 +137,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         negative_prompt,
         max_embeddings_multiples,
         seed,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Encodes the prompt into text encoder hidden states.
@@ -181,6 +182,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             uncond_prompt=negative_prompt if do_classifier_free_guidance else None,
             max_embeddings_multiples=max_embeddings_multiples,
             seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )
         bs_embed, seq_len, _ = text_embeddings.shape
         text_embeddings = text_embeddings.repeat(1, num_images_per_prompt, 1)
@@ -253,6 +255,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         seed: int = 0,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -365,6 +368,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 negative_prompt,
                 max_embeddings_multiples,
                 seed,
+                prompt_expansion_settings=prompt_expansion_settings,
             ).to(device)
             dtype = text_embeddings.dtype
 
@@ -688,6 +692,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         seed: int = 1,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function for text-to-image generation.
@@ -746,7 +751,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self(
+        return self.__call__(
             prompt=prompt,
             generator=generator,
             negative_prompt=negative_prompt,
@@ -765,6 +770,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
             seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )
 
     def img2img(
@@ -788,6 +794,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         seed: int = 1,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function for image-to-image generation.
@@ -867,6 +874,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
             seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )
 
     def inpaint(
@@ -891,6 +899,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         width: int = 512,
         height: int = 512,
         seed: int = 1,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function for inpaint.
@@ -979,4 +988,5 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             width=width,
             height=height,
             seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )

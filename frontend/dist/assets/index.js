@@ -6957,6 +6957,7 @@ function defineStore(idOrOptions, setup, setupOptions) {
   useStore.$id = id;
   return useStore;
 }
+const _2img = "";
 const themeOverridesKey = Symbol("themeOverrides");
 const themeKey = Symbol("theme");
 let onceCbs = [];
@@ -42679,11 +42680,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
 });
 const TopBar_vue_vue_type_style_index_0_scoped_2589676e_lang = "";
 const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
-const _2img = "";
+const Prompt_vue_vue_type_style_index_0_lang = "";
+const Prompt_vue_vue_type_style_index_1_scoped_5cc6c30d_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_ea705b88_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_7bc38f75_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_08b8fd63_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_b80427fc_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_178bc741_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_bedc0d0a_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _sfc_main$2 = {};
@@ -42732,13 +42734,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "fc790420": theme.value.common.popoverColor,
-        "34723a10": theme.value.common.borderRadius,
-        "7a57d2da": theme.value.common.pressedColor,
-        "5d197049": theme.value.common.primaryColorHover,
-        "78261d33": blur.value,
-        "4077faba": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "2a9066fe": backgroundImage.value
+        "42a435f2": theme.value.common.popoverColor,
+        "155a1bdc": theme.value.common.borderRadius,
+        "f89662d6": theme.value.common.pressedColor,
+        "27556987": theme.value.common.primaryColorHover,
+        "7e1027f1": blur.value,
+        "6f68cc10": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "d64781fa": backgroundImage.value
       };
     });
     const settings = useSettings();
@@ -42859,12 +42861,12 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/FormItem.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/FormItem.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
@@ -42904,7 +42906,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/FormItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -42930,20 +42932,20 @@ app.use(router);
 app.mount("#app");
 export {
   call as $,
-  pushScopeId as A,
-  popScopeId as B,
-  h as C,
-  ref as D,
-  NButton as E,
-  Fragment as F,
-  NIcon as G,
-  NTabPane as H,
-  NTabs as I,
+  spaceRegex as A,
+  pushScopeId as B,
+  popScopeId as C,
+  h as D,
+  ref as E,
+  NButton as F,
+  NTabPane as G,
+  NTabs as H,
+  Fragment as I,
   watch as J,
   upscalerOptions as K,
   renderList as L,
   NScrollbar as M,
-  NInput as N,
+  NTooltip as N,
   replaceable as O,
   createInjectionKey as P,
   cB as Q,
@@ -42957,7 +42959,7 @@ export {
   createTreeMate as Y,
   happensIn as Z,
   _export_sfc as _,
-  useState as a,
+  createBaseVNode as a,
   AddIcon as a$,
   nextTick as a0,
   keysOf as a1,
@@ -43022,7 +43024,7 @@ export {
   getSlot$1 as ax,
   depx as ay,
   formatLength as az,
-  createVNode as b,
+  useState as b,
   VFollower as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
@@ -43034,12 +43036,12 @@ export {
   themeOverridesKey as b7,
   reactive as b8,
   onMounted as b9,
-  commonVariables$m as bA,
-  formItemInjectionKey as bB,
-  convertToTextString as bC,
-  themeKey as bD,
-  useNotification as bE,
-  defaultSettings as bF,
+  useNotification as bA,
+  defaultSettings as bB,
+  getCurrentInstance as bC,
+  formLight$1 as bD,
+  commonVariables$m as bE,
+  formItemInjectionKey as bF,
   resolveDynamicComponent as bG,
   checkboxLight$1 as bH,
   urlFromPath as bI,
@@ -43085,34 +43087,34 @@ export {
   rateLight as bv,
   color2Class as bw,
   NTag as bx,
-  getCurrentInstance as by,
-  formLight$1 as bz,
+  convertToTextString as by,
+  themeKey as bz,
   createElementBlock as c,
   sliderLight$1 as c0,
   isSlotEmpty as c1,
   switchLight$1 as c2,
   NResult as c3,
   defineComponent as d,
-  unref as e,
-  promptHandleKeyDown as f,
-  useMessage as g,
-  onUnmounted as h,
-  NGi as i,
-  NCard as j,
-  NSpace as k,
-  createBaseVNode as l,
-  NTooltip as m,
-  createTextVNode as n,
+  createVNode as e,
+  unref as f,
+  NIcon as g,
+  NSelect as h,
+  promptHandleKeyDown as i,
+  NInput as j,
+  useMessage as k,
+  onUnmounted as l,
+  NGi as m,
+  NCard as n,
   openBlock as o,
   promptHandleKeyUp as p,
-  createCommentVNode as q,
-  createBlock as r,
-  serverUrl as s,
-  NSelect as t,
+  NSpace as q,
+  createTextVNode as r,
+  createCommentVNode as s,
+  createBlock as t,
   useSettings as u,
   NGrid as v,
   withCtx as w,
-  computed as x,
-  toDisplayString as y,
-  spaceRegex as z
+  serverUrl as x,
+  computed as y,
+  toDisplayString as z
 };
