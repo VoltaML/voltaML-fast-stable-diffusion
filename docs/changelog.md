@@ -1,5 +1,19 @@
 # Changelog
 
+## v0.4.1
+
+### Bug Fixes
+
+- Fixed loras on latest version of diffusers
+- Fixed Karras sigmas
+- Fixed incorrect step count being displayed in the UI
+- Fixed CivitAI browser getting stuck in some scenarios
+
+### All changes
+
+- Added support for prompt expansion
+- Reorganized frontend code
+
 ## v0.4.0
 
 ### Biggest Changes
