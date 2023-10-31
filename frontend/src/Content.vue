@@ -4,9 +4,9 @@
     <NLoadingBarProvider>
       <NMessageProvider>
         <div id="background"></div>
-        <SecretsHandlerVue />
-        <CollapsileNavbarVue />
-        <TopBarVue />
+        <SecretsHandler />
+        <CollapsibleNavbar />
+        <TopBar />
         <InitHandler />
         <routerContainerVue style="margin-top: 52px" />
         <PerformanceDrawer />
@@ -22,11 +22,13 @@ import {
   NMessageProvider,
   NNotificationProvider,
 } from "naive-ui";
-import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
-import InitHandler from "./components/InitHandler.vue";
-import LogDrawer from "./components/LogDrawer.vue";
-import PerformanceDrawer from "./components/PerformanceDrawer.vue";
-import SecretsHandlerVue from "./components/SecretsHandler.vue";
-import TopBarVue from "./components/TopBar.vue";
+import {
+  CollapsibleNavbar,
+  InitHandler,
+  LogDrawer,
+  PerformanceDrawer,
+  SecretsHandler,
+  TopBar,
+} from "./components";
 import routerContainerVue from "./router/router-container.vue";
 </script>

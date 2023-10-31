@@ -3,11 +3,13 @@ import logging
 import math
 import multiprocessing
 import time
+from importlib.util import find_spec
 from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
 
 import torch
 from diffusers.utils import is_xformers_available
+from packaging import version
 from PIL import Image
 
 from api import websocket_manager
@@ -28,18 +30,16 @@ from core.types import (
     AITemplateDynamicBuildRequest,
     Capabilities,
     ControlNetQueueEntry,
-    Img2ImgQueueEntry,
     InferenceBackend,
-    InpaintQueueEntry,
+    InferenceJob,
     InterrogatorQueueEntry,
     Job,
     ONNXBuildRequest,
     TextualInversionLoadRequest,
-    Txt2ImgQueueEntry,
     UpscaleQueueEntry,
     VaeLoadRequest,
 )
-from core.utils import convert_to_image, image_grid
+from core.utils import convert_to_image, image_grid, preprocess_job
 
 if TYPE_CHECKING:
     from core.inference.onnx import OnnxStableDiffusion
@@ -65,12 +65,20 @@ class GPU:
     def _get_capabilities(self) -> Capabilities:
         "Returns all of the capabilities of this GPU."
         cap = Capabilities()
+
+        if version.parse(torch.__version__) >= version.parse("2.0.0"):
+            cap.supported_self_attentions = [
+                ["SDP Attention", "sdpa"],
+                *cap.supported_self_attentions,
+            ]
+
         if torch.cuda.is_available():
             for i in range(torch.cuda.device_count()):
                 cap.supported_backends.append(
                     [f"(CUDA) {torch.cuda.get_device_name(i)}", f"cuda:{i}"]
                 )
         try:
+            # Not find_spec because we actually do end up using it
             import torch_directml
 
             for i in range(torch_directml.device_count()):
@@ -125,6 +133,17 @@ class GPU:
                 logger.debug("GPU does not support int8")
 
         cap.supports_xformers = is_xformers_available()
+        cap.supports_triton = find_spec("triton") is not None
+
+        if find_spec("flash_attn") is not None:
+            cap.supported_self_attentions.append(["Flash-Attention", "flash-attn"])
+
+        if cap.supports_xformers:
+            cap.supported_self_attentions = [
+                ["xFormers", "xformers"],
+                *cap.supported_self_attentions,
+            ]
+
         if torch.cuda.is_available():
             caps = torch.cuda.get_device_capability(0)
             if caps[0] < 7:
@@ -155,14 +174,11 @@ class GPU:
 
     async def generate(
         self,
-        job: Union[
-            Txt2ImgQueueEntry,
-            Img2ImgQueueEntry,
-            InpaintQueueEntry,
-            ControlNetQueueEntry,
-        ],
+        job: InferenceJob,
     ):
         "Generate images from the queue"
+
+        job = preprocess_job(job)
 
         def generate_thread_call(job: Job) -> List[Image.Image]:
             try:

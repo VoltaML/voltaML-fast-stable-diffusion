@@ -101,8 +101,7 @@
 
 <script setup lang="ts">
 import "@/assets/2img.css";
-import GenerateSection from "@/components/GenerateSection.vue";
-import ImageUpload from "@/components/ImageUpload.vue";
+import { GenerateSection, ImageUpload } from "@/components";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
 import {

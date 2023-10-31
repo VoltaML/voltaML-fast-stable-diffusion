@@ -7,3 +7,5 @@ export type ExtendedThemeOverrides = GlobalThemeOverrides & {
     backgroundImage: string | undefined;
   };
 };
+
+export type InferenceTabs = "txt2img" | "img2img" | "inpainting" | "controlnet";

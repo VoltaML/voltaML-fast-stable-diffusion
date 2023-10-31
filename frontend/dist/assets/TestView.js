@@ -1,5 +1,5 @@
+import { d as defineComponent, x as ref, c as openBlock, n as createBlock, g as unref } from "./index.js";
 import { _ as _sfc_main$1 } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
-import { d as defineComponent, D as ref, e as openBlock, v as createBlock } from "./index.js";
 import "./DescriptionsItem.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "TestView",
@@ -12,7 +12,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       });
     });
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(_sfc_main$1, {
+      return openBlock(), createBlock(unref(_sfc_main$1), {
         model: model.value,
         "show-modal": showModal.value,
         "onUpdate:showModal": _cache[0] || (_cache[0] = (e) => showModal.value = e)

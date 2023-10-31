@@ -1,4 +1,4 @@
-import { _ as _export_sfc, d as defineComponent, u as useState, e as openBlock, v as createBlock, w as withCtx, h as unref, g as createVNode, G as NTabPane, H as NTabs } from "./index.js";
+import { _ as _export_sfc, d as defineComponent, u as useState, c as openBlock, n as createBlock, w as withCtx, g as unref, f as createVNode, B as NTabPane, C as NTabs } from "./index.js";
 const _sfc_main$2 = {};
 function _sfc_render$1(_ctx, _cache) {
   return "Autofill manager";
@@ -25,7 +25,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             name: "dependencies"
           }, {
             default: withCtx(() => [
-              createVNode(DependencyManager)
+              createVNode(unref(DependencyManager))
             ]),
             _: 1
           }),
@@ -34,7 +34,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             name: "autofill"
           }, {
             default: withCtx(() => [
-              createVNode(AutofillManager)
+              createVNode(unref(AutofillManager))
             ]),
             _: 1
           })

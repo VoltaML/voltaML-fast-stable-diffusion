@@ -322,6 +322,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 output_type=output_type,
                 callback=callback,
                 num_images_per_prompt=job.data.batch_size,
+                seed=job.data.seed,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
             if output_type == "latent":
@@ -352,6 +354,8 @@ class PyTorchStableDiffusion(InferenceModel):
                     strength=flag.strength,
                     return_dict=False,
                     num_images_per_prompt=job.data.batch_size,
+                    seed=job.data.seed,
+                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 )
 
             images: list[Image.Image] = data[0]  # type: ignore
@@ -409,6 +413,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 strength=job.data.strength,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
+                seed=job.data.seed,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
             if not data:
@@ -474,6 +480,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 num_images_per_prompt=job.data.batch_size,
                 width=job.data.width,
                 height=job.data.height,
+                seed=job.data.seed,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
             if not data:
@@ -546,6 +554,8 @@ class PyTorchStableDiffusion(InferenceModel):
                 controlnet_conditioning_scale=job.data.controlnet_conditioning_scale,
                 height=job.data.height,
                 width=job.data.width,
+                seed=job.data.seed,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
             images = data[0]  # type: ignore

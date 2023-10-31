@@ -1,4 +1,4 @@
-import { d as defineComponent, D as ref, u as useState, e as openBlock, v as createBlock, w as withCtx, h as unref, N as NGi, g as createVNode, F as NIcon, m as createTextVNode, E as NButton, r as createCommentVNode, y as NGrid, c as computed, n as createBaseVNode, f as createElementBlock, I as Fragment, L as renderList, M as NScrollbar, i as NCard } from "./index.js";
+import { d as defineComponent, x as ref, u as useState, c as openBlock, n as createBlock, w as withCtx, g as unref, N as NGi, f as createVNode, z as NIcon, l as createTextVNode, y as NButton, m as createCommentVNode, q as NGrid, D as computed, j as createBaseVNode, e as createElementBlock, F as Fragment, L as renderList, M as NScrollbar, h as NCard } from "./index.js";
 import { D as Download, _ as _sfc_main$2 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { T as TrashBin, N as NImage } from "./TrashBin.js";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
@@ -163,11 +163,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             })
           ])) : createCommentVNode("", true),
           props.currentImage ? (openBlock(), createElementBlock("div", _hoisted_5, [
-            createVNode(_sfc_main$1, {
+            createVNode(unref(_sfc_main$1), {
               base64image: props.currentImage,
               style: { "margin-bottom": "4px" }
             }, null, 8, ["base64image"]),
-            createVNode(_sfc_main$2, {
+            createVNode(unref(_sfc_main$2), {
               output: props.currentImage,
               card: false,
               data: __props.data

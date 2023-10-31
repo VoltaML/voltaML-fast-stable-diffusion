@@ -1,4 +1,4 @@
-import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, R as inject, D as ref, c as computed, b8 as reactive, b9 as onMounted, o as onUnmounted, e as openBlock, f as createElementBlock, n as createBaseVNode, g as createVNode, h as unref, w as withCtx, I as Fragment, L as renderList, b7 as themeOverridesKey, s as serverUrl, k as NInput, F as NIcon, bd as NModal, y as NGrid, N as NGi, E as NButton, m as createTextVNode, M as NScrollbar, v as createBlock, bC as convertToTextString, t as toDisplayString, r as createCommentVNode, bI as urlFromPath, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, R as inject, x as ref, D as computed, b8 as reactive, b9 as onMounted, o as onUnmounted, c as openBlock, e as createElementBlock, j as createBaseVNode, f as createVNode, g as unref, w as withCtx, F as Fragment, L as renderList, b7 as themeOverridesKey, s as serverUrl, H as NInput, z as NIcon, bd as NModal, q as NGrid, N as NGi, y as NButton, l as createTextVNode, M as NScrollbar, n as createBlock, by as convertToTextString, A as toDisplayString, m as createCommentVNode, bI as urlFromPath, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
@@ -20,8 +20,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a, _b;
       return {
-        "1bf86f7d": unref(settings).data.settings.frontend.image_browser_columns,
-        "6326b8e7": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+        "114fe7c0": unref(settings).data.settings.frontend.image_browser_columns,
+        "3d9e4b24": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
       };
     });
     const global = useState();
@@ -372,7 +372,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NGi), { span: "2" }, {
                             default: withCtx(() => [
-                              createVNode(_sfc_main$1, {
+                              createVNode(unref(_sfc_main$1), {
                                 output: unref(global).state.imageBrowser.currentImageByte64,
                                 card: false,
                                 data: unref(global).state.imageBrowser.currentImageMetadata
@@ -454,8 +454,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_7b550fae_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-7b550fae"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_239f75b8_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-239f75b8"]]);
 export {
   ImageBrowserView as default
 };

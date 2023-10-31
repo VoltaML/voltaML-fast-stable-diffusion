@@ -10,8 +10,7 @@
 </template>
 
 <script lang="ts" setup>
-import AutofillManager from "@/components/extra/AutofillManager.vue";
-import DependencyManager from "@/components/extra/DependencyManager.vue";
+import { AutofillManager, DependencyManager } from "@/components";
 import { useState } from "@/store/state";
 import { NTabPane, NTabs } from "naive-ui";
 

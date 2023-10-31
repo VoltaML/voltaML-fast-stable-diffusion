@@ -26,6 +26,7 @@ Backend = Literal[
     "ONNX",
     "VAE",
     "Upscaler",
+    "GPT",  # for prompt-expansion
 ]
 ImageFormats = Literal["png", "jpeg", "webp"]
 
@@ -69,6 +70,7 @@ class Txt2imgData:
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -91,6 +93,7 @@ class Img2imgData:
     batch_count: int = field(default=1)
     strength: float = field(default=0.6)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -113,6 +116,7 @@ class InpaintData:
     batch_size: int = field(default=1)
     batch_count: int = field(default=1)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
 
 @dataclass
@@ -136,6 +140,7 @@ class ControlNetData:
     controlnet_conditioning_scale: float = field(default=1.0)
     detection_resolution: int = field(default=512)
     sampler_settings: Dict = field(default_factory=dict)
+    prompt_to_prompt_settings: Dict = field(default_factory=dict)
 
     canny_low_threshold: int = field(default=100)
     canny_high_threshold: int = field(default=200)
@@ -337,12 +342,23 @@ class Capabilities:
         default_factory=lambda: ["inductor"]
     )
 
+    supported_self_attentions: List[List[str]] = field(
+        default_factory=lambda: [
+            ["Cross-Attention", "cross-attention"],
+            ["Subquadratic Attention", "subquadratic"],
+            ["Multihead Attention", "multihead"],
+        ]
+    )
+
     # Does he have bitsandbytes installed?
     supports_int8: bool = False
 
     # Does the current build support xformers?
     # Useful for e.g. torch nightlies
     supports_xformers: bool = False
+
+    # Needed for sfast.
+    supports_triton: bool = False
 
     # Volta+ (>=7.0)
     has_tensor_cores: bool = True
@@ -351,3 +367,11 @@ class Capabilities:
     has_tensorfloat: bool = False
 
     hypertile_available: bool = False
+
+
+InferenceJob = Union[
+    Txt2ImgQueueEntry,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    ControlNetQueueEntry,
+]

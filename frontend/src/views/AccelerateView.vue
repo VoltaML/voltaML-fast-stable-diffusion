@@ -10,7 +10,6 @@
 </template>
 
 <script lang="ts" setup>
-import AITemplateDynamicAccelerate from "@/components/accelerate/AITemplateDynamicAccelerate.vue";
-import ONNXAccelerate from "@/components/accelerate/ONNXAccelerate.vue";
+import { AITemplateDynamicAccelerate, ONNXAccelerate } from "@/components";
 import { NTabPane, NTabs } from "naive-ui";
 </script>

@@ -172,6 +172,7 @@ export interface ISettings {
     reduced_precision: boolean;
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
+    dont_merge_latents: boolean;
 
     huggingface_style_parsing: boolean;
 
@@ -191,6 +192,11 @@ export interface ISettings {
     torch_compile_backend: string;
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
 
+    sfast_compile: boolean;
+    sfast_xformers: boolean;
+    sfast_triton: boolean;
+    sfast_cuda_graph: boolean;
+
     hypertile: boolean;
     hypertile_unet_chunk: number;
 
@@ -200,6 +206,10 @@ export interface ISettings {
     generator: "device" | "cpu" | "philox";
     live_preview_method: "disabled" | "approximation" | "taesd";
     live_preview_delay: number;
+
+    prompt_to_prompt: boolean;
+    prompt_to_prompt_model: string;
+    prompt_to_prompt_device: "gpu" | "cpu";
   };
   aitemplate: {
     num_threads: number;
@@ -339,6 +349,7 @@ export const defaultSettings: ISettings = {
     trace_model: false,
     cudnn_benchmark: false,
     offload: "disabled",
+    dont_merge_latents: false,
 
     device: "cuda:0",
     data_type: "float16",
@@ -368,6 +379,11 @@ export const defaultSettings: ISettings = {
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
 
+    sfast_compile: false,
+    sfast_xformers: true,
+    sfast_triton: true,
+    sfast_cuda_graph: false,
+
     hypertile: false,
     hypertile_unet_chunk: 256,
 
@@ -377,6 +393,10 @@ export const defaultSettings: ISettings = {
     generator: "device",
     live_preview_method: "approximation",
     live_preview_delay: 2.0,
+
+    prompt_to_prompt: false,
+    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
+    prompt_to_prompt_device: "gpu",
   },
   aitemplate: {
     num_threads: 8,

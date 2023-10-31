@@ -13,40 +13,7 @@
         <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
-            <NInput
-              v-model:value="settings.data.settings.img2img.prompt"
-              type="textarea"
-              placeholder="Prompt"
-              show-count
-              @keyup="
-                promptHandleKeyUp(
-                  $event,
-                  settings.data.settings.img2img,
-                  'prompt',
-                  global
-                )
-              "
-              @keydown="promptHandleKeyDown"
-            >
-              <template #count>{{ promptCount }}</template>
-            </NInput>
-            <NInput
-              v-model:value="settings.data.settings.img2img.negative_prompt"
-              type="textarea"
-              placeholder="Negative prompt"
-              show-count
-              @keyup="
-                promptHandleKeyUp(
-                  $event,
-                  settings.data.settings.img2img,
-                  'negative_prompt',
-                  global
-                )
-              "
-              @keydown="promptHandleKeyDown"
-            >
-              <template #count>{{ negativePromptCount }}</template>
-            </NInput>
+            <Prompt tab="img2img" />
 
             <!-- Sampler -->
             <SamplerPicker type="img2img" />
@@ -260,24 +227,21 @@
 <script setup lang="ts">
 import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
-import GenerateSection from "@/components/GenerateSection.vue";
-import ImageOutput from "@/components/ImageOutput.vue";
-import ImageUpload from "@/components/ImageUpload.vue";
-import OutputStats from "@/components/OutputStats.vue";
-import BatchSizeInput from "@/components/generate/BatchSizeInput.vue";
-import DimensionsInput from "@/components/generate/DimensionsInput.vue";
-import SamplerPicker from "@/components/generate/SamplerPicker.vue";
-import { serverUrl } from "@/env";
 import {
-  promptHandleKeyDown,
-  promptHandleKeyUp,
-  spaceRegex,
-} from "@/functions";
+  BatchSizeInput,
+  DimensionsInput,
+  GenerateSection,
+  ImageOutput,
+  ImageUpload,
+  OutputStats,
+  Prompt,
+  SamplerPicker,
+} from "@/components";
+import { serverUrl } from "@/env";
 import {
   NCard,
   NGi,
   NGrid,
-  NInput,
   NInputNumber,
   NSlider,
   NSpace,
@@ -285,22 +249,13 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, onUnmounted } from "vue";
+import { onUnmounted } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
-
-const promptCount = computed(() => {
-  return settings.data.settings.img2img.prompt.split(spaceRegex).length - 1;
-});
-const negativePromptCount = computed(() => {
-  return (
-    settings.data.settings.img2img.negative_prompt.split(spaceRegex).length - 1
-  );
-});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -351,6 +306,13 @@ const generate = () => {
           settings.data.settings.sampler_config[
             settings.data.settings.img2img.sampler
           ],
+        prompt_to_prompt_settings: {
+          prompt_to_prompt_model:
+            settings.data.settings.api.prompt_to_prompt_model,
+          prompt_to_prompt_model_settings:
+            settings.data.settings.api.prompt_to_prompt_device,
+          prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
+        },
       },
       model: settings.data.settings.model?.name,
     }),

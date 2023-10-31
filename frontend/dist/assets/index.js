@@ -6957,6 +6957,7 @@ function defineStore(idOrOptions, setup, setupOptions) {
   useStore.$id = id;
   return useStore;
 }
+const _2img = "";
 const themeOverridesKey = Symbol("themeOverrides");
 const themeKey = Symbol("theme");
 let onceCbs = [];
@@ -40174,9 +40175,15 @@ const defaultCapabilities = {
   supported_precisions_cpu: ["float32"],
   supported_precisions_gpu: ["float32"],
   supported_torch_compile_backends: ["inductor"],
+  supported_self_attentions: [
+    ["Cross-Attention", "cross-attention"],
+    ["Subquadratic Attention", "subquadratic"],
+    ["Multihead Attention", "multihead"]
+  ],
   has_tensorfloat: false,
   has_tensor_cores: false,
   supports_xformers: false,
+  supports_triton: false,
   supports_int8: false
 };
 async function getCapabilities() {
@@ -40261,6 +40268,9 @@ const useState = defineStore("state", () => {
     extra: {
       tab: "dependencies"
     },
+    modelManager: {
+      tab: "manager"
+    },
     tagger: {
       positivePrompt: /* @__PURE__ */ new Map(),
       negativePrompt: /* @__PURE__ */ new Map(),
@@ -40311,6 +40321,437 @@ const useState = defineStore("state", () => {
   }
   return { state, fetchCapabilites, fetchAutofill };
 });
+var Backends = /* @__PURE__ */ ((Backends2) => {
+  Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
+  Backends2[Backends2["AITemplate"] = 1] = "AITemplate";
+  Backends2[Backends2["ONNX"] = 2] = "ONNX";
+  Backends2[Backends2["unknown"] = 3] = "unknown";
+  Backends2[Backends2["LoRA"] = 4] = "LoRA";
+  Backends2[Backends2["LyCORIS"] = 5] = "LyCORIS";
+  Backends2[Backends2["VAE"] = 6] = "VAE";
+  Backends2[Backends2["Textual Inversion"] = 7] = "Textual Inversion";
+  Backends2[Backends2["Upscaler"] = 8] = "Upscaler";
+  return Backends2;
+})(Backends || {});
+var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
+  ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
+  ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
+  ControlNetType2["HED"] = "lllyasviel/sd-controlnet-hed";
+  ControlNetType2["MLSD"] = "lllyasviel/sd-controlnet-mlsd";
+  ControlNetType2["NORMAL"] = "lllyasviel/sd-controlnet-normal";
+  ControlNetType2["OPENPOSE"] = "lllyasviel/sd-controlnet-openpose";
+  ControlNetType2["SCRIBBLE"] = "lllyasviel/sd-controlnet-scribble";
+  ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
+  return ControlNetType2;
+})(ControlNetType || {});
+const defaultSettings = {
+  $schema: "./schema/ui_data/settings.json",
+  backend: "PyTorch",
+  model: null,
+  extra: {
+    highres: {
+      scale: 2,
+      latent_scale_mode: "bilinear",
+      strength: 0.7,
+      steps: 50,
+      antialiased: false
+    }
+  },
+  aitDim: {
+    width: void 0,
+    height: void 0,
+    batch_size: void 0
+  },
+  txt2img: {
+    width: 512,
+    height: 512,
+    seed: -1,
+    cfg_scale: 7,
+    sampler: 8,
+    prompt: "",
+    steps: 25,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    self_attention_scale: 0,
+    sigmas: "automatic"
+  },
+  img2img: {
+    width: 512,
+    height: 512,
+    seed: -1,
+    cfg_scale: 7,
+    sampler: 8,
+    prompt: "",
+    steps: 25,
+    batch_count: 1,
+    batch_size: 1,
+    negative_prompt: "",
+    denoising_strength: 0.6,
+    image: "",
+    self_attention_scale: 0,
+    sigmas: "automatic"
+  },
+  inpainting: {
+    prompt: "",
+    negative_prompt: "",
+    image: "",
+    mask_image: "",
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfg_scale: 7,
+    seed: -1,
+    batch_count: 1,
+    batch_size: 1,
+    sampler: 8,
+    self_attention_scale: 0,
+    sigmas: "automatic"
+  },
+  controlnet: {
+    prompt: "",
+    image: "",
+    sampler: 8,
+    controlnet: ControlNetType.CANNY,
+    negative_prompt: "",
+    width: 512,
+    height: 512,
+    steps: 25,
+    cfg_scale: 7,
+    seed: -1,
+    batch_size: 1,
+    batch_count: 1,
+    controlnet_conditioning_scale: 1,
+    detection_resolution: 512,
+    is_preprocessed: false,
+    save_preprocessed: false,
+    return_preprocessed: true,
+    sigmas: "automatic"
+  },
+  upscale: {
+    image: "",
+    upscale_factor: 4,
+    model: "RealESRGAN_x4plus_anime_6B",
+    tile_size: 128,
+    tile_padding: 10
+  },
+  tagger: {
+    image: "",
+    model: "deepdanbooru",
+    threshold: 0.5
+  },
+  api: {
+    websocket_sync_interval: 0.02,
+    websocket_perf_interval: 1,
+    enable_websocket_logging: true,
+    clip_skip: 1,
+    clip_quantization: "full",
+    autocast: true,
+    attention_processor: "xformers",
+    subquadratic_size: 512,
+    attention_slicing: "disabled",
+    channels_last: true,
+    vae_slicing: false,
+    vae_tiling: false,
+    trace_model: false,
+    cudnn_benchmark: false,
+    offload: "disabled",
+    dont_merge_latents: false,
+    device: "cuda:0",
+    data_type: "float16",
+    use_tomesd: true,
+    tomesd_ratio: 0.4,
+    tomesd_downsample_layers: 1,
+    deterministic_generation: false,
+    reduced_precision: false,
+    clear_memory_policy: "always",
+    huggingface_style_parsing: false,
+    autoloaded_textual_inversions: [],
+    autoloaded_models: [],
+    autoloaded_vae: {},
+    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
+    image_extension: "png",
+    image_quality: 95,
+    disable_grid: false,
+    torch_compile: false,
+    torch_compile_fullgraph: false,
+    torch_compile_dynamic: false,
+    torch_compile_backend: "inductor",
+    torch_compile_mode: "default",
+    sfast_compile: false,
+    sfast_xformers: true,
+    sfast_triton: true,
+    sfast_cuda_graph: false,
+    hypertile: false,
+    hypertile_unet_chunk: 256,
+    sgm_noise_multiplier: false,
+    kdiffusers_quantization: true,
+    generator: "device",
+    live_preview_method: "approximation",
+    live_preview_delay: 2,
+    prompt_to_prompt: false,
+    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
+    prompt_to_prompt_device: "gpu"
+  },
+  aitemplate: {
+    num_threads: 8
+  },
+  onnx: {
+    quant_dict: {
+      text_encoder: null,
+      unet: null,
+      vae_decoder: null,
+      vae_encoder: null
+    },
+    convert_to_fp16: true,
+    simplify_unet: false
+  },
+  bot: {
+    default_scheduler: 8,
+    verbose: false,
+    use_default_negative_prompt: true
+  },
+  frontend: {
+    theme: "dark",
+    enable_theme_editor: false,
+    image_browser_columns: 5,
+    on_change_timer: 2e3,
+    nsfw_ok_threshold: 0,
+    background_image_override: ""
+  },
+  sampler_config: {}
+};
+let rSettings = JSON.parse(JSON.stringify(defaultSettings));
+try {
+  const req = new XMLHttpRequest();
+  req.open("GET", `${serverUrl}/api/settings/`, false);
+  req.send();
+  const extra = rSettings.extra;
+  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
+  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
+} catch (e) {
+  console.error(e);
+}
+console.log("Settings:", rSettings);
+const recievedSettings = rSettings;
+class Settings {
+  constructor(settings_override) {
+    __publicField(this, "settings");
+    this.settings = { ...defaultSettings, ...settings_override };
+  }
+  to_json() {
+    return JSON.stringify(this.settings);
+  }
+}
+const diffusersSchedulerTuple = {
+  DDIM: 1,
+  DDPM: 2,
+  PNDM: 3,
+  LMSD: 4,
+  EulerDiscrete: 5,
+  HeunDiscrete: 6,
+  EulerAncestralDiscrete: 7,
+  DPMSolverMultistep: 8,
+  DPMSolverSinglestep: 9,
+  KDPM2Discrete: 10,
+  KDPM2AncestralDiscrete: 11,
+  DEISMultistep: 12,
+  UniPCMultistep: 13,
+  DPMSolverSDEScheduler: 14
+};
+const upscalerOptions = [
+  {
+    label: "RealESRGAN_x4plus",
+    value: "RealESRGAN_x4plus"
+  },
+  {
+    label: "RealESRNet_x4plus",
+    value: "RealESRNet_x4plus"
+  },
+  {
+    label: "RealESRGAN_x4plus_anime_6B",
+    value: "RealESRGAN_x4plus_anime_6B"
+  },
+  {
+    label: "RealESRGAN_x2plus",
+    value: "RealESRGAN_x2plus"
+  },
+  {
+    label: "RealESR-general-x4v3",
+    value: "RealESR-general-x4v3"
+  }
+];
+function getSchedulerOptions() {
+  const scheduler_options = [
+    {
+      type: "group",
+      label: "k-diffusion",
+      key: "K-Diffusion",
+      children: [
+        { label: "Euler a", value: "euler_a" },
+        { label: "Euler", value: "euler" },
+        { label: "LMS", value: "lms" },
+        { label: "Heun", value: "heun" },
+        { label: "DPM Fast", value: "dpm_fast" },
+        { label: "DPM Adaptive", value: "dpm_adaptive" },
+        { label: "DPM2", value: "dpm2" },
+        { label: "DPM2 a", value: "dpm2_a" },
+        { label: "DPM++ 2S a", value: "dpmpp_2s_a" },
+        { label: "DPM++ 2M", value: "dpmpp_2m" },
+        { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
+        { label: "DPM++ SDE", value: "dpmpp_sde" },
+        { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
+        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
+        { label: "UniPC Multistep", value: "unipc_multistep" },
+        { label: "Restart", value: "restart" }
+      ]
+    },
+    {
+      type: "group",
+      label: "Diffusers",
+      key: "diffusers",
+      children: Object.keys(diffusersSchedulerTuple).map((key) => {
+        return {
+          label: key,
+          value: diffusersSchedulerTuple[key]
+        };
+      })
+    }
+  ];
+  return scheduler_options;
+}
+function getControlNetOptions() {
+  const controlnet_options = [
+    {
+      type: "group",
+      label: "ControlNet 1.1",
+      key: "ControlNet 1.1",
+      children: [
+        {
+          label: "lllyasviel/control_v11p_sd15_canny",
+          value: "lllyasviel/control_v11p_sd15_canny"
+        },
+        {
+          label: "lllyasviel/control_v11f1p_sd15_depth",
+          value: "lllyasviel/control_v11f1p_sd15_depth"
+        },
+        {
+          label: "lllyasviel/control_v11e_sd15_ip2p",
+          value: "lllyasviel/control_v11e_sd15_ip2p"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_softedge",
+          value: "lllyasviel/control_v11p_sd15_softedge"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_openpose",
+          value: "lllyasviel/control_v11p_sd15_openpose"
+        },
+        {
+          label: "lllyasviel/control_v11f1e_sd15_tile",
+          value: "lllyasviel/control_v11f1e_sd15_tile"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_mlsd",
+          value: "lllyasviel/control_v11p_sd15_mlsd"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_scribble",
+          value: "lllyasviel/control_v11p_sd15_scribble"
+        },
+        {
+          label: "lllyasviel/control_v11p_sd15_seg",
+          value: "lllyasviel/control_v11p_sd15_seg"
+        }
+      ]
+    },
+    {
+      type: "group",
+      label: "Special",
+      key: "Special",
+      children: [
+        {
+          label: "DionTimmer/controlnet_qrcode",
+          value: "DionTimmer/controlnet_qrcode"
+        },
+        {
+          label: "CrucibleAI/ControlNetMediaPipeFace",
+          value: "CrucibleAI/ControlNetMediaPipeFace"
+        }
+      ]
+    },
+    {
+      type: "group",
+      label: "Original",
+      key: "Original",
+      children: [
+        {
+          label: "lllyasviel/sd-controlnet-canny",
+          value: "lllyasviel/sd-controlnet-canny"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-depth",
+          value: "lllyasviel/sd-controlnet-depth"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-hed",
+          value: "lllyasviel/sd-controlnet-hed"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-mlsd",
+          value: "lllyasviel/sd-controlnet-mlsd"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-normal",
+          value: "lllyasviel/sd-controlnet-normal"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-openpose",
+          value: "lllyasviel/sd-controlnet-openpose"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-scribble",
+          value: "lllyasviel/sd-controlnet-scribble"
+        },
+        {
+          label: "lllyasviel/sd-controlnet-seg",
+          value: "lllyasviel/sd-controlnet-seg"
+        }
+      ]
+    }
+  ];
+  return controlnet_options;
+}
+const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
+const useSettings = defineStore("settings", () => {
+  const data = reactive(new Settings(recievedSettings));
+  const scheduler_options = computed(() => {
+    return getSchedulerOptions();
+  });
+  const controlnet_options = computed(() => {
+    return getControlNetOptions();
+  });
+  function resetSettings() {
+    console.log("Resetting settings to default");
+    Object.assign(defaultSettings$1, defaultSettings);
+  }
+  const defaultSettings$1 = reactive(deepcopiedSettings);
+  return {
+    data,
+    scheduler_options,
+    controlnet_options,
+    defaultSettings: defaultSettings$1,
+    resetSettings
+  };
+});
+const ImageUpload_vue_vue_type_style_index_0_scoped_9ed1514f_lang = "";
+const _export_sfc = (sfc, props) => {
+  const target = sfc.__vccOpts || sfc;
+  for (const [key, val] of props) {
+    target[key] = val;
+  }
+  return target;
+};
 const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "InitHandler",
   setup(__props) {
@@ -40878,24 +41319,6 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
-function progressForward(progress, global2) {
-  if (progress === 0) {
-    return 0;
-  } else if (global2.state.progress <= progress) {
-    return progress;
-  } else {
-    return global2.state.progress;
-  }
-}
-function currentStepForward(currentStep, global2) {
-  if (currentStep === 0) {
-    return 0;
-  } else if (global2.state.current_step <= currentStep) {
-    return currentStep;
-  } else {
-    return global2.state.current_step;
-  }
-}
 function processWebSocket(message, global2, notificationProvider) {
   switch (message.type) {
     case "test": {
@@ -40907,41 +41330,29 @@ function processWebSocket(message, global2, notificationProvider) {
     }
     case "txt2img": {
       global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "img2img": {
       global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "inpainting": {
       global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "controlnet": {
       global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
@@ -41311,437 +41722,26 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-var Backends = /* @__PURE__ */ ((Backends2) => {
-  Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
-  Backends2[Backends2["AITemplate"] = 1] = "AITemplate";
-  Backends2[Backends2["ONNX"] = 2] = "ONNX";
-  Backends2[Backends2["unknown"] = 3] = "unknown";
-  Backends2[Backends2["LoRA"] = 4] = "LoRA";
-  Backends2[Backends2["LyCORIS"] = 5] = "LyCORIS";
-  Backends2[Backends2["VAE"] = 6] = "VAE";
-  Backends2[Backends2["Textual Inversion"] = 7] = "Textual Inversion";
-  Backends2[Backends2["Upscaler"] = 8] = "Upscaler";
-  return Backends2;
-})(Backends || {});
-var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
-  ControlNetType2["CANNY"] = "lllyasviel/sd-controlnet-canny";
-  ControlNetType2["DEPTH"] = "lllyasviel/sd-controlnet-depth";
-  ControlNetType2["HED"] = "lllyasviel/sd-controlnet-hed";
-  ControlNetType2["MLSD"] = "lllyasviel/sd-controlnet-mlsd";
-  ControlNetType2["NORMAL"] = "lllyasviel/sd-controlnet-normal";
-  ControlNetType2["OPENPOSE"] = "lllyasviel/sd-controlnet-openpose";
-  ControlNetType2["SCRIBBLE"] = "lllyasviel/sd-controlnet-scribble";
-  ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
-  return ControlNetType2;
-})(ControlNetType || {});
-const defaultSettings = {
-  $schema: "./schema/ui_data/settings.json",
-  backend: "PyTorch",
-  model: null,
-  extra: {
-    highres: {
-      scale: 2,
-      latent_scale_mode: "bilinear",
-      strength: 0.7,
-      steps: 50,
-      antialiased: false
-    }
-  },
-  aitDim: {
-    width: void 0,
-    height: void 0,
-    batch_size: void 0
-  },
-  txt2img: {
-    width: 512,
-    height: 512,
-    seed: -1,
-    cfg_scale: 7,
-    sampler: 8,
-    prompt: "",
-    steps: 25,
-    batch_count: 1,
-    batch_size: 1,
-    negative_prompt: "",
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  img2img: {
-    width: 512,
-    height: 512,
-    seed: -1,
-    cfg_scale: 7,
-    sampler: 8,
-    prompt: "",
-    steps: 25,
-    batch_count: 1,
-    batch_size: 1,
-    negative_prompt: "",
-    denoising_strength: 0.6,
-    image: "",
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  inpainting: {
-    prompt: "",
-    negative_prompt: "",
-    image: "",
-    mask_image: "",
-    width: 512,
-    height: 512,
-    steps: 25,
-    cfg_scale: 7,
-    seed: -1,
-    batch_count: 1,
-    batch_size: 1,
-    sampler: 8,
-    self_attention_scale: 0,
-    sigmas: "automatic"
-  },
-  controlnet: {
-    prompt: "",
-    image: "",
-    sampler: 8,
-    controlnet: ControlNetType.CANNY,
-    negative_prompt: "",
-    width: 512,
-    height: 512,
-    steps: 25,
-    cfg_scale: 7,
-    seed: -1,
-    batch_size: 1,
-    batch_count: 1,
-    controlnet_conditioning_scale: 1,
-    detection_resolution: 512,
-    is_preprocessed: false,
-    save_preprocessed: false,
-    return_preprocessed: true,
-    sigmas: "automatic"
-  },
-  upscale: {
-    image: "",
-    upscale_factor: 4,
-    model: "RealESRGAN_x4plus_anime_6B",
-    tile_size: 128,
-    tile_padding: 10
-  },
-  tagger: {
-    image: "",
-    model: "deepdanbooru",
-    threshold: 0.5
-  },
-  api: {
-    websocket_sync_interval: 0.02,
-    websocket_perf_interval: 1,
-    enable_websocket_logging: true,
-    clip_skip: 1,
-    clip_quantization: "full",
-    autocast: true,
-    attention_processor: "xformers",
-    subquadratic_size: 512,
-    attention_slicing: "disabled",
-    channels_last: true,
-    vae_slicing: false,
-    vae_tiling: false,
-    trace_model: false,
-    cudnn_benchmark: false,
-    offload: "disabled",
-    device: "cuda:0",
-    data_type: "float16",
-    use_tomesd: true,
-    tomesd_ratio: 0.4,
-    tomesd_downsample_layers: 1,
-    deterministic_generation: false,
-    reduced_precision: false,
-    clear_memory_policy: "always",
-    huggingface_style_parsing: false,
-    autoloaded_textual_inversions: [],
-    autoloaded_models: [],
-    autoloaded_vae: {},
-    save_path_template: "{folder}/{prompt}/{id}-{index}.{extension}",
-    image_extension: "png",
-    image_quality: 95,
-    disable_grid: false,
-    torch_compile: false,
-    torch_compile_fullgraph: false,
-    torch_compile_dynamic: false,
-    torch_compile_backend: "inductor",
-    torch_compile_mode: "default",
-    hypertile: false,
-    hypertile_unet_chunk: 256,
-    sgm_noise_multiplier: false,
-    kdiffusers_quantization: true,
-    generator: "device",
-    live_preview_method: "approximation",
-    live_preview_delay: 2
-  },
-  aitemplate: {
-    num_threads: 8
-  },
-  onnx: {
-    quant_dict: {
-      text_encoder: null,
-      unet: null,
-      vae_decoder: null,
-      vae_encoder: null
-    },
-    convert_to_fp16: true,
-    simplify_unet: false
-  },
-  bot: {
-    default_scheduler: 8,
-    verbose: false,
-    use_default_negative_prompt: true
-  },
-  frontend: {
-    theme: "dark",
-    enable_theme_editor: false,
-    image_browser_columns: 5,
-    on_change_timer: 2e3,
-    nsfw_ok_threshold: 0,
-    background_image_override: ""
-  },
-  sampler_config: {}
-};
-let rSettings = JSON.parse(JSON.stringify(defaultSettings));
-try {
-  const req = new XMLHttpRequest();
-  req.open("GET", `${serverUrl}/api/settings/`, false);
-  req.send();
-  const extra = rSettings.extra;
-  rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
-  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
-} catch (e) {
-  console.error(e);
-}
-console.log("Settings:", rSettings);
-const recievedSettings = rSettings;
-class Settings {
-  constructor(settings_override) {
-    __publicField(this, "settings");
-    this.settings = { ...defaultSettings, ...settings_override };
-  }
-  to_json() {
-    return JSON.stringify(this.settings);
-  }
-}
-const diffusersSchedulerTuple = {
-  DDIM: 1,
-  DDPM: 2,
-  PNDM: 3,
-  LMSD: 4,
-  EulerDiscrete: 5,
-  HeunDiscrete: 6,
-  EulerAncestralDiscrete: 7,
-  DPMSolverMultistep: 8,
-  DPMSolverSinglestep: 9,
-  KDPM2Discrete: 10,
-  KDPM2AncestralDiscrete: 11,
-  DEISMultistep: 12,
-  UniPCMultistep: 13,
-  DPMSolverSDEScheduler: 14
-};
-const upscalerOptions = [
-  {
-    label: "RealESRGAN_x4plus",
-    value: "RealESRGAN_x4plus"
-  },
-  {
-    label: "RealESRNet_x4plus",
-    value: "RealESRNet_x4plus"
-  },
-  {
-    label: "RealESRGAN_x4plus_anime_6B",
-    value: "RealESRGAN_x4plus_anime_6B"
-  },
-  {
-    label: "RealESRGAN_x2plus",
-    value: "RealESRGAN_x2plus"
-  },
-  {
-    label: "RealESR-general-x4v3",
-    value: "RealESR-general-x4v3"
-  }
-];
-function getSchedulerOptions() {
-  const scheduler_options = [
-    {
-      type: "group",
-      label: "k-diffusion",
-      key: "K-Diffusion",
-      children: [
-        { label: "Euler a", value: "euler_a" },
-        { label: "Euler", value: "euler" },
-        { label: "LMS", value: "lms" },
-        { label: "Heun", value: "heun" },
-        { label: "DPM Fast", value: "dpm_fast" },
-        { label: "DPM Adaptive", value: "dpm_adaptive" },
-        { label: "DPM2", value: "dpm2" },
-        { label: "DPM2 a", value: "dpm2_a" },
-        { label: "DPM++ 2S a", value: "dpmpp_2s_a" },
-        { label: "DPM++ 2M", value: "dpmpp_2m" },
-        { label: "DPM++ 2M Sharp", value: "dpmpp_2m_sharp" },
-        { label: "DPM++ SDE", value: "dpmpp_sde" },
-        { label: "DPM++ 2M SDE", value: "dpmpp_2m_sde" },
-        { label: "DPM++ 3M SDE", value: "dpmpp_3m_sde" },
-        { label: "UniPC Multistep", value: "unipc_multistep" },
-        { label: "Restart", value: "restart" }
-      ]
-    },
-    {
-      type: "group",
-      label: "Diffusers",
-      key: "diffusers",
-      children: Object.keys(diffusersSchedulerTuple).map((key) => {
-        return {
-          label: key,
-          value: diffusersSchedulerTuple[key]
-        };
-      })
-    }
-  ];
-  return scheduler_options;
-}
-function getControlNetOptions() {
-  const controlnet_options = [
-    {
-      type: "group",
-      label: "ControlNet 1.1",
-      key: "ControlNet 1.1",
-      children: [
-        {
-          label: "lllyasviel/control_v11p_sd15_canny",
-          value: "lllyasviel/control_v11p_sd15_canny"
-        },
-        {
-          label: "lllyasviel/control_v11f1p_sd15_depth",
-          value: "lllyasviel/control_v11f1p_sd15_depth"
-        },
-        {
-          label: "lllyasviel/control_v11e_sd15_ip2p",
-          value: "lllyasviel/control_v11e_sd15_ip2p"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_softedge",
-          value: "lllyasviel/control_v11p_sd15_softedge"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_openpose",
-          value: "lllyasviel/control_v11p_sd15_openpose"
-        },
-        {
-          label: "lllyasviel/control_v11f1e_sd15_tile",
-          value: "lllyasviel/control_v11f1e_sd15_tile"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_mlsd",
-          value: "lllyasviel/control_v11p_sd15_mlsd"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_scribble",
-          value: "lllyasviel/control_v11p_sd15_scribble"
-        },
-        {
-          label: "lllyasviel/control_v11p_sd15_seg",
-          value: "lllyasviel/control_v11p_sd15_seg"
-        }
-      ]
-    },
-    {
-      type: "group",
-      label: "Special",
-      key: "Special",
-      children: [
-        {
-          label: "DionTimmer/controlnet_qrcode",
-          value: "DionTimmer/controlnet_qrcode"
-        },
-        {
-          label: "CrucibleAI/ControlNetMediaPipeFace",
-          value: "CrucibleAI/ControlNetMediaPipeFace"
-        }
-      ]
-    },
-    {
-      type: "group",
-      label: "Original",
-      key: "Original",
-      children: [
-        {
-          label: "lllyasviel/sd-controlnet-canny",
-          value: "lllyasviel/sd-controlnet-canny"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-depth",
-          value: "lllyasviel/sd-controlnet-depth"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-hed",
-          value: "lllyasviel/sd-controlnet-hed"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-mlsd",
-          value: "lllyasviel/sd-controlnet-mlsd"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-normal",
-          value: "lllyasviel/sd-controlnet-normal"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-openpose",
-          value: "lllyasviel/sd-controlnet-openpose"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-scribble",
-          value: "lllyasviel/sd-controlnet-scribble"
-        },
-        {
-          label: "lllyasviel/sd-controlnet-seg",
-          value: "lllyasviel/sd-controlnet-seg"
-        }
-      ]
-    }
-  ];
-  return controlnet_options;
-}
-const deepcopiedSettings = JSON.parse(JSON.stringify(recievedSettings));
-const useSettings = defineStore("settings", () => {
-  const data = reactive(new Settings(recievedSettings));
-  const scheduler_options = computed(() => {
-    return getSchedulerOptions();
-  });
-  const controlnet_options = computed(() => {
-    return getControlNetOptions();
-  });
-  function resetSettings() {
-    console.log("Resetting settings to default");
-    Object.assign(defaultSettings$1, defaultSettings);
-  }
-  const defaultSettings$1 = reactive(deepcopiedSettings);
-  return {
-    data,
-    scheduler_options,
-    controlnet_options,
-    defaultSettings: defaultSettings$1,
-    resetSettings
-  };
-});
-const _withScopeId = (n) => (pushScopeId("data-v-44d84e0e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-2589676e"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
-const _hoisted_4 = { key: 2 };
-const _hoisted_5 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_6 = { style: { "display": "inline-flex" } };
-const _hoisted_7 = { key: 0 };
-const _hoisted_8 = { style: { "display": "inline-flex" } };
-const _hoisted_9 = { key: 1 };
-const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_11 = { key: 0 };
-const _hoisted_12 = { style: { "display": "inline-flex" } };
-const _hoisted_13 = { key: 1 };
-const _hoisted_14 = { class: "progress-container" };
-const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+  src: "https://i.imgflip.com/84840n.jpg",
+  style: { "max-width": "30vw", "max-height": "30vh" }
+}, null, -1));
+const _hoisted_5 = { key: 2 };
+const _hoisted_6 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_7 = { style: { "display": "inline-flex" } };
+const _hoisted_8 = { key: 0 };
+const _hoisted_9 = { style: { "display": "inline-flex" } };
+const _hoisted_10 = { key: 1 };
+const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_12 = { key: 0 };
+const _hoisted_13 = { style: { "display": "inline-flex" } };
+const _hoisted_14 = { key: 1 };
+const _hoisted_15 = { class: "progress-container" };
+const _hoisted_16 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -42267,28 +42267,36 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_3, [
               createVNode(unref(NResult), {
                 title: "No models found",
-                description: "Click on this icon in the LEFT MENU to access the model download page",
                 style: { "height": "70vh", "display": "flex", "align-items": "center", "justify-content": "center", "flex-direction": "column" },
                 status: "404"
               }, {
                 footer: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: _cache[2] || (_cache[2] = () => {
-                      unref(router2).push("/models");
-                      showModal.value = false;
-                    })
-                  }, {
+                  createVNode(unref(NTooltip), null, {
+                    trigger: withCtx(() => [
+                      createVNode(unref(NButton), {
+                        type: "success",
+                        onClick: _cache[2] || (_cache[2] = () => {
+                          unref(global2).state.modelManager.tab = "civitai";
+                          unref(router2).push("/models");
+                          showModal.value = false;
+                        })
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode("Get some models")
+                        ]),
+                        _: 1
+                      })
+                    ]),
                     default: withCtx(() => [
-                      createTextVNode("Get model")
+                      _hoisted_4
                     ]),
                     _: 1
                   })
                 ]),
                 _: 1
               })
-            ])) : (openBlock(), createElementBlock("div", _hoisted_4, [
-              createBaseVNode("div", _hoisted_5, [
+            ])) : (openBlock(), createElementBlock("div", _hoisted_5, [
+              createBaseVNode("div", _hoisted_6, [
                 createVNode(unref(NInput), {
                   value: filter.value,
                   "onUpdate:value": _cache[3] || (_cache[3] = ($event) => filter.value = $event),
@@ -42339,7 +42347,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           key: model.path
                                         }, [
                                           createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                          createBaseVNode("div", _hoisted_6, [
+                                          createBaseVNode("div", _hoisted_7, [
                                             model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
@@ -42387,7 +42395,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: vae_title.value }, {
                                     default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_8, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42395,7 +42403,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: vae.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_8, [
+                                            createBaseVNode("div", _hoisted_9, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
                                                 key: 0,
                                                 type: "error",
@@ -42422,7 +42430,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_9, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_10, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42451,12 +42459,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_10,
+                                          _hoisted_11,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_11, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_12, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42464,7 +42472,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_12, [
+                                            createBaseVNode("div", _hoisted_13, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -42493,7 +42501,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_13, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_14, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42628,7 +42636,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_14, [
+        createBaseVNode("div", _hoisted_15, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -42648,7 +42656,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_15, [
+        createBaseVNode("div", _hoisted_16, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -42670,15 +42678,16 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_44d84e0e_lang = "";
-const _export_sfc = (sfc, props) => {
-  const target = sfc.__vccOpts || sfc;
-  for (const [key, val] of props) {
-    target[key] = val;
-  }
-  return target;
-};
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-44d84e0e"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_2589676e_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
+const Prompt_vue_vue_type_style_index_0_lang = "";
+const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
+const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_c6a2efba_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_8e99cbae_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_95ca20dd_lang = "";
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
+const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42700,13 +42709,13 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
                   _hoisted_1,
-                  createVNode(_sfc_main$4),
-                  createVNode(_sfc_main$8),
-                  createVNode(TopBarVue),
-                  createVNode(_sfc_main$7),
+                  createVNode(unref(_sfc_main$4)),
+                  createVNode(unref(_sfc_main$8)),
+                  createVNode(unref(TopBar)),
+                  createVNode(unref(_sfc_main$7)),
                   createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
-                  createVNode(_sfc_main$5),
-                  createVNode(_sfc_main$6)
+                  createVNode(unref(_sfc_main$5)),
+                  createVNode(unref(_sfc_main$6))
                 ]),
                 _: 1
               })
@@ -42725,22 +42734,24 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "2441c648": theme.value.common.popoverColor,
-        "521efb30": theme.value.common.borderRadius,
-        "65525eeb": theme.value.common.pressedColor,
-        "0c729ef1": theme.value.common.primaryColorHover,
-        "15a84ddb": blur.value,
-        "2259b162": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "f8e7ba4e": backgroundImage.value
+        "42a435f2": theme.value.common.popoverColor,
+        "155a1bdc": theme.value.common.borderRadius,
+        "f89662d6": theme.value.common.pressedColor,
+        "27556987": theme.value.common.primaryColorHover,
+        "7e1027f1": blur.value,
+        "6f68cc10": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "d64781fa": backgroundImage.value
       };
     });
     const settings = useSettings();
     const overrides = ref(null);
     const theme = computed(() => {
-      var _a2, _b;
+      var _a2, _b, _c, _d, _e, _f;
       if (((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.base) === "light") {
+        document.body.style.backgroundColor = ((_d = (_c = overrides.value) == null ? void 0 : _c.common) == null ? void 0 : _d.baseColor) ?? lightTheme.common.baseColor;
         return lightTheme;
       } else {
+        document.body.style.backgroundColor = ((_f = (_e = overrides.value) == null ? void 0 : _e.common) == null ? void 0 : _f.baseColor) ?? darkTheme.common.baseColor;
         return darkTheme;
       }
     });
@@ -42850,27 +42861,27 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js","assets/Image2ImageView.css"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
       name: "imageProcessing",
-      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/InputNumber.js","assets/ImageProcessingView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/models",
       name: "models",
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Switch.js","assets/Settings.js","assets/TrashBin.js","assets/CloudUpload.js","assets/ModelsView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Switch.js","assets/Settings.js","assets/TrashBin.js","assets/CloudUpload.js"] : void 0)
     },
     {
       path: "/about",
@@ -42895,7 +42906,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -42905,7 +42916,7 @@ const router = createRouter({
     {
       path: "/tagger",
       name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/GenerateSection.css","assets/ImageUpload.js","assets/CloudUpload.js","assets/ImageUpload.css","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
     },
     {
       path: "/:pathMatch(.*)",
@@ -42921,15 +42932,15 @@ app.use(router);
 app.mount("#app");
 export {
   call as $,
-  pushScopeId as A,
-  popScopeId as B,
-  h as C,
-  ref as D,
-  NButton as E,
-  NIcon as F,
-  NTabPane as G,
-  NTabs as H,
-  Fragment as I,
+  toDisplayString as A,
+  NTabPane as B,
+  NTabs as C,
+  computed as D,
+  promptHandleKeyUp as E,
+  Fragment as F,
+  promptHandleKeyDown as G,
+  NInput as H,
+  spaceRegex as I,
   watch as J,
   upscalerOptions as K,
   renderList as L,
@@ -43025,12 +43036,12 @@ export {
   themeOverridesKey as b7,
   reactive as b8,
   onMounted as b9,
-  commonVariables$m as bA,
-  formItemInjectionKey as bB,
-  convertToTextString as bC,
-  themeKey as bD,
-  useNotification as bE,
-  defaultSettings as bF,
+  useNotification as bA,
+  defaultSettings as bB,
+  getCurrentInstance as bC,
+  formLight$1 as bD,
+  commonVariables$m as bE,
+  formItemInjectionKey as bF,
   resolveDynamicComponent as bG,
   checkboxLight$1 as bH,
   urlFromPath as bI,
@@ -43076,34 +43087,34 @@ export {
   rateLight as bv,
   color2Class as bw,
   NTag as bx,
-  getCurrentInstance as by,
-  formLight$1 as bz,
-  computed as c,
+  convertToTextString as by,
+  themeKey as bz,
+  openBlock as c,
   sliderLight$1 as c0,
   isSlotEmpty as c1,
   switchLight$1 as c2,
   NResult as c3,
   defineComponent as d,
-  openBlock as e,
-  createElementBlock as f,
-  createVNode as g,
-  unref as h,
-  NCard as i,
-  NSpace as j,
-  NInput as k,
-  promptHandleKeyDown as l,
-  createTextVNode as m,
-  createBaseVNode as n,
+  createElementBlock as e,
+  createVNode as f,
+  unref as g,
+  NCard as h,
+  NSpace as i,
+  createBaseVNode as j,
+  NTooltip as k,
+  createTextVNode as l,
+  createCommentVNode as m,
+  createBlock as n,
   onUnmounted as o,
-  promptHandleKeyUp as p,
-  NTooltip as q,
-  createCommentVNode as r,
+  NSelect as p,
+  NGrid as q,
+  pushScopeId as r,
   serverUrl as s,
-  toDisplayString as t,
+  popScopeId as t,
   useState as u,
-  createBlock as v,
+  h as v,
   withCtx as w,
-  NSelect as x,
-  NGrid as y,
-  spaceRegex as z
+  ref as x,
+  NButton as y,
+  NIcon as z
 };

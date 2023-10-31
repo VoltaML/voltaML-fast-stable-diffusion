@@ -19,10 +19,13 @@
 </template>
 
 <script lang="ts" setup>
+import {
+  ControlNetSettings,
+  ImageBrowserSettings,
+  ImageToImageSettings,
+  InpaintingSettings,
+  TextToImageSettings,
+} from "@/components";
 import { NTabPane, NTabs } from "naive-ui";
-import ControlNetSettings from "./DefaultsSettings/ControlNetSettings.vue";
-import ImageBrowserSettings from "./DefaultsSettings/ImageBrowserSettings.vue";
-import ImageToImageSettings from "./DefaultsSettings/ImageToImageSettings.vue";
-import InpaintingSettings from "./DefaultsSettings/InpaintingSettings.vue";
-import TextToImageSettings from "./DefaultsSettings/TextToImageSettings.vue";
 </script>
+./defaultSettings/ControlNetSettings.vue./defaultSettings/ImageBrowserSettings.vue./defaultSettings/ImageToImageSettings.vue./defaultSettings/InpaintingSettings.vue./defaultSettings/TextToImageSettings.vue

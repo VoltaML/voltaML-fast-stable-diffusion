@@ -20,7 +20,7 @@ For [AITemplate acceleration](/basics/aitemplate) support, please navigate to [W
 
 ### Python
 
-- Python 3.10 or higher (3.11 is used for testing and development, probably the best option if you do not have any other Python versions installed)
+- Python 3.10 or higher that PyTorch supports (3.11 is used for testing and development, probably the best option if you do not have any other Python versions installed)
 - Installed from official [Python website](https://www.python.org/downloads/) (not from Microsoft Store)
 - Added to PATH (done by checking the "Add python.exe to PATH" box during installation) automatically or [manually](https://datatofish.com/add-python-to-windows-path/)
 

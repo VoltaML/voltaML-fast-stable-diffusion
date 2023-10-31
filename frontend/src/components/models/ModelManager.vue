@@ -11,6 +11,7 @@
         v-for="key in (
           Object.keys(modelTypes) as Array<keyof typeof modelTypes>
         ).filter((item) => item !== 'AITemplate' && item !== 'ONNX')"
+        v-bind:key="key"
       >
         <NCard :title="key">
           <NUpload
@@ -49,6 +50,7 @@
         v-for="modelType in Object.keys(Backends).filter((item) =>
           isNaN(Number(item))
         ) as (keyof typeof modelTypes)[]"
+        v-bind:key="modelType"
       >
         <NCard :title="modelType" style="width: 100%">
           <div

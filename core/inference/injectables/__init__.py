@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
+from diffusers.models.lora import LoRACompatibleConv
 import torch
 
 from ...config import config
@@ -9,7 +10,7 @@ from .lycoris import LyCORISManager
 from .utils import HookObject
 
 torch.nn.Linear.old_forward = torch.nn.Linear.forward  # type: ignore
-torch.nn.Conv2d.old_forward = torch.nn.Conv2d.forward  # type: ignore
+LoRACompatibleConv.old_forward = LoRACompatibleConv.forward  # type: ignore
 
 
 def load_lora_utilities(pipe):
@@ -18,7 +19,7 @@ def load_lora_utilities(pipe):
         pipe.lora_injector.change_forwards()
     else:
         torch.nn.Linear.forward = torch.nn.Linear.old_forward  # type: ignore
-        torch.nn.Conv2d.forward = torch.nn.Conv2d.old_forward  # type: ignore
+        LoRACompatibleConv.forward = LoRACompatibleConv.old_forward  # type: ignore
 
 
 def install_lora_hook(pipe):
@@ -61,6 +62,11 @@ class HookManager(object):
         for name, module in root_module.named_modules():
             if module.__class__.__name__ in target_replace_modules:
                 for child_name, child_module in module.named_modules():
+                    is_linear = isinstance(child_module, torch.nn.Linear)
+                    is_conv2d = isinstance(child_module, torch.nn.Conv2d)
+                    if not (is_linear or is_conv2d):
+                        continue
+
                     # retarded change, revert pliz diffusers
                     name = name.replace(".", "_")
                     name = name.replace("input_blocks", "down_blocks")
@@ -91,7 +97,9 @@ class HookManager(object):
                         name = name.replace("skip_connection", "conv_shortcut")
 
                     if "transformer_blocks" in name:
-                        if "attn1" in name or "attn2" in name:
+                        if (
+                            "attn1" in name or "attn2" in name
+                        ) and "processor" not in name:
                             name = name.replace("attn1", "attn1_processor")
                             name = name.replace("attn2", "attn2_processor")
                     elif "mlp" in name:
@@ -127,8 +135,15 @@ class HookManager(object):
 
             return self.old_forward(input)
 
+        def diffusers_lora_forward(
+            self, hidden_states: torch.Tensor, scale: float = 1.0
+        ):
+            d.apply_weights(self)
+
+            return self.old_forward(hidden_states, scale)
+
         torch.nn.Linear.forward = lora_forward
-        torch.nn.Conv2d.forward = lora_forward
+        LoRACompatibleConv.forward = diffusers_lora_forward
 
     def install_hooks(self, pipe):
         """Install LoRAHook to the pipe"""
@@ -144,9 +159,10 @@ class HookManager(object):
                     pipe.text_encoder, "lora_te1", ["CLIPAttention", "CLIPMLP"]
                 )
             )
-        text_encoder_targets = text_encoder_targets + self._get_target_modules(
-            pipe.text_encoder, "lora_te", ["CLIPAttention", "CLIPMLP"]
-        )
+        else:
+            text_encoder_targets = text_encoder_targets + self._get_target_modules(
+                pipe.text_encoder, "lora_te", ["CLIPAttention", "CLIPMLP"]
+            )
         targets = []
         for m in self.managers:
             for target in m.targets:

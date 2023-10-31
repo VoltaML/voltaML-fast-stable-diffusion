@@ -115,9 +115,7 @@
 
 <script setup lang="ts">
 import "@/assets/2img.css";
-import GenerateSection from "@/components/GenerateSection.vue";
-import ImageOutput from "@/components/ImageOutput.vue";
-import ImageUpload from "@/components/ImageUpload.vue";
+import { GenerateSection, ImageOutput, ImageUpload } from "@/components";
 import { serverUrl } from "@/env";
 import {
   NCard,

@@ -1,7 +1,7 @@
 # HuggingFace example pipeline taken from https://github.com/huggingface/diffusers/blob/main/examples/community/lpw_stable_diffusion.py
 
 from contextlib import ExitStack
-from typing import Any, Callable, List, Literal, Optional, Union
+from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import PIL
 import torch
@@ -12,6 +12,7 @@ from diffusers.utils import logging
 from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
+from core.config import config
 from core.inference.utilities import (
     full_vae,
     get_timesteps,
@@ -95,7 +96,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         self.tokenizer: CLIPTokenizer
         self.unet: UNet2DConditionModel
         self.scheduler: LMSDiscreteScheduler
-        self.controlnet: Optional[ControlNetModel] = controlnet
+        if controlnet is not None:
+            self.controlnet: Optional[ControlNetModel] = controlnet
 
     def __init__additional__(self):
         if not hasattr(self, "vae_scale_factor"):
@@ -134,6 +136,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         do_classifier_free_guidance,
         negative_prompt,
         max_embeddings_multiples,
+        seed,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Encodes the prompt into text encoder hidden states.
@@ -177,6 +181,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             prompt=prompt,
             uncond_prompt=negative_prompt if do_classifier_free_guidance else None,
             max_embeddings_multiples=max_embeddings_multiples,
+            seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )
         bs_embed, seq_len, _ = text_embeddings.shape
         text_embeddings = text_embeddings.repeat(1, num_images_per_prompt, 1)
@@ -248,6 +254,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
+        seed: int = 0,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -331,7 +339,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 1. Check inputs. Raise error if not correct
             self._check_inputs(prompt, strength, callback_steps)
-            if self.controlnet is not None:
+            if hasattr(self, "controlnet"):
                 global_pool_conditions = self.controlnet.config.global_pool_conditions  # type: ignore
                 guess_mode = guess_mode or global_pool_conditions
 
@@ -344,8 +352,12 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
             # corresponds to doing no classifier free guidance.
             do_classifier_free_guidance = guidance_scale > 1.0
-
-            do_self_attention_guidance = self_attention_scale > 0.0
+            split_latents_into_two = (
+                config.api.dont_merge_latents and do_classifier_free_guidance
+            )
+            do_self_attention_guidance = self_attention_scale > 0.0 and not isinstance(
+                self.scheduler, KdiffusionSchedulerAdapter
+            )
 
             # 3. Encode input prompt
             text_embeddings = self._encode_prompt(
@@ -355,13 +367,15 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 do_classifier_free_guidance,
                 negative_prompt,
                 max_embeddings_multiples,
+                seed,
+                prompt_expansion_settings=prompt_expansion_settings,
             ).to(device)
             dtype = text_embeddings.dtype
 
             # 4. Preprocess image and mask
             if isinstance(image, PIL.Image.Image):  # type: ignore
                 width, height = image.size  # type: ignore
-                if self.controlnet is None:
+                if not hasattr(self, "controlnet"):
                     image = preprocess_image(image)
                 else:
                     image = prepare_image(
@@ -403,7 +417,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 num_inference_steps,
                 strength,
                 device,
-                image is None or self.controlnet is not None,
+                image is None or hasattr(self, "controlnet"),
             )
             if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                 self.scheduler.timesteps = timesteps
@@ -413,7 +427,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 6. Prepare latent variables
             latents, image_latents, noise = prepare_latents(
                 self,
-                image if self.controlnet is None else None,
+                image if not hasattr(self, "controlnet") else None,
                 latent_timestep,
                 batch_size * num_images_per_prompt,  # type: ignore
                 height,
@@ -429,7 +443,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             extra_step_kwargs = prepare_extra_step_kwargs(self.scheduler, eta, generator)  # type: ignore
 
             controlnet_keep = []
-            if self.controlnet is not None:
+            if hasattr(self, "controlnet"):
                 for i in range(len(timesteps)):
                     controlnet_keep.append(
                         1.0
@@ -457,7 +471,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             ):
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
-                    torch.cat([x] * 2) if do_classifier_free_guidance else x  # type: ignore
+                    torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
                 )
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
@@ -465,13 +479,20 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     latent_model_input = torch.cat([latent_model_input, mask, masked_image_latents], dim=1)  # type: ignore
 
                 # predict the noise residual
-                if self.controlnet is None:
-                    noise_pred = call(  # type: ignore
-                        latent_model_input,
-                        t,
-                        cond=text_embeddings,
-                    )
+                if not hasattr(self, "controlnet"):
+                    if split_latents_into_two:
+                        uncond, cond = text_embeddings.chunk(2)
+                        noise_pred_text = call(latent_model_input, t, cond=cond)
+                        noise_pred_uncond = call(latent_model_input, t, cond=uncond)
+                    else:
+                        noise_pred = call(  # type: ignore
+                            latent_model_input,
+                            t,
+                            cond=text_embeddings,
+                        )
                 else:
+                    assert self.controlnet is not None
+
                     if guess_mode and do_classifier_free_guidance:
                         # Infer ControlNet only for the conditional batch.
                         control_model_input = x
@@ -510,20 +531,26 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 mid_block_res_sample,
                             ]
                         )
-                    noise_pred = call(  # type: ignore
-                        latent_model_input,
-                        t,
-                        cond=text_embeddings,
-                        down_block_additional_residuals=down_block_res_samples,
-                        mid_block_additional_residual=mid_block_res_sample,
-                    )
+                    if split_latents_into_two:
+                        uncond, cond = text_embeddings.chunk(2)
+                        noise_pred_text = call(latent_model_input, t, cond=cond)
+                        noise_pred_uncond = call(latent_model_input, t, cond=uncond)
+                    else:
+                        noise_pred = call(  # type: ignore
+                            latent_model_input,
+                            t,
+                            cond=text_embeddings,
+                            down_block_additional_residuals=down_block_res_samples,
+                            mid_block_additional_residual=mid_block_res_sample,
+                        )
 
                 # perform guidance
                 if do_classifier_free_guidance:
-                    noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)
-                    noise_pred = noise_pred_uncond + guidance_scale * (
-                        noise_pred_text - noise_pred_uncond
-                    )
+                    if not split_latents_into_two:
+                        noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
+                    noise_pred = noise_pred_uncond + guidance_scale * (  # type: ignore
+                        noise_pred_text - noise_pred_uncond  # type: ignore
+                    )  # type: ignore
 
                 if do_self_attention_guidance:
                     if do_classifier_free_guidance:
@@ -542,7 +569,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
                         noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
                     else:
-                        pred = pred_x0(self, x, noise_pred, t)
+                        pred = pred_x0(self, x, noise_pred, t)  # type: ignore
                         cond_attn = store_processor.attention_probs  # type: ignore
                         degraded_latents = sag_masking(
                             self,
@@ -550,7 +577,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             cond_attn,
                             map_size,
                             t,
-                            pred_epsilon(self, x, noise_pred, t),
+                            pred_epsilon(self, x, noise_pred, t),  # type: ignore
                         )
                         # predict the noise residual
                         degraded_prep = call(  # type: ignore
@@ -566,7 +593,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
                     ).prev_sample  # type: ignore
                 else:
-                    x = noise_pred
+                    x = noise_pred  # type: ignore
 
                 if mask is not None and num_channels_unet == 4:
                     # masking
@@ -664,6 +691,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
+        seed: int = 1,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function for text-to-image generation.
@@ -722,7 +751,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             list of `bool`s denoting whether the corresponding generated image likely represents "not-safe-for-work"
             (nsfw) content, according to the `safety_checker`.
         """
-        return self(
+        return self.__call__(
             prompt=prompt,
             generator=generator,
             negative_prompt=negative_prompt,
@@ -740,6 +769,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
+            seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )
 
     def img2img(
@@ -762,6 +793,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
+        seed: int = 1,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function for image-to-image generation.
@@ -840,6 +873,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
+            seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )
 
     def inpaint(
@@ -863,6 +898,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback_steps: int = 1,
         width: int = 512,
         height: int = 512,
+        seed: int = 1,
+        prompt_expansion_settings: Optional[Dict] = None,
     ):
         r"""
         Function for inpaint.
@@ -950,4 +987,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback_steps=callback_steps,
             width=width,
             height=height,
+            seed=seed,
+            prompt_expansion_settings=prompt_expansion_settings,
         )

@@ -18,6 +18,7 @@ renamed_requirements = {
     "python-multipart": "multipart",
     "discord.py": "discord",
     "HyperTile": "hyper-tile",
+    "stable-fast": "sfast",
 }
 logger = logging.getLogger(__name__)
 
@@ -123,10 +124,10 @@ _pytorch_distributions = [
             "-m",
             "pip",
             "install",
-            "torch==2.0.0",
+            "torch==2.1.0",
             "torchvision",
             "--index-url",
-            "https://download.pytorch.org/whl/rocm5.4.2",
+            "https://download.pytorch.org/whl/rocm5.6",
         ],
     ),
     PytorchDistribution(
@@ -139,10 +140,8 @@ _pytorch_distributions = [
             "-m",
             "pip",
             "install",
-            "torch==2.0.0",
+            "torch==2.1.0",
             "torchvision",
-            "--index-url",
-            "https://download.pytorch.org/whl/cu118",
         ],
     ),
     PytorchDistribution(
@@ -396,6 +395,17 @@ def version_check(commit: str):
         logger.info(
             "No git repo found, assuming that we are in containerized environment"
         )
+
+
+def check_valid_python_version():
+    minor = int(platform.python_version_tuple()[1])
+    if minor >= 12:
+        print("Python 3.12 or later is not currently supported in voltaML!")
+        print("Please consider switching to an older release to use volta!")
+        raise RuntimeError("Unsupported Python version")
+    elif minor < 9:
+        print("The python release you are currently using is older than our")
+        print("official supported version! Please consider updating to Python 3.11!")
 
 
 def is_up_to_date():

@@ -114,6 +114,9 @@ class APIConfig:
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["module", "model", "disabled"] = "disabled"
     data_type: Literal["float32", "float16", "bfloat16"] = "float16"
+    dont_merge_latents: bool = (
+        False  # Will drop performance, but could help with some VRAM issues
+    )
 
     # CUDA specific optimizations
     reduced_precision: bool = False
@@ -152,6 +155,11 @@ class APIConfig:
         "max-autotune",
     ] = "reduce-overhead"
 
+    sfast_compile: bool = False
+    sfast_xformers: bool = True
+    sfast_triton: bool = True
+    sfast_cuda_graph: bool = True
+
     # Hypertile
     hypertile: bool = False
     hypertile_unet_chunk: int = 256
@@ -168,6 +176,17 @@ class APIConfig:
     live_preview_delay: float = 2.0
     vae_slicing: bool = True
     vae_tiling: bool = False
+
+    # Prompt expansion (very, and I mean VERYYYY heavily inspired/copied from lllyasviel/Fooocus)
+    prompt_to_prompt: bool = False
+    prompt_to_prompt_model: Literal[
+        "lllyasviel/Fooocus-Expansion",
+        "daspartho/prompt-extend",
+        "succinctly/text2image-prompt-generator",
+        "Gustavosta/MagicPrompt-Stable-Diffusion",
+        "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator",
+    ] = "lllyasviel/Fooocus-Expansion"
+    prompt_to_prompt_device: Literal["cpu", "gpu"] = "gpu"
 
     @property
     def dtype(self):

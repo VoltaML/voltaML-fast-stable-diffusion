@@ -4,5 +4,11 @@
 	"python.testing.pytestEnabled": true,
 	"python.analysis.typeCheckingMode": "basic",
 	"python.languageServer": "Pylance",
-	"rust-analyzer.linkedProjects": ["./manager/Cargo.toml"]
+	"rust-analyzer.linkedProjects": [
+		"./manager/Cargo.toml"
+	],
+	"[python]": {
+		"editor.defaultFormatter": "ms-python.black-formatter"
+	},
+	"python.formatting.provider": "none"
 }

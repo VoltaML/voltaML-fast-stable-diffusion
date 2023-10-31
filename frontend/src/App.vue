@@ -9,6 +9,8 @@
 </template>
 
 <script setup lang="ts">
+import "@/assets/2img.css";
+
 import { themeKey, themeOverridesKey } from "@/injectionKeys";
 import { NConfigProvider, NThemeEditor, darkTheme, lightTheme } from "naive-ui";
 import { computed, provide, ref, watch } from "vue";
@@ -22,8 +24,12 @@ const settings = useSettings();
 const overrides = ref<ExtendedThemeOverrides | null>(null);
 const theme = computed(() => {
   if (overrides.value?.volta?.base === "light") {
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? lightTheme.common.baseColor;
     return lightTheme;
   } else {
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? darkTheme.common.baseColor;
     return darkTheme;
   }
 });
