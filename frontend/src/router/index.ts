@@ -1,3 +1,4 @@
+import { trackRouter } from "vue-gtag-next";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -70,5 +71,7 @@ const router = createRouter({
     },
   ],
 });
+
+trackRouter(router);
 
 export default router;
