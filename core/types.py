@@ -338,12 +338,23 @@ class Capabilities:
         default_factory=lambda: ["inductor"]
     )
 
+    supported_self_attentions: List[List[str]] = field(
+        default_factory=lambda: [
+            ["Cross-Attention", "cross-attention"],
+            ["Subquadratic Attention", "subquadratic"],
+            ["Multihead Attention", "multihead"],
+        ]
+    )
+
     # Does he have bitsandbytes installed?
     supports_int8: bool = False
 
     # Does the current build support xformers?
     # Useful for e.g. torch nightlies
     supports_xformers: bool = False
+
+    # Needed for sfast.
+    supports_triton: bool = False
 
     # Volta+ (>=7.0)
     has_tensor_cores: bool = True

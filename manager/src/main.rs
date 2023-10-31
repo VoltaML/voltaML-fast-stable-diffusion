@@ -39,6 +39,7 @@ fn main() {
             "Update",
             "Install",
             "Configure",
+            "Switch Branch",
             "Developer Menu",
             "Exit",
         ];
@@ -64,6 +65,36 @@ fn main() {
                 }
             }
             "Configure" => configure(),
+            "Switch Branch" => {
+                let branches = git::git::get_branches();
+                if branches.is_ok() {
+                    let mut items = branches.unwrap();
+                    items.append(&mut vec!["Back".to_string()]);
+                    let response_id = Select::with_theme(&ColorfulTheme::default())
+                        .default(0)
+                        .items(&items)
+                        .interact()
+                        .unwrap_or(items.len() - 1);
+                    let response = &items[response_id];
+
+                    if response == "Back" {
+                        continue;
+                    }
+
+                    let res = git::checkout::checkout_branch(&".", response);
+                    if res.is_ok() {
+                        println!(
+                            "{} {}",
+                            style("[OK]").green(),
+                            "Branch Switched Successfully"
+                        );
+                    } else {
+                        println!("{} {}", style("[ERROR]").red(), res.err().unwrap());
+                    }
+                } else {
+                    println!("{} {}", style("[ERROR]").red(), branches.err().unwrap());
+                }
+            }
             "Start" => {
                 let res = start_api();
                 if res.is_err() {

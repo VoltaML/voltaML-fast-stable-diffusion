@@ -13,7 +13,7 @@ from core.config import config
 from core.files import get_full_model_path
 
 from .attn import set_attention_processor
-from .trace_utils import generate_inputs, trace_model
+from .compile.trace_utils import generate_inputs, trace_model
 
 logger = logging.getLogger(__name__)
 

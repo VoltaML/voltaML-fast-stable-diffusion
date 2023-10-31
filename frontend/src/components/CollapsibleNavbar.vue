@@ -38,7 +38,6 @@
 <script lang="ts" setup>
 import {
   Albums,
-  Archive,
   Create,
   Cube,
   Duplicate,
@@ -106,11 +105,11 @@ const menuOptionsMain: MenuOption[] = [
     key: "plugins",
     icon: renderIcon(Speedometer),
   },
-  {
-    label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-    key: "extra",
-    icon: renderIcon(Archive),
-  },
+  // {
+  //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+  //   key: "extra",
+  //   icon: renderIcon(Archive),
+  // },
   {
     label: () =>
       h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),

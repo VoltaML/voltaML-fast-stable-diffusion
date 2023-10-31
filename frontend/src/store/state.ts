@@ -77,6 +77,9 @@ export interface StateInterface {
   extra: {
     tab: "dependencies";
   };
+  modelManager: {
+    tab: "manager" | "huggingface" | "civitai" | "convert";
+  };
   tagger: {
     positivePrompt: Map<string, number>;
     negativePrompt: Map<string, number>;
@@ -174,6 +177,9 @@ export const useState = defineStore("state", () => {
     },
     extra: {
       tab: "dependencies",
+    },
+    modelManager: {
+      tab: "manager",
     },
     tagger: {
       positivePrompt: new Map<string, number>(),

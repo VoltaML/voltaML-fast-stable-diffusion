@@ -42,8 +42,33 @@
         <NButton @click="change_compilation('compile')" :color="compileColor"
           >torch.compile</NButton
         >
+        <NButton @click="change_compilation('sfast')" :color="sfastColor"
+          >stable-fast</NButton
+        >
       </div>
     </NFormItem>
+    <div v-if="settings.defaultSettings.api.sfast_compile">
+      <NFormItem label="Use xFormers during compilation" label-placement="left">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.sfast_xformers"
+          :disabled="!global.state.capabilities.supports_xformers"
+        />
+      </NFormItem>
+      <NFormItem label="Use Triton during compilation" label-placement="left">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.sfast_triton"
+          :disabled="!global.state.capabilities.supports_triton"
+        />
+      </NFormItem>
+      <NFormItem
+        label="Use CUDA graphs during compilation"
+        label-placement="left"
+      >
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.sfast_cuda_graph"
+        />
+      </NFormItem>
+    </div>
     <div v-if="settings.defaultSettings.api.torch_compile">
       <NFormItem label="Fullgraph compile" label-placement="left">
         <NSwitch
@@ -201,10 +226,16 @@ const traceColor = computed(() => {
   return undefined;
 });
 
+const sfastColor = computed(() => {
+  if (settings.defaultSettings.api.sfast_compile) return "#f1f1f1";
+  return undefined;
+});
+
 const disableColor = computed(() => {
   if (
     settings.defaultSettings.api.torch_compile ||
-    settings.defaultSettings.api.trace_model
+    settings.defaultSettings.api.trace_model ||
+    settings.defaultSettings.api.sfast_compile
   )
     return undefined;
   return theme?.value.Button.common?.successColor;
@@ -213,6 +244,7 @@ const disableColor = computed(() => {
 function change_compilation(a: string) {
   settings.defaultSettings.api.torch_compile = a === "compile";
   settings.defaultSettings.api.trace_model = a === "trace";
+  settings.defaultSettings.api.sfast_compile = a === "sfast";
 }
 
 const availableTorchCompileBackends = computed(() => {
@@ -224,26 +256,8 @@ const availableTorchCompileBackends = computed(() => {
 });
 
 const availableAttentions = computed(() => {
-  return [
-    ...(global.state.capabilities.supports_xformers
-      ? [{ value: "xformers", label: "xFormers" }]
-      : []),
-    {
-      value: "sdpa",
-      label: "SDP Attention",
-    },
-    {
-      value: "cross-attention",
-      label: "Cross-Attention",
-    },
-    {
-      value: "subquadratic",
-      label: "Sub-quadratic Attention",
-    },
-    {
-      value: "multihead",
-      label: "Multihead attention",
-    },
-  ];
+  return global.state.capabilities.supported_self_attentions.map((l) => {
+    return { value: l[1], label: l[0] };
+  });
 });
 </script>

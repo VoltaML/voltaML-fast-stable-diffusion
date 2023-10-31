@@ -18,6 +18,7 @@ renamed_requirements = {
     "python-multipart": "multipart",
     "discord.py": "discord",
     "HyperTile": "hyper-tile",
+    "stable-fast": "sfast",
 }
 logger = logging.getLogger(__name__)
 

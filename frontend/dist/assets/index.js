@@ -1552,7 +1552,7 @@ function renderComponentRoot(instance) {
     slots,
     attrs,
     emit: emit2,
-    render: render16,
+    render: render15,
     renderCache,
     data,
     setupState,
@@ -1566,7 +1566,7 @@ function renderComponentRoot(instance) {
     if (vnode.shapeFlag & 4) {
       const proxyToUse = withProxy || proxy;
       result = normalizeVNode(
-        render16.call(
+        render15.call(
           proxyToUse,
           proxyToUse,
           renderCache,
@@ -2668,7 +2668,7 @@ function applyOptions(instance) {
     beforeUnmount,
     destroyed,
     unmounted,
-    render: render16,
+    render: render15,
     renderTracked,
     renderTriggered,
     errorCaptured,
@@ -2767,8 +2767,8 @@ function applyOptions(instance) {
       instance.exposed = {};
     }
   }
-  if (render16 && instance.render === NOOP) {
-    instance.render = render16;
+  if (render15 && instance.render === NOOP) {
+    instance.render = render15;
   }
   if (inheritAttrs != null) {
     instance.inheritAttrs = inheritAttrs;
@@ -3000,7 +3000,7 @@ function createAppContext() {
   };
 }
 let uid$1 = 0;
-function createAppAPI(render16, hydrate) {
+function createAppAPI(render15, hydrate) {
   return function createApp2(rootComponent, rootProps = null) {
     if (!isFunction$2(rootComponent)) {
       rootComponent = extend({}, rootComponent);
@@ -3069,7 +3069,7 @@ function createAppAPI(render16, hydrate) {
           if (isHydrate && hydrate) {
             hydrate(vnode, rootContainer);
           } else {
-            render16(vnode, rootContainer, isSVG2);
+            render15(vnode, rootContainer, isSVG2);
           }
           isMounted2 = true;
           app2._container = rootContainer;
@@ -3079,7 +3079,7 @@ function createAppAPI(render16, hydrate) {
       },
       unmount() {
         if (isMounted2) {
-          render16(null, app2._container);
+          render15(null, app2._container);
           delete app2._container.__vue_app__;
         }
       },
@@ -4794,7 +4794,7 @@ function baseCreateRenderer(options, createHydrationFns) {
     }
     return hostNextSibling(vnode.anchor || vnode.el);
   };
-  const render16 = (vnode, container, isSVG2) => {
+  const render15 = (vnode, container, isSVG2) => {
     if (vnode == null) {
       if (container._vnode) {
         unmount2(container._vnode, null, null, true);
@@ -4826,9 +4826,9 @@ function baseCreateRenderer(options, createHydrationFns) {
     );
   }
   return {
-    render: render16,
+    render: render15,
     hydrate,
-    createApp: createAppAPI(render16, hydrate)
+    createApp: createAppAPI(render15, hydrate)
   };
 }
 function toggleRecurse({ effect, update }, allowed) {
@@ -27556,8 +27556,8 @@ const NDropdownRenderOption = defineComponent({
     }
   },
   render() {
-    const { rawNode: { render: render16, props } } = this.tmNode;
-    return h("div", props, [render16 === null || render16 === void 0 ? void 0 : render16()]);
+    const { rawNode: { render: render15, props } } = this.tmNode;
+    return h("div", props, [render15 === null || render15 === void 0 ? void 0 : render15()]);
   }
 });
 const NDropdownMenu = defineComponent({
@@ -37770,12 +37770,12 @@ const NThemeEditor = defineComponent({
     });
   }
 });
-const _hoisted_1$i = {
+const _hoisted_1$h = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -37785,7 +37785,7 @@ const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -37795,7 +37795,7 @@ const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -37805,48 +37805,11 @@ const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$7 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
+const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$i, _hoisted_5$7);
-  }
-});
-const _hoisted_1$h = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M64 164v244a56 56 0 0 0 56 56h272a56 56 0 0 0 56-56V164a4 4 0 0 0-4-4H68a4 4 0 0 0-4 4zm267 151.63l-63.69 63.68a16 16 0 0 1-22.62 0L181 315.63c-6.09-6.09-6.65-16-.85-22.38a16 16 0 0 1 23.16-.56L240 329.37V224.45c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 272 224v105.37l36.69-36.68a16 16 0 0 1 23.16.56c5.8 6.37 5.24 16.29-.85 22.38z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
-  "rect",
-  {
-    x: "32",
-    y: "48",
-    width: "448",
-    height: "80",
-    rx: "32",
-    ry: "32",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$b = [_hoisted_2$f, _hoisted_3$e];
-const Archive = defineComponent({
-  name: "Archive",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_4$b);
+    return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_5$7);
   }
 });
 const _hoisted_1$g = {
@@ -37887,7 +37850,7 @@ const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$a];
 const Create = defineComponent({
   name: "Create",
-  render: function render4(_ctx, _cache) {
+  render: function render3(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$6);
   }
 });
@@ -37929,7 +37892,7 @@ const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
 const Cube = defineComponent({
   name: "Cube",
-  render: function render5(_ctx, _cache) {
+  render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$5);
   }
 });
@@ -37961,7 +37924,7 @@ const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
 const DocumentText = defineComponent({
   name: "DocumentText",
-  render: function render6(_ctx, _cache) {
+  render: function render5(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
   }
 });
@@ -37993,7 +37956,7 @@ const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
 const Duplicate = defineComponent({
   name: "Duplicate",
-  render: function render7(_ctx, _cache) {
+  render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
   }
 });
@@ -38015,7 +37978,7 @@ const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$9 = [_hoisted_2$a];
 const Image$1 = defineComponent({
   name: "Image",
-  render: function render8(_ctx, _cache) {
+  render: function render7(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_3$9);
   }
 });
@@ -38047,7 +38010,7 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
 const Images = defineComponent({
   name: "Images",
-  render: function render9(_ctx, _cache) {
+  render: function render8(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
@@ -38079,7 +38042,7 @@ const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
 const PowerSharp = defineComponent({
   name: "PowerSharp",
-  render: function render10(_ctx, _cache) {
+  render: function render9(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
   }
 });
@@ -38101,7 +38064,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$6 = [_hoisted_2$7];
 const SettingsSharp = defineComponent({
   name: "SettingsSharp",
-  render: function render11(_ctx, _cache) {
+  render: function render10(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
   }
 });
@@ -38123,7 +38086,7 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$5 = [_hoisted_2$6];
 const Speedometer = defineComponent({
   name: "Speedometer",
-  render: function render12(_ctx, _cache) {
+  render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$5);
   }
 });
@@ -38175,7 +38138,7 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
 const StatsChart = defineComponent({
   name: "StatsChart",
-  render: function render13(_ctx, _cache) {
+  render: function render12(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_6$2);
   }
 });
@@ -38229,7 +38192,7 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
-  render: function render14(_ctx, _cache) {
+  render: function render13(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
   }
 });
@@ -38283,7 +38246,7 @@ const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
 const Wifi = defineComponent({
   name: "Wifi",
-  render: function render15(_ctx, _cache) {
+  render: function render14(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$1);
   }
 });
@@ -40136,11 +40099,11 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
         key: "plugins",
         icon: renderIcon(Speedometer)
       },
-      {
-        label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-        key: "extra",
-        icon: renderIcon(Archive)
-      },
+      // {
+      //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+      //   key: "extra",
+      //   icon: renderIcon(Archive),
+      // },
       {
         label: () => h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),
         key: "settings",
@@ -40211,9 +40174,15 @@ const defaultCapabilities = {
   supported_precisions_cpu: ["float32"],
   supported_precisions_gpu: ["float32"],
   supported_torch_compile_backends: ["inductor"],
+  supported_self_attentions: [
+    ["Cross-Attention", "cross-attention"],
+    ["Subquadratic Attention", "subquadratic"],
+    ["Multihead Attention", "multihead"]
+  ],
   has_tensorfloat: false,
   has_tensor_cores: false,
   supports_xformers: false,
+  supports_triton: false,
   supports_int8: false
 };
 async function getCapabilities() {
@@ -40297,6 +40266,9 @@ const useState = defineStore("state", () => {
     },
     extra: {
       tab: "dependencies"
+    },
+    modelManager: {
+      tab: "manager"
     },
     tagger: {
       positivePrompt: /* @__PURE__ */ new Map(),
@@ -40915,24 +40887,6 @@ function useWebSocket(url, options = {}) {
     ws: wsRef
   };
 }
-function progressForward(progress, global2) {
-  if (progress === 0) {
-    return 0;
-  } else if (global2.state.progress <= progress) {
-    return progress;
-  } else {
-    return global2.state.progress;
-  }
-}
-function currentStepForward(currentStep, global2) {
-  if (currentStep === 0) {
-    return 0;
-  } else if (global2.state.current_step <= currentStep) {
-    return currentStep;
-  } else {
-    return global2.state.current_step;
-  }
-}
 function processWebSocket(message, global2, notificationProvider) {
   switch (message.type) {
     case "test": {
@@ -40944,41 +40898,29 @@ function processWebSocket(message, global2, notificationProvider) {
     }
     case "txt2img": {
       global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "img2img": {
       global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "inpainting": {
       global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
     case "controlnet": {
       global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
-      global2.state.progress = progressForward(message.data.progress, global2);
-      global2.state.current_step = currentStepForward(
-        message.data.current_step,
-        global2
-      );
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
       global2.state.total_steps = message.data.total_steps;
       break;
     }
@@ -41505,6 +41447,10 @@ const defaultSettings = {
     torch_compile_dynamic: false,
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
+    sfast_compile: false,
+    sfast_xformers: true,
+    sfast_triton: true,
+    sfast_cuda_graph: false,
     hypertile: false,
     hypertile_unet_chunk: 256,
     sgm_noise_multiplier: false,
@@ -41767,22 +41713,26 @@ const useSettings = defineStore("settings", () => {
     resetSettings
   };
 });
-const _withScopeId = (n) => (pushScopeId("data-v-44d84e0e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-2589676e"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
-const _hoisted_4 = { key: 2 };
-const _hoisted_5 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_6 = { style: { "display": "inline-flex" } };
-const _hoisted_7 = { key: 0 };
-const _hoisted_8 = { style: { "display": "inline-flex" } };
-const _hoisted_9 = { key: 1 };
-const _hoisted_10 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_11 = { key: 0 };
-const _hoisted_12 = { style: { "display": "inline-flex" } };
-const _hoisted_13 = { key: 1 };
-const _hoisted_14 = { class: "progress-container" };
-const _hoisted_15 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+  src: "https://i.imgflip.com/84840n.jpg",
+  style: { "max-width": "30vw", "max-height": "30vh" }
+}, null, -1));
+const _hoisted_5 = { key: 2 };
+const _hoisted_6 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_7 = { style: { "display": "inline-flex" } };
+const _hoisted_8 = { key: 0 };
+const _hoisted_9 = { style: { "display": "inline-flex" } };
+const _hoisted_10 = { key: 1 };
+const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_12 = { key: 0 };
+const _hoisted_13 = { style: { "display": "inline-flex" } };
+const _hoisted_14 = { key: 1 };
+const _hoisted_15 = { class: "progress-container" };
+const _hoisted_16 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -42308,28 +42258,36 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_3, [
               createVNode(unref(NResult), {
                 title: "No models found",
-                description: "Click on this icon in the LEFT MENU to access the model download page",
                 style: { "height": "70vh", "display": "flex", "align-items": "center", "justify-content": "center", "flex-direction": "column" },
                 status: "404"
               }, {
                 footer: withCtx(() => [
-                  createVNode(unref(NButton), {
-                    type: "success",
-                    onClick: _cache[2] || (_cache[2] = () => {
-                      unref(router2).push("/models");
-                      showModal.value = false;
-                    })
-                  }, {
+                  createVNode(unref(NTooltip), null, {
+                    trigger: withCtx(() => [
+                      createVNode(unref(NButton), {
+                        type: "success",
+                        onClick: _cache[2] || (_cache[2] = () => {
+                          unref(global2).state.modelManager.tab = "civitai";
+                          unref(router2).push("/models");
+                          showModal.value = false;
+                        })
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode("Get some models")
+                        ]),
+                        _: 1
+                      })
+                    ]),
                     default: withCtx(() => [
-                      createTextVNode("Get model")
+                      _hoisted_4
                     ]),
                     _: 1
                   })
                 ]),
                 _: 1
               })
-            ])) : (openBlock(), createElementBlock("div", _hoisted_4, [
-              createBaseVNode("div", _hoisted_5, [
+            ])) : (openBlock(), createElementBlock("div", _hoisted_5, [
+              createBaseVNode("div", _hoisted_6, [
                 createVNode(unref(NInput), {
                   value: filter.value,
                   "onUpdate:value": _cache[3] || (_cache[3] = ($event) => filter.value = $event),
@@ -42380,7 +42338,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           key: model.path
                                         }, [
                                           createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                          createBaseVNode("div", _hoisted_6, [
+                                          createBaseVNode("div", _hoisted_7, [
                                             model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
@@ -42428,7 +42386,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: vae_title.value }, {
                                     default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_7, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_8, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42436,7 +42394,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: vae.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_8, [
+                                            createBaseVNode("div", _hoisted_9, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
                                                 key: 0,
                                                 type: "error",
@@ -42463,7 +42421,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_9, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_10, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42492,12 +42450,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_10,
+                                          _hoisted_11,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_11, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_12, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42505,7 +42463,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_12, [
+                                            createBaseVNode("div", _hoisted_13, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -42534,7 +42492,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_13, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_14, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42669,7 +42627,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_14, [
+        createBaseVNode("div", _hoisted_15, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -42689,7 +42647,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_15, [
+        createBaseVNode("div", _hoisted_16, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -42711,7 +42669,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_44d84e0e_lang = "";
+const TopBar_vue_vue_type_style_index_0_scoped_2589676e_lang = "";
 const _export_sfc = (sfc, props) => {
   const target = sfc.__vccOpts || sfc;
   for (const [key, val] of props) {
@@ -42719,7 +42677,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-44d84e0e"]]);
+const TopBarVue = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -42766,22 +42724,24 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "2441c648": theme.value.common.popoverColor,
-        "521efb30": theme.value.common.borderRadius,
-        "65525eeb": theme.value.common.pressedColor,
-        "0c729ef1": theme.value.common.primaryColorHover,
-        "15a84ddb": blur.value,
-        "2259b162": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "f8e7ba4e": backgroundImage.value
+        "fc790420": theme.value.common.popoverColor,
+        "34723a10": theme.value.common.borderRadius,
+        "7a57d2da": theme.value.common.pressedColor,
+        "5d197049": theme.value.common.primaryColorHover,
+        "78261d33": blur.value,
+        "4077faba": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "2a9066fe": backgroundImage.value
       };
     });
     const settings = useSettings();
     const overrides = ref(null);
     const theme = computed(() => {
-      var _a2, _b;
+      var _a2, _b, _c, _d, _e, _f;
       if (((_b = (_a2 = overrides.value) == null ? void 0 : _a2.volta) == null ? void 0 : _b.base) === "light") {
+        document.body.style.backgroundColor = ((_d = (_c = overrides.value) == null ? void 0 : _c.common) == null ? void 0 : _d.baseColor) ?? lightTheme.common.baseColor;
         return lightTheme;
       } else {
+        document.body.style.backgroundColor = ((_f = (_e = overrides.value) == null ? void 0 : _e.common) == null ? void 0 : _f.baseColor) ?? darkTheme.common.baseColor;
         return darkTheme;
       }
     });
