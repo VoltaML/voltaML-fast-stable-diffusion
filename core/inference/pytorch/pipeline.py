@@ -565,7 +565,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
                         noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
                     else:
-                        pred = pred_x0(self, x, noise_pred, t)
+                        pred = pred_x0(self, x, noise_pred, t)  # type: ignore
                         cond_attn = store_processor.attention_probs  # type: ignore
                         degraded_latents = sag_masking(
                             self,
@@ -573,7 +573,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             cond_attn,
                             map_size,
                             t,
-                            pred_epsilon(self, x, noise_pred, t),
+                            pred_epsilon(self, x, noise_pred, t),  # type: ignore
                         )
                         # predict the noise residual
                         degraded_prep = call(  # type: ignore
@@ -589,7 +589,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         noise_pred, t.to(noise_pred.device), x.to(noise_pred.device), **extra_step_kwargs  # type: ignore
                     ).prev_sample  # type: ignore
                 else:
-                    x = noise_pred
+                    x = noise_pred  # type: ignore
 
                 if mask is not None and num_channels_unet == 4:
                     # masking
