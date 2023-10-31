@@ -13,40 +13,7 @@
         <NCard title="Settings" style="margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
-            <NInput
-              v-model:value="settings.data.settings.controlnet.prompt"
-              type="textarea"
-              placeholder="Prompt"
-              show-count
-              @keyup="
-                promptHandleKeyUp(
-                  $event,
-                  settings.data.settings.controlnet,
-                  'prompt',
-                  global
-                )
-              "
-              @keydown="promptHandleKeyDown"
-            >
-              <template #count>{{ promptCount }}</template>
-            </NInput>
-            <NInput
-              v-model:value="settings.data.settings.controlnet.negative_prompt"
-              type="textarea"
-              placeholder="Negative prompt"
-              show-count
-              @keyup="
-                promptHandleKeyUp(
-                  $event,
-                  settings.data.settings.controlnet,
-                  'negative_prompt',
-                  global
-                )
-              "
-              @keydown="promptHandleKeyDown"
-            >
-              <template #count>{{ negativePromptCount }}</template>
-            </NInput>
+            <Prompt tab="controlnet" />
 
             <!-- Sampler -->
             <SamplerPicker type="controlnet" />
@@ -315,19 +282,14 @@ import {
   ImageOutput,
   ImageUpload,
   OutputStats,
+  Prompt,
   SamplerPicker,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
-  promptHandleKeyDown,
-  promptHandleKeyUp,
-  spaceRegex,
-} from "@/functions";
-import {
   NCard,
   NGi,
   NGrid,
-  NInput,
   NInputNumber,
   NSelect,
   NSlider,
@@ -337,23 +299,13 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, onUnmounted } from "vue";
+import { onUnmounted } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
-
-const promptCount = computed(() => {
-  return settings.data.settings.controlnet.prompt.split(spaceRegex).length - 1;
-});
-const negativePromptCount = computed(() => {
-  return (
-    settings.data.settings.controlnet.negative_prompt.split(spaceRegex).length -
-    1
-  );
-});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed

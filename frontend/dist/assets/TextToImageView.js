@@ -1,180 +1,15 @@
-import { d as defineComponent, o as openBlock, c as createElementBlock, a as createBaseVNode, u as useSettings, b as useState, e as createVNode, w as withCtx, f as unref, N as NTooltip, g as NIcon, h as NSelect, p as promptHandleKeyUp, i as promptHandleKeyDown, j as NInput, _ as _export_sfc, k as useMessage, l as onUnmounted, m as NGi, n as NCard, q as NSpace, r as createTextVNode, s as createCommentVNode, t as createBlock, v as NGrid, x as serverUrl } from "./index.js";
-import { _ as _sfc_main$6 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$7 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
-import { B as BurnerClock, _ as _sfc_main$4, a as _sfc_main$5, b as _sfc_main$8 } from "./clock.js";
-import { N as NForm, a as NFormItem } from "./FormItem.js";
-import { N as NSwitch, a as NSlider } from "./Switch.js";
-import { _ as _sfc_main$3 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, o as onUnmounted, c as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as createBaseVNode, k as NTooltip, l as createTextVNode, m as createCommentVNode, n as createBlock, p as NSelect, q as NGrid, s as serverUrl } from "./index.js";
+import { _ as _sfc_main$5 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$6 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { B as BurnerClock, P as Prompt, _ as _sfc_main$3, a as _sfc_main$4, b as _sfc_main$7 } from "./clock.js";
+import { _ as _sfc_main$2 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
 import { v as v4 } from "./v4.js";
+import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./DescriptionsItem.js";
 import "./Settings.js";
-const _hoisted_1$1 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M262.29 192.31a64 64 0 1 0 57.4 57.4a64.13 64.13 0 0 0-57.4-57.4zM416.39 256a154.34 154.34 0 0 1-1.53 20.79l45.21 35.46a10.81 10.81 0 0 1 2.45 13.75l-42.77 74a10.81 10.81 0 0 1-13.14 4.59l-44.9-18.08a16.11 16.11 0 0 0-15.17 1.75A164.48 164.48 0 0 1 325 400.8a15.94 15.94 0 0 0-8.82 12.14l-6.73 47.89a11.08 11.08 0 0 1-10.68 9.17h-85.54a11.11 11.11 0 0 1-10.69-8.87l-6.72-47.82a16.07 16.07 0 0 0-9-12.22a155.3 155.3 0 0 1-21.46-12.57a16 16 0 0 0-15.11-1.71l-44.89 18.07a10.81 10.81 0 0 1-13.14-4.58l-42.77-74a10.8 10.8 0 0 1 2.45-13.75l38.21-30a16.05 16.05 0 0 0 6-14.08c-.36-4.17-.58-8.33-.58-12.5s.21-8.27.58-12.35a16 16 0 0 0-6.07-13.94l-38.19-30A10.81 10.81 0 0 1 49.48 186l42.77-74a10.81 10.81 0 0 1 13.14-4.59l44.9 18.08a16.11 16.11 0 0 0 15.17-1.75A164.48 164.48 0 0 1 187 111.2a15.94 15.94 0 0 0 8.82-12.14l6.73-47.89A11.08 11.08 0 0 1 213.23 42h85.54a11.11 11.11 0 0 1 10.69 8.87l6.72 47.82a16.07 16.07 0 0 0 9 12.22a155.3 155.3 0 0 1 21.46 12.57a16 16 0 0 0 15.11 1.71l44.89-18.07a10.81 10.81 0 0 1 13.14 4.58l42.77 74a10.8 10.8 0 0 1-2.45 13.75l-38.21 30a16.05 16.05 0 0 0-6.05 14.08c.33 4.14.55 8.3.55 12.47z",
-    fill: "none",
-    stroke: "currentColor",
-    "stroke-linecap": "round",
-    "stroke-linejoin": "round",
-    "stroke-width": "32"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$1 = [_hoisted_2$1];
-const SettingsOutline = defineComponent({
-  name: "SettingsOutline",
-  render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$1, _hoisted_3$1);
-  }
-});
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
-  __name: "Prompt",
-  props: {
-    tab: {
-      type: String,
-      required: true
-    }
-  },
-  setup(__props) {
-    const props = __props;
-    const settings = useSettings();
-    const state = useState();
-    return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", null, [
-        createVNode(unref(NInput), {
-          value: unref(settings).data.settings[props.tab].prompt,
-          "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings[props.tab].prompt = $event),
-          type: "textarea",
-          placeholder: "Prompt",
-          class: "prompt",
-          onKeyup: _cache[4] || (_cache[4] = ($event) => unref(promptHandleKeyUp)(
-            $event,
-            unref(settings).data.settings[props.tab],
-            "prompt",
-            unref(state)
-          )),
-          onKeydown: unref(promptHandleKeyDown)
-        }, {
-          suffix: withCtx(() => [
-            createVNode(unref(NTooltip), null, {
-              trigger: withCtx(() => [
-                createVNode(unref(NIcon), { style: { "margin-top": "10px" } }, {
-                  default: withCtx(() => [
-                    createVNode(unref(SettingsOutline))
-                  ]),
-                  _: 1
-                })
-              ]),
-              default: withCtx(() => [
-                createVNode(unref(NForm), { "show-feedback": false }, {
-                  default: withCtx(() => [
-                    createVNode(unref(NFormItem), {
-                      label: "Prompt-to-Prompt preprocessing",
-                      class: "form-item"
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NSwitch), {
-                          value: unref(settings).data.settings.api.prompt_to_prompt,
-                          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.api.prompt_to_prompt = $event)
-                        }, null, 8, ["value"])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(unref(NFormItem), {
-                      label: "Prompt-to-Prompt model",
-                      class: "form-item"
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NSelect), {
-                          filterable: "",
-                          "consistent-menu-width": false,
-                          options: [
-                            {
-                              value: "lllyasviel/Fooocus-Expansion",
-                              label: "lllyasviel/Fooocus-Expansion"
-                            },
-                            {
-                              value: "daspartho/prompt-extend",
-                              label: "daspartho/prompt-extend"
-                            },
-                            {
-                              value: "succinctly/text2image-prompt-generator",
-                              label: "succinctly/text2image-prompt-generator"
-                            },
-                            {
-                              value: "Gustavosta/MagicPrompt-Stable-Diffusion",
-                              label: "Gustavosta/MagicPrompt-Stable-Diffusion"
-                            },
-                            {
-                              value: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator",
-                              label: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator"
-                            }
-                          ],
-                          value: unref(settings).data.settings.api.prompt_to_prompt_model,
-                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.api.prompt_to_prompt_model = $event)
-                        }, null, 8, ["value"])
-                      ]),
-                      _: 1
-                    }),
-                    createVNode(unref(NFormItem), {
-                      label: "Prompt-to-Prompt device",
-                      class: "form-item"
-                    }, {
-                      default: withCtx(() => [
-                        createVNode(unref(NSelect), {
-                          options: [
-                            {
-                              value: "gpu",
-                              label: "On-Device"
-                            },
-                            {
-                              value: "cpu",
-                              label: "CPU"
-                            }
-                          ],
-                          value: unref(settings).data.settings.api.prompt_to_prompt_device,
-                          "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.api.prompt_to_prompt_device = $event)
-                        }, null, 8, ["value"])
-                      ]),
-                      _: 1
-                    })
-                  ]),
-                  _: 1
-                })
-              ]),
-              _: 1
-            })
-          ]),
-          _: 1
-        }, 8, ["value", "onKeydown"]),
-        createVNode(unref(NInput), {
-          value: unref(settings).data.settings[props.tab].negative_prompt,
-          "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).data.settings[props.tab].negative_prompt = $event),
-          type: "textarea",
-          placeholder: "Negative prompt",
-          onKeyup: _cache[6] || (_cache[6] = ($event) => unref(promptHandleKeyUp)(
-            $event,
-            unref(settings).data.settings[props.tab],
-            "negative_prompt",
-            unref(state)
-          )),
-          onKeydown: unref(promptHandleKeyDown)
-        }, null, 8, ["value", "onKeydown"])
-      ]);
-    };
-  }
-});
-const Prompt = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-5cc6c30d"]]);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
@@ -316,8 +151,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                         var _a;
                         return [
                           createVNode(unref(Prompt), { tab: "txt2img" }),
-                          createVNode(unref(_sfc_main$3), { type: "txt2img" }),
-                          createVNode(unref(_sfc_main$4), {
+                          createVNode(unref(_sfc_main$2), { type: "txt2img" }),
+                          createVNode(unref(_sfc_main$3), {
                             "dimensions-object": unref(settings).data.settings.txt2img
                           }, null, 8, ["dimensions-object"]),
                           createBaseVNode("div", _hoisted_2, [
@@ -422,7 +257,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               style: { "min-width": "96px", "width": "96px" }
                             }, null, 8, ["value"])
                           ]),
-                          createVNode(unref(_sfc_main$5), {
+                          createVNode(unref(_sfc_main$4), {
                             "batch-size-object": unref(settings).data.settings.txt2img
                           }, null, 8, ["batch-size-object"]),
                           createBaseVNode("div", _hoisted_12, [
@@ -573,14 +408,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(unref(_sfc_main$6), { generate }),
-                createVNode(unref(_sfc_main$7), {
+                createVNode(unref(_sfc_main$5), { generate }),
+                createVNode(unref(_sfc_main$6), {
                   "current-image": unref(global).state.txt2img.currentImage,
                   images: unref(global).state.txt2img.images,
                   data: unref(settings).data.settings.txt2img,
                   onImageClicked: _cache[18] || (_cache[18] = ($event) => unref(global).state.txt2img.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(unref(_sfc_main$8), {
+                createVNode(unref(_sfc_main$7), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.txt2img.genData
                 }, null, 8, ["gen-data"])

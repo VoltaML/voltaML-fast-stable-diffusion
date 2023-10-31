@@ -42681,11 +42681,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
 const TopBar_vue_vue_type_style_index_0_scoped_2589676e_lang = "";
 const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
-const Prompt_vue_vue_type_style_index_1_scoped_5cc6c30d_lang = "";
+const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_b80427fc_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_178bc741_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_bedc0d0a_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_c6a2efba_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_8e99cbae_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_95ca20dd_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _sfc_main$2 = {};
@@ -42861,17 +42861,17 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/FormItem.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/FormItem.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
@@ -42906,7 +42906,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/FormItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -42932,20 +42932,20 @@ app.use(router);
 app.mount("#app");
 export {
   call as $,
-  spaceRegex as A,
-  pushScopeId as B,
-  popScopeId as C,
-  h as D,
-  ref as E,
-  NButton as F,
-  NTabPane as G,
-  NTabs as H,
-  Fragment as I,
+  toDisplayString as A,
+  NTabPane as B,
+  NTabs as C,
+  computed as D,
+  promptHandleKeyUp as E,
+  Fragment as F,
+  promptHandleKeyDown as G,
+  NInput as H,
+  spaceRegex as I,
   watch as J,
   upscalerOptions as K,
   renderList as L,
   NScrollbar as M,
-  NTooltip as N,
+  NGi as N,
   replaceable as O,
   createInjectionKey as P,
   cB as Q,
@@ -42959,7 +42959,7 @@ export {
   createTreeMate as Y,
   happensIn as Z,
   _export_sfc as _,
-  createBaseVNode as a,
+  useSettings as a,
   AddIcon as a$,
   nextTick as a0,
   keysOf as a1,
@@ -43024,7 +43024,7 @@ export {
   getSlot$1 as ax,
   depx as ay,
   formatLength as az,
-  useState as b,
+  useMessage as b,
   VFollower as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
@@ -43089,32 +43089,32 @@ export {
   NTag as bx,
   convertToTextString as by,
   themeKey as bz,
-  createElementBlock as c,
+  openBlock as c,
   sliderLight$1 as c0,
   isSlotEmpty as c1,
   switchLight$1 as c2,
   NResult as c3,
   defineComponent as d,
-  createVNode as e,
-  unref as f,
-  NIcon as g,
-  NSelect as h,
-  promptHandleKeyDown as i,
-  NInput as j,
-  useMessage as k,
-  onUnmounted as l,
-  NGi as m,
-  NCard as n,
-  openBlock as o,
-  promptHandleKeyUp as p,
-  NSpace as q,
-  createTextVNode as r,
-  createCommentVNode as s,
-  createBlock as t,
-  useSettings as u,
-  NGrid as v,
+  createElementBlock as e,
+  createVNode as f,
+  unref as g,
+  NCard as h,
+  NSpace as i,
+  createBaseVNode as j,
+  NTooltip as k,
+  createTextVNode as l,
+  createCommentVNode as m,
+  createBlock as n,
+  onUnmounted as o,
+  NSelect as p,
+  NGrid as q,
+  pushScopeId as r,
+  serverUrl as s,
+  popScopeId as t,
+  useState as u,
+  h as v,
   withCtx as w,
-  serverUrl as x,
-  computed as y,
-  toDisplayString as z
+  ref as x,
+  NButton as y,
+  NIcon as z
 };

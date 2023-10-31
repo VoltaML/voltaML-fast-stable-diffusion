@@ -98,40 +98,7 @@
         <NCard title="Settings" style="margin-top: 12px; margin-bottom: 12px">
           <NSpace vertical class="left-container">
             <!-- Prompt -->
-            <NInput
-              v-model:value="settings.data.settings.inpainting.prompt"
-              type="textarea"
-              placeholder="Prompt"
-              show-count
-              @keyup="
-                promptHandleKeyUp(
-                  $event,
-                  settings.data.settings.inpainting,
-                  'prompt',
-                  global
-                )
-              "
-              @keydown="promptHandleKeyDown"
-            >
-              <template #count>{{ promptCount }}</template>
-            </NInput>
-            <NInput
-              v-model:value="settings.data.settings.inpainting.negative_prompt"
-              type="textarea"
-              placeholder="Negative prompt"
-              show-count
-              @keyup="
-                promptHandleKeyUp(
-                  $event,
-                  settings.data.settings.inpainting,
-                  'negative_prompt',
-                  global
-                )
-              "
-              @keydown="promptHandleKeyDown"
-            >
-              <template #count>{{ negativePromptCount }}</template>
-            </NInput>
+            <Prompt tab="inpainting" />
 
             <!-- Sampler -->
             <SamplerPicker type="inpainting" />
@@ -370,14 +337,10 @@ import {
   GenerateSection,
   ImageOutput,
   OutputStats,
+  Prompt,
   SamplerPicker,
 } from "@/components";
 import { serverUrl } from "@/env";
-import {
-  promptHandleKeyDown,
-  promptHandleKeyUp,
-  spaceRegex,
-} from "@/functions";
 import {
   ArrowRedoSharp,
   ArrowUndoSharp,
@@ -390,7 +353,6 @@ import {
   NGi,
   NGrid,
   NIcon,
-  NInput,
   NInputNumber,
   NSlider,
   NSpace,
@@ -398,7 +360,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { computed, onUnmounted, ref } from "vue";
+import { onUnmounted, ref } from "vue";
 import VueDrawingCanvas from "vue-drawing-canvas";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
@@ -406,16 +368,6 @@ import { useState } from "../../store/state";
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
-
-const promptCount = computed(() => {
-  return settings.data.settings.inpainting.prompt.split(spaceRegex).length - 1;
-});
-const negativePromptCount = computed(() => {
-  return (
-    settings.data.settings.inpainting.negative_prompt.split(spaceRegex).length -
-    1
-  );
-});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed

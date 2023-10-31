@@ -6,6 +6,7 @@
       type="textarea"
       placeholder="Prompt"
       class="prompt"
+      show-count
       @keyup="
         promptHandleKeyUp(
           $event,
@@ -83,11 +84,13 @@
           </NForm>
         </NTooltip>
       </template>
+      <template #count>{{ promptCount }}</template>
     </NInput>
     <NInput
       v-model:value="settings.data.settings[props.tab].negative_prompt"
       type="textarea"
       placeholder="Negative prompt"
+      show-count
       @keyup="
         promptHandleKeyUp(
           $event,
@@ -97,12 +100,18 @@
         )
       "
       @keydown="promptHandleKeyDown"
-    />
+    >
+      <template #count>{{ negativePromptCount }}</template>
+    </NInput>
   </div>
 </template>
 
 <script lang="ts" setup>
-import { promptHandleKeyDown, promptHandleKeyUp } from "@/functions";
+import {
+  promptHandleKeyDown,
+  promptHandleKeyUp,
+  spaceRegex,
+} from "@/functions";
 import { useSettings } from "@/store/settings";
 import { useState } from "@/store/state";
 import type { InferenceTabs } from "@/types";
@@ -116,7 +125,7 @@ import {
   NSwitch,
   NTooltip,
 } from "naive-ui";
-import type { PropType } from "vue";
+import { computed, type PropType } from "vue";
 
 const settings = useSettings();
 const state = useState();
@@ -126,6 +135,16 @@ const props = defineProps({
     type: String as PropType<InferenceTabs>,
     required: true,
   },
+});
+
+const promptCount = computed(() => {
+  return settings.data.settings[props.tab].prompt.split(spaceRegex).length - 1;
+});
+const negativePromptCount = computed(() => {
+  return (
+    settings.data.settings[props.tab].negative_prompt.split(spaceRegex).length -
+    1
+  );
 });
 </script>
 
