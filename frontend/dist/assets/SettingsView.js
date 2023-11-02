@@ -1157,6 +1157,18 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   }, null, 8, ["value"])
                 ]),
                 _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Disable Analytics",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.frontend.disable_analytics,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.disable_analytics = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
               })
             ]),
             _: 1

@@ -11,6 +11,7 @@ const app = createApp(App);
 app.use(createPinia());
 app.use(router);
 app.use(VueGtag, {
+  isEnabled: false,
   property: {
     id: "G-PYLCYXF7B8",
   },
