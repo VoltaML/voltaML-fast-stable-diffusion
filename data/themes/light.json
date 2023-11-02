@@ -17,5 +17,9 @@
     },
     "Tabs": {
         "colorSegment": "rgba(255, 255, 255, 0.6)"
+    },
+    "Tooltip": {
+        "color": "rgba(255, 255, 255, 1)",
+        "textColor": "rgba(21, 21, 21, 1)"
     }
 }

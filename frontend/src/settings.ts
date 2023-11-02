@@ -231,6 +231,7 @@ export interface ISettings {
     on_change_timer: number;
     nsfw_ok_threshold: number;
     background_image_override: string;
+    disable_analytics: boolean;
   };
   sampler_config: Record<string, Record<string, any>>;
 }
@@ -423,6 +424,7 @@ export const defaultSettings: ISettings = {
     on_change_timer: 2000,
     nsfw_ok_threshold: 0,
     background_image_override: "",
+    disable_analytics: true,
   },
   sampler_config: {},
 };

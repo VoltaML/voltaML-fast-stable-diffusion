@@ -1,4 +1,4 @@
-import { d as defineComponent, a as useSettings, c as openBlock, n as createBlock, w as withCtx, f as createVNode, g as unref, H as NInput, p as NSelect, h as NCard, b8 as reactive, D as computed, x as ref, s as serverUrl, J as watch, by as convertToTextString, u as useState, j as createBaseVNode, e as createElementBlock, L as renderList, bb as NText, l as createTextVNode, A as toDisplayString, F as Fragment, m as createCommentVNode, B as NTabPane, C as NTabs, R as inject, bz as themeKey, y as NButton, k as NTooltip, b as useMessage, bA as useNotification, o as onUnmounted, bB as defaultSettings } from "./index.js";
+import { d as defineComponent, a as useSettings, c as openBlock, n as createBlock, w as withCtx, f as createVNode, g as unref, I as NInput, p as NSelect, h as NCard, b8 as reactive, D as computed, by as convertToTextString, x as ref, s as serverUrl, J as watch, u as useState, j as createBaseVNode, e as createElementBlock, L as renderList, bb as NText, l as createTextVNode, A as toDisplayString, F as Fragment, m as createCommentVNode, B as NTabPane, C as NTabs, R as inject, bz as themeKey, y as NButton, k as NTooltip, b as useMessage, bA as useNotification, o as onUnmounted, bB as defaultSettings } from "./index.js";
 import { a as NFormItem, _ as _sfc_main$h, N as NForm } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
 import { a as NSwitch, N as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -1154,6 +1154,18 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                   createVNode(unref(NSwitch), {
                     value: unref(settings).defaultSettings.api.enable_websocket_logging,
                     "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.api.enable_websocket_logging = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Disable Analytics",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.frontend.disable_analytics,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.frontend.disable_analytics = $event)
                   }, null, 8, ["value"])
                 ]),
                 _: 1

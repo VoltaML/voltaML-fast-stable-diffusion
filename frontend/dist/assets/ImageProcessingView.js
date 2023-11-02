@@ -1,4 +1,4 @@
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, D as computed, c as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as createBaseVNode, p as NSelect, k as NTooltip, l as createTextVNode, q as NGrid, K as upscalerOptions, s as serverUrl, r as pushScopeId, t as popScopeId, _ as _export_sfc, n as createBlock, B as NTabPane, C as NTabs } from "./index.js";
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, D as computed, K as upscalerOptions, c as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as createBaseVNode, p as NSelect, k as NTooltip, l as createTextVNode, q as NGrid, s as serverUrl, r as pushScopeId, t as popScopeId, _ as _export_sfc, n as createBlock, B as NTabPane, C as NTabs } from "./index.js";
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";

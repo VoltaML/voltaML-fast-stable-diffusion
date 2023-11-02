@@ -142,6 +142,8 @@ _pytorch_distributions = [
             "install",
             "torch==2.1.0",
             "torchvision",
+            "--index-url",
+            "https://download.pytorch.org/whl/cu118",
         ],
     ),
     PytorchDistribution(

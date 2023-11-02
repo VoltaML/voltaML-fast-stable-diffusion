@@ -14,6 +14,7 @@ import "@/assets/2img.css";
 import { themeKey, themeOverridesKey } from "@/injectionKeys";
 import { NConfigProvider, NThemeEditor, darkTheme, lightTheme } from "naive-ui";
 import { computed, provide, ref, watch } from "vue";
+import { useState as useAnalytics } from "vue-gtag-next";
 import Content from "./Content.vue";
 import { serverUrl } from "./env";
 import { useSettings } from "./store/settings";
@@ -33,6 +34,10 @@ const theme = computed(() => {
     return darkTheme;
   }
 });
+
+// Handle analytics
+const analytics = useAnalytics();
+analytics.isEnabled!.value = !settings.data.settings.frontend.disable_analytics;
 
 provide(themeOverridesKey, overrides);
 provide(themeKey, theme);
