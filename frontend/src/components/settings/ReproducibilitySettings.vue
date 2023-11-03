@@ -138,48 +138,83 @@
     <NFormItem label="Prompt-to-Prompt preprocessing" label-placement="left">
       <NSwitch v-model:value="settings.defaultSettings.api.prompt_to_prompt" />
     </NFormItem>
-    <NFormItem label="Prompt-to-Prompt model" label-placement="left">
-      <NSelect
-        :options="[
-          {
-            value: 'lllyasviel/Fooocus-Expansion',
-            label: 'lllyasviel/Fooocus-Expansion',
-          },
-          {
-            value: 'daspartho/prompt-extend',
-            label: 'daspartho/prompt-extend',
-          },
-          {
-            value: 'succinctly/text2image-prompt-generator',
-            label: 'succinctly/text2image-prompt-generator',
-          },
-          {
-            value: 'Gustavosta/MagicPrompt-Stable-Diffusion',
-            label: 'Gustavosta/MagicPrompt-Stable-Diffusion',
-          },
-          {
-            value: 'Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator',
-            label: 'Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.prompt_to_prompt_model"
-      />
+    <div v-if="settings.defaultSettings.api.prompt_to_prompt">
+      <NFormItem label="Prompt-to-Prompt model" label-placement="left">
+        <NSelect
+          :options="[
+            {
+              value: 'lllyasviel/Fooocus-Expansion',
+              label: 'lllyasviel/Fooocus-Expansion',
+            },
+            {
+              value: 'daspartho/prompt-extend',
+              label: 'daspartho/prompt-extend',
+            },
+            {
+              value: 'succinctly/text2image-prompt-generator',
+              label: 'succinctly/text2image-prompt-generator',
+            },
+            {
+              value: 'Gustavosta/MagicPrompt-Stable-Diffusion',
+              label: 'Gustavosta/MagicPrompt-Stable-Diffusion',
+            },
+            {
+              value:
+                'Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator',
+              label:
+                'Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator',
+            },
+          ]"
+          v-model:value="settings.defaultSettings.api.prompt_to_prompt_model"
+        />
+      </NFormItem>
+      <NFormItem label="Prompt-to-Prompt device" label-placement="left">
+        <NSelect
+          :options="[
+            {
+              value: 'gpu',
+              label: 'On-Device',
+            },
+            {
+              value: 'cpu',
+              label: 'CPU',
+            },
+          ]"
+          v-model:value="settings.defaultSettings.api.prompt_to_prompt_device"
+        />
+      </NFormItem>
+    </div>
+
+    <NFormItem label="Free U" label-placement="left">
+      <NSwitch v-model:value="settings.defaultSettings.api.free_u" />
     </NFormItem>
-    <NFormItem label="Prompt-to-Prompt device" label-placement="left">
-      <NSelect
-        :options="[
-          {
-            value: 'gpu',
-            label: 'On-Device',
-          },
-          {
-            value: 'cpu',
-            label: 'CPU',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.prompt_to_prompt_device"
-      />
-    </NFormItem>
+
+    <div v-if="settings.defaultSettings.api.free_u">
+      <NFormItem label="Free U S1" label-placement="left">
+        <NInputNumber
+          v-model:value="settings.defaultSettings.api.free_u_s1"
+          :step="0.01"
+        />
+      </NFormItem>
+      <NFormItem label="Free U S2" label-placement="left">
+        <NInputNumber
+          v-model:value="settings.defaultSettings.api.free_u_s2"
+          :step="0.01"
+        />
+      </NFormItem>
+      <NFormItem label="Free U B1" label-placement="left">
+        <NInputNumber
+          v-model:value="settings.defaultSettings.api.free_u_b1"
+          :step="0.01"
+        />
+      </NFormItem>
+      <NFormItem label="Free U B2" label-placement="left">
+        <NInputNumber
+          v-model:value="settings.defaultSettings.api.free_u_b2"
+          :step="0.01"
+        />
+      </NFormItem>
+    </div>
   </NForm>
 </template>
 
