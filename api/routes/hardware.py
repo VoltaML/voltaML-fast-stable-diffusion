@@ -9,7 +9,7 @@ router = APIRouter(tags=["hardware"])
 
 
 @router.get("/gpu_ids")
-async def gpu_ids() -> List[int]:
+def gpu_ids() -> List[int]:
     "List all available GPUs"
 
     if amd:
@@ -21,7 +21,7 @@ async def gpu_ids() -> List[int]:
 
 
 @router.get("/gpu_name/{gpu_id}")
-async def gpu(gpu_id: int) -> str:
+def gpu(gpu_id: int) -> str:
     "Return the name of the GPU"
 
     if amd:
@@ -31,7 +31,7 @@ async def gpu(gpu_id: int) -> str:
 
 
 @router.get("/gpu_memory/{gpu_id}")
-async def gpu_memory(gpu_id: int):
+def gpu_memory(gpu_id: int):
     "Return the memory statistics of the GPU"
 
     if amd:
@@ -49,7 +49,7 @@ async def gpu_memory(gpu_id: int):
 
 
 @router.get("/capabilities")
-async def capabilities():
+def capabilities():
     "List of all the capabilities of this system"
 
     from core.shared_dependent import gpu as _gpu
@@ -58,11 +58,11 @@ async def capabilities():
 
 
 @router.get("/gpus")
-async def gpus():
+def gpus():
     "List all available GPUs"
 
     devices = {}
-    for i in await gpu_ids():
+    for i in gpu_ids():
         if amd:
             data = all_gpus[i]
             name = data.name

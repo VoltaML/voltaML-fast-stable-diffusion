@@ -27,13 +27,13 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/txt2img")
-async def txt2img_job(job: Txt2ImgQueueEntry):
+def txt2img_job(job: Txt2ImgQueueEntry):
     "Generate images from text"
 
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(status_code=400, detail="Model is not loaded")
 
@@ -41,7 +41,7 @@ async def txt2img_job(job: Txt2ImgQueueEntry):
 
 
 @router.post("/img2img")
-async def img2img_job(job: Img2ImgQueueEntry):
+def img2img_job(job: Img2ImgQueueEntry):
     "Modify image with prompt"
 
     data = job.data.image
@@ -51,7 +51,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(status_code=400, detail="Model is not loaded")
 
@@ -59,7 +59,7 @@ async def img2img_job(job: Img2ImgQueueEntry):
 
 
 @router.post("/inpainting")
-async def inpaint_job(job: InpaintQueueEntry):
+def inpaint_job(job: InpaintQueueEntry):
     "Inpaint image with prompt"
 
     image_bytes = job.data.image
@@ -73,7 +73,7 @@ async def inpaint_job(job: InpaintQueueEntry):
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(status_code=400, detail="Model is not loaded")
 
@@ -81,7 +81,7 @@ async def inpaint_job(job: InpaintQueueEntry):
 
 
 @router.post("/controlnet")
-async def controlnet_job(job: ControlNetQueueEntry):
+def controlnet_job(job: ControlNetQueueEntry):
     "Generate images based on a reference image"
 
     image_bytes = job.data.image
@@ -91,7 +91,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
     try:
         images: Union[List[Image.Image], List[str]]
         time: float
-        images, time = await gpu.generate(job)
+        images, time = gpu.generate(job)
     except ModelNotLoadedError:
         raise HTTPException(status_code=400, detail="Model is not loaded")
 
@@ -99,7 +99,7 @@ async def controlnet_job(job: ControlNetQueueEntry):
 
 
 @router.post("/upscale")
-async def realesrgan_upscale_job(job: UpscaleQueueEntry):
+def realesrgan_upscale_job(job: UpscaleQueueEntry):
     "Upscale image with RealESRGAN model"
 
     image_bytes = job.data.image
@@ -109,7 +109,7 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
     try:
         image: Image.Image
         time: float
-        image, time = await gpu.upscale(job)
+        image, time = gpu.upscale(job)
     except ModelNotLoadedError:
         raise HTTPException(status_code=400, detail="Model is not loaded")
 
@@ -122,48 +122,48 @@ async def realesrgan_upscale_job(job: UpscaleQueueEntry):
 
 
 @router.post("/generate-aitemplate")
-async def generate_aitemplate(request: AITemplateBuildRequest):
+def generate_aitemplate(request: AITemplateBuildRequest):
     "Generate an AITemplate model from a local model"
 
-    await gpu.build_aitemplate_engine(request)
+    gpu.build_aitemplate_engine(request)
 
     return {"message": "Success"}
 
 
 @router.post("/generate-dynamic-aitemplate")
-async def generate_dynamic_aitemplate(request: AITemplateDynamicBuildRequest):
+def generate_dynamic_aitemplate(request: AITemplateDynamicBuildRequest):
     "Generate an AITemplate engine from a local model"
 
-    await gpu.build_dynamic_aitemplate_engine(request)
+    gpu.build_dynamic_aitemplate_engine(request)
 
     return {"message": "Success"}
 
 
 @router.post("/generate-onnx")
-async def generate_onnx(request: ONNXBuildRequest):
+def generate_onnx(request: ONNXBuildRequest):
     "Generate an ONNX model from a local model"
 
-    await gpu.build_onnx_engine(request)
+    gpu.build_onnx_engine(request)
 
     return {"message": "Success"}
 
 
 @router.post("/convert-model")
-async def convert_model(request: ConvertModelRequest):
+def convert_model(request: ConvertModelRequest):
     "Convert a Stable Diffusion model"
 
-    await gpu.convert_model(model=request.model, safetensors=request.safetensors)
+    gpu.convert_model(model=request.model, safetensors=request.safetensors)
 
     return {"message": "Success"}
 
 
 @router.post("/interrogate")
-async def interrogate(request: InterrogatorQueueEntry):
+def interrogate(request: InterrogatorQueueEntry):
     "Interrogate a model"
 
     data = request.data.image
     assert isinstance(data, bytes)
     request.data.image = convert_bytes_to_image_stream(data)
 
-    result = await gpu.interrogate(request)
+    result = gpu.interrogate(request)
     return result

@@ -1,8 +1,7 @@
-import asyncio
 import importlib
 import logging
 from pathlib import Path
-from typing import Any, List, Literal, Optional, Tuple, Union
+from typing import Any, List, Optional, Tuple, Union
 
 import requests
 import torch
@@ -41,7 +40,6 @@ from core.types import (
     InpaintQueueEntry,
     Job,
     SigmaScheduler,
-    Txt2imgData,
     Txt2ImgQueueEntry,
     UpscaleData,
     UpscaleQueueEntry,
@@ -373,32 +371,26 @@ class PyTorchStableDiffusion(InferenceModel):
                     images = data[0]  # type: ignore
                     assert isinstance(images, List)
 
-                    upscale_output = []
-
-                    async def upscale(flag: HighResFixFlag, images: List[Image.Image]):
-                        upscaled_images = []
-                        for image in images:
-                            output = await gpu.upscale(
-                                UpscaleQueueEntry(
-                                    data=UpscaleData(
-                                        id=job.data.id,
-                                        # FastAPI validation error, we need to do this so that we can pass in a PIL image
-                                        image=image,  # type: ignore
-                                    ),
-                                    model=flag.image_upscaler,
-                                    save_image=False,
-                                )
+                    upscaled_images = []
+                    for image in images:
+                        output: tuple[Image.Image, float] = gpu.upscale(
+                            UpscaleQueueEntry(
+                                data=UpscaleData(
+                                    id=job.data.id,
+                                    # FastAPI validation error, we need to do this so that we can pass in a PIL image
+                                    image=image,  # type: ignore
+                                    upscale_factor=flag.scale,
+                                ),
+                                model=flag.image_upscaler,
+                                save_image=False,
                             )
-                            upscaled_images.append(output[0])
-                        upscale_output.extend(upscaled_images)
-
-                    loop = asyncio.get_event_loop()
-                    loop.run_until_complete(upscale(flag, images))
+                        )
+                        upscaled_images.append(output[0])
 
                     data = pipe.img2img(
                         generator=generator,
                         prompt=job.data.prompt,
-                        image=upscale_output,
+                        image=upscaled_images[0],
                         height=int(flag.scale * job.data.height),
                         width=int(flag.scale * job.data.width),
                         num_inference_steps=flag.steps,
