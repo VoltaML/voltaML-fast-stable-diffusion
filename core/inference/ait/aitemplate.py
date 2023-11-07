@@ -3,7 +3,9 @@ import os
 from typing import Any, List, Literal, Optional, Tuple, Union
 
 import torch
-from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from PIL import Image
 from tqdm import tqdm
 from transformers.models.clip import CLIPFeatureExtractor

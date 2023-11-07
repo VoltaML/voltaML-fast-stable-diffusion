@@ -1,7 +1,7 @@
 from copy import deepcopy
 
 import pytest
-from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.types import (
     ControlNetData,

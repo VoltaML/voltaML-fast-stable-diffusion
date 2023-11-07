@@ -5,9 +5,17 @@ from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import PIL
 import torch
-from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipeline
-from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion.pipeline_output import (
+    StableDiffusionPipelineOutput,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
+from diffusers.schedulers.scheduling_utils import SchedulerMixin
 from diffusers.utils import logging
 from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer

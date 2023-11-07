@@ -4,8 +4,11 @@ import logging
 from typing import Dict, Optional, Union
 
 import torch
-from diffusers import DDIMScheduler, SchedulerMixin
-from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
+from diffusers.schedulers.scheduling_ddim import DDIMScheduler
+from diffusers.schedulers.scheduling_utils import (
+    KarrasDiffusionSchedulers,
+    SchedulerMixin,
+)
 
 from core import shared
 from core.config import config

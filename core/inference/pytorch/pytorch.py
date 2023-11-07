@@ -5,12 +5,12 @@ from typing import Any, List, Optional, Tuple, Union
 
 import requests
 import torch
-from diffusers import (
-    AutoencoderKL,
-    ControlNetModel,
-    ModelMixin,
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.modeling_utils import ModelMixin
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
-    UNet2DConditionModel,
 )
 from PIL import Image, ImageOps
 from tqdm import tqdm

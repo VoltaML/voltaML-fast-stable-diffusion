@@ -189,6 +189,13 @@ class APIConfig:
     ] = "lllyasviel/Fooocus-Expansion"
     prompt_to_prompt_device: Literal["cpu", "gpu"] = "gpu"
 
+    # Free U
+    free_u: bool = False
+    free_u_s1: float = 0.9
+    free_u_s2: float = 0.2
+    free_u_b1: float = 1.2
+    free_u_b2: float = 1.4
+
     @property
     def dtype(self):
         "Return selected data type"

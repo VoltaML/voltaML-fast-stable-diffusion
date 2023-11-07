@@ -7,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
 
 import torch
-from diffusers.utils import is_xformers_available
+from diffusers.utils.import_utils import is_xformers_available
 from packaging import version
 from PIL import Image
 

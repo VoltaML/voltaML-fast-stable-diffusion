@@ -2,7 +2,7 @@ import logging
 from dataclasses import dataclass, field
 
 from dataclasses_json.api import DataClassJsonMixin
-from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 logger = logging.getLogger(__name__)
 

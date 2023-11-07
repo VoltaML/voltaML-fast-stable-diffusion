@@ -48,9 +48,12 @@ def install_requirements(path_to_requirements: str = "requirements.txt"):
 
             if "git+http" in i:
                 tmp = i.split("@")[0].split("/")[-1].replace(".git", "").strip()
-                logger.debug(
-                    f"Rewrote git requirement (cannot check hash, but proceeding): {i} => {tmp}"
-                )
+                version = i.split("#") if "#" in i else None
+
+                if version:
+                    tmp += f"=={version[-1].strip()}"
+
+                logger.debug(f"Rewrote git requirement: {i} => {tmp}")
                 i = tmp
 
             if "==" in i:

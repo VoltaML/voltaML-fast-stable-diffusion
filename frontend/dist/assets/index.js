@@ -40822,7 +40822,12 @@ const defaultSettings = {
     live_preview_delay: 2,
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
-    prompt_to_prompt_device: "gpu"
+    prompt_to_prompt_device: "gpu",
+    free_u: false,
+    free_u_s1: 0.9,
+    free_u_s2: 0.2,
+    free_u_b1: 1.2,
+    free_u_b2: 1.4
   },
   aitemplate: {
     num_threads: 8
