@@ -1,10 +1,5 @@
-<<<<<<< HEAD
-import { Y as cB, $ as cM, X as c, Z as cE, a0 as iconSwitchTransition, aq as cNotM, d as defineComponent, Q as useConfig, a7 as useRtl, a5 as useTheme, T as provide, D as h, aC as flatten, aD as getSlot, V as createInjectionKey, be as stepsLight, a3 as inject, a_ as throwError, c as computed, a9 as useThemeClass, aB as resolveWrappedSlot, at as resolveSlot, ab as NIconSwitchTransition, a8 as createKey, W as call, au as NBaseIcon, bf as FinishedIcon, bg as ErrorIcon, b as useMessage, u as useState, E as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, j as NSpace, i as NCard, n as createBaseVNode, r as NSelect, F as NButton, m as createTextVNode, bd as NModal, s as serverUrl, a as useSettings, x as createBlock, H as NTabPane, I as NTabs } from "./index.js";
-import { N as NSlider } from "./Slider.js";
-=======
-import { T as cB, ae as cM, ad as c, aw as cE, aW as iconSwitchTransition, af as cNotM, d as defineComponent, V as useConfig, aj as useRtl, W as useTheme, a6 as provide, s as h, az as flatten, aA as getSlot, S as createInjectionKey, bi as stepsLight, U as inject, b1 as throwError, c as computed, Z as useThemeClass, ay as resolveWrappedSlot, ak as resolveSlot, aL as NIconSwitchTransition, ao as createKey, a2 as call, al as NBaseIcon, bj as FinishedIcon, bk as ErrorIcon, x as useMessage, v as useState, r as ref, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, B as NSpace, N as NCard, b as createBaseVNode, p as NSelect, h as NButton, i as createTextVNode, m as NModal, z as serverUrl, u as useSettings, k as createBlock, L as NTabPane, M as NTabs } from "./index.js";
+import { Q as cB, ab as cM, aa as c, at as cE, aT as iconSwitchTransition, ac as cNotM, d as defineComponent, S as useConfig, ag as useRtl, T as useTheme, a3 as provide, D as h, aw as flatten, ax as getSlot, P as createInjectionKey, bg as stepsLight, R as inject, a_ as throwError, c as computed, ah as createKey, Y as useThemeClass, a1 as call, av as resolveWrappedSlot, ai as resolveSlot, aI as NIconSwitchTransition, aj as NBaseIcon, bh as FinishedIcon, bi as ErrorIcon, b as useMessage, u as useState, E as ref, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, k as NSpace, j as NCard, q as createBaseVNode, y as NSelect, F as NButton, n as createTextVNode, bd as NModal, i as serverUrl, a as useSettings, x as createBlock, G as NTabPane, H as NTabs } from "./index.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
->>>>>>> origin/experimental
 import { N as NInputNumber } from "./InputNumber.js";
 const style = cB("steps", `
  width: 100%;
@@ -499,30 +494,30 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 options: modelOptions.value,
                 style: { "margin-right": "12px" }
               }, null, 8, ["value", "options"])
-            ])
-          ]),
-          _: 1
-        }),
-        createVNode(unref(NSpace), {
-          vertical: "",
-          justify: "center",
-          style: { "width": "100%" },
-          align: "center"
-        }, {
-          default: withCtx(() => [
-            createVNode(unref(NButton), {
-              style: { "margin-top": "16px", "padding": "0 92px" },
-              type: "success",
-              ghost: "",
-              loading: building.value,
-              disabled: building.value || modelOptions.value.length === 0,
-              onClick: onAccelerateClick
+            ]),
+            createVNode(unref(NSpace), {
+              vertical: "",
+              justify: "center",
+              style: { "width": "100%" },
+              align: "center"
             }, {
               default: withCtx(() => [
-                createTextVNode("Accelerate")
+                createVNode(unref(NButton), {
+                  style: { "margin-top": "16px", "padding": "0 92px" },
+                  type: "success",
+                  ghost: "",
+                  loading: building.value,
+                  disabled: building.value || modelOptions.value.length === 0,
+                  onClick: onAccelerateClick
+                }, {
+                  default: withCtx(() => [
+                    createTextVNode("Accelerate")
+                  ]),
+                  _: 1
+                }, 8, ["loading", "disabled"])
               ]),
               _: 1
-            }, 8, ["loading", "disabled"])
+            })
           ]),
           _: 1
         }),
@@ -720,13 +715,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         default: withCtx(() => [
           createVNode(unref(NTabPane), { name: "Dynamic AITemplate" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$2)
+              createVNode(unref(_sfc_main$2))
             ]),
             _: 1
           }),
           createVNode(unref(NTabPane), { name: "ONNX" }, {
             default: withCtx(() => [
-              createVNode(_sfc_main$1)
+              createVNode(unref(_sfc_main$1))
             ]),
             _: 1
           })

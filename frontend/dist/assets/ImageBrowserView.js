@@ -1,15 +1,11 @@
-<<<<<<< HEAD
-import { d as defineComponent, b7 as useCssVars, u as useState, a as useSettings, E as ref, c as computed, b8 as reactive, b9 as onMounted, o as onUnmounted, e as openBlock, f as createElementBlock, n as createBaseVNode, g as createVNode, h as unref, w as withCtx, J as Fragment, M as renderList, s as serverUrl, k as NInput, G as NIcon, bd as NModal, y as NGrid, N as NGi, F as NButton, m as createTextVNode, O as NScrollbar, x as createBlock, t as toDisplayString, v as createCommentVNode, bC as urlFromPath, _ as _export_sfc } from "./index.js";
-=======
-import { d as defineComponent, b9 as useCssVars, v as useState, u as useSettings, r as ref, c as computed, ba as reactive, bb as onMounted, y as onUnmounted, o as openBlock, a as createElementBlock, b as createBaseVNode, e as createVNode, f as unref, w as withCtx, F as Fragment, g as renderList, z as serverUrl, C as NInput, q as NIcon, m as NModal, H as NGrid, A as NGi, h as NButton, i as createTextVNode, Q as NScrollbar, k as createBlock, j as convertToTextString, t as toDisplayString, G as createCommentVNode, bG as urlFromPath, _ as _export_sfc } from "./index.js";
->>>>>>> origin/experimental
+import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, R as inject, E as ref, c as computed, bI as urlFromPath, b8 as reactive, b9 as onMounted, o as onUnmounted, e as openBlock, f as createElementBlock, q as createBaseVNode, g as createVNode, h as unref, w as withCtx, I as Fragment, L as renderList, b7 as themeOverridesKey, i as serverUrl, l as NInput, A as NIcon, bd as NModal, z as NGrid, N as NGi, F as NButton, n as createTextVNode, M as NScrollbar, x as createBlock, by as convertToTextString, t as toDisplayString, v as createCommentVNode, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
 import { N as NSlider } from "./Switch.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1 = {
-  style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "53px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
+  style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "52px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
   class: "top-bar"
 };
 const _hoisted_2 = {
@@ -21,12 +17,16 @@ const _hoisted_4 = ["src", "onClick"];
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "ImageBrowserView",
   setup(__props) {
-    useCssVars((_ctx) => ({
-      "c641501e": unref(settings).data.settings.frontend.image_browser_columns,
-      "0c6c1cae": backgroundColor.value
-    }));
+    useCssVars((_ctx) => {
+      var _a, _b;
+      return {
+        "114fe7c0": unref(settings).data.settings.frontend.image_browser_columns,
+        "3d9e4b24": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+      };
+    });
     const global = useState();
     const settings = useSettings();
+    const theme = inject(themeOverridesKey);
     const showDeleteModal = ref(false);
     const showImageModal = ref(false);
     const scrollComponent = ref(null);
@@ -74,7 +74,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             a.click();
             document.body.removeChild(a);
           } else {
-            console.log("base64data is null!");
+            console.error("base64data is null!");
           }
         };
       });
@@ -89,7 +89,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           if (base64data !== null) {
             global.state.imageBrowser.currentImageByte64 = base64data.toString();
           } else {
-            console.log("base64data is null!");
+            console.error("base64data is null!");
           }
         };
       });
@@ -128,7 +128,6 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             return value;
           }
         );
-        console.log(global.state.imageBrowser.currentImageMetadata);
       });
       showImageModal.value = true;
     }
@@ -237,14 +236,17 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         }
       });
     });
-    refreshImages();
-    const backgroundColor = computed(() => {
-      if (settings.data.settings.frontend.theme === "dark") {
-        return "#121215";
-      } else {
-        return "#fff";
+    function getNamedSampler(value) {
+      const parsed_string = +value;
+      for (const objectKey of Object.keys(diffusersSchedulerTuple)) {
+        const val = diffusersSchedulerTuple[objectKey];
+        if (val === parsed_string) {
+          return objectKey;
+        }
       }
-    });
+      return value;
+    }
+    refreshImages();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock("div", null, [
         createBaseVNode("div", _hoisted_1, [
@@ -291,6 +293,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             "onUpdate:show": _cache[5] || (_cache[5] = ($event) => showImageModal.value = $event),
             closable: "",
             "mask-closable": "",
+            "close-on-esc": "",
             preset: "card",
             style: { "width": "85vw" },
             title: "Image Info",
@@ -369,7 +372,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                           }),
                           createVNode(unref(NGi), { span: "2" }, {
                             default: withCtx(() => [
-                              createVNode(_sfc_main$1, {
+                              createVNode(unref(_sfc_main$1), {
                                 output: unref(global).state.imageBrowser.currentImageByte64,
                                 card: false,
                                 data: unref(global).state.imageBrowser.currentImageMetadata
@@ -401,7 +404,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                                   key: item.toString()
                                 }, {
                                   default: withCtx(() => [
-                                    createTextVNode(toDisplayString(item), 1)
+                                    createTextVNode(toDisplayString(key.toString() === "scheduler" ? getNamedSampler(item.toString()) : item), 1)
                                   ]),
                                   _: 2
                                 }, 1032, ["label"]);
@@ -451,8 +454,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_59d31164_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-59d31164"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_239f75b8_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-239f75b8"]]);
 export {
   ImageBrowserView as default
 };

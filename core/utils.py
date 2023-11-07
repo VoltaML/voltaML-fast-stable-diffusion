@@ -7,7 +7,7 @@ import re
 from enum import Enum
 from io import BytesIO
 from pathlib import Path
-from typing import Any, Callable, Coroutine, Dict, List, Literal, Optional, Tuple, Union
+from typing import Any, Callable, Coroutine, Dict, List, Optional, Tuple, Union
 import struct
 import json
 
@@ -17,7 +17,15 @@ from requests.adapters import HTTPAdapter, Retry
 from tqdm import tqdm
 
 from core.thread import ThreadWithReturnValue
-from .types import PyTorchModelBase, PyTorchModelStage, ImageFormats
+from core.types import (
+    ControlNetQueueEntry,
+    ImageFormats,
+    Img2ImgQueueEntry,
+    InpaintQueueEntry,
+    Txt2ImgQueueEntry,
+    PyTorchModelBase,
+    PyTorchModelStage,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -274,3 +282,22 @@ def download_file(url: str, file: Path, add_filename: bool = False):
                     pbar.update(len(data))
 
     return file
+
+
+def preprocess_job(
+    job: Union[
+        Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry, ControlNetQueueEntry
+    ]
+):
+    if not isinstance(job, ControlNetQueueEntry):
+        # SAG does not work with KDiffusion schedulers
+        try:
+            int(unwrap_enum(job.data.scheduler))
+        except ValueError:
+            if job.data.self_attention_scale > 0:
+                logger.warning(
+                    f"Scheduler {job.data.scheduler} does not support SAG, setting to 0"
+                )
+                job.data.self_attention_scale = 0
+
+    return job

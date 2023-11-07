@@ -34,7 +34,7 @@ class KdiffusionSchedulerAdapter:
     alphas_cumprod: torch.Tensor
 
     sigma_range: Tuple[float, float] = (0, 1.0)
-    sigma_rho: float = 1
+    sigma_rho: Optional[float] = None
     sigma_always_discard_next_to_last: bool = False
 
     sampler_eta: Optional[float] = None
@@ -92,6 +92,9 @@ class KdiffusionSchedulerAdapter:
         self.device = device
         self.dtype = dtype
 
+        self.sigma_rho = sigma_rho
+        self.sigma_always_discard_next_to_last = sigma_discard
+
     def set_timesteps(
         self,
         steps: int,
@@ -132,14 +135,26 @@ class KdiffusionSchedulerAdapter:
         self,
         x: torch.Tensor,
         call: Callable,
-        apply_model: Callable[..., torch.Tensor],
+        apply_model: Callable[
+            [
+                torch.Tensor,
+                torch.IntTensor,
+                Callable[..., torch.Tensor],
+                Callable[[Callable], None],
+            ],
+            torch.Tensor,
+        ],
         generator: Union[PhiloxGenerator, torch.Generator],
         callback,
         callback_steps,
     ) -> torch.Tensor:
         "Run inference function provided with denoiser."
-        apply_model = functools.partial(apply_model, call=self.denoiser)
-        self.denoiser.inner_model.callable = call
+
+        def change_source(src):
+            self.denoiser.inner_model.callable = src
+
+        apply_model = functools.partial(apply_model, call=self.denoiser, change_source=change_source)  # type: ignore
+        change_source(call)
 
         def callback_func(data):
             if callback is not None and data["i"] % callback_steps == 0:

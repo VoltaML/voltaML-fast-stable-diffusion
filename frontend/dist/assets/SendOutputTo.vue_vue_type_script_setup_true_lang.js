@@ -1,11 +1,6 @@
-<<<<<<< HEAD
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, bD as useRouter, a as useSettings, u as useState, x as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, m as createTextVNode, y as NGrid, i as NCard, v as createCommentVNode } from "./index.js";
-const _hoisted_1 = {
-=======
-import { d as defineComponent, o as openBlock, a as createElementBlock, b as createBaseVNode, bH as useRouter, u as useSettings, v as useState, r as ref, ba as reactive, O as watch, c as computed, e as createVNode, w as withCtx, f as unref, N as NCard, h as NButton, i as createTextVNode, Q as NScrollbar, F as Fragment, g as renderList, t as toDisplayString, bf as NDivider, m as NModal, k as createBlock, A as NGi, H as NGrid, G as createCommentVNode } from "./index.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, q as createBaseVNode, bK as useRouter, a as useSettings, u as useState, E as ref, b8 as reactive, J as watch, c as computed, g as createVNode, w as withCtx, h as unref, j as NCard, F as NButton, n as createTextVNode, M as NScrollbar, I as Fragment, L as renderList, t as toDisplayString, be as NDivider, bd as NModal, x as createBlock, N as NGi, z as NGrid, v as createCommentVNode } from "./index.js";
 import { a as NSwitch } from "./Switch.js";
 const _hoisted_1$3 = {
->>>>>>> origin/experimental
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
@@ -155,7 +150,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       img2img: "img2img",
       controlnet: "img2img",
       inpainting: "img2img",
-      upscale: "extra",
+      upscale: "imageProcessing",
       tagger: "tagger"
     };
     function handleClick(target) {
@@ -228,7 +223,12 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        createVNode(unref(NModal), { show: showModal.value }, {
+        createVNode(unref(NModal), {
+          show: showModal.value,
+          "onUpdate:show": _cache[1] || (_cache[1] = ($event) => showModal.value = $event),
+          "mask-closable": "",
+          "close-on-esc": ""
+        }, {
           default: withCtx(() => [
             createVNode(unref(NCard), {
               style: { "max-width": "700px" },

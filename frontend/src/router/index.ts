@@ -1,3 +1,4 @@
+import { trackRouter } from "vue-gtag-next";
 import { createRouter, createWebHistory } from "vue-router";
 
 const router = createRouter({
@@ -19,9 +20,9 @@ const router = createRouter({
       component: () => import("../views/Image2ImageView.vue"),
     },
     {
-      path: "/extra",
-      name: "extra",
-      component: () => import("../views/ExtraView.vue"),
+      path: "/imageProcessing",
+      name: "imageProcessing",
+      component: () => import("../views/ImageProcessingView.vue"),
     },
     {
       path: "/models",
@@ -37,6 +38,11 @@ const router = createRouter({
       path: "/accelerate",
       name: "accelerate",
       component: () => import("../views/AccelerateView.vue"),
+    },
+    {
+      path: "/extra",
+      name: "extra",
+      component: () => import("../views/ExtraView.vue"),
     },
     {
       path: "/test",
@@ -58,7 +64,14 @@ const router = createRouter({
       name: "tagger",
       component: () => import("../views/TaggerView.vue"),
     },
+    {
+      path: "/:pathMatch(.*)",
+      name: "notFound",
+      component: () => import("../views/404View.vue"),
+    },
   ],
 });
+
+trackRouter(router);
 
 export default router;

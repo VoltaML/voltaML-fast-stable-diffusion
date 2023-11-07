@@ -147,6 +147,7 @@ export interface ISettings {
   api: {
     websocket_sync_interval: number;
     websocket_perf_interval: number;
+    enable_websocket_logging: boolean;
 
     use_tomesd: boolean;
     tomesd_ratio: number;
@@ -168,20 +169,14 @@ export interface ISettings {
     vae_slicing: boolean;
     vae_tiling: boolean;
     trace_model: boolean;
-<<<<<<< HEAD
     offload: boolean;
-    image_preview_delay: number;
-    device_id: number;
-    device_type: "cpu" | "cuda" | "mps" | "directml";
-=======
-    offload: "module" | "model" | "disabled";
     device: string;
->>>>>>> origin/experimental
     data_type: "float16" | "float32" | "bfloat16";
     deterministic_generation: boolean;
     reduced_precision: boolean;
     cudnn_benchmark: boolean;
     clear_memory_policy: "always" | "after_disconnect" | "never";
+    dont_merge_latents: boolean;
 
     huggingface_style_parsing: boolean;
 
@@ -201,6 +196,11 @@ export interface ISettings {
     torch_compile_backend: string;
     torch_compile_mode: "default" | "reduce-overhead" | "max-autotune";
 
+    sfast_compile: boolean;
+    sfast_xformers: boolean;
+    sfast_triton: boolean;
+    sfast_cuda_graph: boolean;
+
     hypertile: boolean;
     hypertile_unet_chunk: number;
 
@@ -210,6 +210,10 @@ export interface ISettings {
     generator: "device" | "cpu" | "philox";
     live_preview_method: "disabled" | "approximation" | "taesd";
     live_preview_delay: number;
+
+    prompt_to_prompt: boolean;
+    prompt_to_prompt_model: string;
+    prompt_to_prompt_device: "gpu" | "cpu";
   };
   aitemplate: {
     num_threads: number;
@@ -225,11 +229,12 @@ export interface ISettings {
     use_default_negative_prompt: boolean;
   };
   frontend: {
-    theme: "dark" | "light";
+    theme: string;
     enable_theme_editor: boolean;
     image_browser_columns: number;
     on_change_timer: number;
     nsfw_ok_threshold: number;
+    background_image_override: string;
   };
   sampler_config: Record<string, Record<string, any>>;
 }
@@ -338,6 +343,7 @@ export const defaultSettings: ISettings = {
   api: {
     websocket_sync_interval: 0.02,
     websocket_perf_interval: 1,
+    enable_websocket_logging: true,
 
     clip_skip: 1,
     clip_quantization: "full",
@@ -352,6 +358,7 @@ export const defaultSettings: ISettings = {
     trace_model: false,
     cudnn_benchmark: false,
     offload: false,
+    dont_merge_latents: false,
 
     device: "cuda:0",
     data_type: "float16",
@@ -381,6 +388,11 @@ export const defaultSettings: ISettings = {
     torch_compile_backend: "inductor",
     torch_compile_mode: "default",
 
+    sfast_compile: false,
+    sfast_xformers: true,
+    sfast_triton: true,
+    sfast_cuda_graph: false,
+
     hypertile: false,
     hypertile_unet_chunk: 256,
 
@@ -390,6 +402,10 @@ export const defaultSettings: ISettings = {
     generator: "device",
     live_preview_method: "approximation",
     live_preview_delay: 2.0,
+
+    prompt_to_prompt: false,
+    prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
+    prompt_to_prompt_device: "gpu",
   },
   aitemplate: {
     num_threads: 8,
@@ -415,6 +431,7 @@ export const defaultSettings: ISettings = {
     image_browser_columns: 5,
     on_change_timer: 2000,
     nsfw_ok_threshold: 0,
+    background_image_override: "",
   },
   sampler_config: {},
 };

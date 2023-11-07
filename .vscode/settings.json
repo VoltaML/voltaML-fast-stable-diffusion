@@ -13,5 +13,10 @@
 	],
 	"[python]": {
 		"editor.defaultFormatter": "ms-python.black-formatter"
+<<<<<<< HEAD
 	}
+=======
+	},
+	"python.formatting.provider": "none"
+>>>>>>> experimental
 }

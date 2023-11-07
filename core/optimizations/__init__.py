@@ -4,6 +4,7 @@ from .pytorch_optimizations import optimize_model
 from .upcast import upcast_vae
 from .offload import ensure_correct_device, unload_all
 from .hypertile import is_hypertile_available, hypertile
+from .compile.stable_fast import compile as compile_sfast
 
 __all__ = [
     "optimize_model",
@@ -16,4 +17,5 @@ __all__ = [
     "InferenceContext",
     "is_hypertile_available",
     "hypertile",
+    "compile_sfast",
 ]

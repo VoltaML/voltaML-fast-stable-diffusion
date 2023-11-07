@@ -102,36 +102,39 @@
               margin-bottom: 8px;
             "
           >
-            <img
-              :src="item.modelVersions[0].images[0].url"
-              :style="{
-                width: '100%',
-                height: 'auto',
-                borderRadius: '8px',
-                cursor: 'pointer',
-                filter:
-                  nsfwIndex(item.modelVersions[0].images[0].nsfw) >
-                  settings.data.settings.frontend.nsfw_ok_threshold
-                    ? 'blur(12px)'
-                    : 'none',
-              }"
-              @click="imgClick(column_index, item_index)"
-            />
-            <div
-              style="
-                position: absolute;
-                width: 100%;
-                bottom: 0;
-                padding: 0 8px;
-                min-height: 32px;
-                overflow: hidden;
-                box-sizing: border-box;
-                backdrop-filter: blur(12px);
-              "
-            >
-              <NText :depth="2">
-                {{ item.name }}
-              </NText>
+            <div v-if="item.modelVersions[0].images[0]?.url">
+              <img
+                :src="item.modelVersions[0].images[0].url"
+                :style="{
+                  width: '100%',
+                  height: 'auto',
+                  minHeight: '200px',
+                  cursor: 'pointer',
+                  borderRadius: '8px',
+                  filter:
+                    nsfwIndex(item.modelVersions[0].images[0].nsfw) >
+                    settings.data.settings.frontend.nsfw_ok_threshold
+                      ? 'blur(12px)'
+                      : 'none',
+                }"
+                @click="imgClick(column_index, item_index)"
+              />
+              <div
+                style="
+                  position: absolute;
+                  width: 100%;
+                  bottom: 0;
+                  padding: 0 8px;
+                  min-height: 32px;
+                  overflow: hidden;
+                  box-sizing: border-box;
+                  backdrop-filter: blur(12px);
+                "
+              >
+                <NText :depth="2">
+                  {{ item.name }}
+                </NText>
+              </div>
             </div>
           </div>
         </div>
@@ -141,7 +144,8 @@
 </template>
 
 <script lang="ts" setup>
-import ModelPopup from "@/components/models/ModelPopup.vue";
+import { ModelPopup } from "@/components";
+import { themeOverridesKey } from "@/injectionKeys";
 import { GridOutline, SearchOutline } from "@vicons/ionicons5";
 import {
   NButton,
@@ -152,12 +156,21 @@ import {
   NText,
   useLoadingBar,
 } from "naive-ui";
-import { computed, onMounted, onUnmounted, reactive, ref, type Ref } from "vue";
+import {
+  computed,
+  inject,
+  onMounted,
+  onUnmounted,
+  reactive,
+  ref,
+  type Ref,
+} from "vue";
 import type { ICivitAIModel, ICivitAIModels } from "../../civitai";
 import { nsfwIndex } from "../../civitai";
 import { useSettings } from "../../store/settings";
 
 const settings = useSettings();
+const theme = inject(themeOverridesKey);
 
 const loadingLock = ref(false);
 const currentPage = ref(1);
@@ -211,6 +224,8 @@ async function refreshImages() {
   currentPage.value = 1;
   modelData.splice(0, modelData.length);
 
+  loadingBar.start();
+
   // Fetch new data
   const url = new URL("https://civitai.com/api/v1/models");
   url.searchParams.append("sort", sortBy.value);
@@ -227,6 +242,7 @@ async function refreshImages() {
       data.items.forEach((item) => {
         modelData.push(item);
       });
+      loadingBar.finish();
     });
 }
 
@@ -273,7 +289,6 @@ const handleScroll = (e: Event) => {
       url.searchParams.append("types", types.value);
     }
 
-    console.log("Fetching page: " + url.toString());
     fetch(url)
       .then((res) => res.json())
       .then((data: ICivitAIModels) => {
@@ -352,14 +367,6 @@ onUnmounted(() => {
 });
 
 refreshImages();
-
-const backgroundColor = computed(() => {
-  if (settings.data.settings.frontend.theme === "dark") {
-    return "#121215";
-  } else {
-    return "#fff";
-  }
-});
 </script>
 
 <style scoped>
@@ -379,7 +386,7 @@ const backgroundColor = computed(() => {
 }
 
 .top-bar {
-  background-color: v-bind(backgroundColor);
+  background-color: v-bind("theme?.Card?.color");
 }
 
 .image-column {

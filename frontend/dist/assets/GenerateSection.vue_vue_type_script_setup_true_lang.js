@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { d as defineComponent, e as openBlock, f as createElementBlock, n as createBaseVNode, u as useState, a as useSettings, E as ref, b9 as onMounted, o as onUnmounted, s as serverUrl, x as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, G as NIcon, m as createTextVNode, y as NGrid, bN as NAlert, v as createCommentVNode, i as NCard } from "./index.js";
-=======
-import { d as defineComponent, o as openBlock, a as createElementBlock, b as createBaseVNode, v as useState, u as useSettings, r as ref, bb as onMounted, y as onUnmounted, z as serverUrl, k as createBlock, w as withCtx, e as createVNode, f as unref, A as NGi, h as NButton, q as NIcon, i as createTextVNode, H as NGrid, bS as NAlert, G as createCommentVNode, N as NCard } from "./index.js";
->>>>>>> origin/experimental
+import { d as defineComponent, e as openBlock, f as createElementBlock, q as createBaseVNode, u as useState, a as useSettings, E as ref, b9 as onMounted, o as onUnmounted, i as serverUrl, x as createBlock, w as withCtx, g as createVNode, h as unref, N as NGi, F as NButton, A as NIcon, n as createTextVNode, z as NGrid, bV as NAlert, v as createCommentVNode, j as NCard } from "./index.js";
 const _hoisted_1$1 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -47,7 +43,6 @@ const Skull = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1, _hoisted_3);
   }
 });
-const _2img = "";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "GenerateSection",
   props: {

@@ -43,8 +43,7 @@
 </template>
 
 <script lang="ts" setup>
-import DownloadDelete from "@/components/DownloadDelete.vue";
-import SendOutputTo from "@/components/SendOutputTo.vue";
+import { DownloadDelete, SendOutputTo } from "@/components";
 import { NCard, NImage, NScrollbar } from "naive-ui";
 import { computed } from "vue";
 

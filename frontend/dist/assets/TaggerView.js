@@ -1,11 +1,11 @@
+import { d as defineComponent, u as useState, a as useSettings, b as useMessage, E as ref, c as computed, s as spaceRegex, e as openBlock, f as createElementBlock, g as createVNode, w as withCtx, h as unref, N as NGi, j as NCard, k as NSpace, q as createBaseVNode, y as NSelect, r as NTooltip, n as createTextVNode, l as NInput, t as toDisplayString, z as NGrid, i as serverUrl, B as pushScopeId, C as popScopeId, _ as _export_sfc } from "./index.js";
 import { _ as _sfc_main$1 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { d as defineComponent, v as useState, u as useSettings, x as useMessage, r as ref, c as computed, o as openBlock, a as createElementBlock, e as createVNode, w as withCtx, f as unref, A as NGi, N as NCard, B as NSpace, b as createBaseVNode, p as NSelect, n as NTooltip, i as createTextVNode, C as NInput, t as toDisplayString, H as NGrid, z as serverUrl, I as spaceRegex, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
 import { v as v4 } from "./v4.js";
 import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-a772e913"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-94d16b9f"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "main-container" };
 const _hoisted_2 = { class: "flex-container" };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Sampler", -1));
@@ -46,13 +46,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           (data) => {
             global.state.tagger.positivePrompt = data.positive;
             global.state.tagger.negativePrompt = data.negative;
-            console.log(data);
           }
         );
       }).catch((err) => {
         global.state.generating = false;
         messageHandler.error(err);
-        console.log(err);
       });
     };
     const weighted = ref(false);
@@ -104,7 +102,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(ImageUpload, {
+                createVNode(unref(ImageUpload), {
                   callback: imageSelectCallback,
                   preview: unref(settings).data.settings.tagger.image,
                   style: { "margin-bottom": "12px" },
@@ -181,7 +179,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(_sfc_main$1, {
+                createVNode(unref(_sfc_main$1), {
                   generate,
                   "do-not-disable-generate": ""
                 }),
@@ -231,8 +229,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TaggerView_vue_vue_type_style_index_0_scoped_a772e913_lang = "";
-const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-a772e913"]]);
+const TaggerView_vue_vue_type_style_index_0_scoped_94d16b9f_lang = "";
+const TaggerView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-94d16b9f"]]);
 export {
   TaggerView as default
 };

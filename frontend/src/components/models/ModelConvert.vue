@@ -22,19 +22,19 @@
           style="margin-right: 12px"
         />
       </div>
-    </NCard>
 
-    <NSpace vertical justify="center" style="width: 100%" align="center">
-      <NButton
-        style="margin-top: 16px; padding: 0 92px"
-        type="success"
-        ghost
-        :loading="building"
-        :disabled="building || modelOptions.length === 0"
-        @click="showUnloadModal = true"
-        >Convert</NButton
-      >
-    </NSpace>
+      <NSpace vertical justify="center" style="width: 100%" align="center">
+        <NButton
+          style="margin-top: 16px; padding: 0 92px"
+          type="success"
+          ghost
+          :loading="building"
+          :disabled="building || modelOptions.length === 0"
+          @click="showUnloadModal = true"
+          >Convert</NButton
+        >
+      </NSpace>
+    </NCard>
 
     <NModal
       v-model:show="showUnloadModal"

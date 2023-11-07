@@ -1,7 +1,7 @@
 import asyncio
 import logging
 from pathlib import Path
-from typing import Any, List, Tuple
+from typing import Any, List, Tuple, Optional
 
 import torch
 from diffusers import (
@@ -23,18 +23,15 @@ from core.config import config
 from core.flags import RefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
-from core.inference.utilities import change_scheduler
-from core.inference_callbacks import (
-    img2img_callback,
-    inpaint_callback,
-    txt2img_callback,
-)
+from core.inference.utilities import change_scheduler, create_generator
+from core.inference_callbacks import callback
 from core.types import (
     Backend,
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     Job,
     Txt2ImgQueueEntry,
+    SigmaScheduler,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
@@ -69,6 +66,7 @@ class SDXLStableDiffusion(InferenceModel):
         self.aesthetic_score: bool
         self.scheduler: Any
         self.final_offload_hook: Any = None
+
         self.image_encoder: Any
 
         self.vae_path: str = "default"
@@ -153,9 +151,11 @@ class SDXLStableDiffusion(InferenceModel):
 
         total_images: List[Image.Image] = []
 
-        pipe, generator = self.create_pipe(
-            job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
+        pipe = self.create_pipe(
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
+        generator = create_generator(job.data.seed)
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
@@ -164,6 +164,7 @@ class SDXLStableDiffusion(InferenceModel):
                 output_type = "latent"
 
             data = pipe.text2img(
+                generator=generator,
                 prompt=job.data.prompt,
                 height=job.data.height,
                 width=job.data.width,
@@ -171,10 +172,10 @@ class SDXLStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
-                generator=generator,
-                callback=txt2img_callback,
+                callback=callback,
                 num_images_per_prompt=job.data.batch_size,
-                return_dict=False,
+                seed=job.data.seed,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
             if output_type == "latent":
@@ -190,11 +191,13 @@ class SDXLStableDiffusion(InferenceModel):
                 model: SDXLStableDiffusion = gpu.loaded_models[flags.model]  # type: ignore
                 if config.api.clear_memory_policy == "always":
                     self.memory_cleanup()
-                pipe, generator = model.create_pipe(
-                    job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
+                pipe = model.create_pipe(
+                    scheduler=(job.data.scheduler, job.data.sigmas),
+                    sampler_settings=job.data.sampler_settings,
                 )
                 data = pipe(
                     image=latents,
+                    generator=generator,
                     prompt=job.data.prompt,
                     height=job.data.height,
                     width=job.data.width,
@@ -202,11 +205,12 @@ class SDXLStableDiffusion(InferenceModel):
                     num_inference_steps=flags.steps,
                     guidance_scale=job.data.guidance_scale,
                     negative_prompt=job.data.negative_prompt,
-                    generator=generator,
-                    callback=txt2img_callback,
+                    callback=callback,
                     num_images_per_prompt=job.data.batch_size,
                     return_dict=False,
                     output_type="pil",
+                    seed=job.data.seed,
+                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 )
                 del model
                 if unload:
@@ -231,14 +235,14 @@ class SDXLStableDiffusion(InferenceModel):
         return total_images
 
     def create_pipe(
-        self, seed: int, scheduler: Any, use_karras_sigmas: bool = False
-    ) -> Tuple[StableDiffusionXLLongPromptWeightingPipeline, torch.Generator]:
+        self,
+        controlnet: Optional[str] = "",
+        scheduler: Optional[Tuple[Any, SigmaScheduler]] = None,
+        sampler_settings: Optional[dict] = None,
+    ) -> StableDiffusionXLLongPromptWeightingPipeline:
         "Create an LWP-XL pipeline"
 
-        if config.api.device_type == "directml":
-            generator = torch.Generator().manual_seed(seed)
-        else:
-            generator = torch.Generator(config.api.device).manual_seed(seed)
+        # self.manage_optional_components(target_controlnet=controlnet or "")
 
         pipe = StableDiffusionXLLongPromptWeightingPipeline(
             parent=self,
@@ -252,20 +256,26 @@ class SDXLStableDiffusion(InferenceModel):
             force_zeros=self.force_zeros,
             aesthetic_score=self.aesthetic_score,
         )
+        pipe.parent = self
 
-        change_scheduler(
-            model=pipe,
-            scheduler=scheduler,
-            use_karras_sigmas=use_karras_sigmas,
-        )
-        return pipe, generator
+        if scheduler:
+            change_scheduler(
+                model=pipe,
+                scheduler=scheduler[0],  # type: ignore
+                sigma_type=scheduler[1],
+                sampler_settings=sampler_settings,
+            )
+
+        return pipe
 
     def img2img(self, job: Img2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        pipe, generator = self.create_pipe(
-            job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
+        pipe = self.create_pipe(
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
+        generator = create_generator(job.data.seed)
 
         # Preprocess the image
         input_image = convert_to_image(job.data.image)
@@ -275,17 +285,19 @@ class SDXLStableDiffusion(InferenceModel):
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
+                generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
-                callback=img2img_callback,
+                callback=callback,
                 strength=job.data.strength,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
+                seed=job.data.seed,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
             if not data:
@@ -315,9 +327,11 @@ class SDXLStableDiffusion(InferenceModel):
     def inpaint(self, job: InpaintQueueEntry) -> List[Image.Image]:
         "Generate an image from an image"
 
-        pipe, generator = self.create_pipe(
-            job.data.seed, job.data.scheduler, job.data.use_karras_sigmas
+        pipe = self.create_pipe(
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
         )
+        generator = create_generator(job.data.seed)
 
         # Preprocess images
         input_image = convert_to_image(job.data.image).convert("RGB")
@@ -331,6 +345,7 @@ class SDXLStableDiffusion(InferenceModel):
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
+                generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,
                 mask_image=input_mask_image,
@@ -338,12 +353,13 @@ class SDXLStableDiffusion(InferenceModel):
                 guidance_scale=job.data.guidance_scale,
                 negative_prompt=job.data.negative_prompt,
                 output_type="pil",
-                generator=generator,
-                callback=inpaint_callback,
+                callback=callback,
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
                 width=job.data.width,
                 height=job.data.height,
+                seed=job.data.seed,
+                prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
             if not data:

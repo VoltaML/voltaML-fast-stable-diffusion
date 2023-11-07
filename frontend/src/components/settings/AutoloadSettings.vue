@@ -113,7 +113,6 @@ const autoloadVaeValue = (model: string) => {
       if (!value || value === "default") {
         delete settings.defaultSettings.api.autoloaded_vae[model];
       } else {
-        console.log("Setting", model, "to", value);
         settings.defaultSettings.api.autoloaded_vae[model] = value;
       }
     },

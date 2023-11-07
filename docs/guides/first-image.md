@@ -4,15 +4,22 @@ This guide assumes that you already have started instance of Volta (fully instal
 
 ## Download your first model
 
-Please click the Download button to access the model downloads page:
+Click the Box icon to access the `Models` page:
 
-![Download Tab](../static/getting-started/left-bar-download.webp)
+![Models Page](../static/getting-started/left-bar-download.webp)
 
-Next, find a model that you like and click on the download button:
+Find a model that you like and click on it (I will use `Dreamshaper v8` for this example):
+![CivitAI Download](../static/getting-started/download-model-1.webp)
 
-![Download Button](../static/getting-started/download-model.webp)
+Select a version that you want to download (the one automatically selected is usually the best one), select the format and click on the **Download** button:
 
-Wait for the download to finish (you can see the progress in the terminal window where you started Volta)
+::: tip Recommendation
+Use FP16 models saved in Safetensors format.
+:::
+
+![CivitAI Download Popup](../static/getting-started/download-model-2.webp)
+
+Wait for the download to finish (you can see the progress in the terminal window where you started Volta), notification will be displayed when the download is finished
 
 Switch back to the **Text to Image** tab:
 
@@ -28,51 +35,59 @@ Click on the **Load Model** button:
 
 Select the model you just downloaded:
 
-1. Click the Load Button (marked as 1)
-2. Wait for the button to change to Unload (marked as 2)
+1. Click the `Load` Button
+2. Wait for the button to change to `Unload`
 
 ![Select Model](../static/getting-started/load-model-modal.webp)
 
-Close the modal by clicking on the **X** button in the top right corner.
+Close the modal by clicking on the `X` button in the top right corner.
 
-Check the model selected as active; it should be done automatically:
+Model should now be loaded and selected:
 
 ![Model Selected](../static/getting-started/loaded-model.webp)
 
-## Generating an image (Finally!)
+## Generating an image
 
-Now that you have loaded the model, you can generate an image.
-
-Assuming that you downloaded one of the `Anything` models [anime style] (but not required - these prompts might not be the best on other models but still should work), paste these inputs into the correct fields:
-
-**Prompt**
+### Prompt
 
 ```
-1girl, blonde, night city, hoodie
+8k portrait of beautiful cyborg with brown hair, intricate, elegant, highly detailed, majestic, digital photography, art by artgerm and ruan jia and greg rutkowski surreal painting gold butterfly filigree, broken glass, (masterpiece, sidelighting, finely detailed beautiful eyes: 1.2), hdr, (detailed background window to a new dimension, plants and flowers:0.7), <lora:https://civitai.com/api/download/models/87153:0.6>
 ```
 
-**Negative Prompt**
+::: tip
+You might have noticed the `<lora:https://civitai.com/api/download/models/87153:0.6>` at the end - this is remote LoRA model, find out more about it [here](/basics/lora)
+:::
 
-This is my "silver bullet" for negative prompt - it works on most models and should work on yours as well.
+### Negative Prompt
+
+::: tip
+You can make your image look a lot better with the use of [textual inversions](/basics/textual-inversion) like [Bad Dream](https://civitai.com/models/72437/baddream-unrealisticdream-negative-embeddings) or [Easy Negative](https://civitai.com/models/7808?modelVersionId=9208)
+:::
 
 ```
-(((deformed))), blurry, bad anatomy, disfigured, poorly drawn face, mutation, mutated, (extra_limb), (ugly), (poorly drawn hands), fused fingers, messy drawing, broken legs censor, censored, censor_bar, multiple breasts, (mutated hands and fingers:1.5), (long body :1.3), (mutation, poorly drawn :1.2), black-white, bad anatomy, liquid body, liquidtongue, disfigured, malformed, mutated, anatomical nonsense, text font ui, error, malformed hands, long neck, blurred, lowers, low res, bad anatomy, bad proportions, bad shadow, uncoordinated body, unnatural body, fused breasts, bad breasts, huge breasts, poorly drawn breasts, extra breasts, liquid breasts, heavy breasts, missingbreasts, huge haunch, huge thighs, huge calf, bad hands, fused hand, missing hand, disappearing arms, disappearing thigh, disappearing calf, disappearing legs, fusedears, bad ears, poorly drawn ears, extra ears, liquid ears, heavy ears, missing ears, old photo, low res, black and white, black and white filter, colorless
+(worst quality, low quality:1.4), nsfw
 ```
 
-**Sampler**
+### Sampler
 
-```
-EulerAncestralDiscrete
-```
+> Pick one of the samplers from the dropdown menu. My favourite is **DPM++ 2S a** and **DPM++ 2M**
+
+### Sigmas
+
+> I will use **Exponential** for this example, but it is a personal preference, experiment with different sigmas to get different results.
 
 <hr>
 
 ![Generate Settings](../static/getting-started/gen-settings.webp)
 
-Now that you set your inputs, click on the **Generate** button:
+Now that you set your inputs, click on the **Generate** button. Wait for the image to generate. You can see progress in the UI or in the terminal window where you started Volta.
 
-![Generate Button](../static/getting-started/generate-button.webp)
+![Progress](../static/getting-started/progress.webp)
 
-Wait for the image to generate. You can see progress on the progress bar or in the terminal window where you started Volta.
+## Final result
 
-![Generated Image](../static/getting-started/final-image.webp)
+![Generated Image](../static/getting-started/final.webp)
+
+::: info
+Image generated in this example has some visual artifacts, but it should provide a good **starting point** for your own experiments with Stable Diffusion and Volta. Learn more by reading other pages in this documentation.
+:::

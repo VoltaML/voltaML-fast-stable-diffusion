@@ -70,8 +70,13 @@ const menuOptionsMain: MenuOption[] = [
     icon: renderIcon(Images),
   },
   {
-    label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
-    key: "extra",
+    label: () =>
+      h(
+        RouterLink,
+        { to: "/imageProcessing" },
+        { default: () => "Image Processing" }
+      ),
+    key: "imageProcessing",
     icon: renderIcon(Duplicate),
   },
   {
@@ -100,6 +105,11 @@ const menuOptionsMain: MenuOption[] = [
     key: "plugins",
     icon: renderIcon(Speedometer),
   },
+  // {
+  //   label: () => h(RouterLink, { to: "/extra" }, { default: () => "Extra" }),
+  //   key: "extra",
+  //   icon: renderIcon(Archive),
+  // },
   {
     label: () =>
       h(RouterLink, { to: "/settings" }, { default: () => "Settings" }),

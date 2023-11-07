@@ -6,9 +6,15 @@ export const defaultCapabilities: Capabilities = {
   supported_precisions_cpu: ["float32"],
   supported_precisions_gpu: ["float32"],
   supported_torch_compile_backends: ["inductor"],
+  supported_self_attentions: [
+    ["Cross-Attention", "cross-attention"],
+    ["Subquadratic Attention", "subquadratic"],
+    ["Multihead Attention", "multihead"],
+  ],
   has_tensorfloat: false,
   has_tensor_cores: false,
   supports_xformers: false,
+  supports_triton: false,
   supports_int8: false,
 };
 

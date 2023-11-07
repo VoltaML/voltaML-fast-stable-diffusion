@@ -11,6 +11,7 @@ from datetime import datetime, timedelta
 from pathlib import Path
 
 from core.install_requirements import (
+    check_valid_python_version,
     commit_hash,
     create_environment,
     in_virtualenv,
@@ -95,6 +96,8 @@ for directory in [
     "textual-inversion",
     "lycoris",
     "logs",
+    "themes",
+    "autofill",
 ]:
     Path(f"data/{directory}").mkdir(exist_ok=True, parents=True)
 
@@ -275,6 +278,12 @@ def checks():
     # Check if we are up to date with the latest release
     version_check(commit_hash())
 
+    # Check if user is running unsupported/non-working version of Python
+    try:
+        check_valid_python_version()
+    except RuntimeError:
+        exit(0)
+
     # Install pytorch and api requirements
     install_deps(args_with_extras.pytorch_type if args_with_extras.pytorch_type else -1)
 
@@ -289,7 +298,9 @@ def checks():
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
 
     from core.config import config
+    from core.logger.websocket_logging import WebSocketLoggingHandler
 
+    logger.addHandler(WebSocketLoggingHandler(config=config))
     logger.info(f"Device: {config.api.device}")
     logger.info(f"Precision: {config.api.data_type}")
 

@@ -1,9 +1,5 @@
+import { d as defineComponent, E as ref, e as openBlock, x as createBlock, h as unref } from "./index.js";
 import { _ as _sfc_main$1 } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
-<<<<<<< HEAD
-import { d as defineComponent, E as ref, e as openBlock, x as createBlock } from "./index.js";
-=======
-import { d as defineComponent, r as ref, o as openBlock, k as createBlock } from "./index.js";
->>>>>>> origin/experimental
 import "./DescriptionsItem.js";
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "TestView",
@@ -16,7 +12,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       });
     });
     return (_ctx, _cache) => {
-      return openBlock(), createBlock(_sfc_main$1, {
+      return openBlock(), createBlock(unref(_sfc_main$1), {
         model: model.value,
         "show-modal": showModal.value,
         "onUpdate:showModal": _cache[0] || (_cache[0] = (e) => showModal.value = e)

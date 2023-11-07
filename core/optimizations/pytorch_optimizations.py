@@ -11,8 +11,8 @@ from diffusers import (
 from core.config import config
 
 from .attn import set_attention_processor
-from .trace_utils import generate_inputs, trace_model
 from .offload import set_offload
+from .compile.trace_utils import generate_inputs, trace_model
 
 logger = logging.getLogger(__name__)
 
@@ -48,9 +48,10 @@ def optimize_model(
         )
 
     offload = config.api.offload and is_pytorch_pipe(pipe) and not is_for_aitemplate
-    can_offload = any(
-        map(lambda x: x not in config.api.device, ["cpu", "vulkan", "mps"])
-    ) and (offload != "disabled" and offload is not None)
+    can_offload = (
+        any(map(lambda x: x not in config.api.device, ["cpu", "vulkan", "mps"]))
+        and offload
+    )
 
     # Took me an hour to understand why CPU stopped working...
     # Turns out AMD just lacks support for BF16...

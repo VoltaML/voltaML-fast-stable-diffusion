@@ -1,5 +1,5 @@
 <template>
-  <NModal :show="showModal">
+  <NModal v-model:show="showModal" mask-closable close-on-esc>
     <NCard style="max-width: 700px" title="Copy additional properties">
       <div
         style="
@@ -119,7 +119,7 @@ const targets = {
   img2img: "img2img",
   controlnet: "img2img",
   inpainting: "img2img",
-  upscale: "extra",
+  upscale: "imageProcessing",
   tagger: "tagger",
 } as const;
 

@@ -131,6 +131,7 @@ export default defineConfig({
 			{
 				text: "WebUI",
 				items: [
+					{ text: "Themes", link: "/webui/themes" },
 					{ text: "Image to Image", link: "/webui/img2img" },
 					{ text: "Downloading Models", link: "/webui/download" },
 					{ text: "Image browser", link: "/webui/imagebrowser" },

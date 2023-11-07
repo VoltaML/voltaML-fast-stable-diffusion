@@ -42,8 +42,33 @@
         <NButton @click="change_compilation('compile')" :color="compileColor"
           >torch.compile</NButton
         >
+        <NButton @click="change_compilation('sfast')" :color="sfastColor"
+          >stable-fast</NButton
+        >
       </div>
     </NFormItem>
+    <div v-if="settings.defaultSettings.api.sfast_compile">
+      <NFormItem label="Use xFormers during compilation" label-placement="left">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.sfast_xformers"
+          :disabled="!global.state.capabilities.supports_xformers"
+        />
+      </NFormItem>
+      <NFormItem label="Use Triton during compilation" label-placement="left">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.sfast_triton"
+          :disabled="!global.state.capabilities.supports_triton"
+        />
+      </NFormItem>
+      <NFormItem
+        label="Use CUDA graphs during compilation"
+        label-placement="left"
+      >
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.sfast_cuda_graph"
+        />
+      </NFormItem>
+    </div>
     <div v-if="settings.defaultSettings.api.torch_compile">
       <NFormItem label="Fullgraph compile" label-placement="left">
         <NSwitch
@@ -133,29 +158,27 @@
       <NSwitch v-model:value="settings.defaultSettings.api.vae_tiling" />
     </NFormItem>
     <NFormItem label="Offload" label-placement="left">
-      <NSelect
-        :options="[
-          {
-            value: 'disabled',
-            label: 'Disabled',
-          },
-          {
-            value: 'model',
-            label: 'Offload the whole model to RAM when not used',
-          },
-          {
-            value: 'module',
-            label: 'Offload individual modules to RAM when not used',
-          },
-        ]"
-        v-model:value="settings.defaultSettings.api.offload"
-      >
-      </NSelect>
+      <NSwitch v-model:value="settings.defaultSettings.api.offload" />
     </NFormItem>
+    <div class="flex-container">
+      <NTooltip style="max-width: 600px">
+        <template #trigger>
+          <p class="switch-label">Don't merge latents</p>
+        </template>
+        <b class="highlight">PyTorch ONLY.</b>
+        Doesn't merge latents into a single one during UNet inference, and
+        instead does both the negatives and positives separately. Saves around
+        200-300mBs of VRAM during inference for a ~10% speed regression.
+      </NTooltip>
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.dont_merge_latents"
+      />
+    </div>
   </NForm>
 </template>
 
 <script lang="ts" setup>
+import { themeKey } from "@/injectionKeys";
 import {
   NButton,
   NForm,
@@ -164,36 +187,47 @@ import {
   NSelect,
   NSlider,
   NSwitch,
+  NTooltip,
 } from "naive-ui";
-import { computed } from "vue";
+import { computed, inject } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
 const settings = useSettings();
 const global = useState();
+const theme = inject(themeKey);
 
 const compileColor = computed(() => {
-  if (settings.defaultSettings.api.torch_compile) return "#f1f1f1";
+  if (settings.defaultSettings.api.torch_compile)
+    return theme?.value.Button.common?.successColor;
   return undefined;
 });
 
 const traceColor = computed(() => {
-  if (settings.defaultSettings.api.trace_model) return "#f1f1f1";
+  if (settings.defaultSettings.api.trace_model)
+    return theme?.value.Button.common?.successColor;
+  return undefined;
+});
+
+const sfastColor = computed(() => {
+  if (settings.defaultSettings.api.sfast_compile) return "#f1f1f1";
   return undefined;
 });
 
 const disableColor = computed(() => {
   if (
     settings.defaultSettings.api.torch_compile ||
-    settings.defaultSettings.api.trace_model
+    settings.defaultSettings.api.trace_model ||
+    settings.defaultSettings.api.sfast_compile
   )
     return undefined;
-  return "#ffffff";
+  return theme?.value.Button.common?.successColor;
 });
 
 function change_compilation(a: string) {
   settings.defaultSettings.api.torch_compile = a === "compile";
   settings.defaultSettings.api.trace_model = a === "trace";
+  settings.defaultSettings.api.sfast_compile = a === "sfast";
 }
 
 const availableTorchCompileBackends = computed(() => {
@@ -205,26 +239,8 @@ const availableTorchCompileBackends = computed(() => {
 });
 
 const availableAttentions = computed(() => {
-  return [
-    ...(global.state.capabilities.supports_xformers
-      ? [{ value: "xformers", label: "xFormers" }]
-      : []),
-    {
-      value: "sdpa",
-      label: "SDP Attention",
-    },
-    {
-      value: "cross-attention",
-      label: "Cross-Attention",
-    },
-    {
-      value: "subquadratic",
-      label: "Sub-quadratic Attention",
-    },
-    {
-      value: "multihead",
-      label: "Multihead attention",
-    },
-  ];
+  return global.state.capabilities.supported_self_attentions.map((l) => {
+    return { value: l[1], label: l[0] };
+  });
 });
 </script>

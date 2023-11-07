@@ -75,7 +75,6 @@ function downloadModel(model: Ref<string> | string) {
   const url = new URL(`${serverUrl}/api/models/download`);
   const modelName = typeof model === "string" ? model : model.value;
   url.searchParams.append("model", modelName);
-  console.log(url);
   settings.state.downloading = true;
   customModel.value = "";
   message.info(`Downloading model: ${modelName}`);

@@ -1,74 +1,75 @@
 <template>
   <NConfigProvider :theme="theme" :theme-overrides="overrides" class="main">
-    <NThemeEditor v-if="settings.data.settings.frontend.enable_theme_editor" />
-    <NNotificationProvider placement="bottom-right" :max="3">
-      <NLoadingBarProvider>
-        <NMessageProvider>
-          <SecretsHandlerVue />
-          <CollapsileNavbarVue />
-          <TopBarVue />
-          <InitHandler />
-          <routerContainerVue style="margin-top: 52px" />
-          <PerformanceDrawer />
-        </NMessageProvider>
-      </NLoadingBarProvider>
-    </NNotificationProvider>
+    <NThemeEditor v-if="settings.data.settings.frontend.enable_theme_editor">
+      <Content />
+    </NThemeEditor>
+
+    <Content v-else />
   </NConfigProvider>
 </template>
 
 <script setup lang="ts">
-import {
-  NConfigProvider,
-  NLoadingBarProvider,
-  NMessageProvider,
-  NNotificationProvider,
-  NThemeEditor,
-  darkTheme,
-  lightTheme,
-  type GlobalThemeOverrides,
-} from "naive-ui";
-import { computed } from "vue";
-import CollapsileNavbarVue from "./components/CollapsibleNavbar.vue";
-import InitHandler from "./components/InitHandler.vue";
-import PerformanceDrawer from "./components/PerformanceDrawer.vue";
-import SecretsHandlerVue from "./components/SecretsHandler.vue";
-import TopBarVue from "./components/TopBar.vue";
-import routerContainerVue from "./router/router-container.vue";
+import "@/assets/2img.css";
+
+import { themeKey, themeOverridesKey } from "@/injectionKeys";
+import { NConfigProvider, NThemeEditor, darkTheme, lightTheme } from "naive-ui";
+import { computed, provide, ref, watch } from "vue";
+import Content from "./Content.vue";
+import { serverUrl } from "./env";
 import { useSettings } from "./store/settings";
+import type { ExtendedThemeOverrides } from "./types";
 
 const settings = useSettings();
 
+const overrides = ref<ExtendedThemeOverrides | null>(null);
 const theme = computed(() => {
-  if (settings.data.settings.frontend.theme === "dark") {
-    document.body.style.backgroundColor = "#121215";
-    return darkTheme;
-  } else {
-    document.body.style.backgroundColor = "white";
+  if (overrides.value?.volta?.base === "light") {
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? lightTheme.common.baseColor;
     return lightTheme;
-  }
-});
-
-const backgroundColor = computed(() => {
-  if (settings.data.settings.frontend.theme === "dark") {
-    return "#121215";
   } else {
-    return "#fff";
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? darkTheme.common.baseColor;
+    return darkTheme;
   }
 });
 
-const overrides: GlobalThemeOverrides = {
-  common: {
-    fontSize: "15px",
-    fontWeight: "600",
-  },
-};
-</script>
+provide(themeOverridesKey, overrides);
+provide(themeKey, theme);
 
-<style>
-.main {
-  background-color: v-bind(backgroundColor);
+function updateTheme() {
+  fetch(`${serverUrl}/themes/${settings.data.settings.frontend.theme}.json`)
+    .then((res) => res.json())
+    .then((data) => {
+      overrides.value = data;
+    });
 }
 
+updateTheme();
+watch(() => settings.data.settings.frontend.theme, updateTheme);
+
+const backgroundImage = computed(() => {
+  if (settings.data.settings.frontend.background_image_override) {
+    return `url(${settings.data.settings.frontend.background_image_override})`;
+  } else if (overrides.value?.volta?.backgroundImage) {
+    return `url(${overrides.value?.volta?.backgroundImage})`;
+  }
+
+  return undefined;
+});
+
+const blur = computed(() => `blur(${overrides.value?.volta?.blur ?? "6px"})`);
+
+watch(
+  () => overrides.value,
+  () => {
+    document.body.style.backgroundColor =
+      overrides.value?.common?.baseColor ?? theme.value.common.baseColor;
+  }
+);
+</script>
+
+<style lang="scss">
 .autocomplete {
   position: relative;
   display: inline-block;
@@ -86,7 +87,49 @@ const overrides: GlobalThemeOverrides = {
   border-radius: v-bind("theme.common.borderRadius");
 }
 .autocomplete-active {
-  background-color: v-bind("theme.common.pressedColor") !important;
-  color: v-bind("theme.common.primaryColorHover") !important;
+  background-color: v-bind("theme.common.pressedColor");
+  color: v-bind("theme.common.primaryColorHover");
+}
+#autocomplete-list {
+  max-height: min(600px, 70vh);
+  overflow-y: auto;
+}
+
+.n-card {
+  backdrop-filter: v-bind(blur);
+}
+
+.navbar {
+  .n-layout {
+    backdrop-filter: v-bind(blur);
+  }
+
+  .n-layout-toggle-button {
+    backdrop-filter: v-bind(blur);
+  }
+}
+
+.top-bar {
+  backdrop-filter: v-bind(blur);
+  background-color: v-bind(
+    "overrides?.Card?.color ?? theme.Card.common?.cardColor"
+  );
+}
+
+.navbar {
+  backdrop-filter: v-bind(blur);
+}
+
+#background {
+  width: 100vw;
+  height: 100vh;
+  position: fixed;
+  background-image: v-bind(backgroundImage);
+  background-size: cover;
+  background-position: center;
+  background-attachment: fixed;
+  top: 0;
+  left: 0;
+  z-index: -99;
 }
 </style>

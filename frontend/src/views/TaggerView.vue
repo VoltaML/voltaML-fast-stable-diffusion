@@ -101,8 +101,7 @@
 
 <script setup lang="ts">
 import "@/assets/2img.css";
-import GenerateSection from "@/components/GenerateSection.vue";
-import ImageUpload from "@/components/ImageUpload.vue";
+import { GenerateSection, ImageUpload } from "@/components";
 import { serverUrl } from "@/env";
 import { spaceRegex } from "@/functions";
 import {
@@ -161,14 +160,12 @@ const generate = () => {
           }) => {
             global.state.tagger.positivePrompt = data.positive;
             global.state.tagger.negativePrompt = data.negative;
-            console.log(data);
           }
         );
     })
     .catch((err) => {
       global.state.generating = false;
       messageHandler.error(err);
-      console.log(err);
     });
 };
 

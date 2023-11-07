@@ -11,6 +11,7 @@ from core.utils import download_file
 
 from ...config import config
 from ...files import get_full_model_path
+from .prompt_expansion import expand
 
 logger = logging.getLogger(__name__)
 
@@ -350,6 +351,8 @@ def get_weighted_text_embeddings(
     no_boseos_middle: Optional[bool] = False,
     skip_parsing: Optional[bool] = False,
     skip_weighting: Optional[bool] = False,
+    seed: int = -1,
+    prompt_expansion_settings: Optional[Dict] = None,
 ):
     r"""
     Prompts can be assigned with local weights using brackets. For example,
@@ -376,14 +379,16 @@ def get_weighted_text_embeddings(
         skip_weighting (`bool`, *optional*, defaults to `False`):
             Skip the weighting. When the parsing is skipped, it is forced True.
     """
+    prompt_expansion_settings = prompt_expansion_settings or {}
+
     max_length = (pipe.tokenizer.model_max_length - 2) * max_embeddings_multiples + 2  # type: ignore
     if isinstance(prompt, str):
         prompt = [prompt]
 
     if not hasattr(pipe, "clip_inference"):
         loralist = []
-        for i, prompt_ in enumerate(prompt):
-            prompt[i], load_map = parse_prompt_special(prompt_)
+        for i, p in enumerate(prompt):
+            prompt[i], load_map = parse_prompt_special(p)
             if len(load_map.keys()) != 0:
                 logger.debug(load_map)
                 if "lora" in load_map:
@@ -467,6 +472,14 @@ def get_weighted_text_embeddings(
                     pipe.lora_injector.apply_lora(lora, alpha)
             pipe.unload_lycoris = remove_lycoris
             pipe.unload_loras = remove_loras
+
+    # Move after loras to purge <lora:...> and <ti:...>
+    if prompt_expansion_settings.pop("prompt_to_prompt", config.api.prompt_to_prompt):
+        for i, p in enumerate(prompt):
+            prompt[i] = expand(
+                p, seed, prompt_expansion_settings=prompt_expansion_settings
+            )
+            logger.info(f'Expanded prompt to "{prompt[i]}"')
 
     if not skip_parsing:
         prompt_tokens, prompt_weights = get_prompts_with_weights(

@@ -7,7 +7,7 @@
 </template>
 
 <script setup lang="ts">
-import ModelPopup from "@/components/models/ModelPopup.vue";
+import { ModelPopup } from "@/components";
 import { ref } from "vue";
 import type { ICivitAIModel } from "../civitai";
 

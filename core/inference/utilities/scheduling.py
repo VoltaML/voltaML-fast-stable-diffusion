@@ -25,6 +25,9 @@ def get_timesteps(
     is_text2img: bool,
 ):
     "Get the amount of timesteps for the provided options"
+
+    shared.current_done_steps = 0
+
     if is_text2img:
         shared.current_steps = num_inference_steps
         return scheduler.timesteps.to(device), num_inference_steps  # type: ignore
@@ -37,8 +40,7 @@ def get_timesteps(
         t_start = max(num_inference_steps - init_timestep + offset, 0)
         timesteps = scheduler.timesteps[t_start:].to(device)  # type: ignore
 
-        shared.current_steps = num_inference_steps
-
+        shared.current_steps = num_inference_steps - t_start
         return timesteps, num_inference_steps - t_start
 
 
@@ -113,8 +115,8 @@ def change_scheduler(
             eta_noise_seed_delta=0,
             sigma_always_discard_next_to_last=False,
             sigma_use_old_karras_scheduler=False,
-            device=model.unet.device,  # type: ignore
-            dtype=model.unet.dtype,  # type: ignore
+            device=torch.device(config.api.device),  # type: ignore
+            dtype=config.api.dtype,  # type: ignore
             sampler_settings=sampler_settings,
         )
     model.scheduler = new_scheduler  # type: ignore

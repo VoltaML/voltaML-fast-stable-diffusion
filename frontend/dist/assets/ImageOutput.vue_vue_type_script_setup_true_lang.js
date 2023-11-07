@@ -1,8 +1,4 @@
-<<<<<<< HEAD
-import { d as defineComponent, E as ref, u as useState, e as openBlock, x as createBlock, w as withCtx, h as unref, N as NGi, g as createVNode, G as NIcon, m as createTextVNode, F as NButton, v as createCommentVNode, y as NGrid, c as computed, n as createBaseVNode, f as createElementBlock, J as Fragment, M as renderList, O as NScrollbar, i as NCard } from "./index.js";
-=======
-import { d as defineComponent, r as ref, v as useState, o as openBlock, k as createBlock, w as withCtx, f as unref, A as NGi, e as createVNode, q as NIcon, i as createTextVNode, h as NButton, G as createCommentVNode, H as NGrid, c as computed, b as createBaseVNode, a as createElementBlock, F as Fragment, g as renderList, Q as NScrollbar, N as NCard } from "./index.js";
->>>>>>> origin/experimental
+import { d as defineComponent, E as ref, u as useState, e as openBlock, x as createBlock, w as withCtx, h as unref, N as NGi, g as createVNode, A as NIcon, n as createTextVNode, F as NButton, v as createCommentVNode, z as NGrid, c as computed, q as createBaseVNode, f as createElementBlock, I as Fragment, L as renderList, M as NScrollbar, j as NCard } from "./index.js";
 import { D as Download, _ as _sfc_main$2 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { T as TrashBin, N as NImage } from "./TrashBin.js";
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
@@ -167,11 +163,11 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
             })
           ])) : createCommentVNode("", true),
           props.currentImage ? (openBlock(), createElementBlock("div", _hoisted_5, [
-            createVNode(_sfc_main$1, {
+            createVNode(unref(_sfc_main$1), {
               base64image: props.currentImage,
               style: { "margin-bottom": "4px" }
             }, null, 8, ["base64image"]),
-            createVNode(_sfc_main$2, {
+            createVNode(unref(_sfc_main$2), {
               output: props.currentImage,
               card: false,
               data: __props.data

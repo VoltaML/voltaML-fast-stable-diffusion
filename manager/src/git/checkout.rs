@@ -20,7 +20,7 @@ pub fn checkout_commit(repo_path_str: &str, commit_string: &str) -> Result<(), B
 pub fn checkout_branch(repo_path_str: &str, branch_name: &str) -> Result<(), Box<dyn Error>> {
     spawn_command(
         &format!(
-            "git checkout --work-tree=\"{}\" {}",
+            "git --work-tree=\"{}\" checkout {}",
             repo_path_str, branch_name
         ),
         &format!("Checkout branch {} in {}", branch_name, repo_path_str),

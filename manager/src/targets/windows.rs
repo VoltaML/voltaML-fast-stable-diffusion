@@ -47,8 +47,8 @@ pub fn install(experimental: bool) {
         );
     }
 
-    // Insert the HUGGINGFACE_TOKEN
-    crate::environ::change_huggingface_token();
+    // Create .env file
+    crate::environ::create_env_file();
 
     // Create the virtual environment
     let res = crate::utils::python::create_venv();

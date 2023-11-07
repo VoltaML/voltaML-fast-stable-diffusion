@@ -16,7 +16,6 @@ pub fn install(wsl: bool, experimental: bool) {
 
     // Update and upgrade the system
     crate::apt::update();
-    crate::apt::upgrade();
 
     // Clone the repo
     let res = crate::git::clone::clone_repo(
@@ -99,8 +98,8 @@ pub fn install(wsl: bool, experimental: bool) {
     // Check NVCC
     crate::utils::nvidia::is_nvcc_installed();
 
-    // Insert the HUGGINGFACE_TOKEN
-    crate::environ::change_huggingface_token();
+    // Create .env file
+    crate::environ::create_env_file();
 
     // Create the virtual environment
     let res = crate::utils::python::create_venv();

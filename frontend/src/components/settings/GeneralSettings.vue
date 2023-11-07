@@ -11,12 +11,17 @@
           :step="50"
         />
       </NFormItem>
+      <NFormItem label="Enable sending logs to UI" label-placement="left">
+        <NSwitch
+          v-model:value="settings.defaultSettings.api.enable_websocket_logging"
+        />
+      </NFormItem>
     </NForm>
   </NCard>
 </template>
 
 <script setup lang="ts">
-import { NCard, NForm, NFormItem, NInputNumber } from "naive-ui";
+import { NCard, NForm, NFormItem, NInputNumber, NSwitch } from "naive-ui";
 import { watch } from "vue";
 import { useSettings } from "../../store/settings";
 

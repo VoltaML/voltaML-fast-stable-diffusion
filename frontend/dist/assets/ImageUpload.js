@@ -1,10 +1,6 @@
-<<<<<<< HEAD
-import { d as defineComponent, E as ref, c as computed, b9 as onMounted, e as openBlock, x as createBlock, w as withCtx, n as createBaseVNode, bM as withModifiers, f as createElementBlock, g as createVNode, h as unref, G as NIcon, t as toDisplayString, i as NCard, A as pushScopeId, B as popScopeId, _ as _export_sfc } from "./index.js";
-=======
-import { d as defineComponent, r as ref, c as computed, bb as onMounted, o as openBlock, k as createBlock, w as withCtx, b as createBaseVNode, bR as withModifiers, a as createElementBlock, e as createVNode, f as unref, q as NIcon, t as toDisplayString, N as NCard, J as pushScopeId, K as popScopeId, _ as _export_sfc } from "./index.js";
->>>>>>> origin/experimental
+import { d as defineComponent, E as ref, c as computed, b9 as onMounted, e as openBlock, x as createBlock, w as withCtx, q as createBaseVNode, bU as withModifiers, f as createElementBlock, g as createVNode, h as unref, A as NIcon, t as toDisplayString, j as NCard, B as pushScopeId, C as popScopeId, _ as _export_sfc } from "./index.js";
 import { C as CloudUpload } from "./CloudUpload.js";
-const _withScopeId = (n) => (pushScopeId("data-v-b7a1d9cc"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-9ed1514f"), n = n(), popScopeId(), n);
 const _hoisted_1 = { class: "image-container" };
 const _hoisted_2 = {
   for: "file-upload",
@@ -63,9 +59,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
       }
     }
     function onDrop(e) {
-      var _a, _b;
-      console.log((_a = e.dataTransfer) == null ? void 0 : _a.files);
-      if ((_b = e.dataTransfer) == null ? void 0 : _b.files) {
+      var _a;
+      if ((_a = e.dataTransfer) == null ? void 0 : _a.files) {
         const reader = new FileReader();
         reader.onload = (e2) => {
           var _a2;
@@ -138,8 +133,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageUpload_vue_vue_type_style_index_0_scoped_b7a1d9cc_lang = "";
-const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-b7a1d9cc"]]);
+const ImageUpload = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-9ed1514f"]]);
 export {
   ImageUpload as I
 };

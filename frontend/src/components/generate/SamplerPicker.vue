@@ -28,7 +28,7 @@
           <component
             :is="
               resolveComponent(
-                settings.data.settings.sampler_config['ui_settings'][param],
+                target.sampler_config['ui_settings'][param],
                 param
               )
             "
@@ -53,7 +53,7 @@
     <NSelect
       :options="settings.scheduler_options"
       filterable
-      v-model:value="settings.data.settings[props.type].sampler"
+      v-model:value="target[props.type].sampler"
       style="flex-grow: 1"
     />
 
@@ -80,7 +80,7 @@
 
     <NSelect
       :options="sigmaOptions"
-      v-model:value="settings.data.settings[props.type].sigmas"
+      v-model:value="target[props.type].sigmas"
       :status="sigmaValidationStatus"
     />
   </div>
@@ -88,6 +88,8 @@
 
 <script setup lang="ts">
 import { convertToTextString } from "@/functions";
+import type { ISettings } from "@/settings";
+import type { InferenceTabs } from "@/types";
 import { Settings } from "@vicons/ionicons5";
 import {
   NButton,
@@ -144,16 +146,12 @@ type SamplerSetting =
 
 function getValue(param: string) {
   const val =
-    settings.data.settings.sampler_config[
-      settings.data.settings[props.type].sampler
-    ][param];
+    target.value.sampler_config[target.value[props.type].sampler][param];
   return val;
 }
 
 function setValue(param: string, value: any) {
-  settings.data.settings.sampler_config[
-    settings.data.settings[props.type].sampler
-  ][param] = value;
+  target.value.sampler_config[target.value[props.type].sampler][param] = value;
 }
 
 function resolveComponent(settings: SamplerSetting, param: string) {
@@ -190,25 +188,32 @@ function resolveComponent(settings: SamplerSetting, param: string) {
   }
 }
 
+const target = computed<ISettings>(() => {
+  if (props.target === "settings") {
+    return settings.data.settings;
+  }
+
+  return settings.defaultSettings;
+});
+
 const props = defineProps({
   type: {
-    type: String as PropType<
-      "txt2img" | "img2img" | "inpainting" | "controlnet"
-    >,
+    type: String as PropType<InferenceTabs>,
     required: true,
+  },
+  target: {
+    type: String as PropType<"settings" | "defaultSettings">,
+    required: false,
+    default: "settings",
   },
 });
 
 const computedSettings = computed(() => {
-  return (
-    settings.data.settings.sampler_config[
-      settings.data.settings[props.type].sampler
-    ] ?? {}
-  );
+  return target.value.sampler_config[target.value[props.type].sampler] ?? {};
 });
 
 const sigmaOptions = computed<SelectMixedOption[]>(() => {
-  const karras = typeof settings.data.settings[props.type].sampler === "string";
+  const karras = typeof target.value[props.type].sampler === "string";
   return [
     {
       label: "Automatic",
@@ -237,12 +242,8 @@ const sigmaOptions = computed<SelectMixedOption[]>(() => {
 });
 
 const sigmaValidationStatus = computed<FormValidationStatus | undefined>(() => {
-  if (typeof settings.data.settings[props.type].sampler !== "string") {
-    if (
-      !["automatic", "karras"].includes(
-        settings.data.settings[props.type].sigmas
-      )
-    ) {
+  if (typeof target.value[props.type].sampler !== "string") {
+    if (!["automatic", "karras"].includes(target.value[props.type].sigmas)) {
       return "error";
     } else {
       return undefined;

@@ -1,0 +1,10 @@
+{
+    "volta": {
+        "base": "light",
+        "blur": "0"
+    },
+    "common": {
+        "fontSize": "15px",
+        "fontWeight": "600"
+    }
+}

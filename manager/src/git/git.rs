@@ -23,3 +23,17 @@ pub fn update_git_repo() -> Result<String, Box<dyn Error>> {
     let output = spawn_command("git pull", "Update git repo")?;
     Ok(output)
 }
+
+pub fn get_branches() -> Result<Vec<String>, Box<dyn Error>> {
+    let output = run_command("git branch -l", "Get all git branches")?;
+    let branches = output
+        .replace("*", "")
+        .split("\n")
+        .collect::<Vec<&str>>()
+        .iter()
+        .map(|s| s.trim())
+        .filter(|s| !s.is_empty())
+        .map(|s| s.to_owned())
+        .collect();
+    Ok(branches)
+}

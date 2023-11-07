@@ -7,6 +7,24 @@ import {
   recievedSettings,
   type ISettings,
 } from "../settings";
+
+export const diffusersSchedulerTuple = {
+  DDIM: 1,
+  DDPM: 2,
+  PNDM: 3,
+  LMSD: 4,
+  EulerDiscrete: 5,
+  HeunDiscrete: 6,
+  EulerAncestralDiscrete: 7,
+  DPMSolverMultistep: 8,
+  DPMSolverSinglestep: 9,
+  KDPM2Discrete: 10,
+  KDPM2AncestralDiscrete: 11,
+  DEISMultistep: 12,
+  UniPCMultistep: 13,
+  DPMSolverSDEScheduler: 14,
+} as const;
+
 export const upscalerOptions: SelectMixedOption[] = [
   {
     label: "RealESRGAN_x4plus",
@@ -59,64 +77,15 @@ export function getSchedulerOptions() {
       type: "group",
       label: "Diffusers",
       key: "diffusers",
-      children: [
-        {
-          label: "DDIM",
-          value: 1,
-        },
-        {
-          label: "DDPM",
-          value: 2,
-        },
-        {
-          label: "PNDM",
-          value: 3,
-        },
-        {
-          label: "LMSD",
-          value: 4,
-        },
-        {
-          label: "EulerDiscrete",
-          value: 5,
-        },
-        {
-          label: "HeunDiscrete",
-          value: 6,
-        },
-        {
-          label: "EulerAncestralDiscrete",
-          value: 7,
-        },
-        {
-          label: "DPMSolverMultistep",
-          value: 8,
-        },
-        {
-          label: "DPMSolverSinglestep",
-          value: 9,
-        },
-        {
-          label: "KDPM2Discrete",
-          value: 10,
-        },
-        {
-          label: "KDPM2AncestralDiscrete",
-          value: 11,
-        },
-        {
-          label: "DEISMultistep",
-          value: 12,
-        },
-        {
-          label: "UniPCMultistep",
-          value: 13,
-        },
-        {
-          label: "DPMSolverSDE",
-          value: 14,
-        },
-      ],
+      children: Object.keys(diffusersSchedulerTuple).map((key) => {
+        return {
+          label: key,
+          value:
+            diffusersSchedulerTuple[
+              key as keyof typeof diffusersSchedulerTuple
+            ],
+        };
+      }),
     },
   ];
   return scheduler_options;

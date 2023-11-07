@@ -42,6 +42,8 @@ ATTENTION_PROCESSORS = {
     "flashattention": lambda p: apply_flash_attention(p.unet) is None,
     # ---
     "multihead": lambda p: apply_multihead_attention(p.unet) is None,
+    # ---
+    "flash-attn": lambda p: apply_flash_attention(p.unet) is None,
 }
 
 

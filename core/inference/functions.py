@@ -1,4 +1,5 @@
 import io
+from importlib.util import find_spec
 import json
 import logging
 import os
@@ -7,7 +8,12 @@ from typing import Any, Dict, Tuple, Union, Optional
 
 import requests
 import torch
-from diffusers import AutoencoderKL, DiffusionPipeline, StableDiffusionPipeline
+from diffusers import (
+    AutoencoderKL,
+    DiffusionPipeline,
+    StableDiffusionPipeline,
+    StableDiffusionXLPipeline,
+)
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     assign_to_checkpoint,
     conv_attn_to_linear,
@@ -41,6 +47,8 @@ from transformers import CLIPTextModel, CLIPTextModelWithProjection
 
 from core.config import config
 from core.files import get_full_model_path
+from core.optimizations import compile_sfast
+from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
 config_name = "model_index.json"
@@ -52,63 +60,32 @@ torch_newer_than_201 = version.parse(torch.__version__) > version.parse("2.0.1")
 
 def is_aitemplate_available():
     "Checks whether AITemplate is available."
-    try:
-        import aitemplate  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
+    return find_spec("aitemplate") is not None
 
 
 def is_ipex_available():
     "Checks whether Intel Pytorch EXtensions are available/installed."
-    try:
-        import intel_extension_for_pytorch  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
+    return find_spec("intel_extension_for_pytorch") is not None
 
 
 def is_onnxconverter_available():
     "Checks whether onnxconverter-common is installed. Onnxconverter-common can be installed using `pip install onnxconverter-common`"
-    try:
-        import onnxconverter_common  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
+    return find_spec("onnxconverter_common") is not None
 
 
 def is_onnx_available():
     "Checks whether onnx and onnxruntime is installed. Onnx can be installed using `pip install onnx onnxruntime`"
-    try:
-        import onnx  # noqa: F401
-        from onnxruntime.quantization import QuantType, quantize_dynamic  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
+    return find_spec("onnx") is not None and find_spec("onnxruntime") is not None
 
 
 def is_onnxscript_available():
     "Checks whether onnx-script is installed. Onnx-script can be installed with the instructions from https://github.com/microsoft/onnx-script#installing-onnx-script"
-    try:
-        import onnxscript  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
+    return find_spec("onnxscript") is not None
 
 
 def is_onnxsim_available():
     "Checks whether onnx-simplifier is available. Onnx-simplifier can be installed using `pip install onnxsim`"
-    try:
-        from onnxsim import simplify  # noqa: F401
-
-        return True
-    except ImportError:
-        return False
+    return find_spec("onnxsim") is not None
 
 
 def load_config(
@@ -380,11 +357,14 @@ def load_pytorch_pipeline(
         # This function does not inherit the channels so we need to hack it like this
         in_channels = 9 if "inpaint" in model_id_or_path.casefold() else 4
 
+        type = determine_model_type(get_full_model_path(model_id_or_path))
+        cl = StableDiffusionXLPipeline if type[1] == "SDXL" else StableDiffusionPipeline
         # I never knew this existed, but this is pretty handy :)
         # cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),
+                pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=True,
                 load_safety_checker=False,
@@ -393,6 +373,7 @@ def load_pytorch_pipeline(
         except KeyError:
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),
+                pipeline_class=cl,  # type: ignore
                 from_safetensors=use_safetensors,
                 extract_ema=False,
                 load_safety_checker=False,
@@ -464,6 +445,8 @@ def load_pytorch_pipeline(
             device=device,
             is_for_aitemplate=is_for_aitemplate,
         )
+        if config.api.sfast_compile:
+            pipe = compile_sfast(pipe)
     else:
         pipe.to(device, config.api.dtype)
 

@@ -106,9 +106,6 @@
             </div>
 
             <!-- Self Attention Scale -->
-<<<<<<< HEAD
-            <div class="flex-container" v-if="isSelectedModelPyTorch">
-=======
             <div
               class="flex-container"
               v-if="
@@ -116,7 +113,6 @@
                 settings.data.settings.model?.backend === 'PyTorch'
               "
             >
->>>>>>> origin/experimental
               <NTooltip style="max-width: 600px">
                 <template #trigger>
                   <p class="slider-label">Self Attention Scale</p>
@@ -224,8 +220,8 @@
                 placeholder="None"
                 @update:value="onRefinerChange"
                 :value="
-                  conf.data.settings.extra.refiner.model !== null
-                    ? conf.data.settings.extra.refiner.model
+                  settings.data.settings.extra.refiner.model !== null
+                    ? settings.data.settings.extra.refiner.model
                     : ''
                 "
               />
@@ -246,13 +242,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="conf.data.settings.extra.refiner.steps"
+                v-model:value="settings.data.settings.extra.refiner.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.extra.refiner.steps"
+                v-model:value="settings.data.settings.extra.refiner.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
               />
@@ -261,14 +257,14 @@
             <div class="flex-container">
               <p class="slider-label">Strength</p>
               <NSlider
-                v-model:value="conf.data.settings.extra.refiner.strength"
+                v-model:value="settings.data.settings.extra.refiner.strength"
                 :min="0.1"
                 :max="0.9"
                 :step="0.05"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="conf.data.settings.extra.refiner.strength"
+                v-model:value="settings.data.settings.extra.refiner.strength"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
@@ -480,7 +476,7 @@ const refinerModels = computed(() => {
 });
 
 async function onRefinerChange(modelStr: string) {
-  conf.data.settings.extra.refiner.model = modelStr;
+  settings.data.settings.extra.refiner.model = modelStr;
 }
 
 const checkSeed = (seed: number) => {
@@ -544,9 +540,9 @@ const generate = () => {
         : global.state.txt2img.refiner
         ? {
             refiner: {
-              model: conf.data.settings.extra.refiner.model,
-              steps: conf.data.settings.extra.refiner.steps,
-              strength: conf.data.settings.extra.refiner.strength,
+              model: settings.data.settings.extra.refiner.model,
+              steps: settings.data.settings.extra.refiner.steps,
+              strength: settings.data.settings.extra.refiner.strength,
             },
           }
         : {},
@@ -577,17 +573,9 @@ const generate = () => {
     });
 };
 
-<<<<<<< HEAD
-const isSelectedModelPyTorch = computed(() => {
-  return conf.data.settings.model?.backend === "PyTorch";
-});
-
 const isSelectedModelSDXL = computed(() => {
-  return conf.data.settings.model?.backend === "SDXL";
+  return settings.data.settings.model?.backend === "SDXL";
 });
-
-=======
->>>>>>> origin/experimental
 // Burner clock
 const burner = new BurnerClock(
   settings.data.settings.txt2img,

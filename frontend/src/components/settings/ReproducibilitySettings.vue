@@ -135,6 +135,51 @@
         v-model:value="settings.defaultSettings.api.huggingface_style_parsing"
       />
     </NFormItem>
+    <NFormItem label="Prompt-to-Prompt preprocessing" label-placement="left">
+      <NSwitch v-model:value="settings.defaultSettings.api.prompt_to_prompt" />
+    </NFormItem>
+    <NFormItem label="Prompt-to-Prompt model" label-placement="left">
+      <NSelect
+        :options="[
+          {
+            value: 'lllyasviel/Fooocus-Expansion',
+            label: 'lllyasviel/Fooocus-Expansion',
+          },
+          {
+            value: 'daspartho/prompt-extend',
+            label: 'daspartho/prompt-extend',
+          },
+          {
+            value: 'succinctly/text2image-prompt-generator',
+            label: 'succinctly/text2image-prompt-generator',
+          },
+          {
+            value: 'Gustavosta/MagicPrompt-Stable-Diffusion',
+            label: 'Gustavosta/MagicPrompt-Stable-Diffusion',
+          },
+          {
+            value: 'Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator',
+            label: 'Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.prompt_to_prompt_model"
+      />
+    </NFormItem>
+    <NFormItem label="Prompt-to-Prompt device" label-placement="left">
+      <NSelect
+        :options="[
+          {
+            value: 'gpu',
+            label: 'On-Device',
+          },
+          {
+            value: 'cpu',
+            label: 'CPU',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.prompt_to_prompt_device"
+      />
+    </NFormItem>
   </NForm>
 </template>
 

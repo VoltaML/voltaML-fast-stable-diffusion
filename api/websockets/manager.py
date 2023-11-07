@@ -140,7 +140,10 @@ class WebSocketManager:
                     await connection.send_json(data.to_json())
                 except RuntimeError:
                     logger.debug("RuntimeError, removing connection")
-                    await connection.close()
+                    try:
+                        await connection.close()
+                    except RuntimeError:
+                        pass
                     self.active_connections.remove(connection)
             else:
                 self.active_connections.remove(connection)
@@ -157,7 +160,6 @@ class WebSocketManager:
             assert self.loop is not None  # For type safety
             asyncio.set_event_loop(self.loop)
         except AssertionError:
-            logger.info("WARNING: No event loop found, assuming we are running tests")
             return
 
         for connection in self.active_connections:

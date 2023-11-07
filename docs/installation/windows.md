@@ -13,8 +13,28 @@
 | ONNX       | 🚧        |
 
 ::: warning
-For AITemplate acceleration support, please navigate to [WSL2 Installation Guide](/installation/wsl).
+For [AITemplate acceleration](/basics/aitemplate) support, please navigate to [WSL2 Installation Guide](/installation/wsl).
 :::
+
+## Pre-requisites
+
+### Python
+
+- Python 3.10 or higher that PyTorch supports (3.11 is used for testing and development, probably the best option if you do not have any other Python versions installed)
+- Installed from official [Python website](https://www.python.org/downloads/) (not from Microsoft Store)
+- Added to PATH (done by checking the "Add python.exe to PATH" box during installation) automatically or [manually](https://datatofish.com/add-python-to-windows-path/)
+
+::: tip
+You can check if you have Python correctly on path by opening CMD/PowerShell and typing `python --version`. If you get an error, you will need to add Python to path. Also make sure that you have the correct version of Python installed.
+:::
+
+::: warning
+If you installed Python from the Microsoft Store, you will need to uninstall it and install it from the official website.
+:::
+
+### Git
+
+- Installed from official [Git website](https://git-scm.com/downloads)
 
 ## Installation
 
