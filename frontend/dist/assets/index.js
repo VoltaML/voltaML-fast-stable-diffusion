@@ -40827,7 +40827,12 @@ const defaultSettings = {
     live_preview_delay: 2,
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
-    prompt_to_prompt_device: "gpu"
+    prompt_to_prompt_device: "gpu",
+    free_u: false,
+    free_u_s1: 0.9,
+    free_u_s2: 0.2,
+    free_u_b1: 1.2,
+    free_u_b2: 1.4
   },
   aitemplate: {
     num_threads: 8
@@ -40853,7 +40858,8 @@ const defaultSettings = {
     image_browser_columns: 5,
     on_change_timer: 2e3,
     nsfw_ok_threshold: 0,
-    background_image_override: ""
+    background_image_override: "",
+    disable_analytics: true
   },
   sampler_config: {}
 };
@@ -43258,13 +43264,13 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a2, _b, _c;
       return {
-        "42a435f2": theme.value.common.popoverColor,
-        "155a1bdc": theme.value.common.borderRadius,
-        "f89662d6": theme.value.common.pressedColor,
-        "27556987": theme.value.common.primaryColorHover,
-        "7e1027f1": blur.value,
-        "6f68cc10": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
-        "d64781fa": backgroundImage.value
+        "4c7ba08e": theme.value.common.popoverColor,
+        "01ab46a4": theme.value.common.borderRadius,
+        "e4e78d9e": theme.value.common.pressedColor,
+        "d0777f2a": theme.value.common.primaryColorHover,
+        "98485856": blur.value,
+        "6a1d04dc": ((_b = (_a2 = overrides.value) == null ? void 0 : _a2.Card) == null ? void 0 : _b.color) ?? ((_c = theme.value.Card.common) == null ? void 0 : _c.cardColor),
+        "344206c2": backgroundImage.value
       };
     });
     const settings = useSettings();
@@ -43279,6 +43285,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
         return darkTheme;
       }
     });
+    const analytics = useState$1();
+    analytics.isEnabled.value = !settings.data.settings.frontend.disable_analytics;
     provide(themeOverridesKey, overrides);
     provide(themeKey, theme);
     function updateTheme() {
@@ -43455,6 +43463,7 @@ const app = createApp(_sfc_main);
 app.use(createPinia());
 app.use(router);
 app.use(index, {
+  isEnabled: false,
   property: {
     id: "G-PYLCYXF7B8"
   }

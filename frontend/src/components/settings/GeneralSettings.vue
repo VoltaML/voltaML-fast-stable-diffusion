@@ -16,6 +16,11 @@
           v-model:value="settings.defaultSettings.api.enable_websocket_logging"
         />
       </NFormItem>
+      <NFormItem label="Disable Analytics" label-placement="left">
+        <NSwitch
+          v-model:value="settings.defaultSettings.frontend.disable_analytics"
+        />
+      </NFormItem>
     </NForm>
   </NCard>
 </template>

@@ -133,6 +133,14 @@ def optimize_model(
                 setattr(pipe, model_name, cpu_offloaded_model)
         logger.info("Optimization: Offloaded model parts to CPU.")
 
+    if config.api.free_u:
+        pipe.enable_freeu(
+            s1=config.api.free_u_s1,
+            s2=config.api.free_u_s2,
+            b1=config.api.free_u_b1,
+            b2=config.api.free_u_b2,
+        )
+
     if config.api.vae_slicing:
         pipe.enable_vae_slicing()
         logger.info("Optimization: Enabled VAE slicing")

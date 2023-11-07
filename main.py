@@ -209,6 +209,17 @@ def checks():
             ]
         )
 
+    if not is_installed("requests"):
+        subprocess.check_call(
+            [
+                sys.executable,
+                "-m",
+                "pip",
+                "install",
+                "requests",
+            ]
+        )
+
     if not is_installed("packaging"):
         subprocess.check_call(
             [

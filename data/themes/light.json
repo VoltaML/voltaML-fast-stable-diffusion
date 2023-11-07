@@ -13,9 +13,14 @@
     },
     "Layout": {
         "color": "rgba(255, 255, 255, 0.6)",
-        "siderColor": "rgba(24, 24, 28, 0)"
+        "siderColor": "rgba(24, 24, 28, 0)",
+        "siderBorderColor": "rgba(255, 255, 255, 0)"
     },
     "Tabs": {
         "colorSegment": "rgba(255, 255, 255, 0.6)"
+    },
+    "Tooltip": {
+        "color": "rgba(255, 255, 255, 1)",
+        "textColor": "rgba(21, 21, 21, 1)"
     }
 }

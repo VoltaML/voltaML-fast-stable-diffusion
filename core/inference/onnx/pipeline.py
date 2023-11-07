@@ -102,7 +102,7 @@ class AutoencoderKLWrapper(AutoencoderKL):
 
     def encode(self, x) -> Tuple:  # pylint: disable=arguments-differ
         x = x.to(self.device, dtype=self.dtype)
-        outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)
+        outputs: AutoencoderKLOutput = AutoencoderKL.encode(self, x, True)  # type: ignore
         return (outputs.latent_dist.sample().to(self.device, dtype=self.dtype),)
 
     def decode(self, z) -> Tuple:  # pylint: disable=arguments-differ

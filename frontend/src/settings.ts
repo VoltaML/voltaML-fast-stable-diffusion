@@ -214,6 +214,12 @@ export interface ISettings {
     prompt_to_prompt: boolean;
     prompt_to_prompt_model: string;
     prompt_to_prompt_device: "gpu" | "cpu";
+
+    free_u: boolean;
+    free_u_s1: number;
+    free_u_s2: number;
+    free_u_b1: number;
+    free_u_b2: number;
   };
   aitemplate: {
     num_threads: number;
@@ -235,6 +241,7 @@ export interface ISettings {
     on_change_timer: number;
     nsfw_ok_threshold: number;
     background_image_override: string;
+    disable_analytics: boolean;
   };
   sampler_config: Record<string, Record<string, any>>;
 }
@@ -406,6 +413,12 @@ export const defaultSettings: ISettings = {
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
     prompt_to_prompt_device: "gpu",
+
+    free_u: false,
+    free_u_s1: 0.9,
+    free_u_s2: 0.2,
+    free_u_b1: 1.2,
+    free_u_b2: 1.4,
   },
   aitemplate: {
     num_threads: 8,
@@ -432,6 +445,7 @@ export const defaultSettings: ISettings = {
     on_change_timer: 2000,
     nsfw_ok_threshold: 0,
     background_image_override: "",
+    disable_analytics: true,
   },
   sampler_config: {},
 };

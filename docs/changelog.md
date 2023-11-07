@@ -1,5 +1,11 @@
 # Changelog
 
+## v0.4.2
+
+### Critical fix
+
+- PyTorch will now download CUDA version instead of CPU version if available
+
 ## v0.4.1
 
 ### Bug Fixes
