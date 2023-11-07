@@ -4,7 +4,7 @@ from functools import partial
 from typing import List, NamedTuple, Optional, Protocol
 
 import torch
-from diffusers.models.attention import Attention
+from diffusers.models.attention_processor import Attention
 
 
 def apply_subquadratic_attention(

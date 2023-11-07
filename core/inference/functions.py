@@ -9,7 +9,7 @@ from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
 import torch
-from diffusers import AutoencoderKL, StableDiffusionPipeline
+from diffusers.models.autoencoder_kl import AutoencoderKL
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     assign_to_checkpoint,
     conv_attn_to_linear,
@@ -17,6 +17,9 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     download_from_original_stable_diffusion_ckpt,
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
 )
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils.constants import (

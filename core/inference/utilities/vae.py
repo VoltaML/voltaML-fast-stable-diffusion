@@ -15,7 +15,7 @@ def taesd(
     global taesd_model
 
     if taesd_model is None:
-        from diffusers import AutoencoderTiny
+        from diffusers.models.autoencoder_tiny import AutoencoderTiny
 
         model = "madebyollin/taesd"
         if False:  # TODO: if is_sdxl:

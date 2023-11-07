@@ -6,9 +6,11 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from diffusers import StableDiffusionPipeline
 from diffusers.models import vae as diffusers_vae
-from diffusers.utils import PIL_INTERPOLATION
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.utils.pil_utils import PIL_INTERPOLATION
 from PIL import Image
 
 from core.config import config
@@ -30,7 +32,7 @@ def _randn_tensor(
     return randn(shape, generator, device, dtype)
 
 
-diffusers_vae.randn_tensor = _randn_tensor
+diffusers_vae.randn_tensor = _randn_tensor  # type: ignore
 logger.debug("Overwritten diffusers randn_tensor")
 
 

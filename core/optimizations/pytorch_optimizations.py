@@ -2,12 +2,11 @@ import logging
 from typing import Optional, Tuple, Union
 
 import torch
-from diffusers import (
-    DiffusionPipeline,
+from diffusers.pipelines.pipeline_utils import DiffusionPipeline
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
-    StableDiffusionUpscalePipeline,
 )
-from diffusers.utils import is_accelerate_available
+from diffusers.utils.import_utils import is_accelerate_available
 
 from core.config import config
 from core.files import get_full_model_path
@@ -22,7 +21,7 @@ USE_DISK_OFFLOAD = False
 
 
 def optimize_model(
-    pipe: Union[StableDiffusionPipeline, StableDiffusionUpscalePipeline],
+    pipe: StableDiffusionPipeline,
     device,
     is_for_aitemplate: bool = False,
 ) -> None:
@@ -183,26 +182,12 @@ def optimize_model(
         )
 
     if config.api.vae_slicing:
-        if not (
-            issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
-            or isinstance(pipe, StableDiffusionUpscalePipeline)
-        ):
-            pipe.enable_vae_slicing()
-            logger.info("Optimization: Enabled VAE slicing")
-        else:
-            logger.debug(
-                "Optimization: VAE slicing is not available for upscale models"
-            )
+        pipe.enable_vae_slicing()
+        logger.info("Optimization: Enabled VAE slicing")
 
     if config.api.vae_tiling:
-        if not (
-            issubclass(pipe.__class__, StableDiffusionUpscalePipeline)
-            or isinstance(pipe, StableDiffusionUpscalePipeline)
-        ):
-            pipe.enable_vae_tiling()
-            logger.info("Optimization: Enabled VAE tiling")
-        else:
-            logger.debug("Optimization: VAE tiling is not available for upscale models")
+        pipe.enable_vae_tiling()
+        logger.info("Optimization: Enabled VAE tiling")
 
     if config.api.use_tomesd and not is_for_aitemplate:
         try:
