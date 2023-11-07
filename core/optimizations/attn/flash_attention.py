@@ -57,7 +57,7 @@ class FlashAttentionBaseAttention:
         )
 
         attention_mask = attn.prepare_attention_mask(  # type: ignore
-            attention_mask, key_tokens, batch_size
+            attention_mask, key_tokens, batch_size  # type: ignore
         )
         if attention_mask is not None:
             # expand our mask's singleton query_tokens dimension:
@@ -79,7 +79,7 @@ class FlashAttentionBaseAttention:
         if encoder_hidden_states is None:
             encoder_hidden_states = hidden_states
         elif attn.norm_cross:
-            encoder_hidden_states = attn.norm_encoder_hidden_states(
+            encoder_hidden_states = attn.norm_encoder_hidden_states(  # type: ignore
                 encoder_hidden_states
             )
 

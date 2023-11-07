@@ -174,6 +174,14 @@ def optimize_model(
 
                 logger.info("Optimization: Enabled sequential offload")
 
+    if config.api.free_u:
+        pipe.enable_freeu(
+            s1=config.api.free_u_s1,
+            s2=config.api.free_u_s2,
+            b1=config.api.free_u_b1,
+            b2=config.api.free_u_b2,
+        )
+
     if config.api.vae_slicing:
         if not (
             issubclass(pipe.__class__, StableDiffusionUpscalePipeline)

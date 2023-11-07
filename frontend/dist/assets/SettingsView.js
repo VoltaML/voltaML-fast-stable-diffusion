@@ -1242,8 +1242,8 @@ const _hoisted_3$1 = { "flex-direction": "row" };
 const _hoisted_4$1 = { key: 1 };
 const _hoisted_5$1 = { key: 2 };
 const _hoisted_6$1 = { class: "flex-container" };
-const _hoisted_7 = /* @__PURE__ */ createBaseVNode("p", { class: "switch-label" }, "Don't merge latents", -1);
-const _hoisted_8 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "PyTorch ONLY.", -1);
+const _hoisted_7$1 = /* @__PURE__ */ createBaseVNode("p", { class: "switch-label" }, "Don't merge latents", -1);
+const _hoisted_8$1 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "PyTorch ONLY.", -1);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "OptimizationSettings",
   setup(__props) {
@@ -1618,10 +1618,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           createBaseVNode("div", _hoisted_6$1, [
             createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
               trigger: withCtx(() => [
-                _hoisted_7
+                _hoisted_7$1
               ]),
               default: withCtx(() => [
-                _hoisted_8,
+                _hoisted_8$1,
                 createTextVNode(" Doesn't merge latents into a single one during UNet inference, and instead does both the negatives and positives separately. Saves around 200-300mBs of VRAM during inference for a ~10% speed regression. ")
               ]),
               _: 1
@@ -1643,6 +1643,8 @@ const _hoisted_3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" 
 const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, 'PyTorch ONLY. Recommended sizes are 1/4th your desired resolution or plain "256."', -1);
 const _hoisted_5 = /* @__PURE__ */ createBaseVNode("b", null, "LARGE (1024x1024+)", -1);
 const _hoisted_6 = { key: 2 };
+const _hoisted_7 = { key: 3 };
+const _hoisted_8 = { key: 4 };
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "ReproducibilitySettings",
   setup(__props) {
@@ -1932,62 +1934,130 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           }),
+          unref(settings).defaultSettings.api.prompt_to_prompt ? (openBlock(), createElementBlock("div", _hoisted_7, [
+            createVNode(unref(NFormItem), {
+              label: "Prompt-to-Prompt model",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSelect), {
+                  options: [
+                    {
+                      value: "lllyasviel/Fooocus-Expansion",
+                      label: "lllyasviel/Fooocus-Expansion"
+                    },
+                    {
+                      value: "daspartho/prompt-extend",
+                      label: "daspartho/prompt-extend"
+                    },
+                    {
+                      value: "succinctly/text2image-prompt-generator",
+                      label: "succinctly/text2image-prompt-generator"
+                    },
+                    {
+                      value: "Gustavosta/MagicPrompt-Stable-Diffusion",
+                      label: "Gustavosta/MagicPrompt-Stable-Diffusion"
+                    },
+                    {
+                      value: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator",
+                      label: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator"
+                    }
+                  ],
+                  value: unref(settings).defaultSettings.api.prompt_to_prompt_model,
+                  "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.api.prompt_to_prompt_model = $event)
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "Prompt-to-Prompt device",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NSelect), {
+                  options: [
+                    {
+                      value: "gpu",
+                      label: "On-Device"
+                    },
+                    {
+                      value: "cpu",
+                      label: "CPU"
+                    }
+                  ],
+                  value: unref(settings).defaultSettings.api.prompt_to_prompt_device,
+                  "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.api.prompt_to_prompt_device = $event)
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            })
+          ])) : createCommentVNode("", true),
           createVNode(unref(NFormItem), {
-            label: "Prompt-to-Prompt model",
+            label: "Free U",
             "label-placement": "left"
           }, {
             default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                options: [
-                  {
-                    value: "lllyasviel/Fooocus-Expansion",
-                    label: "lllyasviel/Fooocus-Expansion"
-                  },
-                  {
-                    value: "daspartho/prompt-extend",
-                    label: "daspartho/prompt-extend"
-                  },
-                  {
-                    value: "succinctly/text2image-prompt-generator",
-                    label: "succinctly/text2image-prompt-generator"
-                  },
-                  {
-                    value: "Gustavosta/MagicPrompt-Stable-Diffusion",
-                    label: "Gustavosta/MagicPrompt-Stable-Diffusion"
-                  },
-                  {
-                    value: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator",
-                    label: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator"
-                  }
-                ],
-                value: unref(settings).defaultSettings.api.prompt_to_prompt_model,
-                "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.api.prompt_to_prompt_model = $event)
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.free_u,
+                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.api.free_u = $event)
               }, null, 8, ["value"])
             ]),
             _: 1
           }),
-          createVNode(unref(NFormItem), {
-            label: "Prompt-to-Prompt device",
-            "label-placement": "left"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(NSelect), {
-                options: [
-                  {
-                    value: "gpu",
-                    label: "On-Device"
-                  },
-                  {
-                    value: "cpu",
-                    label: "CPU"
-                  }
-                ],
-                value: unref(settings).defaultSettings.api.prompt_to_prompt_device,
-                "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.api.prompt_to_prompt_device = $event)
-              }, null, 8, ["value"])
-            ]),
-            _: 1
-          })
+          unref(settings).defaultSettings.api.free_u ? (openBlock(), createElementBlock("div", _hoisted_8, [
+            createVNode(unref(NFormItem), {
+              label: "Free U S1",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NInputNumber), {
+                  value: unref(settings).defaultSettings.api.free_u_s1,
+                  "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).defaultSettings.api.free_u_s1 = $event),
+                  step: 0.01
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "Free U S2",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NInputNumber), {
+                  value: unref(settings).defaultSettings.api.free_u_s2,
+                  "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).defaultSettings.api.free_u_s2 = $event),
+                  step: 0.01
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "Free U B1",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NInputNumber), {
+                  value: unref(settings).defaultSettings.api.free_u_b1,
+                  "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).defaultSettings.api.free_u_b1 = $event),
+                  step: 0.01
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            }),
+            createVNode(unref(NFormItem), {
+              label: "Free U B2",
+              "label-placement": "left"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(NInputNumber), {
+                  value: unref(settings).defaultSettings.api.free_u_b2,
+                  "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(settings).defaultSettings.api.free_u_b2 = $event),
+                  step: 0.01
+                }, null, 8, ["value"])
+              ]),
+              _: 1
+            })
+          ])) : createCommentVNode("", true)
         ]),
         _: 1
       });
