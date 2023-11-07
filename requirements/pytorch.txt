@@ -1,7 +1,7 @@
 --extra-index-url https://pypi.ngc.nvidia.com
 coloredlogs==15.0.1
 dataclasses-json==0.5.8
-git+https://github.com/huggingface/diffusers@60c5eb58778b83f38a1ca599190c6728f79a539f # 0.22.0.dev0
+diffusers==0.22.0
 huggingface_hub==0.17.3
 scipy==1.10.1
 transformers==4.30.0
