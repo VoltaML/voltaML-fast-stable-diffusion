@@ -64,8 +64,6 @@ class LoRAManager(HookObject):
             if lora_key == "alpha":
                 lora_module.alpha = v  # type: ignore
                 continue
-            if isinstance(v, float):
-                continue
             if isinstance(module, torch.nn.Linear):
                 module = torch.nn.Linear(v.shape[1], v.shape[0], bias=False)  # type: ignore
             else:

@@ -1,6 +1,7 @@
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 import re
+import logging
 
 from diffusers.models.lora import LoRACompatibleConv
 import torch
@@ -12,6 +13,9 @@ from .utils import HookObject
 
 torch.nn.Linear.old_forward = torch.nn.Linear.forward  # type: ignore
 LoRACompatibleConv.old_forward = LoRACompatibleConv.forward  # type: ignore
+
+
+logger = logging.getLogger(__name__)
 
 
 def load_lora_utilities(pipe):
@@ -70,11 +74,50 @@ class HookManager(object):
                     if not (is_linear or is_conv2d):
                         continue
 
+                    if not hasattr(self.pipe, "text_encoder_2"):
+                        logger.debug("SD1.5 lora")
+                        name = name.replace(".", "_")
+                        name = name.replace("input_blocks", "down_blocks")
+                        name = name.replace("middle_block", "mid_block")
+                        name = name.replace("output_blocks", "out_blocks")
+
+                        name = name.replace("to_out_0_lora", "to_out_lora")
+                        name = name.replace("emb_layers", "time_emb_proj")
+
+                        name = name.replace("q_proj_lora", "to_q_lora")
+                        name = name.replace("k_proj_lora", "to_k_lora")
+                        name = name.replace("v_proj_lora", "to_v_lora")
+                        name = name.replace("out_proj_lora", "to_out_lora")
+
+                        # Prepare for SDXL
+                        if "emb" in name:
+                            import re
+
+                            pattern = r"\_\d+(?=\D*$)"
+                            name = re.sub(pattern, "", name, count=1)
+                        if "in_layers_2" in name:
+                            name = name.replace("in_layers_2", "conv1")
+                        if "out_layers_3" in name:
+                            name = name.replace("out_layers_3", "conv2")
+                        if "downsamplers" in name or "upsamplers" in name:
+                            name = name.replace("op", "conv")
+                        if "skip" in name:
+                            name = name.replace("skip_connection", "conv_shortcut")
+
+                        if "transformer_blocks" in name:
+                            if (
+                                "attn1" in name or "attn2" in name
+                            ) and "processor" not in name:
+                                name = name.replace("attn1", "attn1_processor")
+                                name = name.replace("attn2", "attn2_processor")
+                        elif "mlp" in name:
+                            name = name.replace("_lora_", "_lora_linear_layer_")
+
                     lora_name = prefix + "_" + name + "_" + child_name
                     lora_name = lora_name.replace(".", "_")
-                    print(lora_name)
+                    # print(lora_name)
                     target_modules.append((lora_name, child_module))
-        print("---")
+        # print("---")
         return target_modules
 
     def _load_state_dict(self, file: Union[Path, str]) -> Dict[str, torch.nn.Module]:
@@ -87,9 +130,13 @@ class HookManager(object):
         else:
             state_dict = torch.load(file)  # .bin, .pt, .ckpt...
 
-        unet_config = self.pipe.unet.config  # type: ignore
-        state_dict = self._maybe_map_sgm_blocks_to_diffusers(state_dict, unet_config)
-        state_dict = self._convert_kohya_lora_to_diffusers(state_dict)
+        if hasattr(self.pipe, "text_encoder_2"):
+            logger.debug("Mapping SGM")
+            unet_config = self.pipe.unet.config  # type: ignore
+            state_dict = self._maybe_map_sgm_blocks_to_diffusers(
+                state_dict, unet_config
+            )
+            state_dict = self._convert_kohya_lora_to_diffusers(state_dict)
 
         return state_dict  # type: ignore
 
@@ -121,20 +168,21 @@ class HookManager(object):
     def install_hooks(self, pipe):
         """Install LoRAHook to the pipe"""
         assert len(self.modules) == 0
+        self.pipe = pipe
         text_encoder_targets = []
         if hasattr(pipe, "text_encoder_2"):
             text_encoder_targets = (
                 text_encoder_targets
                 + self._get_target_modules(
-                    pipe.text_encoder_2, "text_encoder_2", ["CLIPAttention", "CLIPMLP"]
+                    pipe.text_encoder_2, "lora_te2", ["CLIPAttention", "CLIPMLP"]
                 )
                 + self._get_target_modules(
-                    pipe.text_encoder, "text_encoder", ["CLIPAttention", "CLIPMLP"]
+                    pipe.text_encoder, "lora_te", ["CLIPAttention", "CLIPMLP"]
                 )
             )
         else:
             text_encoder_targets = text_encoder_targets + self._get_target_modules(
-                pipe.text_encoder, "text_encoder", ["CLIPAttention", "CLIPMLP"]
+                pipe.text_encoder, "lora_te", ["CLIPAttention", "CLIPMLP"]
             )
         targets = []
         for m in self.managers:
@@ -143,7 +191,7 @@ class HookManager(object):
                     targets.append(target)
         unet_targets = self._get_target_modules(
             pipe.unet,
-            "unet",
+            "lora_unet",
             targets,
         )
         for name, target_module in text_encoder_targets + unet_targets:
@@ -155,7 +203,6 @@ class HookManager(object):
 
         self.change_forwards()
 
-        self.pipe = pipe
         self.device = config.api.device  # type: ignore
         self.dtype = pipe.unet.dtype
 
@@ -326,25 +373,25 @@ class HookManager(object):
             if lora_name_alpha in state_dict:
                 alpha = state_dict.pop(lora_name_alpha).item()
                 if lora_name_alpha.startswith("lora_unet_"):
-                    prefix = "unet_"
+                    prefix = "lora_unet_"
                 elif lora_name_alpha.startswith(("lora_te_", "lora_te1_")):
-                    prefix = "text_encoder_"
+                    prefix = "lora_te_"
                 else:
-                    prefix = "text_encoder_2_"
+                    prefix = "lora_te2_"
                 new_name = prefix + diffusers_name.split("_lora")[0] + ".alpha"  # type: ignore
                 network_alphas.update({new_name: alpha})
 
         unet_state_dict = {
-            f"unet_{module_name}": params
+            f"lora_unet_{module_name}": params
             for module_name, params in unet_state_dict.items()
         }
         te_state_dict = {
-            f"text_encoder_{module_name}": params
+            f"lora_te_{module_name}": params
             for module_name, params in te_state_dict.items()
         }
         te2_state_dict = (
             {
-                f"text_encoder_2_{module_name}": params
+                f"lora_te2_{module_name}": params
                 for module_name, params in te2_state_dict.items()
             }
             if len(te2_state_dict) > 0
