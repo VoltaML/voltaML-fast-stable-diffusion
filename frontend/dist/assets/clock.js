@@ -5,10 +5,37 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, e as openBlock, x as createBlock, w as withCtx, g as createVNode, h as unref, n as createTextVNode, t as toDisplayString, j as NCard, v as createCommentVNode, a as useSettings, f as createElementBlock, r as NTooltip, q as createBaseVNode, I as Fragment, J as watch, E as ref, i as serverUrl } from "./index.js";
-import { N as NSlider } from "./Switch.js";
+import { d as defineComponent, e as openBlock, f as createElementBlock, k as createBaseVNode, p as createBlock, w as withCtx, g as createVNode, h as unref, m as createTextVNode, B as toDisplayString, i as NCard, n as createCommentVNode, a as useSettings, l as NTooltip, F as Fragment, u as useState, c as computed, E as spaceRegex, A as NIcon, q as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
+import { N as NSlider, a as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+import { N as NForm, a as NFormItem } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+const _hoisted_1$2 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M262.29 192.31a64 64 0 1 0 57.4 57.4a64.13 64.13 0 0 0-57.4-57.4zM416.39 256a154.34 154.34 0 0 1-1.53 20.79l45.21 35.46a10.81 10.81 0 0 1 2.45 13.75l-42.77 74a10.81 10.81 0 0 1-13.14 4.59l-44.9-18.08a16.11 16.11 0 0 0-15.17 1.75A164.48 164.48 0 0 1 325 400.8a15.94 15.94 0 0 0-8.82 12.14l-6.73 47.89a11.08 11.08 0 0 1-10.68 9.17h-85.54a11.11 11.11 0 0 1-10.69-8.87l-6.72-47.82a16.07 16.07 0 0 0-9-12.22a155.3 155.3 0 0 1-21.46-12.57a16 16 0 0 0-15.11-1.71l-44.89 18.07a10.81 10.81 0 0 1-13.14-4.58l-42.77-74a10.8 10.8 0 0 1 2.45-13.75l38.21-30a16.05 16.05 0 0 0 6-14.08c-.36-4.17-.58-8.33-.58-12.5s.21-8.27.58-12.35a16 16 0 0 0-6.07-13.94l-38.19-30A10.81 10.81 0 0 1 49.48 186l42.77-74a10.81 10.81 0 0 1 13.14-4.59l44.9 18.08a16.11 16.11 0 0 0 15.17-1.75A164.48 164.48 0 0 1 187 111.2a15.94 15.94 0 0 0 8.82-12.14l6.73-47.89A11.08 11.08 0 0 1 213.23 42h85.54a11.11 11.11 0 0 1 10.69 8.87l6.72 47.82a16.07 16.07 0 0 0 9 12.22a155.3 155.3 0 0 1 21.46 12.57a16 16 0 0 0 15.11 1.71l44.89-18.07a10.81 10.81 0 0 1 13.14 4.58l42.77 74a10.8 10.8 0 0 1-2.45 13.75l-38.21 30a16.05 16.05 0 0 0-6.05 14.08c.33 4.14.55 8.3.55 12.47z",
+    fill: "none",
+    stroke: "currentColor",
+    "stroke-linecap": "round",
+    "stroke-linejoin": "round",
+    "stroke-width": "32"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$2 = [_hoisted_2$2];
+const SettingsOutline = defineComponent({
+  name: "SettingsOutline",
+  render: function render(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_3$2);
+  }
+});
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "OutputStats",
   props: {
     genData: {
@@ -56,7 +83,7 @@ const _hoisted_3$1 = {
   class: "flex-container"
 };
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "BatchSizeInput",
   props: {
     batchSizeObject: {
@@ -140,7 +167,7 @@ const _hoisted_7 = {
   class: "flex-container"
 };
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _sfc_main = /* @__PURE__ */ defineComponent({
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "DimensionsInput",
   props: {
     dimensionsObject: {
@@ -231,6 +258,160 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "Prompt",
+  props: {
+    tab: {
+      type: String,
+      required: true
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const settings = useSettings();
+    const state = useState();
+    const promptCount = computed(() => {
+      return settings.data.settings[props.tab].prompt.split(spaceRegex).length - 1;
+    });
+    const negativePromptCount = computed(() => {
+      return settings.data.settings[props.tab].negative_prompt.split(spaceRegex).length - 1;
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", null, [
+        createVNode(unref(NInput), {
+          value: unref(settings).data.settings[props.tab].prompt,
+          "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings[props.tab].prompt = $event),
+          type: "textarea",
+          placeholder: "Prompt",
+          class: "prompt",
+          "show-count": "",
+          onKeyup: _cache[4] || (_cache[4] = ($event) => unref(promptHandleKeyUp)(
+            $event,
+            unref(settings).data.settings[props.tab],
+            "prompt",
+            unref(state)
+          )),
+          onKeydown: unref(promptHandleKeyDown)
+        }, {
+          suffix: withCtx(() => [
+            createVNode(unref(NTooltip), null, {
+              trigger: withCtx(() => [
+                createVNode(unref(NIcon), { style: { "margin-top": "10px" } }, {
+                  default: withCtx(() => [
+                    createVNode(unref(SettingsOutline))
+                  ]),
+                  _: 1
+                })
+              ]),
+              default: withCtx(() => [
+                createVNode(unref(NForm), { "show-feedback": false }, {
+                  default: withCtx(() => [
+                    createVNode(unref(NFormItem), {
+                      label: "Prompt-to-Prompt preprocessing",
+                      class: "form-item"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NSwitch), {
+                          value: unref(settings).data.settings.api.prompt_to_prompt,
+                          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.api.prompt_to_prompt = $event)
+                        }, null, 8, ["value"])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(unref(NFormItem), {
+                      label: "Prompt-to-Prompt model",
+                      class: "form-item"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NSelect), {
+                          filterable: "",
+                          "consistent-menu-width": false,
+                          options: [
+                            {
+                              value: "lllyasviel/Fooocus-Expansion",
+                              label: "lllyasviel/Fooocus-Expansion"
+                            },
+                            {
+                              value: "daspartho/prompt-extend",
+                              label: "daspartho/prompt-extend"
+                            },
+                            {
+                              value: "succinctly/text2image-prompt-generator",
+                              label: "succinctly/text2image-prompt-generator"
+                            },
+                            {
+                              value: "Gustavosta/MagicPrompt-Stable-Diffusion",
+                              label: "Gustavosta/MagicPrompt-Stable-Diffusion"
+                            },
+                            {
+                              value: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator",
+                              label: "Ar4ikov/gpt2-medium-650k-stable-diffusion-prompt-generator"
+                            }
+                          ],
+                          value: unref(settings).data.settings.api.prompt_to_prompt_model,
+                          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.api.prompt_to_prompt_model = $event)
+                        }, null, 8, ["value"])
+                      ]),
+                      _: 1
+                    }),
+                    createVNode(unref(NFormItem), {
+                      label: "Prompt-to-Prompt device",
+                      class: "form-item"
+                    }, {
+                      default: withCtx(() => [
+                        createVNode(unref(NSelect), {
+                          options: [
+                            {
+                              value: "gpu",
+                              label: "On-Device"
+                            },
+                            {
+                              value: "cpu",
+                              label: "CPU"
+                            }
+                          ],
+                          value: unref(settings).data.settings.api.prompt_to_prompt_device,
+                          "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.api.prompt_to_prompt_device = $event)
+                        }, null, 8, ["value"])
+                      ]),
+                      _: 1
+                    })
+                  ]),
+                  _: 1
+                })
+              ]),
+              _: 1
+            })
+          ]),
+          count: withCtx(() => [
+            createTextVNode(toDisplayString(promptCount.value), 1)
+          ]),
+          _: 1
+        }, 8, ["value", "onKeydown"]),
+        createVNode(unref(NInput), {
+          value: unref(settings).data.settings[props.tab].negative_prompt,
+          "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).data.settings[props.tab].negative_prompt = $event),
+          type: "textarea",
+          placeholder: "Negative prompt",
+          "show-count": "",
+          onKeyup: _cache[6] || (_cache[6] = ($event) => unref(promptHandleKeyUp)(
+            $event,
+            unref(settings).data.settings[props.tab],
+            "negative_prompt",
+            unref(state)
+          )),
+          onKeydown: unref(promptHandleKeyDown)
+        }, {
+          count: withCtx(() => [
+            createTextVNode(toDisplayString(negativePromptCount.value), 1)
+          ]),
+          _: 1
+        }, 8, ["value", "onKeydown"])
+      ]);
+    };
+  }
+});
+const Prompt = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-780680bc"]]);
 class BurnerClock {
   constructor(observed_value, settings, callback, timerOverrride = 0, sendInterrupt = true) {
     __publicField(this, "isChanging", ref(false));
@@ -302,7 +483,8 @@ class BurnerClock {
 }
 export {
   BurnerClock as B,
-  _sfc_main as _,
-  _sfc_main$1 as a,
-  _sfc_main$2 as b
+  Prompt as P,
+  _sfc_main$1 as _,
+  _sfc_main$2 as a,
+  _sfc_main$3 as b
 };

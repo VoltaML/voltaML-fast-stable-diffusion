@@ -155,6 +155,94 @@
         </NCard>
 
         <NCard
+          title="SDXL Refiner"
+          style="margin-top: 12px; margin-bottom: 12px"
+          v-if="isSelectedModelSDXL"
+        >
+          <div class="flex-container">
+            <div class="slider-label">
+              <p>Enabled</p>
+            </div>
+            <NSwitch v-model:value="global.state.txt2img.refiner" />
+          </div>
+          <NSpace
+            vertical
+            class="left-container"
+            v-if="global.state.txt2img.refiner"
+          >
+            <!-- Refiner model -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Refiner model</p>
+                </template>
+                The SDXL-Refiner model to use for this step of diffusion.
+                <b class="highlight">
+                  Generally, the refiner that came with your model is bound to
+                  generate the best results.
+                </b>
+              </NTooltip>
+              <NSelect
+                :options="refinerModels"
+                placeholder="None"
+                @update:value="onRefinerChange"
+                :value="
+                  settings.data.settings.extra.refiner.model !== null
+                    ? settings.data.settings.extra.refiner.model
+                    : ''
+                "
+              />
+            </div>
+
+            <!-- Steps -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Steps</p>
+                </template>
+                Number of steps to take in the diffusion process. Higher values
+                will result in more detailed images but will take longer to
+                generate. There is also a point of diminishing returns around
+                100 steps.
+                <b class="highlight"
+                  >We recommend using 20-50 steps for most images.</b
+                >
+              </NTooltip>
+              <NSlider
+                v-model:value="settings.data.settings.extra.refiner.steps"
+                :min="5"
+                :max="300"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="settings.data.settings.extra.refiner.steps"
+                size="small"
+                style="min-width: 96px; width: 96px"
+              />
+            </div>
+
+            <div class="flex-container">
+              <p class="slider-label">Strength</p>
+              <NSlider
+                v-model:value="settings.data.settings.extra.refiner.strength"
+                :min="0.1"
+                :max="0.9"
+                :step="0.05"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="settings.data.settings.extra.refiner.strength"
+                size="small"
+                style="min-width: 96px; width: 96px"
+                :min="0.1"
+                :max="0.9"
+                :step="0.05"
+              />
+            </div>
+          </NSpace>
+        </NCard>
+
+        <NCard
           title="Highres fix"
           style="margin-top: 12px; margin-bottom: 12px"
         >
@@ -317,7 +405,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { onUnmounted } from "vue";
+import { computed, onUnmounted } from "vue";
 import { BurnerClock } from "../../clock";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
@@ -325,6 +413,28 @@ import { useState } from "../../store/state";
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
+
+const isSelectedModelSDXL = computed(() => {
+  return settings.data.settings.model?.backend === "SDXL";
+});
+
+const refinerModels = computed(() => {
+  return global.state.models
+    .filter(
+      (model) =>
+        model.backend === "SDXL" && model.name.toLowerCase().includes("refiner")
+    )
+    .map((model) => {
+      return {
+        label: model.name,
+        value: model.name,
+      };
+    });
+});
+
+async function onRefinerChange(modelStr: string) {
+  settings.data.settings.extra.refiner.model = modelStr;
+}
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -389,6 +499,14 @@ const generate = () => {
               strength: settings.data.settings.extra.highres.strength,
               steps: settings.data.settings.extra.highres.steps,
               antialiased: settings.data.settings.extra.highres.antialiased,
+            },
+          }
+        : global.state.txt2img.refiner
+        ? {
+            refiner: {
+              model: settings.data.settings.extra.refiner.model,
+              steps: settings.data.settings.extra.refiner.steps,
+              strength: settings.data.settings.extra.refiner.strength,
             },
           }
         : {},

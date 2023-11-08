@@ -1,4 +1,4 @@
-import { _ as _export_sfc, d as defineComponent, u as useState, e as openBlock, x as createBlock, w as withCtx, h as unref, g as createVNode, G as NTabPane, H as NTabs } from "./index.js";
+import { _ as _export_sfc, d as defineComponent, u as useState, e as openBlock, p as createBlock, w as withCtx, h as unref, g as createVNode, C as NTabPane, D as NTabs } from "./index.js";
 const _sfc_main$2 = {};
 function _sfc_render$1(_ctx, _cache) {
   return "Autofill manager";

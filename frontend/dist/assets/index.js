@@ -43403,7 +43403,7 @@ const router = createRouter({
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/FormItem.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
@@ -43438,7 +43438,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/FormItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -43472,14 +43472,14 @@ app.mount("#app");
 export {
   createTmOptions as $,
   NIcon as A,
-  pushScopeId as B,
-  popScopeId as C,
-  h as D,
-  ref as E,
-  NButton as F,
-  NTabPane as G,
-  NTabs as H,
-  Fragment as I,
+  toDisplayString as B,
+  NTabPane as C,
+  NTabs as D,
+  spaceRegex as E,
+  Fragment as F,
+  promptHandleKeyUp as G,
+  promptHandleKeyDown as H,
+  NInput as I,
   watch as J,
   upscalerOptions as K,
   renderList as L,
@@ -43638,22 +43638,22 @@ export {
   createElementBlock as f,
   createVNode as g,
   unref as h,
-  serverUrl as i,
-  NCard as j,
-  NSpace as k,
-  NInput as l,
-  promptHandleKeyDown as m,
-  createTextVNode as n,
+  NCard as i,
+  NSpace as j,
+  createBaseVNode as k,
+  NTooltip as l,
+  createTextVNode as m,
+  createCommentVNode as n,
   onUnmounted as o,
-  promptHandleKeyUp as p,
-  createBaseVNode as q,
-  NTooltip as r,
-  spaceRegex as s,
-  toDisplayString as t,
+  createBlock as p,
+  NSelect as q,
+  NGrid as r,
+  serverUrl as s,
+  pushScopeId as t,
   useState2 as u,
-  createCommentVNode as v,
+  popScopeId as v,
   withCtx as w,
-  createBlock as x,
-  NSelect as y,
-  NGrid as z
+  h as x,
+  ref as y,
+  NButton as z
 };
