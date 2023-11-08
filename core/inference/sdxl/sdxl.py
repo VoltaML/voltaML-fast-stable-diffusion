@@ -70,6 +70,8 @@ class SDXLStableDiffusion(InferenceModel):
         self.image_encoder: Any
 
         self.vae_path: str = "default"
+        self.unload_loras: List[str] = []
+        self.unload_lycoris: List[str] = []
 
         if autoload:
             self.load()
@@ -404,6 +406,21 @@ class SDXLStableDiffusion(InferenceModel):
         except Exception as e:
             self.memory_cleanup()
             raise e
+        if len(self.unload_loras) != 0:
+            for lora in self.unload_loras:
+                try:
+                    self.lora_injector.remove_lora(lora)  # type: ignore
+                    logger.debug(f"Unloading LoRA: {lora}")
+                except KeyError:
+                    pass
+            self.unload_loras.clear()
+        if len(self.unload_lycoris) != 0:  # type: ignore
+            for lora in self.unload_lycoris:  # type: ignore
+                try:
+                    self.lora_injector.remove_lycoris(lora)  # type: ignore
+                    logger.debug(f"Unloading LyCORIS: {lora}")
+                except KeyError:
+                    pass
 
         # Clean memory and return images
         self.memory_cleanup()

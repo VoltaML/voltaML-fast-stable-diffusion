@@ -52,6 +52,7 @@ class LoRAManager(HookObject):
         for k, v in state_dict.items():
             key, lora_key = k.split(".", 1)
             module = modules.get(key, None)
+
             if module is None:
                 print(key, lora_key)
                 continue
@@ -61,7 +62,9 @@ class LoRAManager(HookObject):
                 lora.modules[key] = lora_module  # type: ignore
 
             if lora_key == "alpha":
-                lora_module.alpha = v.item()  # type: ignore
+                lora_module.alpha = v  # type: ignore
+                continue
+            if isinstance(v, float):
                 continue
             if isinstance(module, torch.nn.Linear):
                 module = torch.nn.Linear(v.shape[1], v.shape[0], bias=False)  # type: ignore

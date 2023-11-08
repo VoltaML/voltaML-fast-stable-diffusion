@@ -131,11 +131,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             if negative_prompt is not None:
                 logger.debug(f"Post textual negative_prompt: {negative_prompt}")
 
-            obj = Placebo()
             ensure_correct_device(text_encoder)
-            setattr(obj, "text_encoder", text_encoder)
-            setattr(obj, "tokenizer", tokenizer)
-            setattr(obj, "loras", [])
 
             (
                 text_embeddings,
@@ -143,12 +139,14 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 uncond_embeddings,
                 uncond_pooled_embeddings,
             ) = get_weighted_text_embeddings(
-                pipe=obj,  # type: ignore
+                pipe=self.parent,  # type: ignore
                 prompt=prompt,
                 uncond_prompt="" if negative_prompt is None and not self.force_zeros else negative_prompt,  # type: ignore
                 max_embeddings_multiples=max_embeddings_multiples,
                 seed=seed,
                 prompt_expansion_settings=prompt_expansion_settings,
+                tokenizer=tokenizer,
+                text_encoder=text_encoder,
             )
             if negative_prompt is None and self.force_zeros:
                 uncond_embeddings = torch.zeros_like(text_embeddings)
