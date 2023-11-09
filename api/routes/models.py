@@ -104,7 +104,7 @@ def load_model(
 
 
 @router.post("/unload")
-async def unload_model(model: str):
+def unload_model(model: str):
     "Unloads a model from memory"
 
     gpu.unload(model)
@@ -123,7 +123,7 @@ def unload_all_models():
 
 
 @router.post("/load-vae")
-async def load_vae(req: VaeLoadRequest):
+def load_vae(req: VaeLoadRequest):
     "Load a VAE into a model"
 
     gpu.load_vae(req)
@@ -132,7 +132,7 @@ async def load_vae(req: VaeLoadRequest):
 
 
 @router.post("/load-textual-inversion")
-async def load_textual_inversion(req: TextualInversionLoadRequest):
+def load_textual_inversion(req: TextualInversionLoadRequest):
     "Load a LoRA model into a model"
 
     gpu.load_textual_inversion(req)
@@ -141,7 +141,7 @@ async def load_textual_inversion(req: TextualInversionLoadRequest):
 
 
 @router.post("/memory-cleanup")
-async def cleanup():
+def cleanup():
     "Free up memory manually"
 
     gpu.memory_cleanup()
@@ -149,7 +149,7 @@ async def cleanup():
 
 
 @router.post("/download")
-async def download_model(model: str):
+def download_model(model: str):
     "Download a model to the cache"
 
     gpu.download_huggingface_model(model)
