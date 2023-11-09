@@ -6,7 +6,6 @@ import torch
 
 from core.config import config
 
-
 logger = logging.getLogger(__name__)
 _module: torch.nn.Module = None  # type: ignore
 
@@ -32,7 +31,7 @@ def ensure_correct_device(module: torch.nn.Module):
             logger.debug(f"Transferring {_module.__class__.__name__} to cpu.")
             _module.cpu()
 
-        module.to(device=device)
+        module.to(device=torch.device(device))
         _module = module
     else:
         logger.debug(f"Don't need to do anything with {module.__class__.__name__}.")

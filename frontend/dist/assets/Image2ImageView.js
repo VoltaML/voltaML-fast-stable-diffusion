@@ -1,11 +1,11 @@
-import { d as defineComponent, e as openBlock, f as createElementBlock, k as createBaseVNode, u as useState, a as useSettings, b as useMessage, o as onUnmounted, g as createVNode, w as withCtx, h as unref, N as NGi, i as NCard, j as NSpace, l as NTooltip, m as createTextVNode, q as NSelect, r as NGrid, s as serverUrl, t as pushScopeId, v as popScopeId, _ as _export_sfc, n as createCommentVNode, x as h, y as ref, z as NButton, A as NIcon, p as createBlock, B as toDisplayString, C as NTabPane, D as NTabs } from "./index.js";
+import { d as defineComponent, o as openBlock, j as createElementBlock, f as createBaseVNode, a as useState, u as useSettings, p as useMessage, q as onUnmounted, g as createVNode, w as withCtx, h as unref, s as NGi, n as NCard, N as NSpace, l as NTooltip, k as createTextVNode, i as NSelect, t as NGrid, v as serverUrl, x as pushScopeId, y as popScopeId, _ as _export_sfc, m as createCommentVNode, z as h, A as ref, B as NButton, C as NIcon, e as createBlock, D as toDisplayString, E as NTabPane, F as NTabs } from "./index.js";
 import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$9 } from "./clock.js";
 import { _ as _sfc_main$7 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$8 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
 import { _ as _sfc_main$4 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
 import { v as v4 } from "./v4.js";
-import { N as NSlider, a as NSwitch } from "./Switch.js";
+import { a as NSlider, N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./DescriptionsItem.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";

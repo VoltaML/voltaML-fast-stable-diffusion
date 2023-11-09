@@ -36,12 +36,16 @@ export interface ISettings {
   $schema: string;
   backend: "PyTorch" | "AITemplate" | "ONNX" | "unknown";
   model: ModelEntry | null;
-  extra: {
+  flags: {
     sdxl: {
       original_size: number[];
     };
     highres: {
       scale: number;
+      mode: "latent" | "image";
+
+      image_upscaler: string;
+
       latent_scale_mode:
         | "nearest"
         | "area"
@@ -49,9 +53,10 @@ export interface ISettings {
         | "bislerp"
         | "bicubic"
         | "nearest-exact";
+      antialiased: boolean;
+
       strength: number;
       steps: 50;
-      antialiased: boolean;
     };
     refiner: {
       model: string | undefined;
@@ -255,13 +260,15 @@ export const defaultSettings: ISettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: null,
-  extra: {
+  flags: {
     sdxl: {
       original_size: [1024, 1024],
     },
     highres: {
+      image_upscaler: "RealESRGAN_x4plus_anime_6B",
+      mode: "latent",
       scale: 2,
-      latent_scale_mode: "bilinear",
+      latent_scale_mode: "bislerp",
       strength: 0.7,
       steps: 50,
       antialiased: false,
@@ -467,12 +474,8 @@ try {
   req.open("GET", `${serverUrl}/api/settings/`, false);
   req.send();
 
-  // Extra is CatchAll property, so we need to keep ours and merge the rest
-  const extra = rSettings.extra;
   // Merge the recieved settings with the default settings
   rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
-  // Overwrite the extra property as it is store for frontend only
-  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
 } catch (e) {
   console.error(e);
 }

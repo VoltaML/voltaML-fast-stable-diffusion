@@ -1,7 +1,7 @@
 from typing import Optional
 
 import torch
-from diffusers.models.attention import Attention
+from diffusers.models.attention_processor import Attention
 
 
 def apply_flash_attention(module: torch.nn.Module):

@@ -4,7 +4,9 @@ from pathlib import Path
 from typing import Dict, List, Optional, Tuple, Union
 
 import torch
-from diffusers import StableDiffusionPipeline, DiffusionPipeline
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
 from transformers import CLIPTextModel, CLIPTokenizer
 
 from core.utils import download_file

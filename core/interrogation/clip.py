@@ -7,7 +7,7 @@ from typing import List, Optional, Union
 
 import numpy as np
 import torch
-from diffusers.utils import is_accelerate_available
+from diffusers.utils.import_utils import is_accelerate_available
 from PIL import Image
 from safetensors.numpy import load_file, save_file
 from tqdm import tqdm

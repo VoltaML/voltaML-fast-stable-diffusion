@@ -111,7 +111,10 @@ export default defineConfig({
 			},
 			{
 				text: "Guides",
-				items: [{ text: "First image", link: "/guides/first-image" }],
+				items: [
+					{ text: "First image", link: "/guides/first-image" },
+					{ text: "Highres fix", link: "/guides/highres-fix" },
+				],
 				collapsed: false,
 			},
 			{

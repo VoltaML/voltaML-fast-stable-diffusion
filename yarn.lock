@@ -278,6 +278,13 @@
   resolved "https://registry.yarnpkg.com/@esbuild/win32-x64/-/win32-x64-0.18.20.tgz#786c5f41f043b07afb1af37683d7c33668858f6d"
   integrity sha512-kTdfRcSiDfQca/y9QIkng02avJ+NCaQvrMejlsB3RRv5sE9rRoeBPISaZpKxHELzRxZyLvNts1P27W3wV+8geQ==
 
+"@img-comparison-slider/vue@^8.0.0":
+  version "8.0.0"
+  resolved "https://registry.yarnpkg.com/@img-comparison-slider/vue/-/vue-8.0.0.tgz#6d7f036f7ad77e564e915a65d830f9eaea9be23a"
+  integrity sha512-1gir2JlS8ZQLK2lzk4gIp6fuNvOR8UFXaPiHnBrF6fEwIXdMiI5veobi479FV6Tekj8CIhK+pLUPs+NvcOHd5g==
+  dependencies:
+    img-comparison-slider "~8.0.0"
+
 "@jridgewell/sourcemap-codec@^1.4.15":
   version "1.4.15"
   resolved "https://registry.yarnpkg.com/@jridgewell/sourcemap-codec/-/sourcemap-codec-1.4.15.tgz#d7c6e6755c78567a951e04ab52ef0fd26de59f32"
@@ -638,6 +645,11 @@ has-flag@^4.0.0:
   version "4.0.0"
   resolved "https://registry.yarnpkg.com/has-flag/-/has-flag-4.0.0.tgz#944771fd9c81c81265c4d6941860da06bb59479b"
   integrity sha512-EykJT/Q1KjTWctppgIAgfSO0tKVuZUjhgMr17kqTumMl6Afv3EISleU7qZUzoXDFTAHTDC4NOoG/ZxU3EvlMPQ==
+
+img-comparison-slider@~8.0.0:
+  version "8.0.1"
+  resolved "https://registry.yarnpkg.com/img-comparison-slider/-/img-comparison-slider-8.0.1.tgz#6511953ab77c50e36e52f4e1073de9694d9a361c"
+  integrity sha512-Z15m78FhlG0wAg1nhl8oaJgXukxeB9ZRSHbLFyBk3tSG/VfB05vL8FW0DJlm9ztrJc8kE5Q3R979FLhcKohP3Q==
 
 immutable@^4.0.0:
   version "4.3.4"

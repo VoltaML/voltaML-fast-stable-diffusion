@@ -3,7 +3,9 @@ import os
 from typing import Any, List, Literal, Optional, Tuple, Union
 
 import torch
-from diffusers.models import AutoencoderKL, ControlNetModel, UNet2DConditionModel
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from PIL import Image
 from tqdm import tqdm
 from transformers.models.clip import CLIPFeatureExtractor
@@ -33,7 +35,6 @@ from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 from ..utilities import (
     change_scheduler,
     create_generator,
-    get_weighted_text_embeddings,
     image_to_controlnet_input,
     init_ait_module,
 )

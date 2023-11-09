@@ -1,47 +1,44 @@
-from typing import Callable, List, Literal, Optional, Union
 import logging
+from typing import Callable, List, Literal, Optional, Union
 
 import PIL
-from PIL import Image
 import torch
-from tqdm import tqdm
-from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionXLPipeline
-from diffusers.models import (
-    AutoencoderKL,
-    MultiAdapter,
-    T2IAdapter,
-    UNet2DConditionModel,
-)
-from diffusers.pipelines.stable_diffusion import (
+from diffusers.models.adapter import MultiAdapter
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion.pipeline_output import (
     StableDiffusionPipelineOutput,
 )
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
+    StableDiffusionXLPipeline,
+)
+from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
+from diffusers.schedulers.scheduling_utils import SchedulerMixin
+from PIL import Image
+from tqdm import tqdm
 from transformers.models.clip import (
     CLIPTextModel,
-    CLIPTokenizer,
     CLIPTextModelWithProjection,
+    CLIPTokenizer,
 )
 
 from core.config import config
 from core.inference.utilities import (
+    full_vae,
+    get_timesteps,
+    get_weighted_text_embeddings,
+    numpy_to_pil,
+    philox,
+    prepare_extra_step_kwargs,
     prepare_latents,
+    prepare_mask_and_masked_image,
+    prepare_mask_latents,
     preprocess_adapter_image,
     preprocess_image,
     preprocess_mask,
-    prepare_mask_latents,
-    prepare_mask_and_masked_image,
-    prepare_extra_step_kwargs,
-    get_weighted_text_embeddings,
-    get_timesteps,
-    full_vae,
-    numpy_to_pil,
-    philox,
 )
+from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
-from core.optimizations import (
-    inference_context,
-    ensure_correct_device,
-    unload_all,
-)
 
 # ------------------------------------------------------------------------------
 
@@ -360,7 +357,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
                     for oi in image:
                         oi = preprocess_adapter_image(oi, height, width)
-                        oi = oi.to(device, dtype)
+                        oi = oi.to(device, dtype)  # type: ignore
                         adapter_input.append(oi)  # type: ignore
                 else:
                     adapter_input: torch.Tensor = preprocess_adapter_image(  # type: ignore

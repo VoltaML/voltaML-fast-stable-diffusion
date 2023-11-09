@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/save")
-async def save_configuration(settings: config.Configuration):
+def save_configuration(settings: config.Configuration):
     "Update settings and save them to the config file"
 
     reload_required = False
@@ -39,7 +39,7 @@ async def save_configuration(settings: config.Configuration):
 
 
 @router.get("/")
-async def get_configuration():
+def get_configuration():
     "Get current settings"
 
     logger.debug(f"Sending configuration to frontend: {config.config}")
@@ -47,7 +47,7 @@ async def get_configuration():
 
 
 @router.post("/inject-var-into-dotenv")
-async def set_hf_token(key: str, value: str):
+def set_hf_token(key: str, value: str):
     "Set the HuggingFace token in the environment variables and in the .env file"
 
     from core.functions import inject_var_into_dotenv
@@ -56,10 +56,8 @@ async def set_hf_token(key: str, value: str):
     return {"message": "success"}
 
 
-@router.get(
-    "/hf-whoami",
-)
-async def hf_whoami():
+@router.get("/hf-whoami")
+def hf_whoami():
     "Return the current HuggingFace user"
 
     from huggingface_hub import HfApi

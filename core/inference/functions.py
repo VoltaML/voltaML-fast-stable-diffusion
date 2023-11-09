@@ -9,12 +9,8 @@ from functools import partial
 
 import requests
 import torch
-from diffusers import (
-    AutoencoderKL,
-    DiffusionPipeline,
-    StableDiffusionPipeline,
-    StableDiffusionXLPipeline,
-)
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     assign_to_checkpoint,
     conv_attn_to_linear,
@@ -22,6 +18,12 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     download_from_original_stable_diffusion_ckpt,
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
+    StableDiffusionXLPipeline,
 )
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils.constants import (
