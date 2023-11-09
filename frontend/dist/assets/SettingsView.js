@@ -1594,7 +1594,21 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             "label-placement": "left"
           }, {
             default: withCtx(() => [
-              createVNode(unref(NSwitch), {
+              createVNode(unref(NSelect), {
+                options: [
+                  {
+                    value: "disabled",
+                    label: "Disabled"
+                  },
+                  {
+                    value: "model",
+                    label: "Offload the whole model to RAM when not used"
+                  },
+                  {
+                    value: "module",
+                    label: "Offload individual modules to RAM when not used"
+                  }
+                ],
                 value: unref(settings).defaultSettings.api.offload,
                 "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(settings).defaultSettings.api.offload = $event)
               }, null, 8, ["value"])

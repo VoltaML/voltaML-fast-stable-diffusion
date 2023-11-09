@@ -130,9 +130,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         `pipeline.enable_sequential_cpu_offload()` the execution device can only be inferred from Accelerate's module
         hooks.
         """
-        if self.device != torch.device("meta") and not hasattr(self.unet, "offload_device"):  # type: ignore
-            return self.device
-        return getattr(self.unet, "offload_device", self.device)
+        return torch.device(config.api.device)
 
     def _default_height_width(self, height, width, image):
         if image is None:

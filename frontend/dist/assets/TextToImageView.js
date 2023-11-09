@@ -298,7 +298,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           flags: {
             ...isSelectedModelSDXL.value ? {
               sdxl: {
-                original_size: settings.data.settings.flags.sdxl.original_size
+                original_size: [1024, 1024]
               }
             } : {},
             ...global.state.txt2img.highres ? {

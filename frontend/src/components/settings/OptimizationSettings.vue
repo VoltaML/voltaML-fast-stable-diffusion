@@ -158,7 +158,24 @@
       <NSwitch v-model:value="settings.defaultSettings.api.vae_tiling" />
     </NFormItem>
     <NFormItem label="Offload" label-placement="left">
-      <NSwitch v-model:value="settings.defaultSettings.api.offload" />
+      <NSelect
+        :options="[
+          {
+            value: 'disabled',
+            label: 'Disabled',
+          },
+          {
+            value: 'model',
+            label: 'Offload the whole model to RAM when not used',
+          },
+          {
+            value: 'module',
+            label: 'Offload individual modules to RAM when not used',
+          },
+        ]"
+        v-model:value="settings.defaultSettings.api.offload"
+      >
+      </NSelect>
     </NFormItem>
     <div class="flex-container">
       <NTooltip style="max-width: 600px">

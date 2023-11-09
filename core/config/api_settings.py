@@ -33,7 +33,7 @@ class APIConfig:
     channels_last: bool = True
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
-    offload: bool = False
+    offload: Literal["disabled", "model", "module"] = "disabled"
     data_type: Literal["float32", "float16", "bfloat16"] = "float16"
     dont_merge_latents: bool = (
         False  # Will drop performance, but could help with some VRAM issues

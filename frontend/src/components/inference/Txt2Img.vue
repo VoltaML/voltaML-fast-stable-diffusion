@@ -440,7 +440,7 @@ const generate = () => {
         ...(isSelectedModelSDXL.value
           ? {
               sdxl: {
-                original_size: settings.data.settings.flags.sdxl.original_size,
+                original_size: [1024, 1024],
               },
             }
           : {}),

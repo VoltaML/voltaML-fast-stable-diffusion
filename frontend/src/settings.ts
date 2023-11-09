@@ -179,7 +179,7 @@ export interface ISettings {
     vae_slicing: boolean;
     vae_tiling: boolean;
     trace_model: boolean;
-    offload: boolean;
+    offload: "disabled" | "model" | "module";
     device: string;
     data_type: "float16" | "float32" | "bfloat16";
     deterministic_generation: boolean;
@@ -381,7 +381,7 @@ export const defaultSettings: ISettings = {
     vae_tiling: false,
     trace_model: false,
     cudnn_benchmark: false,
-    offload: false,
+    offload: "disabled",
     dont_merge_latents: false,
 
     device: "cuda:0",

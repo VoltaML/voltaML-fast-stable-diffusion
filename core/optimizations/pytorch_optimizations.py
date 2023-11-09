@@ -46,7 +46,11 @@ def optimize_model(
             'You can disable it by going inside Graphics Settings → "Default Graphics Settings" and disabling "Hardware-accelerated GPU Scheduling"'
         )
 
-    offload = config.api.offload and is_pytorch_pipe(pipe) and not is_for_aitemplate
+    offload = (
+        config.api.offload != "disabled"
+        and is_pytorch_pipe(pipe)
+        and not is_for_aitemplate
+    )
     can_offload = (
         any(map(lambda x: x not in config.api.device, ["cpu", "vulkan", "mps"]))
         and offload
