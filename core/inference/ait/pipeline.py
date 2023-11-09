@@ -19,15 +19,17 @@ from pathlib import Path
 from typing import Any, Callable, List, Optional, Union
 
 import torch
-from diffusers import (
-    AutoencoderKL,
-    ControlNetModel,
-    LMSDiscreteScheduler,
-    StableDiffusionPipeline,
-    UNet2DConditionModel,
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion.pipeline_output import (
+    StableDiffusionPipelineOutput,
 )
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
-from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 from PIL import Image
 from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
@@ -339,7 +341,9 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     - float(i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0)
                 )
 
-        def do_denoise(x, t, call: Callable) -> torch.Tensor:
+        def do_denoise(
+            x, t, call: Callable, change_source: Callable[[Callable], None]
+        ) -> torch.Tensor:
             latent_model_input = (
                 torch.cat([x] * 2) if do_classifier_free_guidance else x
             )
@@ -445,6 +449,11 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     callback_steps=1,
                 )
         else:
+            s = self.unet
+
+            def change(src):
+                nonlocal s
+                s = src
 
             def _call(*args, **kwargs):
                 if len(args) == 3:
@@ -459,7 +468,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                 )
 
             for i, t in enumerate(tqdm(timesteps, desc="AITemplate")):
-                latents = do_denoise(latents, t, _call)  # type: ignore
+                latents = do_denoise(latents, t, _call, change)  # type: ignore
 
                 # call the callback, if provided
                 if callback is not None:

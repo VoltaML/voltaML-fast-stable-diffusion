@@ -4,17 +4,19 @@ from dataclasses import Field, dataclass, field, fields
 from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_json
 
 from core.config.samplers.sampler_config import SamplerConfig
+
 from .api_settings import APIConfig
 from .bot_settings import BotConfig
 from .default_settings import (
-    Txt2ImgConfig,
+    AITemplateConfig,
+    ControlNetConfig,
     Img2ImgConfig,
     InpaintingConfig,
-    ControlNetConfig,
-    UpscaleConfig,
-    AITemplateConfig,
     ONNXConfig,
+    Txt2ImgConfig,
+    UpscaleConfig,
 )
+from .flags_settings import FlagsConfig
 from .frontend_settings import FrontendConfig
 from .interrogator_settings import InterrogatorConfig
 
@@ -38,6 +40,7 @@ class Configuration(DataClassJsonMixin):
     bot: BotConfig = field(default_factory=BotConfig)
     frontend: FrontendConfig = field(default_factory=FrontendConfig)
     sampler_config: SamplerConfig = field(default_factory=SamplerConfig)
+    flags: FlagsConfig = field(default_factory=FlagsConfig)
     extra: CatchAll = field(default_factory=dict)
 
 

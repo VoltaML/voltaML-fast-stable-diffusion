@@ -1,8 +1,8 @@
 import logging
 
-from diffusers.models import AutoencoderKL
-from diffusers.models.attention_processor import AttnProcessor2_0, XFormersAttnProcessor
 import torch
+from diffusers.models.attention_processor import AttnProcessor2_0, XFormersAttnProcessor
+from diffusers.models.autoencoder_kl import AutoencoderKL
 
 logger = logging.getLogger(__name__)
 

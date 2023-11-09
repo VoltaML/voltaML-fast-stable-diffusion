@@ -2,14 +2,14 @@ import logging
 
 import torch
 from diffusers.models.attention_processor import AttnProcessor, AttnProcessor2_0
-from diffusers.utils import is_xformers_available
+from diffusers.utils.import_utils import is_xformers_available
 from packaging import version
 
 from core.config import config
 
+from .flash_attention import apply_flash_attention
 from .multihead_attention import apply_multihead_attention
 from .sub_quadratic import apply_subquadratic_attention
-from .flash_attention import apply_flash_attention
 
 logger = logging.getLogger(__name__)
 

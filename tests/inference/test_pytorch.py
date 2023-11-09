@@ -1,6 +1,6 @@
 import numpy as np
 import pytest
-from diffusers.schedulers import KarrasDiffusionSchedulers
+from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 from PIL import Image
 
 from core.inference.pytorch import PyTorchStableDiffusion

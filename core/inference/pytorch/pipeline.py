@@ -4,18 +4,21 @@ from contextlib import ExitStack
 from typing import Any, Callable, Dict, List, Literal, Optional, Union
 
 import PIL
-from PIL import Image
 import torch
-from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionPipeline
-from diffusers.models import (
-    AutoencoderKL,
-    ControlNetModel,
-    UNet2DConditionModel,
-    T2IAdapter,
-    MultiAdapter,
+from diffusers.models.adapter import MultiAdapter
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion.pipeline_output import (
+    StableDiffusionPipelineOutput,
 )
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
+from diffusers.schedulers.scheduling_utils import SchedulerMixin
 from diffusers.utils import logging
+from PIL import Image
 from tqdm import tqdm
 from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
@@ -31,12 +34,16 @@ from core.inference.utilities import (
     prepare_latents,
     prepare_mask_and_masked_image,
     prepare_mask_latents,
-    preprocess_image,
     preprocess_adapter_image,
+    preprocess_image,
 )
-from core.optimizations import upcast_vae, ensure_correct_device, unload_all
 from core.inference.utilities.philox import PhiloxGenerator
-from core.optimizations import inference_context
+from core.optimizations import (
+    ensure_correct_device,
+    inference_context,
+    unload_all,
+    upcast_vae,
+)
 from core.scheduling import KdiffusionSchedulerAdapter
 
 from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
@@ -432,7 +439,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
                     for oi in image:
                         oi = preprocess_adapter_image(oi, height, width)
-                        oi = oi.to(device, dtype)
+                        oi = oi.to(device, dtype)  # type: ignore
                         adapter_input.append(oi)  # type: ignore
                 else:
                     adapter_input: torch.Tensor = preprocess_adapter_image(  # type: ignore
@@ -624,8 +631,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 change_source(self.unet)
                 if split_latents_into_two and do_classifier_free_guidance:
                     uncond, cond = text_embeddings.chunk(2)
-                    uncond_down, cond_down = down_block_res_samples.chunk(2)
-                    uncond_mid, cond_mid = mid_block_res_sample.chunk(2)
+                    uncond_down, cond_down = down_block_res_samples.chunk(2)  # type: ignore
+                    uncond_mid, cond_mid = mid_block_res_sample.chunk(2)  # type: ignore
                     uncond_intra, cond_intra = None, None
                     if down_intrablock_additional_residuals is not None:
                         uncond_intra, cond_intra = [], []

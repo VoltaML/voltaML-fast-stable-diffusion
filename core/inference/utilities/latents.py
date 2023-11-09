@@ -6,9 +6,11 @@ from typing import List, Optional, Tuple, Union
 import numpy as np
 import torch
 import torch.nn.functional as F
-from diffusers import StableDiffusionPipeline
 from diffusers.models import vae as diffusers_vae
-from diffusers.utils import PIL_INTERPOLATION
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.utils.pil_utils import PIL_INTERPOLATION
 from PIL import Image
 
 from core.config import config
@@ -30,7 +32,7 @@ def _randn_tensor(
     return randn(shape, generator, device, dtype)
 
 
-diffusers_vae.randn_tensor = _randn_tensor
+diffusers_vae.randn_tensor = _randn_tensor  # type: ignore
 logger.debug("Overwritten diffusers randn_tensor")
 
 
@@ -233,13 +235,13 @@ def preprocess_adapter_image(image, height, width):
         image = image.transpose(0, 3, 1, 2)
         image = torch.from_numpy(image)
     elif isinstance(image[0], torch.Tensor):
-        if image[0].ndim == 3:
-            image = torch.stack(image, dim=0)
-        elif image[0].ndim == 4:
-            image = torch.cat(image, dim=0)
+        if image[0].ndim == 3:  # type: ignore
+            image = torch.stack(image, dim=0)  # type: ignore
+        elif image[0].ndim == 4:  # type: ignore
+            image = torch.cat(image, dim=0)  # type: ignore
         else:
             raise ValueError(
-                f"Invalid image tensor! Expecting image tensor with 3 or 4 dimension, but recive: {image[0].ndim}"
+                f"Invalid image tensor! Expecting image tensor with 3 or 4 dimension, but recive: {image[0].ndim}"  # type: ignore
             )
     return image
 

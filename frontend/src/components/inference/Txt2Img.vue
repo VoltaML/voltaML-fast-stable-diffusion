@@ -187,8 +187,8 @@
                 placeholder="None"
                 @update:value="onRefinerChange"
                 :value="
-                  settings.data.settings.extra.refiner.model !== null
-                    ? settings.data.settings.extra.refiner.model
+                  settings.data.settings.flags.refiner.model !== null
+                    ? settings.data.settings.flags.refiner.model
                     : ''
                 "
               />
@@ -209,13 +209,13 @@
                 >
               </NTooltip>
               <NSlider
-                v-model:value="settings.data.settings.extra.refiner.steps"
+                v-model:value="settings.data.settings.flags.refiner.steps"
                 :min="5"
                 :max="300"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="settings.data.settings.extra.refiner.steps"
+                v-model:value="settings.data.settings.flags.refiner.steps"
                 size="small"
                 style="min-width: 96px; width: 96px"
               />
@@ -224,14 +224,14 @@
             <div class="flex-container">
               <p class="slider-label">Strength</p>
               <NSlider
-                v-model:value="settings.data.settings.extra.refiner.strength"
+                v-model:value="settings.data.settings.flags.refiner.strength"
                 :min="0.1"
                 :max="0.9"
                 :step="0.05"
                 style="margin-right: 12px"
               />
               <NInputNumber
-                v-model:value="settings.data.settings.extra.refiner.strength"
+                v-model:value="settings.data.settings.flags.refiner.strength"
                 size="small"
                 style="min-width: 96px; width: 96px"
                 :min="0.1"
@@ -242,121 +242,7 @@
           </NSpace>
         </NCard>
 
-        <NCard
-          title="Highres fix"
-          style="margin-top: 12px; margin-bottom: 12px"
-        >
-          <div class="flex-container">
-            <div class="slider-label">
-              <p>Enabled</p>
-            </div>
-            <NSwitch v-model:value="global.state.txt2img.highres" />
-          </div>
-
-          <NSpace
-            vertical
-            class="left-container"
-            v-if="global.state.txt2img.highres"
-          >
-            <!-- Steps -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Steps</p>
-                </template>
-                Number of steps to take in the diffusion process. Higher values
-                will result in more detailed images but will take longer to
-                generate. There is also a point of diminishing returns around
-                100 steps.
-                <b class="highlight"
-                  >We recommend using 20-50 steps for most images.</b
-                >
-              </NTooltip>
-              <NSlider
-                v-model:value="settings.data.settings.extra.highres.steps"
-                :min="5"
-                :max="300"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="settings.data.settings.extra.highres.steps"
-                size="small"
-                style="min-width: 96px; width: 96px"
-              />
-            </div>
-
-            <!-- Scale -->
-            <div class="flex-container">
-              <p class="slider-label">Scale</p>
-              <NSlider
-                v-model:value="settings.data.settings.extra.highres.scale"
-                :min="1"
-                :max="8"
-                :step="0.1"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="settings.data.settings.extra.highres.scale"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="0.1"
-              />
-            </div>
-
-            <!-- Denoising strength -->
-            <div class="flex-container">
-              <p class="slider-label">Strength</p>
-              <NSlider
-                v-model:value="settings.data.settings.extra.highres.strength"
-                :min="0.1"
-                :max="0.9"
-                :step="0.05"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="settings.data.settings.extra.highres.strength"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="0.1"
-                :max="0.9"
-                :step="0.05"
-              />
-            </div>
-
-            <div class="flex-container">
-              <p class="slider-label">Antialiased</p>
-              <NSwitch
-                v-model:value="settings.data.settings.extra.highres.antialiased"
-              />
-            </div>
-
-            <div class="flex-container">
-              <p class="slider-label">Latent Mode</p>
-              <NSelect
-                v-model:value="
-                  settings.data.settings.extra.highres.latent_scale_mode
-                "
-                size="small"
-                style="flex-grow: 1"
-                :options="[
-                  { label: 'Nearest', value: 'nearest' },
-                  { label: 'Nearest exact', value: 'nearest-exact' },
-                  { label: 'Area', value: 'area' },
-                  { label: 'Bilinear', value: 'bilinear' },
-                  { label: 'Bicubic', value: 'bicubic' },
-                  {
-                    label: 'Bislerp (Original, slow)',
-                    value: 'bislerp-original',
-                  },
-                  {
-                    label: 'Bislerp (Tortured, fast)',
-                    value: 'bislerp-tortured',
-                  },
-                ]"
-              />
-            </div>
-          </NSpace>
-        </NCard>
+        <HighResFix style="margin-top: 12px; margin-bottom: 12px" />
       </NGi>
 
       <!-- Split -->
@@ -386,6 +272,7 @@ import {
   BatchSizeInput,
   DimensionsInput,
   GenerateSection,
+  HighResFix,
   ImageOutput,
   OutputStats,
   Prompt,
@@ -397,10 +284,8 @@ import {
   NGi,
   NGrid,
   NInputNumber,
-  NSelect,
   NSlider,
   NSpace,
-  NSwitch,
   NTooltip,
   useMessage,
 } from "naive-ui";
@@ -433,7 +318,7 @@ const refinerModels = computed(() => {
 });
 
 async function onRefinerChange(modelStr: string) {
-  settings.data.settings.extra.refiner.model = modelStr;
+  settings.data.settings.flags.refiner.model = modelStr;
 }
 
 const checkSeed = (seed: number) => {
@@ -493,20 +378,23 @@ const generate = () => {
       flags: global.state.txt2img.highres
         ? {
             highres_fix: {
-              scale: settings.data.settings.extra.highres.scale,
+              mode: settings.data.settings.flags.highres.mode,
+              image_upscaler:
+                settings.data.settings.flags.highres.image_upscaler,
+              scale: settings.data.settings.flags.highres.scale,
               latent_scale_mode:
-                settings.data.settings.extra.highres.latent_scale_mode,
-              strength: settings.data.settings.extra.highres.strength,
-              steps: settings.data.settings.extra.highres.steps,
-              antialiased: settings.data.settings.extra.highres.antialiased,
+                settings.data.settings.flags.highres.latent_scale_mode,
+              strength: settings.data.settings.flags.highres.strength,
+              steps: settings.data.settings.flags.highres.steps,
+              antialiased: settings.data.settings.flags.highres.antialiased,
             },
           }
         : global.state.txt2img.refiner
         ? {
             refiner: {
-              model: settings.data.settings.extra.refiner.model,
-              steps: settings.data.settings.extra.refiner.steps,
-              strength: settings.data.settings.extra.refiner.strength,
+              model: settings.data.settings.flags.refiner.model,
+              steps: settings.data.settings.flags.refiner.steps,
+              strength: settings.data.settings.flags.refiner.strength,
             },
           }
         : {},

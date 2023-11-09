@@ -1,18 +1,17 @@
 import logging
-from typing import Optional, Tuple, Union
+from typing import Optional, Tuple
 
 import torch
-from diffusers import (
-    DiffusionPipeline,
+from diffusers.pipelines.pipeline_utils import DiffusionPipeline
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
-    StableDiffusionUpscalePipeline,
 )
 
 from core.config import config
 
 from .attn import set_attention_processor
-from .offload import set_offload
 from .compile.trace_utils import generate_inputs, trace_model
+from .offload import set_offload
 
 logger = logging.getLogger(__name__)
 
@@ -21,7 +20,7 @@ USE_DISK_OFFLOAD = False
 
 
 def optimize_model(
-    pipe: Union[StableDiffusionPipeline, StableDiffusionUpscalePipeline],
+    pipe: StableDiffusionPipeline,
     device,
     is_for_aitemplate: bool = False,
 ) -> None:

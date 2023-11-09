@@ -9,20 +9,23 @@ import warnings
 from dataclasses import fields
 from pathlib import Path
 from time import time
-from typing import Dict, List, Optional, Tuple, Type, TypeVar, Union
+from typing import Callable, Dict, List, Optional, Tuple, Type, TypeVar, Union
 
 import numpy as np
 import torch
 from accelerate import init_empty_weights, load_checkpoint_and_dispatch
 from accelerate.utils import set_module_tensor_to_device
-from diffusers import LMSDiscreteScheduler, SchedulerMixin
 from diffusers.models.attention_processor import AttnProcessor
 from diffusers.models.autoencoder_kl import AutoencoderKL, AutoencoderKLOutput
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.models.vae import DecoderOutput
 from diffusers.pipelines.onnx_utils import ORT_TO_NP_TYPE
-from diffusers.pipelines.stable_diffusion import StableDiffusionPipelineOutput
-from diffusers.utils import PIL_INTERPOLATION
+from diffusers.pipelines.stable_diffusion.pipeline_output import (
+    StableDiffusionPipelineOutput,
+)
+from diffusers.schedulers.scheduling_lms_discrete import LMSDiscreteScheduler
+from diffusers.schedulers.scheduling_utils import SchedulerMixin
+from diffusers.utils.pil_utils import PIL_INTERPOLATION
 from numpy.random import MT19937, RandomState, SeedSequence
 from PIL import Image
 from torch.onnx import export
@@ -712,10 +715,10 @@ class OnnxStableDiffusion(InferenceModel):
             del unet
             self.memory_cleanup()
             if needs_collate:
-                unet = onnx.load(  # type: ignore pylint: disable=undefined-variable
+                unet = onnx.load(  # type: ignore # noqa: F821
                     str((unet_out_path / "unet.onnx").absolute().as_posix())
                 )
-                onnx.save_model(  # type: ignore pylint: disable=undefined-variable
+                onnx.save_model(  # type: ignore # noqa: F821
                     unet,
                     str((output_folder / "unet.onnx").absolute().as_posix()),
                     save_as_external_data=True,
@@ -764,7 +767,7 @@ class OnnxStableDiffusion(InferenceModel):
             logger.info("Compiling cross-attention into model")
             set_attn_processor(vae, AttnProcessor())
 
-            vae.forward = lambda sample: vae.encode(sample)[0]  # type: ignore
+            vae.forward = lambda sample: vae.encode(sample)[0]  # type: ignore # noqa: F821
             onnx_export(
                 vae,
                 model_args=(
@@ -1028,7 +1031,9 @@ class OnnxStableDiffusion(InferenceModel):
         logger.debug("timestep start")
         rt = time()
 
-        def do_inference(x: torch.Tensor, t: torch.Tensor, call) -> torch.Tensor:
+        def do_inference(
+            x, t, call: Callable, change_source: Callable[[Callable], None]
+        ) -> torch.Tensor:
             if kw is not None:
                 latent_model_input = kw(x.numpy(), do_classifier_free_guidance, t)
             else:
@@ -1083,6 +1088,11 @@ class OnnxStableDiffusion(InferenceModel):
                 1,
             ).numpy()
         else:
+            s = self.unet
+
+            def change(src):
+                nonlocal s
+                s = src
 
             def _call(*args, **kwargs):
                 if len(args) == 3:
@@ -1098,7 +1108,7 @@ class OnnxStableDiffusion(InferenceModel):
                 )[0]
 
             for i, t in enumerate(tqdm(timesteps)):
-                latents = do_inference(latents, t, _call)
+                latents = do_inference(latents, t, _call, change)
         logger.debug("timestep end (%.2fs)", time() - rt)
         return latents
 

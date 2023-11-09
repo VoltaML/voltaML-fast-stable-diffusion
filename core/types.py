@@ -2,15 +2,18 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, List, Literal, Optional, Tuple, Union
 from uuid import uuid4
 
-from diffusers import (
-    DiffusionPipeline,
+from diffusers.pipelines.controlnet.pipeline_controlnet import (
     StableDiffusionControlNetPipeline,
-    StableDiffusionDepth2ImgPipeline,
-    StableDiffusionImg2ImgPipeline,
-    StableDiffusionInpaintPipeline,
-    StableDiffusionInstructPix2PixPipeline,
+)
+from diffusers.pipelines.pipeline_utils import DiffusionPipeline
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
-    StableDiffusionUpscalePipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_img2img import (
+    StableDiffusionImg2ImgPipeline,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion_inpaint import (
+    StableDiffusionInpaintPipeline,
 )
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
@@ -241,12 +244,9 @@ class ConvertModelRequest:
 
 PyTorchModelType = Union[
     DiffusionPipeline,
-    StableDiffusionDepth2ImgPipeline,
     StableDiffusionImg2ImgPipeline,
     StableDiffusionInpaintPipeline,
-    StableDiffusionInstructPix2PixPipeline,
     StableDiffusionPipeline,
-    StableDiffusionUpscalePipeline,
     StableDiffusionControlNetPipeline,
 ]
 

@@ -3,7 +3,7 @@
     <NForm>
       <NFormItem label="Scale" label-placement="left">
         <NInputNumber
-          v-model:value="settings.defaultSettings.extra.highres.scale"
+          v-model:value="settings.defaultSettings.flags.highres.scale"
         />
       </NFormItem>
       <NFormItem label="Scaling Mode" label-placement="left">
@@ -39,23 +39,23 @@
             },
           ]"
           v-model:value="
-            settings.defaultSettings.extra.highres.latent_scale_mode
+            settings.defaultSettings.flags.highres.latent_scale_mode
           "
         />
       </NFormItem>
       <NFormItem label="Strength" label-placement="left">
         <NInputNumber
-          v-model:value="settings.defaultSettings.extra.highres.strength"
+          v-model:value="settings.defaultSettings.flags.highres.strength"
         />
       </NFormItem>
       <NFormItem label="Steps" label-placement="left">
         <NInputNumber
-          v-model:value="settings.defaultSettings.extra.highres.steps"
+          v-model:value="settings.defaultSettings.flags.highres.steps"
         />
       </NFormItem>
       <NFormItem label="Antialiased" label-placement="left">
         <NSwitch
-          v-model:value="settings.defaultSettings.extra.highres.antialiased"
+          v-model:value="settings.defaultSettings.flags.highres.antialiased"
         />
       </NFormItem>
     </NForm>

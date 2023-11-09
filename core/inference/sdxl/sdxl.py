@@ -1,27 +1,26 @@
-import asyncio
 import logging
 from pathlib import Path
-from typing import Any, List, Tuple, Optional
+from typing import Any, List, Optional, Tuple
 
 import torch
-from diffusers import (
-    AutoencoderKL,
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
     StableDiffusionXLPipeline,
-    UNet2DConditionModel,
 )
 from PIL import Image, ImageOps
+from tqdm import tqdm
 from transformers.models.clip.modeling_clip import (
     CLIPTextModel,
     CLIPTextModelWithProjection,
 )
 from transformers.models.clip.tokenization_clip import CLIPTokenizer
-from tqdm import tqdm
 
 from api import websocket_manager
 from api.websockets import Data
 from core import shared
 from core.config import config
-from core.flags import XLRefinerFlag, XLFlag
+from core.flags import XLFlag, XLRefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import change_scheduler, create_generator
@@ -31,8 +30,8 @@ from core.types import (
     Img2ImgQueueEntry,
     InpaintQueueEntry,
     Job,
-    Txt2ImgQueueEntry,
     SigmaScheduler,
+    Txt2ImgQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
@@ -199,7 +198,7 @@ class SDXLStableDiffusion(InferenceModel):
 
                 unload = False
                 if flags.model not in gpu.loaded_models:
-                    asyncio.run(gpu.load_model(flags.model, "SDXL"))
+                    gpu.load_model(flags.model, "SDXL")
                     unload = True
                 model: SDXLStableDiffusion = gpu.loaded_models[flags.model]  # type: ignore
                 if config.api.clear_memory_policy == "always":
@@ -230,7 +229,7 @@ class SDXLStableDiffusion(InferenceModel):
                 )
                 del model
                 if unload:
-                    asyncio.run(gpu.unload(flags.model))
+                    gpu.unload(flags.model)
             images: list[Image.Image] = data[0]  # type: ignore
             total_images.extend(images)
 

@@ -4,16 +4,12 @@ import logging
 import os
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Any, Dict, Tuple, Union, Optional
+from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
 import torch
-from diffusers import (
-    AutoencoderKL,
-    DiffusionPipeline,
-    StableDiffusionPipeline,
-    StableDiffusionXLPipeline,
-)
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     assign_to_checkpoint,
     conv_attn_to_linear,
@@ -21,6 +17,12 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     download_from_original_stable_diffusion_ckpt,
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
+)
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
+    StableDiffusionXLPipeline,
 )
 from diffusers.schedulers.scheduling_utils import SCHEDULER_CONFIG_NAME
 from diffusers.utils.constants import (
@@ -43,7 +45,7 @@ from huggingface_hub.utils._errors import (
 from omegaconf import OmegaConf
 from packaging import version
 from requests import HTTPError
-from transformers import CLIPTextModel, CLIPTextModelWithProjection
+from transformers import CLIPTextModel
 
 from core.config import config
 from core.files import get_full_model_path
@@ -393,6 +395,7 @@ def load_pytorch_pipeline(
     for name, text_encoder in [x for x in vars(pipe).items() if "text_encoder" in x[0]]:
         text_encoder: CLIPTextModel
         if text_encoder is not None:
+
             def new_forward(
                 self,
                 inputs_embeds,
@@ -403,10 +406,17 @@ def load_pytorch_pipeline(
                 return_dict: Optional[bool] = None,
             ):
                 n = []
-                original = self.old_forward(inputs_embeds, attention_mask=attention_mask, causal_attention_mask=causal_attention_mask, output_attentions=output_attentions, output_hidden_states=True, return_dict=return_dict)
+                original = self.old_forward(
+                    inputs_embeds,
+                    attention_mask=attention_mask,
+                    causal_attention_mask=causal_attention_mask,
+                    output_attentions=output_attentions,
+                    output_hidden_states=True,
+                    return_dict=return_dict,
+                )
                 n.append(original.hidden_states[-config.api.clip_skip])
                 return n
-            
+
             if config.api.clip_quantization != "full":
                 from transformers import BitsAndBytesConfig
                 from transformers.utils.bitsandbytes import (
