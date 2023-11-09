@@ -1,8 +1,8 @@
-import { d as defineComponent, u as useState, a as useSettings, b as useMessage, D as computed, K as upscalerOptions, c as openBlock, e as createElementBlock, f as createVNode, w as withCtx, g as unref, N as NGi, h as NCard, i as NSpace, j as createBaseVNode, p as NSelect, k as NTooltip, l as createTextVNode, q as NGrid, s as serverUrl, r as pushScopeId, t as popScopeId, _ as _export_sfc, n as createBlock, B as NTabPane, C as NTabs } from "./index.js";
+import { d as defineComponent, a as useState, u as useSettings, p as useMessage, c as computed, b as upscalerOptions, o as openBlock, j as createElementBlock, g as createVNode, w as withCtx, h as unref, r as NGi, n as NCard, N as NSpace, f as createBaseVNode, i as NSelect, l as NTooltip, k as createTextVNode, s as NGrid, t as serverUrl, v as pushScopeId, x as popScopeId, _ as _export_sfc, e as createBlock, D as NTabPane, E as NTabs } from "./index.js";
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { N as NSlider } from "./Switch.js";
+import { a as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";

@@ -1,6 +1,6 @@
-import { d as defineComponent, a as useSettings, c as openBlock, n as createBlock, w as withCtx, f as createVNode, g as unref, I as NInput, p as NSelect, h as NCard, b8 as reactive, D as computed, by as convertToTextString, x as ref, s as serverUrl, J as watch, u as useState, j as createBaseVNode, e as createElementBlock, L as renderList, bb as NText, l as createTextVNode, A as toDisplayString, F as Fragment, m as createCommentVNode, B as NTabPane, C as NTabs, R as inject, bz as themeKey, y as NButton, k as NTooltip, b as useMessage, bA as useNotification, o as onUnmounted, bB as defaultSettings } from "./index.js";
+import { d as defineComponent, u as useSettings, o as openBlock, e as createBlock, w as withCtx, g as createVNode, h as unref, J as NInput, i as NSelect, n as NCard, b8 as reactive, c as computed, by as convertToTextString, z as ref, t as serverUrl, K as watch, a as useState, f as createBaseVNode, j as createElementBlock, L as renderList, bb as NText, k as createTextVNode, C as toDisplayString, F as Fragment, m as createCommentVNode, D as NTabPane, E as NTabs, R as inject, bz as themeKey, A as NButton, l as NTooltip, p as useMessage, bA as useNotification, q as onUnmounted, bB as defaultSettings } from "./index.js";
 import { a as NFormItem, _ as _sfc_main$h, N as NForm } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
-import { a as NSwitch, N as NSlider } from "./Switch.js";
+import { N as NSwitch, a as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./Settings.js";
 const _sfc_main$g = /* @__PURE__ */ defineComponent({
@@ -892,114 +892,6 @@ const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   }
 });
 const _sfc_main$8 = /* @__PURE__ */ defineComponent({
-  __name: "ExtraSettings",
-  setup(__props) {
-    const settings = useSettings();
-    return (_ctx, _cache) => {
-      return openBlock(), createBlock(unref(NCard), { title: "Hi-res fix" }, {
-        default: withCtx(() => [
-          createVNode(unref(NForm), null, {
-            default: withCtx(() => [
-              createVNode(unref(NFormItem), {
-                label: "Scale",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.extra.highres.scale,
-                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.extra.highres.scale = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Scaling Mode",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSelect), {
-                    options: [
-                      {
-                        label: "Nearest",
-                        value: "nearest"
-                      },
-                      {
-                        label: "Linear",
-                        value: "linear"
-                      },
-                      {
-                        label: "Bilinear",
-                        value: "bilinear"
-                      },
-                      {
-                        label: "Bicubic",
-                        value: "bicubic"
-                      },
-                      {
-                        label: "Bislerp (Original, slow)",
-                        value: "bislerp-original"
-                      },
-                      {
-                        label: "Bislerp (Tortured, fast)",
-                        value: "bislerp-tortured"
-                      },
-                      {
-                        label: "Nearest Exact",
-                        value: "nearest-exact"
-                      }
-                    ],
-                    value: unref(settings).defaultSettings.extra.highres.latent_scale_mode,
-                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.extra.highres.latent_scale_mode = $event)
-                  }, null, 8, ["options", "value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Strength",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.extra.highres.strength,
-                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.extra.highres.strength = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Steps",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NInputNumber), {
-                    value: unref(settings).defaultSettings.extra.highres.steps,
-                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.extra.highres.steps = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              }),
-              createVNode(unref(NFormItem), {
-                label: "Antialiased",
-                "label-placement": "left"
-              }, {
-                default: withCtx(() => [
-                  createVNode(unref(NSwitch), {
-                    value: unref(settings).defaultSettings.extra.highres.antialiased,
-                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.extra.highres.antialiased = $event)
-                  }, null, 8, ["value"])
-                ]),
-                _: 1
-              })
-            ]),
-            _: 1
-          })
-        ]),
-        _: 1
-      });
-    };
-  }
-});
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "FilesSettings",
   setup(__props) {
     const settings = useSettings();
@@ -1072,6 +964,114 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
             ]),
             _: 1
           })) : createCommentVNode("", true)
+        ]),
+        _: 1
+      });
+    };
+  }
+});
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+  __name: "FlagsSettings",
+  setup(__props) {
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NCard), { title: "Hi-res fix" }, {
+        default: withCtx(() => [
+          createVNode(unref(NForm), null, {
+            default: withCtx(() => [
+              createVNode(unref(NFormItem), {
+                label: "Scale",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.flags.highres.scale,
+                    "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).defaultSettings.flags.highres.scale = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Scaling Mode",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSelect), {
+                    options: [
+                      {
+                        label: "Nearest",
+                        value: "nearest"
+                      },
+                      {
+                        label: "Linear",
+                        value: "linear"
+                      },
+                      {
+                        label: "Bilinear",
+                        value: "bilinear"
+                      },
+                      {
+                        label: "Bicubic",
+                        value: "bicubic"
+                      },
+                      {
+                        label: "Bislerp (Original, slow)",
+                        value: "bislerp-original"
+                      },
+                      {
+                        label: "Bislerp (Tortured, fast)",
+                        value: "bislerp-tortured"
+                      },
+                      {
+                        label: "Nearest Exact",
+                        value: "nearest-exact"
+                      }
+                    ],
+                    value: unref(settings).defaultSettings.flags.highres.latent_scale_mode,
+                    "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.flags.highres.latent_scale_mode = $event)
+                  }, null, 8, ["options", "value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Strength",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.flags.highres.strength,
+                    "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.flags.highres.strength = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Steps",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NInputNumber), {
+                    value: unref(settings).defaultSettings.flags.highres.steps,
+                    "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).defaultSettings.flags.highres.steps = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              }),
+              createVNode(unref(NFormItem), {
+                label: "Antialiased",
+                "label-placement": "left"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NSwitch), {
+                    value: unref(settings).defaultSettings.flags.highres.antialiased,
+                    "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).defaultSettings.flags.highres.antialiased = $event)
+                  }, null, 8, ["value"])
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
         ]),
         _: 1
       });
@@ -2217,7 +2217,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                 }),
                 createVNode(unref(NTabPane), { name: "Files & Saving" }, {
                   default: withCtx(() => [
-                    createVNode(unref(_sfc_main$7))
+                    createVNode(unref(_sfc_main$8))
                   ]),
                   _: 1
                 }),
@@ -2257,9 +2257,9 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
                   ]),
                   _: 1
                 }),
-                createVNode(unref(NTabPane), { name: "Extra" }, {
+                createVNode(unref(NTabPane), { name: "Flags" }, {
                   default: withCtx(() => [
-                    createVNode(unref(_sfc_main$8))
+                    createVNode(unref(_sfc_main$7))
                   ]),
                   _: 1
                 }),

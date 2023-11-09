@@ -8,6 +8,7 @@ from dataclasses_json import CatchAll, DataClassJsonMixin, Undefined, dataclass_
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
 from core.config.samplers.sampler_config import SamplerConfig
+from core.flags import HighResFixFlag
 from core.types import SigmaScheduler
 
 logger = logging.getLogger(__name__)
@@ -270,6 +271,13 @@ class FrontendConfig:
     disable_analytics: bool = False
 
 
+@dataclass
+class FlagsConfig:
+    "Configuration for flags"
+
+    highres: HighResFixFlag = field(default_factory=HighResFixFlag)
+
+
 @dataclass_json(undefined=Undefined.INCLUDE)
 @dataclass
 class Configuration(DataClassJsonMixin):
@@ -286,6 +294,7 @@ class Configuration(DataClassJsonMixin):
     onnx: ONNXConfig = field(default_factory=ONNXConfig)
     bot: BotConfig = field(default_factory=BotConfig)
     frontend: FrontendConfig = field(default_factory=FrontendConfig)
+    flags: FlagsConfig = field(default_factory=FlagsConfig)
     sampler_config: SamplerConfig = field(default_factory=SamplerConfig)
     extra: CatchAll = field(default_factory=dict)
 

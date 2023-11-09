@@ -5,6 +5,7 @@
   "license": "GPL-3.0",
   "private": false,
   "devDependencies": {
+    "@img-comparison-slider/vue": "^8.0.0",
     "concurrently": "^8.2.1",
     "sass": "^1.69.4",
     "vitepress": "^1.0.0-rc.17",
@@ -17,7 +18,7 @@
     "docs:preview": "vitepress preview docs",
     "api:test": "pytest",
     "api:fulltest": "pytest --run-optional-tests=slow --cov=core -x",
-    "api:lint": "pylint **/**.py --output-format=colorized",
+    "api:lint": "ruff . --watch",
     "api:dev": "python main.py",
     "frontend:dev": "cd frontend && yarn dev",
     "frontend:build": "cd frontend && yarn build",
@@ -33,5 +34,6 @@
     "docker:test-compose-no-mount": "docker compose -f test-no-mount.docker-compose.yml up --force-recreate --remove-orphans",
     "docker:run": "docker compose run --service-ports --rm voltaml",
     "docker:push": "docker push stax124/volta:experimental"
-  }
+  },
+  "dependencies": {}
 }

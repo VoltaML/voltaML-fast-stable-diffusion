@@ -26,6 +26,6 @@ async def master_endpoint(websocket: WebSocket):
 async def set_progress(progress: int):
     "Set the progress of the progress bar"
 
-    await websocket_manager.broadcast(
+    websocket_manager.broadcast_sync(
         data=Data(data_type="progress", data={"progress": progress})
     )

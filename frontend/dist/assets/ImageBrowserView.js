@@ -1,8 +1,8 @@
-import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, R as inject, x as ref, D as computed, bI as urlFromPath, b8 as reactive, b9 as onMounted, o as onUnmounted, c as openBlock, e as createElementBlock, j as createBaseVNode, f as createVNode, g as unref, w as withCtx, F as Fragment, L as renderList, b7 as themeOverridesKey, s as serverUrl, I as NInput, z as NIcon, bd as NModal, q as NGrid, N as NGi, y as NButton, l as createTextVNode, M as NScrollbar, n as createBlock, by as convertToTextString, A as toDisplayString, m as createCommentVNode, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b6 as useCssVars, a as useState, u as useSettings, R as inject, z as ref, c as computed, bI as urlFromPath, b8 as reactive, b9 as onMounted, q as onUnmounted, o as openBlock, j as createElementBlock, f as createBaseVNode, g as createVNode, h as unref, w as withCtx, F as Fragment, L as renderList, b7 as themeOverridesKey, t as serverUrl, J as NInput, B as NIcon, bd as NModal, s as NGrid, r as NGi, A as NButton, k as createTextVNode, M as NScrollbar, e as createBlock, by as convertToTextString, C as toDisplayString, m as createCommentVNode, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
-import { N as NSlider } from "./Switch.js";
+import { a as NSlider } from "./Switch.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "52px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
