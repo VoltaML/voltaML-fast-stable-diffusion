@@ -221,6 +221,67 @@
               />
             </div>
 
+            <!-- Aesthetic score -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Aesthetic Score</p>
+                </template>
+                Generally higher numbers will produce "more professional"
+                images.
+                <b class="highlight">Generally best to keep it around 6.</b>
+              </NTooltip>
+              <NSlider
+                v-model:value="
+                  settings.data.settings.extra.refiner.aesthetic_score
+                "
+                :min="0"
+                :max="10"
+                :step="0.5"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="
+                  settings.data.settings.extra.refiner.aesthetic_score
+                "
+                :min="0"
+                :max="10"
+                :step="0.25"
+                size="small"
+                style="min-width: 96px; width: 96px"
+              />
+            </div>
+
+            <!-- Negative aesthetic score -->
+            <div class="flex-container">
+              <NTooltip style="max-width: 600px">
+                <template #trigger>
+                  <p class="slider-label">Negative Aesthetic Score</p>
+                </template>
+                Makes sense to keep this lower than aesthetic score.
+                <b class="highlight">Generally best to keep it around 3.</b>
+              </NTooltip>
+              <NSlider
+                v-model:value="
+                  settings.data.settings.extra.refiner.negative_aesthetic_score
+                "
+                :min="0"
+                :max="10"
+                :step="0.5"
+                style="margin-right: 12px"
+              />
+              <NInputNumber
+                v-model:value="
+                  settings.data.settings.extra.refiner.negative_aesthetic_score
+                "
+                :min="0"
+                :max="10"
+                :step="0.25"
+                size="small"
+                style="min-width: 96px; width: 96px"
+              />
+            </div>
+
             <div class="flex-container">
               <p class="slider-label">Strength</p>
               <NSlider
@@ -245,6 +306,7 @@
         <NCard
           title="Highres fix"
           style="margin-top: 12px; margin-bottom: 12px"
+          v-if="!isSelectedModelSDXL"
         >
           <div class="flex-container">
             <div class="slider-label">
@@ -344,14 +406,7 @@
                   { label: 'Area', value: 'area' },
                   { label: 'Bilinear', value: 'bilinear' },
                   { label: 'Bicubic', value: 'bicubic' },
-                  {
-                    label: 'Bislerp (Original, slow)',
-                    value: 'bislerp-original',
-                  },
-                  {
-                    label: 'Bislerp (Tortured, fast)',
-                    value: 'bislerp-tortured',
-                  },
+                  { label: 'Bislerp', value: 'bislerp' },
                 ]"
               />
             </div>
@@ -490,26 +545,39 @@ const generate = () => {
       model: settings.data.settings.model?.name,
       backend: "PyTorch",
       autoload: false,
-      flags: global.state.txt2img.highres
-        ? {
-            highres_fix: {
-              scale: settings.data.settings.extra.highres.scale,
-              latent_scale_mode:
-                settings.data.settings.extra.highres.latent_scale_mode,
-              strength: settings.data.settings.extra.highres.strength,
-              steps: settings.data.settings.extra.highres.steps,
-              antialiased: settings.data.settings.extra.highres.antialiased,
-            },
-          }
-        : global.state.txt2img.refiner
-        ? {
-            refiner: {
-              model: settings.data.settings.extra.refiner.model,
-              steps: settings.data.settings.extra.refiner.steps,
-              strength: settings.data.settings.extra.refiner.strength,
-            },
-          }
-        : {},
+      flags: {
+        ...(isSelectedModelSDXL.value
+          ? {
+              sdxl: {
+                original_size: settings.data.settings.extra.sdxl.original_size,
+              },
+            }
+          : {}),
+        ...(global.state.txt2img.highres
+          ? {
+              highres_fix: {
+                scale: settings.data.settings.extra.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.extra.highres.latent_scale_mode,
+                strength: settings.data.settings.extra.highres.strength,
+                steps: settings.data.settings.extra.highres.steps,
+                antialiased: settings.data.settings.extra.highres.antialiased,
+              },
+            }
+          : global.state.txt2img.refiner
+          ? {
+              refiner: {
+                model: settings.data.settings.extra.refiner.model,
+                aesthetic_score:
+                  settings.data.settings.extra.refiner.aesthetic_score,
+                negative_aesthetic_score:
+                  settings.data.settings.extra.refiner.negative_aesthetic_score,
+                steps: settings.data.settings.extra.refiner.steps,
+                strength: settings.data.settings.extra.refiner.strength,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

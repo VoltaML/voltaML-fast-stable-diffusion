@@ -33,8 +33,6 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
 class XLFlag(Flag, DataClassJsonMixin):
     "Flag for SDXL settings"
 
-    aesthetic_score: float = 6.0
-    negative_aesthetic_score: float = 2.5
     original_size: List[int] = field(default_factory=lambda: [1024, 1024])
 
 
@@ -45,3 +43,5 @@ class XLRefinerFlag(Flag, DataClassJsonMixin):
     steps: int = 50
     strength: float = 0.3
     model: str = ""
+    aesthetic_score: float = 6.0
+    negative_aesthetic_score: float = 2.5

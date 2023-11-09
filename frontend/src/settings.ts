@@ -37,6 +37,9 @@ export interface ISettings {
   backend: "PyTorch" | "AITemplate" | "ONNX" | "unknown";
   model: ModelEntry | null;
   extra: {
+    sdxl: {
+      original_size: number[];
+    };
     highres: {
       scale: number;
       latent_scale_mode:
@@ -52,6 +55,8 @@ export interface ISettings {
     };
     refiner: {
       model: string | undefined;
+      aesthetic_score: number;
+      negative_aesthetic_score: number;
       steps: 50;
       strength: number;
     };
@@ -251,6 +256,9 @@ export const defaultSettings: ISettings = {
   backend: "PyTorch",
   model: null,
   extra: {
+    sdxl: {
+      original_size: [1024, 1024],
+    },
     highres: {
       scale: 2,
       latent_scale_mode: "bilinear",
@@ -260,6 +268,8 @@ export const defaultSettings: ISettings = {
     },
     refiner: {
       model: undefined,
+      aesthetic_score: 6.0,
+      negative_aesthetic_score: 2.5,
       steps: 50,
       strength: 0.3,
     },

@@ -38,22 +38,28 @@ const _hoisted_20 = { class: "flex-container" };
 const _hoisted_21 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
 const _hoisted_22 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
 const _hoisted_23 = { class: "flex-container" };
-const _hoisted_24 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Strength", -1);
-const _hoisted_25 = { class: "flex-container" };
-const _hoisted_26 = /* @__PURE__ */ createBaseVNode("div", { class: "slider-label" }, [
+const _hoisted_24 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Aesthetic Score", -1);
+const _hoisted_25 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "Generally best to keep it around 6.", -1);
+const _hoisted_26 = { class: "flex-container" };
+const _hoisted_27 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Negative Aesthetic Score", -1);
+const _hoisted_28 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "Generally best to keep it around 3.", -1);
+const _hoisted_29 = { class: "flex-container" };
+const _hoisted_30 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Strength", -1);
+const _hoisted_31 = { class: "flex-container" };
+const _hoisted_32 = /* @__PURE__ */ createBaseVNode("div", { class: "slider-label" }, [
   /* @__PURE__ */ createBaseVNode("p", null, "Enabled")
 ], -1);
-const _hoisted_27 = { class: "flex-container" };
-const _hoisted_28 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
-const _hoisted_29 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
-const _hoisted_30 = { class: "flex-container" };
-const _hoisted_31 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale", -1);
-const _hoisted_32 = { class: "flex-container" };
-const _hoisted_33 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Strength", -1);
-const _hoisted_34 = { class: "flex-container" };
-const _hoisted_35 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Antialiased", -1);
+const _hoisted_33 = { class: "flex-container" };
+const _hoisted_34 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
+const _hoisted_35 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
 const _hoisted_36 = { class: "flex-container" };
-const _hoisted_37 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Latent Mode", -1);
+const _hoisted_37 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale", -1);
+const _hoisted_38 = { class: "flex-container" };
+const _hoisted_39 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Strength", -1);
+const _hoisted_40 = { class: "flex-container" };
+const _hoisted_41 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Antialiased", -1);
+const _hoisted_42 = { class: "flex-container" };
+const _hoisted_43 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Latent Mode", -1);
 const _sfc_main$1 = /* @__PURE__ */ defineComponent({
   __name: "Txt2Img",
   setup(__props) {
@@ -121,21 +127,30 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
           model: (_a = settings.data.settings.model) == null ? void 0 : _a.name,
           backend: "PyTorch",
           autoload: false,
-          flags: global.state.txt2img.highres ? {
-            highres_fix: {
-              scale: settings.data.settings.extra.highres.scale,
-              latent_scale_mode: settings.data.settings.extra.highres.latent_scale_mode,
-              strength: settings.data.settings.extra.highres.strength,
-              steps: settings.data.settings.extra.highres.steps,
-              antialiased: settings.data.settings.extra.highres.antialiased
-            }
-          } : global.state.txt2img.refiner ? {
-            refiner: {
-              model: settings.data.settings.extra.refiner.model,
-              steps: settings.data.settings.extra.refiner.steps,
-              strength: settings.data.settings.extra.refiner.strength
-            }
-          } : {}
+          flags: {
+            ...isSelectedModelSDXL.value ? {
+              sdxl: {
+                original_size: settings.data.settings.extra.sdxl.original_size
+              }
+            } : {},
+            ...global.state.txt2img.highres ? {
+              highres_fix: {
+                scale: settings.data.settings.extra.highres.scale,
+                latent_scale_mode: settings.data.settings.extra.highres.latent_scale_mode,
+                strength: settings.data.settings.extra.highres.strength,
+                steps: settings.data.settings.extra.highres.steps,
+                antialiased: settings.data.settings.extra.highres.antialiased
+              }
+            } : global.state.txt2img.refiner ? {
+              refiner: {
+                model: settings.data.settings.extra.refiner.model,
+                aesthetic_score: settings.data.settings.extra.refiner.aesthetic_score,
+                negative_aesthetic_score: settings.data.settings.extra.refiner.negative_aesthetic_score,
+                steps: settings.data.settings.extra.refiner.steps,
+                strength: settings.data.settings.extra.refiner.strength
+              }
+            } : {}
+          }
         })
       }).then((res) => {
         if (!res.ok) {
@@ -383,10 +398,68 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"])
                         ]),
                         createBaseVNode("div", _hoisted_23, [
-                          _hoisted_24,
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                            trigger: withCtx(() => [
+                              _hoisted_24
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(' Generally higher numbers will produce "more professional" images. '),
+                              _hoisted_25
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(settings).data.settings.extra.refiner.aesthetic_score,
+                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).data.settings.extra.refiner.aesthetic_score = $event),
+                            min: 0,
+                            max: 10,
+                            step: 0.5,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(settings).data.settings.extra.refiner.aesthetic_score,
+                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).data.settings.extra.refiner.aesthetic_score = $event),
+                            min: 0,
+                            max: 10,
+                            step: 0.25,
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" }
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_26, [
+                          createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                            trigger: withCtx(() => [
+                              _hoisted_27
+                            ]),
+                            default: withCtx(() => [
+                              createTextVNode(" Makes sense to keep this lower than aesthetic score. "),
+                              _hoisted_28
+                            ]),
+                            _: 1
+                          }),
+                          createVNode(unref(NSlider), {
+                            value: unref(settings).data.settings.extra.refiner.negative_aesthetic_score,
+                            "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).data.settings.extra.refiner.negative_aesthetic_score = $event),
+                            min: 0,
+                            max: 10,
+                            step: 0.5,
+                            style: { "margin-right": "12px" }
+                          }, null, 8, ["value"]),
+                          createVNode(unref(NInputNumber), {
+                            value: unref(settings).data.settings.extra.refiner.negative_aesthetic_score,
+                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).data.settings.extra.refiner.negative_aesthetic_score = $event),
+                            min: 0,
+                            max: 10,
+                            step: 0.25,
+                            size: "small",
+                            style: { "min-width": "96px", "width": "96px" }
+                          }, null, 8, ["value"])
+                        ]),
+                        createBaseVNode("div", _hoisted_29, [
+                          _hoisted_30,
                           createVNode(unref(NSlider), {
                             value: unref(settings).data.settings.extra.refiner.strength,
-                            "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).data.settings.extra.refiner.strength = $event),
+                            "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).data.settings.extra.refiner.strength = $event),
                             min: 0.1,
                             max: 0.9,
                             step: 0.05,
@@ -394,7 +467,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(settings).data.settings.extra.refiner.strength,
-                            "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).data.settings.extra.refiner.strength = $event),
+                            "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).data.settings.extra.refiner.strength = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 0.1,
@@ -408,16 +481,17 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   ]),
                   _: 1
                 })) : createCommentVNode("", true),
-                createVNode(unref(NCard), {
+                !isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(NCard), {
+                  key: 1,
                   title: "Highres fix",
                   style: { "margin-top": "12px", "margin-bottom": "12px" }
                 }, {
                   default: withCtx(() => [
-                    createBaseVNode("div", _hoisted_25, [
-                      _hoisted_26,
+                    createBaseVNode("div", _hoisted_31, [
+                      _hoisted_32,
                       createVNode(unref(NSwitch), {
                         value: unref(global).state.txt2img.highres,
-                        "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(global).state.txt2img.highres = $event)
+                        "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(global).state.txt2img.highres = $event)
                       }, null, 8, ["value"])
                     ]),
                     unref(global).state.txt2img.highres ? (openBlock(), createBlock(unref(NSpace), {
@@ -426,36 +500,36 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                       class: "left-container"
                     }, {
                       default: withCtx(() => [
-                        createBaseVNode("div", _hoisted_27, [
+                        createBaseVNode("div", _hoisted_33, [
                           createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                             trigger: withCtx(() => [
-                              _hoisted_28
+                              _hoisted_34
                             ]),
                             default: withCtx(() => [
                               createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                              _hoisted_29
+                              _hoisted_35
                             ]),
                             _: 1
                           }),
                           createVNode(unref(NSlider), {
                             value: unref(settings).data.settings.extra.highres.steps,
-                            "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).data.settings.extra.highres.steps = $event),
+                            "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).data.settings.extra.highres.steps = $event),
                             min: 5,
                             max: 300,
                             style: { "margin-right": "12px" }
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(settings).data.settings.extra.highres.steps,
-                            "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).data.settings.extra.highres.steps = $event),
+                            "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).data.settings.extra.highres.steps = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" }
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_30, [
-                          _hoisted_31,
+                        createBaseVNode("div", _hoisted_36, [
+                          _hoisted_37,
                           createVNode(unref(NSlider), {
                             value: unref(settings).data.settings.extra.highres.scale,
-                            "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).data.settings.extra.highres.scale = $event),
+                            "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).data.settings.extra.highres.scale = $event),
                             min: 1,
                             max: 8,
                             step: 0.1,
@@ -463,17 +537,17 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(settings).data.settings.extra.highres.scale,
-                            "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).data.settings.extra.highres.scale = $event),
+                            "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(settings).data.settings.extra.highres.scale = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             step: 0.1
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_32, [
-                          _hoisted_33,
+                        createBaseVNode("div", _hoisted_38, [
+                          _hoisted_39,
                           createVNode(unref(NSlider), {
                             value: unref(settings).data.settings.extra.highres.strength,
-                            "onUpdate:value": _cache[19] || (_cache[19] = ($event) => unref(settings).data.settings.extra.highres.strength = $event),
+                            "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(settings).data.settings.extra.highres.strength = $event),
                             min: 0.1,
                             max: 0.9,
                             step: 0.05,
@@ -481,7 +555,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                           }, null, 8, ["value"]),
                           createVNode(unref(NInputNumber), {
                             value: unref(settings).data.settings.extra.highres.strength,
-                            "onUpdate:value": _cache[20] || (_cache[20] = ($event) => unref(settings).data.settings.extra.highres.strength = $event),
+                            "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).data.settings.extra.highres.strength = $event),
                             size: "small",
                             style: { "min-width": "96px", "width": "96px" },
                             min: 0.1,
@@ -489,18 +563,18 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                             step: 0.05
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_34, [
-                          _hoisted_35,
+                        createBaseVNode("div", _hoisted_40, [
+                          _hoisted_41,
                           createVNode(unref(NSwitch), {
                             value: unref(settings).data.settings.extra.highres.antialiased,
-                            "onUpdate:value": _cache[21] || (_cache[21] = ($event) => unref(settings).data.settings.extra.highres.antialiased = $event)
+                            "onUpdate:value": _cache[25] || (_cache[25] = ($event) => unref(settings).data.settings.extra.highres.antialiased = $event)
                           }, null, 8, ["value"])
                         ]),
-                        createBaseVNode("div", _hoisted_36, [
-                          _hoisted_37,
+                        createBaseVNode("div", _hoisted_42, [
+                          _hoisted_43,
                           createVNode(unref(NSelect), {
                             value: unref(settings).data.settings.extra.highres.latent_scale_mode,
-                            "onUpdate:value": _cache[22] || (_cache[22] = ($event) => unref(settings).data.settings.extra.highres.latent_scale_mode = $event),
+                            "onUpdate:value": _cache[26] || (_cache[26] = ($event) => unref(settings).data.settings.extra.highres.latent_scale_mode = $event),
                             size: "small",
                             style: { "flex-grow": "1" },
                             options: [
@@ -509,23 +583,16 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                               { label: "Area", value: "area" },
                               { label: "Bilinear", value: "bilinear" },
                               { label: "Bicubic", value: "bicubic" },
-                              {
-                                label: "Bislerp (Original, slow)",
-                                value: "bislerp-original"
-                              },
-                              {
-                                label: "Bislerp (Tortured, fast)",
-                                value: "bislerp-tortured"
-                              }
+                              { label: "Bislerp", value: "bislerp" }
                             ]
-                          }, null, 8, ["value", "options"])
+                          }, null, 8, ["value"])
                         ])
                       ]),
                       _: 1
                     })) : createCommentVNode("", true)
                   ]),
                   _: 1
-                })
+                })) : createCommentVNode("", true)
               ]),
               _: 1
             }),
@@ -536,7 +603,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                   "current-image": unref(global).state.txt2img.currentImage,
                   images: unref(global).state.txt2img.images,
                   data: unref(settings).data.settings.txt2img,
-                  onImageClicked: _cache[23] || (_cache[23] = ($event) => unref(global).state.txt2img.currentImage = $event)
+                  onImageClicked: _cache[27] || (_cache[27] = ($event) => unref(global).state.txt2img.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
                 createVNode(unref(_sfc_main$7), {
                   style: { "margin-top": "12px" },

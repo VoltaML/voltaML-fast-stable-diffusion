@@ -174,8 +174,6 @@ class SDXLStableDiffusion(InferenceModel):
                 output_type = "latent"
 
             data = pipe.text2img(
-                aesthetic_score=xl_flag.aesthetic_score,
-                negative_aesthetic_score=xl_flag.negative_aesthetic_score,
                 original_size=xl_flag.original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -209,8 +207,8 @@ class SDXLStableDiffusion(InferenceModel):
                     sampler_settings=job.data.sampler_settings,
                 )
                 data = pipe(
-                    aesthetic_score=xl_flag.aesthetic_score,
-                    negative_aesthetic_score=xl_flag.negative_aesthetic_score,
+                    aesthetic_score=flags.aesthetic_score,
+                    negative_aesthetic_score=flags.negative_aesthetic_score,
                     original_size=xl_flag.original_size,
                     image=latents,
                     generator=generator,
@@ -308,8 +306,6 @@ class SDXLStableDiffusion(InferenceModel):
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
-                aesthetic_score=xl_flag.aesthetic_score,
-                negative_aesthetic_score=xl_flag.negative_aesthetic_score,
                 original_size=xl_flag.original_size,
                 generator=generator,
                 prompt=job.data.prompt,
@@ -378,8 +374,6 @@ class SDXLStableDiffusion(InferenceModel):
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
-                aesthetic_score=xl_flag.aesthetic_score,
-                negative_aesthetic_score=xl_flag.negative_aesthetic_score,
                 original_size=xl_flag.original_size,
                 generator=generator,
                 prompt=job.data.prompt,

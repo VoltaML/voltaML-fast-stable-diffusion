@@ -22,6 +22,9 @@ def ensure_correct_device(module: torch.nn.Module):
     if hasattr(module, "offload_device"):
         global _module
 
+        if module.__class__.__name__ == _module.__class__.__name__:
+            return
+
         device = getattr(module, "offload_device", config.api.device)
         logger.debug(f"Transferring {module.__class__.__name__} to {str(device)}.")
 

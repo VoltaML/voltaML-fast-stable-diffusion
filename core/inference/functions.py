@@ -5,6 +5,7 @@ import os
 from importlib.util import find_spec
 from pathlib import Path
 from typing import Any, Dict, Tuple, Union, Optional
+from functools import partial
 
 import requests
 import torch
@@ -43,7 +44,7 @@ from huggingface_hub.utils._errors import (
 from omegaconf import OmegaConf
 from packaging import version
 from requests import HTTPError
-from transformers import CLIPTextModel, CLIPTextModelWithProjection
+from transformers.models.clip.modeling_clip import BaseModelOutput
 
 from core.config import config
 from core.files import get_full_model_path
@@ -391,22 +392,40 @@ def load_pytorch_pipeline(
     logger.debug(f"Loaded {model_id_or_path} with {config.api.data_type}")
 
     for name, text_encoder in [x for x in vars(pipe).items() if "text_encoder" in x[0]]:
-        text_encoder: CLIPTextModel
         if text_encoder is not None:
+
             def new_forward(
-                self,
                 inputs_embeds,
                 attention_mask: Optional[torch.Tensor] = None,
                 causal_attention_mask: Optional[torch.Tensor] = None,
                 output_attentions: Optional[bool] = None,
                 output_hidden_states: Optional[bool] = None,
                 return_dict: Optional[bool] = None,
+                bober=None,
             ):
-                n = []
-                original = self.old_forward(inputs_embeds, attention_mask=attention_mask, causal_attention_mask=causal_attention_mask, output_attentions=output_attentions, output_hidden_states=True, return_dict=return_dict)
-                n.append(original.hidden_states[-config.api.clip_skip])
-                return n
-            
+                output_hidden_states = True
+                original = bober.old_forward(  # type: ignore
+                    inputs_embeds,
+                    attention_mask=attention_mask,
+                    causal_attention_mask=causal_attention_mask,
+                    output_attentions=output_attentions,
+                    output_hidden_states=output_hidden_states,
+                    return_dict=return_dict,
+                )
+
+                hidden_states = (_ := original[1])[: len(_) - config.api.clip_skip]
+                last_hidden_state = hidden_states[-1]
+
+                attentions = original[2] if output_attentions else None
+
+                if not return_dict:
+                    return last_hidden_state, hidden_states, attentions
+                return BaseModelOutput(
+                    last_hidden_state=last_hidden_state,
+                    hidden_states=hidden_states,
+                    attentions=attentions,
+                )
+
             if config.api.clip_quantization != "full":
                 from transformers import BitsAndBytesConfig
                 from transformers.utils.bitsandbytes import (
@@ -438,7 +457,9 @@ def load_pytorch_pipeline(
                 del state_dict, dont_convert
 
             text_encoder.text_model.encoder.old_forward = text_encoder.text_model.encoder.forward  # type: ignore
-            text_encoder.text_model.encoder.forward = new_forward  # type: ignore
+            # fuck you python
+            # enjoy bober
+            text_encoder.text_model.encoder.forward = partial(new_forward, bober=text_encoder.text_model.encoder)  # type: ignore
             logger.debug(f"Overwritten {name}s final_layer_norm.")
 
     if optimize:

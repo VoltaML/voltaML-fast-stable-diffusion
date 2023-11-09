@@ -168,14 +168,13 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         for prompt, negative_prompt, tokenizer, text_encoder in zip(
             prompts, negative_prompts, tokenizers, text_encoders
         ):
+            ensure_correct_device(text_encoder)
             prompt = self.maybe_convert_prompt(prompt, tokenizer)
             logger.debug(f"Post textual prompt: {prompt}")
 
             if negative_prompt is not None:
                 negative_prompt = self.maybe_convert_prompt(negative_prompt, tokenizer)
                 logger.debug(f"Post textual negative_prompt: {negative_prompt}")
-
-            ensure_correct_device(text_encoder)
 
             (
                 text_embeddings,
@@ -318,6 +317,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             self.unet = context.unet  # type: ignore
             self.vae = context.vae  # type: ignore
 
+            original_size = tuple(original_size)  # type: ignore
             height, width = self._default_height_width(height, width, image)
 
             # 2. Define call parameters

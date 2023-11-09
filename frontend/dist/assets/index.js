@@ -40680,6 +40680,9 @@ const defaultSettings = {
   backend: "PyTorch",
   model: null,
   extra: {
+    sdxl: {
+      original_size: [1024, 1024]
+    },
     highres: {
       scale: 2,
       latent_scale_mode: "bilinear",
@@ -40689,6 +40692,8 @@ const defaultSettings = {
     },
     refiner: {
       model: void 0,
+      aesthetic_score: 6,
+      negative_aesthetic_score: 2.5,
       steps: 50,
       strength: 0.3
     }
