@@ -119,7 +119,22 @@
                       v-for="model in pyTorchModels"
                       v-bind:key="model.path"
                     >
-                      <p>{{ model.name }}</p>
+                      <div
+                        style="
+                          display: flex;
+                          flex-direction: row;
+                          align-items: center;
+                        "
+                      >
+                        <NTag
+                          :type="model.backend === 'SDXL' ? 'warning' : 'info'"
+                          ghost
+                          style="margin-right: 8px"
+                        >
+                          {{ model.backend === "SDXL" ? "SDXL" : "SD" }}
+                        </NTag>
+                        <p>{{ model.name }}</p>
+                      </div>
                       <div style="display: inline-flex">
                         <NButton
                           type="error"
@@ -302,104 +317,7 @@
                 </NCard>
               </NScrollbar>
             </NTabPane>
-            <NTabPane name="SDXL">
-              <NGrid cols="1 900:2" :x-gap="8" :y-gap="8" style="height: 100%">
-                <!-- Models -->
-                <NGi>
-                  <NCard title="Models" style="height: 100%">
-                    <div
-                      style="
-                        display: inline-flex;
-                        width: 100%;
-                        align-items: center;
-                        justify-content: space-between;
-                        border-bottom: 1px solid rgb(66, 66, 71);
-                      "
-                      v-for="model in sdxlModels"
-                      v-bind:key="model.path"
-                    >
-                      <p>{{ model.name }}</p>
-                      <div style="display: inline-flex">
-                        <NButton
-                          type="error"
-                          ghost
-                          @click="unloadModel(model)"
-                          v-if="model.state === 'loaded'"
-                          >Unload
-                        </NButton>
-                        <NButton
-                          type="success"
-                          ghost
-                          @click="loadModel(model)"
-                          :loading="model.state === 'loading'"
-                          v-else
-                          >Load</NButton
-                        >
-                        <NButton
-                          type="info"
-                          style="margin-left: 4px"
-                          ghost
-                          @click="global.state.selected_model = model"
-                          :disabled="model.state !== 'loaded'"
-                          >Select</NButton
-                        >
-                      </div>
-                    </div>
-                  </NCard>
-                </NGi>
 
-                <!-- VAE -->
-                <NGi>
-                  <NCard :title="vae_title">
-                    <div v-if="global.state.selected_model !== null">
-                      <div
-                        style="
-                          display: inline-flex;
-                          width: 100%;
-                          align-items: center;
-                          justify-content: space-between;
-                          border-bottom: 1px solid rgb(66, 66, 71);
-                        "
-                        v-for="vae in sdxlVaeModels"
-                        v-bind:key="vae.path"
-                      >
-                        <p>{{ vae.name }}</p>
-                        <div style="display: inline-flex">
-                          <NButton
-                            type="error"
-                            ghost
-                            disabled
-                            v-if="global.state.selected_model?.vae == vae.path"
-                            >Loaded
-                          </NButton>
-                          <NButton
-                            type="success"
-                            ghost
-                            @click="loadVAE(vae)"
-                            :disabled="
-                              global.state.selected_model === undefined
-                            "
-                            :loading="vae.state === 'loading'"
-                            v-else
-                            >Load</NButton
-                          >
-                        </div>
-                      </div>
-                    </div>
-                    <div v-else>
-                      <NAlert
-                        type="warning"
-                        show-icon
-                        title="No model selected"
-                        style="margin-top: 4px"
-                      >
-                        Please select a model first
-                      </NAlert>
-                    </div>
-                  </NCard>
-                </NGi>
-              </NGrid>
-            </NTabPane>
             <NTabPane name="ONNX">
               <NScrollbar style="height: 70vh">
                 <NCard title="Models" style="height: 100%">
@@ -486,6 +404,7 @@ import {
   NSelect,
   NTabPane,
   NTabs,
+  NTag,
   NText,
   type DropdownOption,
 } from "naive-ui";
@@ -523,7 +442,7 @@ const settings = useSettings();
 const modelsLoading = ref(false);
 const filter = ref("");
 
-const filteredModels = computed(() => {
+const filteredModels = computed<ModelEntry[]>(() => {
   return global.state.models.filter((model) => {
     return (
       model.path.toLowerCase().includes(filter.value.toLowerCase()) ||
@@ -532,10 +451,13 @@ const filteredModels = computed(() => {
   });
 });
 
-const pyTorchModels = computed(() => {
+const pyTorchModels = computed<ModelEntry[]>(() => {
   return filteredModels.value
     .filter((model) => {
-      return model.backend === "PyTorch" && model.valid === true;
+      return (
+        (model.backend === "PyTorch" || model.backend === "SDXL") &&
+        model.valid === true
+      );
     })
     .sort((a, b) => {
       if (a.state === "loaded" && b.state !== "loaded") {
@@ -549,17 +471,7 @@ const pyTorchModels = computed(() => {
     });
 });
 
-const sdxlModels = computed(() => {
-  return filteredModels.value
-    .filter((model) => {
-      return model.backend === "SDXL";
-    })
-    .sort((a, b) => {
-      return a.name.localeCompare(b.name);
-    });
-});
-
-const aitModels = computed(() => {
+const aitModels = computed<ModelEntry[]>(() => {
   return filteredModels.value
     .filter((model) => {
       return model.backend === "AITemplate";
@@ -576,7 +488,7 @@ const aitModels = computed(() => {
     });
 });
 
-const onnxModels = computed(() => {
+const onnxModels = computed<ModelEntry[]>(() => {
   return filteredModels.value
     .filter((model) => {
       return model.backend === "ONNX";
@@ -593,65 +505,65 @@ const onnxModels = computed(() => {
     });
 });
 
-const vaeModels = computed(() => {
-  return [
-    {
-      name: "Default VAE",
-      path: "default",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "default",
-      textual_inversions: [],
-    } as ModelEntry,
-    {
-      name: "Tiny VAE (fast)",
-      path: "madebyollin/taesd",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "madebyollin/taesd",
-      textual_inversions: [],
-    } as ModelEntry,
-    {
-      name: "Asymmetric VAE",
-      path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-      textual_inversions: [],
-    } as ModelEntry,
-    ...filteredModels.value
-      .filter((model) => {
-        return model.backend === "VAE";
-      })
-      .sort((a, b) => {
-        return a.name.localeCompare(b.name);
-      }),
-  ];
+const manualVAEModels = computed<ModelEntry[]>(() => {
+  const selectedModel = global.state.selected_model;
+  if (selectedModel?.backend === "SDXL") {
+    return [
+      {
+        name: "Default VAE (fp32)",
+        path: "default",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "default",
+        textual_inversions: [],
+      } as ModelEntry,
+      {
+        name: "FP16 VAE",
+        path: "madebyollin/sdxl-vae-fp16-fix",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "fp16",
+        textual_inversions: [],
+      } as ModelEntry,
+    ];
+  } else {
+    return [
+      {
+        name: "Default VAE",
+        path: "default",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "default",
+        textual_inversions: [],
+      } as ModelEntry,
+      {
+        name: "Tiny VAE (fast)",
+        path: "madebyollin/taesd",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "madebyollin/taesd",
+        textual_inversions: [],
+      } as ModelEntry,
+      {
+        name: "Asymmetric VAE",
+        path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+        backend: "VAE",
+        valid: true,
+        state: "not loaded",
+        vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+        textual_inversions: [],
+      } as ModelEntry,
+    ];
+  }
 });
 
-const sdxlVaeModels = computed(() => {
+const vaeModels = computed<ModelEntry[]>(() => {
   return [
-    {
-      name: "Default VAE (fp32)",
-      path: "default",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "default",
-      textual_inversions: [],
-    } as ModelEntry,
-    {
-      name: "FP16 VAE",
-      path: "madebyollin/sdxl-vae-fp16-fix",
-      backend: "VAE",
-      valid: true,
-      state: "not loaded",
-      vae: "fp16",
-      textual_inversions: [],
-    } as ModelEntry,
+    ...manualVAEModels.value,
     ...filteredModels.value
       .filter((model) => {
         return model.backend === "VAE";

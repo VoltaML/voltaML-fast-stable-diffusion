@@ -42064,7 +42064,7 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const _withScopeId = (n) => (pushScopeId("data-v-e207b7ed"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-e0808386"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -42074,20 +42074,17 @@ const _hoisted_4 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBase
 }, null, -1));
 const _hoisted_5 = { key: 2 };
 const _hoisted_6 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_7 = { style: { "display": "inline-flex" } };
-const _hoisted_8 = { key: 0 };
-const _hoisted_9 = { style: { "display": "inline-flex" } };
-const _hoisted_10 = { key: 1 };
-const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_12 = { key: 0 };
-const _hoisted_13 = { style: { "display": "inline-flex" } };
-const _hoisted_14 = { key: 1 };
-const _hoisted_15 = { style: { "display": "inline-flex" } };
-const _hoisted_16 = { key: 0 };
-const _hoisted_17 = { style: { "display": "inline-flex" } };
-const _hoisted_18 = { key: 1 };
-const _hoisted_19 = { class: "progress-container" };
-const _hoisted_20 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _hoisted_7 = { style: { "display": "flex", "flex-direction": "row", "align-items": "center" } };
+const _hoisted_8 = { style: { "display": "inline-flex" } };
+const _hoisted_9 = { key: 0 };
+const _hoisted_10 = { style: { "display": "inline-flex" } };
+const _hoisted_11 = { key: 1 };
+const _hoisted_12 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_13 = { key: 0 };
+const _hoisted_14 = { style: { "display": "inline-flex" } };
+const _hoisted_15 = { key: 1 };
+const _hoisted_16 = { class: "progress-container" };
+const _hoisted_17 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
@@ -42104,7 +42101,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     });
     const pyTorchModels = computed(() => {
       return filteredModels.value.filter((model) => {
-        return model.backend === "PyTorch" && model.valid === true;
+        return (model.backend === "PyTorch" || model.backend === "SDXL") && model.valid === true;
       }).sort((a, b) => {
         if (a.state === "loaded" && b.state !== "loaded") {
           return -1;
@@ -42113,13 +42110,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         } else {
           return a.name.localeCompare(b.name);
         }
-      });
-    });
-    const sdxlModels = computed(() => {
-      return filteredModels.value.filter((model) => {
-        return model.backend === "SDXL";
-      }).sort((a, b) => {
-        return a.name.localeCompare(b.name);
       });
     });
     const aitModels = computed(() => {
@@ -42148,62 +42138,64 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         }
       });
     });
+    const manualVAEModels = computed(() => {
+      const selectedModel = global2.state.selected_model;
+      if ((selectedModel == null ? void 0 : selectedModel.backend) === "SDXL") {
+        return [
+          {
+            name: "Default VAE (fp32)",
+            path: "default",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "default",
+            textual_inversions: []
+          },
+          {
+            name: "FP16 VAE",
+            path: "madebyollin/sdxl-vae-fp16-fix",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "fp16",
+            textual_inversions: []
+          }
+        ];
+      } else {
+        return [
+          {
+            name: "Default VAE",
+            path: "default",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "default",
+            textual_inversions: []
+          },
+          {
+            name: "Tiny VAE (fast)",
+            path: "madebyollin/taesd",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "madebyollin/taesd",
+            textual_inversions: []
+          },
+          {
+            name: "Asymmetric VAE",
+            path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+            textual_inversions: []
+          }
+        ];
+      }
+    });
     const vaeModels = computed(() => {
       return [
-        {
-          name: "Default VAE",
-          path: "default",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "default",
-          textual_inversions: []
-        },
-        {
-          name: "Tiny VAE (fast)",
-          path: "madebyollin/taesd",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "madebyollin/taesd",
-          textual_inversions: []
-        },
-        {
-          name: "Asymmetric VAE",
-          path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-          textual_inversions: []
-        },
-        ...filteredModels.value.filter((model) => {
-          return model.backend === "VAE";
-        }).sort((a, b) => {
-          return a.name.localeCompare(b.name);
-        })
-      ];
-    });
-    const sdxlVaeModels = computed(() => {
-      return [
-        {
-          name: "Default VAE (fp32)",
-          path: "default",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "default",
-          textual_inversions: []
-        },
-        {
-          name: "FP16 VAE",
-          path: "madebyollin/sdxl-vae-fp16-fix",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "fp16",
-          textual_inversions: []
-        },
+        ...manualVAEModels.value,
         ...filteredModels.value.filter((model) => {
           return model.backend === "VAE";
         }).sort((a, b) => {
@@ -42746,8 +42738,20 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                                           key: model.path
                                         }, [
-                                          createBaseVNode("p", null, toDisplayString(model.name), 1),
                                           createBaseVNode("div", _hoisted_7, [
+                                            createVNode(unref(NTag), {
+                                              type: model.backend === "SDXL" ? "warning" : "info",
+                                              ghost: "",
+                                              style: { "margin-right": "8px" }
+                                            }, {
+                                              default: withCtx(() => [
+                                                createTextVNode(toDisplayString(model.backend === "SDXL" ? "SDXL" : "SD"), 1)
+                                              ]),
+                                              _: 2
+                                            }, 1032, ["type"]),
+                                            createBaseVNode("p", null, toDisplayString(model.name), 1)
+                                          ]),
+                                          createBaseVNode("div", _hoisted_8, [
                                             model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
@@ -42795,7 +42799,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: vae_title.value }, {
                                     default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_8, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_9, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42803,7 +42807,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: vae.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_9, [
+                                            createBaseVNode("div", _hoisted_10, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
                                                 key: 0,
                                                 type: "error",
@@ -42830,7 +42834,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_10, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_11, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42859,12 +42863,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_11,
+                                          _hoisted_12,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_12, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_13, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42872,7 +42876,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_13, [
+                                            createBaseVNode("div", _hoisted_14, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -42901,7 +42905,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_14, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_15, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42976,136 +42980,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                         ]),
                         _: 1
                       }),
-                      createVNode(unref(NTabPane), { name: "SDXL" }, {
-                        default: withCtx(() => [
-                          createVNode(unref(NGrid), {
-                            cols: "1 900:2",
-                            "x-gap": 8,
-                            "y-gap": 8,
-                            style: { "height": "100%" }
-                          }, {
-                            default: withCtx(() => [
-                              createVNode(unref(NGi), null, {
-                                default: withCtx(() => [
-                                  createVNode(unref(NCard), {
-                                    title: "Models",
-                                    style: { "height": "100%" }
-                                  }, {
-                                    default: withCtx(() => [
-                                      (openBlock(true), createElementBlock(Fragment, null, renderList(sdxlModels.value, (model) => {
-                                        return openBlock(), createElementBlock("div", {
-                                          style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                          key: model.path
-                                        }, [
-                                          createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                          createBaseVNode("div", _hoisted_15, [
-                                            model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
-                                              key: 0,
-                                              type: "error",
-                                              ghost: "",
-                                              onClick: ($event) => unloadModel(model)
-                                            }, {
-                                              default: withCtx(() => [
-                                                createTextVNode("Unload ")
-                                              ]),
-                                              _: 2
-                                            }, 1032, ["onClick"])) : (openBlock(), createBlock(unref(NButton), {
-                                              key: 1,
-                                              type: "success",
-                                              ghost: "",
-                                              onClick: ($event) => loadModel(model),
-                                              loading: model.state === "loading"
-                                            }, {
-                                              default: withCtx(() => [
-                                                createTextVNode("Load")
-                                              ]),
-                                              _: 2
-                                            }, 1032, ["onClick", "loading"])),
-                                            createVNode(unref(NButton), {
-                                              type: "info",
-                                              style: { "margin-left": "4px" },
-                                              ghost: "",
-                                              onClick: ($event) => unref(global2).state.selected_model = model,
-                                              disabled: model.state !== "loaded"
-                                            }, {
-                                              default: withCtx(() => [
-                                                createTextVNode("Select")
-                                              ]),
-                                              _: 2
-                                            }, 1032, ["onClick", "disabled"])
-                                          ])
-                                        ]);
-                                      }), 128))
-                                    ]),
-                                    _: 1
-                                  })
-                                ]),
-                                _: 1
-                              }),
-                              createVNode(unref(NGi), null, {
-                                default: withCtx(() => [
-                                  createVNode(unref(NCard), { title: vae_title.value }, {
-                                    default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_16, [
-                                        (openBlock(true), createElementBlock(Fragment, null, renderList(sdxlVaeModels.value, (vae) => {
-                                          var _a3;
-                                          return openBlock(), createElementBlock("div", {
-                                            style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
-                                            key: vae.path
-                                          }, [
-                                            createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_17, [
-                                              ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
-                                                key: 0,
-                                                type: "error",
-                                                ghost: "",
-                                                disabled: ""
-                                              }, {
-                                                default: withCtx(() => [
-                                                  createTextVNode("Loaded ")
-                                                ]),
-                                                _: 1
-                                              })) : (openBlock(), createBlock(unref(NButton), {
-                                                key: 1,
-                                                type: "success",
-                                                ghost: "",
-                                                onClick: ($event) => loadVAE(vae),
-                                                disabled: unref(global2).state.selected_model === void 0,
-                                                loading: vae.state === "loading"
-                                              }, {
-                                                default: withCtx(() => [
-                                                  createTextVNode("Load")
-                                                ]),
-                                                _: 2
-                                              }, 1032, ["onClick", "disabled", "loading"]))
-                                            ])
-                                          ]);
-                                        }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_18, [
-                                        createVNode(unref(NAlert), {
-                                          type: "warning",
-                                          "show-icon": "",
-                                          title: "No model selected",
-                                          style: { "margin-top": "4px" }
-                                        }, {
-                                          default: withCtx(() => [
-                                            createTextVNode(" Please select a model first ")
-                                          ]),
-                                          _: 1
-                                        })
-                                      ]))
-                                    ]),
-                                    _: 1
-                                  }, 8, ["title"])
-                                ]),
-                                _: 1
-                              })
-                            ]),
-                            _: 1
-                          })
-                        ]),
-                        _: 1
-                      }),
                       createVNode(unref(NTabPane), { name: "ONNX" }, {
                         default: withCtx(() => [
                           createVNode(unref(NScrollbar), { style: { "height": "70vh" } }, {
@@ -43166,7 +43040,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_19, [
+        createBaseVNode("div", _hoisted_16, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -43186,7 +43060,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_20, [
+        createBaseVNode("div", _hoisted_17, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -43208,8 +43082,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_e207b7ed_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-e207b7ed"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_e0808386_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-e0808386"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
