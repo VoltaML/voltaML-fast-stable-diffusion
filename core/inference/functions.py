@@ -393,19 +393,20 @@ def load_pytorch_pipeline(
     for name, text_encoder in [x for x in vars(pipe).items() if "text_encoder" in x[0]]:
         text_encoder: CLIPTextModel
         if text_encoder is not None:
-            conf = text_encoder.config
-            conf.num_hidden_layers = conf.num_hidden_layers - (
-                config.api.clip_skip
-                * (2 if text_encoder is CLIPTextModelWithProjection else 1)
-            )
-            logger.debug(f"Replacing {name}s layers to {conf.num_hidden_layers}.")
-            setattr(
-                pipe,
-                name,
-                text_encoder.__class__.from_pretrained(
-                    None, config=conf, state_dict=text_encoder.state_dict()
-                ),
-            )
+            def new_forward(
+                self,
+                inputs_embeds,
+                attention_mask: Optional[torch.Tensor] = None,
+                causal_attention_mask: Optional[torch.Tensor] = None,
+                output_attentions: Optional[bool] = None,
+                output_hidden_states: Optional[bool] = None,
+                return_dict: Optional[bool] = None,
+            ):
+                n = []
+                original = self.old_forward(inputs_embeds, attention_mask=attention_mask, causal_attention_mask=causal_attention_mask, output_attentions=output_attentions, output_hidden_states=True, return_dict=return_dict)
+                n.append(original.hidden_states[-config.api.clip_skip])
+                return n
+            
             if config.api.clip_quantization != "full":
                 from transformers import BitsAndBytesConfig
                 from transformers.utils.bitsandbytes import (
@@ -435,7 +436,10 @@ def load_pytorch_pipeline(
                     set_module_quantized_tensor_to_device(nt, k, config.api.device, v)
                 setattr(pipe, name, nt)
                 del state_dict, dont_convert
-            del conf
+
+            text_encoder.text_model.encoder.old_forward = text_encoder.text_model.encoder.forward  # type: ignore
+            text_encoder.text_model.encoder.forward = new_forward  # type: ignore
+            logger.debug(f"Overwritten {name}s final_layer_norm.")
 
     if optimize:
         from core.optimizations import optimize_model
