@@ -6,6 +6,7 @@ from .latents import (
     prepare_latents,
     prepare_mask_and_masked_image,
     prepare_mask_latents,
+    preprocess_adapter_image,
     preprocess_image,
     preprocess_mask,
     scale_latents,

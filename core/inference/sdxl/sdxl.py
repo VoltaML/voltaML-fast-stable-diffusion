@@ -19,8 +19,9 @@ from tqdm import tqdm
 
 from api import websocket_manager
 from api.websockets import Data
+from core import shared
 from core.config import config
-from core.flags import RefinerFlag
+from core.flags import XLRefinerFlag, XLFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import change_scheduler, create_generator
@@ -158,14 +159,24 @@ class SDXLStableDiffusion(InferenceModel):
             sampler_settings=job.data.sampler_settings,
         )
         generator = create_generator(job.data.seed)
+        shared.current_method = "txt2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
+
+            xl_flag: XLFlag
+            if "sdxl" in job.flags:
+                xl_flag = XLFlag.from_dict(job.flags["sdxl"])
+            else:
+                xl_flag = XLFlag()
 
             if "refiner" in job.flags:
                 output_type = "latent"
 
             data = pipe.text2img(
+                aesthetic_score=xl_flag.aesthetic_score,
+                negative_aesthetic_score=xl_flag.negative_aesthetic_score,
+                original_size=xl_flag.original_size,
                 generator=generator,
                 prompt=job.data.prompt,
                 height=job.data.height,
@@ -182,7 +193,7 @@ class SDXLStableDiffusion(InferenceModel):
 
             if output_type == "latent":
                 latents: torch.FloatTensor = data[0]  # type: ignore
-                flags = RefinerFlag.from_dict(job.flags["refiner"])
+                flags = XLRefinerFlag.from_dict(job.flags["refiner"])
 
                 from core.shared_dependent import gpu
 
@@ -198,6 +209,9 @@ class SDXLStableDiffusion(InferenceModel):
                     sampler_settings=job.data.sampler_settings,
                 )
                 data = pipe(
+                    aesthetic_score=xl_flag.aesthetic_score,
+                    negative_aesthetic_score=xl_flag.negative_aesthetic_score,
+                    original_size=xl_flag.original_size,
                     image=latents,
                     generator=generator,
                     prompt=job.data.prompt,
@@ -284,9 +298,19 @@ class SDXLStableDiffusion(InferenceModel):
         input_image = resize(input_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
+        shared.current_method = "img2img"
+
+        xl_flag: XLFlag
+        if "sdxl" in job.flags:
+            xl_flag = XLFlag.from_dict(job.flags["sdxl"])
+        else:
+            xl_flag = XLFlag()
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
+                aesthetic_score=xl_flag.aesthetic_score,
+                negative_aesthetic_score=xl_flag.negative_aesthetic_score,
+                original_size=xl_flag.original_size,
                 generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,
@@ -344,9 +368,19 @@ class SDXLStableDiffusion(InferenceModel):
         input_mask_image = resize(input_mask_image, job.data.width, job.data.height)
 
         total_images: List[Image.Image] = []
+        shared.current_method = "inpainting"
+
+        xl_flag: XLFlag
+        if "sdxl" in job.flags:
+            xl_flag = XLFlag.from_dict(job.flags["sdxl"])
+        else:
+            xl_flag = XLFlag()
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
+                aesthetic_score=xl_flag.aesthetic_score,
+                negative_aesthetic_score=xl_flag.negative_aesthetic_score,
+                original_size=xl_flag.original_size,
                 generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,

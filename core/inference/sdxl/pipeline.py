@@ -1,11 +1,17 @@
-from typing import Callable, Literal, Optional, Union
+from typing import Callable, List, Literal, Optional, Union
 import logging
 
 import PIL
+from PIL import Image
 import torch
 from tqdm import tqdm
 from diffusers import LMSDiscreteScheduler, SchedulerMixin, StableDiffusionXLPipeline
-from diffusers.models import AutoencoderKL, UNet2DConditionModel
+from diffusers.models import (
+    AutoencoderKL,
+    MultiAdapter,
+    T2IAdapter,
+    UNet2DConditionModel,
+)
 from diffusers.pipelines.stable_diffusion import (
     StableDiffusionPipelineOutput,
 )
@@ -18,6 +24,7 @@ from transformers.models.clip import (
 from core.config import config
 from core.inference.utilities import (
     prepare_latents,
+    preprocess_adapter_image,
     preprocess_image,
     preprocess_mask,
     prepare_mask_latents,
@@ -28,7 +35,6 @@ from core.inference.utilities import (
     full_vae,
     numpy_to_pil,
     philox,
-    Placebo,
 )
 from core.scheduling import KdiffusionSchedulerAdapter
 from core.optimizations import (
@@ -86,6 +92,42 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 2 ** (len(self.vae.config.block_out_channels) - 1),  # type: ignore
             )
 
+    def _default_height_width(self, height, width, image):
+        if image is None:
+            return height, width
+
+        # NOTE: It is possible that a list of images have different
+        # dimensions for each image, so just checking the first image
+        # is not _exactly_ correct, but it is simple.
+        while isinstance(image, list):
+            image = image[0]
+
+        if height is None:
+            if isinstance(image, Image.Image):
+                height = image.height
+            elif isinstance(image, torch.Tensor):
+                height = image.shape[-2]
+
+            # round down to nearest multiple of `self.adapter.downscale_factor`
+            if hasattr(self, "adapter") and self.adapter is not None:
+                height = (
+                    height // self.adapter.downscale_factor
+                ) * self.adapter.downscale_factor
+
+        if width is None:
+            if isinstance(image, Image.Image):
+                width = image.width
+            elif isinstance(image, torch.Tensor):
+                width = image.shape[-1]
+
+            # round down to nearest multiple of `self.adapter.downscale_factor`
+            if hasattr(self, "adapter") and self.adapter is not None:
+                width = (
+                    width // self.adapter.downscale_factor
+                ) * self.adapter.downscale_factor
+
+        return height, width
+
     @property
     def _execution_device(self):
         r"""
@@ -126,9 +168,11 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         for prompt, negative_prompt, tokenizer, text_encoder in zip(
             prompts, negative_prompts, tokenizers, text_encoders
         ):
+            prompt = self.maybe_convert_prompt(prompt, tokenizer)
             logger.debug(f"Post textual prompt: {prompt}")
 
             if negative_prompt is not None:
+                negative_prompt = self.maybe_convert_prompt(negative_prompt, tokenizer)
                 logger.debug(f"Post textual negative_prompt: {negative_prompt}")
 
             ensure_correct_device(text_encoder)
@@ -237,6 +281,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         prompt: str,
         generator: Union[torch.Generator, philox.PhiloxGenerator],
         seed: int,
+        aesthetic_score: float = 6.0,
+        negative_aesthetic_score: float = 2.5,
+        original_size: List[int] = [1024, 1024],
         negative_prompt: Optional[str] = None,
         image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
@@ -245,7 +292,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
         strength: float = 0.8,
-        num_images_per_prompt: Optional[int] = 1,
+        num_images_per_prompt: int = 1,
         eta: float = 0.0,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 100,
@@ -255,10 +302,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         prompt_expansion_settings=None,
+        adapter_conditioning_scale: Union[float, List[float]] = 1.0,
+        adapter_conditioning_factor: float = 1.0,
     ):
-        aesthetic_score = 6.0
-        negative_aesthetic_score = 2.5
-
         if config.api.torch_compile:
             self.unet = torch.compile(
                 self.unet,
@@ -271,6 +317,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         with inference_context(self.unet, self.vae, height, width) as context:
             self.unet = context.unet  # type: ignore
             self.vae = context.vae  # type: ignore
+
+            height, width = self._default_height_width(height, width, image)
 
             # 2. Define call parameters
             batch_size = 1 if isinstance(prompt, str) else len(prompt)
@@ -300,12 +348,32 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             )
             dtype = prompt_embeds.dtype
 
+            adapter_input = None  # type: ignore
+            if hasattr(self, "adapter"):
+                if isinstance(self.adapter, MultiAdapter):
+                    adapter_input: list = []  # type: ignore
+
+                    if not isinstance(adapter_conditioning_scale, list):
+                        adapter_conditioning_scale = [
+                            adapter_conditioning_scale * len(image)
+                        ]
+
+                    for oi in image:
+                        oi = preprocess_adapter_image(oi, height, width)
+                        oi = oi.to(device, dtype)
+                        adapter_input.append(oi)  # type: ignore
+                else:
+                    adapter_input: torch.Tensor = preprocess_adapter_image(  # type: ignore
+                        adapter_input, height, width
+                    )
+                    adapter_input.to(device, dtype)
+
             # 4. Preprocess image and mask
-            if isinstance(image, PIL.Image.Image):  # type: ignore
+            if isinstance(image, Image.Image):
                 image = preprocess_image(image)
             if image is not None:
                 image = image.to(device=device, dtype=dtype)
-            if isinstance(mask_image, PIL.Image.Image):  # type: ignore
+            if isinstance(mask_image, Image.Image):
                 mask_image = preprocess_mask(mask_image)
             if mask_image is not None:
                 mask, masked_image, _ = prepare_mask_and_masked_image(
@@ -314,7 +382,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 mask, _ = prepare_mask_latents(
                     mask,
                     masked_image,
-                    batch_size * num_images_per_prompt,  # type: ignore
+                    batch_size * num_images_per_prompt,
                     height,
                     width,
                     dtype,
@@ -340,14 +408,14 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                 self.scheduler.timesteps = timesteps
                 self.scheduler.steps = num_inference_steps
-            latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)  # type: ignore
+            latent_timestep = timesteps[:1].repeat(batch_size * num_images_per_prompt)
 
             # 6. Prepare latent variables
             latents, init_latents_orig, noise = prepare_latents(
                 self,  # type: ignore
                 image,
                 latent_timestep,
-                batch_size * num_images_per_prompt,  # type: ignore
+                batch_size * num_images_per_prompt,
                 height,
                 width,
                 dtype,
@@ -361,9 +429,26 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 scheduler=self.scheduler, generator=generator, eta=eta
             )
 
+            if hasattr(self, "adapter"):
+                if isinstance(self.adapter, MultiAdapter):
+                    adapter_state = self.adapter(
+                        adapter_input, adapter_conditioning_scale
+                    )
+                    for k, v in enumerate(adapter_state):
+                        adapter_state[k] = v
+                else:
+                    adapter_state = self.adapter(adapter_input)
+                    for k, v in enumerate(adapter_state):
+                        adapter_state[k] = v * adapter_conditioning_scale
+                if num_images_per_prompt > 1:
+                    for k, v in enumerate(adapter_state):
+                        adapter_state[k] = v.repeat(num_images_per_prompt, 1, 1, 1)
+                if do_classifier_free_guidance:
+                    for k, v in enumerate(adapter_state):
+                        adapter_state[k] = torch.cat([v] * 2, dim=0)
             add_text_embeds = pooled_prompt_embeds
             add_time_ids, add_neg_time_ids = self._get_add_time_ids(
-                (height, width),
+                original_size,
                 (0, 0),
                 (height, width),
                 aesthetic_score,
@@ -383,44 +468,67 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             add_text_embeds = add_text_embeds.to(device)
             add_time_ids = add_time_ids.to(device).repeat(batch_size * num_images_per_prompt, 1)  # type: ignore
 
+            cutoff = num_inference_steps * adapter_conditioning_factor
             # 8. Denoising loop
+            j = 0
+
             def do_denoise(
                 x: torch.Tensor,
                 t: torch.IntTensor,
                 call: Callable[..., torch.Tensor],
                 change_source: Callable[[Callable], None],
             ) -> torch.Tensor:
+                nonlocal j
+
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
                     torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
                 )
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
 
+                down_intrablock_additional_residuals = None
+                if hasattr(self, "adapter") and self.adapter is not None:
+                    if j < cutoff:
+                        assert adapter_state is not None
+                        down_intrablock_additional_residuals = [
+                            state.clone() for state in adapter_state
+                        ]
+
                 if split_latents_into_two:
                     uncond, cond = prompt_embeds.chunk(2)
                     uncond_text, cond_text = add_text_embeds.chunk(2)
                     uncond_time, cond_time = add_time_ids.chunk(2)
+                    uncond_intra, cond_intra = None, None
+                    if down_intrablock_additional_residuals is not None:
+                        uncond_intra, cond_intra = [], []
+                        for s in down_intrablock_additional_residuals:
+                            unc, cnd = s.chunk(2)
+                            uncond_intra.append(unc)
+                            cond_intra.append(cnd)
 
                     added_cond_kwargs = {
                         "text_embeds": cond_text,
                         "time_ids": cond_time,
                     }
+                    added_uncond_kwargs = {
+                        "text_embeds": uncond_text,
+                        "time_ids": uncond_time,
+                    }
+
                     noise_pred_text = call(
                         latent_model_input,
                         t,
                         cond=cond,
                         added_cond_kwargs=added_cond_kwargs,
+                        down_intrablock_additional_residuals=cond_intra,
                     )
 
-                    added_cond_kwargs = {
-                        "text_embeds": uncond_text,
-                        "time_ids": uncond_time,
-                    }
                     noise_pred_uncond = call(
                         latent_model_input,
                         t,
                         cond=uncond,
-                        added_cond_kwargs=added_cond_kwargs,
+                        added_cond_kwargs=added_uncond_kwargs,
+                        down_intrablock_additional_residuals=uncond_intra,
                     )
                 else:
                     added_cond_kwargs = {
@@ -432,6 +540,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         t,
                         cond=prompt_embeds,
                         added_cond_kwargs=added_cond_kwargs,
+                        down_intrablock_additional_residuals=down_intrablock_additional_residuals,
                     )
 
                 # perform guidance
@@ -442,7 +551,6 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         noise_pred_text - noise_pred_uncond  # type: ignore
                     )  # type: ignore
 
-                # compute the previous noisy sample x_t -> x_t-1
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
                     x = self.scheduler.step(  # type: ignore
@@ -457,6 +565,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         init_latents_orig, noise, torch.tensor([t])  # type: ignore
                     )
                     x = (init_latents_proper * mask) + (x * (1 - mask))  # type: ignore
+                j += 1
                 return x
 
             ensure_correct_device(self.unet)
@@ -524,12 +633,15 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         generator: Union[torch.Generator, philox.PhiloxGenerator],
         prompt: str,
         seed: int,
+        aesthetic_score: float = 6.0,
+        negative_aesthetic_score: float = 2.5,
+        original_size: List[int] = [1024, 1024],
         negative_prompt: Optional[str] = None,
         height: int = 512,
         width: int = 512,
         num_inference_steps: int = 50,
         guidance_scale: float = 7.5,
-        num_images_per_prompt: Optional[int] = 1,
+        num_images_per_prompt: int = 1,
         eta: float = 0.0,
         latents: Optional[torch.FloatTensor] = None,
         max_embeddings_multiples: Optional[int] = 100,
@@ -541,6 +653,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         prompt_expansion_settings=None,
     ):
         return self.__call__(
+            aesthetic_score=aesthetic_score,
+            negative_aesthetic_score=negative_aesthetic_score,
+            original_size=original_size,
             prompt=prompt,
             negative_prompt=negative_prompt,
             seed=seed,
@@ -563,15 +678,18 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
 
     def img2img(
         self,
-        image: Union[torch.FloatTensor, PIL.Image.Image],  # type: ignore
+        image: Union[torch.FloatTensor, Image.Image],
         prompt: str,
         seed: int,
         generator: Union[torch.Generator, philox.PhiloxGenerator],
+        aesthetic_score: float = 6.0,
+        negative_aesthetic_score: float = 2.5,
+        original_size: List[int] = [1024, 1024],
         negative_prompt: Optional[str] = None,
         strength: float = 0.8,
-        num_inference_steps: Optional[int] = 50,
+        num_inference_steps: int = 50,
         guidance_scale: Optional[float] = 7.5,
-        num_images_per_prompt: Optional[int] = 1,
+        num_images_per_prompt: int = 1,
         eta: Optional[float] = 0.0,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
@@ -582,6 +700,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         prompt_expansion_settings=None,
     ):
         return self.__call__(
+            aesthetic_score=aesthetic_score,
+            negative_aesthetic_score=negative_aesthetic_score,
+            original_size=original_size,
             prompt=prompt,
             seed=seed,
             negative_prompt=negative_prompt,
@@ -608,11 +729,14 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         prompt: str,
         seed: int,
         generator: Union[torch.Generator, philox.PhiloxGenerator],
+        aesthetic_score: float = 6.0,
+        negative_aesthetic_score: float = 2.5,
+        original_size: List[int] = [1024, 1024],
         negative_prompt: Optional[str] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,
         guidance_scale: Optional[float] = 7.5,
-        num_images_per_prompt: Optional[int] = 1,
+        num_images_per_prompt: int = 1,
         eta: Optional[float] = 0.0,
         max_embeddings_multiples: Optional[int] = 100,
         output_type: Literal["pil", "latent"] = "pil",
@@ -625,6 +749,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         prompt_expansion_settings=None,
     ):
         return self.__call__(
+            aesthetic_score=aesthetic_score,
+            negative_aesthetic_score=negative_aesthetic_score,
+            original_size=original_size,
             prompt=prompt,
             seed=seed,
             negative_prompt=negative_prompt,
