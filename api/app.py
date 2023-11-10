@@ -130,7 +130,9 @@ async def startup_event():
         for model in config.api.autoloaded_models:
             if model in [i.path for i in all_models]:
                 backend: InferenceBackend = [i.backend for i in all_models if i.path == model][0]  # type: ignore
-                gpu.load_model(model, backend)
+                gpu.load_model(
+                    model, backend, type="SD1.x"
+                )  # TODO: this is hardcoded now, we need something dynamic here
             else:
                 logger.warning(f"Autoloaded model {model} not found, skipping")
 

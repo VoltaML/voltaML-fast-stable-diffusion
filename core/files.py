@@ -57,6 +57,12 @@ class CachedModelList:
             model_name: str = "/".join(model_name.split("--")[1:3])
             name, base, stage = determine_model_type(self.paths["pytorch"] / model_name)
 
+            try:
+                full_path = get_full_model_path(model_name)
+            except ValueError as e:
+                logger.debug(f"Model {model_name} is not valid: {e}")
+                continue
+
             models.append(
                 ModelResponse(
                     name=name,
@@ -65,7 +71,7 @@ class CachedModelList:
                     type=base,
                     stage=stage,
                     vae="default",
-                    valid=is_valid_diffusers_model(get_full_model_path(model_name)),
+                    valid=is_valid_diffusers_model(full_path),
                     state="not loaded",
                 )
             )
@@ -453,7 +459,7 @@ def get_full_model_path(
     ref = current_diffusers_ref(storage, revision)
 
     if not ref:
-        raise ValueError("No ref found")
+        raise ValueError(f"No ref found for {repo_id}")
 
     if diffusers_skip_ref_follow:
         return Path(storage)
