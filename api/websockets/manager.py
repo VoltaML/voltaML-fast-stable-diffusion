@@ -185,3 +185,8 @@ class WebSocketManager:
                     torch.cuda.ipc_collect()
 
         self.active_connections = []
+
+    def get_active_connections(self):
+        "Returns the number of active websocket connections"
+
+        return self.active_connections
