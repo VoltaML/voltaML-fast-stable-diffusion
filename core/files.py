@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 class CachedModelList:
-    "List of models downloaded for PyTorch and (or) converted to TRT"
+    "List of models that user has downloaded"
 
     def __init__(self):
         self.paths = {
