@@ -7,6 +7,7 @@ from diffusers.utils.constants import DIFFUSERS_CACHE
 from huggingface_hub.file_download import repo_folder_name
 
 from core.types import ModelResponse
+from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
 
@@ -53,100 +54,45 @@ class CachedModelList:
             # Skip if it is not a huggingface model
             if "model" not in model_name:
                 continue
+            model_name: str = "/".join(model_name.split("--")[1:3])
+            name, base, stage = determine_model_type(self.paths["pytorch"] / model_name)
 
-            name: str = "/".join(model_name.split("--")[1:3])
-            try:
-                file = get_full_model_path(name) / "model_index.json"
-                with open(file, "r", encoding="UTF-8") as content:
-                    sdxl = "StableDiffusionXL" in content.readlines()[1]
-                    if sdxl:
-                        models.append(
-                            ModelResponse(
-                                name=name,
-                                path=name,
-                                backend="SDXL",
-                                vae="default",
-                                valid=True,
-                                state="not loaded",
-                            )
-                        )
-                        continue
-            except Exception:  # pylint: disable=broad-except
-                pass
-            try:
-                models.append(
-                    ModelResponse(
-                        name=name,
-                        path=name,
-                        backend="PyTorch",
-                        vae="default",
-                        valid=is_valid_diffusers_model(get_full_model_path(name)),
-                        state="not loaded",
-                    )
+            models.append(
+                ModelResponse(
+                    name=name,
+                    path=name,
+                    backend="PyTorch",
+                    type=base,
+                    stage=stage,
+                    vae="default",
+                    valid=is_valid_diffusers_model(get_full_model_path(model_name)),
+                    state="not loaded",
                 )
-            except ValueError:
-                logger.debug(f"Invalid model {name}, skipping...")
-                continue
+            )
 
-        # Localy stored models
+        # Locally stored models
         logger.debug(f"Looking for local models in {self.paths['checkpoints']}")
         for model_name in os.listdir(self.paths["checkpoints"]):
             logger.debug(f"Found model {model_name}")
-
-            if self.paths["checkpoints"].joinpath(model_name).is_dir():
-                # Assuming that model is in Diffusers format
-                file = self.paths["checkpoints"] / model_name / "model_index.json"
-                try:
-                    with open(file, "r", encoding="UTF-8") as content:
-                        sdxl = "StableDiffusionXL" in content.readlines()[1]
-                        if sdxl:
-                            models.append(
-                                ModelResponse(
-                                    name=model_name,
-                                    path=model_name,
-                                    backend="SDXL",
-                                    vae="default",
-                                    valid=True,
-                                    state="not loaded",
-                                )
-                            )
-                            continue
-                except Exception:  # pylint: disable=broad-except
-                    pass
-                models.append(
-                    ModelResponse(
-                        name=model_name,
-                        path=model_name,
-                        backend="PyTorch",
-                        vae="default",
-                        valid=is_valid_diffusers_model(
-                            self.paths["checkpoints"].joinpath(model_name)
-                        ),
-                        state="not loaded",
-                    )
-                )
-            elif (self.paths["checkpoints"] / model_name).suffix in [
-                ".ckpt",
-                ".safetensors",
-            ]:
-                # Assuming that model is in Checkpoint / Safetensors format
-                models.append(
-                    ModelResponse(
-                        name=model_name,
-                        path=model_name,
-                        backend="PyTorch"
-                        if "xl" not in model_name.casefold()
-                        else "SDXL",
-                        vae="default",
-                        valid=True,
-                        state="not loaded",
-                    )
-                )
+            if model_name.endswith(".ckpt"):
+                name, base, stage = model_name, "SD1.x", "first_stage"
             else:
-                # Junk file, notify user
-                logger.debug(
-                    f"Found junk file {model_name} in {self.paths['checkpoints']}, skipping..."
+                name, base, stage = determine_model_type(
+                    self.paths["checkpoints"] / model_name
                 )
+
+            models.append(
+                ModelResponse(
+                    name=name,
+                    path=model_name,
+                    backend="PyTorch",
+                    vae="default",
+                    valid=True,
+                    state="not loaded",
+                    type=base,
+                    stage=stage,
+                )
+            )
 
         return models
 

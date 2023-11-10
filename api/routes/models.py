@@ -22,6 +22,7 @@ from core.types import (
     ModelResponse,
     TextualInversionLoadRequest,
     VaeLoadRequest,
+    PyTorchModelBase,
 )
 from core.utils import download_file
 
@@ -73,6 +74,7 @@ def list_loaded_models() -> List[ModelResponse]:
                     "textual_inversions", []
                 ),
                 valid=True,
+                type=gpu.loaded_models[model_id].__dict__.get("type", "SD1.x"),
             )
         )
 
@@ -90,11 +92,12 @@ def list_available_models() -> List[ModelResponse]:
 def load_model(
     model: str,
     backend: InferenceBackend,
+    type: PyTorchModelBase,
 ):
     "Loads a model into memory"
 
     try:
-        gpu.load_model(model, backend)
+        gpu.load_model(model, backend, type)
 
         websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     except torch.cuda.OutOfMemoryError:  # type: ignore

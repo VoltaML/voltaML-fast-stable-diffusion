@@ -236,11 +236,11 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const messageHandler = useMessage();
     const isSelectedModelSDXL = computed(() => {
       var _a;
-      return ((_a = settings.data.settings.model) == null ? void 0 : _a.backend) === "SDXL";
+      return ((_a = settings.data.settings.model) == null ? void 0 : _a.type) === "SDXL";
     });
     const refinerModels = computed(() => {
       return global.state.models.filter(
-        (model) => model.backend === "SDXL" && model.name.toLowerCase().includes("refiner")
+        (model) => model.type === "SDXL" && model.name.toLowerCase().includes("refiner")
       ).map((model) => {
         return {
           label: model.name,

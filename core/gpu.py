@@ -38,6 +38,7 @@ from core.types import (
     TextualInversionLoadRequest,
     UpscaleQueueEntry,
     VaeLoadRequest,
+    PyTorchModelBase,
 )
 from core.utils import convert_to_image, image_grid, preprocess_job
 
@@ -221,13 +222,13 @@ class GPU:
                     shared_dependent.cached_controlnet_preprocessor = None
                     self.memory_cleanup()
 
-            # shared.current_model = model
-
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
+                shared.current_model = "SD1.x"
                 images: List[Image.Image] = model.generate(job)
             elif isinstance(model, SDXLStableDiffusion):
                 logger.debug("Generating with SDXL (PyTorch)")
+                shared.current_model = "SDXL"
                 images: List[Image.Image] = model.generate(job)
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
@@ -333,6 +334,7 @@ class GPU:
         self,
         model: str,
         backend: InferenceBackend,
+        type: PyTorchModelBase,
     ):
         "Load a model into memory"
 
@@ -397,7 +399,7 @@ class GPU:
 
                 pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
-            elif backend == "SDXL":
+            elif type == "SDXL":
                 logger.debug("Selecting SDXL")
 
                 websocket_manager.broadcast_sync(

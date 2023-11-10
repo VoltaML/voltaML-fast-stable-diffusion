@@ -132,7 +132,7 @@ def optimize_model(
         ]:
             cpu_offloaded_model = getattr(pipe, model_name, None)
             if cpu_offloaded_model is not None:
-                set_offload(cpu_offloaded_model, device)
+                cpu_offloaded_model = set_offload(cpu_offloaded_model, device)
                 setattr(pipe, model_name, cpu_offloaded_model)
         logger.info("Optimization: Offloaded model parts to CPU.")
 

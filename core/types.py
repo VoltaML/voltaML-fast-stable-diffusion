@@ -21,7 +21,6 @@ InferenceBackend = Literal["PyTorch", "AITemplate", "SDXL", "ONNX"]
 SigmaScheduler = Literal["automatic", "karras", "exponential", "polyexponential", "vp"]
 Backend = Literal[
     "PyTorch",
-    "SDXL",
     "AITemplate",
     "unknown",
     "LoRA",

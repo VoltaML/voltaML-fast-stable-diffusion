@@ -19,17 +19,14 @@ def unload_all():
 
 
 def ensure_correct_device(module: torch.nn.Module):
-    if hasattr(module, "v_offload_device"):
-        global _module
-
+    global _module
+    if _module is not None:
         if module.__class__.__name__ == _module.__class__.__name__:
             return
-
+        logger.debug(f"Transferring {_module.__class__.__name__} to cpu.")
+        _module.cpu()
+    if hasattr(module, "v_offload_device"):
         device = getattr(module, "v_offload_device", config.api.device)
-
-        if _module is not None:
-            logger.debug(f"Transferring {_module.__class__.__name__} to cpu.")
-            _module.cpu()
 
         logger.debug(f"Transferring {module.__class__.__name__} to {str(device)}.")
         module.to(device=torch.device(device))
@@ -40,6 +37,9 @@ def ensure_correct_device(module: torch.nn.Module):
 
 def set_offload(module: torch.nn.Module, device: torch.device):
     if config.api.offload == "module":
-        cpu_offload(module, device, offload_buffers=len(module._parameters) > 0)
-    else:
-        setattr(module, "v_offload_device", device)
+        if "CLIP" not in module.__class__.__name__:
+            return cpu_offload(
+                module, device, offload_buffers=len(module._parameters) > 0
+            )
+    setattr(module, "v_offload_device", device)
+    return module

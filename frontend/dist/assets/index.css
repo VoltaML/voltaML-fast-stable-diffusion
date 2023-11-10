@@ -50,12 +50,12 @@
   justify-content: center;
 }
 
-.progress-container[data-v-e0808386] {
+.progress-container[data-v-ab2d5f77] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-e0808386] {
+.top-bar[data-v-ab2d5f77] {
   display: inline-flex;
   align-items: center;
   padding-top: 10px;
@@ -66,7 +66,7 @@
   top: 0;
   z-index: 1;
 }
-.logo[data-v-e0808386] {
+.logo[data-v-ab2d5f77] {
   margin-right: 16px;
   margin-left: 16px;
 }

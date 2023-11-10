@@ -127,11 +127,11 @@
                         "
                       >
                         <NTag
-                          :type="model.backend === 'SDXL' ? 'warning' : 'info'"
+                          :type="getModelTag(model.type)[1]"
                           ghost
                           style="margin-right: 8px"
                         >
-                          {{ model.backend === "SDXL" ? "SDXL" : "SD" }}
+                          {{ getModelTag(model.type)[0] }}
                         </NTag>
                         <p>{{ model.name }}</p>
                       </div>
@@ -454,10 +454,7 @@ const filteredModels = computed<ModelEntry[]>(() => {
 const pyTorchModels = computed<ModelEntry[]>(() => {
   return filteredModels.value
     .filter((model) => {
-      return (
-        (model.backend === "PyTorch" || model.backend === "SDXL") &&
-        model.valid === true
-      );
+      return model.backend === "PyTorch" && model.valid === true;
     })
     .sort((a, b) => {
       if (a.state === "loaded" && b.state !== "loaded") {
@@ -507,7 +504,7 @@ const onnxModels = computed<ModelEntry[]>(() => {
 
 const manualVAEModels = computed<ModelEntry[]>(() => {
   const selectedModel = global.state.selected_model;
-  if (selectedModel?.backend === "SDXL") {
+  if (selectedModel?.type === "SDXL") {
     return [
       {
         name: "Default VAE (fp32)",
@@ -517,6 +514,8 @@ const manualVAEModels = computed<ModelEntry[]>(() => {
         state: "not loaded",
         vae: "default",
         textual_inversions: [],
+        type: "SDXL",
+        stage: "last_stage",
       } as ModelEntry,
       {
         name: "FP16 VAE",
@@ -526,6 +525,8 @@ const manualVAEModels = computed<ModelEntry[]>(() => {
         state: "not loaded",
         vae: "fp16",
         textual_inversions: [],
+        type: "SDXL",
+        stage: "last_stage",
       } as ModelEntry,
     ];
   } else {
@@ -538,6 +539,8 @@ const manualVAEModels = computed<ModelEntry[]>(() => {
         state: "not loaded",
         vae: "default",
         textual_inversions: [],
+        type: "SD1.x",
+        stage: "last_stage",
       } as ModelEntry,
       {
         name: "Tiny VAE (fast)",
@@ -547,6 +550,8 @@ const manualVAEModels = computed<ModelEntry[]>(() => {
         state: "not loaded",
         vae: "madebyollin/taesd",
         textual_inversions: [],
+        type: "SD1.x",
+        stage: "last_stage",
       } as ModelEntry,
       {
         name: "Asymmetric VAE",
@@ -556,6 +561,8 @@ const manualVAEModels = computed<ModelEntry[]>(() => {
         state: "not loaded",
         vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
         textual_inversions: [],
+        type: "SD1.x",
+        stage: "last_stage",
       } as ModelEntry,
     ];
   }
@@ -640,7 +647,6 @@ function refreshModels() {
               ...loadedPyTorchModels.value,
               ...loadedAitModels.value,
               ...loadedOnnxModels.value,
-              ...loadedSdxlModels.value,
               ...loadedExtraModels.value,
             ];
 
@@ -710,7 +716,11 @@ async function loadModel(model: ModelEntry) {
   model.state = "loading";
   modelsLoading.value = true;
   const load_url = new URL(`${serverUrl}/api/models/load`);
-  const params = { model: model.path, backend: model.backend };
+  const params = {
+    model: model.path,
+    backend: model.backend,
+    type: model.type,
+  };
   load_url.search = new URLSearchParams(params).toString();
 
   fetch(load_url, {
@@ -844,6 +854,24 @@ function resetModels() {
   console.log("Reset models");
 }
 
+function getModelTag(
+  type: string
+): [string, "info" | "warning" | "success" | "error" | "primary"] {
+  switch (type) {
+    case "SD1.x":
+      return [type, "primary"];
+    case "SD2.x":
+      return [type, "info"];
+    case "SDXL":
+      return [type, "warning"];
+    case "Kandinsky 2.1":
+    case "Kandinsky 2.2":
+      return ["Kandinsky", "success"];
+    default:
+      return [type, "error"];
+  }
+}
+
 websocketState.onConnectedCallbacks.push(() => {
   refreshModels();
 });
@@ -870,11 +898,6 @@ const loadedAitModels = computed(() => {
 const loadedOnnxModels = computed(() => {
   return global.state.models.filter((model) => {
     return model.backend === "ONNX" && model.state === "loaded";
-  });
-});
-const loadedSdxlModels = computed(() => {
-  return global.state.models.filter((model) => {
-    return model.backend === "SDXL" && model.state === "loaded";
   });
 });
 const loadedExtraModels = computed(() => {
@@ -939,25 +962,10 @@ const extraOptions: ComputedRef<SelectMixedOption> = computed(() => {
   };
 });
 
-const sdxlOptions: ComputedRef<SelectMixedOption> = computed(() => {
-  return {
-    type: "group",
-    label: "SDXL",
-    key: "sdxl",
-    children: loadedSdxlModels.value.map((model) => {
-      return {
-        label: model.name,
-        value: `${model.path}:SDXL`,
-      };
-    }),
-  };
-});
-
 const generatedModelOptions: ComputedRef<SelectMixedOption[]> = computed(() => {
   return [
     pyTorchOptions.value,
     aitOptions.value,
-    sdxlOptions.value,
     onnxOptions.value,
     extraOptions.value,
   ];

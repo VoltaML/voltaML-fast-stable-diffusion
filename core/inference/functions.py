@@ -363,7 +363,7 @@ def load_pytorch_pipeline(
         type = determine_model_type(get_full_model_path(model_id_or_path))
         cl = StableDiffusionXLPipeline if type[1] == "SDXL" else StableDiffusionPipeline
         # I never knew this existed, but this is pretty handy :)
-        # cl.__init__ = partialmethod(cl.__init__, requires_safety_checker=False)  # type: ignore
+        # cl.__init__ = partialmethod(cl.__init__, low_cpu_mem_usage=True)  # type: ignore
         try:
             pipe = download_from_original_stable_diffusion_ckpt(
                 str(get_full_model_path(model_id_or_path)),

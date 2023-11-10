@@ -52,7 +52,8 @@ class SDXLStableDiffusion(InferenceModel):
     ) -> None:
         super().__init__(model_id, device)
 
-        self.backend: Backend = "SDXL"
+        self.backend: Backend = "PyTorch"
+        self.type = "SDXL"
         self.bare: bool = bare
 
         # Components
@@ -113,6 +114,10 @@ class SDXLStableDiffusion(InferenceModel):
         old_vae = getattr(self, "original_vae")
         dtype = self.unet.dtype
         device = self.unet.device
+
+        if hasattr(self.text_encoder, "v_offload_device"):
+            device = torch.device("cpu")
+
         if vae == "default":
             self.vae = old_vae
         else:
@@ -124,8 +129,12 @@ class SDXLStableDiffusion(InferenceModel):
                 self.vae = convert_vaept_to_diffusers(vae).to(
                     device=device, dtype=dtype
                 )
-        if hasattr(old_vae, "offload_device"):
-            setattr(self.vae, "offload_device", getattr(old_vae, "offload_device"))
+        # Check if text_encoder has v_offload_device, because it always
+        # gets wholly offloaded instead of being sequentially offloaded
+        if hasattr(self.text_encoder, "v_offload_device"):
+            from core.optimizations.offload import set_offload
+
+            self.vae = set_offload(self.vae, torch.device(config.api.device))  # type: ignore
         self.vae_path = vae
 
     def unload(self) -> None:
@@ -196,7 +205,7 @@ class SDXLStableDiffusion(InferenceModel):
 
                 unload = False
                 if flags.model not in gpu.loaded_models:
-                    gpu.load_model(flags.model, "SDXL")
+                    gpu.load_model(flags.model, "PyTorch", "SDXL")
                     unload = True
                 model: SDXLStableDiffusion = gpu.loaded_models[flags.model]  # type: ignore
                 if config.api.clear_memory_policy == "always":

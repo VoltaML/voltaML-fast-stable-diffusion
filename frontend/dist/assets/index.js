@@ -42069,7 +42069,7 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const _withScopeId = (n) => (pushScopeId("data-v-e0808386"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-ab2d5f77"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -42106,7 +42106,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     });
     const pyTorchModels = computed(() => {
       return filteredModels.value.filter((model) => {
-        return (model.backend === "PyTorch" || model.backend === "SDXL") && model.valid === true;
+        return model.backend === "PyTorch" && model.valid === true;
       }).sort((a, b) => {
         if (a.state === "loaded" && b.state !== "loaded") {
           return -1;
@@ -42145,7 +42145,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     });
     const manualVAEModels = computed(() => {
       const selectedModel = global2.state.selected_model;
-      if ((selectedModel == null ? void 0 : selectedModel.backend) === "SDXL") {
+      if ((selectedModel == null ? void 0 : selectedModel.type) === "SDXL") {
         return [
           {
             name: "Default VAE (fp32)",
@@ -42154,7 +42154,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             valid: true,
             state: "not loaded",
             vae: "default",
-            textual_inversions: []
+            textual_inversions: [],
+            type: "SDXL",
+            stage: "last_stage"
           },
           {
             name: "FP16 VAE",
@@ -42163,7 +42165,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             valid: true,
             state: "not loaded",
             vae: "fp16",
-            textual_inversions: []
+            textual_inversions: [],
+            type: "SDXL",
+            stage: "last_stage"
           }
         ];
       } else {
@@ -42175,7 +42179,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             valid: true,
             state: "not loaded",
             vae: "default",
-            textual_inversions: []
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
           },
           {
             name: "Tiny VAE (fast)",
@@ -42184,7 +42190,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             valid: true,
             state: "not loaded",
             vae: "madebyollin/taesd",
-            textual_inversions: []
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
           },
           {
             name: "Asymmetric VAE",
@@ -42193,7 +42201,9 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             valid: true,
             state: "not loaded",
             vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-            textual_inversions: []
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
           }
         ];
       }
@@ -42260,7 +42270,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 ...loadedPyTorchModels.value,
                 ...loadedAitModels.value,
                 ...loadedOnnxModels.value,
-                ...loadedSdxlModels.value,
                 ...loadedExtraModels.value
               ];
               console.log("All loaded models: ", allLoaded);
@@ -42316,7 +42325,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       model.state = "loading";
       modelsLoading.value = true;
       const load_url = new URL(`${serverUrl}/api/models/load`);
-      const params = { model: model.path, backend: model.backend };
+      const params = {
+        model: model.path,
+        backend: model.backend,
+        type: model.type
+      };
       load_url.search = new URLSearchParams(params).toString();
       fetch(load_url, {
         method: "POST"
@@ -42432,6 +42445,21 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       global2.state.models.splice(0, global2.state.models.length);
       console.log("Reset models");
     }
+    function getModelTag(type) {
+      switch (type) {
+        case "SD1.x":
+          return [type, "primary"];
+        case "SD2.x":
+          return [type, "info"];
+        case "SDXL":
+          return [type, "warning"];
+        case "Kandinsky 2.1":
+        case "Kandinsky 2.2":
+          return ["Kandinsky", "success"];
+        default:
+          return [type, "error"];
+      }
+    }
     websocketState.onConnectedCallbacks.push(() => {
       refreshModels();
     });
@@ -42457,11 +42485,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     const loadedOnnxModels = computed(() => {
       return global2.state.models.filter((model) => {
         return model.backend === "ONNX" && model.state === "loaded";
-      });
-    });
-    const loadedSdxlModels = computed(() => {
-      return global2.state.models.filter((model) => {
-        return model.backend === "SDXL" && model.state === "loaded";
       });
     });
     const loadedExtraModels = computed(() => {
@@ -42521,24 +42544,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         })
       };
     });
-    const sdxlOptions = computed(() => {
-      return {
-        type: "group",
-        label: "SDXL",
-        key: "sdxl",
-        children: loadedSdxlModels.value.map((model) => {
-          return {
-            label: model.name,
-            value: `${model.path}:SDXL`
-          };
-        })
-      };
-    });
     const generatedModelOptions = computed(() => {
       return [
         pyTorchOptions.value,
         aitOptions.value,
-        sdxlOptions.value,
         onnxOptions.value,
         extraOptions.value
       ];
@@ -42745,12 +42754,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                         }, [
                                           createBaseVNode("div", _hoisted_7, [
                                             createVNode(unref(NTag), {
-                                              type: model.backend === "SDXL" ? "warning" : "info",
+                                              type: getModelTag(model.type)[1],
                                               ghost: "",
                                               style: { "margin-right": "8px" }
                                             }, {
                                               default: withCtx(() => [
-                                                createTextVNode(toDisplayString(model.backend === "SDXL" ? "SDXL" : "SD"), 1)
+                                                createTextVNode(toDisplayString(getModelTag(model.type)[0]), 1)
                                               ]),
                                               _: 2
                                             }, 1032, ["type"]),
@@ -43087,8 +43096,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_e0808386_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-e0808386"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_ab2d5f77_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-ab2d5f77"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";

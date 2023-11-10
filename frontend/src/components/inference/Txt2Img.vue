@@ -361,14 +361,14 @@ const settings = useSettings();
 const messageHandler = useMessage();
 
 const isSelectedModelSDXL = computed(() => {
-  return settings.data.settings.model?.backend === "SDXL";
+  return settings.data.settings.model?.type === "SDXL";
 });
 
 const refinerModels = computed(() => {
   return global.state.models
     .filter(
       (model) =>
-        model.backend === "SDXL" && model.name.toLowerCase().includes("refiner")
+        model.type === "SDXL" && model.name.toLowerCase().includes("refiner")
     )
     .map((model) => {
       return {

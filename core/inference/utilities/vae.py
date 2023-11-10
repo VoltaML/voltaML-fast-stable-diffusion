@@ -5,6 +5,7 @@ import torch
 from PIL import Image
 
 from core.config import config
+from core import shared
 
 taesd_model = None
 
@@ -18,7 +19,7 @@ def taesd(
         from diffusers.models.autoencoder_tiny import AutoencoderTiny
 
         model = "madebyollin/taesd"
-        if False:  # TODO: if is_sdxl:
+        if shared.current_model == "SDXL":
             model = "madebyollin/taesdxl"
         taesd_model = AutoencoderTiny.from_pretrained(
             model, torch_dtype=torch.float16
@@ -46,7 +47,7 @@ def cheap_approximation(sample: torch.Tensor) -> Image.Image:
         [-0.158, 0.189, 0.264],
         [-0.184, -0.271, -0.473],
     ]
-    if False:  # TODO: if is_sdxl:
+    if shared.current_model == "SDXL":
         coeffs = [
             [0.3448, 0.4168, 0.4395],
             [-0.1953, -0.0290, 0.0250],

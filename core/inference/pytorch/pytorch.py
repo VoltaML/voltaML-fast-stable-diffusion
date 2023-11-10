@@ -139,8 +139,12 @@ class PyTorchStableDiffusion(InferenceModel):
 
         old_vae = getattr(self, "original_vae")
         # Not sure what I needed this for, but whatever
-        # dtype = self.unet.dtype
-        # device = self.unet.device
+        dtype = self.unet.dtype
+        device = self.unet.device
+
+        if hasattr(self.text_encoder, "v_offload_device"):
+            device = torch.device("cpu")
+
         if vae == "default":
             self.vae = old_vae
         else:
@@ -149,9 +153,7 @@ class PyTorchStableDiffusion(InferenceModel):
                     f"https://huggingface.co/{vae}/raw/main/config.json"
                 ).json()["_class_name"]
                 cont = getattr(importlib.import_module("diffusers"), cont)
-                self.vae = cont.from_pretrained(vae).to(
-                    device=old_vae.device, dtype=old_vae.dtype
-                )
+                self.vae = cont.from_pretrained(vae).to(device, dtype)
                 if not hasattr(self.vae.config, "block_out_channels"):
                     setattr(
                         self.vae.config,
@@ -168,11 +170,16 @@ class PyTorchStableDiffusion(InferenceModel):
                     if Path(vae).is_dir():
                         self.vae = ModelMixin.from_pretrained(vae)  # type: ignore
                     else:
-                        self.vae = convert_vaept_to_diffusers(vae).to(
-                            device=old_vae.device, dtype=old_vae.dtype
-                        )
+                        self.vae = convert_vaept_to_diffusers(vae).to(device, dtype)
                 else:
                     raise FileNotFoundError(f"{vae} is not a valid path")
+
+        # Check if text_encoder has v_offload_device, because it always
+        # gets wholly offloaded instead of being sequentially offloaded
+        if hasattr(self.text_encoder, "v_offload_device"):
+            from core.optimizations.offload import set_offload
+
+            self.vae = set_offload(self.vae, torch.device(config.api.device))  # type: ignore
 
         logger.info(f"Successfully changed vae to {vae} of type {type(self.vae)}")
 

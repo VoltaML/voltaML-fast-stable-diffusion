@@ -1,3 +1,5 @@
+import type { PyTorchModelBase, PyTorchModelStage } from "@/types";
+
 export interface imgData {
   id: string;
   path: string;
@@ -38,6 +40,8 @@ export interface ModelEntry {
   vae: string;
   state: "loading" | "loaded" | "not loaded";
   textual_inversions: string[];
+  type: PyTorchModelBase;
+  stage: PyTorchModelStage;
 }
 
 export interface Capabilities {
