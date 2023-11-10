@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Union
 
 from diffusers.utils.constants import DIFFUSERS_CACHE
 from huggingface_hub.file_download import repo_folder_name
@@ -406,17 +406,18 @@ def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
     )
 
 
-def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
+def current_diffusers_ref(path: str, revision: str = "main") -> str:
     "Return the current ref of the diffusers model"
 
     rev_path = os.path.join(path, "refs", revision)
     snapshot_path = os.path.join(path, "snapshots")
 
     if not os.path.exists(rev_path) or not os.path.exists(snapshot_path):
-        return None
+        raise ValueError(
+            f"Ref path {rev_path} or snapshot path {snapshot_path} not found"
+        )
 
     snapshots = os.listdir(snapshot_path)
-    ref = ""
 
     with open(os.path.join(path, "refs", revision), "r", encoding="utf-8") as f:
         ref = f.read().strip().split(":")[0]
@@ -424,6 +425,10 @@ def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
     for snapshot in snapshots:
         if ref.startswith(snapshot):
             return snapshot
+
+    raise ValueError(
+        f"Ref {ref} found in {snapshot_path} for revision {revision}, but ref path does not exist"
+    )
 
 
 def get_full_model_path(
