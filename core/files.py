@@ -54,19 +54,19 @@ class CachedModelList:
             # Skip if it is not a huggingface model
             if "model" not in model_name:
                 continue
-            model_name: str = "/".join(model_name.split("--")[1:3])
-            name, base, stage = determine_model_type(self.paths["pytorch"] / model_name)
+            parsed_model_name: str = "/".join(model_name.split("--")[1:3])
 
             try:
-                full_path = get_full_model_path(model_name)
+                full_path = get_full_model_path(parsed_model_name)
             except ValueError as e:
-                logger.debug(f"Model {model_name} is not valid: {e}")
+                logger.debug(f"Model {parsed_model_name} is not valid: {e}")
                 continue
 
+            _name, base, stage = determine_model_type(full_path)
             models.append(
                 ModelResponse(
-                    name=name,
-                    path=name,
+                    name=parsed_model_name,
+                    path=parsed_model_name,
                     backend="PyTorch",
                     type=base,
                     stage=stage,
@@ -79,6 +79,11 @@ class CachedModelList:
         # Locally stored models
         logger.debug(f"Looking for local models in {self.paths['checkpoints']}")
         for model_name in os.listdir(self.paths["checkpoints"]):
+            if not (
+                model_name.endswith(".ckpt") or model_name.endswith(".safetensors")
+            ):
+                continue
+
             logger.debug(f"Found model {model_name}")
             if model_name.endswith(".ckpt"):
                 name, base, stage = model_name, "SD1.x", "first_stage"

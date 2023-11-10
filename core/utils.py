@@ -97,7 +97,7 @@ def determine_model_type(
     file: Path,
 ) -> Tuple[str, PyTorchModelBase, PyTorchModelStage]:
     name = file.name
-    model_type: PyTorchModelBase = "SD1.x"
+    model_type: PyTorchModelBase = "Unknown"
     model_stage: PyTorchModelStage = "last_stage"
     if file.suffix == ".safetensors":
         with open(file, "rb") as f:
@@ -137,27 +137,30 @@ def determine_model_type(
                 if "class_embedding.linear_1.bias" not in _metadata:
                     model_stage = "first_stage"
     elif file.is_dir():
-        with open(file / "model_index.json", "r") as f:
-            metadata: Dict[str, str] = json.loads(f.read())
-            class_name = metadata.get("_class_name")
-            if class_name == "KandinskyV22PriorPipeline":
-                model_type = "Kandinsky 2.2"
-                model_stage = "text_encoding"
-            elif (
-                class_name == "KandinskyV22ControlnetPipeline"
-                or class_name == "KandinskyV22Pipeline"
-            ):
-                model_type = "Kandinsky 2.2"
-            elif class_name == "KandinskyPipeline":
-                model_type = "Kandinsky 2.1"
-            elif class_name == "KandinskyPriorPipeline":
-                model_type = "Kandinsky 2.1"
-                model_stage = "text_encoding"
-            elif class_name == "StableDiffusionPipeline":
-                # Either SD1.x or SD2.x
-                model_type = "SD1.x"
-            elif class_name == "StableDiffusionXLPipeline":
-                model_type = "SDXL"
+        if file.joinpath("model_index.json").exists():
+            with open(file / "model_index.json", "r") as f:
+                metadata: Dict[str, str] = json.loads(f.read())
+                class_name = metadata.get("_class_name")
+                if class_name == "KandinskyV22PriorPipeline":
+                    model_type = "Kandinsky 2.2"
+                    model_stage = "text_encoding"
+                elif (
+                    class_name == "KandinskyV22ControlnetPipeline"
+                    or class_name == "KandinskyV22Pipeline"
+                ):
+                    model_type = "Kandinsky 2.2"
+                elif class_name == "KandinskyPipeline":
+                    model_type = "Kandinsky 2.1"
+                elif class_name == "KandinskyPriorPipeline":
+                    model_type = "Kandinsky 2.1"
+                    model_stage = "text_encoding"
+                elif class_name == "StableDiffusionPipeline":
+                    # Either SD1.x or SD2.x
+                    model_type = "SD1.x"
+                elif class_name == "StableDiffusionXLPipeline":
+                    model_type = "SDXL"
+                else:
+                    model_type = "Unknown"
 
     return (name, model_type, model_stage)
 

@@ -15,7 +15,8 @@ export type PyTorchModelBase =
   | "Kandinsky 2.1"
   | "Kandinsky 2.2"
   | "Wuerstchen"
-  | "IF";
+  | "IF"
+  | "Unknown";
 
 export type PyTorchModelStage = "text_encoding" | "first_stage" | "last_stage";
 
