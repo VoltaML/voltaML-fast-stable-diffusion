@@ -1,3 +1,4 @@
+<!-- eslint-disable vue/no-mutating-props -->
 <template>
   <div class="flex-container" v-if="settings.data.settings.aitDim.width">
     <p class="slider-label">Width</p>
