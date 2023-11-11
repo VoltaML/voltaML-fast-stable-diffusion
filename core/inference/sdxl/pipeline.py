@@ -24,6 +24,7 @@ from transformers.models.clip import (
 
 from core.config import config
 from core.inference.utilities import (
+    calculate_cfg,
     full_vae,
     get_timesteps,
     get_weighted_text_embeddings,
@@ -39,6 +40,7 @@ from core.inference.utilities import (
 )
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
+from core.flags import XLRefinerFlag
 
 # ------------------------------------------------------------------------------
 
@@ -300,6 +302,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         prompt_expansion_settings=None,
         adapter_conditioning_scale: Union[float, List[float]] = 1.0,
         adapter_conditioning_factor: float = 1.0,
+        refiner: Optional[XLRefinerFlag] = None,
+        refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
     ):
         if config.api.torch_compile:
             self.unet = torch.compile(
@@ -313,6 +317,16 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         with inference_context(self.unet, self.vae, height, width) as context:
             self.unet = context.unet  # type: ignore
             self.vae = context.vae  # type: ignore
+
+            refiner_steps = 10000
+            if refiner_model is not None:
+                assert refiner is not None
+                num_inference_steps += refiner.steps
+                refiner_steps = num_inference_steps // (refiner.strength + 1)
+
+                refiner_model = refiner_model.unet  # type: ignore
+                aesthetic_score = refiner.aesthetic_score
+                negative_aesthetic_score = refiner.negative_aesthetic_score
 
             original_size = tuple(original_size)  # type: ignore
             height, width = self._default_height_width(height, width, image)
@@ -468,6 +482,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             cutoff = num_inference_steps * adapter_conditioning_factor
             # 8. Denoising loop
             j = 0
+            un = self.unet
 
             def do_denoise(
                 x: torch.Tensor,
@@ -475,13 +490,17 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 call: Callable[..., torch.Tensor],
                 change_source: Callable[[Callable], None],
             ) -> torch.Tensor:
-                nonlocal j
+                nonlocal j, un
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
                     torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
                 )
                 latent_model_input = self.scheduler.scale_model_input(latent_model_input, t)  # type: ignore
+
+                if j >= refiner_steps:
+                    assert refiner_model is not None
+                    un = refiner_model
 
                 down_intrablock_additional_residuals = None
                 if hasattr(self, "adapter") and self.adapter is not None:
@@ -491,6 +510,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                             state.clone() for state in adapter_state
                         ]
 
+                change_source(un)
+                ensure_correct_device(un)  # type: ignore
                 if split_latents_into_two:
                     uncond, cond = prompt_embeds.chunk(2)
                     uncond_text, cond_text = add_text_embeds.chunk(2)
@@ -544,9 +565,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
-                    noise_pred = noise_pred_uncond + guidance_scale * (  # type: ignore
-                        noise_pred_text - noise_pred_uncond  # type: ignore
-                    )  # type: ignore
+                    noise_pred = calculate_cfg(
+                        noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
+                    )
 
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
@@ -648,6 +669,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         prompt_expansion_settings=None,
+        refiner: Optional[XLRefinerFlag] = None,
+        refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
     ):
         return self.__call__(
             aesthetic_score=aesthetic_score,
@@ -671,6 +694,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
             prompt_expansion_settings=prompt_expansion_settings,
+            refiner=refiner,
+            refiner_model=refiner_model,
         )
 
     def img2img(

@@ -89,6 +89,15 @@ class APIConfig:
     sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
     kdiffusers_quantization: bool = True  # improves sampling quality
 
+    # K_Diffusion & Diffusers
+    # What to do with refiner:
+    #  - "joint:" instead of creating a new sampler, it uses the refiner inside of the main loop,
+    #             replacing the unet with the refiners unet after a certain number of steps have
+    #             been processed. This improves consistency and generation quality.
+    #  - "separate:" creates a new pipeline for refiner and does the refining there on the final
+    #                latents of the image. This can introduce some artifacts/lose context.
+    sdxl_refiner: Literal["joint", "separate"] = "joint"
+
     # "philox" is what a "cuda" generator would be, except, it's on cpu
     generator: Literal["device", "cpu", "philox"] = "device"
 
@@ -98,6 +107,11 @@ class APIConfig:
     vae_slicing: bool = True
     vae_tiling: bool = False
     upcast_vae: bool = False  # Fixes issues on 10xx-series and RX cards
+    # Somewhat fixes extraordinarily high CFG values. Does also change output composition, so
+    # best to leave on off by default. TODO: write docs for this?
+    apply_unsharp_mask: bool = False
+    # Rescales CFG to a known good value when CFG is higher than this number. Set to "off" to disable.
+    cfg_rescale_threshold: Union[float, Literal["off"]] = 10.0
 
     # Prompt expansion (very, and I mean VERYYYY heavily inspired/copied from lllyasviel/Fooocus)
     prompt_to_prompt: bool = False

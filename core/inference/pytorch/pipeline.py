@@ -24,6 +24,7 @@ from transformers.models.clip import CLIPTextModel, CLIPTokenizer
 
 from core.config import config
 from core.inference.utilities import (
+    calculate_cfg,
     full_vae,
     get_timesteps,
     get_weighted_text_embeddings,
@@ -46,7 +47,7 @@ from core.optimizations import (
 )
 from core.scheduling import KdiffusionSchedulerAdapter
 
-from .sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
+from ..utilities.sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
 
 # ------------------------------------------------------------------------------
 
@@ -668,9 +669,10 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 if do_classifier_free_guidance:
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
-                    noise_pred = noise_pred_uncond + guidance_scale * (  # type: ignore
-                        noise_pred_text - noise_pred_uncond  # type: ignore
-                    )  # type: ignore
+                    noise_pred = calculate_cfg(
+                        noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
+                    )
+                    print(noise_pred.shape)
 
                 if do_self_attention_guidance:
                     if do_classifier_free_guidance:

@@ -7,13 +7,11 @@ import torch
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
-from transformers import CLIPTextModel, CLIPTokenizer
 
 from core.utils import download_file
 
 from ...config import config
 from ...files import get_full_model_path
-from ...optimizations import ensure_correct_device
 from .prompt_expansion import expand
 
 logger = logging.getLogger(__name__)
@@ -36,12 +34,6 @@ re_attention = re.compile(
 """,
     re.X,
 )
-
-
-class Placebo:
-    text_encoder: CLIPTextModel
-    tokenizer: CLIPTokenizer
-    loras: list
 
 
 special_parser = re.compile(
@@ -282,7 +274,6 @@ def get_unweighted_text_embeddings(
                 if hasattr(pipe, "clip_inference"):
                     text_embedding = pipe.clip_inference(text_input_chunk)
                 else:
-                    ensure_correct_device(pipe.text_encoder)
                     text_embedding = pipe.text_encoder(text_input_chunk)[0]  # type: ignore
 
                 if no_boseos_middle:
@@ -302,7 +293,6 @@ def get_unweighted_text_embeddings(
             if hasattr(pipe, "clip_inference"):
                 text_embeddings = pipe.clip_inference(text_input)
             else:
-                ensure_correct_device(pipe.text_encoder)
                 text_embeddings = pipe.text_encoder(text_input)[0]  # type: ignore
         return text_embeddings, None  # type: ignore
     else:
@@ -316,7 +306,6 @@ def get_unweighted_text_embeddings(
 
                 text_input_chunk[:, 0] = text_input[0, 0]
                 text_input_chunk[:, -1] = text_input[0, -1]
-                ensure_correct_device(text_encoder)
                 text_embedding = text_encoder(  # type: ignore
                     text_input_chunk, output_hidden_states=True
                 )
@@ -341,7 +330,6 @@ def get_unweighted_text_embeddings(
             hidden_states = text_embeddings[-1][0].unsqueeze(0)  # type: ignore
             # text_embeddings = torch.Tensor(hidden_states.shape[0])
         else:
-            ensure_correct_device(text_encoder)
             text_embeddings = text_encoder(text_input, output_hidden_states=True)  # type: ignore
             hidden_states = text_embeddings[0]
             text_embeddings = text_embeddings.hidden_states[-2]

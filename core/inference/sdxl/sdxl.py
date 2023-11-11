@@ -157,6 +157,34 @@ class SDXLStableDiffusion(InferenceModel):
 
         self.memory_cleanup()
 
+    def load_refiner(self, refiner: XLRefinerFlag, job) -> Tuple[Any, Any]:
+        from core.shared_dependent import gpu
+
+        unload = False
+
+        if refiner.model not in gpu.loaded_models:
+            gpu.load_model(refiner.model, "PyTorch", "SDXL")
+            unload = True
+        model: SDXLStableDiffusion = gpu.loaded_models[refiner.model]  # type: ignore
+        if config.api.clear_memory_policy == "always":
+            self.memory_cleanup()
+        pipe = model.create_pipe(
+            scheduler=(job.data.scheduler, job.data.sigmas),
+            sampler_settings=job.data.sampler_settings,
+        )
+        unl = lambda: ""
+        if unload:
+
+            def unll():
+                nonlocal model, refiner
+
+                del model
+                gpu.unload(refiner.model)
+
+            unl = unll
+
+        return pipe, unl
+
     def txt2img(self, job: Txt2ImgQueueEntry) -> List[Image.Image]:
         "Generate an image from a prompt"
 
@@ -172,14 +200,18 @@ class SDXLStableDiffusion(InferenceModel):
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
 
-            xl_flag: XLFlag
+            xl_flag = XLFlag()
             if "sdxl" in job.flags:
                 xl_flag = XLFlag.from_dict(job.flags["sdxl"])
-            else:
-                xl_flag = XLFlag()
 
+            refiner = None
             if "refiner" in job.flags:
                 output_type = "latent"
+                refiner = XLRefinerFlag.from_dict(job.flags["refiner"])
+
+            refiner_model, unload = None, lambda: ""
+            if config.api.sdxl_refiner == "joint" and refiner is not None:
+                refiner_model, unload = self.load_refiner(refiner, job)
 
             data = pipe.text2img(
                 original_size=xl_flag.original_size,
@@ -195,36 +227,26 @@ class SDXLStableDiffusion(InferenceModel):
                 num_images_per_prompt=job.data.batch_size,
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                refiner=refiner,
+                refiner_model=refiner_model,
             )
 
-            if output_type == "latent":
+            if refiner is not None and config.api.sdxl_refiner == "separate":
                 latents: torch.FloatTensor = data[0]  # type: ignore
-                flags = XLRefinerFlag.from_dict(job.flags["refiner"])
 
-                from core.shared_dependent import gpu
+                refiner_model, unload = self.load_refiner(refiner, job)
 
-                unload = False
-                if flags.model not in gpu.loaded_models:
-                    gpu.load_model(flags.model, "PyTorch", "SDXL")
-                    unload = True
-                model: SDXLStableDiffusion = gpu.loaded_models[flags.model]  # type: ignore
-                if config.api.clear_memory_policy == "always":
-                    self.memory_cleanup()
-                pipe = model.create_pipe(
-                    scheduler=(job.data.scheduler, job.data.sigmas),
-                    sampler_settings=job.data.sampler_settings,
-                )
                 data = pipe(
-                    aesthetic_score=flags.aesthetic_score,
-                    negative_aesthetic_score=flags.negative_aesthetic_score,
+                    aesthetic_score=refiner.aesthetic_score,
+                    negative_aesthetic_score=refiner.negative_aesthetic_score,
                     original_size=xl_flag.original_size,
                     image=latents,
                     generator=generator,
                     prompt=job.data.prompt,
                     height=job.data.height,
                     width=job.data.width,
-                    strength=flags.strength,
-                    num_inference_steps=flags.steps,
+                    strength=refiner.strength,
+                    num_inference_steps=refiner.steps,
                     guidance_scale=job.data.guidance_scale,
                     negative_prompt=job.data.negative_prompt,
                     callback=callback,
@@ -234,11 +256,9 @@ class SDXLStableDiffusion(InferenceModel):
                     seed=job.data.seed,
                     prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 )
-                del model
-                if unload:
-                    gpu.unload(flags.model)
             images: list[Image.Image] = data[0]  # type: ignore
             total_images.extend(images)
+            unload()
 
         websocket_manager.broadcast_sync(
             data=Data(
