@@ -1,62 +1,53 @@
 <!-- eslint-disable vue/no-mutating-props -->
 <template>
-  <div class="flex-container">
-    <p class="slider-label">Resize From (temporary placement)</p>
-    <NSwitch v-model:value="show" />
-  </div>
+  <NCard title="Resize from" class="generate-extra-card">
+    <div class="flex-container">
+      <p class="slider-label">Enabled</p>
+      <NSwitch v-model:value="global.state.txt2img.sdxl_resize" />
+    </div>
 
-  <div v-if="show">
-    <div class="flex-container">
-      <p class="slider-label">Resize From Width</p>
-      <NSlider
-        v-model:value="props.dimensionsObject.width"
-        :min="128"
-        :max="2048"
-        :step="1"
-        style="margin-right: 12px"
-      />
-      <NInputNumber
-        v-model:value="props.dimensionsObject.width"
-        size="small"
-        style="min-width: 96px; width: 96px"
-        :step="1"
-      />
+    <div v-if="global.state.txt2img.sdxl_resize">
+      <div class="flex-container">
+        <p class="slider-label">Width</p>
+        <NSlider
+          v-model:value="settings.data.settings.flags.sdxl.original_size.width"
+          :min="128"
+          :max="2048"
+          :step="1"
+          style="margin-right: 12px"
+        />
+        <NInputNumber
+          v-model:value="settings.data.settings.flags.sdxl.original_size.width"
+          size="small"
+          style="min-width: 96px; width: 96px"
+          :step="1"
+        />
+      </div>
+      <div class="flex-container">
+        <p class="slider-label">Height</p>
+        <NSlider
+          v-model:value="settings.data.settings.flags.sdxl.original_size.height"
+          :min="128"
+          :max="2048"
+          :step="1"
+          style="margin-right: 12px"
+        />
+        <NInputNumber
+          v-model:value="settings.data.settings.flags.sdxl.original_size.height"
+          size="small"
+          style="min-width: 96px; width: 96px"
+          :step="1"
+        />
+      </div>
     </div>
-    <div class="flex-container">
-      <p class="slider-label">Resize From Height</p>
-      <NSlider
-        v-model:value="props.dimensionsObject.height"
-        :min="128"
-        :max="2048"
-        :step="1"
-        style="margin-right: 12px"
-      />
-      <NInputNumber
-        v-model:value="props.dimensionsObject.height"
-        size="small"
-        style="min-width: 96px; width: 96px"
-        :step="1"
-      />
-    </div>
-  </div>
+  </NCard>
 </template>
 
 <script setup lang="ts">
-import { NInputNumber, NSlider, NSwitch } from "naive-ui";
-import type { PropType } from "vue";
-import { ref } from "vue";
+import { useSettings } from "@/store/settings";
+import { useState } from "@/store/state";
+import { NCard, NInputNumber, NSlider, NSwitch } from "naive-ui";
 
-const show = ref(false);
-
-interface DimensionsObject {
-  width: number;
-  height: number;
-}
-
-const props = defineProps({
-  dimensionsObject: {
-    type: Object as PropType<DimensionsObject>,
-    required: true,
-  },
-});
+const settings = useSettings();
+const global = useState();
 </script>

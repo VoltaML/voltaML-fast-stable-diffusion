@@ -2,10 +2,10 @@ import io
 import json
 import logging
 import os
+from functools import partial
 from importlib.util import find_spec
 from pathlib import Path
-from typing import Any, Dict, Tuple, Union, Optional
-from functools import partial
+from typing import Any, Dict, Optional, Tuple, Union
 
 import requests
 import torch

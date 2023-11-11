@@ -40551,6 +40551,7 @@ const useState2 = defineStore("state", () => {
       images: [],
       highres: false,
       refiner: false,
+      sdxl_resize: false,
       currentImage: "",
       genData: {
         time_taken: null,
@@ -40681,7 +40682,10 @@ const defaultSettings = {
   model: null,
   flags: {
     sdxl: {
-      original_size: [1024, 1024]
+      original_size: {
+        width: 1024,
+        height: 1024
+      }
     },
     highres: {
       image_upscaler: "RealESRGAN_x4plus_anime_6B",
@@ -43539,13 +43543,13 @@ export {
   openBlock as o,
   useMessage as p,
   onUnmounted as q,
-  ref as r,
-  NGi as s,
-  NGrid as t,
+  NGi as r,
+  NGrid as s,
+  serverUrl as t,
   useSettings as u,
-  serverUrl as v,
+  pushScopeId as v,
   withCtx as w,
-  pushScopeId as x,
-  popScopeId as y,
-  h as z
+  popScopeId as x,
+  h as y,
+  ref as z
 };

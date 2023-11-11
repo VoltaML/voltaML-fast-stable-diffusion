@@ -20,7 +20,7 @@ from api import websocket_manager
 from api.websockets import Data
 from core import shared
 from core.config import config
-from core.flags import XLFlag, XLRefinerFlag
+from core.flags import SDXLFlag, SDXLRefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import change_scheduler, create_generator
@@ -157,7 +157,7 @@ class SDXLStableDiffusion(InferenceModel):
 
         self.memory_cleanup()
 
-    def load_refiner(self, refiner: XLRefinerFlag, job) -> Tuple[Any, Any]:
+    def load_refiner(self, refiner: SDXLRefinerFlag, job) -> Tuple[Any, Any]:
         from core.shared_dependent import gpu
 
         unload = False
@@ -200,21 +200,28 @@ class SDXLStableDiffusion(InferenceModel):
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
 
-            xl_flag = XLFlag()
+            xl_flag = None
             if "sdxl" in job.flags:
-                xl_flag = XLFlag.from_dict(job.flags["sdxl"])
+                xl_flag = SDXLFlag.from_dict(job.flags["sdxl"])
 
             refiner = None
             if "refiner" in job.flags:
                 output_type = "latent"
-                refiner = XLRefinerFlag.from_dict(job.flags["refiner"])
+                refiner = SDXLRefinerFlag.from_dict(job.flags["refiner"])
 
             refiner_model, unload = None, lambda: ""
             if config.api.sdxl_refiner == "joint" and refiner is not None:
                 refiner_model, unload = self.load_refiner(refiner, job)
 
+            original_size = None
+            if xl_flag:
+                original_size = [
+                    xl_flag.original_size.height,
+                    xl_flag.original_size.width,
+                ]
+
             data = pipe.text2img(
-                original_size=xl_flag.original_size,
+                original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
                 height=job.data.height,
@@ -239,7 +246,7 @@ class SDXLStableDiffusion(InferenceModel):
                 data = pipe(
                     aesthetic_score=refiner.aesthetic_score,
                     negative_aesthetic_score=refiner.negative_aesthetic_score,
-                    original_size=xl_flag.original_size,
+                    original_size=original_size,
                     image=latents,
                     generator=generator,
                     prompt=job.data.prompt,
@@ -326,15 +333,20 @@ class SDXLStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
         shared.current_method = "img2img"
 
-        xl_flag: XLFlag
+        xl_flag = None
         if "sdxl" in job.flags:
-            xl_flag = XLFlag.from_dict(job.flags["sdxl"])
-        else:
-            xl_flag = XLFlag()
+            xl_flag = SDXLFlag.from_dict(job.flags["sdxl"])
+
+        original_size = None
+        if xl_flag:
+            original_size = [
+                xl_flag.original_size.height,
+                xl_flag.original_size.width,
+            ]
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
-                original_size=xl_flag.original_size,
+                original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,
@@ -394,15 +406,20 @@ class SDXLStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
         shared.current_method = "inpainting"
 
-        xl_flag: XLFlag
+        xl_flag = None
         if "sdxl" in job.flags:
-            xl_flag = XLFlag.from_dict(job.flags["sdxl"])
-        else:
-            xl_flag = XLFlag()
+            xl_flag = SDXLFlag.from_dict(job.flags["sdxl"])
+
+        original_size = None
+        if xl_flag:
+            original_size = [
+                xl_flag.original_size.height,
+                xl_flag.original_size.width,
+            ]
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
-                original_size=xl_flag.original_size,
+                original_size=original_size,
                 generator=generator,
                 prompt=job.data.prompt,
                 image=input_image,

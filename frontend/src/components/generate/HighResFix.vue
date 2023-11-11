@@ -1,5 +1,5 @@
 <template>
-  <NCard title="Highres fix">
+  <NCard title="Highres fix" class="generate-extra-card">
     <div class="flex-container">
       <div class="slider-label">
         <p>Enabled</p>

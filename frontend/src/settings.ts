@@ -38,7 +38,10 @@ export interface ISettings {
   model: ModelEntry | null;
   flags: {
     sdxl: {
-      original_size: number[];
+      original_size: {
+        width: number;
+        height: number;
+      };
     };
     highres: {
       scale: number;
@@ -267,7 +270,10 @@ export const defaultSettings: ISettings = {
   model: null,
   flags: {
     sdxl: {
-      original_size: [1024, 1024],
+      original_size: {
+        width: 1024,
+        height: 1024,
+      },
     },
     highres: {
       image_upscaler: "RealESRGAN_x4plus_anime_6B",
