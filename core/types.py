@@ -32,7 +32,14 @@ Backend = Literal[
     "GPT",  # for prompt-expansion
 ]
 PyTorchModelBase = Literal[
-    "SD1.x", "SD2.x", "SDXL", "Kandinsky 2.1", "Kandinsky 2.2", "Wuerstchen", "IF"
+    "SD1.x",
+    "SD2.x",
+    "SDXL",
+    "Kandinsky 2.1",
+    "Kandinsky 2.2",
+    "Wuerstchen",
+    "IF",
+    "Unknown",
 ]
 PyTorchModelStage = Literal["text_encoding", "first_stage", "last_stage"]
 ImageFormats = Literal["png", "jpeg", "webp"]

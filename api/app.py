@@ -19,7 +19,9 @@ from api.routes import static, ws
 from api.websockets.data import Data
 from api.websockets.notification import Notification
 from core import shared
+from core.files import get_full_model_path
 from core.types import InferenceBackend
+from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
 
@@ -130,9 +132,9 @@ async def startup_event():
         for model in config.api.autoloaded_models:
             if model in [i.path for i in all_models]:
                 backend: InferenceBackend = [i.backend for i in all_models if i.path == model][0]  # type: ignore
-                gpu.load_model(
-                    model, backend, type="SD1.x"
-                )  # TODO: this is hardcoded now, we need something dynamic here
+                model_type = determine_model_type(get_full_model_path(model))[1]
+
+                gpu.load_model(model, backend, type=model_type)
             else:
                 logger.warning(f"Autoloaded model {model} not found, skipping")
 
