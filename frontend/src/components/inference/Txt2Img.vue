@@ -16,6 +16,12 @@
               :dimensions-object="settings.data.settings.txt2img"
             />
 
+            <!-- SDXL Resize Dimensions -->
+            <ResizeFromDimensionsInput
+              :dimensions-object="settings.data.settings.txt2img"
+              v-if="settings.data.settings.model?.type === 'SDXL'"
+            />
+
             <!-- Steps -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -195,6 +201,7 @@ import {
   ImageOutput,
   OutputStats,
   Prompt,
+  ResizeFromDimensionsInput,
   SamplerPicker,
   XLRefiner,
 } from "@/components";
