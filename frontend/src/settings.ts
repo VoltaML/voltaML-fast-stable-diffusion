@@ -176,8 +176,6 @@ export interface ISettings {
     subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
-    vae_slicing: boolean;
-    vae_tiling: boolean;
     trace_model: boolean;
     offload: "disabled" | "model" | "module";
     device: string;
@@ -217,9 +215,16 @@ export interface ISettings {
     sgm_noise_multiplier: boolean;
     kdiffusers_quantization: boolean;
 
+    xl_refiner: "joint" | "separate";
+
     generator: "device" | "cpu" | "philox";
     live_preview_method: "disabled" | "approximation" | "taesd";
     live_preview_delay: number;
+    upcast_vae: boolean;
+    vae_slicing: boolean;
+    vae_tiling: boolean;
+    apply_unsharp_mask: boolean;
+    cfg_rescale_threshold: number;
 
     prompt_to_prompt: boolean;
     prompt_to_prompt_model: string;
@@ -377,8 +382,6 @@ export const defaultSettings: ISettings = {
     subquadratic_size: 512,
     attention_slicing: "disabled",
     channels_last: true,
-    vae_slicing: false,
-    vae_tiling: false,
     trace_model: false,
     cudnn_benchmark: false,
     offload: "disabled",
@@ -423,9 +426,16 @@ export const defaultSettings: ISettings = {
     sgm_noise_multiplier: false,
     kdiffusers_quantization: true,
 
+    xl_refiner: "joint",
+
     generator: "device",
     live_preview_method: "approximation",
     live_preview_delay: 2.0,
+    upcast_vae: false,
+    vae_slicing: false,
+    vae_tiling: false,
+    apply_unsharp_mask: false,
+    cfg_rescale_threshold: 10.0,
 
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",

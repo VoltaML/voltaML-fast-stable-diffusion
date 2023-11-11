@@ -46,7 +46,7 @@ def calculate_cfg(
         MIX_FACTOR = 0.003
         cond_scale_factor = min(0.02 * cfg, 0.65)
         usm_sigma = torch.clamp(1 + timestep * cond_scale_factor, min=1e-6)
-        sharpened = unsharp_mask(cond, (3, 3), (usm_sigma, usm_sigma), border_type="reflect")  # type: ignore
+        sharpened = unsharp_mask(cond, (3, 3), (usm_sigma, usm_sigma))  # type: ignore
 
         return cc + (sharpened - cc) * MIX_FACTOR
 

@@ -79,18 +79,15 @@ class CachedModelList:
         # Locally stored models
         logger.debug(f"Looking for local models in {self.paths['checkpoints']}")
         for model_name in os.listdir(self.paths["checkpoints"]):
-            if not (
-                model_name.endswith(".ckpt") or model_name.endswith(".safetensors")
-            ):
+            path = self.paths["checkpoints"] / model_name
+            if not (path.is_dir() or path.suffix in self.ext_whitelist):
                 continue
 
             logger.debug(f"Found model {model_name}")
-            if model_name.endswith(".ckpt"):
+            if ".ckpt" == path.suffix:
                 name, base, stage = model_name, "SD1.x", "first_stage"
             else:
-                name, base, stage = determine_model_type(
-                    self.paths["checkpoints"] / model_name
-                )
+                name, base, stage = determine_model_type(path)
 
             models.append(
                 ModelResponse(
@@ -108,7 +105,7 @@ class CachedModelList:
         return models
 
     def aitemplate(self) -> List[ModelResponse]:
-        "List of models converted to TRT"
+        "List of models converted to AITempalte"
 
         models: List[ModelResponse] = []
 

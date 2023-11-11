@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, j as createElementBlock, g as createVNode, w as withCtx, h as unref, c4 as NResult, n as NCard } from "./index.js";
+import { d as defineComponent, o as openBlock, j as createElementBlock, g as createVNode, w as withCtx, h as unref, c3 as NResult, n as NCard } from "./index.js";
 const _hoisted_1 = { style: { "width": "100vw", "height": "100vh", "display": "flex", "align-items": "center", "justify-content": "center", "backdrop-filter": "blur(4px)" } };
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "404View",

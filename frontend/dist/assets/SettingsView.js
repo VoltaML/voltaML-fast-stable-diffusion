@@ -1,4 +1,4 @@
-import { d as defineComponent, u as useSettings, o as openBlock, e as createBlock, w as withCtx, g as createVNode, h as unref, K as NInput, i as NSelect, n as NCard, b9 as reactive, c as computed, bz as convertToTextString, A as ref, v as serverUrl, L as watch, a as useState, f as createBaseVNode, j as createElementBlock, M as renderList, bc as NText, k as createTextVNode, D as toDisplayString, G as Fragment, m as createCommentVNode, E as NTabPane, F as NTabs, S as inject, bA as themeKey, B as NButton, l as NTooltip, p as useMessage, bB as useNotification, q as onUnmounted, bC as defaultSettings } from "./index.js";
+import { d as defineComponent, u as useSettings, o as openBlock, e as createBlock, w as withCtx, g as createVNode, h as unref, J as NInput, i as NSelect, n as NCard, b8 as reactive, c as computed, by as convertToTextString, z as ref, t as serverUrl, K as watch, a as useState, f as createBaseVNode, j as createElementBlock, L as renderList, bb as NText, k as createTextVNode, C as toDisplayString, F as Fragment, m as createCommentVNode, D as NTabPane, E as NTabs, R as inject, bz as themeKey, A as NButton, l as NTooltip, p as useMessage, bA as useNotification, q as onUnmounted, bB as defaultSettings } from "./index.js";
 import { a as NFormItem, _ as _sfc_main$h, N as NForm } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
 import { N as NSwitch, a as NSlider } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -2053,7 +2053,46 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               ]),
               _: 1
             })
-          ])) : createCommentVNode("", true)
+          ])) : createCommentVNode("", true),
+          createVNode(unref(NFormItem), {
+            label: "Upcast VAE",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.upcast_vae,
+                "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(settings).defaultSettings.api.upcast_vae = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Apply unsharp mask",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.apply_unsharp_mask,
+                "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).defaultSettings.api.apply_unsharp_mask = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "CFG Rescale Threshold",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSlider), {
+                value: unref(settings).defaultSettings.api.cfg_rescale_threshold,
+                "onUpdate:value": _cache[25] || (_cache[25] = ($event) => unref(settings).defaultSettings.api.cfg_rescale_threshold = $event),
+                min: 2,
+                max: 30,
+                step: 0.5
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          })
         ]),
         _: 1
       });

@@ -112,7 +112,7 @@ def change_scheduler(
 
         new_scheduler = create_sampler(
             alphas_cumprod=sched.alphas_cumprod,  # type: ignore
-            denoiser_enable_quantization=True,
+            denoiser_enable_quantization=config.api.kdiffusers_quantization,
             sampler=scheduler,
             sigma_type=sigma_type,
             eta_noise_seed_delta=0,

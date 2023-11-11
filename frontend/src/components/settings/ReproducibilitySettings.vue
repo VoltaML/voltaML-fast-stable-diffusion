@@ -215,6 +215,25 @@
         />
       </NFormItem>
     </div>
+
+    <NFormItem label="Upcast VAE" label-placement="left">
+      <NSwitch v-model:value="settings.defaultSettings.api.upcast_vae" />
+    </NFormItem>
+
+    <NFormItem label="Apply unsharp mask" label-placement="left">
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.apply_unsharp_mask"
+      />
+    </NFormItem>
+
+    <NFormItem label="CFG Rescale Threshold" label-placement="left">
+      <NSlider
+        v-model:value="settings.defaultSettings.api.cfg_rescale_threshold"
+        :min="2"
+        :max="30"
+        :step="0.5"
+      />
+    </NFormItem>
   </NForm>
 </template>
 
