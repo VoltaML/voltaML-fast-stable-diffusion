@@ -96,7 +96,7 @@ class APIConfig:
     #             been processed. This improves consistency and generation quality.
     #  - "separate:" creates a new pipeline for refiner and does the refining there on the final
     #                latents of the image. This can introduce some artifacts/lose context.
-    sdxl_refiner: Literal["joint", "separate"] = "joint"
+    sdxl_refiner: Literal["joint", "separate"] = "separate"
 
     # "philox" is what a "cuda" generator would be, except, it's on cpu
     generator: Literal["device", "cpu", "philox"] = "device"
