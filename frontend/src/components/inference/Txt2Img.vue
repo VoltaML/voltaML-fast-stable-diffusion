@@ -16,12 +16,6 @@
               :dimensions-object="settings.data.settings.txt2img"
             />
 
-            <!-- SDXL Resize Dimensions -->
-            <ResizeFromDimensionsInput
-              :dimensions-object="settings.data.settings.txt2img"
-              v-if="settings.data.settings.model?.type === 'SDXL'"
-            />
-
             <!-- Steps -->
             <div class="flex-container">
               <NTooltip style="max-width: 600px">
@@ -98,14 +92,12 @@
           </NSpace>
         </NCard>
 
-        <XLRefiner
-          style="margin-top: 12px; margin-bottom: 12px"
-          v-if="isSelectedModelSDXL"
+        <ResizeFromDimensionsInput
+          :dimensions-object="settings.data.settings.txt2img"
+          v-if="settings.data.settings.model?.type === 'SDXL'"
         />
-        <HighResFix
-          style="margin-top: 12px; margin-bottom: 12px"
-          v-if="!isSelectedModelSDXL"
-        />
+        <XLRefiner v-if="isSelectedModelSDXL" />
+        <HighResFix v-if="!isSelectedModelSDXL" />
       </NGi>
 
       <!-- Split -->
@@ -225,10 +217,14 @@ const generate = () => {
       backend: "PyTorch",
       autoload: false,
       flags: {
-        ...(isSelectedModelSDXL.value
+        ...(isSelectedModelSDXL.value && global.state.txt2img.sdxl_resize
           ? {
               sdxl: {
-                original_size: [1024, 1024],
+                original_size: {
+                  width: settings.data.settings.flags.sdxl.original_size.width,
+                  height:
+                    settings.data.settings.flags.sdxl.original_size.height,
+                },
               },
             }
           : {}),

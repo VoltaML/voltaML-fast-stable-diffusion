@@ -46,6 +46,7 @@ export interface StateInterface {
     currentImage: string;
     highres: boolean;
     refiner: boolean;
+    sdxl_resize: boolean;
     images: string[];
     genData: GenerationData;
   };
@@ -133,6 +134,7 @@ export const useState = defineStore("state", () => {
       images: [],
       highres: false,
       refiner: false,
+      sdxl_resize: false,
       currentImage: "",
       genData: {
         time_taken: null,

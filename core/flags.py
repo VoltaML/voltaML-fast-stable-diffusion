@@ -1,5 +1,5 @@
 from dataclasses import dataclass, field
-from typing import List, Literal
+from typing import Literal
 
 from dataclasses_json.api import DataClassJsonMixin
 
@@ -39,14 +39,20 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
 
 
 @dataclass
-class XLFlag(Flag, DataClassJsonMixin):
-    "Flag for SDXL settings"
-
-    original_size: List[int] = field(default_factory=lambda: [1024, 1024])
+class XLOriginalSize:
+    width: int = 1024
+    height: int = 1024
 
 
 @dataclass
-class XLRefinerFlag(Flag, DataClassJsonMixin):
+class SDXLFlag(Flag, DataClassJsonMixin):
+    "Flag for SDXL settings"
+
+    original_size: XLOriginalSize = field(default_factory=XLOriginalSize)
+
+
+@dataclass
+class SDXLRefinerFlag(Flag, DataClassJsonMixin):
     "Flag for SDXL refiners"
 
     steps: int = 50

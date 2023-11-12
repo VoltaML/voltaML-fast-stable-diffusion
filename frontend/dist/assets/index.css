@@ -26,6 +26,14 @@
   color: #63e2b7;
 }
 
+.generate-extra-card {
+  margin-top: 12px;
+}
+
+.generate-extra-card:last-child {
+  margin-bottom: 12px;
+}
+
 .navbar {
   position: fixed;
   top: 0;

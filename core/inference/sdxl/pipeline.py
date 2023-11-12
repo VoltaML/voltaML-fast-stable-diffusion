@@ -24,6 +24,7 @@ from transformers.models.clip import (
 )
 
 from core.config import config
+from core.flags import SDXLRefinerFlag
 from core.inference.utilities import (
     calculate_cfg,
     full_vae,
@@ -42,7 +43,6 @@ from core.inference.utilities import (
 )
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
-from core.flags import XLRefinerFlag
 
 # ------------------------------------------------------------------------------
 
@@ -283,7 +283,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         seed: int,
         aesthetic_score: float = 6.0,
         negative_aesthetic_score: float = 2.5,
-        original_size: List[int] = [1024, 1024],
+        original_size: Optional[List[int]] = [1024, 1024],
         negative_prompt: Optional[str] = None,
         image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
@@ -305,9 +305,12 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         prompt_expansion_settings=None,
         adapter_conditioning_scale: Union[float, List[float]] = 1.0,
         adapter_conditioning_factor: float = 1.0,
-        refiner: Optional[XLRefinerFlag] = None,
+        refiner: Optional[SDXLRefinerFlag] = None,
         refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
     ):
+        if original_size is None:
+            original_size = [height, width]
+
         if config.api.torch_compile:
             self.unet = torch.compile(
                 self.unet,
@@ -693,7 +696,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         seed: int,
         aesthetic_score: float = 6.0,
         negative_aesthetic_score: float = 2.5,
-        original_size: List[int] = [1024, 1024],
+        original_size: Optional[List[int]] = None,
         negative_prompt: Optional[str] = None,
         height: int = 512,
         width: int = 512,
@@ -709,7 +712,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         prompt_expansion_settings=None,
-        refiner: Optional[XLRefinerFlag] = None,
+        refiner: Optional[SDXLRefinerFlag] = None,
         refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
     ):
         return self.__call__(
@@ -746,7 +749,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         generator: Union[torch.Generator, philox.PhiloxGenerator],
         aesthetic_score: float = 6.0,
         negative_aesthetic_score: float = 2.5,
-        original_size: List[int] = [1024, 1024],
+        original_size: Optional[List[int]] = None,
         negative_prompt: Optional[str] = None,
         strength: float = 0.8,
         num_inference_steps: int = 50,
@@ -793,7 +796,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         generator: Union[torch.Generator, philox.PhiloxGenerator],
         aesthetic_score: float = 6.0,
         negative_aesthetic_score: float = 2.5,
-        original_size: List[int] = [1024, 1024],
+        original_size: Optional[List[int]] = None,
         negative_prompt: Optional[str] = None,
         strength: float = 0.8,
         num_inference_steps: Optional[int] = 50,

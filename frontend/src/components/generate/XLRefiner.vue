@@ -1,5 +1,5 @@
 <template>
-  <NCard title="SDXL Refiner">
+  <NCard title="SDXL Refiner" class="generate-extra-card">
     <div class="flex-container">
       <div class="slider-label">
         <p>Enabled</p>
