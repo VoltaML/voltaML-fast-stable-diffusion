@@ -40773,6 +40773,7 @@ const defaultSettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
+    self_attention_scale: 0,
     sigmas: "automatic"
   },
   upscale: {
@@ -43109,9 +43110,9 @@ const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-f
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_c6a2efba_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_8e99cbae_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_95ca20dd_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_765782f1_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_014010a6_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_595f4c6c_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _sfc_main$2 = {};

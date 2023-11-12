@@ -1646,24 +1646,29 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const settings = useSettings();
     const global = useState();
-    const enabledCfg = computed(() => {
-      return settings.defaultSettings.api.cfg_rescale_threshold != "off";
-    });
-    const cfgRescaleValue = computed(() => {
-      if (settings.defaultSettings.api.cfg_rescale_threshold == "off") {
-        return 1;
+    const enabledCfg = computed({
+      get() {
+        return settings.defaultSettings.api.cfg_rescale_threshold != "off";
+      },
+      set(value) {
+        if (!value) {
+          settings.defaultSettings.api.cfg_rescale_threshold = "off";
+        } else {
+          settings.defaultSettings.api.cfg_rescale_threshold = 10;
+        }
       }
-      return settings.defaultSettings.api.cfg_rescale_threshold;
     });
-    function changeCFG(value) {
-      if (value == true) {
-        settings.defaultSettings.api.cfg_rescale_threshold = 10;
-      } else if (value == false) {
-        settings.defaultSettings.api.cfg_rescale_threshold = "off";
-      } else {
+    const cfgRescaleValue = computed({
+      get() {
+        if (settings.defaultSettings.api.cfg_rescale_threshold == "off") {
+          return 1;
+        }
+        return settings.defaultSettings.api.cfg_rescale_threshold;
+      },
+      set(value) {
         settings.defaultSettings.api.cfg_rescale_threshold = value;
       }
-    }
+    });
     const availableDtypes = computed(() => {
       if (settings.defaultSettings.api.device.includes("cpu")) {
         return global.state.capabilities.supported_precisions_cpu.map((value) => {
@@ -2104,14 +2109,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NSlider), {
                 value: cfgRescaleValue.value,
                 "onUpdate:value": _cache[25] || (_cache[25] = ($event) => cfgRescaleValue.value = $event),
-                disabled: enabledCfg.value,
-                "on-update:value": changeCFG,
+                disabled: !enabledCfg.value,
                 min: 2,
                 max: 30,
                 step: 0.5
               }, null, 8, ["value", "disabled"]),
               createVNode(unref(NSwitch), {
-                "on-update:value": changeCFG,
                 value: enabledCfg.value,
                 "onUpdate:value": _cache[26] || (_cache[26] = ($event) => enabledCfg.value = $event)
               }, null, 8, ["value"])
