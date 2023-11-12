@@ -96,6 +96,7 @@ class ControlNetConfig:
     is_preprocessed: bool = False
     save_preprocessed: bool = False
     return_preprocessed: bool = True
+    self_attention_scale: float = 0.0
 
 
 @dataclass

@@ -298,15 +298,4 @@ def preprocess_job(
         Txt2ImgQueueEntry, Img2ImgQueueEntry, InpaintQueueEntry, ControlNetQueueEntry
     ]
 ):
-    if not isinstance(job, ControlNetQueueEntry):
-        # SAG does not work with KDiffusion schedulers
-        try:
-            int(unwrap_enum(job.data.scheduler))
-        except ValueError:
-            if job.data.self_attention_scale > 0:
-                logger.warning(
-                    f"Scheduler {job.data.scheduler} does not support SAG, setting to 0"
-                )
-                # job.data.self_attention_scale = 0
-
     return job

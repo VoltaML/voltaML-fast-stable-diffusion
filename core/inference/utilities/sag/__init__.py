@@ -23,6 +23,13 @@ def calculate_sag(
     dtype: torch.dtype,
     **additional_kwargs,
 ) -> torch.Tensor:
+    new_kwargs = {}
+    for kw, arg in additional_kwargs.items():
+        if arg is not None and isinstance(arg, torch.Tensor):
+            if arg.shape[0] != 1:
+                arg, _ = arg.chunk(2)
+        new_kwargs[kw] = arg
+
     if isinstance(pipe.scheduler, KdiffusionSchedulerAdapter):
         return kdiff(
             pipe,
@@ -36,7 +43,7 @@ def calculate_sag(
             scale,
             cfg,
             dtype,
-            **additional_kwargs,
+            **new_kwargs,
         )
     else:
         return diff(
@@ -51,5 +58,5 @@ def calculate_sag(
             scale,
             cfg,
             dtype,
-            **additional_kwargs,
+            **new_kwargs,
         )

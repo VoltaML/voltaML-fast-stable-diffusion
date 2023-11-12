@@ -686,6 +686,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         self_attention_scale,
                         guidance_scale,
                         self.unet.dtype,
+                        down_block_additional_residuals=cond_down,  # type: ignore
+                        mid_block_additional_residual=cond_mid,  # type: ignore
+                        down_intrablock_additional_residuals=cond_intra,  # type: ignore
                     )
 
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
