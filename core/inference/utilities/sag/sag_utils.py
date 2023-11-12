@@ -1,7 +1,7 @@
 import torch
 import torch.nn.functional as F
 
-from ..anisotropic import gaussian_blur2d
+from ..anisotropic import simple_gaussian_2d
 
 
 def pred_x0(pipe, sample, model_output, timestep):
@@ -58,13 +58,14 @@ def sag_masking(pipe, original_latents, attn_map, map_size, t, eps):
     attn_mask = F.interpolate(attn_mask, (latent_h, latent_w))
 
     # Blur according to the self-attention mask
-    degraded_latents = gaussian_blur2d(original_latents, kernel_size=9, sigma=1.0)  # type: ignore
+    degraded_latents = simple_gaussian_2d(original_latents, kernel_size=9, sigma=1.0)  # type: ignore
     degraded_latents = degraded_latents * attn_mask + original_latents * (1 - attn_mask)
 
     # Noise it again to match the noise level
-    degraded_latents = pipe.scheduler.add_noise(
-        degraded_latents, noise=eps, timesteps=torch.tensor([t])
-    )
+    if isinstance(eps, torch.Tensor):
+        degraded_latents = pipe.scheduler.add_noise(
+            degraded_latents, noise=eps, timesteps=torch.tensor([t])
+        )
 
     return degraded_latents
 

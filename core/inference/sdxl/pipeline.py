@@ -1,3 +1,4 @@
+from contextlib import ExitStack
 import logging
 from typing import Callable, List, Literal, Optional, Union
 
@@ -37,6 +38,7 @@ from core.inference.utilities import (
     preprocess_adapter_image,
     preprocess_image,
     preprocess_mask,
+    sag,
 )
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
@@ -285,6 +287,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         negative_prompt: Optional[str] = None,
         image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
         mask_image: Union[torch.FloatTensor, PIL.Image.Image] = None,  # type: ignore
+        self_attention_scale: float = 0.0,
         height: int = 1024,
         width: int = 1024,
         num_inference_steps: int = 50,
@@ -338,6 +341,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             # of the Imagen paper: https://arxiv.org/pdf/2205.11487.pdf . `guidance_scale = 1`
             # corresponds to doing no classifier free guidance.
             do_classifier_free_guidance = guidance_scale > 1.0
+            do_self_attention_guidance = self_attention_scale > 1.0
             split_latents_into_two = (
                 config.api.dont_merge_latents and do_classifier_free_guidance
             )
@@ -484,6 +488,18 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             j = 0
             un = self.unet
 
+            if do_self_attention_guidance:
+                store_processor = sag.CrossAttnStoreProcessor()
+                self.unet.mid_block.attentions[0].transformer_blocks[0].attn1.processor = store_processor  # type: ignore
+
+            map_size = None
+
+            def get_map_size(_, __, output):
+                nonlocal map_size
+                map_size = output[0].shape[
+                    -2:
+                ]  # output.sample.shape[-2:] in older diffusers
+
             def do_denoise(
                 x: torch.Tensor,
                 t: torch.IntTensor,
@@ -569,6 +585,23 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
                     )
 
+                if do_self_attention_guidance:
+                    if not do_classifier_free_guidance:
+                        noise_pred_uncond = noise_pred  # type: ignore
+                    noise_pred += sag.calculate_sag(  # type: ignore
+                        self,
+                        call,
+                        store_processor,  # type: ignore
+                        x,
+                        noise_pred_uncond,  # type: ignore
+                        t,
+                        map_size,  # type: ignore
+                        prompt_embeds,
+                        self_attention_scale,
+                        guidance_scale,
+                        self.unet.dtype,
+                    )
+
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
                     x = self.scheduler.step(  # type: ignore
@@ -586,48 +619,55 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 j += 1
                 return x
 
+            if do_self_attention_guidance:
+                pass
+
             ensure_correct_device(self.unet)
-            if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
-                latents = self.scheduler.do_inference(
-                    latents,  # type: ignore
-                    generator=generator,
-                    call=self.unet,  # type: ignore
-                    apply_model=do_denoise,
-                    callback=callback,
-                    callback_steps=callback_steps,
-                )
-            else:
-                s = self.unet
+            with ExitStack() as gs:
+                if do_self_attention_guidance:
+                    gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
 
-                def change(src):
-                    nonlocal s
-                    s = src
+                if isinstance(self.scheduler, KdiffusionSchedulerAdapter):
+                    latents = self.scheduler.do_inference(
+                        latents,  # type: ignore
+                        generator=generator,
+                        call=self.unet,  # type: ignore
+                        apply_model=do_denoise,
+                        callback=callback,
+                        callback_steps=callback_steps,
+                    )
+                else:
+                    s = self.unet
 
-                def _call(*args, **kwargs):
-                    if len(args) == 3:
-                        encoder_hidden_states = args[-1]
-                        args = args[:2]
-                    if kwargs.get("cond", None) is not None:
-                        encoder_hidden_states = kwargs.pop("cond")
-                    return s(
-                        *args,
-                        encoder_hidden_states=encoder_hidden_states,  # type: ignore
-                        return_dict=True,
-                        **kwargs,
-                    )[0]
+                    def change(src):
+                        nonlocal s
+                        s = src
 
-                for i, t in enumerate(tqdm(timesteps, desc="SDXL")):
-                    latents = do_denoise(latents, t, _call, change)  # type: ignore
+                    def _call(*args, **kwargs):
+                        if len(args) == 3:
+                            encoder_hidden_states = args[-1]
+                            args = args[:2]
+                        if kwargs.get("cond", None) is not None:
+                            encoder_hidden_states = kwargs.pop("cond")
+                        return s(
+                            *args,
+                            encoder_hidden_states=encoder_hidden_states,  # type: ignore
+                            return_dict=True,
+                            **kwargs,
+                        )[0]
 
-                    # call the callback, if provided
-                    if i % callback_steps == 0:
-                        if callback is not None:
-                            callback(i, t, latents)  # type: ignore
-                        if (
-                            is_cancelled_callback is not None
-                            and is_cancelled_callback()
-                        ):
-                            return None
+                    for i, t in enumerate(tqdm(timesteps, desc="SDXL")):
+                        latents = do_denoise(latents, t, _call, change)  # type: ignore
+
+                        # call the callback, if provided
+                        if i % callback_steps == 0:
+                            if callback is not None:
+                                callback(i, t, latents)  # type: ignore
+                            if (
+                                is_cancelled_callback is not None
+                                and is_cancelled_callback()
+                            ):
+                                return None
 
             # 9. Post-processing
             ensure_correct_device(self.vae)

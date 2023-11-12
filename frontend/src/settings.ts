@@ -135,6 +135,7 @@ export interface ISettings {
     is_preprocessed: boolean;
     save_preprocessed: boolean;
     return_preprocessed: boolean;
+    self_attention_scale: number;
     sigmas: SigmaType;
   };
   upscale: {
@@ -224,7 +225,7 @@ export interface ISettings {
     vae_slicing: boolean;
     vae_tiling: boolean;
     apply_unsharp_mask: boolean;
-    cfg_rescale_threshold: number;
+    cfg_rescale_threshold: number | "off";
 
     prompt_to_prompt: boolean;
     prompt_to_prompt_model: string;
@@ -355,6 +356,7 @@ export const defaultSettings: ISettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
+    self_attention_scale: 0.0,
     sigmas: "automatic",
   },
   upscale: {

@@ -5,3 +5,5 @@ export { default as Prompt } from "./Prompt.vue";
 export { default as ResizeFromDimensionsInput } from "./ResizeFromDimensionsInput.vue";
 export { default as SamplerPicker } from "./SamplerPicker.vue";
 export { default as XLRefiner } from "./XLRefiner.vue";
+export { default as CFGScale } from "./CFGScaleInput.vue";
+export { default as SAGInput } from "./SAGInput.vue";

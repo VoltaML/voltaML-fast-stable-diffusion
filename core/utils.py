@@ -307,6 +307,6 @@ def preprocess_job(
                 logger.warning(
                     f"Scheduler {job.data.scheduler} does not support SAG, setting to 0"
                 )
-                job.data.self_attention_scale = 0
+                # job.data.self_attention_scale = 0
 
     return job

@@ -44,6 +44,28 @@ def gaussian(
     return gauss / gauss.sum(-1, keepdim=True)
 
 
+def simple_gaussian_2d(img, kernel_size, sigma):
+    "Blurs an image with gaussian blur."
+    ksize_half = (kernel_size - 1) * 0.5
+
+    x = torch.linspace(-ksize_half, ksize_half, steps=kernel_size)
+
+    pdf = torch.exp(-0.5 * (x / sigma).pow(2))
+
+    x_kernel = pdf / pdf.sum()
+    x_kernel = x_kernel.to(device=img.device, dtype=img.dtype)
+
+    kernel2d = torch.mm(x_kernel[:, None], x_kernel[None, :])
+    kernel2d = kernel2d.expand(img.shape[-3], 1, kernel2d.shape[0], kernel2d.shape[1])
+
+    padding = [kernel_size // 2, kernel_size // 2, kernel_size // 2, kernel_size // 2]
+
+    img = torch.nn.functional.pad(img, padding, mode="reflect")
+    img = torch.nn.functional.conv2d(img, kernel2d, groups=img.shape[-3])
+
+    return img
+
+
 def get_gaussian_kernel2d(
     kernel_size: Union[Tuple[int, int], int],
     sigma: Union[Tuple[float, float], torch.Tensor],

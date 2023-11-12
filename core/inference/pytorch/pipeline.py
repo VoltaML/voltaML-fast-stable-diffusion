@@ -47,7 +47,7 @@ from core.optimizations import (
 )
 from core.scheduling import KdiffusionSchedulerAdapter
 
-from ..utilities.sag import CrossAttnStoreProcessor, pred_epsilon, pred_x0, sag_masking
+from ..utilities.sag import calculate_sag, CrossAttnStoreProcessor
 
 # ------------------------------------------------------------------------------
 
@@ -409,9 +409,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             split_latents_into_two = (
                 config.api.dont_merge_latents and do_classifier_free_guidance
             )
-            do_self_attention_guidance = self_attention_scale > 0.0 and not isinstance(
-                self.scheduler, KdiffusionSchedulerAdapter
-            )
+            do_self_attention_guidance = self_attention_scale > 0.0
 
             # 3. Encode input prompt
             text_embeddings = self._encode_prompt(
@@ -672,42 +670,23 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     noise_pred = calculate_cfg(
                         noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
                     )
-                    print(noise_pred.shape)
 
                 if do_self_attention_guidance:
-                    if do_classifier_free_guidance:
-                        pred = pred_x0(self, x, noise_pred_uncond, t)  # type: ignore
-                        uncond_attn, cond_attn = store_processor.attention_probs.chunk(2)  # type: ignore
-                        degraded_latents = sag_masking(
-                            self, pred, uncond_attn, map_size, t, pred_epsilon(self, x, noise_pred_uncond, t)  # type: ignore
-                        )
-                        uncond_emb, _ = text_embeddings.chunk(2)
-                        # predict the noise residual
-                        # this probably could have been done better but honestly fuck this
-                        degraded_prep = call(  # type: ignore
-                            degraded_latents.to(dtype=self.unet.dtype),
-                            t,
-                            cond=uncond_emb,
-                        )
-                        noise_pred += self_attention_scale * (noise_pred_uncond - degraded_prep)  # type: ignore
-                    else:
-                        pred = pred_x0(self, x, noise_pred, t)  # type: ignore
-                        cond_attn = store_processor.attention_probs  # type: ignore
-                        degraded_latents = sag_masking(
-                            self,
-                            pred,
-                            cond_attn,
-                            map_size,
-                            t,
-                            pred_epsilon(self, x, noise_pred, t),  # type: ignore
-                        )
-                        # predict the noise residual
-                        degraded_prep = call(  # type: ignore
-                            degraded_latents.to(dtype=self.unet.dtype),
-                            t,
-                            cond=text_embeddings,
-                        )
-                        noise_pred += self_attention_scale * (noise_pred - degraded_prep)  # type: ignore
+                    if not do_classifier_free_guidance:
+                        noise_pred_uncond = noise_pred  # type: ignore
+                    noise_pred += calculate_sag(  # type: ignore
+                        self,
+                        call,
+                        store_processor,  # type: ignore
+                        x,
+                        noise_pred_uncond,  # type: ignore
+                        t,
+                        map_size,  # type: ignore
+                        text_embeddings,
+                        self_attention_scale,
+                        guidance_scale,
+                        self.unet.dtype,
+                    )
 
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):
                     # compute the previous noisy sample x_t -> x_t-1
