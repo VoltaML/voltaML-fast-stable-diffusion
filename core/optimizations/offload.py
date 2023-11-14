@@ -25,6 +25,7 @@ def ensure_correct_device(module: torch.nn.Module):
             return
         logger.debug(f"Transferring {_module.__class__.__name__} to cpu.")
         _module.cpu()
+        _module = None  # type: ignore
     if hasattr(module, "v_offload_device"):
         device = getattr(module, "v_offload_device", config.api.device)
 
@@ -37,7 +38,8 @@ def ensure_correct_device(module: torch.nn.Module):
 
 def set_offload(module: torch.nn.Module, device: torch.device):
     if config.api.offload == "module":
-        if "CLIP" not in module.__class__.__name__:
+        class_name = module.__class__.__name__
+        if "CLIP" not in class_name and "Autoencoder" not in class_name:
             return cpu_offload(
                 module, device, offload_buffers=len(module._parameters) > 0
             )

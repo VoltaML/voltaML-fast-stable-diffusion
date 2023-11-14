@@ -5,6 +5,7 @@ import torch
 from PIL import Image
 
 from core.config import config
+from core.optimizations import ensure_correct_device, upcast_vae
 from core import shared
 
 taesd_model = None
@@ -68,12 +69,14 @@ def cheap_approximation(sample: torch.Tensor) -> Image.Image:
 
 def full_vae(
     samples: torch.Tensor,
-    overwrite: Callable[[torch.Tensor], torch.Tensor],
+    vae,
     height: Optional[int] = None,
     width: Optional[int] = None,
 ) -> torch.Tensor:
+    ensure_correct_device(vae)
+
     return decode_latents(
-        overwrite,
+        lambda sample: upcast_vae(vae, sample),
         samples,
         height or samples[0].shape[1] * 8,
         width or samples[0].shape[2] * 8,
@@ -85,10 +88,12 @@ def decode_latents(
     latents: torch.Tensor,
     height: int,
     width: int,
+    scaling_factor: float = 0.18215,
 ) -> torch.Tensor:
     "Decode latents"
-    latents = 1 / 0.18215 * latents
+    latents = 1 / scaling_factor * latents
     image = decode_lambda(latents)  # type: ignore
+    print(image)
     image = (image / 2 + 0.5).clamp(0, 1)
     # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
     image = image.cpu().permute(0, 2, 3, 1).float().numpy()
@@ -96,17 +101,13 @@ def decode_latents(
     return img
 
 
-def numpy_to_pil(images):
+def numpy_to_pil(images: np.ndarray):
     """
     Convert a numpy image or a batch of images to a PIL image.
     """
     if images.ndim == 3:
         images = images[None, ...]
-    images = (images * 255).round().astype("uint8")
-    if images.shape[-1] == 1:
-        # special case for grayscale (single channel) images
-        pil_images = [Image.fromarray(image.squeeze(), mode="L") for image in images]
-    else:
-        pil_images = [Image.fromarray(image) for image in images]
+    images = (images * 255).round().astype(np.uint8)
+    pil_images = [Image.fromarray(image) for image in images]
 
     return pil_images

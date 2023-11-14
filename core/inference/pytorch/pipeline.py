@@ -263,22 +263,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 f" {type(callback_steps)}."
             )
 
-    def _decode_latents(self, latents, height, width):
-        # Should improve compatibility with radeon cards
-        if config.api.upcast_vae:
-            upcast_vae(self.vae)
-            latents = latents.to(
-                next(iter(self.vae.post_quant_conv.parameters())).dtype
-            )
-
-        latents = 1 / 0.18215 * latents
-        image = self.vae.decode(latents).sample  # type: ignore
-        image = (image / 2 + 0.5).clamp(0, 1)
-        # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
-        image = image.cpu().permute(0, 2, 3, 1).float().numpy()
-        img = image[:, :height, :width, :]
-        return img
-
     @torch.no_grad()
     def __call__(
         self,
@@ -767,8 +751,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 unload_all()
                 return latents, False
 
-            ensure_correct_device(self.vae)
-            image = full_vae(latents, overwrite=lambda sample: self.vae.decode(sample).sample, height=height, width=width)  # type: ignore
+            image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL
             if output_type == "pil":

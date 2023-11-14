@@ -122,6 +122,12 @@ def determine_model_type(
             ):
                 model_type = "SDXL"
             elif (
+                "conditioner.embedders.0.model.transformer.resblocks.0.attn.in_proj_weight"
+                in _metadata
+            ):
+                model_stage = "last_stage"
+                model_type = "SDXL"
+            elif (
                 "cond_stage_model.transformer.text_model.encoder.layers.0.layer_norm1.weight"
                 in _metadata
             ):

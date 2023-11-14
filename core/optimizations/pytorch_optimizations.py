@@ -147,14 +147,10 @@ def optimize_model(
     if config.api.vae_slicing:
         pipe.enable_vae_slicing()
         logger.info("Optimization: Enabled VAE slicing")
-    else:
-        logger.debug("Optimization: VAE slicing is not available for upscale models")
 
     if config.api.vae_tiling:
         pipe.enable_vae_tiling()
         logger.info("Optimization: Enabled VAE tiling")
-    else:
-        logger.debug("Optimization: VAE tiling is not available for upscale models")
 
     if config.api.use_tomesd and not is_for_aitemplate:
         try:
@@ -205,12 +201,7 @@ def optimize_model(
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
-        if config.api.attention_processor == "xformers":
-            logger.warning(
-                "Skipping tracing because xformers used for attention processor. Please change to SDPA to enable tracing."
-            )
-        else:
-            pipe.unet = trace_model(pipe.unet, config.api.dtype, device)  # type: ignore
+        pipe.unet = trace_model(pipe.unet, config.api.dtype, device)  # type: ignore
     elif is_ipex_available() and config.api.trace_model and not is_for_aitemplate:
         logger.warning(
             "Skipping tracing because IPEX optimizations have already been done"

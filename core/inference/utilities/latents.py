@@ -298,17 +298,12 @@ def prepare_latents(
         latents = latents * pipe.scheduler.init_noise_sigma  # type: ignore
         return latents, None, None
     else:
-        if pipe.vae.config.force_upcast or config.api.upcast_vae:
-            from core.optimizations import upcast_vae
-
-            upcast_vae(pipe.vae)
-
         if image.shape[1] != 4:
             image = pad_tensor(image, pipe.vae_scale_factor)
             init_latent_dist = pipe.vae.encode(image.to(config.api.device, dtype=pipe.vae.dtype)).latent_dist  # type: ignore
             init_latents = init_latent_dist.sample(generator=generator)
             init_latents = 0.18215 * init_latents
-            init_latents = torch.cat([init_latents] * batch_size, dim=0)
+            init_latents = torch.cat([init_latents] * batch_size, dim=0)  # type: ignore
         else:
             logger.debug("Skipping VAE encode, already have latents")
             init_latents = image
