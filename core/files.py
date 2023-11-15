@@ -71,30 +71,40 @@ class CachedModelList:
                 continue
 
         # Localy stored models
-        logger.debug(f"Looking for local models in {self.paths['checkpoints']}")
-        for model_name in os.listdir(self.paths["checkpoints"]):
-            logger.debug(f"Found model {model_name}")
+        logger.debug(f"Looking for local models in '{self.paths['checkpoints']}'")
+        for model_path in self.paths["checkpoints"].rglob("*"):
+            logger.debug(f"Found '{model_path.name}'")
 
-            if self.paths["checkpoints"].joinpath(model_name).is_dir():
+            if model_path.is_dir():
+                if not model_path.joinpath("model_index.json").exists():
+                    continue
+
                 # Assuming that model is in Diffusers format
                 models.append(
                     ModelResponse(
-                        name=model_name,
-                        path=model_name,
+                        name=model_path.name,
+                        path=model_path.relative_to(
+                            self.paths["checkpoints"]
+                        ).as_posix(),
                         backend="PyTorch",
                         vae="default",
-                        valid=is_valid_diffusers_model(
-                            self.paths["checkpoints"].joinpath(model_name)
-                        ),
+                        valid=is_valid_diffusers_model(model_path),
                         state="not loaded",
                     )
                 )
-            elif ".safetensors" in model_name or ".ckpt" in model_name:
+            elif (
+                ".safetensors" in model_path.name or ".ckpt" in model_path.name
+            ) and not (
+                model_path.parent.joinpath("model_index.json").exists()
+                or model_path.parent.parent.joinpath("model_index.json").exists()
+            ):
                 # Assuming that model is in Checkpoint / Safetensors format
                 models.append(
                     ModelResponse(
-                        name=model_name,
-                        path=model_name,
+                        name=model_path.name,
+                        path=model_path.relative_to(
+                            self.paths["checkpoints"]
+                        ).as_posix(),
                         backend="PyTorch",
                         vae="default",
                         valid=True,
@@ -104,7 +114,7 @@ class CachedModelList:
             else:
                 # Junk file, notify user
                 logger.debug(
-                    f"Found junk file {model_name} in {self.paths['checkpoints']}, skipping..."
+                    f"Found junk file {model_path} in {self.paths['checkpoints']}, skipping..."
                 )
 
         return models

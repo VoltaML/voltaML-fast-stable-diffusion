@@ -449,6 +449,8 @@ class GPU:
                 del self.loaded_models[model_type]
                 self.memory_cleanup()
                 logger.debug("Unloaded model")
+            else:
+                raise ValueError(f"Model {model_type} not loaded")
 
         unload_thread_call(model_type)
 

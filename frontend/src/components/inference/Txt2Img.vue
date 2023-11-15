@@ -262,7 +262,7 @@ const generate = () => {
           prompt_to_prompt: settings.data.settings.api.prompt_to_prompt,
         },
       },
-      model: settings.data.settings.model?.name,
+      model: settings.data.settings.model?.path,
       backend: "PyTorch",
       autoload: false,
       flags: global.state.txt2img.highres
