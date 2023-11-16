@@ -115,7 +115,7 @@ class PyTorchStableDiffusion(InferenceModel):
                     self.load_textual_inversion(textural_inversion)
                 except Exception as e:
                     logger.warning(
-                        f"Failed to load textual inversion {textural_inversion}: {e}"
+                        f"({e.__class__.__name__}) Failed to load textual inversion {textural_inversion}: {e}"
                     )
                     websocket_manager.broadcast_sync(
                         Notification(
@@ -719,7 +719,13 @@ class PyTorchStableDiffusion(InferenceModel):
         token = Path(textual_inversion).stem
         logger.info(f"Loading token {token} for textual inversion model")
 
-        pipe.load_textual_inversion(textual_inversion, token=token)
+        try:
+            pipe.load_textual_inversion(textual_inversion, token=token)
+        except ValueError as e:
+            if "Loaded state dictonary is incorrect" in str(e):
+                logger.info(f"Assuming {textual_inversion} is for SDXL, skipping")
+                return
+            raise e
 
         self.textual_inversions.append(textual_inversion)
         logger.info(f"Textual inversion model {textual_inversion} loaded successfully")

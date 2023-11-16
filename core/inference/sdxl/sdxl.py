@@ -9,6 +9,7 @@ from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import
     StableDiffusionXLPipeline,
 )
 from PIL import Image, ImageOps
+from safetensors.torch import load_file
 from tqdm import tqdm
 from transformers.models.clip.modeling_clip import (
     CLIPTextModel,
@@ -18,6 +19,7 @@ from transformers.models.clip.tokenization_clip import CLIPTokenizer
 
 from api import websocket_manager
 from api.websockets import Data
+from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.flags import SDXLFlag, SDXLRefinerFlag
@@ -74,6 +76,8 @@ class SDXLStableDiffusion(InferenceModel):
         self.unload_loras: List[str] = []
         self.unload_lycoris: List[str] = []
 
+        self.textual_inversions: List[str] = []
+
         if autoload:
             self.load()
 
@@ -100,6 +104,23 @@ class SDXLStableDiffusion(InferenceModel):
         else:
             self.aesthetic_score = False
         self.force_zeros = pipe.config.force_zeros_for_empty_prompt  # type: ignore
+
+        if not self.bare:
+            # Autoload textual inversions
+            for textural_inversion in config.api.autoloaded_textual_inversions:
+                try:
+                    self.load_textual_inversion(textural_inversion)
+                except Exception as e:
+                    logger.warning(
+                        f"({e.__class__.__name__}) Failed to load textual inversion {textural_inversion}: {e}"
+                    )
+                    websocket_manager.broadcast_sync(
+                        Notification(
+                            severity="error",
+                            message=f"Failed to load textual inversion: {textural_inversion}",
+                            title="Autoload Error",
+                        )
+                    )
 
         # Free up memory
         del pipe
@@ -516,6 +537,53 @@ class SDXLStableDiffusion(InferenceModel):
 
     def load_textual_inversion(self, textual_inversion: str):
         "Inject a textual inversion model into the pipeline"
+
+        logger.info(
+            f"Loading textual inversion model {textual_inversion} onto {self.model_id}..."
+        )
+
+        if any(textual_inversion in lora for lora in self.textual_inversions):
+            logger.info(
+                f"Textual inversion model {textual_inversion} already loaded onto {self.model_id}"
+            )
+            return
+
+        pipe = StableDiffusionXLPipeline(
+            vae=self.vae,
+            unet=self.unet,
+            text_encoder=self.text_encoder,
+            text_encoder_2=self.text_encoder_2,
+            tokenizer=self.tokenizer,
+            tokenizer_2=self.tokenizer_2,
+            scheduler=self.scheduler,
+        )
+        pipe.parent = self
+
+        token = Path(textual_inversion).stem
+        logger.info(f"Loading token {token} for textual inversion model")
+
+        state_dict = load_file(textual_inversion)
+
+        try:
+            pipe.load_textual_inversion(
+                state_dict["clip_g"],  # type: ignore
+                token=token,
+                text_encoder=pipe.text_encoder_2,
+                tokenizer=pipe.tokenizer_2,
+            )
+            pipe.load_textual_inversion(
+                state_dict["clip_l"],  # type: ignore
+                token=token,
+                text_encoder=pipe.text_encoder,
+                tokenizer=pipe.tokenizer,
+            )
+        except KeyError:
+            logger.info(f"Assuming {textual_inversion} is for non SDXL model, skipping")
+            return
+
+        self.textual_inversions.append(textual_inversion)
+        logger.info(f"Textual inversion model {textual_inversion} loaded successfully")
+        logger.debug(f"All added tokens: {self.tokenizer.added_tokens_encoder}")
 
     def tokenize(self, text: str):
         "Return the vocabulary of the tokenizer"

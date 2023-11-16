@@ -35,10 +35,10 @@ from core.types import (
     InterrogatorQueueEntry,
     Job,
     ONNXBuildRequest,
+    PyTorchModelBase,
     TextualInversionLoadRequest,
     UpscaleQueueEntry,
     VaeLoadRequest,
-    PyTorchModelBase,
 )
 from core.utils import convert_to_image, image_grid, preprocess_job
 
@@ -651,6 +651,20 @@ class GPU:
                         f"Textual inversion model {req.textual_inversion} loaded",
                     )
                 )
+            if isinstance(internal_model, SDXLStableDiffusion):
+                logger.info(f"Loading textual inversion model: {req.textual_inversion}")
+
+                internal_model.load_textual_inversion(req.textual_inversion)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Textual inversion model loaded",
+                        f"Textual inversion model {req.textual_inversion} loaded",
+                    )
+                )
+            else:
+                logger.warning(f"Model {req.model} does not support textual inversion")
 
         else:
             websocket_manager.broadcast_sync(
