@@ -89,6 +89,7 @@ export default defineConfig({
 					{
 						text: "Local",
 						items: [
+							{ text: "Stability Matrix", link: "/installation/stability-matrix" },
 							{ text: "Windows", link: "/installation/windows" },
 							{ text: "Linux", link: "/installation/linux" },
 							{ text: "WSL", link: "/installation/wsl" },

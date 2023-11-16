@@ -65,7 +65,9 @@ def list_loaded_models() -> List[ModelResponse]:
     for model_id in gpu.loaded_models:
         loaded_models.append(
             ModelResponse(
-                name=model_id,
+                name=Path(model_id).name
+                if (".ckpt" in model_id) or (".safetensors" in model_id)
+                else model_id,
                 backend=gpu.loaded_models[model_id].backend,
                 path=gpu.loaded_models[model_id].model_id,
                 state="loaded",

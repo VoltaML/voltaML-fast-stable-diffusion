@@ -350,7 +350,7 @@ const generate = () => {
         return_preprocessed:
           settings.data.settings.controlnet.return_preprocessed,
       },
-      model: settings.data.settings.model?.name,
+      model: settings.data.settings.model?.path,
     }),
   })
     .then((res) => {

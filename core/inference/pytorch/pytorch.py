@@ -181,6 +181,12 @@ class PyTorchStableDiffusion(InferenceModel):
 
             self.vae = set_offload(self.vae, torch.device(config.api.device))  # type: ignore
 
+        if isinstance(self.vae, AutoencoderKL):
+            if config.api.vae_slicing:
+                self.vae.enable_slicing()
+            if config.api.vae_tiling:
+                self.vae.enable_tiling()
+
         logger.info(f"Successfully changed vae to {vae} of type {type(self.vae)}")
 
         # This is at the end 'cause I've read horror stories about pythons prefetch system

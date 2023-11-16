@@ -501,7 +501,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
             }
           },
-          model: (_a = settings.data.settings.model) == null ? void 0 : _a.name,
+          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path,
           backend: "PyTorch",
           autoload: false,
           flags: {

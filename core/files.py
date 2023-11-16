@@ -76,31 +76,61 @@ class CachedModelList:
                 )
             )
 
-        # Locally stored models
-        logger.debug(f"Looking for local models in {self.paths['checkpoints']}")
-        for model_name in os.listdir(self.paths["checkpoints"]):
-            path = self.paths["checkpoints"] / model_name
-            if not (path.is_dir() or path.suffix in self.ext_whitelist):
-                continue
+        # Localy stored models
+        logger.debug(f"Looking for local models in '{self.paths['checkpoints']}'")
+        for model_path in self.paths["checkpoints"].rglob("*"):
+            logger.debug(f"Found '{model_path.name}'")
 
-            logger.debug(f"Found model {model_name}")
-            if ".ckpt" == path.suffix:
-                name, base, stage = model_name, "SD1.x", "first_stage"
-            else:
-                name, base, stage = determine_model_type(path)
+            if model_path.is_dir():
+                if not model_path.joinpath("model_index.json").exists():
+                    continue
 
-            models.append(
-                ModelResponse(
-                    name=name,
-                    path=model_name,
-                    backend="PyTorch",
-                    vae="default",
-                    valid=True,
-                    state="not loaded",
-                    type=base,
-                    stage=stage,
+                name, base, stage = determine_model_type(model_path)
+
+                # Assuming that model is in Diffusers format
+                models.append(
+                    ModelResponse(
+                        name=name,
+                        path=model_path.relative_to(
+                            self.paths["checkpoints"]
+                        ).as_posix(),
+                        backend="PyTorch",
+                        vae="default",
+                        valid=is_valid_diffusers_model(model_path),
+                        state="not loaded",
+                        type=base,
+                        stage=stage,
+                    )
                 )
-            )
+            elif (
+                ".safetensors" in model_path.name or ".ckpt" in model_path.name
+            ) and not (
+                model_path.parent.joinpath("model_index.json").exists()
+                or model_path.parent.parent.joinpath("model_index.json").exists()
+            ):
+                if ".ckpt" == model_path.suffix:
+                    name, base, stage = model_path.name, "SD1.x", "first_stage"
+                else:
+                    name, base, stage = determine_model_type(model_path)
+
+                # Assuming that model is in Checkpoint / Safetensors format
+                models.append(
+                    ModelResponse(
+                        name=name,
+                        path=model_path.relative_to(
+                            self.paths["checkpoints"]
+                        ).as_posix(),
+                        backend="PyTorch",
+                        vae="default",
+                        valid=True,
+                        type=base,
+                        stage=stage,
+                        state="not loaded",
+                    )
+                )
+            else:
+                # Junk file, notify user
+                logger.debug(f"Found junk file {model_path}, skipping...")
 
         return models
 

@@ -393,8 +393,6 @@
 <script lang="ts" setup>
 import type { ModelEntry } from "@/core/interfaces";
 import {
-  NAlert,
-  NButton,
   NCard,
   NDropdown,
   NGi,
@@ -402,16 +400,11 @@ import {
   NIcon,
   NInput,
   NModal,
-  NProgress,
-  NResult,
   NScrollbar,
   NSelect,
   NTabPane,
   NTabs,
-  NTag,
   NText,
-  NTooltip,
-  useMessage,
   type DropdownOption,
 } from "naive-ui";
 
@@ -426,6 +419,14 @@ import {
   SyncSharp,
   Wifi,
 } from "@vicons/ionicons5";
+import {
+  NAlert,
+  NButton,
+  NProgress,
+  NResult,
+  NTooltip,
+  useMessage,
+} from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
 import { useRouter } from "vue-router";
@@ -746,7 +747,7 @@ async function unloadModel(model: ModelEntry) {
   }
 
   const load_url = new URL(`${serverUrl}/api/models/unload`);
-  const params = { model: model.name };
+  const params = { model: model.path };
   load_url.search = new URLSearchParams(params).toString();
 
   try {

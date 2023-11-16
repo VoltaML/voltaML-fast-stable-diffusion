@@ -41780,7 +41780,8 @@ const useWebsocket = defineStore("websocket", () => {
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     heartbeat: {
       message: "ping",
-      interval: 3e4
+      interval: 1e3,
+      pongTimeout: 5e3
     },
     immediate: false,
     onMessage: (ws, event2) => {
@@ -41800,7 +41801,6 @@ const useWebsocket = defineStore("websocket", () => {
       onConnectedCallbacks.forEach((callback) => callback());
     },
     onDisconnected: () => {
-      messageProvider.error("Disconnected from server");
       onDisconnectedCallbacks.forEach((callback) => callback());
     }
   });
@@ -42078,7 +42078,7 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const _withScopeId = (n) => (pushScopeId("data-v-fc8ab602"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-7e344a3a"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -42360,7 +42360,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         global2.state.selected_model = null;
       }
       const load_url = new URL(`${serverUrl}/api/models/unload`);
-      const params = { model: model.name };
+      const params = { model: model.path };
       load_url.search = new URLSearchParams(params).toString();
       try {
         await fetch(load_url, {
@@ -42627,6 +42627,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
+      const _component_NTag = resolveComponent("NTag");
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
@@ -42762,7 +42763,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           key: model.path
                                         }, [
                                           createBaseVNode("div", _hoisted_7, [
-                                            createVNode(unref(NTag), {
+                                            createVNode(_component_NTag, {
                                               type: getModelTag(model.type)[1],
                                               ghost: "",
                                               style: { "margin-right": "8px" }
@@ -43105,14 +43106,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_fc8ab602_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-fc8ab602"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_7e344a3a_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-7e344a3a"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_765782f1_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_014010a6_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_595f4c6c_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_95a354be_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_116492bf_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_6961892e_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _sfc_main$2 = {};
