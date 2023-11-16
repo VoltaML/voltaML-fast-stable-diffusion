@@ -42078,7 +42078,7 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const _withScopeId = (n) => (pushScopeId("data-v-7e344a3a"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-91ace41f"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -42627,7 +42627,6 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
-      const _component_NTag = resolveComponent("NTag");
       return openBlock(), createElementBlock("div", _hoisted_1$1, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
@@ -42763,7 +42762,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           key: model.path
                                         }, [
                                           createBaseVNode("div", _hoisted_7, [
-                                            createVNode(_component_NTag, {
+                                            createVNode(unref(NTag), {
                                               type: getModelTag(model.type)[1],
                                               ghost: "",
                                               style: { "margin-right": "8px" }
@@ -43106,8 +43105,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_7e344a3a_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-7e344a3a"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_91ace41f_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-91ace41f"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";

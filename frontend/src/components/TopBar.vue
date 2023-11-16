@@ -393,6 +393,8 @@
 <script lang="ts" setup>
 import type { ModelEntry } from "@/core/interfaces";
 import {
+  NAlert,
+  NButton,
   NCard,
   NDropdown,
   NGi,
@@ -400,11 +402,16 @@ import {
   NIcon,
   NInput,
   NModal,
+  NProgress,
+  NResult,
   NScrollbar,
   NSelect,
   NTabPane,
   NTabs,
+  NTag,
   NText,
+  NTooltip,
+  useMessage,
   type DropdownOption,
 } from "naive-ui";
 
@@ -419,14 +426,6 @@ import {
   SyncSharp,
   Wifi,
 } from "@vicons/ionicons5";
-import {
-  NAlert,
-  NButton,
-  NProgress,
-  NResult,
-  NTooltip,
-  useMessage,
-} from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
 import { useRouter } from "vue-router";
