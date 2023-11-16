@@ -39,15 +39,10 @@ from core.inference.utilities import (
     preprocess_image,
 )
 from core.inference.utilities.philox import PhiloxGenerator
-from core.optimizations import (
-    ensure_correct_device,
-    inference_context,
-    unload_all,
-    upcast_vae,
-)
+from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
 
-from ..utilities.sag import calculate_sag, CrossAttnStoreProcessor
+from ..utilities.sag import CrossAttnStoreProcessor, calculate_sag
 
 # ------------------------------------------------------------------------------
 
