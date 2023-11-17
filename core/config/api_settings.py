@@ -105,7 +105,7 @@ class APIConfig:
     live_preview_method: Literal["disabled", "approximation", "taesd"] = "approximation"
     live_preview_delay: float = 2.0
     vae_slicing: bool = True
-    vae_tiling: bool = False
+    vae_tiling: bool = True
     upcast_vae: bool = False  # Fixes issues on 10xx-series and RX cards
     # Somewhat fixes extraordinarily high CFG values. Does also change output composition, so
     # best to leave on off by default. TODO: write docs for this?
