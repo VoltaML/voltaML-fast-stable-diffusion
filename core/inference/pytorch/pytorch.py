@@ -44,6 +44,7 @@ from core.types import (
     UpscaleData,
     UpscaleQueueEntry,
 )
+from core.optimizations import optimize_vae
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -180,16 +181,7 @@ class PyTorchStableDiffusion(InferenceModel):
             from core.optimizations.offload import set_offload
 
             self.vae = set_offload(self.vae, torch.device(config.api.device))  # type: ignore
-
-        if isinstance(self.vae, AutoencoderKL):
-            if config.api.vae_slicing:
-                self.vae.enable_slicing()
-            if config.api.vae_tiling:
-                self.vae.enable_tiling()
-
-        logger.info(f"Successfully changed vae to {vae} of type {type(self.vae)}")
-
-        # This is at the end 'cause I've read horror stories about pythons prefetch system
+        self.vae = optimize_vae(self.vae)  # type: ignore
         self.vae_path = vae
 
     def unload(self) -> None:

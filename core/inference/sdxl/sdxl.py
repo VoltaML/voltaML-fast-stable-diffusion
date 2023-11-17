@@ -35,6 +35,7 @@ from core.types import (
     SigmaScheduler,
     Txt2ImgQueueEntry,
 )
+from core.optimizations import optimize_vae
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 from .pipeline import StableDiffusionXLLongPromptWeightingPipeline
@@ -156,6 +157,7 @@ class SDXLStableDiffusion(InferenceModel):
             from core.optimizations.offload import set_offload
 
             self.vae = set_offload(self.vae, torch.device(config.api.device))  # type: ignore
+        self.vae = optimize_vae(self.vae)  # type: ignore
         self.vae_path = vae
 
     def unload(self) -> None:

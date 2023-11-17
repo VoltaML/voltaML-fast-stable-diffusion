@@ -5,7 +5,7 @@ import torch
 from PIL import Image
 
 from core.config import config
-from core.optimizations import ensure_correct_device, upcast_vae
+from core.optimizations import ensure_correct_device
 from core import shared
 
 taesd_model = None
@@ -76,7 +76,7 @@ def full_vae(
     ensure_correct_device(vae)
 
     return decode_latents(
-        lambda sample: upcast_vae(vae, sample),
+        lambda sample: vae.decode(sample, return_dict=False)[0],  # type: ignore
         samples,
         height or samples[0].shape[1] * 8,
         width or samples[0].shape[2] * 8,
@@ -93,7 +93,6 @@ def decode_latents(
     "Decode latents"
     latents = 1 / scaling_factor * latents
     image = decode_lambda(latents)  # type: ignore
-    print(image)
     image = (image / 2 + 0.5).clamp(0, 1)
     # we always cast to float32 as this does not cause significant overhead and is compatible with bfloat16
     image = image.cpu().permute(0, 2, 3, 1).float().numpy()

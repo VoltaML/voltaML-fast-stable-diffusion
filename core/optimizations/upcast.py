@@ -10,7 +10,7 @@ from core.config import config
 logger = logging.getLogger(__name__)
 
 
-def upcast_vae(vae: AutoencoderKL, sample: torch.Tensor):
+def upcast_vae(vae: AutoencoderKL):
     if (
         vae.config["force_upcast"] or config.api.upcast_vae
     ) and vae.dtype == torch.float16:
@@ -32,8 +32,4 @@ def upcast_vae(vae: AutoencoderKL, sample: torch.Tensor):
             vae.post_quant_conv.to(dtype=dtype)
             vae.decoder.conv_in.to(dtype=dtype)
             vae.decoder.mid_block.to(dtype=dtype)  # type: ignore
-    samp = sample.to(dtype=next(iter(vae.post_quant_conv.parameters())).dtype)
-    return vae.decode(
-        samp,  # type: ignore
-        return_dict=False,
-    )[0]
+    return vae

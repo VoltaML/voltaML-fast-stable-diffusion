@@ -7,6 +7,7 @@ from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from tqdm import tqdm
 
 from core.config import config
+from core.inference.functions import is_ipex_available
 
 logger = logging.getLogger(__name__)
 
@@ -52,12 +53,45 @@ def warmup(
             model(*generate_inputs(dtype, device))
 
 
+def trace_ipex(
+    model: torch.nn.Module,
+    dtype: torch.dtype,
+    device: torch.device,
+    cpu: dict,
+) -> Tuple[torch.nn.Module, bool]:
+    if is_ipex_available():
+        import intel_extension_for_pytorch as ipex
+
+        logger.info("Optimization: Running IPEX optimizations")
+
+        if config.api.channels_last:
+            ipex.enable_auto_channels_last()
+        else:
+            ipex.disable_auto_channels_last()
+        ipex.enable_onednn_fusion(True)
+        ipex.set_fp32_math_mode(
+            ipex.FP32MathMode.BF32
+            if "AMD" not in cpu["VendorId"]
+            else ipex.FP32MathMode.FP32
+        )
+        model = ipex.optimize(
+            model,  # type: ignore
+            dtype=dtype,
+            auto_kernel_selection=True,
+            sample_input=generate_inputs(dtype, device),
+            concat_linear=True,
+            graph_mode=True,
+        )
+        return model, True
+    else:
+        return model, False
+
+
 def trace_model(
     model: torch.nn.Module,
     dtype: torch.dtype,
     device: torch.device,
     iterations: int = 25,
-    ipex: bool = False,
 ) -> torch.nn.Module:
     "Traces the model for inference"
 
@@ -67,7 +101,7 @@ def trace_model(
     if model.forward.__code__.co_argcount > 3:
         model.forward = partial(model.forward, return_dict=False)
     warmup(model, iterations, dtype, device)
-    if config.api.channels_last and not ipex:
+    if config.api.channels_last:
         model.to(memory_format=torch.channels_last)  # type: ignore
     logger.debug("Starting trace")
     with warnings.catch_warnings():

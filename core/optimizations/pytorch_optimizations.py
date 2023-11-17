@@ -8,10 +8,12 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 )
 
 from core.config import config
+from core.inference.functions import is_ipex_available
 
 from .attn import set_attention_processor
-from .compile.trace_utils import generate_inputs, trace_model
+from .compile.trace_utils import trace_ipex, trace_model
 from .offload import set_offload
+from .upcast import upcast_vae
 
 logger = logging.getLogger(__name__)
 
@@ -25,8 +27,6 @@ def optimize_model(
     is_for_aitemplate: bool = False,
 ) -> None:
     "Optimize the model for inference."
-
-    from core.inference.functions import is_ipex_available
 
     # Tuple[Supported, Enabled by default, Enabled]
     hardware_scheduling = experimental_check_hardware_scheduling()
@@ -91,6 +91,9 @@ def optimize_model(
             logger.info("Optimization: CUDNN benchmark enabled")
         torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
+    if is_pytorch_pipe(pipe):
+        pipe.vae = optimize_vae(pipe.vae)
+
     # Attention slicing that should save VRAM (but is slower)
     slicing = config.api.attention_slicing
     if slicing != "disabled" and is_pytorch_pipe(pipe) and not is_for_aitemplate:
@@ -144,14 +147,6 @@ def optimize_model(
             b2=config.api.free_u_b2,
         )
 
-    if config.api.vae_slicing:
-        pipe.enable_vae_slicing()
-        logger.info("Optimization: Enabled VAE slicing")
-
-    if config.api.vae_tiling:
-        pipe.enable_vae_tiling()
-        logger.info("Optimization: Enabled VAE tiling")
-
     if config.api.use_tomesd and not is_for_aitemplate:
         try:
             import tomesd
@@ -175,40 +170,12 @@ def optimize_model(
             f"Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
         )
 
-        if is_ipex_available():
-            import intel_extension_for_pytorch as ipex
-
-            logger.info("Optimization: Running IPEX optimizations")
-
-            if config.api.channels_last:
-                ipex.enable_auto_channels_last()
-            else:
-                ipex.disable_auto_channels_last()
-            ipex.enable_onednn_fusion(True)
-            ipex.set_fp32_math_mode(
-                ipex.FP32MathMode.BF32
-                if "AMD" not in cpu["VendorId"]
-                else ipex.FP32MathMode.FP32
-            )
-            pipe.unet = ipex.optimize(
-                pipe.unet,  # type: ignore
-                dtype=config.api.dtype,
-                auto_kernel_selection=True,
-                sample_input=generate_inputs(config.api.dtype, device),
-            )
-            ipexed = True
+        pipe.unet, ipexed = trace_ipex(pipe.unet, config.api.dtype, device, cpu)
 
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
         pipe.unet = trace_model(pipe.unet, config.api.dtype, device)  # type: ignore
-    elif is_ipex_available() and config.api.trace_model and not is_for_aitemplate:
-        logger.warning(
-            "Skipping tracing because IPEX optimizations have already been done"
-        )
-        logger.warning(
-            "This is a temporary measure, tracing will work with IPEX-enabled devices later on"
-        )
 
     if config.api.torch_compile and not is_for_aitemplate:
         if config.api.attention_processor == "xformers":
@@ -255,3 +222,17 @@ def is_pytorch_pipe(pipe):
     "Checks if the pipe is a pytorch pipe"
 
     return issubclass(pipe.__class__, (DiffusionPipeline))
+
+
+def optimize_vae(vae):
+    "Optimize a VAE according to config defined in data/settings.json"
+    vae = upcast_vae(vae)
+
+    if hasattr(vae, "enable_slicing") and config.api.vae_slicing:
+        vae.enable_slicing()
+        logger.info("Optimization: Enabled VAE slicing")
+
+    if config.api.vae_tiling and hasattr(vae, "enable_tiling"):
+        vae.enable_tiling()
+        logger.info("Optimization: Enabled VAE tiling")
+    return vae
