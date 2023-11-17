@@ -20,11 +20,11 @@ from core.types import (
     DeleteModelRequest,
     InferenceBackend,
     ModelResponse,
+    PyTorchModelBase,
     TextualInversionLoadRequest,
     VaeLoadRequest,
-    PyTorchModelBase,
 )
-from core.utils import download_file
+from core.utils import determine_model_type, download_file
 
 router = APIRouter(tags=["models"])
 logger = logging.getLogger(__name__)
@@ -63,9 +63,11 @@ def list_loaded_models() -> List[ModelResponse]:
 
     loaded_models = []
     for model_id in gpu.loaded_models:
+        name, type_, stage = determine_model_type(get_full_model_path(model_id))
+
         loaded_models.append(
             ModelResponse(
-                name=Path(model_id).name
+                name=name
                 if (".ckpt" in model_id) or (".safetensors" in model_id)
                 else model_id,
                 backend=gpu.loaded_models[model_id].backend,
@@ -76,7 +78,8 @@ def list_loaded_models() -> List[ModelResponse]:
                     "textual_inversions", []
                 ),
                 valid=True,
-                type=gpu.loaded_models[model_id].__dict__.get("type", "SD1.x"),
+                stage=stage,
+                type=type_,
             )
         )
 
