@@ -8,7 +8,6 @@ from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
 )
 
 from core.config import config
-from core.inference.functions import is_ipex_available
 
 from .attn import set_attention_processor
 from .compile.trace_utils import trace_ipex, trace_model
@@ -110,7 +109,6 @@ def optimize_model(
     if (
         config.api.channels_last
         and "privateuseone" not in config.api.device
-        and (not is_ipex_available() and "cpu" not in config.api.device)
         and not is_for_aitemplate
     ):
         pipe.unet.to(memory_format=torch.channels_last)  # type: ignore

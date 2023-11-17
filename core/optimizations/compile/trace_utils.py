@@ -7,7 +7,6 @@ from diffusers.models.unet_2d_condition import UNet2DConditionOutput
 from tqdm import tqdm
 
 from core.config import config
-from core.inference.functions import is_ipex_available
 
 logger = logging.getLogger(__name__)
 
@@ -59,6 +58,8 @@ def trace_ipex(
     device: torch.device,
     cpu: dict,
 ) -> Tuple[torch.nn.Module, bool]:
+    from core.inference.functions import is_ipex_available
+
     if is_ipex_available():
         import intel_extension_for_pytorch as ipex
 
