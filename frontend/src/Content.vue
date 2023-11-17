@@ -11,6 +11,7 @@
         <routerContainerVue style="margin-top: 52px" />
         <PerformanceDrawer />
         <LogDrawer />
+        <SettingsDiffResolver />
       </NMessageProvider>
     </NLoadingBarProvider>
   </NNotificationProvider>
@@ -28,6 +29,7 @@ import {
   LogDrawer,
   PerformanceDrawer,
   SecretsHandler,
+  SettingsDiffResolver,
   TopBar,
 } from "./components";
 import routerContainerVue from "./router/router-container.vue";

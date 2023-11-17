@@ -49,12 +49,33 @@ async def validation_exception_handler(_request: Request, exc: RequestValidation
 
     logger.debug(exc)
 
+    if exc._error_cache is not None and exc._error_cache[0]["loc"][0] == "body":
+        from core.config._config import Configuration
+
+        default_value = Configuration()
+        keys = [str(i) for i in exc._error_cache[0]["loc"][1:]]  # type: ignore
+        current_value = exc._error_cache[0]["ctx"]["given"]  # type: ignore
+
+        # Traverse the config object to find the correct value
+        for key in keys:
+            default_value = getattr(default_value, key)
+
+        websocket_manager.broadcast_sync(
+            data=Data(
+                data={
+                    "default_value": default_value,
+                    "key": keys,
+                    "current_value": current_value,
+                },
+                data_type="incorrect_settings_value",
+            )
+        )
+
     try:
-        why = str(exc).split(":")[1].strip()
-        await websocket_manager.broadcast(
+        websocket_manager.broadcast_sync(
             data=Notification(
                 severity="error",
-                message=f"Validation error: {why}",
+                message="Validation error",
                 title="Validation Error",
             )
         )

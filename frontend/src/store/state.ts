@@ -110,6 +110,12 @@ export interface StateInterface {
   autofill: Array<string>;
   autofill_special: Array<string>;
   capabilities: Capabilities;
+  settings_diff: {
+    key: string[];
+    default_value: string;
+    current_value: string;
+    active: boolean;
+  };
 }
 
 export const useState = defineStore("state", () => {
@@ -217,6 +223,12 @@ export const useState = defineStore("state", () => {
     autofill: [],
     autofill_special: [],
     capabilities: defaultCapabilities, // Should get replaced at runtime
+    settings_diff: {
+      active: false,
+      default_value: "",
+      current_value: "",
+      key: [],
+    },
   });
 
   async function fetchCapabilites() {

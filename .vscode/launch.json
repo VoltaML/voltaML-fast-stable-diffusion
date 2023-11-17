@@ -1,7 +1,7 @@
 {
 	"configurations": [
 		{
-			"name": "Python: File",
+			"name": "VoltaML API Debug",
 			"type": "python",
 			"request": "launch",
 			"program": "main.py",
