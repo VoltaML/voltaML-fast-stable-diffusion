@@ -2217,25 +2217,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     function saveSettings() {
       saving.value = true;
-      fetch(`${serverUrl}/api/settings/save`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(settings.defaultSettings)
-      }).then((res) => {
-        if (res.status === 200) {
-          message.success("Settings saved successfully");
-        } else {
-          res.json().then((data) => {
-            message.error("Error while saving settings");
-            notification.create({
-              title: "Error while saving settings",
-              content: data.message,
-              type: "error"
-            });
-          });
-        }
+      settings.saveSettings().then(() => {
+        message.success("Settings saved");
+      }).catch((e) => {
+        message.error("Failed to save settings");
+        notification.create({
+          title: "Failed to save settings",
+          content: e,
+          type: "error"
+        });
+      }).finally(() => {
         saving.value = false;
       });
     }
