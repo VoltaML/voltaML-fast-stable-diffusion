@@ -4,9 +4,9 @@ import numpy as np
 import torch
 from PIL import Image
 
+from core import shared
 from core.config import config
 from core.optimizations import ensure_correct_device
-from core import shared
 
 taesd_model = None
 
@@ -72,7 +72,7 @@ def full_vae(
     vae,
     height: Optional[int] = None,
     width: Optional[int] = None,
-) -> torch.Tensor:
+) -> np.ndarray:
     ensure_correct_device(vae)
 
     return decode_latents(
@@ -89,7 +89,7 @@ def decode_latents(
     height: int,
     width: int,
     scaling_factor: float = 0.18215,
-) -> torch.Tensor:
+) -> np.ndarray:
     "Decode latents"
     latents = 1 / scaling_factor * latents
     image = decode_lambda(latents)  # type: ignore

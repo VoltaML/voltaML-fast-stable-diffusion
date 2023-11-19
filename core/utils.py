@@ -281,7 +281,14 @@ def download_file(url: str, file: Path, add_filename: bool = False):
 
         if add_filename:
             file = file / file_name
-        total = int(r.headers["Content-Length"])
+
+        try:
+            total = int(r.headers["Content-Length"])
+        except KeyError:
+            total = None
+            logger.warning(
+                "Content-Length header not found, progress bar will not work"
+            )
 
         if file.exists():
             logger.debug(f"File {file.as_posix()} already exists, skipping")

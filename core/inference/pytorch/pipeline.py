@@ -747,19 +747,19 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 unload_all()
                 return latents, False
 
-            image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
+            converted_image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL
             if output_type == "pil":
-                image = numpy_to_pil(image)
+                converted_image = numpy_to_pil(converted_image)
 
             unload_all()
 
             if not return_dict:
-                return image, False
+                return converted_image, False
 
             return StableDiffusionPipelineOutput(
-                images=image, nsfw_content_detected=False  # type: ignore
+                images=converted_image, nsfw_content_detected=False  # type: ignore
             )
 
     def text2img(
