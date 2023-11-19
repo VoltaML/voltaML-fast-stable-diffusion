@@ -67,7 +67,7 @@ class LoRAManager(HookObject):
             if isinstance(module, torch.nn.Linear):
                 module = torch.nn.Linear(v.shape[1], v.shape[0], bias=False)  # type: ignore
             else:
-                module = torch.nn.Conv2d(v.shape[1], v.shape[0], (1, 1), bias=False)  # type: ignore
+                module = torch.nn.Conv2d(v.shape[1], v.shape[0], v.shape[2], v.shape[3], bias=False)  # type: ignore
 
             with torch.no_grad():
                 module.weight.copy_(v, True)  # type: ignore
@@ -108,6 +108,7 @@ class LoRAManager(HookObject):
                             .unsqueeze(3)
                         )
                     else:
+                        print(up.shape, down.shape)
                         updown = up @ down
                     p.weight += (
                         updown
