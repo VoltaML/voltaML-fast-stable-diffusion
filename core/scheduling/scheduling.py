@@ -10,7 +10,6 @@ from .adapter.k_adapter import KdiffusionSchedulerAdapter
 from .adapter.unipc_adapter import UnipcSchedulerAdapter
 from .custom.dpmpp_2m import sample_dpmpp_2mV2
 from .custom.restart import restart_sampler
-from .custom.lcm import sample_lcm
 from .denoiser import create_denoiser
 
 logger = logging.getLogger(__name__)
@@ -78,8 +77,7 @@ samplers_kdiffusion = [
         {"brownian_noise": True},
     ),
     ("unipc_multistep", "unipc", {}),
-    ("restart", sample_lcm, {}),  # restart_sampler
-    ("lcm", sample_lcm, {}),
+    ("restart", restart_sampler, {}),
 ]
 
 
