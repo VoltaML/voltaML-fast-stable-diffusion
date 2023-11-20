@@ -15,7 +15,6 @@ from diffusers.pipelines.stable_diffusion.convert_from_ckpt import (
     assign_to_checkpoint,
     conv_attn_to_linear,
     create_vae_diffusers_config,
-    download_from_original_stable_diffusion_ckpt,
     renew_vae_attention_paths,
     renew_vae_resnet_paths,
 )
@@ -365,21 +364,20 @@ def load_pytorch_pipeline(
         # I never knew this existed, but this is pretty handy :)
         # cl.__init__ = partialmethod(cl.__init__, low_cpu_mem_usage=True)  # type: ignore
         try:
-            pipe = download_from_original_stable_diffusion_ckpt(
+            pipe = cl.from_single_file(
                 str(get_full_model_path(model_id_or_path)),
-                pipeline_class=cl,  # type: ignore
-                from_safetensors=use_safetensors,
-                extract_ema=True,
                 load_safety_checker=False,
+                torch_dtype=config.api.dtype,
+                resume_download=True,
                 num_in_channels=in_channels,
+                extract_ema=True,
             )
         except KeyError:
-            pipe = download_from_original_stable_diffusion_ckpt(
+            pipe = cl.from_single_file(
                 str(get_full_model_path(model_id_or_path)),
-                pipeline_class=cl,  # type: ignore
-                from_safetensors=use_safetensors,
-                extract_ema=False,
                 load_safety_checker=False,
+                torch_dtype=config.api.dtype,
+                resume_download=True,
                 num_in_channels=in_channels,
             )
     else:
