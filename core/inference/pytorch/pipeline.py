@@ -695,6 +695,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
 
             # 8. Denoising loop
             ensure_correct_device(self.unet)
+            latents = latents.to(dtype)  # type: ignore
             with ExitStack() as gs:
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
@@ -746,19 +747,19 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 unload_all()
                 return latents, False
 
-            image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
+            converted_image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL
             if output_type == "pil":
-                image = numpy_to_pil(image)
+                converted_image = numpy_to_pil(converted_image)
 
             unload_all()
 
             if not return_dict:
-                return image, False
+                return converted_image, False
 
             return StableDiffusionPipelineOutput(
-                images=image, nsfw_content_detected=False  # type: ignore
+                images=converted_image, nsfw_content_detected=False  # type: ignore
             )
 
     def text2img(

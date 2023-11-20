@@ -22,11 +22,13 @@ from api.websockets import Data
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
+from core.files import get_full_model_path
 from core.flags import SDXLFlag, SDXLRefinerFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import change_scheduler, create_generator
 from core.inference_callbacks import callback
+from core.optimizations import optimize_vae
 from core.types import (
     Backend,
     Img2ImgQueueEntry,
@@ -35,7 +37,6 @@ from core.types import (
     SigmaScheduler,
     Txt2ImgQueueEntry,
 )
-from core.optimizations import optimize_vae
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 from .pipeline import StableDiffusionXLLongPromptWeightingPipeline
@@ -143,14 +144,16 @@ class SDXLStableDiffusion(InferenceModel):
         if vae == "default":
             self.vae = old_vae
         else:
-            if "/" in vae or Path(vae).is_dir():
-                self.vae = AutoencoderKL.from_pretrained(vae).to(  # type: ignore
+            full_path = get_full_model_path(vae)
+            if full_path.is_dir():
+                self.vae = AutoencoderKL.from_pretrained(full_path).to(  # type: ignore
                     device=device, dtype=dtype
                 )
             else:
-                self.vae = convert_vaept_to_diffusers(vae).to(
+                self.vae = convert_vaept_to_diffusers(full_path.as_posix()).to(
                     device=device, dtype=dtype
                 )
+
         # Check if text_encoder has v_offload_device, because it always
         # gets wholly offloaded instead of being sequentially offloaded
         if hasattr(self.text_encoder, "v_offload_device"):

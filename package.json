@@ -20,6 +20,8 @@
     "api:fulltest": "pytest --run-optional-tests=slow --cov=core -x",
     "api:lint": "ruff . --watch",
     "api:dev": "python main.py",
+    "api:memray": "memray run --live main.py",
+    "api:profile": "viztracer main.py",
     "frontend:dev": "cd frontend && yarn dev",
     "frontend:build": "cd frontend && yarn build",
     "frontend:format": "cd frontend && yarn format",
