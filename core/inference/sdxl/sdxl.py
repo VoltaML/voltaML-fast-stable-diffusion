@@ -135,7 +135,7 @@ class SDXLStableDiffusion(InferenceModel):
             setattr(self, "original_vae", self.vae)
 
         old_vae = getattr(self, "original_vae")
-        dtype = self.unet.dtype
+        dtype = config.api.load_dtype
         device = self.unet.device
 
         if hasattr(self.text_encoder, "v_offload_device"):

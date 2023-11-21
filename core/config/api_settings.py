@@ -34,10 +34,13 @@ class APIConfig:
     trace_model: bool = False
     clear_memory_policy: Literal["always", "after_disconnect", "never"] = "always"
     offload: Literal["disabled", "model", "module"] = "disabled"
-    data_type: Literal["float32", "float16", "bfloat16"] = "float16"
+    data_type: Literal[
+        "float32", "float16", "bfloat16", "float8_e4m3fn", "float8_e5m2"
+    ] = "float16"
     dont_merge_latents: bool = (
         False  # Will drop performance, but could help with some VRAM issues
     )
+    cache_fp16_weight: bool = False  # only works on float8. Used for LoRAs.
 
     # CUDA specific optimizations
     reduced_precision: bool = False
@@ -132,13 +135,28 @@ class APIConfig:
     free_u_b2: float = 1.4
 
     @property
-    def dtype(self):
+    def dtype(self) -> torch.dtype:
         "Return selected data type"
-        if self.data_type == "bfloat16":
-            return torch.bfloat16
-        if self.data_type == "float16":
-            return torch.float16
-        return torch.float32
+        return getattr(torch, self.data_type)
+
+    @property
+    def load_dtype(self) -> torch.dtype:
+        "Data type for loading models."
+        dtype = self.dtype
+        if "float8" in self.data_type:
+            from core.shared_dependent import gpu
+
+            if self.device == "cpu":
+                if "bfloat16" in gpu.capabilities.supported_precisions_cpu:
+                    dtype = torch.bfloat16
+                else:
+                    dtype = torch.float32
+            else:
+                if "float16" in gpu.capabilities.supported_precisions_gpu:
+                    dtype = torch.float16
+                else:
+                    dtype = torch.float32
+        return dtype
 
     @property
     def overwrite_generator(self) -> bool:

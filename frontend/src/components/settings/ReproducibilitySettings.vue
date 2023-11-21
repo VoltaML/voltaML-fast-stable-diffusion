@@ -292,6 +292,12 @@ const availableDtypes = computed(() => {
         case "float16":
           description = "16-bit float";
           break;
+        case "float8_e5m2":
+          description = "8-bit float (5-data)";
+          break;
+        case "float8_e4m3fn":
+          description = "8-bit float (4-data)";
+          break;
         default:
           description = "16-bit bfloat";
       }
@@ -306,6 +312,12 @@ const availableDtypes = computed(() => {
         break;
       case "float16":
         description = "16-bit float";
+        break;
+      case "float8_e5m2":
+        description = "8-bit float (5-data)";
+        break;
+      case "float8_e4m3fn":
+        description = "8-bit float (4-data)";
         break;
       default:
         description = "16-bit bfloat";

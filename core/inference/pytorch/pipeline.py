@@ -393,7 +393,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 3. Encode input prompt
             text_embeddings = self._encode_prompt(
                 prompt,
-                self.unet.dtype,
+                config.api.load_dtype,
                 num_images_per_prompt,
                 do_classifier_free_guidance,
                 negative_prompt,
@@ -664,10 +664,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         text_embeddings,
                         self_attention_scale,
                         guidance_scale,
-                        self.unet.dtype,
-                        down_block_additional_residuals=cond_down,  # type: ignore
-                        mid_block_additional_residual=cond_mid,  # type: ignore
-                        down_intrablock_additional_residuals=cond_intra,  # type: ignore
+                        config.api.load_dtype,
                     )
 
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):

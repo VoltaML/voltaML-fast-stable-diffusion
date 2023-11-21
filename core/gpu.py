@@ -111,9 +111,13 @@ class GPU:
                     pass
         for t, s in support_map.items():
             if t == "cpu":
-                cap.supported_precisions_cpu = ["float32"] + s
+                cap.supported_precisions_cpu = (
+                    ["float32"] + s + ["float8_e4m3fn", "float8_e5m2"]
+                )
             else:
-                cap.supported_precisions_gpu = ["float32"] + s
+                cap.supported_precisions_gpu = (
+                    ["float32"] + s + ["float8_e4m3fn", "float8_e5m2"]
+                )
         try:
             cap.supported_torch_compile_backends = (
                 torch._dynamo.list_backends()  # type: ignore

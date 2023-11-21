@@ -214,7 +214,7 @@ class AITemplateStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet,
                 resume_download=True,
-                torch_dtype=config.api.dtype,
+                torch_dtype=config.api.load_dtype,
             )
 
             assert isinstance(cn, ControlNetModel)
@@ -226,7 +226,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     "Optimization: xformers not available, enabling attention slicing instead"
                 )
 
-            cn.to(device=torch.device(self.device), dtype=config.api.dtype)
+            cn.to(device=torch.device(self.device), dtype=config.api.load_dtype)
             self.controlnet = cn
             self.current_controlnet = target_controlnet
 

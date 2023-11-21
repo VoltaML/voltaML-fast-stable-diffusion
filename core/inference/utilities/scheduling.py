@@ -119,7 +119,7 @@ def change_scheduler(
             sigma_always_discard_next_to_last=False,
             sigma_use_old_karras_scheduler=False,
             device=torch.device(config.api.device),  # type: ignore
-            dtype=config.api.dtype,  # type: ignore
+            dtype=config.api.load_dtype,  # type: ignore
             sampler_settings=sampler_settings,
         )
     model.scheduler = new_scheduler  # type: ignore

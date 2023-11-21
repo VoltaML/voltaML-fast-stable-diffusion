@@ -367,7 +367,7 @@ def load_pytorch_pipeline(
             pipe = cl.from_single_file(
                 str(get_full_model_path(model_id_or_path)),
                 load_safety_checker=False,
-                torch_dtype=config.api.dtype,
+                torch_dtype=config.api.load_dtype,
                 resume_download=True,
                 num_in_channels=in_channels,
                 extract_ema=True,
@@ -376,14 +376,14 @@ def load_pytorch_pipeline(
             pipe = cl.from_single_file(
                 str(get_full_model_path(model_id_or_path)),
                 load_safety_checker=False,
-                torch_dtype=config.api.dtype,
+                torch_dtype=config.api.load_dtype,
                 resume_download=True,
                 num_in_channels=in_channels,
             )
     else:
         pipe = DiffusionPipeline.from_pretrained(
             pretrained_model_name_or_path=get_full_model_path(model_id_or_path),
-            torch_dtype=config.api.dtype,
+            torch_dtype=config.api.load_dtype,
             safety_checker=None,
             feature_extractor=None,
             low_cpu_mem_usage=True,
@@ -444,7 +444,7 @@ def load_pytorch_pipeline(
                 text_encoder.is_loaded_in_8bit = True  # type: ignore
                 text_encoder.is_quantized = True  # type: ignore
                 nt = replace_with_bnb_linear(
-                    pipe.text_encoder.to(config.api.device, config.api.dtype),  # type: ignore
+                    pipe.text_encoder.to(config.api.device, config.api.load_dtype),  # type: ignore
                     dont_convert,
                     quantization_config=bnbconfig,
                 )
@@ -473,7 +473,7 @@ def load_pytorch_pipeline(
         if config.api.sfast_compile:
             pipe = compile_sfast(pipe)
     else:
-        pipe.to(device, config.api.dtype)
+        pipe.to(device, config.api.load_dtype)
 
     return pipe  # type: ignore
 

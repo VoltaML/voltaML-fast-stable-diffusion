@@ -19,7 +19,12 @@ def inference_context(unet, vae, height, width) -> InferenceContext:
     s = InferenceContext()
     s.unet = unet
     s.vae = vae
-    s.enter_context(autocast(unet.dtype, disable=config.api.autocast))
+    s.enter_context(
+        autocast(
+            config.api.load_dtype,
+            disable=config.api.autocast and not unet.force_autocast,
+        )
+    )
     if is_hypertile_available() and config.api.hypertile:
         s.enter_context(hypertile(unet, height, width))
     if config.api.torch_compile:

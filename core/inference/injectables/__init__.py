@@ -204,7 +204,7 @@ class HookManager(object):
         self.change_forwards()
 
         self.device = config.api.device  # type: ignore
-        self.dtype = pipe.unet.dtype
+        self.dtype = config.api.load_dtype
 
     # Temporary, TODO: replace this with something sensible
     def apply_lycoris(

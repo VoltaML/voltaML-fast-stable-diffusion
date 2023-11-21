@@ -602,7 +602,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                         prompt_embeds,
                         self_attention_scale,
                         guidance_scale,
-                        self.unet.dtype,
+                        config.api.load_dtype,
                     )
 
                 if not isinstance(self.scheduler, KdiffusionSchedulerAdapter):

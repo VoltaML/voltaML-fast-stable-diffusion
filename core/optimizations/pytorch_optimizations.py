@@ -11,6 +11,7 @@ from core.config import config
 
 from .attn import set_attention_processor
 from .compile.trace_utils import trace_ipex, trace_model
+from .dtype import cast
 from .offload import set_offload
 from .upcast import upcast_vae
 
@@ -55,13 +56,7 @@ def optimize_model(
         and offload
     )
 
-    # Took me an hour to understand why CPU stopped working...
-    # Turns out AMD just lacks support for BF16...
-    # Not mad, not mad at all... to be fair, I'm just disappointed
-    if not can_offload and not is_for_aitemplate:
-        pipe.to(device, torch_dtype=config.api.dtype)
-    else:
-        pipe.to(torch_dtype=config.api.dtype)
+    pipe = cast(pipe, device, config.api.dtype, can_offload)
 
     if "cuda" in config.api.device and not is_for_aitemplate:
         supports_tf = supports_tf32(device)
@@ -102,18 +97,6 @@ def optimize_model(
         else:
             pipe.enable_attention_slicing(slicing)
             logger.info(f"Optimization: Enabled attention slicing ({slicing})")
-
-    # Change the order of the channels to be more efficient for the GPU
-    # DirectML only supports contiguous memory format
-    # Disable for IPEX as well, they don't like torch's way of setting memory format
-    if (
-        config.api.channels_last
-        and "privateuseone" not in config.api.device
-        and not is_for_aitemplate
-    ):
-        pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
-        pipe.vae.to(memory_format=torch.channels_last)  # type: ignore
-        logger.info("Optimization: Enabled channels_last memory format")
 
     # xFormers and SPDA
     if not is_for_aitemplate:
@@ -168,12 +151,12 @@ def optimize_model(
             f"Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
         )
 
-        pipe.unet, ipexed = trace_ipex(pipe.unet, config.api.dtype, device, cpu)
+        pipe.unet, ipexed = trace_ipex(pipe.unet, config.api.load_dtype, device, cpu)
 
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
-        pipe.unet = trace_model(pipe.unet, config.api.dtype, device)  # type: ignore
+        pipe.unet = trace_model(pipe.unet, config.api.load_dtype, device)  # type: ignore
 
     if config.api.torch_compile and not is_for_aitemplate:
         if config.api.attention_processor == "xformers":

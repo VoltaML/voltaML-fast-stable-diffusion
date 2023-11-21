@@ -140,7 +140,7 @@ class PyTorchStableDiffusion(InferenceModel):
 
         old_vae = getattr(self, "original_vae")
         # Not sure what I needed this for, but whatever
-        dtype = self.unet.dtype
+        dtype = config.api.load_dtype
         device = self.unet.device
 
         if hasattr(self.text_encoder, "v_offload_device"):
@@ -244,7 +244,7 @@ class PyTorchStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet,
                 resume_download=True,
-                torch_dtype=config.api.dtype,
+                torch_dtype=config.api.load_dtype,
             )
 
             assert isinstance(cn, ControlNetModel)

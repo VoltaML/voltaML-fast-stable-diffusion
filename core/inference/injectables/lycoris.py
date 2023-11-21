@@ -177,7 +177,7 @@ class LyCORISManager(HookObject):
                 lyco_module.scale = v.item()  # type: ignore
                 continue
             if lyco_key == "diff":
-                v = v.to(device=torch.device("cpu"), dtype=config.api.dtype)
+                v = v.to(device=torch.device("cpu"), dtype=config.api.load_dtype)
                 v.requires_grad_(False)
                 lyco_module = FullModule()  # type: ignore
                 lyco_module.weight = v  # type: ignore
@@ -199,7 +199,7 @@ class LyCORISManager(HookObject):
                         lyco_module.bias[0],  # type: ignore
                         lyco_module.bias[1],  # type: ignore
                         tuple(lyco_module.bias[2]),  # type: ignore
-                    ).to(device=torch.device("cpu"), dtype=config.api.dtype)
+                    ).to(device=torch.device("cpu"), dtype=config.api.load_dtype)
                     lyco_module.bias.requires_grad_(False)
                 continue
             if lyco_key in CON_KEY:
@@ -251,7 +251,7 @@ class LyCORISManager(HookObject):
                         v = v.reshape(module.weight.shape)  # type: ignore
                     module.weight.copy_(v)  # type: ignore
 
-                module.to(device=torch.device("cpu"), dtype=config.api.dtype)  # type: ignore
+                module.to(device=torch.device("cpu"), dtype=config.api.load_dtype)  # type: ignore
                 module.requires_grad_(False)  # type: ignore
 
                 if lyco_key == "lora_up.weight" or lyco_key == "dyn_up":
@@ -274,7 +274,7 @@ class LyCORISManager(HookObject):
                 if hasattr(sd_module, "weight"):
                     lyco_module.shape = sd_module.weight.shape  # type: ignore
 
-                v = v.to(device=torch.device("cpu"), dtype=config.api.dtype)
+                v = v.to(device=torch.device("cpu"), dtype=config.api.load_dtype)
                 v.requires_grad_(False)
 
                 if lyco_key == "hada_w1_a":
@@ -298,7 +298,7 @@ class LyCORISManager(HookObject):
                     lyco.modules[key] = lyco_module
 
                 if lyco_key == "weight":
-                    lyco_module.w = v.to(torch.device("cpu"), dtype=config.api.dtype)  # type: ignore
+                    lyco_module.w = v.to(torch.device("cpu"), dtype=config.api.load_dtype)  # type: ignore
                 elif lyco_key == "on_input":
                     lyco_module.on_input = v  # type: ignore
             elif lyco_key in KRON_KEY:
@@ -312,7 +312,7 @@ class LyCORISManager(HookObject):
                 if hasattr(sd_module, "weight"):
                     lyco_module.shape = sd_module.weight.shape  # type: ignore
 
-                v = v.to(device=torch.device("cpu"), dtype=config.api.dtype)
+                v = v.to(device=torch.device("cpu"), dtype=config.api.load_dtype)
                 v.requires_grad_(False)
 
                 if lyco_key == "lokr_w1":

@@ -39,7 +39,7 @@ class DeepdanbooruInterrogator(InterrogationModel):
         self.tags = []
         self.model: DeepDanbooruModel
         self.model_location = Path("data") / "models" / "deepdanbooru.pt"
-        self.dtype = torch.quint8 if quantized else config.api.dtype
+        self.dtype = torch.quint8 if quantized else config.api.load_dtype
         self.device: torch.device
         if isinstance(self.device, str):
             self.device = torch.device(device)

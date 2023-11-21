@@ -71,7 +71,7 @@ class LoRAManager(HookObject):
 
             with torch.no_grad():
                 module.weight.copy_(v, True)  # type: ignore
-            module.to(device=torch.device("cpu"), dtype=config.api.dtype)
+            module.to(device=torch.device("cpu"), dtype=config.api.load_dtype)
             if lora_key == "lora_up.weight":
                 lora_module.up = module
             else:
