@@ -98,8 +98,11 @@ class LoRAManager(HookObject):
                 if module is None:
                     continue
                 with torch.no_grad():
-                    up = module.up.weight.to(p.weight.device, dtype=p.weight.dtype)  # type: ignore
-                    down = module.down.weight.to(p.weight.device, dtype=p.weight.dtype)  # type: ignore
+                    weight = p.weight.clone()
+                    if hasattr(p, "fp16_weight"):
+                        weight = p.fp16_weight.clone()  # type: ignore
+                    up = module.up.weight.to(p.weight.device, dtype=weight.dtype)  # type: ignore
+                    down = module.down.weight.to(p.weight.device, dtype=weight.dtype)  # type: ignore
 
                     if up.shape[2:] == (1, 1) and down.shape[2:] == (1, 1):
                         updown = (
@@ -109,7 +112,7 @@ class LoRAManager(HookObject):
                         )
                     else:
                         updown = up @ down
-                    p.weight += (
+                    weight += (
                         updown
                         * lora.alpha
                         * (
@@ -118,4 +121,5 @@ class LoRAManager(HookObject):
                             else 1.0
                         )
                     )
+                    p.weight.copy_(weight)
             setattr(p, "lora_current_names", wanted_names)

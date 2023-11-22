@@ -41,18 +41,14 @@ def cast(
                     if any(
                         [
                             x
-                            for x in ["Conv", "Linear"]
+                            for x in ["Conv", "Linear"]  # 'cause LoRACompatibleConv
                             if x in module.__class__.__name__
                         ]
                     ):
                         if hasattr(module, "fp16_weight"):
                             del module.fp16_weight
-                        if hasattr(module, "fp16_bias"):
-                            del module.fp16_bias
                         if config.api.cache_fp16_weight:
                             module.fp16_weight = module.weight.clone().half()
-                            if module.bias is not None:
-                                module.fp16_bias = module.bias.clone().half()
                         module.to(device=None if offload else device, dtype=dtype)
                     else:
                         module.to(
