@@ -278,11 +278,11 @@ const currentColumn = ref(0);
 const currentRowIndex = ref(0);
 
 function parseMetadataFromString(key: string, value: string) {
-  value = value.trim().toLowerCase();
+  value = value.trim();
 
-  if (value === "true") {
+  if (value.toLowerCase() === "true") {
     return true;
-  } else if (value === "false") {
+  } else if (value.toLowerCase() === "false") {
     return false;
   } else {
     if (isFinite(+value)) {

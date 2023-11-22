@@ -20,8 +20,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a, _b;
       return {
-        "114fe7c0": unref(settings).data.settings.frontend.image_browser_columns,
-        "3d9e4b24": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+        "0b0e0cc2": unref(settings).data.settings.frontend.image_browser_columns,
+        "4fde547c": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
       };
     });
     const global = useState();
@@ -97,10 +97,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const currentColumn = ref(0);
     const currentRowIndex = ref(0);
     function parseMetadataFromString(key, value) {
-      value = value.trim().toLowerCase();
-      if (value === "true") {
+      value = value.trim();
+      if (value.toLowerCase() === "true") {
         return true;
-      } else if (value === "false") {
+      } else if (value.toLowerCase() === "false") {
         return false;
       } else {
         if (isFinite(+value)) {
@@ -454,8 +454,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_239f75b8_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-239f75b8"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_c3083c91_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c3083c91"]]);
 export {
   ImageBrowserView as default
 };
