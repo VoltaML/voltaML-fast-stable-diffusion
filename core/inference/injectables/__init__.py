@@ -69,53 +69,16 @@ class HookManager(object):
         for name, module in root_module.named_modules():
             if module.__class__.__name__ in target_replace_modules:
                 for child_name, child_module in module.named_modules():
-                    is_linear = isinstance(child_module, torch.nn.Linear)
-                    is_conv2d = isinstance(child_module, torch.nn.Conv2d)
-                    if not (is_linear or is_conv2d):
+                    if not any(
+                        [
+                            x in child_module.__class__.__name__
+                            for x in ["Linear", "Conv"]
+                        ]
+                    ):
                         continue
-
-                    if not hasattr(self.pipe, "text_encoder_2"):
-                        logger.debug("SD1.5 lora")
-                        name = name.replace(".", "_")
-                        name = name.replace("input_blocks", "down_blocks")
-                        name = name.replace("middle_block", "mid_block")
-                        name = name.replace("output_blocks", "out_blocks")
-
-                        name = name.replace("to_out_0_lora", "to_out_lora")
-                        name = name.replace("emb_layers", "time_emb_proj")
-
-                        name = name.replace("q_proj_lora", "to_q_lora")
-                        name = name.replace("k_proj_lora", "to_k_lora")
-                        name = name.replace("v_proj_lora", "to_v_lora")
-                        name = name.replace("out_proj_lora", "to_out_lora")
-
-                        # Prepare for SDXL
-                        if "emb" in name:
-                            import re
-
-                            pattern = r"\_\d+(?=\D*$)"
-                            name = re.sub(pattern, "", name, count=1)
-                        if "in_layers_2" in name:
-                            name = name.replace("in_layers_2", "conv1")
-                        if "out_layers_3" in name:
-                            name = name.replace("out_layers_3", "conv2")
-                        if "downsamplers" in name or "upsamplers" in name:
-                            name = name.replace("op", "conv")
-                        if "skip" in name:
-                            name = name.replace("skip_connection", "conv_shortcut")
-
-                        if "transformer_blocks" in name:
-                            if (
-                                "attn1" in name or "attn2" in name
-                            ) and "processor" not in name:
-                                name = name.replace("attn1", "attn1_processor")
-                                name = name.replace("attn2", "attn2_processor")
-                        elif "mlp" in name:
-                            name = name.replace("_lora_", "_lora_linear_layer_")
 
                     lora_name = prefix + "_" + name + "_" + child_name
                     lora_name = lora_name.replace(".", "_")
-                    # print(lora_name)
                     target_modules.append((lora_name, child_module))
         # print("---")
         return target_modules

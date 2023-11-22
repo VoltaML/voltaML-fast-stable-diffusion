@@ -121,5 +121,5 @@ class LoRAManager(HookObject):
                             else 1.0
                         )
                     )
-                    p.weight.copy_(weight)
+                    p.weight.copy_(weight.to(p.weight.dtype))
             setattr(p, "lora_current_names", wanted_names)
