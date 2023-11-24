@@ -693,7 +693,8 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             # 8. Denoising loop
             ensure_correct_device(self.unet)
             latents = latents.to(dtype=dtype)  # type: ignore
-            image_latents = image_latents.to(dtype=dtype)  # type: ignore
+            if image_latents is not None:
+                image_latents = image_latents.to(dtype=dtype)  # type: ignore
             with ExitStack() as gs:
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore
