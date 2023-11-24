@@ -1,5 +1,5 @@
-from contextlib import ExitStack
 import logging
+from contextlib import ExitStack
 from typing import Callable, List, Literal, Optional, Union
 
 import PIL
@@ -393,6 +393,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 image = image.to(device=device, dtype=dtype)
             if isinstance(mask_image, Image.Image):
                 mask_image = preprocess_mask(mask_image)
+                mask_image = mask_image.to(device=device, dtype=dtype)
             if mask_image is not None:
                 mask, masked_image, _ = prepare_mask_and_masked_image(
                     image, mask_image, height, width
@@ -626,6 +627,9 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 pass
 
             ensure_correct_device(self.unet)
+            latents = latents.to(dtype=dtype)  # type: ignore
+            if init_latents_orig is not None:
+                init_latents_orig = init_latents_orig.to(dtype=dtype)
             with ExitStack() as gs:
                 if do_self_attention_guidance:
                     gs.enter_context(self.unet.mid_block.attentions[0].register_forward_hook(get_map_size))  # type: ignore

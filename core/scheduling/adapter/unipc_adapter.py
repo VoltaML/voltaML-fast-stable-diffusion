@@ -118,19 +118,21 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         device = optional_device or call.device
         dtype = optional_dtype or call.dtype
 
+        unet_or_controlnet = call
+
         def noise_pred_fn(x, t_continuous, cond=None, **model_kwargs):
             # Was originally get_model_input_time(t_continous)
             # but "schedule" is ALWAYS "discrete," so we can skip it :)
             t_input = (t_continuous - 1.0 / self.scheduler.total_N) * 1000
             if cond is None:
-                output = call(
+                output = unet_or_controlnet(
                     x.to(device=device, dtype=dtype),
                     t_input.to(device=device, dtype=dtype),
                     return_dict=True,
                     **model_kwargs,
                 )[0]
             else:
-                output = call(x.to(device=device, dtype=dtype), t_input.to(device=device, dtype=dtype), return_dict=True, encoder_hidden_states=cond, **model_kwargs)[0]  # type: ignore
+                output = unet_or_controlnet(x.to(device=device, dtype=dtype), t_input.to(device=device, dtype=dtype), return_dict=True, encoder_hidden_states=cond, **model_kwargs)[0]  # type: ignore
             if self.model_type == "noise":
                 return output
             elif self.model_type == "x_start":
@@ -147,7 +149,13 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
                 sigma_t = self.scheduler.marginal_std(t_continuous)
                 return -sigma_t * output
 
-        apply_model = functools.partial(apply_model, call=noise_pred_fn)
+        def change_source(src):
+            nonlocal unet_or_controlnet
+            unet_or_controlnet = src
+
+        apply_model = functools.partial(
+            apply_model, call=noise_pred_fn, change_source=change_source
+        )
 
         # predict_x0=True    ->   algorithm_type="data_prediction"
         # predict_x0=False   ->   algorithm_type="noise_prediction"
