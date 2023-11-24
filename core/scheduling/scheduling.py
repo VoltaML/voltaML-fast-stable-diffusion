@@ -11,6 +11,7 @@ from .adapter.unipc_adapter import UnipcSchedulerAdapter
 from .custom.dpmpp_2m import sample_dpmpp_2mV2
 from .custom.restart import restart_sampler
 from .custom.heunpp import sample_heunpp2
+from .custom.lcm import sample_lcm
 from .denoiser import create_denoiser
 
 logger = logging.getLogger(__name__)
@@ -80,6 +81,7 @@ samplers_kdiffusion = [
     ("heunpp", sample_heunpp2, {}),
     ("unipc_multistep", "unipc", {}),
     ("restart", restart_sampler, {}),
+    ("lcm", sample_lcm, {}),
 ]
 
 

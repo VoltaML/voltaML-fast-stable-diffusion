@@ -711,6 +711,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
         callback_steps: int = 1,
         prompt_expansion_settings=None,
+        self_attention_scale: float = 0,
         refiner: Optional[SDXLRefinerFlag] = None,
         refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
     ):
@@ -735,6 +736,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             callback=callback,
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
+            self_attention_scale=self_attention_scale,
             prompt_expansion_settings=prompt_expansion_settings,
             refiner=refiner,
             refiner_model=refiner_model,
@@ -760,10 +762,12 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         return_dict: bool = True,
         callback: Optional[Callable[[int, int, torch.FloatTensor], None]] = None,
         is_cancelled_callback: Optional[Callable[[], bool]] = None,
+        self_attention_scale: float = 0,
         callback_steps: int = 1,
         prompt_expansion_settings=None,
     ):
         return self.__call__(
+            self_attention_scale=self_attention_scale,
             aesthetic_score=aesthetic_score,
             negative_aesthetic_score=negative_aesthetic_score,
             original_size=original_size,
@@ -810,9 +814,11 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         callback_steps: int = 1,
         width: int = 512,
         height: int = 512,
+        self_attention_scale: float = 0,
         prompt_expansion_settings=None,
     ):
         return self.__call__(
+            self_attention_scale=self_attention_scale,
             aesthetic_score=aesthetic_score,
             negative_aesthetic_score=negative_aesthetic_score,
             original_size=original_size,

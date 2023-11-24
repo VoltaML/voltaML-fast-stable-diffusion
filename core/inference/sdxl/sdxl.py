@@ -259,6 +259,7 @@ class SDXLStableDiffusion(InferenceModel):
                 callback=callback,
                 num_images_per_prompt=job.data.batch_size,
                 seed=job.data.seed,
+                self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 refiner=refiner,
                 refiner_model=refiner_model,
@@ -287,6 +288,7 @@ class SDXLStableDiffusion(InferenceModel):
                     return_dict=False,
                     output_type="pil",
                     seed=job.data.seed,
+                    self_attention_scale=job.data.self_attention_scale,
                     prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 )
             images: list[Image.Image] = data[0]  # type: ignore
@@ -385,6 +387,7 @@ class SDXLStableDiffusion(InferenceModel):
                 return_dict=False,
                 num_images_per_prompt=job.data.batch_size,
                 seed=job.data.seed,
+                self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
@@ -460,6 +463,7 @@ class SDXLStableDiffusion(InferenceModel):
                 width=job.data.width,
                 height=job.data.height,
                 seed=job.data.seed,
+                self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 

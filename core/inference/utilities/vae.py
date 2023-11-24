@@ -1,3 +1,4 @@
+from contextlib import ExitStack
 from typing import Callable, Optional
 
 import numpy as np
@@ -6,7 +7,7 @@ from PIL import Image
 
 from core import shared
 from core.config import config
-from core.optimizations import ensure_correct_device
+from core.optimizations import autocast, ensure_correct_device
 
 taesd_model = None
 
@@ -75,8 +76,14 @@ def full_vae(
 ) -> np.ndarray:
     ensure_correct_device(vae)
 
+    def decode(sample):
+        with ExitStack() as gs:
+            if vae.config["force_upcast"] or config.api.upcast_vae:
+                gs.enter_context(autocast(dtype=torch.float32))
+            return vae.decode(sample, return_dict=False)[0]
+
     return decode_latents(
-        lambda sample: vae.decode(sample, return_dict=False)[0],  # type: ignore
+        decode,  # type: ignore
         samples,
         height or samples[0].shape[1] * 8,
         width or samples[0].shape[2] * 8,
