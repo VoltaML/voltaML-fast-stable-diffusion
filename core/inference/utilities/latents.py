@@ -149,7 +149,7 @@ def prepare_mask_latents(
     )
     mask = mask.to(device=device, dtype=dtype)
 
-    masked_image = masked_image.to(device=device, dtype=dtype)
+    masked_image = masked_image.to(device=device, dtype=vae.dtype)
     masked_image_latents = vae_scaling_factor * vae.encode(
         masked_image
     ).latent_dist.sample(generator=generator)

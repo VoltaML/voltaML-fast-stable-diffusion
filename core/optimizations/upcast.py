@@ -6,7 +6,6 @@ from diffusers.models.autoencoder_kl import AutoencoderKL
 
 from core.config import config
 
-
 logger = logging.getLogger(__name__)
 
 

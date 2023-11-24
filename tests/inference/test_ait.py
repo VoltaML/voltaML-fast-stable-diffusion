@@ -45,6 +45,8 @@ def test_aitemplate_txt2img(
             prompt="This is a test",
             scheduler=scheduler,
             id="test",
+            width=128,
+            height=128,
         ),
         model=model,
     )
@@ -64,6 +66,8 @@ def test_aitemplate_img2img(
             image=generate_random_image_base64(),
             scheduler=scheduler,
             id="test",
+            width=128,
+            height=128,
         ),
         model=model,
     )
@@ -84,6 +88,8 @@ def test_aitemplate_controlnet(
             scheduler=scheduler,
             controlnet="lllyasviel/sd-controlnet-canny",
             id="test",
+            width=128,
+            height=128,
         ),
         model=model,
     )
