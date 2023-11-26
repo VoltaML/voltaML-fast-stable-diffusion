@@ -187,9 +187,7 @@ def test_inpaint(pipe: PyTorchStableDiffusion):
     pipe.generate(job)
 
 
-@pytest.mark.parametrize(
-    "scheduler", [KarrasDiffusionSchedulers.UniPCMultistepScheduler, "dpmpp_2m"]
-)
+@pytest.mark.parametrize("scheduler", list(KarrasDiffusionSchedulers) + ["dpmpp_2m"])
 def test_controlnet(pipe: PyTorchStableDiffusion, scheduler):
     "Generate an image with ControlNet Image to Image"
 

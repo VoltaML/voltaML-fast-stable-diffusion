@@ -7,7 +7,7 @@ import PIL
 import torch
 from diffusers.models.adapter import MultiAdapter
 from diffusers.models.autoencoder_kl import AutoencoderKL
-from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.controlnet import ControlNetModel, ControlNetOutput
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion.pipeline_output import (
     StableDiffusionPipelineOutput,
@@ -586,7 +586,6 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         controlnet_cond=image,
                         conditioning_scale=cond_scale,
                         guess_mode=guess_mode,
-                        return_dict=False,
                     )
 
                     if guess_mode and do_classifier_free_guidance:
@@ -721,12 +720,20 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             args = args[:2]
                         if kwargs.get("cond", None) is not None:
                             encoder_hidden_states = kwargs.pop("cond")
-                        return s(
+                        out = s(
                             *args,
                             encoder_hidden_states=encoder_hidden_states,  # type: ignore
                             return_dict=True,
                             **kwargs,
-                        )[0]
+                        )
+
+                        if isinstance(out, ControlNetOutput):
+                            down_block_res_samples = out.down_block_res_samples
+                            mid_block_res_sample = out.mid_block_res_sample
+
+                            return down_block_res_samples, mid_block_res_sample
+                        else:
+                            return out[0]
 
                     for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
                         latents = do_denoise(latents, t, _call, change)  # type: ignore
