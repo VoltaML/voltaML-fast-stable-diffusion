@@ -15,9 +15,11 @@ def patched_ddpm_denoiser_forward(self, input, sigma, **kwargs):
     ]
     cfg_x0, cfg_s, cfg_cin = input, c_out, c_in
     eps = self.get_eps(input * c_in, self.sigma_to_t(sigma), **kwargs)
-    if eps_record is not None:
-        eps_record = eps.clone().cpu()
-    return input + eps * c_out
+
+    if not isinstance(eps, torch.Tensor):
+        return eps
+    else:
+        return eps * c_out + input
 
 
 def patched_vddpm_denoiser_forward(self, input, sigma, **kwargs):
@@ -27,10 +29,13 @@ def patched_vddpm_denoiser_forward(self, input, sigma, **kwargs):
         k_diffusion.utils.append_dims(x, input.ndim) for x in self.get_scalings(sigma)
     ]
     cfg_x0, cfg_s, cfg_cin = input, c_out, c_in
-    return (
-        self.get_v(input * c_in, self.sigma_to_t(sigma), **kwargs) * c_out
-        + input * c_skip
-    )
+
+    v = self.get_v(input * c_in, self.sigma_to_t(sigma), **kwargs)
+
+    if not isinstance(v, torch.Tensor):
+        return v
+    else:
+        return v * c_out + input * c_skip
 
 
 k_diffusion.external.DiscreteEpsDDPMDenoiser.forward = patched_ddpm_denoiser_forward

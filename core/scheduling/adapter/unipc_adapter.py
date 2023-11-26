@@ -1,6 +1,7 @@
 import functools
 from typing import Any, Callable, Optional, Union
 
+from diffusers import UNet2DConditionModel
 import torch
 
 from core.inference.utilities.philox import PhiloxGenerator
@@ -128,26 +129,22 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
                 output = unet_or_controlnet(
                     x.to(device=device, dtype=dtype),
                     t_input.to(device=device, dtype=dtype),
-                    return_dict=True,
+                    return_dict=False,
                     **model_kwargs,
-                )[0]
+                )
+                if isinstance(unet_or_controlnet, UNet2DConditionModel):
+                    output = output[0]
             else:
-                output = unet_or_controlnet(x.to(device=device, dtype=dtype), t_input.to(device=device, dtype=dtype), return_dict=True, encoder_hidden_states=cond, **model_kwargs)[0]  # type: ignore
-            if self.model_type == "noise":
-                return output
-            elif self.model_type == "x_start":
-                alpha_t, sigma_t = self.scheduler.marginal_alpha(
-                    t_continuous
-                ), self.scheduler.marginal_std(t_continuous)
-                return (x - alpha_t * output) / sigma_t
-            elif self.model_type == "v":
-                alpha_t, sigma_t = self.scheduler.marginal_alpha(
-                    t_continuous
-                ), self.scheduler.marginal_std(t_continuous)
-                return alpha_t * output + sigma_t * x
-            elif self.model_type == "score":
-                sigma_t = self.scheduler.marginal_std(t_continuous)
-                return -sigma_t * output
+                output = unet_or_controlnet(
+                    x.to(device=device, dtype=dtype),
+                    t_input.to(device=device, dtype=dtype),
+                    encoder_hidden_states=cond,
+                    return_dict=False,
+                    **model_kwargs,
+                )
+                if isinstance(unet_or_controlnet, UNet2DConditionModel):
+                    output = output[0]
+            return output
 
         def change_source(src):
             nonlocal unet_or_controlnet

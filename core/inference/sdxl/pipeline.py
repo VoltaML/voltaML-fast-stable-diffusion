@@ -656,12 +656,15 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                             args = args[:2]
                         if kwargs.get("cond", None) is not None:
                             encoder_hidden_states = kwargs.pop("cond")
-                        return s(
+                        ret = s(
                             *args,
                             encoder_hidden_states=encoder_hidden_states,  # type: ignore
-                            return_dict=True,
+                            return_dict=False,
                             **kwargs,
-                        )[0]
+                        )
+                        if isinstance(s, UNet2DConditionModel):
+                            return ret[0]
+                        return ret
 
                     for i, t in enumerate(tqdm(timesteps, desc="SDXL")):
                         latents = do_denoise(latents, t, _call, change)  # type: ignore

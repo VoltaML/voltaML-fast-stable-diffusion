@@ -35,6 +35,12 @@ class Heun(BaseMixin):
 
 
 @dataclass
+class Heunpp(BaseMixin):
+    s_churn: Optional[float] = None
+    s_noise: Optional[float] = None
+
+
+@dataclass
 class DPM_2(BaseMixin):
     s_churn: Optional[float] = None
     s_noise: Optional[float] = None

@@ -576,10 +576,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     cond_scale = controlnet_conditioning_scale * controlnet_keep[i]
 
                     change_source(self.controlnet)
-                    (
-                        down_block_res_samples,
-                        mid_block_res_sample,
-                    ) = call(
+                    down_block_res_samples, mid_block_res_sample = call(
                         control_model_input,
                         t,
                         cond=controlnet_prompt_embeds,
@@ -720,20 +717,15 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                             args = args[:2]
                         if kwargs.get("cond", None) is not None:
                             encoder_hidden_states = kwargs.pop("cond")
-                        out = s(
+                        ret = s(
                             *args,
                             encoder_hidden_states=encoder_hidden_states,  # type: ignore
-                            return_dict=True,
+                            return_dict=False,
                             **kwargs,
                         )
-
-                        if isinstance(out, ControlNetOutput):
-                            down_block_res_samples = out.down_block_res_samples
-                            mid_block_res_sample = out.mid_block_res_sample
-
-                            return down_block_res_samples, mid_block_res_sample
-                        else:
-                            return out[0]
+                        if isinstance(s, UNet2DConditionModel):
+                            return ret[0]
+                        return ret
 
                     for i, t in enumerate(tqdm(timesteps, desc="PyTorch")):
                         latents = do_denoise(latents, t, _call, change)  # type: ignore

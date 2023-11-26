@@ -17,6 +17,7 @@ def sample_heunpp2(
     s_noise=1.0,
 ):
     """Implements Algorithm 2 (Heun steps) from Karras et al. (2022)."""
+    # https://github.com/Carzit/sd-webui-samplers-scheduler-for-v1.6/blob/main/scripts/ksampler.py#L356
     extra_args = {} if extra_args is None else extra_args
     s_in = x.new_ones([x.shape[0]])
     s_end = sigmas[-1]

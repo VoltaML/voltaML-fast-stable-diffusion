@@ -60,6 +60,7 @@ export function getSchedulerOptions() {
         { label: "Euler", value: "euler" },
         { label: "LMS", value: "lms" },
         { label: "Heun", value: "heun" },
+        { label: "Heun++", value: "heunpp" },
         { label: "DPM Fast", value: "dpm_fast" },
         { label: "DPM Adaptive", value: "dpm_adaptive" },
         { label: "DPM2", value: "dpm2" },
