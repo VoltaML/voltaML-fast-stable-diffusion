@@ -24,7 +24,7 @@ from transformers.models.clip import (
 )
 
 from core.config import config
-from core.flags import SDXLRefinerFlag
+from core.flags import SDXLRefinerFlag, DeepshrinkFlag
 from core.inference.utilities import (
     calculate_cfg,
     full_vae,
@@ -40,6 +40,8 @@ from core.inference.utilities import (
     preprocess_image,
     preprocess_mask,
     sag,
+    modify_kohya,
+    postprocess_kohya,
 )
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
@@ -307,6 +309,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         adapter_conditioning_factor: float = 1.0,
         refiner: Optional[SDXLRefinerFlag] = None,
         refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         if original_size is None:
             original_size = [height, width]
@@ -512,6 +515,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             ) -> torch.Tensor:
                 nonlocal j, un
 
+                un = modify_kohya(un, j, num_inference_steps, deepshrink)  # type: ignore
+
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
                     torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
@@ -678,13 +683,14 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                                 and is_cancelled_callback()
                             ):
                                 return None
+                un = postprocess_kohya(un)  # type: ignore
 
             # 9. Post-processing
             image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL
             if output_type == "pil":
-                image = numpy_to_pil(image)
+                image = numpy_to_pil(image)  # type: ignore
 
             unload_all()
 
@@ -721,6 +727,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         self_attention_scale: float = 0,
         refiner: Optional[SDXLRefinerFlag] = None,
         refiner_model: Optional["StableDiffusionXLLongPromptWeightingPipeline"] = None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         return self.__call__(
             aesthetic_score=aesthetic_score,
@@ -747,6 +754,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             prompt_expansion_settings=prompt_expansion_settings,
             refiner=refiner,
             refiner_model=refiner_model,
+            deepshrink=deepshrink,
         )
 
     def img2img(
@@ -772,6 +780,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         self_attention_scale: float = 0,
         callback_steps: int = 1,
         prompt_expansion_settings=None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         return self.__call__(
             self_attention_scale=self_attention_scale,
@@ -795,6 +804,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             is_cancelled_callback=is_cancelled_callback,
             callback_steps=callback_steps,
             prompt_expansion_settings=prompt_expansion_settings,
+            deepshrink=deepshrink,
         )
 
     def inpaint(
@@ -823,6 +833,7 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         height: int = 512,
         self_attention_scale: float = 0,
         prompt_expansion_settings=None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         return self.__call__(
             self_attention_scale=self_attention_scale,
@@ -849,4 +860,5 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             width=width,
             height=height,
             prompt_expansion_settings=prompt_expansion_settings,
+            deepshrink=deepshrink,
         )

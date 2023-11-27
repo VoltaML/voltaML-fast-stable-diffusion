@@ -531,6 +531,17 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 steps: settings.data.settings.flags.refiner.steps,
                 strength: settings.data.settings.flags.refiner.strength
               }
+            } : {},
+            ...settings.defaultSettings.flags.deepshrink.enabled ? {
+              deepshrink: {
+                early_out: settings.defaultSettings.flags.deepshrink.early_out,
+                depth_1: settings.defaultSettings.flags.deepshrink.depth_1,
+                stop_at_1: settings.defaultSettings.flags.deepshrink.stop_at_1,
+                depth_2: settings.defaultSettings.flags.deepshrink.depth_2,
+                stop_at_2: settings.defaultSettings.flags.deepshrink.stop_at_2,
+                scaler: settings.defaultSettings.flags.deepshrink.scaler,
+                base_scale: settings.defaultSettings.flags.deepshrink.base_scale
+              }
             } : {}
           }
         })

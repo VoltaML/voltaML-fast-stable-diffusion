@@ -39,6 +39,21 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
 
 
 @dataclass
+class DeepshrinkFlag(Flag, DataClassJsonMixin):
+    "Flag for deepshrink"
+
+    depth_1: int = 3  # -1 to 12; steps of 1
+    stop_at_1: float = 0.15  # 0 to 0.5; steps of 0.01
+
+    depth_2: int = 4  # -1 to 12; steps of 1
+    stop_at_2: float = 0.30  # 0 to 0.5; steps of 0.01
+
+    scaler: LatentScaleModel = "bislerp"
+    base_scale: float = 0.5  # 0.05 to 1.0; steps of 0.05
+    early_out: bool = False
+
+
+@dataclass
 class XLOriginalSize:
     width: int = 1024
     height: int = 1024

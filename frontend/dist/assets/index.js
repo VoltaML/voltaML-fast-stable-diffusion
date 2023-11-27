@@ -40708,6 +40708,16 @@ const defaultSettings = {
       negative_aesthetic_score: 2.5,
       steps: 50,
       strength: 0.3
+    },
+    deepshrink: {
+      enabled: false,
+      depth_1: 3,
+      depth_2: 4,
+      stop_at_1: 0.15,
+      stop_at_2: 0.3,
+      early_out: false,
+      base_scale: 0.5,
+      scaler: "bislerp"
     }
   },
   aitDim: {
@@ -43143,8 +43153,8 @@ const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
 const ControlNet_vue_vue_type_style_index_0_scoped_95a354be_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_116492bf_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_6961892e_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_4fae0a93_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_0d0f8c9e_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };

@@ -68,6 +68,16 @@ export interface ISettings {
       steps: 50;
       strength: number;
     };
+    deepshrink: {
+      enabled: boolean;
+      depth_1: number;
+      stop_at_1: number;
+      depth_2: number;
+      stop_at_2: number;
+      base_scale: number;
+      scaler: string;
+      early_out: boolean;
+    };
   };
   aitDim: {
     width: number[] | undefined;
@@ -291,6 +301,16 @@ export const defaultSettings: ISettings = {
       negative_aesthetic_score: 2.5,
       steps: 50,
       strength: 0.3,
+    },
+    deepshrink: {
+      enabled: false,
+      depth_1: 3,
+      depth_2: 4,
+      stop_at_1: 0.15,
+      stop_at_2: 0.3,
+      early_out: false,
+      base_scale: 0.5,
+      scaler: "bislerp",
     },
   },
   aitDim: {

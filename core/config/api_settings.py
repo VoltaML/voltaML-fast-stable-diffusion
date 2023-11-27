@@ -98,12 +98,9 @@ class APIConfig:
     deepshrink_depth_2: int = 4  # -1 to 12; steps of 1
     deepshrink_stop_at_2: float = 0.30  # 0 to 0.5; steps of 0.01
 
-    deepshrink_scaler: LatentScaleModel = "bilinear"
-    deepshrink_downscale: float = 0.5  # 0.1 to 1.0; steps of 0.05
-    deepshrink_upscale: float = 2.0  # 1.0 to 4.0; steps of 0.1
-    deepshrink_antialias: bool = False
-    deepshrink_smooth_scaling: bool = False
-    deepshrink_early_out: bool = False
+    deepshrink_scaler: LatentScaleModel = "bislerp"
+    deepshrink_base_scale: float = 0.5  # 0.05 to 1.0; steps of 0.05
+    deepshrink_early_out: bool = True
 
     # K_Diffusion
     sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"

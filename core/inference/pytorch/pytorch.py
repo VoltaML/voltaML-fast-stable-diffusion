@@ -22,7 +22,7 @@ from api.websockets import Data
 from api.websockets.notification import Notification
 from core import shared
 from core.config import config
-from core.flags import HighResFixFlag
+from core.flags import HighResFixFlag, DeepshrinkFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.pytorch.pipeline import StableDiffusionLongPromptWeightingPipeline
@@ -307,6 +307,11 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
         shared.current_method = "txt2img"
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+        print(deepshrink)
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = (
                 "latent"
@@ -331,6 +336,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 num_images_per_prompt=job.data.batch_size,
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
             if "highres_fix" in job.flags:
@@ -446,6 +452,10 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
         shared.current_method = "img2img"
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
                 generator=generator,
@@ -464,6 +474,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 num_images_per_prompt=job.data.batch_size,
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
             if not data:
@@ -513,6 +524,10 @@ class PyTorchStableDiffusion(InferenceModel):
         total_images: List[Image.Image] = []
         shared.current_method = "inpainting"
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
                 generator=generator,
@@ -531,6 +546,7 @@ class PyTorchStableDiffusion(InferenceModel):
                 height=job.data.height,
                 seed=job.data.seed,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
             if not data:

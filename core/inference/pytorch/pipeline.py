@@ -41,6 +41,7 @@ from core.inference.utilities import (
     postprocess_kohya,
 )
 from core.inference.utilities.philox import PhiloxGenerator
+from core.flags import DeepshrinkFlag
 from core.optimizations import ensure_correct_device, inference_context, unload_all
 from core.scheduling import KdiffusionSchedulerAdapter
 
@@ -289,6 +290,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         prompt_expansion_settings: Optional[Dict] = None,
         adapter_conditioning_scale: Union[float, List[float]] = 1.0,
         adapter_conditioning_factor: float = 1.0,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         r"""
         Function invoked when calling the pipeline for generation.
@@ -547,7 +549,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             ):
                 nonlocal j
 
-                self.unet = modify_kohya(self.unet, j, num_inference_steps)
+                self.unet = modify_kohya(self.unet, j, num_inference_steps, deepshrink)
 
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
@@ -789,6 +791,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback_steps: int = 1,
         seed: int = 1,
         prompt_expansion_settings: Optional[Dict] = None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         r"""
         Function for text-to-image generation.
@@ -867,6 +870,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback_steps=callback_steps,
             seed=seed,
             prompt_expansion_settings=prompt_expansion_settings,
+            deepshrink=deepshrink,
         )
 
     def img2img(
@@ -891,6 +895,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         callback_steps: int = 1,
         seed: int = 1,
         prompt_expansion_settings: Optional[Dict] = None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         r"""
         Function for image-to-image generation.
@@ -971,6 +976,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             callback_steps=callback_steps,
             seed=seed,
             prompt_expansion_settings=prompt_expansion_settings,
+            deepshrink=deepshrink,
         )
 
     def inpaint(
@@ -996,6 +1002,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
         height: int = 512,
         seed: int = 1,
         prompt_expansion_settings: Optional[Dict] = None,
+        deepshrink: Optional[DeepshrinkFlag] = None,
     ):
         r"""
         Function for inpaint.
@@ -1085,4 +1092,5 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
             height=height,
             seed=seed,
             prompt_expansion_settings=prompt_expansion_settings,
+            deepshrink=deepshrink,
         )

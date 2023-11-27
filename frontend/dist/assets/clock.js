@@ -5,7 +5,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-import { d as defineComponent, o as openBlock, j as createElementBlock, f as createBaseVNode, e as createBlock, w as withCtx, g as createVNode, h as unref, k as createTextVNode, C as toDisplayString, n as NCard, m as createCommentVNode, u as useSettings, l as NTooltip, F as Fragment, a as useState, c as computed, G as spaceRegex, B as NIcon, i as NSelect, H as promptHandleKeyUp, I as promptHandleKeyDown, J as NInput, _ as _export_sfc, K as watch, z as ref, t as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, j as createElementBlock, f as createBaseVNode, e as createBlock, w as withCtx, g as createVNode, h as unref, k as createTextVNode, C as toDisplayString, n as NCard, m as createCommentVNode, u as useSettings, l as NTooltip, i as NSelect, F as Fragment, a as useState, c as computed, G as spaceRegex, B as NIcon, H as promptHandleKeyUp, I as promptHandleKeyDown, J as NInput, _ as _export_sfc, K as watch, z as ref, t as serverUrl } from "./index.js";
 import { a as NSlider, N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NForm, a as NFormItem } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
@@ -167,6 +167,27 @@ const _hoisted_7 = {
   class: "flex-container"
 };
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
+const _hoisted_9 = { key: 4 };
+const _hoisted_10 = { class: "flex-container" };
+const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Enable Deepshrink", -1);
+const _hoisted_12 = { key: 0 };
+const _hoisted_13 = { class: "flex-container" };
+const _hoisted_14 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "First layer", -1);
+const _hoisted_15 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
+const _hoisted_16 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Stop at", -1);
+const _hoisted_17 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
+const _hoisted_18 = { class: "flex-container" };
+const _hoisted_19 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Second layer", -1);
+const _hoisted_20 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
+const _hoisted_21 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Stop at", -1);
+const _hoisted_22 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
+const _hoisted_23 = { class: "flex-container" };
+const _hoisted_24 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Scale", -1);
+const _hoisted_25 = /* @__PURE__ */ createBaseVNode("div", null, null, -1);
+const _hoisted_26 = { class: "flex-container" };
+const _hoisted_27 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Latent scaler", -1);
+const _hoisted_28 = { class: "flex-container" };
+const _hoisted_29 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Early out", -1);
 const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "DimensionsInput",
   props: {
@@ -177,6 +198,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   },
   setup(__props) {
     const props = __props;
+    const latentUpscalerOptions = [
+      { label: "Nearest", value: "nearest" },
+      { label: "Nearest exact", value: "nearest-exact" },
+      { label: "Area", value: "area" },
+      { label: "Bilinear", value: "bilinear" },
+      { label: "Bicubic", value: "bicubic" },
+      { label: "Bislerp", value: "bislerp" }
+    ];
     const settings = useSettings();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
@@ -253,7 +282,106 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             style: { "min-width": "96px", "width": "96px" },
             step: 1
           }, null, 8, ["value"])
-        ]))
+        ])),
+        props.dimensionsObject.width * props.dimensionsObject.height >= 768 * 768 || unref(settings).defaultSettings.flags.deepshrink.enabled ? (openBlock(), createElementBlock("div", _hoisted_9, [
+          createBaseVNode("div", _hoisted_10, [
+            _hoisted_11,
+            createVNode(unref(NSwitch), {
+              value: unref(settings).defaultSettings.flags.deepshrink.enabled,
+              "onUpdate:value": _cache[8] || (_cache[8] = ($event) => unref(settings).defaultSettings.flags.deepshrink.enabled = $event)
+            }, null, 8, ["value"])
+          ]),
+          unref(settings).defaultSettings.flags.deepshrink.enabled ? (openBlock(), createElementBlock("div", _hoisted_12, [
+            createBaseVNode("div", _hoisted_13, [
+              _hoisted_14,
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.flags.deepshrink.depth_1,
+                "onUpdate:value": _cache[9] || (_cache[9] = ($event) => unref(settings).defaultSettings.flags.deepshrink.depth_1 = $event),
+                max: 4,
+                min: 1,
+                step: 1
+              }, null, 8, ["value"]),
+              _hoisted_15,
+              _hoisted_16,
+              createVNode(unref(NSlider), {
+                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_1,
+                "onUpdate:value": _cache[10] || (_cache[10] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_1 = $event),
+                min: 0.05,
+                max: 1,
+                step: 0.05
+              }, null, 8, ["value"]),
+              _hoisted_17,
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_1,
+                "onUpdate:value": _cache[11] || (_cache[11] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_1 = $event),
+                max: 1,
+                min: 0.05,
+                step: 0.05
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_18, [
+              _hoisted_19,
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.flags.deepshrink.depth_2,
+                "onUpdate:value": _cache[12] || (_cache[12] = ($event) => unref(settings).defaultSettings.flags.deepshrink.depth_2 = $event),
+                max: 4,
+                min: 1,
+                step: 1
+              }, null, 8, ["value"]),
+              _hoisted_20,
+              _hoisted_21,
+              createVNode(unref(NSlider), {
+                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_2,
+                "onUpdate:value": _cache[13] || (_cache[13] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_2 = $event),
+                min: 0.05,
+                max: 1,
+                step: 0.05
+              }, null, 8, ["value"]),
+              _hoisted_22,
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.flags.deepshrink.stop_at_2,
+                "onUpdate:value": _cache[14] || (_cache[14] = ($event) => unref(settings).defaultSettings.flags.deepshrink.stop_at_2 = $event),
+                max: 1,
+                min: 0.05,
+                step: 0.05
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_23, [
+              _hoisted_24,
+              createVNode(unref(NSlider), {
+                value: unref(settings).defaultSettings.flags.deepshrink.base_scale,
+                "onUpdate:value": _cache[15] || (_cache[15] = ($event) => unref(settings).defaultSettings.flags.deepshrink.base_scale = $event),
+                min: 0.05,
+                max: 1,
+                step: 0.05
+              }, null, 8, ["value"]),
+              _hoisted_25,
+              createVNode(unref(NInputNumber), {
+                value: unref(settings).defaultSettings.flags.deepshrink.base_scale,
+                "onUpdate:value": _cache[16] || (_cache[16] = ($event) => unref(settings).defaultSettings.flags.deepshrink.base_scale = $event),
+                max: 1,
+                min: 0.05,
+                step: 0.05
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_26, [
+              _hoisted_27,
+              createVNode(unref(NSelect), {
+                value: unref(settings).defaultSettings.flags.deepshrink.scaler,
+                "onUpdate:value": _cache[17] || (_cache[17] = ($event) => unref(settings).defaultSettings.flags.deepshrink.scaler = $event),
+                filterable: "",
+                options: latentUpscalerOptions
+              }, null, 8, ["value"])
+            ]),
+            createBaseVNode("div", _hoisted_28, [
+              _hoisted_29,
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.flags.deepshrink.early_out,
+                "onUpdate:value": _cache[18] || (_cache[18] = ($event) => unref(settings).defaultSettings.flags.deepshrink.early_out = $event)
+              }, null, 8, ["value"])
+            ])
+          ])) : createCommentVNode("", true)
+        ])) : createCommentVNode("", true)
       ], 64);
     };
   }

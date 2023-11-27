@@ -19,6 +19,10 @@ def patched_ddpm_denoiser_forward(self, input, sigma, **kwargs):
     if not isinstance(eps, torch.Tensor):
         return eps
     else:
+        if eps.shape != input.shape:
+            eps = torch.nn.functional.interpolate(
+                eps, (input.shape[2], input.shape[3]), mode="bilinear"
+            )
         return eps * c_out + input
 
 
@@ -35,6 +39,10 @@ def patched_vddpm_denoiser_forward(self, input, sigma, **kwargs):
     if not isinstance(v, torch.Tensor):
         return v
     else:
+        if v.shape != input.shape:
+            v = torch.nn.functional.interpolate(
+                v, (input.shape[2], input.shape[3]), mode="bilinear"
+            )
         return v * c_out + input * c_skip
 
 

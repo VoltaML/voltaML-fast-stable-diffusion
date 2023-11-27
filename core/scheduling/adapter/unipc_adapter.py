@@ -1,7 +1,7 @@
 import functools
 from typing import Any, Callable, Optional, Union
 
-from diffusers import UNet2DConditionModel
+from diffusers import UNet2DConditionModel  # type: ignore
 import torch
 
 from core.inference.utilities.philox import PhiloxGenerator

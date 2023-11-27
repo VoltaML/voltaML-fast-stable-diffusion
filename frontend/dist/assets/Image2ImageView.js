@@ -498,7 +498,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   }
 });
 const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-95a354be"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-116492bf"), n = n(), popScopeId(), n);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-4fae0a93"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
@@ -562,6 +562,19 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
             }
           },
+          ...settings.defaultSettings.flags.deepshrink.enabled ? {
+            flags: {
+              deepshrink: {
+                early_out: settings.defaultSettings.flags.deepshrink.early_out,
+                depth_1: settings.defaultSettings.flags.deepshrink.depth_1,
+                stop_at_1: settings.defaultSettings.flags.deepshrink.stop_at_1,
+                depth_2: settings.defaultSettings.flags.deepshrink.depth_2,
+                stop_at_2: settings.defaultSettings.flags.deepshrink.stop_at_2,
+                scaler: settings.defaultSettings.flags.deepshrink.scaler,
+                base_scale: settings.defaultSettings.flags.deepshrink.base_scale
+              }
+            }
+          } : {},
           model: (_a = settings.data.settings.model) == null ? void 0 : _a.path
         })
       }).then((res) => {
@@ -762,7 +775,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-116492bf"]]);
+const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-4fae0a93"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1338,7 +1351,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-6961892e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-0d0f8c9e"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1418,6 +1431,19 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
             }
           },
+          ...settings.defaultSettings.flags.deepshrink.enabled ? {
+            flags: {
+              deepshrink: {
+                early_out: settings.defaultSettings.flags.deepshrink.early_out,
+                depth_1: settings.defaultSettings.flags.deepshrink.depth_1,
+                stop_at_1: settings.defaultSettings.flags.deepshrink.stop_at_1,
+                depth_2: settings.defaultSettings.flags.deepshrink.depth_2,
+                stop_at_2: settings.defaultSettings.flags.deepshrink.stop_at_2,
+                scaler: settings.defaultSettings.flags.deepshrink.scaler,
+                base_scale: settings.defaultSettings.flags.deepshrink.base_scale
+              }
+            }
+          } : {},
           model: (_a = settings.data.settings.model) == null ? void 0 : _a.path
         })
       }).then((res) => {
@@ -1851,7 +1877,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-6961892e"]]);
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-0d0f8c9e"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

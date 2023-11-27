@@ -1,4 +1,4 @@
-from diffusers import UNet2DConditionModel
+from diffusers import UNet2DConditionModel  # type: ignore
 import torch
 from k_diffusion.external import CompVisDenoiser, CompVisVDenoiser
 

@@ -23,7 +23,7 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.files import get_full_model_path
-from core.flags import SDXLFlag, SDXLRefinerFlag
+from core.flags import SDXLFlag, SDXLRefinerFlag, DeepshrinkFlag
 from core.inference.base_model import InferenceModel
 from core.inference.functions import convert_vaept_to_diffusers, load_pytorch_pipeline
 from core.inference.utilities import change_scheduler, create_generator
@@ -223,6 +223,10 @@ class SDXLStableDiffusion(InferenceModel):
         generator = create_generator(job.data.seed)
         shared.current_method = "txt2img"
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             output_type = "pil"
 
@@ -263,6 +267,7 @@ class SDXLStableDiffusion(InferenceModel):
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
                 refiner=refiner,
                 refiner_model=refiner_model,
+                deepshrink=deepshrink,
             )
 
             if refiner is not None and config.api.sdxl_refiner == "separate":
@@ -372,6 +377,10 @@ class SDXLStableDiffusion(InferenceModel):
                 xl_flag.original_size.width,
             ]
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.img2img(
                 original_size=original_size,
@@ -389,6 +398,7 @@ class SDXLStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
             if not data:
@@ -446,6 +456,10 @@ class SDXLStableDiffusion(InferenceModel):
                 xl_flag.original_size.width,
             ]
 
+        deepshrink = None
+        if "deepshrink" in job.flags:
+            deepshrink = DeepshrinkFlag.from_dict(job.flags["deepshrink"])
+
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
             data = pipe.inpaint(
                 original_size=original_size,
@@ -465,6 +479,7 @@ class SDXLStableDiffusion(InferenceModel):
                 seed=job.data.seed,
                 self_attention_scale=job.data.self_attention_scale,
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                deepshrink=deepshrink,
             )
 
             if not data:
