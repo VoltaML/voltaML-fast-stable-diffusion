@@ -3,6 +3,8 @@ from typing import Dict, List, Literal, Union
 
 import torch
 
+from core.flags import LatentScaleModel
+
 
 @dataclass
 class APIConfig:
@@ -88,6 +90,21 @@ class APIConfig:
     hypertile: bool = False
     hypertile_unet_chunk: int = 256
 
+    # Kohya Deep-Shrink
+    deepshrink_enabled: bool = True
+    deepshrink_depth_1: int = 3  # -1 to 12; steps of 1
+    deepshrink_stop_at_1: float = 0.15  # 0 to 0.5; steps of 0.01
+
+    deepshrink_depth_2: int = 4  # -1 to 12; steps of 1
+    deepshrink_stop_at_2: float = 0.30  # 0 to 0.5; steps of 0.01
+
+    deepshrink_scaler: LatentScaleModel = "bilinear"
+    deepshrink_downscale: float = 0.5  # 0.1 to 1.0; steps of 0.05
+    deepshrink_upscale: float = 2.0  # 1.0 to 4.0; steps of 0.1
+    deepshrink_antialias: bool = False
+    deepshrink_smooth_scaling: bool = False
+    deepshrink_early_out: bool = False
+
     # K_Diffusion
     sgm_noise_multiplier: bool = False  # also known as "alternate DDIM ODE"
     kdiffusers_quantization: bool = True  # improves sampling quality
@@ -105,7 +122,12 @@ class APIConfig:
     generator: Literal["device", "cpu", "philox"] = "device"
 
     # VAE
-    live_preview_method: Literal["disabled", "approximation", "taesd"] = "approximation"
+    live_preview_method: Literal[
+        "disabled",
+        "approximation",
+        "taesd",
+        "full",  # TODO: isn't supported yet.
+    ] = "approximation"
     live_preview_delay: float = 2.0
     vae_slicing: bool = True
     vae_tiling: bool = True

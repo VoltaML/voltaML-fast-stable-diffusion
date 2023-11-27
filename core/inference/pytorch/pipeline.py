@@ -37,6 +37,8 @@ from core.inference.utilities import (
     prepare_mask_latents,
     preprocess_adapter_image,
     preprocess_image,
+    modify_kohya,
+    postprocess_kohya,
 )
 from core.inference.utilities.philox import PhiloxGenerator
 from core.optimizations import ensure_correct_device, inference_context, unload_all
@@ -544,6 +546,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                 change_source: Callable[[Callable], None],
             ):
                 nonlocal j
+
+                self.unet = modify_kohya(self.unet, j, num_inference_steps)
+
                 # expand the latents if we are doing classifier free guidance
                 latent_model_input = (
                     torch.cat([x] * 2) if do_classifier_free_guidance and not split_latents_into_two else x  # type: ignore
@@ -643,7 +648,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                     if not split_latents_into_two:
                         noise_pred_uncond, noise_pred_text = noise_pred.chunk(2)  # type: ignore
                     noise_pred = calculate_cfg(
-                        noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
+                        j, noise_pred_text, noise_pred_uncond, guidance_scale, t  # type: ignore
                     )
 
                 if do_self_attention_guidance:
@@ -684,6 +689,7 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                         )
 
                     x = (1 - init_mask) * init_latents_proper + init_mask * x  # type: ignore
+                j += 1
                 return x
 
             # 8. Denoising loop
@@ -738,7 +744,9 @@ class StableDiffusionLongPromptWeightingPipeline(StableDiffusionPipeline):
                                 is_cancelled_callback is not None
                                 and is_cancelled_callback()
                             ):
+                                self.unet = postprocess_kohya(self.unet)  # type: ignore
                                 return None
+                self.unet = postprocess_kohya(self.unet)  # type: ignore
 
             # 9. Post-processing
             if output_type == "latent":

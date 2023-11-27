@@ -43,7 +43,11 @@ k_diffusion.external.DiscreteVDDPMDenoiser.forward = patched_vddpm_denoiser_forw
 
 
 def calculate_cfg(
-    cond: torch.Tensor, uncond: torch.Tensor, cfg: float, timestep: torch.IntTensor
+    i: int,
+    cond: torch.Tensor,
+    uncond: torch.Tensor,
+    cfg: float,
+    timestep: torch.IntTensor,
 ):
     if config.api.apply_unsharp_mask:
         cc = uncond + cfg * (cond - uncond)

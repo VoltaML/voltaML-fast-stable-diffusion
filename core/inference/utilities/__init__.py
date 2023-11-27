@@ -17,3 +17,4 @@ from .random import create_generator, randn, randn_like
 from .vae import taesd, full_vae, cheap_approximation, numpy_to_pil, decode_latents
 from .prompt_expansion import download_model, expand
 from .cfg import calculate_cfg
+from .kohya_hires import post_process as postprocess_kohya, modify_unet as modify_kohya
