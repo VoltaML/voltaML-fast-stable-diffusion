@@ -79,7 +79,7 @@ def extra() -> List[Dict[str, Any]]:
 
 
 @router.get("/data")
-async def image_data(filename: str) -> Dict[str, str]:
+def image_data(filename: str) -> Dict[str, str]:
     "Get a generated image metadata"
 
     path = Path(filename)
@@ -96,7 +96,7 @@ async def image_data(filename: str) -> Dict[str, str]:
 
 
 @router.delete("/delete")
-async def delete_image(filename: str) -> Dict[str, str]:
+def delete_image(filename: str) -> Dict[str, str]:
     "Delete a generated image (does not purge the directory)"
 
     path = Path(filename)

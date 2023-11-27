@@ -5,12 +5,12 @@ from typing import Any, List, Optional, Tuple, Union
 
 import requests
 import torch
-from diffusers import (
-    AutoencoderKL,
-    ControlNetModel,
-    ModelMixin,
+from diffusers.models.autoencoder_kl import AutoencoderKL
+from diffusers.models.controlnet import ControlNetModel
+from diffusers.models.modeling_utils import ModelMixin
+from diffusers.models.unet_2d_condition import UNet2DConditionModel
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
-    UNet2DConditionModel,
 )
 from PIL import Image, ImageOps
 from tqdm import tqdm
@@ -41,6 +41,8 @@ from core.types import (
     Job,
     SigmaScheduler,
     Txt2ImgQueueEntry,
+    UpscaleData,
+    UpscaleQueueEntry,
 )
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
@@ -172,6 +174,12 @@ class PyTorchStableDiffusion(InferenceModel):
                         )
                 else:
                     raise FileNotFoundError(f"{vae} is not a valid path")
+
+        if isinstance(self.vae, AutoencoderKL):
+            if config.api.vae_slicing:
+                self.vae.enable_slicing()
+            if config.api.vae_tiling:
+                self.vae.enable_tiling()
 
         logger.info(f"Successfully changed vae to {vae} of type {type(self.vae)}")
 
@@ -305,10 +313,14 @@ class PyTorchStableDiffusion(InferenceModel):
         shared.current_method = "txt2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            output_type = "pil"
-
-            if "highres_fix" in job.flags:
-                output_type = "latent"
+            output_type = (
+                "latent"
+                if (
+                    "highres_fix" in job.flags
+                    and HighResFixFlag(**job.flags["highres_fix"]).mode == "latent"
+                )
+                else "pil"
+            )
 
             data = pipe.text2img(
                 generator=generator,
@@ -326,37 +338,79 @@ class PyTorchStableDiffusion(InferenceModel):
                 prompt_expansion_settings=job.data.prompt_to_prompt_settings,
             )
 
-            if output_type == "latent":
-                latents = data[0]  # type: ignore
-                assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
-
+            if "highres_fix" in job.flags:
                 flag = job.flags["highres_fix"]
                 flag = HighResFixFlag.from_dict(flag)
 
-                latents = scale_latents(
-                    latents=latents,
-                    scale=flag.scale,
-                    latent_scale_mode=flag.latent_scale_mode,
-                )
+                if flag.mode == "latent":
+                    latents = data[0]  # type: ignore
+                    assert isinstance(latents, (torch.Tensor, torch.FloatTensor))
 
-                data = pipe.img2img(
-                    generator=generator,
-                    prompt=job.data.prompt,
-                    image=latents,
-                    height=latents.shape[2] * 8,
-                    width=latents.shape[3] * 8,
-                    num_inference_steps=flag.steps,
-                    guidance_scale=job.data.guidance_scale,
-                    self_attention_scale=job.data.self_attention_scale,
-                    negative_prompt=job.data.negative_prompt,
-                    output_type="pil",
-                    callback=callback,
-                    strength=flag.strength,
-                    return_dict=False,
-                    num_images_per_prompt=job.data.batch_size,
-                    seed=job.data.seed,
-                    prompt_expansion_settings=job.data.prompt_to_prompt_settings,
-                )
+                    latents = scale_latents(
+                        latents=latents,
+                        scale=flag.scale,
+                        latent_scale_mode=flag.latent_scale_mode,
+                    )
+
+                    data = pipe.img2img(
+                        generator=generator,
+                        prompt=job.data.prompt,
+                        image=latents,
+                        height=latents.shape[2] * 8,
+                        width=latents.shape[3] * 8,
+                        num_inference_steps=flag.steps,
+                        guidance_scale=job.data.guidance_scale,
+                        self_attention_scale=job.data.self_attention_scale,
+                        negative_prompt=job.data.negative_prompt,
+                        output_type="pil",
+                        callback=callback,
+                        strength=flag.strength,
+                        return_dict=False,
+                        num_images_per_prompt=job.data.batch_size,
+                        seed=job.data.seed,
+                        prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                    )
+
+                else:
+                    from core.shared_dependent import gpu
+
+                    images = data[0]  # type: ignore
+                    assert isinstance(images, List)
+
+                    upscaled_images = []
+                    for image in images:
+                        output: tuple[Image.Image, float] = gpu.upscale(
+                            UpscaleQueueEntry(
+                                data=UpscaleData(
+                                    id=job.data.id,
+                                    # FastAPI validation error, we need to do this so that we can pass in a PIL image
+                                    image=image,  # type: ignore
+                                    upscale_factor=flag.scale,
+                                ),
+                                model=flag.image_upscaler,
+                                save_image=False,
+                            )
+                        )
+                        upscaled_images.append(output[0])
+
+                    data = pipe.img2img(
+                        generator=generator,
+                        prompt=job.data.prompt,
+                        image=upscaled_images[0],
+                        height=int(flag.scale * job.data.height),
+                        width=int(flag.scale * job.data.width),
+                        num_inference_steps=flag.steps,
+                        guidance_scale=job.data.guidance_scale,
+                        self_attention_scale=job.data.self_attention_scale,
+                        negative_prompt=job.data.negative_prompt,
+                        output_type="pil",
+                        callback=callback,
+                        strength=flag.strength,
+                        return_dict=False,
+                        num_images_per_prompt=job.data.batch_size,
+                        seed=job.data.seed,
+                        prompt_expansion_settings=job.data.prompt_to_prompt_settings,
+                    )
 
             images: list[Image.Image] = data[0]  # type: ignore
 

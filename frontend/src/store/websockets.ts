@@ -21,7 +21,8 @@ export const useWebsocket = defineStore("websocket", () => {
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     heartbeat: {
       message: "ping",
-      interval: 30000,
+      interval: 1000,
+      pongTimeout: 5000,
     },
     immediate: false,
     onMessage: (ws: WebSocket, event: MessageEvent) => {
@@ -42,7 +43,6 @@ export const useWebsocket = defineStore("websocket", () => {
       onConnectedCallbacks.forEach((callback) => callback());
     },
     onDisconnected: () => {
-      messageProvider.error("Disconnected from server");
       onDisconnectedCallbacks.forEach((callback) => callback());
     },
   });

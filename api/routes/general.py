@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 @router.post("/interrupt")
-async def interrupt():
+def interrupt():
     "Interupt the current job"
 
     shared.interrupt = True
@@ -21,7 +21,7 @@ async def interrupt():
 
 
 @router.post("/shutdown")
-async def shutdown():
+def shutdown():
     "Shutdown the server"
 
     from core.config import config
@@ -29,7 +29,7 @@ async def shutdown():
 
     if config.api.enable_shutdown:
         if uvicorn_server is not None:
-            await websocket_manager.broadcast(
+            websocket_manager.broadcast_sync(
                 data=Notification(
                     message="Shutting down the server",
                     severity="warning",
@@ -42,17 +42,17 @@ async def shutdown():
             logger.debug("Setting force_exit to True")
 
         assert uvicorn_server is not None
-        await uvicorn_server.shutdown()
-        logger.debug("Unicorn server shutdown")
-
         assert uvicorn_loop is not None
+
+        uvicorn_loop.run_in_executor(None, uvicorn_server.shutdown)
+        logger.debug("Unicorn server shutdown")
         uvicorn_loop.stop()
         logger.debug("Unicorn loop stopped")
 
         sys.exit(0)
 
     else:
-        await websocket_manager.broadcast(
+        websocket_manager.broadcast_sync(
             data=Notification(
                 message="Shutdown is disabled", severity="error", title="Shutdown"
             )
@@ -61,7 +61,7 @@ async def shutdown():
 
 
 @router.get("/queue-status")
-async def queue_status():
+def queue_status():
     "Get the status of the queue"
 
     from core.shared_dependent import gpu
@@ -74,7 +74,7 @@ async def queue_status():
 
 
 @router.post("/queue-clear")
-async def queue_clear():
+def queue_clear():
     "Clear the queue"
 
     from core.shared_dependent import gpu
@@ -87,7 +87,7 @@ async def queue_clear():
 
 
 @router.get("/themes")
-async def themes():
+def themes():
     "Get all available themes"
 
     path = Path("data/themes")

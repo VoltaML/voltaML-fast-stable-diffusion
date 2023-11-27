@@ -2,8 +2,8 @@ export * from "./defaultSettings";
 
 export { default as AutoloadSettings } from "./AutoloadSettings.vue";
 export { default as BotSettings } from "./BotSettings.vue";
-export { default as ExtraSettings } from "./ExtraSettings.vue";
 export { default as FilesSettings } from "./FilesSettings.vue";
+export { default as FlagsSettings } from "./FlagsSettings.vue";
 export { default as FrontendSettings } from "./FrontendSettings.vue";
 export { default as GeneralSettings } from "./GeneralSettings.vue";
 export { default as NSFWSettings } from "./NSFWSettings.vue";

@@ -304,7 +304,7 @@ def checks():
         )
 
     # Create the diffusers cache folder
-    from diffusers.utils import DIFFUSERS_CACHE
+    from diffusers.utils.constants import DIFFUSERS_CACHE
 
     Path(DIFFUSERS_CACHE).mkdir(exist_ok=True, parents=True)
 

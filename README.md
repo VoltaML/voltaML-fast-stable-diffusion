@@ -9,17 +9,11 @@
   
   
   <p>
-    <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docker_build_main.yml">
-      <img src="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docker_build_main.yml/badge.svg" alt="docker build" />
-    </a>
     <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docs.yml">
       <img src="https://github.com/VoltaML/voltaML-fast-stable-diffusion/actions/workflows/docs.yml/badge.svg" alt="docs" />
     </a>
     <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/graphs/contributors">
       <img src="https://img.shields.io/github/contributors/VoltaML/voltaML-fast-stable-diffusion" alt="contributors" />
-    </a>
-    <a href="">
-      <img src="https://img.shields.io/github/last-commit/VoltaML/voltaML-fast-stable-diffusion" alt="last update" />
     </a>
     <a href="https://github.com/VoltaML/voltaML-fast-stable-diffusion/network/members">
       <img src="https://img.shields.io/github/forks/VoltaML/voltaML-fast-stable-diffusion" alt="forks" />

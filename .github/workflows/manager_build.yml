@@ -16,7 +16,7 @@ on:
       branch:
         description: "Branch to build"
         required: true
-        default: "main"
+        default: "experimental"
 
 env:
   CARGO_TERM_COLOR: always

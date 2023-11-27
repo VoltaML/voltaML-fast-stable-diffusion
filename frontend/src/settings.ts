@@ -36,9 +36,13 @@ export interface ISettings {
   $schema: string;
   backend: "PyTorch" | "AITemplate" | "ONNX" | "unknown";
   model: ModelEntry | null;
-  extra: {
+  flags: {
     highres: {
       scale: number;
+      mode: "latent" | "image";
+
+      image_upscaler: string;
+
       latent_scale_mode:
         | "nearest"
         | "area"
@@ -47,9 +51,10 @@ export interface ISettings {
         | "bislerp-tortured"
         | "bicubic"
         | "nearest-exact";
+      antialiased: boolean;
+
       strength: number;
       steps: 50;
-      antialiased: boolean;
     };
   };
   aitDim: {
@@ -210,6 +215,12 @@ export interface ISettings {
     prompt_to_prompt: boolean;
     prompt_to_prompt_model: string;
     prompt_to_prompt_device: "gpu" | "cpu";
+
+    free_u: boolean;
+    free_u_s1: number;
+    free_u_s2: number;
+    free_u_b1: number;
+    free_u_b2: number;
   };
   aitemplate: {
     num_threads: number;
@@ -240,10 +251,12 @@ export const defaultSettings: ISettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: null,
-  extra: {
+  flags: {
     highres: {
+      image_upscaler: "RealESRGAN_x4plus_anime_6B",
+      mode: "latent",
       scale: 2,
-      latent_scale_mode: "bilinear",
+      latent_scale_mode: "bislerp-tortured",
       strength: 0.7,
       steps: 50,
       antialiased: false,
@@ -398,6 +411,12 @@ export const defaultSettings: ISettings = {
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
     prompt_to_prompt_device: "gpu",
+
+    free_u: false,
+    free_u_s1: 0.9,
+    free_u_s2: 0.2,
+    free_u_b1: 1.2,
+    free_u_b2: 1.4,
   },
   aitemplate: {
     num_threads: 8,
@@ -436,12 +455,8 @@ try {
   req.open("GET", `${serverUrl}/api/settings/`, false);
   req.send();
 
-  // Extra is CatchAll property, so we need to keep ours and merge the rest
-  const extra = rSettings.extra;
   // Merge the recieved settings with the default settings
   rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
-  // Overwrite the extra property as it is store for frontend only
-  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
 } catch (e) {
   console.error(e);
 }

@@ -57,14 +57,16 @@ class UploadFileTarget(FileTarget):
 
 
 @router.get("/loaded")
-async def list_loaded_models() -> List[ModelResponse]:
+def list_loaded_models() -> List[ModelResponse]:
     "Returns a list containing information about loaded models"
 
     loaded_models = []
     for model_id in gpu.loaded_models:
         loaded_models.append(
             ModelResponse(
-                name=model_id,
+                name=Path(model_id).name
+                if (".ckpt" in model_id) or (".safetensors" in model_id)
+                else model_id,
                 backend=gpu.loaded_models[model_id].backend,
                 path=gpu.loaded_models[model_id].model_id,
                 state="loaded",
@@ -80,25 +82,23 @@ async def list_loaded_models() -> List[ModelResponse]:
 
 
 @router.get("/available")
-async def list_available_models() -> List[ModelResponse]:
+def list_available_models() -> List[ModelResponse]:
     "Show a list of available models"
 
     return cached_model_list.all()
 
 
 @router.post("/load")
-async def load_model(
+def load_model(
     model: str,
     backend: InferenceBackend,
 ):
     "Loads a model into memory"
 
     try:
-        await gpu.load_model(model, backend)
+        gpu.load_model(model, backend)
 
-        await websocket_manager.broadcast(
-            data=Data(data_type="refresh_models", data={})
-        )
+        websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     except torch.cuda.OutOfMemoryError:  # type: ignore
         logger.warning(traceback.format_exc())
         raise HTTPException(status_code=500, detail="Out of memory")
@@ -109,17 +109,17 @@ async def load_model(
 async def unload_model(model: str):
     "Unloads a model from memory"
 
-    await gpu.unload(model)
-    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
+    gpu.unload(model)
+    websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model unloaded"}
 
 
 @router.post("/unload-all")
-async def unload_all_models():
+def unload_all_models():
     "Unload all models from memory"
 
-    await gpu.unload_all()
-    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
+    gpu.unload_all()
+    websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
 
     return {"message": "All models unloaded"}
 
@@ -128,8 +128,8 @@ async def unload_all_models():
 async def load_vae(req: VaeLoadRequest):
     "Load a VAE into a model"
 
-    await gpu.load_vae(req)
-    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
+    gpu.load_vae(req)
+    websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     return {"message": "VAE model loaded"}
 
 
@@ -137,8 +137,8 @@ async def load_vae(req: VaeLoadRequest):
 async def load_textual_inversion(req: TextualInversionLoadRequest):
     "Load a LoRA model into a model"
 
-    await gpu.load_textual_inversion(req)
-    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
+    gpu.load_textual_inversion(req)
+    websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     return {"message": "LoRA model loaded"}
 
 
@@ -154,13 +154,13 @@ async def cleanup():
 async def download_model(model: str):
     "Download a model to the cache"
 
-    await gpu.download_huggingface_model(model)
-    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
+    gpu.download_huggingface_model(model)
+    websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model downloaded"}
 
 
 @router.get("/current-cached-preprocessor")
-async def get_current_cached_preprocessor():
+def get_current_cached_preprocessor():
     "Get the current cached preprocessor"
 
     from core import shared_dependent
@@ -210,7 +210,7 @@ async def upload_model(request: Request):
 
 
 @router.delete("/delete-model")
-async def delete_model(req: DeleteModelRequest):
+def delete_model(req: DeleteModelRequest):
     "Delete a model from the server"
 
     assert req.model_type in possible_dirs, f"Invalid upload type {req.model_type}"
@@ -224,7 +224,7 @@ async def delete_model(req: DeleteModelRequest):
 
     if not path.is_symlink():
         if not path.exists():
-            await websocket_manager.broadcast(
+            websocket_manager.broadcast_sync(
                 data=Notification(
                     severity="error",
                     message="Model not found",
@@ -237,7 +237,7 @@ async def delete_model(req: DeleteModelRequest):
     else:
         os.unlink(path)
 
-    await websocket_manager.broadcast(data=Data(data_type="refresh_models", data={}))
+    websocket_manager.broadcast_sync(data=Data(data_type="refresh_models", data={}))
     return {"message": "Model deleted"}
 
 

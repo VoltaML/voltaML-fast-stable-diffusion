@@ -40677,10 +40677,12 @@ const defaultSettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
   model: null,
-  extra: {
+  flags: {
     highres: {
+      image_upscaler: "RealESRGAN_x4plus_anime_6B",
+      mode: "latent",
       scale: 2,
-      latent_scale_mode: "bilinear",
+      latent_scale_mode: "bislerp-tortured",
       strength: 0.7,
       steps: 50,
       antialiased: false
@@ -40820,7 +40822,12 @@ const defaultSettings = {
     live_preview_delay: 2,
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
-    prompt_to_prompt_device: "gpu"
+    prompt_to_prompt_device: "gpu",
+    free_u: false,
+    free_u_s1: 0.9,
+    free_u_s2: 0.2,
+    free_u_b1: 1.2,
+    free_u_b2: 1.4
   },
   aitemplate: {
     num_threads: 8
@@ -40856,9 +40863,7 @@ try {
   const req = new XMLHttpRequest();
   req.open("GET", `${serverUrl}/api/settings/`, false);
   req.send();
-  const extra = rSettings.extra;
   rSettings = { ...rSettings, ...JSON.parse(req.responseText) };
-  Object.assign(rSettings.extra, { ...extra, ...rSettings.extra });
 } catch (e) {
   console.error(e);
 }
@@ -41754,7 +41759,8 @@ const useWebsocket = defineStore("websocket", () => {
   const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
     heartbeat: {
       message: "ping",
-      interval: 3e4
+      interval: 1e3,
+      pongTimeout: 5e3
     },
     immediate: false,
     onMessage: (ws, event2) => {
@@ -41774,7 +41780,6 @@ const useWebsocket = defineStore("websocket", () => {
       onConnectedCallbacks.forEach((callback) => callback());
     },
     onDisconnected: () => {
-      messageProvider.error("Disconnected from server");
       onDisconnectedCallbacks.forEach((callback) => callback());
     }
   });
@@ -42052,7 +42057,7 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const _withScopeId = (n) => (pushScopeId("data-v-2589676e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-29f01b28"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { class: "top-bar" };
 const _hoisted_2 = { key: 0 };
 const _hoisted_3 = { key: 1 };
@@ -42290,7 +42295,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         global2.state.selected_model = null;
       }
       const load_url = new URL(`${serverUrl}/api/models/unload`);
-      const params = { model: model.name };
+      const params = { model: model.path };
       load_url.search = new URLSearchParams(params).toString();
       try {
         await fetch(load_url, {
@@ -43008,14 +43013,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_2589676e_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-2589676e"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_29f01b28_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-29f01b28"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_c6a2efba_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_8e99cbae_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_95ca20dd_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_efacc8fd_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_9c556ef8_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_7963dde9_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _sfc_main$2 = {};
@@ -43271,20 +43276,20 @@ app.use(index, {
 app.mount("#app");
 export {
   createTmOptions as $,
-  toDisplayString as A,
-  NTabPane as B,
-  NTabs as C,
-  computed as D,
-  spaceRegex as E,
+  NButton as A,
+  NIcon as B,
+  toDisplayString as C,
+  NTabPane as D,
+  NTabs as E,
   Fragment as F,
-  promptHandleKeyUp as G,
-  promptHandleKeyDown as H,
-  NInput as I,
-  watch as J,
-  upscalerOptions as K,
+  spaceRegex as G,
+  promptHandleKeyUp as H,
+  promptHandleKeyDown as I,
+  NInput as J,
+  watch as K,
   renderList as L,
   NScrollbar as M,
-  NGi as N,
+  NSpace as N,
   replaceable as O,
   createInjectionKey as P,
   cB as Q,
@@ -43298,7 +43303,7 @@ export {
   useThemeClass as Y,
   NInternalSelectMenu as Z,
   _export_sfc as _,
-  useSettings as a,
+  useState2 as a,
   AddIcon as a$,
   happensIn as a0,
   call as a1,
@@ -43363,7 +43368,7 @@ export {
   getSlot$1 as ax,
   depx as ay,
   formatLength as az,
-  useMessage as b,
+  upscalerOptions as b,
   VFollower as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
@@ -43428,32 +43433,32 @@ export {
   NTag as bx,
   convertToTextString as by,
   themeKey as bz,
-  openBlock as c,
+  computed as c,
   sliderLight$1 as c0,
   isSlotEmpty as c1,
   switchLight$1 as c2,
   NResult as c3,
   defineComponent as d,
-  createElementBlock as e,
-  createVNode as f,
-  unref as g,
-  NCard as h,
-  NSpace as i,
-  createBaseVNode as j,
-  NTooltip as k,
-  createTextVNode as l,
+  createBlock as e,
+  createBaseVNode as f,
+  createVNode as g,
+  unref as h,
+  NSelect as i,
+  createElementBlock as j,
+  createTextVNode as k,
+  NTooltip as l,
   createCommentVNode as m,
-  createBlock as n,
-  onUnmounted as o,
-  NSelect as p,
-  NGrid as q,
-  pushScopeId as r,
-  serverUrl as s,
-  popScopeId as t,
-  useState2 as u,
-  h as v,
+  NCard as n,
+  openBlock as o,
+  useMessage as p,
+  onUnmounted as q,
+  NGi as r,
+  NGrid as s,
+  serverUrl as t,
+  useSettings as u,
+  pushScopeId as v,
   withCtx as w,
-  ref as x,
-  NButton as y,
-  NIcon as z
+  popScopeId as x,
+  h as y,
+  ref as z
 };

@@ -1,5 +1,12 @@
 # Changelog
 
+## v0.5.0
+
+- Highres fix can now use image upscalers (ESRGAN, RealSR, etc.) for the intermediate step
+- API converted to sync where applicable, this should resolve some issues with websockets and thread lockups
+- FreeU support
+- Diffusers version bump
+
 ## v0.4.2
 
 ### Critical fix

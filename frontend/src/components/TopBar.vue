@@ -377,39 +377,39 @@
 <script lang="ts" setup>
 import type { ModelEntry } from "@/core/interfaces";
 import {
-  NCard,
-  NDropdown,
-  NGi,
-  NGrid,
-  NIcon,
-  NInput,
-  NModal,
-  NScrollbar,
-  NSelect,
-  NTabPane,
-  NTabs,
-  NText,
-  type DropdownOption,
+NCard,
+NDropdown,
+NGi,
+NGrid,
+NIcon,
+NInput,
+NModal,
+NScrollbar,
+NSelect,
+NTabPane,
+NTabs,
+NText,
+type DropdownOption,
 } from "naive-ui";
 
 import { serverUrl } from "@/env";
 import { startWebsocket } from "@/functions";
 import { useWebsocket } from "@/store/websockets";
 import {
-  DocumentText,
-  PowerSharp,
-  SettingsSharp,
-  StatsChart,
-  SyncSharp,
-  Wifi,
+DocumentText,
+PowerSharp,
+SettingsSharp,
+StatsChart,
+SyncSharp,
+Wifi,
 } from "@vicons/ionicons5";
 import {
-  NAlert,
-  NButton,
-  NProgress,
-  NResult,
-  NTooltip,
-  useMessage,
+NAlert,
+NButton,
+NProgress,
+NResult,
+NTooltip,
+useMessage,
 } from "naive-ui";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { computed, h, ref, type Component, type ComputedRef } from "vue";
@@ -687,7 +687,7 @@ async function unloadModel(model: ModelEntry) {
   }
 
   const load_url = new URL(`${serverUrl}/api/models/unload`);
-  const params = { model: model.name };
+  const params = { model: model.path };
   load_url.search = new URLSearchParams(params).toString();
 
   try {

@@ -89,6 +89,7 @@ export default defineConfig({
 					{
 						text: "Local",
 						items: [
+							{ text: "Stability Matrix", link: "/installation/stability-matrix" },
 							{ text: "Windows", link: "/installation/windows" },
 							{ text: "Linux", link: "/installation/linux" },
 							{ text: "WSL", link: "/installation/wsl" },
@@ -111,7 +112,10 @@ export default defineConfig({
 			},
 			{
 				text: "Guides",
-				items: [{ text: "First image", link: "/guides/first-image" }],
+				items: [
+					{ text: "First image", link: "/guides/first-image" },
+					{ text: "Highres fix", link: "/guides/highres-fix" },
+				],
 				collapsed: false,
 			},
 			{

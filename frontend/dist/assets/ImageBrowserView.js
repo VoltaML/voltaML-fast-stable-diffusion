@@ -1,8 +1,8 @@
-import { d as defineComponent, b6 as useCssVars, u as useState, a as useSettings, R as inject, x as ref, D as computed, bI as urlFromPath, b8 as reactive, b9 as onMounted, o as onUnmounted, c as openBlock, e as createElementBlock, j as createBaseVNode, f as createVNode, g as unref, w as withCtx, F as Fragment, L as renderList, b7 as themeOverridesKey, s as serverUrl, I as NInput, z as NIcon, bd as NModal, q as NGrid, N as NGi, y as NButton, l as createTextVNode, M as NScrollbar, n as createBlock, by as convertToTextString, A as toDisplayString, m as createCommentVNode, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
+import { d as defineComponent, b6 as useCssVars, a as useState, u as useSettings, R as inject, z as ref, c as computed, bI as urlFromPath, b8 as reactive, b9 as onMounted, q as onUnmounted, o as openBlock, j as createElementBlock, f as createBaseVNode, g as createVNode, h as unref, w as withCtx, F as Fragment, L as renderList, b7 as themeOverridesKey, t as serverUrl, J as NInput, B as NIcon, bd as NModal, s as NGrid, r as NGi, A as NButton, k as createTextVNode, M as NScrollbar, e as createBlock, by as convertToTextString, C as toDisplayString, m as createCommentVNode, bJ as diffusersSchedulerTuple, _ as _export_sfc } from "./index.js";
 import { D as Download, _ as _sfc_main$1 } from "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import { G as GridOutline } from "./GridOutline.js";
 import { N as NImage, T as TrashBin } from "./TrashBin.js";
-import { N as NSlider } from "./Switch.js";
+import { a as NSlider } from "./Switch.js";
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
 const _hoisted_1 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "margin-top": "52px", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "fixed", "top": "0", "z-index": "1" },
@@ -20,8 +20,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     useCssVars((_ctx) => {
       var _a, _b;
       return {
-        "114fe7c0": unref(settings).data.settings.frontend.image_browser_columns,
-        "3d9e4b24": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+        "0b0e0cc2": unref(settings).data.settings.frontend.image_browser_columns,
+        "4fde547c": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
       };
     });
     const global = useState();
@@ -97,10 +97,10 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     const currentColumn = ref(0);
     const currentRowIndex = ref(0);
     function parseMetadataFromString(key, value) {
-      value = value.trim().toLowerCase();
-      if (value === "true") {
+      value = value.trim();
+      if (value.toLowerCase() === "true") {
         return true;
-      } else if (value === "false") {
+      } else if (value.toLowerCase() === "false") {
         return false;
       } else {
         if (isFinite(+value)) {
@@ -454,8 +454,8 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageBrowserView_vue_vue_type_style_index_0_scoped_239f75b8_lang = "";
-const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-239f75b8"]]);
+const ImageBrowserView_vue_vue_type_style_index_0_scoped_c3083c91_lang = "";
+const ImageBrowserView = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-c3083c91"]]);
 export {
   ImageBrowserView as default
 };

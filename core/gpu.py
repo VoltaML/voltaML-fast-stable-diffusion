@@ -1,4 +1,3 @@
-import asyncio
 import logging
 import math
 import multiprocessing
@@ -8,7 +7,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Dict, List, Union
 
 import torch
-from diffusers.utils import is_xformers_available
+from diffusers.utils.import_utils import is_xformers_available
 from packaging import version
 from PIL import Image
 
@@ -172,7 +171,7 @@ class GPU:
         index = torch.device(config.api.device).index
         return torch.cuda.memory_allocated(index) / 1024**2
 
-    async def generate(
+    def generate(
         self,
         job: InferenceJob,
     ):
@@ -241,13 +240,13 @@ class GPU:
 
         try:
             # Wait for turn in the queue
-            await self.queue.wait_for_turn(job.data.id)
+            self.queue.wait_for_turn(job.data.id)
 
             start_time = time.time()
 
             # Generate images
             try:
-                generated_images = await asyncio.to_thread(generate_thread_call, job)
+                generated_images = generate_thread_call(job)
 
                 assert generated_images is not None
 
@@ -281,14 +280,14 @@ class GPU:
 
             except Exception as err:
                 self.memory_cleanup()
-                await self.queue.mark_finished(job.data.id)
+                self.queue.mark_finished(job.data.id)
                 raise err
 
             deltatime = time.time() - start_time
 
             # Mark job as finished, so the next job can start
             self.memory_cleanup()
-            await self.queue.mark_finished(job.data.id)
+            self.queue.mark_finished(job.data.id)
 
             # Check if user wants the preprocessed image back (ControlNet only)
             if isinstance(job, ControlNetQueueEntry):
@@ -303,7 +302,7 @@ class GPU:
             return (images, deltatime)
         except InferenceInterruptedError:
             if config.frontend.on_change_timer == 0:
-                await websocket_manager.broadcast(
+                websocket_manager.broadcast_sync(
                     Notification(
                         "warning",
                         "Inference interrupted",
@@ -314,7 +313,7 @@ class GPU:
 
         except Exception as e:
             if not isinstance(e, ModelNotLoadedError):
-                await websocket_manager.broadcast(
+                websocket_manager.broadcast_sync(
                     Notification(
                         "error",
                         "Inference error",
@@ -324,7 +323,7 @@ class GPU:
 
             raise e
 
-    async def load_model(
+    def load_model(
         self,
         model: str,
         backend: InferenceBackend,
@@ -419,7 +418,7 @@ class GPU:
                 )
             )
 
-        await asyncio.to_thread(load_model_thread_call, model, backend)
+        load_model_thread_call(model, backend)
 
     def loaded_models_list(self) -> list:
         "Return a list of loaded models"
@@ -436,7 +435,7 @@ class GPU:
                     torch.cuda.empty_cache()
                     torch.cuda.ipc_collect()
 
-    async def unload(self, model_type: str):
+    def unload(self, model_type: str):
         "Unload a model from memory and free up GPU memory"
 
         def unload_thread_call(model_type: str):
@@ -450,20 +449,22 @@ class GPU:
                 del self.loaded_models[model_type]
                 self.memory_cleanup()
                 logger.debug("Unloaded model")
+            else:
+                raise ValueError(f"Model {model_type} not loaded")
 
-        await asyncio.to_thread(unload_thread_call, model_type)
+        unload_thread_call(model_type)
 
-    async def unload_all(self):
+    def unload_all(self):
         "Unload all models from memory and free up GPU memory"
 
         logger.debug("Unloading all models")
 
         for model in list(self.loaded_models.keys()):
-            await self.unload(model)
+            self.unload(model)
 
         self.memory_cleanup()
 
-    async def build_aitemplate_engine(self, request: AITemplateBuildRequest):
+    def build_aitemplate_engine(self, request: AITemplateBuildRequest):
         "Convert a model to a AITemplate engine"
 
         logger.debug(f"Building AI Template for {request.model_id}...")
@@ -489,15 +490,12 @@ class GPU:
 
             self.memory_cleanup()
 
-        await asyncio.to_thread(ait_build_thread_call)
+        ait_build_thread_call()
 
         logger.debug(f"AI Template built for {request.model_id}.")
-
         logger.info("AITemplate engine successfully built")
 
-    async def build_dynamic_aitemplate_engine(
-        self, request: AITemplateDynamicBuildRequest
-    ):
+    def build_dynamic_aitemplate_engine(self, request: AITemplateDynamicBuildRequest):
         "Convert a model to a AITemplate engine"
 
         logger.debug(f"Building AI Template for {request.model_id}...")
@@ -524,13 +522,13 @@ class GPU:
 
             self.memory_cleanup()
 
-        await asyncio.to_thread(ait_build_thread_call)
+        ait_build_thread_call()
 
         logger.debug(f"AI Template built for {request.model_id}.")
 
         logger.info("AITemplate engine successfully built")
 
-    async def build_onnx_engine(self, request: ONNXBuildRequest):
+    def build_onnx_engine(self, request: ONNXBuildRequest):
         "Convert a model to a ONNX engine"
 
         from core.inference.onnx import OnnxStableDiffusion
@@ -553,11 +551,11 @@ class GPU:
 
             self.memory_cleanup()
 
-        await asyncio.to_thread(onnx_build_thread_call)
+        onnx_build_thread_call()
 
         logger.info(f"ONNX engine successfully built for {request.model_id}.")
 
-    async def convert_model(self, model: str, safetensors: bool = False):
+    def convert_model(self, model: str, safetensors: bool = False):
         "Convert a model to FP16"
 
         logger.debug(f"Converting {model}...")
@@ -576,16 +574,16 @@ class GPU:
             )
             pt_model.unload()
 
-        await asyncio.to_thread(model_to_f16_thread_call)
+        model_to_f16_thread_call()
 
         logger.debug(f"Converted {model}.")
 
-    async def download_huggingface_model(self, model: str):
+    def download_huggingface_model(self, model: str):
         "Download a model from the internet."
 
-        await asyncio.to_thread(download_model, model)
+        download_model(model)
 
-    async def load_vae(self, req: VaeLoadRequest):
+    def load_vae(self, req: VaeLoadRequest):
         "Change the models VAE"
 
         if req.model in self.loaded_models:
@@ -609,7 +607,7 @@ class GPU:
             )
             logger.error(f"Model {req.model} not found")
 
-    async def load_textual_inversion(self, req: TextualInversionLoadRequest):
+    def load_textual_inversion(self, req: TextualInversionLoadRequest):
         "Inject a textual inversion model into a model"
 
         if req.model in self.loaded_models:
@@ -638,7 +636,7 @@ class GPU:
             )
             logger.error(f"Model {req.model} not found")
 
-    async def interrogate(self, job: InterrogatorQueueEntry):
+    def interrogate(self, job: InterrogatorQueueEntry):
         "Generate captions for image"
 
         def generate_call(job: InterrogatorQueueEntry):
@@ -670,10 +668,10 @@ class GPU:
             else:
                 raise ValueError(f"Model {job.model} not implemented")
 
-        output: InterrogationResult = await asyncio.to_thread(generate_call, job)
+        output: InterrogationResult = generate_call(job)
         return output
 
-    async def upscale(self, job: UpscaleQueueEntry):
+    def upscale(self, job: UpscaleQueueEntry):
         "Upscale an image by a specified factor"
 
         def generate_call(job: UpscaleQueueEntry):
@@ -707,7 +705,7 @@ class GPU:
 
         image: Image.Image
         time_: float
-        image, time_ = await asyncio.to_thread(generate_call, job)
+        image, time_ = generate_call(job)
 
         save_images([image], job)
 

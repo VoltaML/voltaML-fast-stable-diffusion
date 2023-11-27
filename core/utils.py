@@ -24,6 +24,7 @@ from core.types import (
 )
 
 logger = logging.getLogger(__name__)
+content_disposition_regex = re.compile(r"filename=[\"]?([^\";\n]+)[\"]?")
 
 
 def unwrap_enum(possible_enum: Union[Enum, Any]) -> Any:
@@ -193,7 +194,13 @@ def download_file(url: str, file: Path, add_filename: bool = False):
 
     with session.get(url, stream=True, timeout=30) as r:
         try:
-            file_name = r.headers["Content-Disposition"].split('"')[1]
+            filename_match = content_disposition_regex.search(
+                r.headers["Content-Disposition"]
+            )
+            if filename_match:
+                file_name = filename_match.group(1)
+            else:
+                raise KeyError
         except KeyError:
             file_name = url.split("/")[-1]
 

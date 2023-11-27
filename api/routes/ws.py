@@ -1,10 +1,13 @@
+import logging
+
 from fastapi import APIRouter
 from fastapi.websockets import WebSocket, WebSocketDisconnect
 
 from api import websocket_manager
 from api.websockets.data import Data
 
-router = APIRouter()
+router = APIRouter(tags=["websockets"])
+logger = logging.getLogger(__name__)
 
 
 @router.websocket("/master")
@@ -23,9 +26,21 @@ async def master_endpoint(websocket: WebSocket):
 
 
 @router.post("/progress")
-async def set_progress(progress: int):
+def set_progress(progress: int):
     "Set the progress of the progress bar"
 
-    await websocket_manager.broadcast(
+    websocket_manager.broadcast_sync(
         data=Data(data_type="progress", data={"progress": progress})
     )
+
+
+@router.get("/get-active-connetions")
+def get_active_connections():
+    connections = websocket_manager.get_active_connections()
+    converted_connections = [
+        f"{connection.client.host}:{connection.client.port}-{connection.client_state.name}"
+        for connection in connections
+        if connection.client is not None
+    ]
+
+    return converted_connections
