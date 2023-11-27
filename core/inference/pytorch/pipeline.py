@@ -7,7 +7,7 @@ import PIL
 import torch
 from diffusers.models.adapter import MultiAdapter
 from diffusers.models.autoencoder_kl import AutoencoderKL
-from diffusers.models.controlnet import ControlNetModel, ControlNetOutput
+from diffusers.models.controlnet import ControlNetModel
 from diffusers.models.unet_2d_condition import UNet2DConditionModel
 from diffusers.pipelines.stable_diffusion.pipeline_output import (
     StableDiffusionPipelineOutput,
