@@ -1,6 +1,14 @@
 name: Black
 
-on: [push, pull_request]
+on:
+  push:
+    paths:
+      - "**.py"
+      - ".github/workflows/**"
+  pull_request:
+    paths:
+      - "**.py"
+      - ".github/workflows/**"
 
 jobs:
   lint:
