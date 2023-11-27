@@ -100,7 +100,8 @@ def modify_unet(
             p1[1] != p2[1] or s == p2[0]
         ):
             unet.down_blocks[d].forward = unet.down_blocks[d]._orignal_forawrd
-            unet.up_blocks[out_d].forward = unet.up_blocks[out_d]._orignal_forawrd
+            if hasattr(unet.up_blocks[out_d], "_orignal_forawrd"):
+                unet.up_blocks[out_d].forward = unet.up_blocks[out_d]._orignal_forawrd
     step_limit = step
     return unet
 
