@@ -1,11 +1,16 @@
 import logging
 
-from diffusers import StableDiffusionPipeline
 import torch
+from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
+    StableDiffusionPipeline,
+)
 
 from core.config import config
 
-force_autocast = [torch.float8_e4m3fn, torch.float8_e5m2]
+try:
+    force_autocast = [torch.float8_e4m3fn, torch.float8_e5m2]
+except AttributeError:
+    force_autocast = []
 
 logger = logging.getLogger(__name__)
 
