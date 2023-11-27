@@ -1,18 +1,19 @@
 import logging
 import os
 from pathlib import Path
-from typing import List, Optional, Union
+from typing import List, Union
 
 from diffusers.utils.constants import DIFFUSERS_CACHE
 from huggingface_hub.file_download import repo_folder_name
 
 from core.types import ModelResponse
+from core.utils import determine_model_type
 
 logger = logging.getLogger(__name__)
 
 
 class CachedModelList:
-    "List of models downloaded for PyTorch and (or) converted to TRT"
+    "List of models that user has downloaded"
 
     def __init__(self):
         self.paths = {
@@ -53,22 +54,27 @@ class CachedModelList:
             # Skip if it is not a huggingface model
             if "model" not in model_name:
                 continue
+            parsed_model_name: str = "/".join(model_name.split("--")[1:3])
 
-            name: str = "/".join(model_name.split("--")[1:3])
             try:
-                models.append(
-                    ModelResponse(
-                        name=name,
-                        path=name,
-                        backend="PyTorch",
-                        vae="default",
-                        valid=is_valid_diffusers_model(get_full_model_path(name)),
-                        state="not loaded",
-                    )
-                )
-            except ValueError:
-                logger.debug(f"Invalid model {name}, skipping...")
+                full_path = get_full_model_path(parsed_model_name)
+            except ValueError as e:
+                logger.debug(f"Model {parsed_model_name} is not valid: {e}")
                 continue
+
+            _name, base, stage = determine_model_type(full_path)
+            models.append(
+                ModelResponse(
+                    name=parsed_model_name,
+                    path=parsed_model_name,
+                    backend="PyTorch",
+                    type=base,
+                    stage=stage,
+                    vae="default",
+                    valid=is_valid_diffusers_model(full_path),
+                    state="not loaded",
+                )
+            )
 
         # Localy stored models
         logger.debug(f"Looking for local models in '{self.paths['checkpoints']}'")
@@ -79,10 +85,12 @@ class CachedModelList:
                 if not model_path.joinpath("model_index.json").exists():
                     continue
 
+                name, base, stage = determine_model_type(model_path)
+
                 # Assuming that model is in Diffusers format
                 models.append(
                     ModelResponse(
-                        name=model_path.name,
+                        name=name,
                         path=model_path.relative_to(
                             self.paths["checkpoints"]
                         ).as_posix(),
@@ -90,6 +98,8 @@ class CachedModelList:
                         vae="default",
                         valid=is_valid_diffusers_model(model_path),
                         state="not loaded",
+                        type=base,
+                        stage=stage,
                     )
                 )
             elif (
@@ -98,29 +108,34 @@ class CachedModelList:
                 model_path.parent.joinpath("model_index.json").exists()
                 or model_path.parent.parent.joinpath("model_index.json").exists()
             ):
+                if ".ckpt" == model_path.suffix:
+                    name, base, stage = model_path.name, "SD1.x", "first_stage"
+                else:
+                    name, base, stage = determine_model_type(model_path)
+
                 # Assuming that model is in Checkpoint / Safetensors format
                 models.append(
                     ModelResponse(
-                        name=model_path.name,
+                        name=name,
                         path=model_path.relative_to(
                             self.paths["checkpoints"]
                         ).as_posix(),
                         backend="PyTorch",
                         vae="default",
                         valid=True,
+                        type=base,
+                        stage=stage,
                         state="not loaded",
                     )
                 )
             else:
                 # Junk file, notify user
-                logger.debug(
-                    f"Found junk file {model_path} in {self.paths['checkpoints']}, skipping..."
-                )
+                logger.debug(f"Found junk file {model_path}, skipping...")
 
         return models
 
     def aitemplate(self) -> List[ModelResponse]:
-        "List of models converted to TRT"
+        "List of models converted to AITempalte"
 
         models: List[ModelResponse] = []
 
@@ -423,17 +438,18 @@ def diffusers_storage_name(repo_id: str, repo_type: str = "model") -> str:
     )
 
 
-def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
+def current_diffusers_ref(path: str, revision: str = "main") -> str:
     "Return the current ref of the diffusers model"
 
     rev_path = os.path.join(path, "refs", revision)
     snapshot_path = os.path.join(path, "snapshots")
 
     if not os.path.exists(rev_path) or not os.path.exists(snapshot_path):
-        return None
+        raise ValueError(
+            f"Ref path {rev_path} or snapshot path {snapshot_path} not found"
+        )
 
     snapshots = os.listdir(snapshot_path)
-    ref = ""
 
     with open(os.path.join(path, "refs", revision), "r", encoding="utf-8") as f:
         ref = f.read().strip().split(":")[0]
@@ -441,6 +457,10 @@ def current_diffusers_ref(path: str, revision: str = "main") -> Optional[str]:
     for snapshot in snapshots:
         if ref.startswith(snapshot):
             return snapshot
+
+    raise ValueError(
+        f"Ref {ref} found in {snapshot_path} for revision {revision}, but ref path does not exist"
+    )
 
 
 def get_full_model_path(
@@ -476,7 +496,7 @@ def get_full_model_path(
     ref = current_diffusers_ref(storage, revision)
 
     if not ref:
-        raise ValueError("No ref found")
+        raise ValueError(f"No ref found for {repo_id}")
 
     if diffusers_skip_ref_follow:
         return Path(storage)

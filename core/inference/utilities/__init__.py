@@ -6,6 +6,7 @@ from .latents import (
     prepare_latents,
     prepare_mask_and_masked_image,
     prepare_mask_latents,
+    preprocess_adapter_image,
     preprocess_image,
     preprocess_mask,
     scale_latents,
@@ -15,3 +16,4 @@ from .scheduling import change_scheduler, get_timesteps, prepare_extra_step_kwar
 from .random import create_generator, randn, randn_like
 from .vae import taesd, full_vae, cheap_approximation, numpy_to_pil, decode_latents
 from .prompt_expansion import download_model, expand
+from .cfg import calculate_cfg

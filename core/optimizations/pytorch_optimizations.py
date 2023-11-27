@@ -6,13 +6,14 @@ from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
 )
-from diffusers.utils.import_utils import is_accelerate_available
 
 from core.config import config
-from core.files import get_full_model_path
 
 from .attn import set_attention_processor
-from .compile.trace_utils import generate_inputs, trace_model
+from .compile.trace_utils import trace_ipex, trace_model
+from .dtype import cast
+from .offload import set_offload
+from .upcast import upcast_vae
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +27,6 @@ def optimize_model(
     is_for_aitemplate: bool = False,
 ) -> None:
     "Optimize the model for inference."
-
-    from core.inference.functions import is_ipex_available
 
     # Tuple[Supported, Enabled by default, Enabled]
     hardware_scheduling = experimental_check_hardware_scheduling()
@@ -48,26 +47,23 @@ def optimize_model(
         )
 
     offload = (
-        config.api.offload
-        if (is_pytorch_pipe(pipe) and not is_for_aitemplate)
-        else None
+        config.api.offload != "disabled"
+        and is_pytorch_pipe(pipe)
+        and not is_for_aitemplate
     )
-    can_offload = any(
-        map(lambda x: x not in config.api.device, ["cpu", "vulkan", "mps"])
-    ) and (offload != "disabled" and offload is not None)
+    can_offload = (
+        any(map(lambda x: x not in config.api.device, ["cpu", "vulkan", "mps"]))
+        and offload
+    )
 
-    # Took me an hour to understand why CPU stopped working...
-    # Turns out AMD just lacks support for BF16...
-    # Not mad, not mad at all... to be fair, I'm just disappointed
-    if not can_offload and not is_for_aitemplate:
-        pipe.to(device, torch_dtype=config.api.dtype)
+    pipe = cast(pipe, device, config.api.dtype, can_offload)
 
     if "cuda" in config.api.device and not is_for_aitemplate:
         supports_tf = supports_tf32(device)
         if config.api.reduced_precision:
             if supports_tf:
-                logger.info("Optimization: Enabled all reduced precision operations")
                 torch.set_float32_matmul_precision("medium")
+                logger.info("Optimization: Enabled all reduced precision operations")
             else:
                 logger.warning(
                     "Optimization: Device capability is not higher than 8.0, skipping most of reduction"
@@ -89,6 +85,9 @@ def optimize_model(
             logger.info("Optimization: CUDNN benchmark enabled")
         torch.backends.cudnn.benchmark = config.api.cudnn_benchmark  # type: ignore
 
+    if is_pytorch_pipe(pipe):
+        pipe.vae = optimize_vae(pipe.vae)
+
     # Attention slicing that should save VRAM (but is slower)
     slicing = config.api.attention_slicing
     if slicing != "disabled" and is_pytorch_pipe(pipe) and not is_for_aitemplate:
@@ -99,19 +98,6 @@ def optimize_model(
             pipe.enable_attention_slicing(slicing)
             logger.info(f"Optimization: Enabled attention slicing ({slicing})")
 
-    # Change the order of the channels to be more efficient for the GPU
-    # DirectML only supports contiguous memory format
-    # Disable for IPEX as well, they don't like torch's way of setting memory format
-    if (
-        config.api.channels_last
-        and "privateuseone" not in config.api.device
-        and (not is_ipex_available() and "cpu" not in config.api.device)
-        and not is_for_aitemplate
-    ):
-        pipe.unet.to(memory_format=torch.channels_last)  # type: ignore
-        pipe.vae.to(memory_format=torch.channels_last)  # type: ignore
-        logger.info("Optimization: Enabled channels_last memory format")
-
     # xFormers and SPDA
     if not is_for_aitemplate:
         set_attention_processor(pipe)
@@ -120,58 +106,19 @@ def optimize_model(
             logger.info("Optimization: Enabled autocast")
 
     if can_offload:
-        if not is_accelerate_available():
-            logger.warning(
-                "Optimization: Offload is not available, because accelerate is not installed"
-            )
-        else:
-            if offload == "model":
-                # Offload to CPU
-                from accelerate import cpu_offload_with_hook
+        # Offload to CPU
 
-                if "cuda" in config.api.device:
-                    torch.cuda.empty_cache()  # otherwise we don't see the memory savings (but they probably exist)
-
-                hook = None
-
-                for cpu_offloaded_model in [
-                    pipe.text_encoder,
-                    pipe.unet,
-                    pipe.vae,
-                ]:
-                    _, hook = cpu_offload_with_hook(
-                        cpu_offloaded_model, device, prev_module_hook=hook
-                    )
-                pipe.final_offload_hook = hook
-                setattr(pipe.vae, "main_device", True)
-                setattr(pipe.unet, "main_device", True)
-                logger.info("Optimization: Offloaded model parts to CPU.")
-
-            elif offload == "module":
-                # Enable sequential offload
-                from accelerate import cpu_offload, disk_offload
-
-                for m in [
-                    pipe.vae,
-                    pipe.unet,
-                ]:
-                    if USE_DISK_OFFLOAD:
-                        # If USE_DISK_OFFLOAD toggle set (idk why anyone would do this, but it's nice to support stuff
-                        # like this in case anyone wants to try running this on fuck knows what)
-                        # then offload to disk.
-                        disk_offload(
-                            m,
-                            str(
-                                get_full_model_path("offload-dir", model_folder="temp")
-                                / m.__name__
-                            ),
-                            device,
-                            offload_buffers=True,
-                        )
-                    else:
-                        cpu_offload(m, device, offload_buffers=True)
-
-                logger.info("Optimization: Enabled sequential offload")
+        for model_name in [
+            "text_encoder",
+            "text_encoder_2",
+            "unet",
+            "vae",
+        ]:
+            cpu_offloaded_model = getattr(pipe, model_name, None)
+            if cpu_offloaded_model is not None:
+                cpu_offloaded_model = set_offload(cpu_offloaded_model, device)
+                setattr(pipe, model_name, cpu_offloaded_model)
+        logger.info("Optimization: Offloaded model parts to CPU.")
 
     if config.api.free_u:
         pipe.enable_freeu(
@@ -180,14 +127,6 @@ def optimize_model(
             b1=config.api.free_u_b1,
             b2=config.api.free_u_b2,
         )
-
-    if config.api.vae_slicing:
-        pipe.enable_vae_slicing()
-        logger.info("Optimization: Enabled VAE slicing")
-
-    if config.api.vae_tiling:
-        pipe.enable_vae_tiling()
-        logger.info("Optimization: Enabled VAE tiling")
 
     if config.api.use_tomesd and not is_for_aitemplate:
         try:
@@ -212,45 +151,12 @@ def optimize_model(
             f"Running on an {cpu['VendorId']} device. Used threads: {torch.get_num_threads()}-{torch.get_num_interop_threads()} / {cpu['num_virtual_cores']}"
         )
 
-        if is_ipex_available():
-            import intel_extension_for_pytorch as ipex
-
-            logger.info("Optimization: Running IPEX optimizations")
-
-            if config.api.channels_last:
-                ipex.enable_auto_channels_last()
-            else:
-                ipex.disable_auto_channels_last()
-            ipex.enable_onednn_fusion(True)
-            ipex.set_fp32_math_mode(
-                ipex.FP32MathMode.BF32
-                if "AMD" not in cpu["VendorId"]
-                else ipex.FP32MathMode.FP32
-            )
-            pipe.unet = ipex.optimize(
-                pipe.unet,  # type: ignore
-                dtype=config.api.dtype,
-                auto_kernel_selection=True,
-                sample_input=generate_inputs(config.api.dtype, device),
-            )
-            ipexed = True
+        pipe.unet, ipexed = trace_ipex(pipe.unet, config.api.load_dtype, device, cpu)
 
     if config.api.trace_model and not ipexed and not is_for_aitemplate:
         logger.info("Optimization: Tracing model.")
         logger.warning("This will break controlnet and loras!")
-        if config.api.attention_processor == "xformers":
-            logger.warning(
-                "Skipping tracing because xformers used for attention processor. Please change to SDPA to enable tracing."
-            )
-        else:
-            pipe.unet = trace_model(pipe.unet, config.api.dtype, device)  # type: ignore
-    elif is_ipex_available() and config.api.trace_model and not is_for_aitemplate:
-        logger.warning(
-            "Skipping tracing because IPEX optimizations have already been done"
-        )
-        logger.warning(
-            "This is a temporary measure, tracing will work with IPEX-enabled devices later on"
-        )
+        pipe.unet = trace_model(pipe.unet, config.api.load_dtype, device)  # type: ignore
 
     if config.api.torch_compile and not is_for_aitemplate:
         if config.api.attention_processor == "xformers":
@@ -267,13 +173,6 @@ def optimize_model(
                     "mode": config.api.torch_compile_mode,
                 },
             )
-            # Wrong place!
-            # pipe.unet = torch.compile(
-            #     pipe.unet,
-            #     fullgraph=config.api.torch_compile_fullgraph,
-            #     dynamic=config.api.torch_compile_dynamic,
-            #     mode=config.api.torch_compile_mode,
-            # )
 
 
 def supports_tf32(device: Optional[torch.device] = None) -> bool:
@@ -304,3 +203,17 @@ def is_pytorch_pipe(pipe):
     "Checks if the pipe is a pytorch pipe"
 
     return issubclass(pipe.__class__, (DiffusionPipeline))
+
+
+def optimize_vae(vae):
+    "Optimize a VAE according to config defined in data/settings.json"
+    vae = upcast_vae(vae)
+
+    if hasattr(vae, "enable_slicing") and config.api.vae_slicing:
+        vae.enable_slicing()
+        logger.info("Optimization: Enabled VAE slicing")
+
+    if config.api.vae_tiling and hasattr(vae, "enable_tiling"):
+        vae.enable_tiling()
+        logger.info("Optimization: Enabled VAE tiling")
+    return vae

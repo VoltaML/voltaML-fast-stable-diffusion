@@ -55,9 +55,11 @@ export function processWebSocket(
       break;
     }
     case "notification": {
-      message.data.timeout = message.data.timeout || 5000;
-
       console.log(message.data.message);
+
+      if (message.data.timeout === 0) {
+        message.data.timeout = null;
+      }
 
       notificationProvider.create({
         type: message.data.severity,
@@ -112,6 +114,13 @@ export function processWebSocket(
           global.state.log_drawer.logs.pop();
         }
       }
+      break;
+    }
+    case "incorrect_settings_value": {
+      global.state.settings_diff.default_value = message.data.default_value;
+      global.state.settings_diff.current_value = message.data.current_value;
+      global.state.settings_diff.key = message.data.key;
+      global.state.settings_diff.active = true;
       break;
     }
     default: {

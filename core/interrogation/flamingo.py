@@ -17,7 +17,7 @@ class FlamingoInterrogator(InterrogationModel):
         super().__init__(device)
 
         self.device = device
-        self.dtype = config.api.dtype
+        self.dtype = config.api.load_dtype
         self.model: FlamingoModel
         self.processor: FlamingoProcessor
 

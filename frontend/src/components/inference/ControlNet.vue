@@ -77,36 +77,9 @@
               />
             </div>
 
-            <!-- CFG Scale -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">CFG Scale</p>
-                </template>
-                Guidance scale indicates how much should model stay close to the
-                prompt. Higher values might be exactly what you want, but
-                generated images might have some artefacts. Lower values
-                indicates that model can "dream" about this prompt more.
-                <b class="highlight"
-                  >We recommend using 3-15 for most images.</b
-                >
-              </NTooltip>
-              <NSlider
-                v-model:value="settings.data.settings.controlnet.cfg_scale"
-                :min="1"
-                :max="30"
-                :step="0.5"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="settings.data.settings.controlnet.cfg_scale"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :min="1"
-                :max="30"
-                :step="0.5"
-              />
-            </div>
+            <CFGScale tab="controlnet" />
+
+            <SAGInput tab="controlnet" />
 
             <!-- Number of images -->
             <div class="flex-container">
@@ -284,6 +257,8 @@ import {
   OutputStats,
   Prompt,
   SamplerPicker,
+  CFGScale,
+  SAGInput,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {

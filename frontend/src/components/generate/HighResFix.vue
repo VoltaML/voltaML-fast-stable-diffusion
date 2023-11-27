@@ -1,5 +1,5 @@
 <template>
-  <NCard title="Highres fix">
+  <NCard title="Highres fix" class="generate-extra-card">
     <div class="flex-container">
       <div class="slider-label">
         <p>Enabled</p>
@@ -167,13 +167,6 @@ const latentUpscalerOptions: SelectMixedOption[] = [
   { label: "Area", value: "area" },
   { label: "Bilinear", value: "bilinear" },
   { label: "Bicubic", value: "bicubic" },
-  {
-    label: "Bislerp (Original, slow)",
-    value: "bislerp-original",
-  },
-  {
-    label: "Bislerp (Tortured, fast)",
-    value: "bislerp-tortured",
-  },
+  { label: "Bislerp", value: "bislerp" },
 ];
 </script>

@@ -18,8 +18,9 @@ from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
-from core.inference.functions import download_model, is_ipex_available
+from core.inference.functions import is_ipex_available
 from core.inference.pytorch import PyTorchStableDiffusion
+from core.inference.sdxl import SDXLStableDiffusion
 from core.interrogation.base_interrogator import InterrogationResult
 from core.optimizations import is_hypertile_available
 from core.png_metadata import save_images
@@ -34,6 +35,7 @@ from core.types import (
     InterrogatorQueueEntry,
     Job,
     ONNXBuildRequest,
+    PyTorchModelBase,
     TextualInversionLoadRequest,
     UpscaleQueueEntry,
     VaeLoadRequest,
@@ -57,6 +59,7 @@ class GPU:
                 PyTorchStableDiffusion,
                 "AITemplateStableDiffusion",
                 "OnnxStableDiffusion",
+                "SDXLStableDiffusion",
             ],
         ] = {}
         self.capabilities = self._get_capabilities()
@@ -108,9 +111,13 @@ class GPU:
                     pass
         for t, s in support_map.items():
             if t == "cpu":
-                cap.supported_precisions_cpu = ["float32"] + s
+                cap.supported_precisions_cpu = (
+                    ["float32"] + s + ["float8_e4m3fn", "float8_e5m2"]
+                )
             else:
-                cap.supported_precisions_gpu = ["float32"] + s
+                cap.supported_precisions_gpu = (
+                    ["float32"] + s + ["float8_e4m3fn", "float8_e5m2"]
+                )
         try:
             cap.supported_torch_compile_backends = (
                 torch._dynamo.list_backends()  # type: ignore
@@ -184,6 +191,7 @@ class GPU:
                 model: Union[
                     PyTorchStableDiffusion,
                     AITemplateStableDiffusion,
+                    SDXLStableDiffusion,
                     "OnnxStableDiffusion",
                 ] = self.loaded_models[job.model]
             except KeyError as err:
@@ -218,10 +226,13 @@ class GPU:
                     shared_dependent.cached_controlnet_preprocessor = None
                     self.memory_cleanup()
 
-            # shared.current_model = model
-
             if isinstance(model, PyTorchStableDiffusion):
                 logger.debug("Generating with PyTorch")
+                shared.current_model = "SD1.x"
+                images: List[Image.Image] = model.generate(job)
+            elif isinstance(model, SDXLStableDiffusion):
+                logger.debug("Generating with SDXL (PyTorch)")
+                shared.current_model = "SDXL"
                 images: List[Image.Image] = model.generate(job)
             elif isinstance(model, AITemplateStableDiffusion):
                 logger.debug("Generating with AITemplate")
@@ -327,6 +338,7 @@ class GPU:
         self,
         model: str,
         backend: InferenceBackend,
+        type: PyTorchModelBase,
     ):
         "Load a model into memory"
 
@@ -391,6 +403,22 @@ class GPU:
 
                 pt_model = OnnxStableDiffusion(model_id=model)
                 self.loaded_models[model] = pt_model
+            elif type == "SDXL":
+                logger.debug("Selecting SDXL")
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "info",
+                        "SDXL",
+                        f"Loading {model} into memory, this may take a while",
+                    )
+                )
+
+                sdxl_model = SDXLStableDiffusion(
+                    model_id=model,
+                    device=config.api.device,
+                )
+                self.loaded_models[model] = sdxl_model
             else:
                 logger.debug("Selecting PyTorch")
 
@@ -581,7 +609,9 @@ class GPU:
     def download_huggingface_model(self, model: str):
         "Download a model from the internet."
 
-        download_model(model)
+        from diffusers.pipelines.pipeline_utils import DiffusionPipeline
+
+        DiffusionPipeline.download(model, resume_download=True)
 
     def load_vae(self, req: VaeLoadRequest):
         "Change the models VAE"
@@ -589,10 +619,10 @@ class GPU:
         if req.model in self.loaded_models:
             internal_model = self.loaded_models[req.model]
 
-            if isinstance(internal_model, PyTorchStableDiffusion):
+            if hasattr(internal_model, "change_vae"):
                 logger.info(f"Loading VAE model: {req.vae}")
 
-                internal_model.change_vae(req.vae)
+                internal_model.change_vae(req.vae)  # type: ignore
 
                 websocket_manager.broadcast_sync(
                     Notification(
@@ -625,6 +655,20 @@ class GPU:
                         f"Textual inversion model {req.textual_inversion} loaded",
                     )
                 )
+            if isinstance(internal_model, SDXLStableDiffusion):
+                logger.info(f"Loading textual inversion model: {req.textual_inversion}")
+
+                internal_model.load_textual_inversion(req.textual_inversion)
+
+                websocket_manager.broadcast_sync(
+                    Notification(
+                        "success",
+                        "Textual inversion model loaded",
+                        f"Textual inversion model {req.textual_inversion} loaded",
+                    )
+                )
+            else:
+                logger.warning(f"Model {req.model} does not support textual inversion")
 
         else:
             websocket_manager.broadcast_sync(

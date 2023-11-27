@@ -43,71 +43,9 @@
               />
             </div>
 
-            <!-- CFG Scale -->
-            <div class="flex-container">
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">CFG Scale</p>
-                </template>
-                Guidance scale indicates how much should model stay close to the
-                prompt. Higher values might be exactly what you want, but
-                generated images might have some artefacts. Lower values
-                indicates that model can "dream" about this prompt more.
-                <b class="highlight"
-                  >We recommend using 3-15 for most images.</b
-                >
-              </NTooltip>
-              <NSlider
-                v-model:value="settings.data.settings.txt2img.cfg_scale"
-                :min="1"
-                :max="30"
-                :step="0.5"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="settings.data.settings.txt2img.cfg_scale"
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="0.5"
-              />
-            </div>
+            <CFGScale tab="txt2img" />
 
-            <!-- Self Attention Scale -->
-            <div
-              class="flex-container"
-              v-if="
-                Number.isInteger(settings.data.settings.txt2img.sampler) &&
-                settings.data.settings.model?.backend === 'PyTorch'
-              "
-            >
-              <NTooltip style="max-width: 600px">
-                <template #trigger>
-                  <p class="slider-label">Self Attention Scale</p>
-                </template>
-                If self attention is >0, SAG will guide the model and improve
-                the quality of the image at the cost of speed. Higher values
-                will follow the guidance more closely, which can lead to better,
-                more sharp and detailed outputs.
-              </NTooltip>
-
-              <NSlider
-                v-model:value="
-                  settings.data.settings.txt2img.self_attention_scale
-                "
-                :min="0"
-                :max="1"
-                :step="0.05"
-                style="margin-right: 12px"
-              />
-              <NInputNumber
-                v-model:value="
-                  settings.data.settings.txt2img.self_attention_scale
-                "
-                size="small"
-                style="min-width: 96px; width: 96px"
-                :step="0.05"
-              />
-            </div>
+            <SAGInput tab="txt2img" />
 
             <!-- Number of images -->
             <div class="flex-container">
@@ -154,7 +92,12 @@
           </NSpace>
         </NCard>
 
-        <HighResFix style="margin-top: 12px; margin-bottom: 12px" />
+        <ResizeFromDimensionsInput
+          :dimensions-object="settings.data.settings.txt2img"
+          v-if="settings.data.settings.model?.type === 'SDXL'"
+        />
+        <XLRefiner v-if="isSelectedModelSDXL" />
+        <HighResFix v-if="!isSelectedModelSDXL" />
       </NGi>
 
       <!-- Split -->
@@ -188,7 +131,11 @@ import {
   ImageOutput,
   OutputStats,
   Prompt,
+  ResizeFromDimensionsInput,
   SamplerPicker,
+  XLRefiner,
+  CFGScale,
+  SAGInput,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -202,7 +149,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { onUnmounted } from "vue";
+import { computed, onUnmounted } from "vue";
 import { BurnerClock } from "../../clock";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
@@ -210,6 +157,10 @@ import { useState } from "../../store/state";
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
+
+const isSelectedModelSDXL = computed(() => {
+  return settings.data.settings.model?.type === "SDXL";
+});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -265,21 +216,46 @@ const generate = () => {
       model: settings.data.settings.model?.path,
       backend: "PyTorch",
       autoload: false,
-      flags: global.state.txt2img.highres
-        ? {
-            highres_fix: {
-              mode: settings.data.settings.flags.highres.mode,
-              image_upscaler:
-                settings.data.settings.flags.highres.image_upscaler,
-              scale: settings.data.settings.flags.highres.scale,
-              latent_scale_mode:
-                settings.data.settings.flags.highres.latent_scale_mode,
-              strength: settings.data.settings.flags.highres.strength,
-              steps: settings.data.settings.flags.highres.steps,
-              antialiased: settings.data.settings.flags.highres.antialiased,
-            },
-          }
-        : {},
+      flags: {
+        ...(isSelectedModelSDXL.value && global.state.txt2img.sdxl_resize
+          ? {
+              sdxl: {
+                original_size: {
+                  width: settings.data.settings.flags.sdxl.original_size.width,
+                  height:
+                    settings.data.settings.flags.sdxl.original_size.height,
+                },
+              },
+            }
+          : {}),
+        ...(global.state.txt2img.highres
+          ? {
+              highres_fix: {
+                mode: settings.data.settings.flags.highres.mode,
+                image_upscaler:
+                  settings.data.settings.flags.highres.image_upscaler,
+                scale: settings.data.settings.flags.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.flags.highres.latent_scale_mode,
+                strength: settings.data.settings.flags.highres.strength,
+                steps: settings.data.settings.flags.highres.steps,
+                antialiased: settings.data.settings.flags.highres.antialiased,
+              },
+            }
+          : global.state.txt2img.refiner
+          ? {
+              refiner: {
+                model: settings.data.settings.flags.refiner.model,
+                aesthetic_score:
+                  settings.data.settings.flags.refiner.aesthetic_score,
+                negative_aesthetic_score:
+                  settings.data.settings.flags.refiner.negative_aesthetic_score,
+                steps: settings.data.settings.flags.refiner.steps,
+                strength: settings.data.settings.flags.refiner.strength,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

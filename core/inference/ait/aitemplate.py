@@ -35,7 +35,6 @@ from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 from ..utilities import (
     change_scheduler,
     create_generator,
-    get_weighted_text_embeddings,
     image_to_controlnet_input,
     init_ait_module,
 )
@@ -215,7 +214,7 @@ class AITemplateStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet,
                 resume_download=True,
-                torch_dtype=config.api.dtype,
+                torch_dtype=config.api.load_dtype,
             )
 
             assert isinstance(cn, ControlNetModel)
@@ -227,7 +226,7 @@ class AITemplateStableDiffusion(InferenceModel):
                     "Optimization: xformers not available, enabling attention slicing instead"
                 )
 
-            cn.to(device=torch.device(self.device), dtype=config.api.dtype)
+            cn.to(device=torch.device(self.device), dtype=config.api.load_dtype)
             self.controlnet = cn
             self.current_controlnet = target_controlnet
 
@@ -305,18 +304,14 @@ class AITemplateStableDiffusion(InferenceModel):
             if "highres_fix" in job.flags:
                 output_type = "latent"
 
-            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                pipe, job.data.prompt, job.data.negative_prompt
-            )
             data = pipe(
                 generator=generator,
-                prompt_embeds=prompt_embeds,
-                negative_prompt_embeds=negative_prompt_embeds,
+                prompt=job.data.prompt,
+                negative_prompt=job.data.negative_prompt,
                 height=job.data.height,
                 width=job.data.width,
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
                 output_type=output_type,
                 callback=callback,
                 num_images_per_prompt=job.data.batch_size,
@@ -393,17 +388,13 @@ class AITemplateStableDiffusion(InferenceModel):
         shared.current_method = "img2img"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                pipe, job.data.prompt, job.data.negative_prompt
-            )
             data = pipe(
                 generator=generator,
-                prompt_embeds=prompt_embeds,
-                negative_prompt_embeds=negative_prompt_embeds,
+                prompt=job.data.prompt,
+                negative_prompt=job.data.negative_prompt,
                 image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 callback=callback,
                 strength=job.data.strength,  # type: ignore
@@ -458,17 +449,13 @@ class AITemplateStableDiffusion(InferenceModel):
         shared.current_method = "controlnet"
 
         for _ in tqdm(range(job.data.batch_count), desc="Queue", position=1):
-            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
-                pipe, job.data.prompt, job.data.negative_prompt
-            )
             data = pipe(
                 generator=generator,
-                prompt_embeds=prompt_embeds,
-                negative_prompt_embeds=negative_prompt_embeds,
+                prompt=job.data.prompt,
+                negative_prompt=job.data.negative_prompt,
                 image=input_image,  # type: ignore
                 num_inference_steps=job.data.steps,
                 guidance_scale=job.data.guidance_scale,
-                negative_prompt=job.data.negative_prompt,
                 output_type="pil",
                 callback=callback,
                 return_dict=False,

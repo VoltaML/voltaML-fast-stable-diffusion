@@ -1,6 +1,7 @@
 import functools
 from typing import Any, Callable, Optional, Union
 
+from diffusers import UNet2DConditionModel
 import torch
 
 from core.inference.utilities.philox import PhiloxGenerator
@@ -118,36 +119,40 @@ class UnipcSchedulerAdapter(KdiffusionSchedulerAdapter):
         device = optional_device or call.device
         dtype = optional_dtype or call.dtype
 
+        unet_or_controlnet = call
+
         def noise_pred_fn(x, t_continuous, cond=None, **model_kwargs):
             # Was originally get_model_input_time(t_continous)
             # but "schedule" is ALWAYS "discrete," so we can skip it :)
             t_input = (t_continuous - 1.0 / self.scheduler.total_N) * 1000
             if cond is None:
-                output = call(
+                output = unet_or_controlnet(
                     x.to(device=device, dtype=dtype),
                     t_input.to(device=device, dtype=dtype),
-                    return_dict=True,
+                    return_dict=False,
                     **model_kwargs,
-                )[0]
+                )
+                if isinstance(unet_or_controlnet, UNet2DConditionModel):
+                    output = output[0]
             else:
-                output = call(x.to(device=device, dtype=dtype), t_input.to(device=device, dtype=dtype), return_dict=True, encoder_hidden_states=cond, **model_kwargs)[0]  # type: ignore
-            if self.model_type == "noise":
-                return output
-            elif self.model_type == "x_start":
-                alpha_t, sigma_t = self.scheduler.marginal_alpha(
-                    t_continuous
-                ), self.scheduler.marginal_std(t_continuous)
-                return (x - alpha_t * output) / sigma_t
-            elif self.model_type == "v":
-                alpha_t, sigma_t = self.scheduler.marginal_alpha(
-                    t_continuous
-                ), self.scheduler.marginal_std(t_continuous)
-                return alpha_t * output + sigma_t * x
-            elif self.model_type == "score":
-                sigma_t = self.scheduler.marginal_std(t_continuous)
-                return -sigma_t * output
+                output = unet_or_controlnet(
+                    x.to(device=device, dtype=dtype),
+                    t_input.to(device=device, dtype=dtype),
+                    encoder_hidden_states=cond,
+                    return_dict=False,
+                    **model_kwargs,
+                )
+                if isinstance(unet_or_controlnet, UNet2DConditionModel):
+                    output = output[0]
+            return output
 
-        apply_model = functools.partial(apply_model, call=noise_pred_fn)
+        def change_source(src):
+            nonlocal unet_or_controlnet
+            unet_or_controlnet = src
+
+        apply_model = functools.partial(
+            apply_model, call=noise_pred_fn, change_source=change_source
+        )
 
         # predict_x0=True    ->   algorithm_type="data_prediction"
         # predict_x0=False   ->   algorithm_type="noise_prediction"

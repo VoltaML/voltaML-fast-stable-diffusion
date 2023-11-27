@@ -271,7 +271,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
 
         do_classifier_free_guidance = guidance_scale > 1.0
         if prompt is not None:
-            prompt_embeds, negative_prompt_embeds = get_weighted_text_embeddings(
+            prompt_embeds, _, negative_prompt_embeds, _ = get_weighted_text_embeddings(
                 self,
                 prompt=prompt,
                 uncond_prompt=negative_prompt,
@@ -341,7 +341,9 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     - float(i / len(timesteps) < 0.0 or (i + 1) / len(timesteps) > 1.0)
                 )
 
-        def do_denoise(x, t, call: Callable) -> torch.Tensor:
+        def do_denoise(
+            x, t, call: Callable, change_source: Callable[[Callable], None]
+        ) -> torch.Tensor:
             latent_model_input = (
                 torch.cat([x] * 2) if do_classifier_free_guidance else x
             )
@@ -447,6 +449,11 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                     callback_steps=1,
                 )
         else:
+            s = self.unet
+
+            def change(src):
+                nonlocal s
+                s = src
 
             def _call(*args, **kwargs):
                 if len(args) == 3:
@@ -461,7 +468,7 @@ class StableDiffusionAITPipeline(StableDiffusionPipeline):
                 )
 
             for i, t in enumerate(tqdm(timesteps, desc="AITemplate")):
-                latents = do_denoise(latents, t, _call)  # type: ignore
+                latents = do_denoise(latents, t, _call, change)  # type: ignore
 
                 # call the callback, if provided
                 if callback is not None:

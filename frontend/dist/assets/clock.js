@@ -9,12 +9,12 @@ import { d as defineComponent, o as openBlock, j as createElementBlock, f as cre
 import { a as NSlider, N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { N as NForm, a as NFormItem } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
-const _hoisted_1$2 = {
+const _hoisted_1$4 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M262.29 192.31a64 64 0 1 0 57.4 57.4a64.13 64.13 0 0 0-57.4-57.4zM416.39 256a154.34 154.34 0 0 1-1.53 20.79l45.21 35.46a10.81 10.81 0 0 1 2.45 13.75l-42.77 74a10.81 10.81 0 0 1-13.14 4.59l-44.9-18.08a16.11 16.11 0 0 0-15.17 1.75A164.48 164.48 0 0 1 325 400.8a15.94 15.94 0 0 0-8.82 12.14l-6.73 47.89a11.08 11.08 0 0 1-10.68 9.17h-85.54a11.11 11.11 0 0 1-10.69-8.87l-6.72-47.82a16.07 16.07 0 0 0-9-12.22a155.3 155.3 0 0 1-21.46-12.57a16 16 0 0 0-15.11-1.71l-44.89 18.07a10.81 10.81 0 0 1-13.14-4.58l-42.77-74a10.8 10.8 0 0 1 2.45-13.75l38.21-30a16.05 16.05 0 0 0 6-14.08c-.36-4.17-.58-8.33-.58-12.5s.21-8.27.58-12.35a16 16 0 0 0-6.07-13.94l-38.19-30A10.81 10.81 0 0 1 49.48 186l42.77-74a10.81 10.81 0 0 1 13.14-4.59l44.9 18.08a16.11 16.11 0 0 0 15.17-1.75A164.48 164.48 0 0 1 187 111.2a15.94 15.94 0 0 0 8.82-12.14l6.73-47.89A11.08 11.08 0 0 1 213.23 42h85.54a11.11 11.11 0 0 1 10.69 8.87l6.72 47.82a16.07 16.07 0 0 0 9 12.22a155.3 155.3 0 0 1 21.46 12.57a16 16 0 0 0 15.11 1.71l44.89-18.07a10.81 10.81 0 0 1 13.14 4.58l42.77 74a10.8 10.8 0 0 1-2.45 13.75l-38.21 30a16.05 16.05 0 0 0-6.05 14.08c.33 4.14.55 8.3.55 12.47z",
@@ -28,14 +28,14 @@ const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$2 = [_hoisted_2$2];
+const _hoisted_3$3 = [_hoisted_2$4];
 const SettingsOutline = defineComponent({
   name: "SettingsOutline",
   render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$2, _hoisted_3$2);
+    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_3$3);
   }
 });
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "OutputStats",
   props: {
     genData: {
@@ -73,17 +73,17 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$1 = {
+const _hoisted_1$3 = {
   key: 0,
   class: "flex-container"
 };
-const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _hoisted_3$1 = {
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
+const _hoisted_3$2 = {
   key: 1,
   class: "flex-container"
 };
 const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Batch Size", -1);
-const _sfc_main$2 = /* @__PURE__ */ defineComponent({
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "BatchSizeInput",
   props: {
     batchSizeObject: {
@@ -95,10 +95,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     const props = __props;
     const settings = useSettings();
     return (_ctx, _cache) => {
-      return unref(settings).data.settings.aitDim.batch_size ? (openBlock(), createElementBlock("div", _hoisted_1$1, [
+      return unref(settings).data.settings.aitDim.batch_size ? (openBlock(), createElementBlock("div", _hoisted_1$3, [
         createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
           trigger: withCtx(() => [
-            _hoisted_2$1
+            _hoisted_2$3
           ]),
           default: withCtx(() => [
             createTextVNode(" Number of images to generate in paralel. ")
@@ -120,7 +120,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
           max: unref(settings).data.settings.aitDim.batch_size[1],
           style: { "min-width": "96px", "width": "96px" }
         }, null, 8, ["value", "min", "max"])
-      ])) : (openBlock(), createElementBlock("div", _hoisted_3$1, [
+      ])) : (openBlock(), createElementBlock("div", _hoisted_3$2, [
         createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
           trigger: withCtx(() => [
             _hoisted_4$1
@@ -147,12 +147,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1 = {
+const _hoisted_1$2 = {
   key: 0,
   class: "flex-container"
 };
-const _hoisted_2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
-const _hoisted_3 = {
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
+const _hoisted_3$1 = {
   key: 1,
   class: "flex-container"
 };
@@ -167,7 +167,7 @@ const _hoisted_7 = {
   class: "flex-container"
 };
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
   __name: "DimensionsInput",
   props: {
     dimensionsObject: {
@@ -180,8 +180,8 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const settings = useSettings();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        unref(settings).data.settings.aitDim.width ? (openBlock(), createElementBlock("div", _hoisted_1, [
-          _hoisted_2,
+        unref(settings).data.settings.aitDim.width ? (openBlock(), createElementBlock("div", _hoisted_1$2, [
+          _hoisted_2$2,
           createVNode(unref(NSlider), {
             value: props.dimensionsObject.width,
             "onUpdate:value": _cache[0] || (_cache[0] = ($event) => props.dimensionsObject.width = $event),
@@ -199,7 +199,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
             max: unref(settings).data.settings.aitDim.width[1],
             step: 64
           }, null, 8, ["value", "min", "max"])
-        ])) : (openBlock(), createElementBlock("div", _hoisted_3, [
+        ])) : (openBlock(), createElementBlock("div", _hoisted_3$1, [
           _hoisted_4,
           createVNode(unref(NSlider), {
             value: props.dimensionsObject.width,
@@ -258,7 +258,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main = /* @__PURE__ */ defineComponent({
+const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "Prompt",
   props: {
     tab: {
@@ -411,7 +411,108 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Prompt = /* @__PURE__ */ _export_sfc(_sfc_main, [["__scopeId", "data-v-780680bc"]]);
+const Prompt = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-780680bc"]]);
+const _hoisted_1$1 = { class: "flex-container" };
+const _hoisted_2$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "CFG Scale", -1);
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 3-15 for most images.", -1);
+const _sfc_main$1 = /* @__PURE__ */ defineComponent({
+  __name: "CFGScaleInput",
+  props: {
+    tab: {
+      type: String,
+      required: true
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const settings = useSettings();
+    const cfgMax = computed(() => {
+      var scale = 30;
+      return scale + Math.max(
+        settings.defaultSettings.api.apply_unsharp_mask ? 15 : 0,
+        settings.defaultSettings.api.cfg_rescale_threshold == "off" ? 0 : 30
+      );
+    });
+    return (_ctx, _cache) => {
+      return openBlock(), createElementBlock("div", _hoisted_1$1, [
+        createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+          trigger: withCtx(() => [
+            _hoisted_2$1
+          ]),
+          default: withCtx(() => [
+            createTextVNode(" Guidance scale indicates how close should the model stay to the prompt. Higher values might be exactly what you want, but generated images might have some artifacts. Lower values give the model more freedom, and therefore might produce more coherent/less-artifacty images, but wouldn't follow the prompt as closely. "),
+            _hoisted_3
+          ]),
+          _: 1
+        }),
+        createVNode(unref(NSlider), {
+          value: unref(settings).data.settings[props.tab].cfg_scale,
+          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
+          min: 1,
+          max: cfgMax.value,
+          step: 0.5,
+          style: { "margin-right": "12px" }
+        }, null, 8, ["value", "max"]),
+        createVNode(unref(NInputNumber), {
+          value: unref(settings).data.settings[props.tab].cfg_scale,
+          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings[props.tab].cfg_scale = $event),
+          size: "small",
+          style: { "min-width": "96px", "width": "96px" },
+          min: 1,
+          max: cfgMax.value,
+          step: 0.5
+        }, null, 8, ["value", "max"])
+      ]);
+    };
+  }
+});
+const _hoisted_1 = {
+  key: 0,
+  class: "flex-container"
+};
+const _hoisted_2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Self Attention Scale", -1);
+const _sfc_main = /* @__PURE__ */ defineComponent({
+  __name: "SAGInput",
+  props: {
+    tab: {
+      type: String,
+      required: true
+    }
+  },
+  setup(__props) {
+    const props = __props;
+    const settings = useSettings();
+    return (_ctx, _cache) => {
+      var _a;
+      return ((_a = unref(settings).data.settings.model) == null ? void 0 : _a.backend) === "PyTorch" ? (openBlock(), createElementBlock("div", _hoisted_1, [
+        createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+          trigger: withCtx(() => [
+            _hoisted_2
+          ]),
+          default: withCtx(() => [
+            createTextVNode(" If self attention is >0, SAG will guide the model and improve the quality of the image at the cost of speed. Higher values will follow the guidance more closely, which can lead to better, more sharp and detailed outputs. ")
+          ]),
+          _: 1
+        }),
+        createVNode(unref(NSlider), {
+          value: unref(settings).data.settings[props.tab].self_attention_scale,
+          "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings[props.tab].self_attention_scale = $event),
+          min: 0,
+          max: 1,
+          step: 0.05,
+          style: { "margin-right": "12px" }
+        }, null, 8, ["value"]),
+        createVNode(unref(NInputNumber), {
+          value: unref(settings).data.settings[props.tab].self_attention_scale,
+          "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings[props.tab].self_attention_scale = $event),
+          size: "small",
+          style: { "min-width": "96px", "width": "96px" },
+          step: 0.05
+        }, null, 8, ["value"])
+      ])) : createCommentVNode("", true);
+    };
+  }
+});
 class BurnerClock {
   constructor(observed_value, settings, callback, timerOverrride = 0, sendInterrupt = true) {
     __publicField(this, "isChanging", ref(false));
@@ -484,7 +585,9 @@ class BurnerClock {
 export {
   BurnerClock as B,
   Prompt as P,
-  _sfc_main$1 as _,
-  _sfc_main$2 as a,
-  _sfc_main$3 as b
+  _sfc_main$3 as _,
+  _sfc_main$1 as a,
+  _sfc_main as b,
+  _sfc_main$4 as c,
+  _sfc_main$5 as d
 };

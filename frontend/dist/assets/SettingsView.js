@@ -1015,12 +1015,8 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                         value: "bicubic"
                       },
                       {
-                        label: "Bislerp (Original, slow)",
-                        value: "bislerp-original"
-                      },
-                      {
-                        label: "Bislerp (Tortured, fast)",
-                        value: "bislerp-tortured"
+                        label: "Bislerp",
+                        value: "bislerp"
                       },
                       {
                         label: "Nearest Exact",
@@ -1029,7 +1025,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
                     ],
                     value: unref(settings).defaultSettings.flags.highres.latent_scale_mode,
                     "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).defaultSettings.flags.highres.latent_scale_mode = $event)
-                  }, null, 8, ["options", "value"])
+                  }, null, 8, ["value"])
                 ]),
                 _: 1
               }),
@@ -1650,6 +1646,29 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   setup(__props) {
     const settings = useSettings();
     const global = useState();
+    const enabledCfg = computed({
+      get() {
+        return settings.defaultSettings.api.cfg_rescale_threshold != "off";
+      },
+      set(value) {
+        if (!value) {
+          settings.defaultSettings.api.cfg_rescale_threshold = "off";
+        } else {
+          settings.defaultSettings.api.cfg_rescale_threshold = 10;
+        }
+      }
+    });
+    const cfgRescaleValue = computed({
+      get() {
+        if (settings.defaultSettings.api.cfg_rescale_threshold == "off") {
+          return 1;
+        }
+        return settings.defaultSettings.api.cfg_rescale_threshold;
+      },
+      set(value) {
+        settings.defaultSettings.api.cfg_rescale_threshold = value;
+      }
+    });
     const availableDtypes = computed(() => {
       if (settings.defaultSettings.api.device.includes("cpu")) {
         return global.state.capabilities.supported_precisions_cpu.map((value) => {
@@ -1660,6 +1679,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               break;
             case "float16":
               description = "16-bit float";
+              break;
+            case "float8_e5m2":
+              description = "8-bit float (5-data)";
+              break;
+            case "float8_e4m3fn":
+              description = "8-bit float (4-data)";
               break;
             default:
               description = "16-bit bfloat";
@@ -1675,6 +1700,12 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
             break;
           case "float16":
             description = "16-bit float";
+            break;
+          case "float8_e5m2":
+            description = "8-bit float (5-data)";
+            break;
+          case "float8_e4m3fn":
+            description = "8-bit float (4-data)";
             break;
           default:
             description = "16-bit bfloat";
@@ -2057,7 +2088,51 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               ]),
               _: 1
             })
-          ])) : createCommentVNode("", true)
+          ])) : createCommentVNode("", true),
+          createVNode(unref(NFormItem), {
+            label: "Upcast VAE",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.upcast_vae,
+                "onUpdate:value": _cache[23] || (_cache[23] = ($event) => unref(settings).defaultSettings.api.upcast_vae = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "Apply unsharp mask",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSwitch), {
+                value: unref(settings).defaultSettings.api.apply_unsharp_mask,
+                "onUpdate:value": _cache[24] || (_cache[24] = ($event) => unref(settings).defaultSettings.api.apply_unsharp_mask = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          }),
+          createVNode(unref(NFormItem), {
+            label: "CFG Rescale Threshold",
+            "label-placement": "left"
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NSlider), {
+                value: cfgRescaleValue.value,
+                "onUpdate:value": _cache[25] || (_cache[25] = ($event) => cfgRescaleValue.value = $event),
+                disabled: !enabledCfg.value,
+                min: 2,
+                max: 30,
+                step: 0.5
+              }, null, 8, ["value", "disabled"]),
+              createVNode(unref(NSwitch), {
+                value: enabledCfg.value,
+                "onUpdate:value": _cache[26] || (_cache[26] = ($event) => enabledCfg.value = $event)
+              }, null, 8, ["value"])
+            ]),
+            _: 1
+          })
         ]),
         _: 1
       });
@@ -2154,25 +2229,16 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
     }
     function saveSettings() {
       saving.value = true;
-      fetch(`${serverUrl}/api/settings/save`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify(settings.defaultSettings)
-      }).then((res) => {
-        if (res.status === 200) {
-          message.success("Settings saved successfully");
-        } else {
-          res.json().then((data) => {
-            message.error("Error while saving settings");
-            notification.create({
-              title: "Error while saving settings",
-              content: data.message,
-              type: "error"
-            });
-          });
-        }
+      settings.saveSettings().then(() => {
+        message.success("Settings saved");
+      }).catch((e) => {
+        message.error("Failed to save settings");
+        notification.create({
+          title: "Failed to save settings",
+          content: e,
+          type: "error"
+        });
+      }).finally(() => {
         saving.value = false;
       });
     }

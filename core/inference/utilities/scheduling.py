@@ -112,14 +112,14 @@ def change_scheduler(
 
         new_scheduler = create_sampler(
             alphas_cumprod=sched.alphas_cumprod,  # type: ignore
-            denoiser_enable_quantization=True,
+            denoiser_enable_quantization=config.api.kdiffusers_quantization,
             sampler=scheduler,
             sigma_type=sigma_type,
             eta_noise_seed_delta=0,
             sigma_always_discard_next_to_last=False,
             sigma_use_old_karras_scheduler=False,
-            device=model.unet.device,  # type: ignore
-            dtype=model.unet.dtype,  # type: ignore
+            device=torch.device(config.api.device),  # type: ignore
+            dtype=config.api.load_dtype,  # type: ignore
             sampler_settings=sampler_settings,
         )
     model.scheduler = new_scheduler  # type: ignore

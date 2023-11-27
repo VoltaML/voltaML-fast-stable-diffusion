@@ -44,6 +44,7 @@ from core.types import (
     UpscaleData,
     UpscaleQueueEntry,
 )
+from core.optimizations import optimize_vae
 from core.utils import convert_images_to_base64_grid, convert_to_image, resize
 
 logger = logging.getLogger(__name__)
@@ -70,10 +71,6 @@ class PyTorchStableDiffusion(InferenceModel):
         self.text_encoder: CLIPTextModel
         self.tokenizer: CLIPTokenizer
         self.scheduler: Any
-        self.feature_extractor: Any
-        self.requires_safety_checker: bool
-        self.safety_checker: Any
-        self.image_encoder: Any
         self.controlnet: Optional[ControlNetModel] = None
 
         self.current_controlnet: str = ""
@@ -119,7 +116,7 @@ class PyTorchStableDiffusion(InferenceModel):
                     self.load_textual_inversion(textural_inversion)
                 except Exception as e:
                     logger.warning(
-                        f"Failed to load textual inversion {textural_inversion}: {e}"
+                        f"({e.__class__.__name__}) Failed to load textual inversion {textural_inversion}: {e}"
                     )
                     websocket_manager.broadcast_sync(
                         Notification(
@@ -142,6 +139,13 @@ class PyTorchStableDiffusion(InferenceModel):
             setattr(self, "original_vae", self.vae)
 
         old_vae = getattr(self, "original_vae")
+        # Not sure what I needed this for, but whatever
+        dtype = config.api.load_dtype
+        device = self.unet.device
+
+        if hasattr(self.text_encoder, "v_offload_device"):
+            device = torch.device("cpu")
+
         if vae == "default":
             self.vae = old_vae
         else:
@@ -150,9 +154,7 @@ class PyTorchStableDiffusion(InferenceModel):
                     f"https://huggingface.co/{vae}/raw/main/config.json"
                 ).json()["_class_name"]
                 cont = getattr(importlib.import_module("diffusers"), cont)
-                self.vae = cont.from_pretrained(vae).to(
-                    device=old_vae.device, dtype=old_vae.dtype
-                )
+                self.vae = cont.from_pretrained(vae).to(device, dtype)
                 if not hasattr(self.vae.config, "block_out_channels"):
                     setattr(
                         self.vae.config,
@@ -169,21 +171,17 @@ class PyTorchStableDiffusion(InferenceModel):
                     if Path(vae).is_dir():
                         self.vae = ModelMixin.from_pretrained(vae)  # type: ignore
                     else:
-                        self.vae = convert_vaept_to_diffusers(vae).to(
-                            device=old_vae.device, dtype=old_vae.dtype
-                        )
+                        self.vae = convert_vaept_to_diffusers(vae).to(device, dtype)
                 else:
                     raise FileNotFoundError(f"{vae} is not a valid path")
 
-        if isinstance(self.vae, AutoencoderKL):
-            if config.api.vae_slicing:
-                self.vae.enable_slicing()
-            if config.api.vae_tiling:
-                self.vae.enable_tiling()
+        # Check if text_encoder has v_offload_device, because it always
+        # gets wholly offloaded instead of being sequentially offloaded
+        if hasattr(self.text_encoder, "v_offload_device"):
+            from core.optimizations.offload import set_offload
 
-        logger.info(f"Successfully changed vae to {vae} of type {type(self.vae)}")
-
-        # This is at the end 'cause I've read horror stories about pythons prefetch system
+            self.vae = set_offload(self.vae, torch.device(config.api.device))  # type: ignore
+        self.vae = optimize_vae(self.vae)  # type: ignore
         self.vae_path = vae
 
     def unload(self) -> None:
@@ -195,9 +193,6 @@ class PyTorchStableDiffusion(InferenceModel):
             self.text_encoder,
             self.tokenizer,
             self.scheduler,
-            self.feature_extractor,
-            self.requires_safety_checker,
-            self.safety_checker,
         )
 
         if hasattr(self, "image_encoder"):
@@ -231,7 +226,7 @@ class PyTorchStableDiffusion(InferenceModel):
         load_lora_utilities(self)
 
         if not variations:
-            self.image_encoder = None
+            self.image_encoder = None  # type: ignore
 
         if self.current_controlnet != target_controlnet:
             logging.debug(f"Old: {self.current_controlnet}, New: {target_controlnet}")
@@ -249,7 +244,7 @@ class PyTorchStableDiffusion(InferenceModel):
             cn = ControlNetModel.from_pretrained(
                 target_controlnet,
                 resume_download=True,
-                torch_dtype=config.api.dtype,
+                torch_dtype=config.api.load_dtype,
             )
 
             assert isinstance(cn, ControlNetModel)
@@ -716,7 +711,13 @@ class PyTorchStableDiffusion(InferenceModel):
         token = Path(textual_inversion).stem
         logger.info(f"Loading token {token} for textual inversion model")
 
-        pipe.load_textual_inversion(textual_inversion, token=token)
+        try:
+            pipe.load_textual_inversion(textual_inversion, token=token)
+        except ValueError as e:
+            if "Loaded state dictonary is incorrect" in str(e):
+                logger.info(f"Assuming {textual_inversion} is for SDXL, skipping")
+                return
+            raise e
 
         self.textual_inversions.append(textual_inversion)
         logger.info(f"Textual inversion model {textual_inversion} loaded successfully")

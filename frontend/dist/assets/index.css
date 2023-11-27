@@ -26,6 +26,14 @@
   color: #63e2b7;
 }
 
+.generate-extra-card {
+  margin-top: 12px;
+}
+
+.generate-extra-card:last-child {
+  margin-bottom: 12px;
+}
+
 .navbar {
   position: fixed;
   top: 0;
@@ -50,12 +58,12 @@
   justify-content: center;
 }
 
-.progress-container[data-v-29f01b28] {
+.progress-container[data-v-91ace41f] {
   margin: 12px;
   flex-grow: 1;
   width: 400px;
 }
-.top-bar[data-v-29f01b28] {
+.top-bar[data-v-91ace41f] {
   display: inline-flex;
   align-items: center;
   padding-top: 10px;
@@ -66,7 +74,7 @@
   top: 0;
   z-index: 1;
 }
-.logo[data-v-29f01b28] {
+.logo[data-v-91ace41f] {
   margin-right: 16px;
   margin-left: 16px;
 }
@@ -90,39 +98,39 @@
   justify-content: center;
 }
 
-.image-container img[data-v-efacc8fd] {
+.image-container img[data-v-95a354be] {
   width: 100%;
   height: 100%;
   object-fit: contain;
   overflow: hidden;
 }
-.image-container[data-v-efacc8fd] {
+.image-container[data-v-95a354be] {
   height: 70vh;
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-.image-container img[data-v-9c556ef8] {
+.image-container img[data-v-116492bf] {
   width: 100%;
   height: 100%;
   object-fit: contain;
   overflow: hidden;
 }
-.image-container[data-v-9c556ef8] {
+.image-container[data-v-116492bf] {
   height: 70vh;
   width: 100%;
   display: flex;
   justify-content: center;
 }
 
-.hidden-input[data-v-7963dde9] {
+.hidden-input[data-v-6961892e] {
   display: none;
 }
-.utility-button[data-v-7963dde9] {
+.utility-button[data-v-6961892e] {
   margin-right: 8px;
 }
-.file-upload[data-v-7963dde9] {
+.file-upload[data-v-6961892e] {
   appearance: none;
   background-color: transparent;
   border: 1px solid #63e2b7;
@@ -142,21 +150,21 @@
   vertical-align: middle;
   white-space: nowrap;
 }
-.file-upload[data-v-7963dde9]:focus:not(:focus-visible):not(.focus-visible) {
+.file-upload[data-v-6961892e]:focus:not(:focus-visible):not(.focus-visible) {
   box-shadow: none;
   outline: none;
 }
-.file-upload[data-v-7963dde9]:focus {
+.file-upload[data-v-6961892e]:focus {
   box-shadow: rgba(46, 164, 79, 0.4) 0 0 0 3px;
   outline: none;
 }
-.file-upload[data-v-7963dde9]:disabled {
+.file-upload[data-v-6961892e]:disabled {
   background-color: #94d3a2;
   border-color: rgba(27, 31, 35, 0.1);
   color: rgba(255, 255, 255, 0.8);
   cursor: default;
 }
-.image-container[data-v-7963dde9] {
+.image-container[data-v-6961892e] {
   width: 100%;
   display: flex;
   justify-content: center;

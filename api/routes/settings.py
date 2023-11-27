@@ -4,7 +4,7 @@ import os
 from fastapi import APIRouter
 
 from core import config
-from core.config.config import update_config
+from core.config._config import update_config
 
 router = APIRouter(tags=["settings"])
 

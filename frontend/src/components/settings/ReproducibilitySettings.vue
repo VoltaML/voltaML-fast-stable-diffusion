@@ -215,6 +215,27 @@
         />
       </NFormItem>
     </div>
+
+    <NFormItem label="Upcast VAE" label-placement="left">
+      <NSwitch v-model:value="settings.defaultSettings.api.upcast_vae" />
+    </NFormItem>
+
+    <NFormItem label="Apply unsharp mask" label-placement="left">
+      <NSwitch
+        v-model:value="settings.defaultSettings.api.apply_unsharp_mask"
+      />
+    </NFormItem>
+
+    <NFormItem label="CFG Rescale Threshold" label-placement="left">
+      <NSlider
+        v-model:value="cfgRescaleValue"
+        :disabled="!enabledCfg"
+        :min="2"
+        :max="30"
+        :step="0.5"
+      />
+      <NSwitch v-model:value="enabledCfg" />
+    </NFormItem>
   </NForm>
 </template>
 
@@ -235,6 +256,31 @@ import { useState } from "../../store/state";
 const settings = useSettings();
 const global = useState();
 
+const enabledCfg = computed({
+  get() {
+    return settings.defaultSettings.api.cfg_rescale_threshold != "off";
+  },
+  set(value) {
+    if (!value) {
+      settings.defaultSettings.api.cfg_rescale_threshold = "off";
+    } else {
+      settings.defaultSettings.api.cfg_rescale_threshold = 10.0;
+    }
+  },
+});
+
+const cfgRescaleValue = computed({
+  get() {
+    if (settings.defaultSettings.api.cfg_rescale_threshold == "off") {
+      return 1.0;
+    }
+    return settings.defaultSettings.api.cfg_rescale_threshold;
+  },
+  set(value) {
+    settings.defaultSettings.api.cfg_rescale_threshold = value;
+  },
+});
+
 const availableDtypes = computed(() => {
   if (settings.defaultSettings.api.device.includes("cpu")) {
     return global.state.capabilities.supported_precisions_cpu.map((value) => {
@@ -245,6 +291,12 @@ const availableDtypes = computed(() => {
           break;
         case "float16":
           description = "16-bit float";
+          break;
+        case "float8_e5m2":
+          description = "8-bit float (5-data)";
+          break;
+        case "float8_e4m3fn":
+          description = "8-bit float (4-data)";
           break;
         default:
           description = "16-bit bfloat";
@@ -260,6 +312,12 @@ const availableDtypes = computed(() => {
         break;
       case "float16":
         description = "16-bit float";
+        break;
+      case "float8_e5m2":
+        description = "8-bit float (5-data)";
+        break;
+      case "float8_e4m3fn":
+        description = "8-bit float (4-data)";
         break;
       default:
         description = "16-bit bfloat";

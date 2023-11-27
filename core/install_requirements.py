@@ -14,8 +14,9 @@ renamed_requirements = {
     "opencv-contrib-python-headless": "cv2",
     "fastapi-analytics": "api_analytics",
     "cuda-python": "cuda",
-    "open_clip_torch": "open_clip",
+    "open-clip-torch": "open_clip",
     "python-multipart": "multipart",
+    "invisible-watermark": "imwatermark",
     "discord.py": "discord",
     "HyperTile": "hyper-tile",
     "stable-fast": "sfast",
@@ -159,9 +160,9 @@ _pytorch_distributions = [
             "-m",
             "pip",
             "install",
-            "torch==1.13.0a0",
-            "torchvision==0.14.1a0",
-            "intel_extension_for_pytorch==1.13.120+xpu",
+            "torch==2.0.1a0",
+            "torchvision==0.15.2a0",
+            "intel_extension_for_pytorch==2.0.110+xpu",
             "-f",
             "https://developer.intel.com/ipex-whl-stable-xpu",
         ],
@@ -238,7 +239,7 @@ def install_deps(force_distribution: int = -1):
         logger.info("Installing PyTorch")
         if platform.system() == "Darwin":
             subprocess.check_call(
-                [sys.executable, "-m", "pip", "install", "torch==2.0.0", "torchvision"]
+                [sys.executable, "-m", "pip", "install", "torch==2.1.0", "torchvision"]
             )
         else:
             for c in _pytorch_distributions:
@@ -409,8 +410,13 @@ def check_valid_python_version():
         print("Please consider switching to an older release to use volta!")
         raise RuntimeError("Unsupported Python version")
     elif minor < 9:
-        print("The python release you are currently using is older than our")
-        print("official supported version! Please consider updating to Python 3.11!")
+        print("--------------------------------------------------------")
+        print("| The python release you are currently using is older  |")
+        print("| than our official supported version! Please consider |")
+        print("| updating to Python 3.11!                             |")
+        print("|                                                      |")
+        print("| Issues will most likely be IGNORED!                  |")
+        print("--------------------------------------------------------")
 
 
 def is_up_to_date():

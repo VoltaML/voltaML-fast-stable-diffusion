@@ -37,6 +37,12 @@ export interface ISettings {
   backend: "PyTorch" | "AITemplate" | "ONNX" | "unknown";
   model: ModelEntry | null;
   flags: {
+    sdxl: {
+      original_size: {
+        width: number;
+        height: number;
+      };
+    };
     highres: {
       scale: number;
       mode: "latent" | "image";
@@ -47,14 +53,20 @@ export interface ISettings {
         | "nearest"
         | "area"
         | "bilinear"
-        | "bislerp-original"
-        | "bislerp-tortured"
+        | "bislerp"
         | "bicubic"
         | "nearest-exact";
       antialiased: boolean;
 
       strength: number;
       steps: 50;
+    };
+    refiner: {
+      model: string | undefined;
+      aesthetic_score: number;
+      negative_aesthetic_score: number;
+      steps: 50;
+      strength: number;
     };
   };
   aitDim: {
@@ -126,6 +138,7 @@ export interface ISettings {
     is_preprocessed: boolean;
     save_preprocessed: boolean;
     return_preprocessed: boolean;
+    self_attention_scale: number;
     sigmas: SigmaType;
   };
   upscale: {
@@ -167,10 +180,8 @@ export interface ISettings {
     subquadratic_size: number;
     attention_slicing: "auto" | number | "disabled";
     channels_last: boolean;
-    vae_slicing: boolean;
-    vae_tiling: boolean;
     trace_model: boolean;
-    offload: "module" | "model" | "disabled";
+    offload: "disabled" | "model" | "module";
     device: string;
     data_type: "float16" | "float32" | "bfloat16";
     deterministic_generation: boolean;
@@ -208,9 +219,16 @@ export interface ISettings {
     sgm_noise_multiplier: boolean;
     kdiffusers_quantization: boolean;
 
+    xl_refiner: "joint" | "separate";
+
     generator: "device" | "cpu" | "philox";
     live_preview_method: "disabled" | "approximation" | "taesd";
     live_preview_delay: number;
+    upcast_vae: boolean;
+    vae_slicing: boolean;
+    vae_tiling: boolean;
+    apply_unsharp_mask: boolean;
+    cfg_rescale_threshold: number | "off";
 
     prompt_to_prompt: boolean;
     prompt_to_prompt_model: string;
@@ -252,14 +270,27 @@ export const defaultSettings: ISettings = {
   backend: "PyTorch",
   model: null,
   flags: {
+    sdxl: {
+      original_size: {
+        width: 1024,
+        height: 1024,
+      },
+    },
     highres: {
       image_upscaler: "RealESRGAN_x4plus_anime_6B",
       mode: "latent",
       scale: 2,
-      latent_scale_mode: "bislerp-tortured",
+      latent_scale_mode: "bislerp",
       strength: 0.7,
       steps: 50,
       antialiased: false,
+    },
+    refiner: {
+      model: undefined,
+      aesthetic_score: 6.0,
+      negative_aesthetic_score: 2.5,
+      steps: 50,
+      strength: 0.3,
     },
   },
   aitDim: {
@@ -331,6 +362,7 @@ export const defaultSettings: ISettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
+    self_attention_scale: 0.0,
     sigmas: "automatic",
   },
   upscale: {
@@ -358,8 +390,6 @@ export const defaultSettings: ISettings = {
     subquadratic_size: 512,
     attention_slicing: "disabled",
     channels_last: true,
-    vae_slicing: false,
-    vae_tiling: false,
     trace_model: false,
     cudnn_benchmark: false,
     offload: "disabled",
@@ -404,9 +434,16 @@ export const defaultSettings: ISettings = {
     sgm_noise_multiplier: false,
     kdiffusers_quantization: true,
 
+    xl_refiner: "joint",
+
     generator: "device",
     live_preview_method: "approximation",
     live_preview_delay: 2.0,
+    upcast_vae: false,
+    vae_slicing: false,
+    vae_tiling: false,
+    apply_unsharp_mask: false,
+    cfg_rescale_threshold: 10.0,
 
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",

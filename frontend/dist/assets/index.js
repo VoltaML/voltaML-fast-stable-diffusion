@@ -38100,12 +38100,12 @@ const NThemeEditor = defineComponent({
     });
   }
 });
-const _hoisted_1$h = {
+const _hoisted_1$i = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$g = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M368 96H144a16 16 0 0 1 0-32h224a16 16 0 0 1 0 32z",
@@ -38115,7 +38115,7 @@ const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$f = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M400 144H112a16 16 0 0 1 0-32h288a16 16 0 0 1 0 32z",
@@ -38125,7 +38125,7 @@ const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M419.13 448H92.87A44.92 44.92 0 0 1 48 403.13V204.87A44.92 44.92 0 0 1 92.87 160h326.26A44.92 44.92 0 0 1 464 204.87v198.26A44.92 44.92 0 0 1 419.13 448z",
@@ -38135,10 +38135,52 @@ const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
+const _hoisted_5$8 = [_hoisted_2$g, _hoisted_3$f, _hoisted_4$c];
 const Albums = defineComponent({
   name: "Albums",
   render: function render2(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$i, _hoisted_5$8);
+  }
+});
+const _hoisted_1$h = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$f = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_3$e = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$b = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_5$7 = [_hoisted_2$f, _hoisted_3$e, _hoisted_4$b];
+const Create = defineComponent({
+  name: "Create",
+  render: function render3(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$h, _hoisted_5$7);
   }
 });
@@ -38150,7 +38192,7 @@ const _hoisted_1$g = {
 const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M459.94 53.25a16.06 16.06 0 0 0-23.22-.56L424.35 65a8 8 0 0 0 0 11.31l11.34 11.32a8 8 0 0 0 11.34 0l12.06-12c6.1-6.09 6.67-16.01.85-22.38z",
+    d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
     fill: "currentColor"
   },
   null,
@@ -38160,7 +38202,7 @@ const _hoisted_2$e = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M399.34 90L218.82 270.2a9 9 0 0 0-2.31 3.93L208.16 299a3.91 3.91 0 0 0 4.86 4.86l24.85-8.35a9 9 0 0 0 3.93-2.31L422 112.66a9 9 0 0 0 0-12.66l-9.95-10a9 9 0 0 0-12.71 0z",
+    d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
     fill: "currentColor"
   },
   null,
@@ -38170,7 +38212,7 @@ const _hoisted_3$d = /* @__PURE__ */ createBaseVNode(
 const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M386.34 193.66L264.45 315.79A41.08 41.08 0 0 1 247.58 326l-25.9 8.67a35.92 35.92 0 0 1-44.33-44.33l8.67-25.9a41.08 41.08 0 0 1 10.19-16.87l122.13-121.91a8 8 0 0 0-5.65-13.66H104a56 56 0 0 0-56 56v240a56 56 0 0 0 56 56h240a56 56 0 0 0 56-56V199.31a8 8 0 0 0-13.66-5.65z",
+    d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
     fill: "currentColor"
   },
   null,
@@ -38178,9 +38220,9 @@ const _hoisted_4$a = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_5$6 = [_hoisted_2$e, _hoisted_3$d, _hoisted_4$a];
-const Create = defineComponent({
-  name: "Create",
-  render: function render3(_ctx, _cache) {
+const Cube = defineComponent({
+  name: "Cube",
+  render: function render4(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$g, _hoisted_5$6);
   }
 });
@@ -38192,7 +38234,7 @@ const _hoisted_1$f = {
 const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M440.9 136.3a4 4 0 0 0 0-6.91L288.16 40.65a64.14 64.14 0 0 0-64.33 0L71.12 129.39a4 4 0 0 0 0 6.91L254 243.88a4 4 0 0 0 4.06 0z",
+    d: "M428 224H288a48 48 0 0 1-48-48V36a4 4 0 0 0-4-4h-92a64 64 0 0 0-64 64v320a64 64 0 0 0 64 64h224a64 64 0 0 0 64-64V228a4 4 0 0 0-4-4zm-92 160H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32zm0-80H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32z",
     fill: "currentColor"
   },
   null,
@@ -38202,28 +38244,18 @@ const _hoisted_2$d = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M54 163.51a4 4 0 0 0-6 3.49v173.89a48 48 0 0 0 23.84 41.39L234 479.51a4 4 0 0 0 6-3.46V274.3a4 4 0 0 0-2-3.46z",
+    d: "M419.22 188.59L275.41 44.78a2 2 0 0 0-3.41 1.41V176a16 16 0 0 0 16 16h129.81a2 2 0 0 0 1.41-3.41z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_4$9 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M272 275v201a4 4 0 0 0 6 3.46l162.15-97.23A48 48 0 0 0 464 340.89V167a4 4 0 0 0-6-3.45l-184 108a4 4 0 0 0-2 3.45z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_5$5 = [_hoisted_2$d, _hoisted_3$c, _hoisted_4$9];
-const Cube = defineComponent({
-  name: "Cube",
-  render: function render4(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_5$5);
+const _hoisted_4$9 = [_hoisted_2$d, _hoisted_3$c];
+const DocumentText = defineComponent({
+  name: "DocumentText",
+  render: function render5(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$f, _hoisted_4$9);
   }
 });
 const _hoisted_1$e = {
@@ -38234,7 +38266,7 @@ const _hoisted_1$e = {
 const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M428 224H288a48 48 0 0 1-48-48V36a4 4 0 0 0-4-4h-92a64 64 0 0 0-64 64v320a64 64 0 0 0 64 64h224a64 64 0 0 0 64-64V228a4 4 0 0 0-4-4zm-92 160H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32zm0-80H176a16 16 0 0 1 0-32h160a16 16 0 0 1 0 32z",
+    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
     fill: "currentColor"
   },
   null,
@@ -38244,7 +38276,7 @@ const _hoisted_2$c = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M419.22 188.59L275.41 44.78a2 2 0 0 0-3.41 1.41V176a16 16 0 0 0 16 16h129.81a2 2 0 0 0 1.41-3.41z",
+    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
     fill: "currentColor"
   },
   null,
@@ -38252,9 +38284,9 @@ const _hoisted_3$b = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$8 = [_hoisted_2$c, _hoisted_3$b];
-const DocumentText = defineComponent({
-  name: "DocumentText",
-  render: function render5(_ctx, _cache) {
+const Duplicate = defineComponent({
+  name: "Duplicate",
+  render: function render6(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$e, _hoisted_4$8);
   }
 });
@@ -38266,28 +38298,18 @@ const _hoisted_1$d = {
 const _hoisted_2$b = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M408 112H184a72 72 0 0 0-72 72v224a72 72 0 0 0 72 72h224a72 72 0 0 0 72-72V184a72 72 0 0 0-72-72zm-32.45 200H312v63.55c0 8.61-6.62 16-15.23 16.43A16 16 0 0 1 280 376v-64h-63.55c-8.61 0-16-6.62-16.43-15.23A16 16 0 0 1 216 280h64v-63.55c0-8.61 6.62-16 15.23-16.43A16 16 0 0 1 312 216v64h64a16 16 0 0 1 16 16.77c-.42 8.61-7.84 15.23-16.45 15.23z",
+    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$a = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M395.88 80A72.12 72.12 0 0 0 328 32H104a72 72 0 0 0-72 72v224a72.12 72.12 0 0 0 48 67.88V160a80 80 0 0 1 80-80z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$7 = [_hoisted_2$b, _hoisted_3$a];
-const Duplicate = defineComponent({
-  name: "Duplicate",
-  render: function render6(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_4$7);
+const _hoisted_3$a = [_hoisted_2$b];
+const Image$1 = defineComponent({
+  name: "Image",
+  render: function render7(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$d, _hoisted_3$a);
   }
 });
 const _hoisted_1$c = {
@@ -38298,18 +38320,28 @@ const _hoisted_1$c = {
 const _hoisted_2$a = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M416 64H96a64.07 64.07 0 0 0-64 64v256a64.07 64.07 0 0 0 64 64h320a64.07 64.07 0 0 0 64-64V128a64.07 64.07 0 0 0-64-64zm-80 64a48 48 0 1 1-48 48a48.05 48.05 0 0 1 48-48zM96 416a32 32 0 0 1-32-32v-67.63l94.84-84.3a48.06 48.06 0 0 1 65.8 1.9l64.95 64.81L172.37 416zm352-32a32 32 0 0 1-32 32H217.63l121.42-121.42a47.72 47.72 0 0 1 61.64-.16L448 333.84z",
+    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$9 = [_hoisted_2$a];
-const Image$1 = defineComponent({
-  name: "Image",
-  render: function render7(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_3$9);
+const _hoisted_3$9 = /* @__PURE__ */ createBaseVNode(
+  "path",
+  {
+    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    fill: "currentColor"
+  },
+  null,
+  -1
+  /* HOISTED */
+);
+const _hoisted_4$7 = [_hoisted_2$a, _hoisted_3$9];
+const Images = defineComponent({
+  name: "Images",
+  render: function render8(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$c, _hoisted_4$7);
   }
 });
 const _hoisted_1$b = {
@@ -38320,7 +38352,7 @@ const _hoisted_1$b = {
 const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M450.29 112H142c-34 0-62 27.51-62 61.33v245.34c0 33.82 28 61.33 62 61.33h308c34 0 62-26.18 62-60V173.33c0-33.82-27.68-61.33-61.71-61.33zm-77.15 61.34a46 46 0 1 1-46.28 46a46.19 46.19 0 0 1 46.28-46.01zm-231.55 276c-17 0-29.86-13.75-29.86-30.66v-64.83l90.46-80.79a46.54 46.54 0 0 1 63.44 1.83L328.27 337l-113 112.33zM480 418.67a30.67 30.67 0 0 1-30.71 30.66H259L376.08 333a46.24 46.24 0 0 1 59.44-.16L480 370.59z",
+    d: "M256 464c-114.69 0-208-93.23-208-207.82a207.44 207.44 0 0 1 74.76-160.13l16.9-14l28.17 33.72l-16.9 14A163.72 163.72 0 0 0 92 256.18c0 90.39 73.57 163.93 164 163.93s164-73.54 164-163.93a163.38 163.38 0 0 0-59.83-126.36l-17-14l28-33.82l17 14A207.13 207.13 0 0 1 464 256.18C464 370.77 370.69 464 256 464z",
     fill: "currentColor"
   },
   null,
@@ -38330,7 +38362,7 @@ const _hoisted_2$9 = /* @__PURE__ */ createBaseVNode(
 const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M384 32H64A64 64 0 0 0 0 96v256a64.11 64.11 0 0 0 48 62V152a72 72 0 0 1 72-72h326a64.11 64.11 0 0 0-62-48z",
+    d: "M234 48h44v224h-44z",
     fill: "currentColor"
   },
   null,
@@ -38338,9 +38370,9 @@ const _hoisted_3$8 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_4$6 = [_hoisted_2$9, _hoisted_3$8];
-const Images = defineComponent({
-  name: "Images",
-  render: function render8(_ctx, _cache) {
+const PowerSharp = defineComponent({
+  name: "PowerSharp",
+  render: function render9(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$b, _hoisted_4$6);
   }
 });
@@ -38352,28 +38384,18 @@ const _hoisted_1$a = {
 const _hoisted_2$8 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 464c-114.69 0-208-93.23-208-207.82a207.44 207.44 0 0 1 74.76-160.13l16.9-14l28.17 33.72l-16.9 14A163.72 163.72 0 0 0 92 256.18c0 90.39 73.57 163.93 164 163.93s164-73.54 164-163.93a163.38 163.38 0 0 0-59.83-126.36l-17-14l28-33.82l17 14A207.13 207.13 0 0 1 464 256.18C464 370.77 370.69 464 256 464z",
+    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
     fill: "currentColor"
   },
   null,
   -1
   /* HOISTED */
 );
-const _hoisted_3$7 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
-    d: "M234 48h44v224h-44z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_4$5 = [_hoisted_2$8, _hoisted_3$7];
-const PowerSharp = defineComponent({
-  name: "PowerSharp",
-  render: function render9(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_4$5);
+const _hoisted_3$7 = [_hoisted_2$8];
+const SettingsSharp = defineComponent({
+  name: "SettingsSharp",
+  render: function render10(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$a, _hoisted_3$7);
   }
 });
 const _hoisted_1$9 = {
@@ -38384,7 +38406,7 @@ const _hoisted_1$9 = {
 const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M256 176a80 80 0 1 0 80 80a80.24 80.24 0 0 0-80-80zm172.72 80a165.53 165.53 0 0 1-1.64 22.34l48.69 38.12a11.59 11.59 0 0 1 2.63 14.78l-46.06 79.52a11.64 11.64 0 0 1-14.14 4.93l-57.25-23a176.56 176.56 0 0 1-38.82 22.67l-8.56 60.78a11.93 11.93 0 0 1-11.51 9.86h-92.12a12 12 0 0 1-11.51-9.53l-8.56-60.78A169.3 169.3 0 0 1 151.05 393L93.8 416a11.64 11.64 0 0 1-14.14-4.92L33.6 331.57a11.59 11.59 0 0 1 2.63-14.78l48.69-38.12A174.58 174.58 0 0 1 83.28 256a165.53 165.53 0 0 1 1.64-22.34l-48.69-38.12a11.59 11.59 0 0 1-2.63-14.78l46.06-79.52a11.64 11.64 0 0 1 14.14-4.93l57.25 23a176.56 176.56 0 0 1 38.82-22.67l8.56-60.78A11.93 11.93 0 0 1 209.94 26h92.12a12 12 0 0 1 11.51 9.53l8.56 60.78A169.3 169.3 0 0 1 361 119l57.2-23a11.64 11.64 0 0 1 14.14 4.92l46.06 79.52a11.59 11.59 0 0 1-2.63 14.78l-48.69 38.12a174.58 174.58 0 0 1 1.64 22.66z",
+    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
     fill: "currentColor"
   },
   null,
@@ -38392,9 +38414,9 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   /* HOISTED */
 );
 const _hoisted_3$6 = [_hoisted_2$7];
-const SettingsSharp = defineComponent({
-  name: "SettingsSharp",
-  render: function render10(_ctx, _cache) {
+const Speedometer = defineComponent({
+  name: "Speedometer",
+  render: function render11(_ctx, _cache) {
     return openBlock(), createElementBlock("svg", _hoisted_1$9, _hoisted_3$6);
   }
 });
@@ -38406,28 +38428,6 @@ const _hoisted_1$8 = {
 const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
-    d: "M425.7 118.25A240 240 0 0 0 76.32 447l.18.2c.33.35.64.71 1 1.05c.74.84 1.58 1.79 2.57 2.78a41.17 41.17 0 0 0 60.36-.42a157.13 157.13 0 0 1 231.26 0a41.18 41.18 0 0 0 60.65.06l3.21-3.5l.18-.2a239.93 239.93 0 0 0-10-328.76zM240 128a16 16 0 0 1 32 0v32a16 16 0 0 1-32 0zM128 304H96a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32zm48.8-95.2a16 16 0 0 1-22.62 0l-22.63-22.62a16 16 0 0 1 22.63-22.63l22.62 22.63a16 16 0 0 1 0 22.62zm149.3 23.1l-47.5 75.5a31 31 0 0 1-7 7a30.11 30.11 0 0 1-35-49l75.5-47.5a10.23 10.23 0 0 1 11.7 0a10.06 10.06 0 0 1 2.3 14zm31.72-23.1a16 16 0 0 1-22.62-22.62l22.62-22.63a16 16 0 0 1 22.63 22.63zm65.88 227.6zM416 304h-32a16 16 0 0 1 0-32h32a16 16 0 0 1 0 32z",
-    fill: "currentColor"
-  },
-  null,
-  -1
-  /* HOISTED */
-);
-const _hoisted_3$5 = [_hoisted_2$6];
-const Speedometer = defineComponent({
-  name: "Speedometer",
-  render: function render11(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_3$5);
-  }
-});
-const _hoisted_1$7 = {
-  xmlns: "http://www.w3.org/2000/svg",
-  "xmlns:xlink": "http://www.w3.org/1999/xlink",
-  viewBox: "0 0 512 512"
-};
-const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
-  "path",
-  {
     d: "M104 496H72a24 24 0 0 1-24-24V328a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v144a24 24 0 0 1-24 24z",
     fill: "currentColor"
   },
@@ -38435,7 +38435,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M328 496h-32a24 24 0 0 1-24-24V232a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v240a24 24 0 0 1-24 24z",
@@ -38445,7 +38445,7 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M440 496h-32a24 24 0 0 1-24-24V120a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v352a24 24 0 0 1-24 24z",
@@ -38455,7 +38455,7 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M216 496h-32a24 24 0 0 1-24-24V40a24 24 0 0 1 24-24h32a24 24 0 0 1 24 24v432a24 24 0 0 1-24 24z",
@@ -38465,19 +38465,19 @@ const _hoisted_5$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$2 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4, _hoisted_5$4];
+const _hoisted_6$3 = [_hoisted_2$6, _hoisted_3$5, _hoisted_4$5, _hoisted_5$5];
 const StatsChart = defineComponent({
   name: "StatsChart",
   render: function render12(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_6$2);
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_6$3);
   }
 });
-const _hoisted_1$6 = {
+const _hoisted_1$7 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M434.67 285.59v-29.8c0-98.73-80.24-178.79-179.2-178.79a179 179 0 0 0-140.14 67.36m-38.53 82v29.8C76.8 355 157 435 256 435a180.45 180.45 0 0 0 140-66.92",
@@ -38491,7 +38491,7 @@ const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -38505,7 +38505,7 @@ const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -38519,19 +38519,19 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$3 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3];
+const _hoisted_5$4 = [_hoisted_2$5, _hoisted_3$4, _hoisted_4$4];
 const SyncSharp = defineComponent({
   name: "SyncSharp",
   render: function render13(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$3);
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_5$4);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M346.65 304.3a136 136 0 0 0-180.71 0a21 21 0 1 0 27.91 31.38a94 94 0 0 1 124.89 0a21 21 0 0 0 27.91-31.4z",
@@ -38541,7 +38541,7 @@ const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M256.28 183.7a221.47 221.47 0 0 0-151.8 59.92a21 21 0 1 0 28.68 30.67a180.28 180.28 0 0 1 246.24 0a21 21 0 1 0 28.68-30.67a221.47 221.47 0 0 0-151.8-59.92z",
@@ -38551,7 +38551,7 @@ const _hoisted_3$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M462 175.86a309 309 0 0 0-411.44 0a21 21 0 1 0 28 31.29a267 267 0 0 1 355.43 0a21 21 0 0 0 28-31.31z",
@@ -38561,7 +38561,7 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode(
   "circle",
   {
     cx: "256.28",
@@ -38573,11 +38573,11 @@ const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_6$1 = [_hoisted_2$3, _hoisted_3$2, _hoisted_4$2, _hoisted_5$2];
+const _hoisted_6$2 = [_hoisted_2$4, _hoisted_3$3, _hoisted_4$3, _hoisted_5$3];
 const Wifi = defineComponent({
   name: "Wifi",
   render: function render14(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_6$1);
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_6$2);
   }
 });
 /*!
@@ -40378,8 +40378,8 @@ function extractChangingRecords(to, from) {
 function useRouter() {
   return inject(routerKey);
 }
-const _hoisted_1$4 = { class: "navbar" };
-const _sfc_main$8 = /* @__PURE__ */ defineComponent({
+const _hoisted_1$5 = { class: "navbar" };
+const _sfc_main$9 = /* @__PURE__ */ defineComponent({
   __name: "CollapsibleNavbar",
   setup(__props) {
     function renderIcon(icon) {
@@ -40442,7 +40442,7 @@ const _sfc_main$8 = /* @__PURE__ */ defineComponent({
     ];
     let collapsed = ref(true);
     return (_ctx, _cache) => {
-      return openBlock(), createElementBlock("div", _hoisted_1$4, [
+      return openBlock(), createElementBlock("div", _hoisted_1$5, [
         createVNode(unref(NLayout), {
           style: { "height": "100%", "overflow": "visible" },
           "has-sider": "",
@@ -40550,6 +40550,8 @@ const useState2 = defineStore("state", () => {
     txt2img: {
       images: [],
       highres: false,
+      refiner: false,
+      sdxl_resize: false,
       currentImage: "",
       genData: {
         time_taken: null,
@@ -40631,8 +40633,14 @@ const useState2 = defineStore("state", () => {
     },
     autofill: [],
     autofill_special: [],
-    capabilities: defaultCapabilities
+    capabilities: defaultCapabilities,
     // Should get replaced at runtime
+    settings_diff: {
+      active: false,
+      default_value: "",
+      current_value: "",
+      key: []
+    }
   });
   async function fetchCapabilites() {
     state2.capabilities = await getCapabilities();
@@ -40652,14 +40660,15 @@ const useState2 = defineStore("state", () => {
 });
 var Backends = /* @__PURE__ */ ((Backends2) => {
   Backends2[Backends2["PyTorch"] = 0] = "PyTorch";
-  Backends2[Backends2["AITemplate"] = 1] = "AITemplate";
-  Backends2[Backends2["ONNX"] = 2] = "ONNX";
-  Backends2[Backends2["unknown"] = 3] = "unknown";
-  Backends2[Backends2["LoRA"] = 4] = "LoRA";
-  Backends2[Backends2["LyCORIS"] = 5] = "LyCORIS";
-  Backends2[Backends2["VAE"] = 6] = "VAE";
-  Backends2[Backends2["Textual Inversion"] = 7] = "Textual Inversion";
-  Backends2[Backends2["Upscaler"] = 8] = "Upscaler";
+  Backends2[Backends2["SDXL"] = 1] = "SDXL";
+  Backends2[Backends2["AITemplate"] = 2] = "AITemplate";
+  Backends2[Backends2["ONNX"] = 3] = "ONNX";
+  Backends2[Backends2["unknown"] = 4] = "unknown";
+  Backends2[Backends2["LoRA"] = 5] = "LoRA";
+  Backends2[Backends2["LyCORIS"] = 6] = "LyCORIS";
+  Backends2[Backends2["VAE"] = 7] = "VAE";
+  Backends2[Backends2["Textual Inversion"] = 8] = "Textual Inversion";
+  Backends2[Backends2["Upscaler"] = 9] = "Upscaler";
   return Backends2;
 })(Backends || {});
 var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
@@ -40678,14 +40687,27 @@ const defaultSettings = {
   backend: "PyTorch",
   model: null,
   flags: {
+    sdxl: {
+      original_size: {
+        width: 1024,
+        height: 1024
+      }
+    },
     highres: {
       image_upscaler: "RealESRGAN_x4plus_anime_6B",
       mode: "latent",
       scale: 2,
-      latent_scale_mode: "bislerp-tortured",
+      latent_scale_mode: "bislerp",
       strength: 0.7,
       steps: 50,
       antialiased: false
+    },
+    refiner: {
+      model: void 0,
+      aesthetic_score: 6,
+      negative_aesthetic_score: 2.5,
+      steps: 50,
+      strength: 0.3
     }
   },
   aitDim: {
@@ -40757,6 +40779,7 @@ const defaultSettings = {
     is_preprocessed: false,
     save_preprocessed: false,
     return_preprocessed: true,
+    self_attention_scale: 0,
     sigmas: "automatic"
   },
   upscale: {
@@ -40782,8 +40805,6 @@ const defaultSettings = {
     subquadratic_size: 512,
     attention_slicing: "disabled",
     channels_last: true,
-    vae_slicing: false,
-    vae_tiling: false,
     trace_model: false,
     cudnn_benchmark: false,
     offload: "disabled",
@@ -40817,9 +40838,15 @@ const defaultSettings = {
     hypertile_unet_chunk: 256,
     sgm_noise_multiplier: false,
     kdiffusers_quantization: true,
+    xl_refiner: "joint",
     generator: "device",
     live_preview_method: "approximation",
     live_preview_delay: 2,
+    upcast_vae: false,
+    vae_slicing: false,
+    vae_tiling: false,
+    apply_unsharp_mask: false,
+    cfg_rescale_threshold: 10,
     prompt_to_prompt: false,
     prompt_to_prompt_model: "lllyasviel/Fooocus-Expansion",
     prompt_to_prompt_device: "gpu",
@@ -40927,6 +40954,7 @@ function getSchedulerOptions() {
         { label: "Euler", value: "euler" },
         { label: "LMS", value: "lms" },
         { label: "Heun", value: "heun" },
+        { label: "Heun++", value: "heunpp" },
         { label: "DPM Fast", value: "dpm_fast" },
         { label: "DPM Adaptive", value: "dpm_adaptive" },
         { label: "DPM2", value: "dpm2" },
@@ -41070,13 +41098,29 @@ const useSettings = defineStore("settings", () => {
     console.log("Resetting settings to default");
     Object.assign(defaultSettings$1, defaultSettings);
   }
+  async function saveSettings() {
+    fetch(`${serverUrl}/api/settings/save`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify(defaultSettings$1)
+    }).then((res) => {
+      if (res.status === 200) {
+        console.log("Settings saved successfully");
+      } else {
+        throw new Error("Failed to save settings");
+      }
+    });
+  }
   const defaultSettings$1 = reactive(deepcopiedSettings);
   return {
     data,
     scheduler_options,
     controlnet_options,
     defaultSettings: defaultSettings$1,
-    resetSettings
+    resetSettings,
+    saveSettings
   };
 });
 const ImageUpload_vue_vue_type_style_index_0_scoped_9ed1514f_lang = "";
@@ -41087,7 +41131,7 @@ const _export_sfc = (sfc, props) => {
   }
   return target;
 };
-const _sfc_main$7 = /* @__PURE__ */ defineComponent({
+const _sfc_main$8 = /* @__PURE__ */ defineComponent({
   __name: "InitHandler",
   setup(__props) {
     console.log(
@@ -41110,7 +41154,7 @@ const _sfc_main$7 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _sfc_main$6 = /* @__PURE__ */ defineComponent({
+const _sfc_main$7 = /* @__PURE__ */ defineComponent({
   __name: "LogDrawer",
   setup(__props) {
     const glob = useState2();
@@ -41145,12 +41189,12 @@ const _sfc_main$6 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$3 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
-const _hoisted_3$1 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
-const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
-const _hoisted_5$1 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
-const _sfc_main$5 = /* @__PURE__ */ defineComponent({
+const _hoisted_1$4 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_2$3 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Utilization", -1);
+const _hoisted_3$2 = { style: { "width": "100%", "display": "inline-flex", "align-items": "center" } };
+const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode("p", { style: { "width": "108px" } }, "Memory", -1);
+const _hoisted_5$2 = { style: { "align-self": "flex-end", "margin-left": "12px" } };
+const _sfc_main$6 = /* @__PURE__ */ defineComponent({
   __name: "PerformanceDrawer",
   setup(__props) {
     const global2 = useState2();
@@ -41187,8 +41231,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                       ]),
                       _: 2
                     }, 1024),
-                    createBaseVNode("div", _hoisted_1$3, [
-                      _hoisted_2$2,
+                    createBaseVNode("div", _hoisted_1$4, [
+                      _hoisted_2$3,
                       createVNode(unref(NProgress), {
                         percentage: gpu.utilization,
                         type: "line",
@@ -41196,8 +41240,8 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                         style: { "flex-grow": "1", "width": "400px" }
                       }, null, 8, ["percentage"])
                     ]),
-                    createBaseVNode("div", _hoisted_3$1, [
-                      _hoisted_4$1,
+                    createBaseVNode("div", _hoisted_3$2, [
+                      _hoisted_4$2,
                       createVNode(unref(NProgress), {
                         percentage: gpu.memory_usage,
                         type: "line",
@@ -41205,7 +41249,7 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                         color: "#63e2b7",
                         "indicator-placement": "inside"
                       }, null, 8, ["percentage"]),
-                      createBaseVNode("p", _hoisted_5$1, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
+                      createBaseVNode("p", _hoisted_5$2, toDisplayString(gpu.memory_used) + " / " + toDisplayString(gpu.memory_total) + " MB ", 1)
                     ])
                   ]),
                   _: 2
@@ -41220,12 +41264,12 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const _hoisted_1$2 = /* @__PURE__ */ createBaseVNode("a", {
+const _hoisted_1$3 = /* @__PURE__ */ createBaseVNode("a", {
   target: "_blank",
   href: "https://huggingface.co/settings/tokens"
 }, "this page", -1);
-const _hoisted_2$1 = { style: { "margin-top": "8px", "width": "100%", "display": "flex", "justify-content": "end" } };
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _hoisted_2$2 = { style: { "margin-top": "8px", "width": "100%", "display": "flex", "justify-content": "end" } };
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "SecretsHandler",
   setup(__props) {
     const message = useMessage();
@@ -41266,7 +41310,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           createVNode(unref(NText), null, {
             default: withCtx(() => [
               createTextVNode(" API does not have a HuggingFace token. Please enter a valid token to continue. You can get a token from "),
-              _hoisted_1$2
+              _hoisted_1$3
             ]),
             _: 1
           }),
@@ -41278,7 +41322,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
             value: hf_token.value,
             "onUpdate:value": _cache[0] || (_cache[0] = ($event) => hf_token.value = $event)
           }, null, 8, ["value"]),
-          createBaseVNode("div", _hoisted_2$1, [
+          createBaseVNode("div", _hoisted_2$2, [
             createVNode(unref(NButton), {
               ghost: "",
               type: "primary",
@@ -41692,8 +41736,10 @@ function processWebSocket(message, global2, notificationProvider) {
       break;
     }
     case "notification": {
-      message.data.timeout = message.data.timeout || 5e3;
       console.log(message.data.message);
+      if (message.data.timeout === 0) {
+        message.data.timeout = null;
+      }
       notificationProvider.create({
         type: message.data.severity,
         title: message.data.title,
@@ -41742,6 +41788,13 @@ function processWebSocket(message, global2, notificationProvider) {
           global2.state.log_drawer.logs.pop();
         }
       }
+      break;
+    }
+    case "incorrect_settings_value": {
+      global2.state.settings_diff.default_value = message.data.default_value;
+      global2.state.settings_diff.current_value = message.data.current_value;
+      global2.state.settings_diff.key = message.data.key;
+      global2.state.settings_diff.active = true;
       break;
     }
     default: {
@@ -42057,27 +42110,28 @@ function urlFromPath(path) {
   const url = new URL(path, serverUrl);
   return url.href;
 }
-const _withScopeId = (n) => (pushScopeId("data-v-29f01b28"), n = n(), popScopeId(), n);
-const _hoisted_1$1 = { class: "top-bar" };
-const _hoisted_2 = { key: 0 };
-const _hoisted_3 = { key: 1 };
-const _hoisted_4 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
+const _withScopeId = (n) => (pushScopeId("data-v-91ace41f"), n = n(), popScopeId(), n);
+const _hoisted_1$2 = { class: "top-bar" };
+const _hoisted_2$1 = { key: 0 };
+const _hoisted_3$1 = { key: 1 };
+const _hoisted_4$1 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("img", {
   src: "https://i.imgflip.com/84840n.jpg",
   style: { "max-width": "30vw", "max-height": "30vh" }
 }, null, -1));
-const _hoisted_5 = { key: 2 };
-const _hoisted_6 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
-const _hoisted_7 = { style: { "display": "inline-flex" } };
-const _hoisted_8 = { key: 0 };
-const _hoisted_9 = { style: { "display": "inline-flex" } };
-const _hoisted_10 = { key: 1 };
-const _hoisted_11 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
-const _hoisted_12 = { key: 0 };
-const _hoisted_13 = { style: { "display": "inline-flex" } };
-const _hoisted_14 = { key: 1 };
-const _hoisted_15 = { class: "progress-container" };
-const _hoisted_16 = { style: { "display": "inline-flex", "align-items": "center" } };
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+const _hoisted_5$1 = { key: 2 };
+const _hoisted_6$1 = { style: { "display": "inline-flex", "width": "100%", "margin-bottom": "12px" } };
+const _hoisted_7$1 = { style: { "display": "flex", "flex-direction": "row", "align-items": "center" } };
+const _hoisted_8 = { style: { "display": "inline-flex" } };
+const _hoisted_9 = { key: 0 };
+const _hoisted_10 = { style: { "display": "inline-flex" } };
+const _hoisted_11 = { key: 1 };
+const _hoisted_12 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("b", null, "Ignore the tokens on CivitAI", -1));
+const _hoisted_13 = { key: 0 };
+const _hoisted_14 = { style: { "display": "inline-flex" } };
+const _hoisted_15 = { key: 1 };
+const _hoisted_16 = { class: "progress-container" };
+const _hoisted_17 = { style: { "display": "inline-flex", "align-items": "center" } };
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   __name: "TopBar",
   setup(__props) {
     const router2 = useRouter();
@@ -42130,35 +42184,74 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
         }
       });
     });
+    const manualVAEModels = computed(() => {
+      const selectedModel = global2.state.selected_model;
+      if ((selectedModel == null ? void 0 : selectedModel.type) === "SDXL") {
+        return [
+          {
+            name: "Default VAE (fp32)",
+            path: "default",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "default",
+            textual_inversions: [],
+            type: "SDXL",
+            stage: "last_stage"
+          },
+          {
+            name: "FP16 VAE",
+            path: "madebyollin/sdxl-vae-fp16-fix",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "fp16",
+            textual_inversions: [],
+            type: "SDXL",
+            stage: "last_stage"
+          }
+        ];
+      } else {
+        return [
+          {
+            name: "Default VAE",
+            path: "default",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "default",
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
+          },
+          {
+            name: "Tiny VAE (fast)",
+            path: "madebyollin/taesd",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "madebyollin/taesd",
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
+          },
+          {
+            name: "Asymmetric VAE",
+            path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+            backend: "VAE",
+            valid: true,
+            state: "not loaded",
+            vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
+            textual_inversions: [],
+            type: "SD1.x",
+            stage: "last_stage"
+          }
+        ];
+      }
+    });
     const vaeModels = computed(() => {
       return [
-        {
-          name: "Default VAE",
-          path: "default",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "default",
-          textual_inversions: []
-        },
-        {
-          name: "Tiny VAE (fast)",
-          path: "madebyollin/taesd",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "madebyollin/taesd",
-          textual_inversions: []
-        },
-        {
-          name: "Asymmetric VAE",
-          path: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-          backend: "VAE",
-          valid: true,
-          state: "not loaded",
-          vae: "cross-attention/asymmetric-autoencoder-kl-x-1-5",
-          textual_inversions: []
-        },
+        ...manualVAEModels.value,
         ...filteredModels.value.filter((model) => {
           return model.backend === "VAE";
         }).sort((a, b) => {
@@ -42273,7 +42366,11 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
       model.state = "loading";
       modelsLoading.value = true;
       const load_url = new URL(`${serverUrl}/api/models/load`);
-      const params = { model: model.path, backend: model.backend };
+      const params = {
+        model: model.path,
+        backend: model.backend,
+        type: model.type
+      };
       load_url.search = new URLSearchParams(params).toString();
       fetch(load_url, {
         method: "POST"
@@ -42388,6 +42485,21 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     function resetModels() {
       global2.state.models.splice(0, global2.state.models.length);
       console.log("Reset models");
+    }
+    function getModelTag(type) {
+      switch (type) {
+        case "SD1.x":
+          return [type, "primary"];
+        case "SD2.x":
+          return [type, "info"];
+        case "SDXL":
+          return [type, "warning"];
+        case "Kandinsky 2.1":
+        case "Kandinsky 2.2":
+          return ["Kandinsky", "success"];
+        default:
+          return [type, "error"];
+      }
     }
     websocketState.onConnectedCallbacks.push(() => {
       refreshModels();
@@ -42547,7 +42659,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     startWebsocket(message);
     return (_ctx, _cache) => {
       var _a2;
-      return openBlock(), createElementBlock("div", _hoisted_1$1, [
+      return openBlock(), createElementBlock("div", _hoisted_1$2, [
         createVNode(unref(NSelect), {
           style: { "max-width": "250px", "padding-left": "12px", "padding-right": "12px" },
           options: generatedModelOptions.value,
@@ -42579,7 +42691,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           "auto-focus": false
         }, {
           default: withCtx(() => [
-            unref(websocketState).readyState === "CLOSED" ? (openBlock(), createElementBlock("div", _hoisted_2, [
+            unref(websocketState).readyState === "CLOSED" ? (openBlock(), createElementBlock("div", _hoisted_2$1, [
               createVNode(unref(NResult), {
                 title: "You are not connected to the server",
                 description: "Click the button below to reconnect",
@@ -42599,7 +42711,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                 ]),
                 _: 1
               })
-            ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_3, [
+            ])) : unref(global2).state.models.length === 0 ? (openBlock(), createElementBlock("div", _hoisted_3$1, [
               createVNode(unref(NResult), {
                 title: "No models found",
                 style: { "height": "70vh", "display": "flex", "align-items": "center", "justify-content": "center", "flex-direction": "column" },
@@ -42623,15 +42735,15 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                       })
                     ]),
                     default: withCtx(() => [
-                      _hoisted_4
+                      _hoisted_4$1
                     ]),
                     _: 1
                   })
                 ]),
                 _: 1
               })
-            ])) : (openBlock(), createElementBlock("div", _hoisted_5, [
-              createBaseVNode("div", _hoisted_6, [
+            ])) : (openBlock(), createElementBlock("div", _hoisted_5$1, [
+              createBaseVNode("div", _hoisted_6$1, [
                 createVNode(unref(NInput), {
                   value: filter.value,
                   "onUpdate:value": _cache[3] || (_cache[3] = ($event) => filter.value = $event),
@@ -42681,8 +42793,20 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                           style: { "display": "inline-flex", "width": "100%", "align-items": "center", "justify-content": "space-between", "border-bottom": "1px solid rgb(66, 66, 71)" },
                                           key: model.path
                                         }, [
-                                          createBaseVNode("p", null, toDisplayString(model.name), 1),
-                                          createBaseVNode("div", _hoisted_7, [
+                                          createBaseVNode("div", _hoisted_7$1, [
+                                            createVNode(unref(NTag), {
+                                              type: getModelTag(model.type)[1],
+                                              ghost: "",
+                                              style: { "margin-right": "8px" }
+                                            }, {
+                                              default: withCtx(() => [
+                                                createTextVNode(toDisplayString(getModelTag(model.type)[0]), 1)
+                                              ]),
+                                              _: 2
+                                            }, 1032, ["type"]),
+                                            createBaseVNode("p", null, toDisplayString(model.name), 1)
+                                          ]),
+                                          createBaseVNode("div", _hoisted_8, [
                                             model.state === "loaded" ? (openBlock(), createBlock(unref(NButton), {
                                               key: 0,
                                               type: "error",
@@ -42730,7 +42854,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                 default: withCtx(() => [
                                   createVNode(unref(NCard), { title: vae_title.value }, {
                                     default: withCtx(() => [
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_8, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_9, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(vaeModels.value, (vae) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42738,7 +42862,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: vae.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(vae.name), 1),
-                                            createBaseVNode("div", _hoisted_9, [
+                                            createBaseVNode("div", _hoisted_10, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.vae) == vae.path ? (openBlock(), createBlock(unref(NButton), {
                                                 key: 0,
                                                 type: "error",
@@ -42765,7 +42889,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_10, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_11, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42794,12 +42918,12 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                         title: "Usage of textual inversion"
                                       }, {
                                         default: withCtx(() => [
-                                          _hoisted_11,
+                                          _hoisted_12,
                                           createTextVNode(". The name of the inversion that is displayed here will be the actual token (easynegative.pt -> easynegative) ")
                                         ]),
                                         _: 1
                                       }),
-                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_12, [
+                                      unref(global2).state.selected_model !== null ? (openBlock(), createElementBlock("div", _hoisted_13, [
                                         (openBlock(true), createElementBlock(Fragment, null, renderList(textualInversionModels.value, (textualInversion) => {
                                           var _a3;
                                           return openBlock(), createElementBlock("div", {
@@ -42807,7 +42931,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             key: textualInversion.path
                                           }, [
                                             createBaseVNode("p", null, toDisplayString(textualInversion.name), 1),
-                                            createBaseVNode("div", _hoisted_13, [
+                                            createBaseVNode("div", _hoisted_14, [
                                               ((_a3 = unref(global2).state.selected_model) == null ? void 0 : _a3.textual_inversions.includes(
                                                 textualInversion.path
                                               )) ? (openBlock(), createBlock(unref(NButton), {
@@ -42836,7 +42960,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                                             ])
                                           ]);
                                         }), 128))
-                                      ])) : (openBlock(), createElementBlock("div", _hoisted_14, [
+                                      ])) : (openBlock(), createElementBlock("div", _hoisted_15, [
                                         createVNode(unref(NAlert), {
                                           type: "warning",
                                           "show-icon": "",
@@ -42971,7 +43095,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
           ]),
           _: 1
         }, 8, ["show"]),
-        createBaseVNode("div", _hoisted_15, [
+        createBaseVNode("div", _hoisted_16, [
           createVNode(unref(NProgress), {
             type: "line",
             percentage: unref(global2).state.progress,
@@ -42991,7 +43115,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             _: 1
           }, 8, ["percentage", "processing"])
         ]),
-        createBaseVNode("div", _hoisted_16, [
+        createBaseVNode("div", _hoisted_17, [
           createVNode(unref(NDropdown), {
             options: dropdownOptions,
             onSelect: dropdownSelected
@@ -43013,16 +43137,126 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const TopBar_vue_vue_type_style_index_0_scoped_29f01b28_lang = "";
-const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-29f01b28"]]);
+const TopBar_vue_vue_type_style_index_0_scoped_91ace41f_lang = "";
+const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-91ace41f"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_efacc8fd_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_9c556ef8_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_7963dde9_lang = "";
+const ControlNet_vue_vue_type_style_index_0_scoped_95a354be_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_116492bf_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_6961892e_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
+const _hoisted_1$1 = { style: { "margin": "16px 0" } };
+const _hoisted_2 = /* @__PURE__ */ createBaseVNode("b", null, "Key in question:", -1);
+const _hoisted_3 = /* @__PURE__ */ createBaseVNode("br", null, null, -1);
+const _hoisted_4 = /* @__PURE__ */ createBaseVNode("b", null, "Current value", -1);
+const _hoisted_5 = /* @__PURE__ */ createBaseVNode("br", null, null, -1);
+const _hoisted_6 = /* @__PURE__ */ createBaseVNode("b", null, "Default value", -1);
+const _hoisted_7 = /* @__PURE__ */ createBaseVNode("br", null, null, -1);
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+  __name: "SettingsDiffResolver",
+  setup(__props) {
+    const global2 = useState2();
+    const settings = useSettings();
+    const message = useMessage();
+    function apply2() {
+      const key = global2.state.settings_diff.key;
+      const default_value = global2.state.settings_diff.default_value;
+      const indexable_keys = key.slice(0, key.length - 1);
+      const last_key = key[key.length - 1];
+      let current = settings.defaultSettings;
+      for (const indexable_key of indexable_keys) {
+        current = current[indexable_key];
+      }
+      current[last_key] = default_value;
+      settings.saveSettings().then(() => {
+        message.success("Settings saved");
+      }).catch((e) => {
+        message.error("Failed to save settings: " + e);
+      }).finally(() => {
+        global2.state.settings_diff.active = false;
+      });
+    }
+    return (_ctx, _cache) => {
+      return openBlock(), createBlock(unref(NModal), {
+        show: unref(global2).state.settings_diff.active
+      }, {
+        default: withCtx(() => [
+          createVNode(unref(NCard), {
+            title: "Settings Diff Resolver",
+            style: { "max-width": "90vw" }
+          }, {
+            default: withCtx(() => [
+              createVNode(unref(NAlert), {
+                "show-icon": "",
+                type: "warning"
+              }, {
+                default: withCtx(() => [
+                  createTextVNode("Failed to save config")
+                ]),
+                _: 1
+              }),
+              createBaseVNode("div", _hoisted_1$1, [
+                _hoisted_2,
+                createTextVNode(" " + toDisplayString(unref(global2).state.settings_diff.key.join("->")) + " ", 1),
+                _hoisted_3,
+                _hoisted_4,
+                createTextVNode(" " + toDisplayString(unref(global2).state.settings_diff.current_value) + " ", 1),
+                _hoisted_5,
+                _hoisted_6,
+                createTextVNode(" " + toDisplayString(unref(global2).state.settings_diff.default_value) + " ", 1),
+                _hoisted_7
+              ]),
+              createVNode(unref(NGrid), {
+                cols: "2",
+                "x-gap": "8"
+              }, {
+                default: withCtx(() => [
+                  createVNode(unref(NGi), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(NButton), {
+                        type: "warning",
+                        block: "",
+                        ghost: "",
+                        style: { "width": "100%" },
+                        onClick: _cache[0] || (_cache[0] = ($event) => unref(global2).state.settings_diff.active = false)
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" I Will Fix It Myself ")
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  createVNode(unref(NGi), null, {
+                    default: withCtx(() => [
+                      createVNode(unref(NButton), {
+                        type: "primary",
+                        style: { "width": "100%" },
+                        onClick: apply2
+                      }, {
+                        default: withCtx(() => [
+                          createTextVNode(" Apply Default Value and Save ")
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  })
+                ]),
+                _: 1
+              })
+            ]),
+            _: 1
+          })
+        ]),
+        _: 1
+      }, 8, ["show"]);
+    };
+  }
+});
 const _sfc_main$2 = {};
 function _sfc_render(_ctx, _cache) {
   const _component_RouterView = resolveComponent("RouterView");
@@ -43044,13 +43278,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               createVNode(unref(NMessageProvider), null, {
                 default: withCtx(() => [
                   _hoisted_1,
-                  createVNode(unref(_sfc_main$4)),
-                  createVNode(unref(_sfc_main$8)),
-                  createVNode(unref(TopBar)),
-                  createVNode(unref(_sfc_main$7)),
-                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
                   createVNode(unref(_sfc_main$5)),
-                  createVNode(unref(_sfc_main$6))
+                  createVNode(unref(_sfc_main$9)),
+                  createVNode(unref(TopBar)),
+                  createVNode(unref(_sfc_main$8)),
+                  createVNode(routerContainerVue, { style: { "margin-top": "52px" } }),
+                  createVNode(unref(_sfc_main$6)),
+                  createVNode(unref(_sfc_main$7)),
+                  createVNode(unref(_sfc_main$3))
                 ]),
                 _: 1
               })

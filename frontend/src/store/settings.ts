@@ -1,3 +1,4 @@
+import { serverUrl } from "@/env";
 import type { SelectMixedOption } from "naive-ui/es/select/src/interface";
 import { defineStore } from "pinia";
 import { computed, reactive } from "vue";
@@ -59,6 +60,7 @@ export function getSchedulerOptions() {
         { label: "Euler", value: "euler" },
         { label: "LMS", value: "lms" },
         { label: "Heun", value: "heun" },
+        { label: "Heun++", value: "heunpp" },
         { label: "DPM Fast", value: "dpm_fast" },
         { label: "DPM Adaptive", value: "dpm_adaptive" },
         { label: "DPM2", value: "dpm2" },
@@ -212,6 +214,22 @@ export const useSettings = defineStore("settings", () => {
     Object.assign(defaultSettings, defaultSettingsTemplate);
   }
 
+  async function saveSettings() {
+    fetch(`${serverUrl}/api/settings/save`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(defaultSettings),
+    }).then((res) => {
+      if (res.status === 200) {
+        console.log("Settings saved successfully");
+      } else {
+        throw new Error("Failed to save settings");
+      }
+    });
+  }
+
   // Deep copy default settings
   const defaultSettings: ISettings = reactive(deepcopiedSettings);
 
@@ -221,5 +239,6 @@ export const useSettings = defineStore("settings", () => {
     controlnet_options,
     defaultSettings,
     resetSettings,
+    saveSettings,
   };
 });
