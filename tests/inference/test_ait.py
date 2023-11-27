@@ -22,7 +22,7 @@ except ModuleNotFoundError:
 
 from core.inference.ait import AITemplateStableDiffusion
 
-model = "Azher--Anything-v4.5-vae-fp16-diffuser__512-1024x512-1024x1-1"
+model = "Azher--Anything-v4.5-vae-fp16-diffuser__128-512x128-512x1-1"
 MODIFIED_KDIFF_SAMPLERS = deepcopy(KDIFF_SAMPLERS)
 MODIFIED_KDIFF_SAMPLERS.remove("unipc_multistep")
 
