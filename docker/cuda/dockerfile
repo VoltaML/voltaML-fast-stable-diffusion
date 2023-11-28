@@ -1,0 +1,46 @@
+FROM nvidia/cuda:12.1.0-runtime-ubuntu22.04
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Basic dependencies
+RUN apt update && apt install curl -y
+RUN apt install time git -y
+RUN apt install python3 python3-pip -y
+RUN pip install --upgrade pip
+RUN apt install -y ca-certificates curl gnupg
+
+# Set up Node.js and Yarn
+RUN mkdir -p /etc/apt/keyrings
+RUN curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+RUN echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_20.x nodistro main" | tee /etc/apt/sources.list.d/nodesource.list
+RUN apt update
+RUN apt install nodejs -y
+RUN npm i -g yarn
+
+# Set up working directory and copy requirement definitions
+WORKDIR /app
+COPY requirements /app/requirements
+
+# PyTorch goes first to avoid redownloads
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install torch torchvision torchaudio
+
+# Other Python dependencies
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install python-dotenv requests
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/api.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/bot.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/pytorch.txt
+RUN --mount=type=cache,mode=0755,target=/root/.cache/pip pip install -r requirements/interrogation.txt
+
+COPY . /app
+
+# Install frontend dependencies and build the frontend
+RUN --mount=type=cache,mode=0755,target=/app/frontend/node_modules cd frontend && yarn install && yarn build
+RUN rm -rf frontend/node_modules
+
+# Remove caches
+RUN rm -rf /root/.cache
+RUN rm -rf /usr/local/share/.cache
+
+# Run the server
+RUN chmod +x scripts/start.sh
+ENTRYPOINT ["bash", "./scripts/start.sh"]
