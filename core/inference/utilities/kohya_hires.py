@@ -50,6 +50,10 @@ CrossAttnUpBlock2D.forward = nf
 UpBlock2D.forward = nf
 
 
+def _round(x, y):
+    return y * round(x / y)
+
+
 def modify_unet(
     unet: UNet2DConditionModel,
     step: int,
@@ -95,6 +99,21 @@ def modify_unet(
                         return self._orignal_forawrd(hidden_states, *args, **kwargs)
 
                     block.forward = partial(new_forawrd, block)
+            # In case someone wants to work on smooth scaling
+            # The double comments are there 'cause of attempts made before
+            # else:
+            #     scale_ratio = step / (total_steps * s)
+            #     downscale = min(
+            #         (1 - flag.base_scale) * scale_ratio + flag.base_scale,
+            #     )
+            #     # upscale = _round(
+            #     upscale = (1.0 / flag.base_scale) * (flag.base_scale / downscale) #, 0.25
+            #     # )
+            #     unet.down_blocks[d].kohya_scale = downscale #  _round(downscale, 0.2)  # type: ignore
+            #     unet.up_blocks[out_d].kohya_scale = upscale  # type: ignore
+            #     print(
+            #         unet.down_blocks[d].kohya_scale, unet.up_blocks[out_d].kohya_scale
+            #     )
             return unet
         elif hasattr(unet.down_blocks[d], "kohya_scale") and (
             p1[1] != p2[1] or s == p2[0]
