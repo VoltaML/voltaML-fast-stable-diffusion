@@ -5,8 +5,9 @@ import { _ as _sfc_main$a } from "./ImageOutput.vue_vue_type_script_setup_true_l
 import { I as ImageUpload } from "./ImageUpload.js";
 import { _ as _sfc_main$4 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
 import { v as v4 } from "./v4.js";
-import { a as NSlider, N as NSwitch } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
+import { N as NSwitch } from "./Switch.js";
 import "./DescriptionsItem.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";

@@ -170,23 +170,20 @@
   justify-content: center;
 }
 
-.img-slider[data-v-e10a07d2] {
+.img-slider[data-v-aac1a1fc] {
   aspect-ratio: 1/1;
   height: 182px;
   width: auto;
 }
-.image-grid[data-v-e10a07d2] {
+.image-grid[data-v-aac1a1fc] {
   display: grid;
-  grid-template-columns: repeat(
-    var(--6b1de230),
-    1fr
-  );
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-gap: 8px;
 }
-.top-bar[data-v-e10a07d2] {
-  background-color: var(--a55b21d8);
+.top-bar[data-v-aac1a1fc] {
+  background-color: var(--5ae1a71d);
 }
-.image-column[data-v-e10a07d2] {
+.image-column[data-v-aac1a1fc] {
   display: flex;
   flex-direction: column;
 }

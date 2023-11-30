@@ -65,22 +65,15 @@
       ]"
       style="margin-right: 4px"
     />
-    <NButton @click="refreshImages" style="margin-right: 24px" type="primary">
+    <NButton
+      @click="refreshImages"
+      style="margin-right: 24px; padding: 0px 48px"
+      type="primary"
+    >
       <NIcon>
         <SearchOutline />
       </NIcon>
     </NButton>
-
-    <NIcon style="margin-right: 12px" size="22">
-      <GridOutline />
-    </NIcon>
-    <NSlider
-      style="width: 30vw"
-      :min="1"
-      :max="10"
-      v-model:value="settings.data.settings.frontend.image_browser_columns"
-    >
-    </NSlider>
   </div>
   <div class="main-container" style="margin: 12px; margin-top: 8px">
     <div ref="scrollComponent">
@@ -102,40 +95,12 @@
               margin-bottom: 8px;
             "
           >
-            <div v-if="item.modelVersions[0].images[0]?.url">
-              <img
-                :src="item.modelVersions[0].images[0].url"
-                :style="{
-                  width: '100%',
-                  height: 'auto',
-                  minHeight: '200px',
-                  cursor: 'pointer',
-                  borderRadius: '8px',
-                  filter:
-                    nsfwIndex(item.modelVersions[0].images[0].nsfw) >
-                    settings.data.settings.frontend.nsfw_ok_threshold
-                      ? 'blur(12px)'
-                      : 'none',
-                }"
-                @click="imgClick(column_index, item_index)"
-              />
-              <div
-                style="
-                  position: absolute;
-                  width: 100%;
-                  bottom: 0;
-                  padding: 0 8px;
-                  min-height: 32px;
-                  overflow: hidden;
-                  box-sizing: border-box;
-                  backdrop-filter: blur(12px);
-                "
-              >
-                <NText :depth="2">
-                  {{ item.name }}
-                </NText>
-              </div>
-            </div>
+            <CivitAIModelImage
+              :item="item"
+              :column_index="column_index"
+              :item_index="item_index"
+              @img-click="imgClick"
+            />
           </div>
         </div>
       </div>
@@ -144,18 +109,10 @@
 </template>
 
 <script lang="ts" setup>
-import { ModelPopup } from "@/components";
+import { CivitAIModelImage, ModelPopup } from "@/components";
 import { themeOverridesKey } from "@/injectionKeys";
-import { GridOutline, SearchOutline } from "@vicons/ionicons5";
-import {
-  NButton,
-  NIcon,
-  NInput,
-  NSelect,
-  NSlider,
-  NText,
-  useLoadingBar,
-} from "naive-ui";
+import { SearchOutline } from "@vicons/ionicons5";
+import { NButton, NIcon, NInput, NSelect, useLoadingBar } from "naive-ui";
 import {
   computed,
   inject,
@@ -166,7 +123,6 @@ import {
   type Ref,
 } from "vue";
 import type { ICivitAIModel, ICivitAIModels } from "../../civitai";
-import { nsfwIndex } from "../../civitai";
 import { useSettings } from "../../store/settings";
 
 const settings = useSettings();
@@ -378,10 +334,7 @@ refreshImages();
 
 .image-grid {
   display: grid;
-  grid-template-columns: repeat(
-    v-bind("settings.data.settings.frontend.image_browser_columns"),
-    1fr
-  );
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-gap: 8px;
 }
 

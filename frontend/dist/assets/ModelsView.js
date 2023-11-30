@@ -1,8 +1,7 @@
-import { d as defineComponent, y as h, O as replaceable, P as createInjectionKey, Q as cB, R as inject, S as useConfig, T as useTheme, U as popselectLight, c as computed, V as createTreeMate, K as watch, W as nextTick, X as toRef, Y as useThemeClass, Z as NInternalSelectMenu, $ as createTmOptions, a0 as happensIn, a1 as call, a2 as keysOf, z as ref, a3 as provide, a4 as keep, a5 as createRefSetter, a6 as mergeEventHandlers, a7 as omit, a8 as NPopover, a9 as popoverBaseProps, aa as c, ab as cM, ac as cNotM, ad as useLocale, ae as useMergedState, af as watchEffect, ag as useRtl, ah as createKey, ai as resolveSlot, J as NInput, i as NSelect, F as Fragment, aj as NBaseIcon, ak as useAdjustedTo, al as paginationLight, am as useMergedClsPrefix, an as ellipsisLight, ao as onDeactivated, l as NTooltip, ap as mergeProps, aq as useStyle, ar as useFormItem, as as useMemo, at as cE, au as radioLight, av as resolveWrappedSlot, aw as flatten$1, ax as getSlot, ay as depx, az as formatLength, A as NButton, aA as NScrollbar, aB as onBeforeUnmount, aC as off, aD as on, aE as ChevronDownIcon, aF as NDropdown, aG as pxfy, aH as get, aI as NIconSwitchTransition, aJ as NBaseLoading, aK as ChevronRightIcon, q as onUnmounted, aL as VResizeObserver, aM as warn, aN as cssrAnchorMetaName, aO as VVirtualList, aP as NEmpty, aQ as repeat, aR as beforeNextFrameOnce, aS as fadeInScaleUpTransition, aT as iconSwitchTransition, aU as insideModal, aV as insidePopover, aW as createId, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, o as openBlock, j as createElementBlock, f as createBaseVNode, b6 as useCssVars, h as unref, u as useSettings, b7 as themeOverridesKey, b8 as reactive, b9 as onMounted, g as createVNode, w as withCtx, B as NIcon, L as renderList, ba as normalizeStyle, k as createTextVNode, C as toDisplayString, bb as NText, m as createCommentVNode, _ as _export_sfc, a as useState, p as useMessage, bc as huggingfaceModelsFile, n as NCard, t as serverUrl, v as pushScopeId, x as popScopeId, N as NSpace, bd as NModal, e as createBlock, r as NGi, s as NGrid, be as NDivider, bf as Backends, D as NTabPane, E as NTabs } from "./index.js";
-import { _ as _sfc_main$5, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
-import { G as GridOutline } from "./GridOutline.js";
-import { a as NSlider, N as NSwitch } from "./Switch.js";
+import { d as defineComponent, y as h, O as replaceable, P as createInjectionKey, Q as cB, R as inject, S as useConfig, T as useTheme, U as popselectLight, c as computed, V as createTreeMate, K as watch, W as nextTick, X as toRef, Y as useThemeClass, Z as NInternalSelectMenu, $ as createTmOptions, a0 as happensIn, a1 as call, a2 as keysOf, z as ref, a3 as provide, a4 as keep, a5 as createRefSetter, a6 as mergeEventHandlers, a7 as omit, a8 as NPopover, a9 as popoverBaseProps, aa as c, ab as cM, ac as cNotM, ad as useLocale, ae as useMergedState, af as watchEffect, ag as useRtl, ah as createKey, ai as resolveSlot, J as NInput, i as NSelect, F as Fragment, aj as NBaseIcon, ak as useAdjustedTo, al as paginationLight, am as useMergedClsPrefix, an as ellipsisLight, ao as onDeactivated, l as NTooltip, ap as mergeProps, aq as useStyle, ar as useFormItem, as as useMemo, at as cE, au as radioLight, av as resolveWrappedSlot, aw as flatten$1, ax as getSlot, ay as depx, az as formatLength, A as NButton, aA as NScrollbar, aB as onBeforeUnmount, aC as off, aD as on, aE as ChevronDownIcon, aF as NDropdown, aG as pxfy, aH as get, aI as NIconSwitchTransition, aJ as NBaseLoading, aK as ChevronRightIcon, q as onUnmounted, aL as VResizeObserver, aM as warn, aN as cssrAnchorMetaName, aO as VVirtualList, aP as NEmpty, aQ as repeat, aR as beforeNextFrameOnce, aS as fadeInScaleUpTransition, aT as iconSwitchTransition, aU as insideModal, aV as insidePopover, aW as createId, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, o as openBlock, j as createElementBlock, b6 as createStaticVNode, f as createBaseVNode, b7 as useCssVars, h as unref, u as useSettings, b8 as themeOverridesKey, b9 as reactive, ba as onMounted, g as createVNode, w as withCtx, B as NIcon, L as renderList, _ as _export_sfc, m as createCommentVNode, bb as normalizeStyle, k as createTextVNode, C as toDisplayString, bc as NText, e as createBlock, bd as withModifiers, a as useState, p as useMessage, be as huggingfaceModelsFile, n as NCard, t as serverUrl, v as pushScopeId, x as popScopeId, N as NSpace, bf as NModal, r as NGi, s as NGrid, bg as NDivider, bh as Backends, D as NTabPane, E as NTabs } from "./index.js";
+import { _ as _sfc_main$6, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
 import { N as NCheckboxGroup, a as NCheckbox, S as Settings } from "./Settings.js";
+import { N as NSwitch } from "./Switch.js";
 import { g as getFilesFromEntries, i as isImageFile, N as NImage, d as download, a as NImageGroup, c as createSettledFileInfo, e as environmentSupportFile, m as matchType, b as createImageDataUrl, T as TrashBin } from "./TrashBin.js";
 import { C as CloudUpload } from "./CloudUpload.js";
 import "./DescriptionsItem.js";
@@ -1398,8 +1397,8 @@ const RenderSorter = defineComponent({
     }
   },
   render() {
-    const { render: render4, order } = this;
-    return render4({
+    const { render: render5, order } = this;
+    return render5({
       order
     });
   }
@@ -1575,8 +1574,8 @@ const RenderFilter = defineComponent({
     }
   },
   render() {
-    const { render: render4, active, show } = this;
-    return render4({
+    const { render: render5, active, show } = this;
+    return render5({
       active,
       show
     });
@@ -2786,9 +2785,9 @@ const Cell = defineComponent({
   render() {
     const { isSummary, column, row, renderCell } = this;
     let cell;
-    const { render: render4, key, ellipsis } = column;
-    if (render4 && !isSummary) {
-      cell = render4(row, this.index);
+    const { render: render5, key, ellipsis } = column;
+    if (render5 && !isSummary) {
+      cell = render5(row, this.index);
     } else {
       if (isSummary) {
         cell = row[key].value;
@@ -6398,12 +6397,25 @@ const NUpload = defineComponent({
     );
   }
 });
-const _hoisted_1$6 = {
+const _hoisted_1$8 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$8 = /* @__PURE__ */ createStaticVNode('<path d="M432 448a15.92 15.92 0 0 1-11.31-4.69l-352-352a16 16 0 0 1 22.62-22.62l352 352A16 16 0 0 1 432 448z" fill="currentColor"></path><path d="M255.66 384c-41.49 0-81.5-12.28-118.92-36.5c-34.07-22-64.74-53.51-88.7-91v-.08c19.94-28.57 41.78-52.73 65.24-72.21a2 2 0 0 0 .14-2.94L93.5 161.38a2 2 0 0 0-2.71-.12c-24.92 21-48.05 46.76-69.08 76.92a31.92 31.92 0 0 0-.64 35.54c26.41 41.33 60.4 76.14 98.28 100.65C162 402 207.9 416 255.66 416a239.13 239.13 0 0 0 75.8-12.58a2 2 0 0 0 .77-3.31l-21.58-21.58a4 4 0 0 0-3.83-1a204.8 204.8 0 0 1-51.16 6.47z" fill="currentColor"></path><path d="M490.84 238.6c-26.46-40.92-60.79-75.68-99.27-100.53C349 110.55 302 96 255.66 96a227.34 227.34 0 0 0-74.89 12.83a2 2 0 0 0-.75 3.31l21.55 21.55a4 4 0 0 0 3.88 1a192.82 192.82 0 0 1 50.21-6.69c40.69 0 80.58 12.43 118.55 37c34.71 22.4 65.74 53.88 89.76 91a.13.13 0 0 1 0 .16a310.72 310.72 0 0 1-64.12 72.73a2 2 0 0 0-.15 2.95l19.9 19.89a2 2 0 0 0 2.7.13a343.49 343.49 0 0 0 68.64-78.48a32.2 32.2 0 0 0-.1-34.78z" fill="currentColor"></path><path d="M256 160a95.88 95.88 0 0 0-21.37 2.4a2 2 0 0 0-1 3.38l112.59 112.56a2 2 0 0 0 3.38-1A96 96 0 0 0 256 160z" fill="currentColor"></path><path d="M165.78 233.66a2 2 0 0 0-3.38 1a96 96 0 0 0 115 115a2 2 0 0 0 1-3.38z" fill="currentColor"></path>', 5);
+const _hoisted_7$1 = [_hoisted_2$8];
+const EyeOffOutline = defineComponent({
+  name: "EyeOffOutline",
+  render: function render(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$8, _hoisted_7$1);
+  }
+});
+const _hoisted_1$7 = {
+  xmlns: "http://www.w3.org/2000/svg",
+  "xmlns:xlink": "http://www.w3.org/1999/xlink",
+  viewBox: "0 0 512 512"
+};
+const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M261.56 101.28a8 8 0 0 0-11.06 0L66.4 277.15a8 8 0 0 0-2.47 5.79L63.9 448a32 32 0 0 0 32 32H192a16 16 0 0 0 16-16V328a8 8 0 0 1 8-8h80a8 8 0 0 1 8 8v136a16 16 0 0 0 16 16h96.06a32 32 0 0 0 32-32V282.94a8 8 0 0 0-2.47-5.79z",
@@ -6423,19 +6435,19 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$5 = [_hoisted_2$6, _hoisted_3$6];
+const _hoisted_4$4 = [_hoisted_2$7, _hoisted_3$6];
 const Home = defineComponent({
   name: "Home",
-  render: function render(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_4$5);
+  render: function render2(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$7, _hoisted_4$4);
   }
 });
-const _hoisted_1$5 = {
+const _hoisted_1$6 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -6463,7 +6475,7 @@ const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -6477,19 +6489,19 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$2 = [_hoisted_2$5, _hoisted_3$5, _hoisted_4$4];
+const _hoisted_5$1 = [_hoisted_2$6, _hoisted_3$5, _hoisted_4$3];
 const Menu = defineComponent({
   name: "Menu",
-  render: function render2(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_5$2);
+  render: function render3(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$6, _hoisted_5$1);
   }
 });
-const _hoisted_1$4 = {
+const _hoisted_1$5 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
   viewBox: "0 0 512 512"
 };
-const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M221.09 64a157.09 157.09 0 1 0 157.09 157.09A157.1 157.1 0 0 0 221.09 64z",
@@ -6516,33 +6528,29 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$3 = [_hoisted_2$4, _hoisted_3$4];
+const _hoisted_4$2 = [_hoisted_2$5, _hoisted_3$4];
 const SearchOutline = defineComponent({
   name: "SearchOutline",
-  render: function render3(_ctx, _cache) {
-    return openBlock(), createElementBlock("svg", _hoisted_1$4, _hoisted_4$3);
+  render: function render4(_ctx, _cache) {
+    return openBlock(), createElementBlock("svg", _hoisted_1$5, _hoisted_4$2);
   }
 });
-const _hoisted_1$3 = {
+const _hoisted_1$4 = {
   style: { "width": "calc(100vw - 98px)", "height": "48px", "border-bottom": "#505050 1px solid", "display": "flex", "justify-content": "end", "align-items": "center", "padding-right": "24px", "position": "sticky", "top": "52px", "z-index": "1" },
   class: "top-bar"
 };
-const _hoisted_2$3 = {
+const _hoisted_2$4 = {
   class: "main-container",
   style: { "margin": "12px", "margin-top": "8px" }
 };
 const _hoisted_3$3 = { class: "image-grid" };
-const _hoisted_4$2 = { key: 0 };
-const _hoisted_5$1 = ["src", "onClick"];
-const _hoisted_6$1 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)" } };
-const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "CivitAIDownload",
   setup(__props) {
     useCssVars((_ctx) => {
       var _a, _b;
       return {
-        "6b1de230": unref(settings).data.settings.frontend.image_browser_columns,
-        "a55b21d8": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+        "5ae1a71d": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
       };
     });
     const settings = useSettings();
@@ -6694,12 +6702,12 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     refreshImages();
     return (_ctx, _cache) => {
       return openBlock(), createElementBlock(Fragment, null, [
-        createVNode(unref(_sfc_main$5), {
+        createVNode(unref(_sfc_main$6), {
           model: currentModel.value,
           "show-modal": showModal.value,
           "onUpdate:showModal": _cache[0] || (_cache[0] = ($event) => showModal.value = $event)
         }, null, 8, ["model", "show-modal"]),
-        createBaseVNode("div", _hoisted_1$3, [
+        createBaseVNode("div", _hoisted_1$4, [
           createVNode(unref(NInput), {
             value: itemFilter.value,
             "onUpdate:value": _cache[1] || (_cache[1] = ($event) => itemFilter.value = $event),
@@ -6750,7 +6758,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
           }, null, 8, ["value"]),
           createVNode(unref(NButton), {
             onClick: refreshImages,
-            style: { "margin-right": "24px" },
+            style: { "margin-right": "24px", "padding": "0px 48px" },
             type: "primary"
           }, {
             default: withCtx(() => [
@@ -6762,25 +6770,9 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
               })
             ]),
             _: 1
-          }),
-          createVNode(unref(NIcon), {
-            style: { "margin-right": "12px" },
-            size: "22"
-          }, {
-            default: withCtx(() => [
-              createVNode(unref(GridOutline))
-            ]),
-            _: 1
-          }),
-          createVNode(unref(NSlider), {
-            style: { "width": "30vw" },
-            min: 1,
-            max: 10,
-            value: unref(settings).data.settings.frontend.image_browser_columns,
-            "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.frontend.image_browser_columns = $event)
-          }, null, 8, ["value"])
+          })
         ]),
-        createBaseVNode("div", _hoisted_2$3, [
+        createBaseVNode("div", _hoisted_2$4, [
           createBaseVNode("div", {
             ref_key: "scrollComponent",
             ref: scrollComponent
@@ -6795,33 +6787,16 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
                   ref: gridColumnRefs
                 }, [
                   (openBlock(true), createElementBlock(Fragment, null, renderList(column, (item, item_index) => {
-                    var _a;
                     return openBlock(), createElementBlock("div", {
                       key: item_index,
                       style: { "border-radius": "20px", "position": "relative", "border": "1px solid #505050", "overflow": "hidden", "margin-bottom": "8px" }
                     }, [
-                      ((_a = item.modelVersions[0].images[0]) == null ? void 0 : _a.url) ? (openBlock(), createElementBlock("div", _hoisted_4$2, [
-                        createBaseVNode("img", {
-                          src: item.modelVersions[0].images[0].url,
-                          style: normalizeStyle({
-                            width: "100%",
-                            height: "auto",
-                            minHeight: "200px",
-                            cursor: "pointer",
-                            borderRadius: "8px",
-                            filter: unref(nsfwIndex)(item.modelVersions[0].images[0].nsfw) > unref(settings).data.settings.frontend.nsfw_ok_threshold ? "blur(12px)" : "none"
-                          }),
-                          onClick: ($event) => imgClick(column_index, item_index)
-                        }, null, 12, _hoisted_5$1),
-                        createBaseVNode("div", _hoisted_6$1, [
-                          createVNode(unref(NText), { depth: 2 }, {
-                            default: withCtx(() => [
-                              createTextVNode(toDisplayString(item.name), 1)
-                            ]),
-                            _: 2
-                          }, 1024)
-                        ])
-                      ])) : createCommentVNode("", true)
+                      createVNode(unref(_sfc_main$4), {
+                        item,
+                        column_index,
+                        item_index,
+                        onImgClick: imgClick
+                      }, null, 8, ["item", "column_index", "item_index"])
                     ]);
                   }), 128))
                 ]);
@@ -6833,7 +6808,84 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-e10a07d2"]]);
+const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-aac1a1fc"]]);
+const _hoisted_1$3 = ["src"];
+const _hoisted_2$3 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px 0 12px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)", "background-color": "rgba(0, 0, 0, 0.3)" } };
+const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+  __name: "CivitAIModelImage",
+  props: {
+    item: {
+      type: Object,
+      required: true
+    },
+    column_index: {
+      type: Number,
+      required: true
+    },
+    item_index: {
+      type: Number,
+      required: true
+    }
+  },
+  emits: ["imgClick"],
+  setup(__props, { emit }) {
+    const props = __props;
+    const settings = useSettings();
+    const filterOverride = ref(false);
+    return (_ctx, _cache) => {
+      var _a;
+      return openBlock(), createElementBlock("div", {
+        style: { "height": "500px", "cursor": "pointer" },
+        onClick: _cache[1] || (_cache[1] = ($event) => emit("imgClick", props.column_index, props.item_index))
+      }, [
+        createBaseVNode("div", {
+          style: normalizeStyle({
+            filter: unref(nsfwIndex)(props.item.modelVersions[0].images[0].nsfw) > unref(settings).data.settings.frontend.nsfw_ok_threshold && !filterOverride.value ? "blur(32px)" : "none",
+            width: "100%",
+            height: "100%"
+          })
+        }, [
+          ((_a = props.item.modelVersions[0].images[0]) == null ? void 0 : _a.url) ? (openBlock(), createElementBlock("img", {
+            key: 0,
+            src: props.item.modelVersions[0].images[0].url,
+            style: {
+              width: "100%",
+              height: "100%",
+              objectFit: "cover"
+            }
+          }, null, 8, _hoisted_1$3)) : createCommentVNode("", true)
+        ], 4),
+        createBaseVNode("div", _hoisted_2$3, [
+          createVNode(unref(NText), { depth: 2 }, {
+            default: withCtx(() => [
+              createTextVNode(toDisplayString(__props.item.name), 1)
+            ]),
+            _: 1
+          })
+        ]),
+        unref(nsfwIndex)(props.item.modelVersions[0].images[0].nsfw) > unref(settings).data.settings.frontend.nsfw_ok_threshold ? (openBlock(), createBlock(unref(NButton), {
+          key: 0,
+          type: "error",
+          style: { "position": "absolute", "top": "0", "right": "0px", "padding": "0 16px 0 12px", "overflow": "hidden", "box-sizing": "border-box", "border-radius": "0px 0px 0px 8px" },
+          onClick: _cache[0] || (_cache[0] = withModifiers(($event) => filterOverride.value = !filterOverride.value, ["stop"]))
+        }, {
+          default: withCtx(() => [
+            createVNode(unref(NIcon), {
+              color: "white",
+              size: "18"
+            }, {
+              default: withCtx(() => [
+                createVNode(unref(EyeOffOutline))
+              ]),
+              _: 1
+            })
+          ]),
+          _: 1
+        })) : createCommentVNode("", true)
+      ]);
+    };
+  }
+});
 const _withScopeId = (n) => (pushScopeId("data-v-b405f046"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "18px" } };
 const _hoisted_2$2 = { style: { "width": "100%", "display": "inline-flex", "justify-content": "space-between", "align-items": "center" } };

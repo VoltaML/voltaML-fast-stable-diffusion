@@ -1,7 +1,8 @@
-import { d as defineComponent, u as useSettings, o as openBlock, e as createBlock, w as withCtx, g as createVNode, h as unref, J as NInput, i as NSelect, n as NCard, b8 as reactive, c as computed, by as convertToTextString, z as ref, t as serverUrl, K as watch, a as useState, f as createBaseVNode, j as createElementBlock, L as renderList, bb as NText, k as createTextVNode, C as toDisplayString, F as Fragment, m as createCommentVNode, D as NTabPane, E as NTabs, R as inject, bz as themeKey, A as NButton, l as NTooltip, p as useMessage, bA as useNotification, q as onUnmounted, bB as defaultSettings } from "./index.js";
+import { d as defineComponent, u as useSettings, o as openBlock, e as createBlock, w as withCtx, g as createVNode, h as unref, J as NInput, i as NSelect, n as NCard, b9 as reactive, c as computed, bA as convertToTextString, z as ref, t as serverUrl, K as watch, a as useState, f as createBaseVNode, j as createElementBlock, L as renderList, bc as NText, k as createTextVNode, C as toDisplayString, F as Fragment, m as createCommentVNode, D as NTabPane, E as NTabs, R as inject, bB as themeKey, A as NButton, l as NTooltip, p as useMessage, bC as useNotification, q as onUnmounted, bD as defaultSettings } from "./index.js";
 import { a as NFormItem, _ as _sfc_main$h, N as NForm } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
-import { N as NSwitch, a as NSlider } from "./Switch.js";
+import { N as NSwitch } from "./Switch.js";
 import { N as NInputNumber } from "./InputNumber.js";
+import { N as NSlider } from "./Slider.js";
 import "./Settings.js";
 const _sfc_main$g = /* @__PURE__ */ defineComponent({
   __name: "ControlNetSettings",

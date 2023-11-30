@@ -2,7 +2,8 @@ import { d as defineComponent, u as useSettings, a as useState, c as computed, b
 import { _ as _sfc_main$a } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$b } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { B as BurnerClock, P as Prompt, _ as _sfc_main$6, a as _sfc_main$7, b as _sfc_main$8, c as _sfc_main$9, d as _sfc_main$c } from "./clock.js";
-import { N as NSwitch, a as NSlider } from "./Switch.js";
+import { N as NSwitch } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { _ as _sfc_main$5 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
 import { v as v4 } from "./v4.js";
