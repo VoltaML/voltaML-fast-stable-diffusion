@@ -1,7 +1,7 @@
 <template>
   <div
     style="height: 500px; cursor: pointer"
-    @click="emit('imgClick', props.column_index, props.item_index)"
+    @click="emit('imgClick', props.item_index)"
   >
     <div
       :style="{
@@ -80,10 +80,6 @@ const filterOverride = ref(false);
 const props = defineProps({
   item: {
     type: Object as PropType<ICivitAIModel>,
-    required: true,
-  },
-  column_index: {
-    type: Number,
     required: true,
   },
   item_index: {

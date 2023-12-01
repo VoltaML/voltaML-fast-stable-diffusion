@@ -1,4 +1,4 @@
-import { d as defineComponent, y as h, O as replaceable, P as createInjectionKey, Q as cB, R as inject, S as useConfig, T as useTheme, U as popselectLight, c as computed, V as createTreeMate, K as watch, W as nextTick, X as toRef, Y as useThemeClass, Z as NInternalSelectMenu, $ as createTmOptions, a0 as happensIn, a1 as call, a2 as keysOf, z as ref, a3 as provide, a4 as keep, a5 as createRefSetter, a6 as mergeEventHandlers, a7 as omit, a8 as NPopover, a9 as popoverBaseProps, aa as c, ab as cM, ac as cNotM, ad as useLocale, ae as useMergedState, af as watchEffect, ag as useRtl, ah as createKey, ai as resolveSlot, J as NInput, i as NSelect, F as Fragment, aj as NBaseIcon, ak as useAdjustedTo, al as paginationLight, am as useMergedClsPrefix, an as ellipsisLight, ao as onDeactivated, l as NTooltip, ap as mergeProps, aq as useStyle, ar as useFormItem, as as useMemo, at as cE, au as radioLight, av as resolveWrappedSlot, aw as flatten$1, ax as getSlot, ay as depx, az as formatLength, A as NButton, aA as NScrollbar, aB as onBeforeUnmount, aC as off, aD as on, aE as ChevronDownIcon, aF as NDropdown, aG as pxfy, aH as get, aI as NIconSwitchTransition, aJ as NBaseLoading, aK as ChevronRightIcon, q as onUnmounted, aL as VResizeObserver, aM as warn, aN as cssrAnchorMetaName, aO as VVirtualList, aP as NEmpty, aQ as repeat, aR as beforeNextFrameOnce, aS as fadeInScaleUpTransition, aT as iconSwitchTransition, aU as insideModal, aV as insidePopover, aW as createId, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, o as openBlock, j as createElementBlock, b6 as createStaticVNode, f as createBaseVNode, b7 as useCssVars, h as unref, u as useSettings, b8 as themeOverridesKey, b9 as reactive, ba as onMounted, g as createVNode, w as withCtx, B as NIcon, L as renderList, _ as _export_sfc, m as createCommentVNode, bb as normalizeStyle, k as createTextVNode, C as toDisplayString, bc as NText, e as createBlock, bd as withModifiers, a as useState, p as useMessage, be as huggingfaceModelsFile, n as NCard, t as serverUrl, v as pushScopeId, x as popScopeId, N as NSpace, bf as NModal, r as NGi, s as NGrid, bg as NDivider, bh as Backends, D as NTabPane, E as NTabs } from "./index.js";
+import { d as defineComponent, y as h, O as replaceable, P as createInjectionKey, Q as cB, R as inject, S as useConfig, T as useTheme, U as popselectLight, c as computed, V as createTreeMate, K as watch, W as nextTick, X as toRef, Y as useThemeClass, Z as NInternalSelectMenu, $ as createTmOptions, a0 as happensIn, a1 as call, a2 as keysOf, z as ref, a3 as provide, a4 as keep, a5 as createRefSetter, a6 as mergeEventHandlers, a7 as omit, a8 as NPopover, a9 as popoverBaseProps, aa as c, ab as cM, ac as cNotM, ad as useLocale, ae as useMergedState, af as watchEffect, ag as useRtl, ah as createKey, ai as resolveSlot, J as NInput, i as NSelect, F as Fragment, aj as NBaseIcon, ak as useAdjustedTo, al as paginationLight, am as useMergedClsPrefix, an as ellipsisLight, ao as onDeactivated, l as NTooltip, ap as mergeProps, aq as useStyle, ar as useFormItem, as as useMemo, at as cE, au as radioLight, av as resolveWrappedSlot, aw as flatten$1, ax as getSlot, ay as depx, az as formatLength, A as NButton, aA as NScrollbar, aB as onBeforeUnmount, aC as off, aD as on, aE as ChevronDownIcon, aF as NDropdown, aG as pxfy, aH as get, aI as NIconSwitchTransition, aJ as NBaseLoading, aK as ChevronRightIcon, q as onUnmounted, aL as VResizeObserver, aM as warn, aN as cssrAnchorMetaName, aO as VVirtualList, aP as NEmpty, aQ as repeat, aR as beforeNextFrameOnce, aS as fadeInScaleUpTransition, aT as iconSwitchTransition, aU as insideModal, aV as insidePopover, aW as createId, aX as Transition, aY as dataTableLight, aZ as loadingBarApiInjectionKey, a_ as throwError, a$ as AddIcon, b0 as NProgress, b1 as NFadeInExpandTransition, b2 as EyeIcon, b3 as fadeInHeightExpandTransition, b4 as Teleport, b5 as uploadLight, o as openBlock, j as createElementBlock, b6 as createStaticVNode, f as createBaseVNode, b7 as useCssVars, h as unref, b8 as themeOverridesKey, b9 as reactive, ba as onMounted, g as createVNode, w as withCtx, B as NIcon, L as renderList, _ as _export_sfc, u as useSettings, m as createCommentVNode, bb as normalizeStyle, k as createTextVNode, C as toDisplayString, bc as NText, e as createBlock, bd as withModifiers, a as useState, p as useMessage, be as huggingfaceModelsFile, n as NCard, t as serverUrl, v as pushScopeId, x as popScopeId, N as NSpace, bf as NModal, r as NGi, s as NGrid, bg as NDivider, bh as Backends, D as NTabPane, E as NTabs } from "./index.js";
 import { _ as _sfc_main$6, n as nsfwIndex } from "./ModelPopup.vue_vue_type_script_setup_true_lang.js";
 import { N as NCheckboxGroup, a as NCheckbox, S as Settings } from "./Settings.js";
 import { N as NSwitch } from "./Switch.js";
@@ -6425,7 +6425,7 @@ const _hoisted_2$7 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     d: "M490.91 244.15l-74.8-71.56V64a16 16 0 0 0-16-16h-48a16 16 0 0 0-16 16v32l-57.92-55.38C272.77 35.14 264.71 32 256 32c-8.68 0-16.72 3.14-22.14 8.63l-212.7 203.5c-6.22 6-7 15.87-1.34 22.37A16 16 0 0 0 43 267.56L250.5 69.28a8 8 0 0 1 11.06 0l207.52 198.28a16 16 0 0 0 22.59-.44c6.14-6.36 5.63-16.86-.76-22.97z",
@@ -6435,7 +6435,7 @@ const _hoisted_3$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$4 = [_hoisted_2$7, _hoisted_3$6];
+const _hoisted_4$4 = [_hoisted_2$7, _hoisted_3$5];
 const Home = defineComponent({
   name: "Home",
   render: function render2(_ctx, _cache) {
@@ -6461,7 +6461,7 @@ const _hoisted_2$6 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$5 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -6489,7 +6489,7 @@ const _hoisted_4$3 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_5$1 = [_hoisted_2$6, _hoisted_3$5, _hoisted_4$3];
+const _hoisted_5$1 = [_hoisted_2$6, _hoisted_3$4, _hoisted_4$3];
 const Menu = defineComponent({
   name: "Menu",
   render: function render3(_ctx, _cache) {
@@ -6514,7 +6514,7 @@ const _hoisted_2$5 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
+const _hoisted_3$3 = /* @__PURE__ */ createBaseVNode(
   "path",
   {
     fill: "none",
@@ -6528,7 +6528,7 @@ const _hoisted_3$4 = /* @__PURE__ */ createBaseVNode(
   -1
   /* HOISTED */
 );
-const _hoisted_4$2 = [_hoisted_2$5, _hoisted_3$4];
+const _hoisted_4$2 = [_hoisted_2$5, _hoisted_3$3];
 const SearchOutline = defineComponent({
   name: "SearchOutline",
   render: function render4(_ctx, _cache) {
@@ -6543,17 +6543,15 @@ const _hoisted_2$4 = {
   class: "main-container",
   style: { "margin": "12px", "margin-top": "8px" }
 };
-const _hoisted_3$3 = { class: "image-grid" };
 const _sfc_main$5 = /* @__PURE__ */ defineComponent({
   __name: "CivitAIDownload",
   setup(__props) {
     useCssVars((_ctx) => {
       var _a, _b;
       return {
-        "5ae1a71d": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
+        "3d50ed98": (_b = (_a = unref(theme)) == null ? void 0 : _a.Card) == null ? void 0 : _b.color
       };
     });
-    const settings = useSettings();
     const theme = inject(themeOverridesKey);
     const loadingLock = ref(false);
     const currentPage = ref(1);
@@ -6561,32 +6559,18 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     const types = ref("");
     const currentModel = ref(null);
     const showModal = ref(false);
+    const gridRef = ref(null);
     const scrollComponent = ref(null);
     const itemFilter = ref("");
-    const gridColumnRefs = ref([]);
-    const currentColumn = ref(0);
-    const currentRowIndex = ref(0);
+    const currentIndex = ref(0);
     const loadingBar = useLoadingBar();
-    function imgClick(column_index, item_index) {
-      currentRowIndex.value = item_index;
-      currentColumn.value = column_index;
-      const item = columns.value[column_index][item_index];
+    function imgClick(item_index) {
+      const item = modelData[item_index];
+      currentIndex.value = item_index;
       currentModel.value = item;
       showModal.value = true;
     }
     const modelData = reactive([]);
-    const columns = computed(() => {
-      const cols = [];
-      for (let i = 0; i < settings.data.settings.frontend.image_browser_columns; i++) {
-        cols.push([]);
-      }
-      for (let i = 0; i < modelData.length; i++) {
-        cols[i % settings.data.settings.frontend.image_browser_columns].push(
-          modelData[i]
-        );
-      }
-      return cols;
-    });
     async function refreshImages() {
       currentPage.value = 1;
       modelData.splice(0, modelData.length);
@@ -6612,16 +6596,11 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
         return;
       }
       let minBox = 0;
-      for (const col of gridColumnRefs.value) {
-        const lastImg = col.childNodes.item(
-          col.childNodes.length - 2
-        );
-        const bottombbox = lastImg.getBoundingClientRect().bottom;
-        if (minBox === 0) {
-          minBox = bottombbox;
-        } else if (bottombbox < minBox) {
-          minBox = bottombbox;
-        }
+      const bottombbox = gridRef.value.getBoundingClientRect().bottom;
+      if (minBox === 0) {
+        minBox = bottombbox;
+      } else if (bottombbox < minBox) {
+        minBox = bottombbox;
       }
       if (minBox - 50 < window.innerHeight) {
         if (loadingLock.value) {
@@ -6654,18 +6633,16 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
       }
     };
     function moveImage(direction) {
-      const numColumns = settings.data.settings.frontend.image_browser_columns;
+      if (currentModel.value === null) {
+        return;
+      }
       if (direction === -1) {
-        if (currentColumn.value > 0) {
-          imgClick(currentColumn.value - 1, currentRowIndex.value);
-        } else {
-          imgClick(numColumns - 1, currentRowIndex.value - 1);
+        if (currentIndex.value > 0) {
+          imgClick(currentIndex.value - 1);
         }
       } else if (direction === 1) {
-        if (currentColumn.value < numColumns - 1) {
-          imgClick(currentColumn.value + 1, currentRowIndex.value);
-        } else {
-          imgClick(0, currentRowIndex.value + 1);
+        if (currentIndex.value < modelData.length - 1) {
+          imgClick(currentIndex.value + 1);
         }
       }
     }
@@ -6777,38 +6754,31 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
             ref_key: "scrollComponent",
             ref: scrollComponent
           }, [
-            createBaseVNode("div", _hoisted_3$3, [
-              (openBlock(true), createElementBlock(Fragment, null, renderList(columns.value, (column, column_index) => {
+            createBaseVNode("div", {
+              class: "image-grid",
+              ref_key: "gridRef",
+              ref: gridRef
+            }, [
+              (openBlock(true), createElementBlock(Fragment, null, renderList(modelData, (item, item_index) => {
                 return openBlock(), createElementBlock("div", {
-                  key: column_index,
-                  class: "image-column",
-                  ref_for: true,
-                  ref_key: "gridColumnRefs",
-                  ref: gridColumnRefs
+                  key: item_index,
+                  style: { "border-radius": "20px", "position": "relative", "border": "1px solid #505050", "overflow": "hidden", "margin-bottom": "8px" }
                 }, [
-                  (openBlock(true), createElementBlock(Fragment, null, renderList(column, (item, item_index) => {
-                    return openBlock(), createElementBlock("div", {
-                      key: item_index,
-                      style: { "border-radius": "20px", "position": "relative", "border": "1px solid #505050", "overflow": "hidden", "margin-bottom": "8px" }
-                    }, [
-                      createVNode(unref(_sfc_main$4), {
-                        item,
-                        column_index,
-                        item_index,
-                        onImgClick: imgClick
-                      }, null, 8, ["item", "column_index", "item_index"])
-                    ]);
-                  }), 128))
+                  createVNode(unref(_sfc_main$4), {
+                    item,
+                    item_index,
+                    onImgClick: imgClick
+                  }, null, 8, ["item", "item_index"])
                 ]);
               }), 128))
-            ])
+            ], 512)
           ], 512)
         ])
       ], 64);
     };
   }
 });
-const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-aac1a1fc"]]);
+const CivitAIDownload = /* @__PURE__ */ _export_sfc(_sfc_main$5, [["__scopeId", "data-v-241a4664"]]);
 const _hoisted_1$3 = ["src"];
 const _hoisted_2$3 = { style: { "position": "absolute", "width": "100%", "bottom": "0", "padding": "0 8px 0 12px", "min-height": "32px", "overflow": "hidden", "box-sizing": "border-box", "backdrop-filter": "blur(12px)", "background-color": "rgba(0, 0, 0, 0.3)" } };
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
@@ -6816,10 +6786,6 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
   props: {
     item: {
       type: Object,
-      required: true
-    },
-    column_index: {
-      type: Number,
       required: true
     },
     item_index: {
@@ -6836,7 +6802,7 @@ const _sfc_main$4 = /* @__PURE__ */ defineComponent({
       var _a;
       return openBlock(), createElementBlock("div", {
         style: { "height": "500px", "cursor": "pointer" },
-        onClick: _cache[1] || (_cache[1] = ($event) => emit("imgClick", props.column_index, props.item_index))
+        onClick: _cache[1] || (_cache[1] = ($event) => emit("imgClick", props.item_index))
       }, [
         createBaseVNode("div", {
           style: normalizeStyle({

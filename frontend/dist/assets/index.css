@@ -170,22 +170,13 @@
   justify-content: center;
 }
 
-.img-slider[data-v-aac1a1fc] {
-  aspect-ratio: 1/1;
-  height: 182px;
-  width: auto;
-}
-.image-grid[data-v-aac1a1fc] {
+.image-grid[data-v-241a4664] {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-gap: 8px;
 }
-.top-bar[data-v-aac1a1fc] {
-  background-color: var(--5ae1a71d);
-}
-.image-column[data-v-aac1a1fc] {
-  display: flex;
-  flex-direction: column;
+.top-bar[data-v-241a4664] {
+  background-color: var(--3d50ed98);
 }
 
 .install[data-v-b405f046] {
