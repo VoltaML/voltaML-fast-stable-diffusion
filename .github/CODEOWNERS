@@ -2,13 +2,16 @@
 # core is somewhat general
 * @Stax124
 /core/ @Stax124 @gabe56f
+/frontend/ @Stax124 @gabe56f
 
 # Stax-specific
 /core/* @Stax124
 /core/inference/esrgan/ @Stax124
 
 # Gabe-specific stuff
+/libs/ @gabe56f
 /core/scheduling/ @gabe56f
+/core/optimizations/ @gabe56f
 /core/inference/injectables/ @gabe56f
 /core/inference/utilities/kohya_hires.py @gabe56f
 /core/inference/utilities/anisotropic.py @gabe56f
