@@ -14,7 +14,7 @@ taesd_model = None
 
 def taesd(
     samples: torch.Tensor, height: Optional[int] = None, width: Optional[int] = None
-) -> torch.Tensor:
+) -> np.ndarray:
     global taesd_model
 
     if taesd_model is None:

@@ -663,7 +663,7 @@ def convert_vaept_to_diffusers(path: str) -> AutoencoderKL:
         from safetensors import safe_open
 
         checkpoint = {}
-        with safe_open(path, framework="pt", device="cpu") as f:
+        with safe_open(path, framework="pt", device="cpu") as f:  # type: ignore # weird import structure, seems to be replaced at runtime in the lib
             for key in f.keys():
                 checkpoint[key] = f.get_tensor(key)
     else:
