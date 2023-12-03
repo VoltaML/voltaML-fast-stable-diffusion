@@ -109,6 +109,8 @@ class GPU:
                     support_map[device.type].append(dt)
                 except RuntimeError:
                     pass
+                except AssertionError:
+                    pass
         for t, s in support_map.items():
             if t == "cpu":
                 cap.supported_precisions_cpu = (
