@@ -234,7 +234,7 @@ _pytorch_distributions = [
 ]
 
 
-def install_deps(force_distribution: int = -1):
+def install_deps(force_distribution: Union[int, str] = -1):
     "Install necessary requirements for inference"
 
     # Install pytorch
@@ -250,6 +250,7 @@ def install_deps(force_distribution: int = -1):
                 x
                 for x in _pytorch_distributions
                 if x.name == force_distribution.lower()
+                and (x.windows_supported if platform.system() == "Windows" else True)
             ][0]
         logger.info("Installing PyTorch")
         if platform.system() == "Darwin":
@@ -257,10 +258,22 @@ def install_deps(force_distribution: int = -1):
                 [sys.executable, "-m", "pip", "install", "torch==2.1.0", "torchvision"]
             )
         else:
-            for c in _pytorch_distributions:
-                if (
-                    (c.windows_supported if platform.system() == "Windows" else True)
-                    and (
+            if forced_distribution is not None:
+                # User forced a specific distribution
+
+                logger.info(forced_distribution.success_message)
+                if isinstance(forced_distribution.install_command[0], list):
+                    for cmd in forced_distribution.install_command:
+                        subprocess.check_call(cmd)
+                else:
+                    subprocess.check_call(forced_distribution.install_command)  # type: ignore
+            else:
+                # Automatically detect pytorch distribution
+
+                for c in _pytorch_distributions:
+                    if (
+                        c.windows_supported if platform.system() == "Windows" else True
+                    ) and (
                         (
                             subprocess.run(
                                 c.check_command,
@@ -270,15 +283,14 @@ def install_deps(force_distribution: int = -1):
                             ).returncode
                             == 0
                         )
-                    )
-                ) or c == forced_distribution:
-                    logger.info(c.success_message)
-                    if isinstance(c.install_command[0], list):
-                        for cmd in c.install_command:
-                            subprocess.check_call(cmd)
-                    else:
-                        subprocess.check_call(c.install_command)  # type: ignore
-                    break
+                    ):
+                        logger.info(c.success_message)
+                        if isinstance(c.install_command[0], list):
+                            for cmd in c.install_command:
+                                subprocess.check_call(cmd)
+                        else:
+                            subprocess.check_call(c.install_command)  # type: ignore
+                        break
 
     # Install other requirements
     install_requirements("requirements/pytorch.txt")
