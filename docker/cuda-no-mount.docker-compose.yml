@@ -1,0 +1,29 @@
+version: "3.7"
+
+services:
+  voltaml:
+    image: stax124/volta:experimental-cuda
+    environment:
+      # General
+      - HUGGINGFACE_TOKEN=${HUGGINGFACE_TOKEN:-}
+      - LOG_LEVEL=${LOG_LEVEL:-INFO}
+      - EXTRA_ARGS=${EXTRA_ARGS:-}
+
+      # Extra api keys
+      - FASTAPI_ANALYTICS_KEY=${FASTAPI_ANALYTICS_KEY:-}
+      - DISCORD_BOT_TOKEN=${DISCORD_BOT_TOKEN:-}
+
+      # R2
+      - R2_ENDPOINT=${R2_ENDPOINT:-}
+      - R2_BUCKET_NAME=${R2_BUCKET_NAME:-}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - R2_DEV_ADDRESS=${R2_DEV_ADDRESS:-}
+    ports:
+      - "5003:5003"
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              capabilities: ["gpu"]
