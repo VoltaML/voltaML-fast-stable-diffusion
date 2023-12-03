@@ -168,6 +168,21 @@ _pytorch_distributions = [
         ],
     ),
     PytorchDistribution(
+        windows_supported=True,
+        name="intel",
+        check_command=["test", "-f", '"/etc/OpenCL/vendors/intel.icd"'],
+        success_message="Intel check success, assuming user has an Intel (i)GPU",
+        install_command=[
+            sys.executable,
+            "-m",
+            "pip",
+            "install",
+            "https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.0.110%2Bxpu-master%2Bdll-bundle/torch-2.0.0a0+gite9ebda2-cp310-cp310-win_amd64.whl",
+            "https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.0.110%2Bxpu-master%2Bdll-bundle/torchvision-0.15.2a0+fa99a53-cp310-cp310-win_amd64.whl",
+            "https://github.com/Nuullll/intel-extension-for-pytorch/releases/download/v2.0.110%2Bxpu-master%2Bdll-bundle/intel_extension_for_pytorch-2.0.110+gitc6ea20b-cp310-cp310-win_amd64.whl",
+        ],
+    ),
+    PytorchDistribution(
         windows_supported=False,
         name="cpu",
         check_command="echo a",
