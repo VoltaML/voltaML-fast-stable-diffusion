@@ -40988,12 +40988,15 @@ function getSchedulerOptions() {
       type: "group",
       label: "Diffusers",
       key: "diffusers",
-      children: Object.keys(diffusersSchedulerTuple).map((key) => {
-        return {
-          label: key,
-          value: diffusersSchedulerTuple[key]
-        };
-      })
+      children: [
+        ...Object.keys(diffusersSchedulerTuple).map((key) => {
+          return {
+            label: key,
+            value: diffusersSchedulerTuple[key]
+          };
+        }),
+        { label: "SASolverMultistep", value: "sasolver" }
+      ]
     }
   ];
   return scheduler_options;

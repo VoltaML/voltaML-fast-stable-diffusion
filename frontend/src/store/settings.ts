@@ -79,15 +79,18 @@ export function getSchedulerOptions() {
       type: "group",
       label: "Diffusers",
       key: "diffusers",
-      children: Object.keys(diffusersSchedulerTuple).map((key) => {
-        return {
-          label: key,
-          value:
-            diffusersSchedulerTuple[
-              key as keyof typeof diffusersSchedulerTuple
-            ],
-        };
-      }),
+      children: [
+        ...Object.keys(diffusersSchedulerTuple).map((key) => {
+          return {
+            label: key,
+            value:
+              diffusersSchedulerTuple[
+                key as keyof typeof diffusersSchedulerTuple
+              ],
+          };
+        }),
+        { label: "SASolverMultistep", value: "sasolver" },
+      ],
     },
   ];
   return scheduler_options;

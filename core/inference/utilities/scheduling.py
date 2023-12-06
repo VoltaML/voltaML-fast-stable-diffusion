@@ -14,6 +14,7 @@ from core import shared
 from core.config import config
 from core.inference.utilities.philox import PhiloxGenerator
 from core.scheduling import KdiffusionSchedulerAdapter, create_sampler
+from core.scheduling.custom.sasolver import SASolverScheduler
 from core.types import PyTorchModelType, SigmaScheduler
 from core.utils import unwrap_enum
 
@@ -110,17 +111,20 @@ def change_scheduler(
     else:
         sched = DDIMScheduler.from_pretrained("runwayml/stable-diffusion-v1-5", subfolder="scheduler")  # type: ignore
 
-        new_scheduler = create_sampler(
-            alphas_cumprod=sched.alphas_cumprod,  # type: ignore
-            denoiser_enable_quantization=config.api.kdiffusers_quantization,
-            sampler=scheduler,
-            sigma_type=sigma_type,
-            eta_noise_seed_delta=0,
-            sigma_always_discard_next_to_last=False,
-            sigma_use_old_karras_scheduler=False,
-            device=torch.device(config.api.device),  # type: ignore
-            dtype=config.api.load_dtype,  # type: ignore
-            sampler_settings=sampler_settings,
-        )
+        if scheduler == "sasolver":
+            new_scheduler = SASolverScheduler.from_config(config=configuration)  # type: ignore
+        else:
+            new_scheduler = create_sampler(
+                alphas_cumprod=sched.alphas_cumprod,  # type: ignore
+                denoiser_enable_quantization=config.api.kdiffusers_quantization,
+                sampler=scheduler,
+                sigma_type=sigma_type,
+                eta_noise_seed_delta=0,
+                sigma_always_discard_next_to_last=False,
+                sigma_use_old_karras_scheduler=False,
+                device=torch.device(config.api.device),  # type: ignore
+                dtype=config.api.load_dtype,  # type: ignore
+                sampler_settings=sampler_settings,
+            )
     model.scheduler = new_scheduler  # type: ignore
     return new_scheduler  # type: ignore
