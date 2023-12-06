@@ -5360,6 +5360,11 @@ function cloneVNode(vnode, extraProps, mergeRef = false) {
 function createTextVNode(text = " ", flag = 0) {
   return createVNode(Text, null, text, flag);
 }
+function createStaticVNode(content, numberOfNodes) {
+  const vnode = createVNode(Static, null, content);
+  vnode.staticCount = numberOfNodes;
+  return vnode;
+}
 function createCommentVNode(text = "", asBlock = false) {
   return asBlock ? (openBlock(), createBlock(Comment, null, text)) : createVNode(Comment, null, text);
 }
@@ -43155,7 +43160,7 @@ const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
 const ControlNet_vue_vue_type_style_index_0_scoped_95a354be_lang = "";
 const Img2Img_vue_vue_type_style_index_0_scoped_4fae0a93_lang = "";
 const Inpainting_vue_vue_type_style_index_0_scoped_0d0f8c9e_lang = "";
-const CivitAIDownload_vue_vue_type_style_index_0_scoped_e10a07d2_lang = "";
+const CivitAIDownload_vue_vue_type_style_index_0_scoped_241a4664_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };
 const _hoisted_2 = /* @__PURE__ */ createBaseVNode("b", null, "Key in question:", -1);
@@ -43443,27 +43448,27 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Switch.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
       name: "imageProcessing",
-      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./ImageProcessingView.js"), true ? ["assets/ImageProcessingView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/Slider.js","assets/InputNumber.js"] : void 0)
     },
     {
       path: "/models",
       name: "models",
-      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/GridOutline.js","assets/Switch.js","assets/Settings.js","assets/TrashBin.js","assets/CloudUpload.js"] : void 0)
+      component: () => __vitePreload(() => import("./ModelsView.js"), true ? ["assets/ModelsView.js","assets/ModelPopup.vue_vue_type_script_setup_true_lang.js","assets/DescriptionsItem.js","assets/Settings.js","assets/Switch.js","assets/TrashBin.js","assets/CloudUpload.js"] : void 0)
     },
     {
       path: "/about",
@@ -43473,7 +43478,7 @@ const router = createRouter({
     {
       path: "/accelerate",
       name: "accelerate",
-      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Switch.js","assets/InputNumber.js"] : void 0)
+      component: () => __vitePreload(() => import("./AccelerateView.js"), true ? ["assets/AccelerateView.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/extra",
@@ -43488,17 +43493,17 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/InputNumber.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/InputNumber.js","assets/Slider.js","assets/Switch.js"] : void 0)
     },
     {
       path: "/imageBrowser",
       name: "imageBrowser",
-      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/GridOutline.js","assets/TrashBin.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
+      component: () => __vitePreload(() => import("./ImageBrowserView.js"), true ? ["assets/ImageBrowserView.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/Slider.js","assets/DescriptionsItem.js","assets/ImageBrowserView.css"] : void 0)
     },
     {
       path: "/tagger",
       name: "tagger",
-      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js","assets/Switch.js","assets/InputNumber.js","assets/TaggerView.css"] : void 0)
+      component: () => __vitePreload(() => import("./TaggerView.js"), true ? ["assets/TaggerView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/TaggerView.css"] : void 0)
     },
     {
       path: "/:pathMatch(.*)",
@@ -43614,75 +43619,76 @@ export {
   depx as ay,
   formatLength as az,
   upscalerOptions as b,
-  VFollower as b$,
+  VTarget as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
   EyeIcon as b2,
   fadeInHeightExpandTransition as b3,
   Teleport as b4,
   uploadLight$1 as b5,
-  useCssVars as b6,
-  themeOverridesKey as b7,
-  reactive as b8,
-  onMounted as b9,
-  useNotification as bA,
-  defaultSettings as bB,
-  getCurrentInstance as bC,
-  formLight$1 as bD,
-  commonVariables$m as bE,
-  formItemInjectionKey as bF,
-  resolveDynamicComponent as bG,
-  checkboxLight$1 as bH,
-  urlFromPath as bI,
-  diffusersSchedulerTuple as bJ,
-  useRouter as bK,
-  isBrowser$3 as bL,
-  fadeInTransition as bM,
-  imageLight as bN,
-  isMounted as bO,
-  LazyTeleport as bP,
-  zindexable$1 as bQ,
-  kebabCase$1 as bR,
-  useCompitable as bS,
-  descriptionsLight$1 as bT,
-  withModifiers as bU,
-  NAlert as bV,
-  rgba as bW,
-  inputNumberLight$1 as bX,
-  XButton as bY,
-  VBinder as bZ,
-  VTarget as b_,
-  normalizeStyle as ba,
-  NText as bb,
-  huggingfaceModelsFile as bc,
-  NModal as bd,
-  NDivider as be,
-  Backends as bf,
-  stepsLight$1 as bg,
-  FinishedIcon as bh,
-  ErrorIcon$1 as bi,
-  upperFirst$1 as bj,
-  toString as bk,
-  createCompounder as bl,
-  cloneVNode as bm,
-  onBeforeUpdate as bn,
-  indexMap as bo,
-  onUpdated as bp,
-  resolveSlotWithProps as bq,
-  withDirectives as br,
-  vShow as bs,
-  getPreciseEventTarget as bt,
-  carouselLight$1 as bu,
-  color2Class as bv,
-  rateLight as bw,
-  NTag as bx,
-  convertToTextString as by,
-  themeKey as bz,
+  createStaticVNode as b6,
+  useCssVars as b7,
+  themeOverridesKey as b8,
+  reactive as b9,
+  convertToTextString as bA,
+  themeKey as bB,
+  useNotification as bC,
+  defaultSettings as bD,
+  getCurrentInstance as bE,
+  formLight$1 as bF,
+  commonVariables$m as bG,
+  formItemInjectionKey as bH,
+  resolveDynamicComponent as bI,
+  checkboxLight$1 as bJ,
+  urlFromPath as bK,
+  diffusersSchedulerTuple as bL,
+  useRouter as bM,
+  isBrowser$3 as bN,
+  fadeInTransition as bO,
+  imageLight as bP,
+  isMounted as bQ,
+  LazyTeleport as bR,
+  zindexable$1 as bS,
+  kebabCase$1 as bT,
+  useCompitable as bU,
+  descriptionsLight$1 as bV,
+  NAlert as bW,
+  rgba as bX,
+  inputNumberLight$1 as bY,
+  XButton as bZ,
+  VBinder as b_,
+  onMounted as ba,
+  normalizeStyle as bb,
+  NText as bc,
+  withModifiers as bd,
+  huggingfaceModelsFile as be,
+  NModal as bf,
+  NDivider as bg,
+  Backends as bh,
+  stepsLight$1 as bi,
+  FinishedIcon as bj,
+  ErrorIcon$1 as bk,
+  upperFirst$1 as bl,
+  toString as bm,
+  createCompounder as bn,
+  cloneVNode as bo,
+  onBeforeUpdate as bp,
+  indexMap as bq,
+  onUpdated as br,
+  resolveSlotWithProps as bs,
+  withDirectives as bt,
+  vShow as bu,
+  getPreciseEventTarget as bv,
+  carouselLight$1 as bw,
+  color2Class as bx,
+  rateLight as by,
+  NTag as bz,
   computed as c,
-  sliderLight$1 as c0,
-  isSlotEmpty as c1,
-  switchLight$1 as c2,
-  NResult as c3,
+  VFollower as c0,
+  sliderLight$1 as c1,
+  isSlotEmpty as c2,
+  switchLight$1 as c3,
+  NResult as c4,
   defineComponent as d,
   createBlock as e,
   createBaseVNode as f,

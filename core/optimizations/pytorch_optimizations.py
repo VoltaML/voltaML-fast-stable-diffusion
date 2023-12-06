@@ -1,10 +1,13 @@
 import logging
-from typing import Optional, Tuple
+from typing import Optional, Tuple, Union
 
 import torch
 from diffusers.pipelines.pipeline_utils import DiffusionPipeline
 from diffusers.pipelines.stable_diffusion.pipeline_stable_diffusion import (
     StableDiffusionPipeline,
+)
+from diffusers.pipelines.stable_diffusion_xl.pipeline_stable_diffusion_xl import (
+    StableDiffusionXLPipeline,
 )
 
 from core.config import config
@@ -22,7 +25,7 @@ USE_DISK_OFFLOAD = False
 
 
 def optimize_model(
-    pipe: StableDiffusionPipeline,
+    pipe: Union[StableDiffusionPipeline, StableDiffusionXLPipeline],
     device,
     is_for_aitemplate: bool = False,
 ) -> None:

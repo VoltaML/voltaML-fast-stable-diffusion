@@ -2,9 +2,10 @@ import { d as defineComponent, a as useState, u as useSettings, p as useMessage,
 import { _ as _sfc_main$2 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$3 } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { a as NSlider } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
+import "./Switch.js";
 import "./TrashBin.js";
 import "./CloudUpload.js";
 const _withScopeId = (n) => (pushScopeId("data-v-5358ed01"), n = n(), popScopeId(), n);

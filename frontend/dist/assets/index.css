@@ -170,25 +170,13 @@
   justify-content: center;
 }
 
-.img-slider[data-v-e10a07d2] {
-  aspect-ratio: 1/1;
-  height: 182px;
-  width: auto;
-}
-.image-grid[data-v-e10a07d2] {
+.image-grid[data-v-241a4664] {
   display: grid;
-  grid-template-columns: repeat(
-    var(--6b1de230),
-    1fr
-  );
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   grid-gap: 8px;
 }
-.top-bar[data-v-e10a07d2] {
-  background-color: var(--a55b21d8);
-}
-.image-column[data-v-e10a07d2] {
-  display: flex;
-  flex-direction: column;
+.top-bar[data-v-241a4664] {
+  background-color: var(--3d50ed98);
 }
 
 .install[data-v-b405f046] {

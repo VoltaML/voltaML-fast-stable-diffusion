@@ -1,4 +1,4 @@
-import { bj as upperFirst, bk as toString, bl as createCompounder, bm as cloneVNode, a3 as provide, P as createInjectionKey, R as inject, a_ as throwError, d as defineComponent, S as useConfig, z as ref, bn as onBeforeUpdate, y as h, bo as indexMap, c as computed, b9 as onMounted, aB as onBeforeUnmount, Q as cB, at as cE, aa as c, ab as cM, a4 as keep, ae as useMergedState, X as toRef, af as watchEffect, bp as onUpdated, K as watch, W as nextTick, T as useTheme, Y as useThemeClass, aw as flatten, aL as VResizeObserver, bq as resolveSlotWithProps, br as withDirectives, bs as vShow, aX as Transition, ba as normalizeStyle, bt as getPreciseEventTarget, aD as on, aC as off, bu as carouselLight, ac as cNotM, ar as useFormItem, ah as createKey, bv as color2Class, L as renderList, aj as NBaseIcon, bw as rateLight, a1 as call, p as useMessage, u as useSettings, b8 as reactive, o as openBlock, e as createBlock, w as withCtx, g as createVNode, j as createElementBlock, h as unref, D as NTabPane, s as NGrid, r as NGi, F as Fragment, f as createBaseVNode, n as NCard, k as createTextVNode, C as toDisplayString, bx as NTag, i as NSelect, A as NButton, E as NTabs, bd as NModal, t as serverUrl } from "./index.js";
+import { bl as upperFirst, bm as toString, bn as createCompounder, bo as cloneVNode, a3 as provide, P as createInjectionKey, R as inject, a_ as throwError, d as defineComponent, S as useConfig, z as ref, bp as onBeforeUpdate, y as h, bq as indexMap, c as computed, ba as onMounted, aB as onBeforeUnmount, Q as cB, at as cE, aa as c, ab as cM, a4 as keep, ae as useMergedState, X as toRef, af as watchEffect, br as onUpdated, K as watch, W as nextTick, T as useTheme, Y as useThemeClass, aw as flatten, aL as VResizeObserver, bs as resolveSlotWithProps, bt as withDirectives, bu as vShow, aX as Transition, bb as normalizeStyle, bv as getPreciseEventTarget, aD as on, aC as off, bw as carouselLight, ac as cNotM, ar as useFormItem, ah as createKey, bx as color2Class, L as renderList, aj as NBaseIcon, by as rateLight, a1 as call, p as useMessage, u as useSettings, b9 as reactive, o as openBlock, e as createBlock, w as withCtx, g as createVNode, j as createElementBlock, h as unref, D as NTabPane, s as NGrid, r as NGi, F as Fragment, f as createBaseVNode, n as NCard, k as createTextVNode, C as toDisplayString, bz as NTag, i as NSelect, A as NButton, E as NTabs, bf as NModal, t as serverUrl } from "./index.js";
 import { a as NDescriptions, N as NDescriptionsItem } from "./DescriptionsItem.js";
 function capitalize(string) {
   return upperFirst(toString(string).toLowerCase());
@@ -1697,6 +1697,7 @@ const _sfc_main = /* @__PURE__ */ defineComponent({
   }
 });
 export {
+  NRate as N,
   _sfc_main as _,
   nsfwIndex as n
 };

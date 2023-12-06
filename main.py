@@ -20,6 +20,12 @@ from core.install_requirements import (
     version_check,
 )
 
+# Handle missing .env file
+if not Path(".env").exists():
+    with open(".env", "w") as f_out:
+        with open("example.env", "r") as f_in:
+            f_out.write(f_in.read())
+
 # Handle arguments passed to the script
 app_args = [] if os.getenv("TESTING") == "1" else sys.argv[1:]
 

@@ -101,13 +101,15 @@ class GPU:
         for device in [torch.device("cpu"), torch.device(config.api.device)]:
             support_map[device.type] = []
             for dt in test_suite:
-                dtype = getattr(torch, dt)
-                a = torch.tensor([1.0], device=device, dtype=dtype)
-                b = torch.tensor([2.0], device=device, dtype=dtype)
                 try:
+                    dtype = getattr(torch, dt)
+                    a = torch.tensor([1.0], device=device, dtype=dtype)
+                    b = torch.tensor([2.0], device=device, dtype=dtype)
                     torch.matmul(a, b)
                     support_map[device.type].append(dt)
                 except RuntimeError:
+                    pass
+                except AssertionError:
                     pass
         for t, s in support_map.items():
             if t == "cpu":
