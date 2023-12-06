@@ -133,6 +133,9 @@
             </div>
           </NSpace>
         </NCard>
+
+        <HighResFix v-if="!isSelectedModelSDXL" tab="img2img" />
+        <Upscale tab="img2img" />
       </NGi>
 
       <!-- Split -->
@@ -162,15 +165,17 @@ import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
 import {
   BatchSizeInput,
+  CFGScale,
   DimensionsInput,
   GenerateSection,
+  HighResFix,
   ImageOutput,
   ImageUpload,
   OutputStats,
   Prompt,
-  SamplerPicker,
-  CFGScale,
   SAGInput,
+  SamplerPicker,
+  Upscale,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -184,7 +189,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { onUnmounted } from "vue";
+import { computed, onUnmounted } from "vue";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
 
@@ -200,6 +205,10 @@ const checkSeed = (seed: number) => {
 
   return seed;
 };
+
+const isSelectedModelSDXL = computed(() => {
+  return settings.data.settings.model?.type === "SDXL";
+});
 
 const imageSelectCallback = (base64Image: string) => {
   settings.data.settings.img2img.image = base64Image;
@@ -250,6 +259,35 @@ const generate = () => {
         },
       },
       model: settings.data.settings.model?.path,
+      flags: {
+        ...(settings.data.settings.img2img.highres.enabled
+          ? {
+              highres_fix: {
+                mode: settings.data.settings.img2img.highres.mode,
+                image_upscaler:
+                  settings.data.settings.img2img.highres.image_upscaler,
+                scale: settings.data.settings.img2img.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.img2img.highres.latent_scale_mode,
+                strength: settings.data.settings.img2img.highres.strength,
+                steps: settings.data.settings.img2img.highres.steps,
+                antialiased: settings.data.settings.img2img.highres.antialiased,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.img2img.upscale.enabled
+          ? {
+              upscale: {
+                upscale_factor:
+                  settings.data.settings.img2img.upscale.upscale_factor,
+                tile_size: settings.data.settings.img2img.upscale.tile_size,
+                tile_padding:
+                  settings.data.settings.img2img.upscale.tile_padding,
+                model: settings.data.settings.img2img.upscale.model,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

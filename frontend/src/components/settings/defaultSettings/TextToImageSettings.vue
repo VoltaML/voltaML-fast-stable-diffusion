@@ -46,13 +46,16 @@
       <NFormItem label="Steps" label-placement="left">
         <NInputNumber v-model:value="settings.defaultSettings.txt2img.steps" />
       </NFormItem>
+
       <SamplerPicker type="txt2img" target="defaultSettings" />
+      <Upscale tab="txt2img" target="defaultSettings" />
+      <HighResFix tab="txt2img" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import SamplerPicker from "@/components/generate/SamplerPicker.vue";
+import { HighResFix, SamplerPicker, Upscale } from "@/components";
 import { NCard, NForm, NFormItem, NInput, NInputNumber } from "naive-ui";
 import { useSettings } from "../../../store/settings";
 

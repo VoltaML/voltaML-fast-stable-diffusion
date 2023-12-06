@@ -1,13 +1,13 @@
 <template>
   <NTabs type="segment" v-model:value="state.state.imageProcessing.tab">
     <NTabPane tab="Upscale" name="upscale">
-      <Upscale />
+      <ESRGAN />
     </NTabPane>
   </NTabs>
 </template>
 
 <script lang="ts" setup>
-import { Upscale } from "@/components";
+import { ESRGAN } from "@/components";
 import { useState } from "@/store/state";
 import { NTabPane, NTabs } from "naive-ui";
 

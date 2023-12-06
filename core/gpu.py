@@ -16,6 +16,7 @@ from api.websockets.notification import Notification
 from core import shared
 from core.config import config
 from core.errors import InferenceInterruptedError, ModelNotLoadedError
+from core.flags import UpscaleFlag
 from core.inference.ait import AITemplateStableDiffusion
 from core.inference.esrgan import RealESRGAN, Upscaler
 from core.inference.functions import is_ipex_available
@@ -37,6 +38,7 @@ from core.types import (
     ONNXBuildRequest,
     PyTorchModelBase,
     TextualInversionLoadRequest,
+    UpscaleData,
     UpscaleQueueEntry,
     VaeLoadRequest,
 )
@@ -180,6 +182,36 @@ class GPU:
         index = torch.device(config.api.device).index
         return torch.cuda.memory_allocated(index) / 1024**2
 
+    def postprocess(self, job: Job, images: List[Image.Image]) -> List[Image.Image]:
+        "Postprocess images"
+
+        logger.debug(f"Postprocessing flags: {job.flags}")
+
+        # TODO: Move highres fix here instead of relying on the individual generate function
+
+        if "upscale" in job.flags:
+            logger.debug("Upscaling image")
+
+            flag = UpscaleFlag(**job.flags["upscale"])
+
+            final_images = []
+            for image in images:
+                upscale_job = UpscaleQueueEntry(
+                    data=UpscaleData(
+                        image=image,  # type: ignore # Pydantic would cry if we extend the union
+                        upscale_factor=flag.upscale_factor,
+                        tile_padding=flag.tile_padding,
+                        tile_size=flag.tile_size,
+                    ),
+                    model=flag.model,
+                )
+
+                final_images.append(self.upscale(upscale_job)[0])
+
+            images = final_images
+
+        return images
+
     def generate(
         self,
         job: InferenceJob,
@@ -249,6 +281,9 @@ class GPU:
                     raise NotImplementedError("Unknown model type")
 
             self.memory_cleanup()
+
+            # Run postprocessing
+            images = self.postprocess(job, images)
             return images
 
         try:

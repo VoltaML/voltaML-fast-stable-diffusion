@@ -239,6 +239,9 @@
             </div>
           </NSpace>
         </NCard>
+
+        <HighResFix v-if="!isSelectedModelSDXL" tab="inpainting" />
+        <Upscale tab="inpainting" />
       </NGi>
 
       <!-- Split -->
@@ -267,13 +270,15 @@
 import "@/assets/2img.css";
 import { BurnerClock } from "@/clock";
 import {
+  CFGScale,
   GenerateSection,
+  HighResFix,
   ImageOutput,
   OutputStats,
   Prompt,
-  SamplerPicker,
-  CFGScale,
   SAGInput,
+  SamplerPicker,
+  Upscale,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -295,7 +300,7 @@ import {
   useMessage,
 } from "naive-ui";
 import { v4 as uuidv4 } from "uuid";
-import { onUnmounted, ref } from "vue";
+import { computed, onUnmounted, ref } from "vue";
 import VueDrawingCanvas from "vue-drawing-canvas";
 import { useSettings } from "../../store/settings";
 import { useState } from "../../store/state";
@@ -303,6 +308,10 @@ import { useState } from "../../store/state";
 const global = useState();
 const settings = useSettings();
 const messageHandler = useMessage();
+
+const isSelectedModelSDXL = computed(() => {
+  return settings.data.settings.model?.type === "SDXL";
+});
 
 const checkSeed = (seed: number) => {
   // If -1 create random seed
@@ -361,6 +370,36 @@ const generate = () => {
         },
       },
       model: settings.data.settings.model?.path,
+      flags: {
+        ...(settings.data.settings.inpainting.highres.enabled
+          ? {
+              highres_fix: {
+                mode: settings.data.settings.inpainting.highres.mode,
+                image_upscaler:
+                  settings.data.settings.inpainting.highres.image_upscaler,
+                scale: settings.data.settings.inpainting.highres.scale,
+                latent_scale_mode:
+                  settings.data.settings.inpainting.highres.latent_scale_mode,
+                strength: settings.data.settings.inpainting.highres.strength,
+                steps: settings.data.settings.inpainting.highres.steps,
+                antialiased:
+                  settings.data.settings.inpainting.highres.antialiased,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.inpainting.upscale.enabled
+          ? {
+              upscale: {
+                upscale_factor:
+                  settings.data.settings.inpainting.upscale.upscale_factor,
+                tile_size: settings.data.settings.inpainting.upscale.tile_size,
+                tile_padding:
+                  settings.data.settings.inpainting.upscale.tile_padding,
+                model: settings.data.settings.inpainting.upscale.model,
+              },
+            }
+          : {}),
+      },
     }),
   })
     .then((res) => {

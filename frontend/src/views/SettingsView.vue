@@ -26,9 +26,6 @@
         <NTabPane name="General">
           <GeneralSettings />
         </NTabPane>
-        <NTabPane name="Flags">
-          <FlagsSettings />
-        </NTabPane>
         <NTabPane name="Theme">
           <ThemeSettings />
         </NTabPane>
@@ -58,7 +55,6 @@ import {
   AutoloadSettings,
   BotSettings,
   FilesSettings,
-  FlagsSettings,
   FrontendSettings,
   GeneralSettings,
   NSFWSettings,

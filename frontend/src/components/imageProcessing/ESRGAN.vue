@@ -193,18 +193,3 @@ const generate = () => {
     });
 };
 </script>
-<style scoped>
-.image-container img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  overflow: hidden;
-}
-
-.image-container {
-  height: 70vh;
-  width: 100%;
-  display: flex;
-  justify-content: center;
-}
-</style>

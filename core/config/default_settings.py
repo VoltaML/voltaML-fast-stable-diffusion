@@ -4,6 +4,7 @@ from typing import Optional, Union
 
 from diffusers.schedulers.scheduling_utils import KarrasDiffusionSchedulers
 
+from core.flags import HighResFixFlag, UpscaleFlag
 from core.types import SigmaScheduler
 
 
@@ -32,6 +33,10 @@ class BaseDiffusionMixin:
         int, str
     ] = KarrasDiffusionSchedulers.DPMSolverSinglestepScheduler.value
     sigmas: SigmaScheduler = "automatic"
+
+    # Flags
+    highres: HighResFixFlag = field(default_factory=HighResFixFlag)
+    upscale: UpscaleFlag = field(default_factory=UpscaleFlag)
 
 
 @dataclass

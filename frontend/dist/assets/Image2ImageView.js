@@ -1,9 +1,9 @@
-import { d as defineComponent, o as openBlock, j as createElementBlock, f as createBaseVNode, a as useState, u as useSettings, p as useMessage, q as onUnmounted, g as createVNode, w as withCtx, h as unref, r as NGi, n as NCard, N as NSpace, l as NTooltip, k as createTextVNode, i as NSelect, s as NGrid, t as serverUrl, v as pushScopeId, x as popScopeId, _ as _export_sfc, y as h, z as ref, A as NButton, B as NIcon, e as createBlock, C as toDisplayString, D as NTabPane, E as NTabs } from "./index.js";
-import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$7, c as _sfc_main$8, d as _sfc_main$b } from "./clock.js";
-import { _ as _sfc_main$9 } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
-import { _ as _sfc_main$a } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, a as useState, u as useSettings, n as useMessage, i as computed, p as onUnmounted, e as createVNode, w as withCtx, f as unref, q as NGi, N as NCard, j as NSpace, l as NTooltip, k as createTextVNode, m as NSelect, c as createBlock, h as createCommentVNode, r as NGrid, s as serverUrl, t as pushScopeId, v as popScopeId, _ as _export_sfc, x as h, y as ref, z as NButton, A as NIcon, B as toDisplayString, C as NTabPane, D as NTabs } from "./index.js";
+import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$7, c as _sfc_main$8, d as _sfc_main$d } from "./clock.js";
+import { _ as _sfc_main$b } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$c } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
 import { I as ImageUpload } from "./ImageUpload.js";
-import { _ as _sfc_main$4 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$4, a as _sfc_main$9, b as _sfc_main$a } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 import { v as v4 } from "./v4.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
@@ -146,7 +146,7 @@ const TrashBinSharp = defineComponent({
     return openBlock(), createElementBlock("svg", _hoisted_1$3, _hoisted_6$3);
   }
 });
-const _withScopeId$2 = (n) => (pushScopeId("data-v-95a354be"), n = n(), popScopeId(), n);
+const _withScopeId$2 = (n) => (pushScopeId("data-v-97c56df6"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { style: { "margin": "0 12px" } };
 const _hoisted_2$2 = { class: "flex-container" };
 const _hoisted_3$2 = /* @__PURE__ */ _withScopeId$2(() => /* @__PURE__ */ createBaseVNode("p", { style: { "margin-right": "12px", "width": "150px" } }, "ControlNet", -1));
@@ -175,6 +175,10 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     const global = useState();
     const settings = useSettings();
     const messageHandler = useMessage();
+    const isSelectedModelSDXL = computed(() => {
+      var _a;
+      return ((_a = settings.data.settings.model) == null ? void 0 : _a.type) === "SDXL";
+    });
     const checkSeed = (seed) => {
       if (seed === -1) {
         seed = Math.floor(Math.random() * 999999999999);
@@ -229,7 +233,28 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
             save_preprocessed: settings.data.settings.controlnet.save_preprocessed,
             return_preprocessed: settings.data.settings.controlnet.return_preprocessed
           },
-          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path
+          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path,
+          flags: {
+            ...settings.data.settings.controlnet.highres.enabled ? {
+              highres_fix: {
+                mode: settings.data.settings.controlnet.highres.mode,
+                image_upscaler: settings.data.settings.controlnet.highres.image_upscaler,
+                scale: settings.data.settings.controlnet.highres.scale,
+                latent_scale_mode: settings.data.settings.controlnet.highres.latent_scale_mode,
+                strength: settings.data.settings.controlnet.highres.strength,
+                steps: settings.data.settings.controlnet.highres.steps,
+                antialiased: settings.data.settings.controlnet.highres.antialiased
+              }
+            } : {},
+            ...settings.data.settings.controlnet.upscale.enabled ? {
+              upscale: {
+                upscale_factor: settings.data.settings.controlnet.upscale.upscale_factor,
+                tile_size: settings.data.settings.controlnet.upscale.tile_size,
+                tile_padding: settings.data.settings.controlnet.upscale.tile_padding,
+                model: settings.data.settings.controlnet.upscale.model
+              }
+            } : {}
+          }
         })
       }).then((res) => {
         if (!res.ok) {
@@ -471,20 +496,25 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                     })
                   ]),
                   _: 1
-                })
+                }),
+                !isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$9), {
+                  key: 0,
+                  tab: "controlnet"
+                })) : createCommentVNode("", true),
+                createVNode(unref(_sfc_main$a), { tab: "controlnet" })
               ]),
               _: 1
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(unref(_sfc_main$9), { generate }),
-                createVNode(unref(_sfc_main$a), {
+                createVNode(unref(_sfc_main$b), { generate }),
+                createVNode(unref(_sfc_main$c), {
                   "current-image": unref(global).state.controlnet.currentImage,
                   images: unref(global).state.controlnet.images,
                   data: unref(settings).data.settings.controlnet,
                   onImageClicked: _cache[14] || (_cache[14] = ($event) => unref(global).state.controlnet.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(unref(_sfc_main$b), {
+                createVNode(unref(_sfc_main$d), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.controlnet.genData
                 }, null, 8, ["gen-data"])
@@ -498,8 +528,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-95a354be"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-116492bf"), n = n(), popScopeId(), n);
+const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-97c56df6"]]);
+const _withScopeId$1 = (n) => (pushScopeId("data-v-bfd46a0a"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
@@ -523,6 +553,10 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
       }
       return seed;
     };
+    const isSelectedModelSDXL = computed(() => {
+      var _a;
+      return ((_a = settings.data.settings.model) == null ? void 0 : _a.type) === "SDXL";
+    });
     const imageSelectCallback = (base64Image) => {
       settings.data.settings.img2img.image = base64Image;
     };
@@ -563,7 +597,28 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
             }
           },
-          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path
+          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path,
+          flags: {
+            ...settings.data.settings.img2img.highres.enabled ? {
+              highres_fix: {
+                mode: settings.data.settings.img2img.highres.mode,
+                image_upscaler: settings.data.settings.img2img.highres.image_upscaler,
+                scale: settings.data.settings.img2img.highres.scale,
+                latent_scale_mode: settings.data.settings.img2img.highres.latent_scale_mode,
+                strength: settings.data.settings.img2img.highres.strength,
+                steps: settings.data.settings.img2img.highres.steps,
+                antialiased: settings.data.settings.img2img.highres.antialiased
+              }
+            } : {},
+            ...settings.data.settings.img2img.upscale.enabled ? {
+              upscale: {
+                upscale_factor: settings.data.settings.img2img.upscale.upscale_factor,
+                tile_size: settings.data.settings.img2img.upscale.tile_size,
+                tile_padding: settings.data.settings.img2img.upscale.tile_padding,
+                model: settings.data.settings.img2img.upscale.model
+              }
+            } : {}
+          }
         })
       }).then((res) => {
         if (!res.ok) {
@@ -736,20 +791,25 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                     })
                   ]),
                   _: 1
-                })
+                }),
+                !isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$9), {
+                  key: 0,
+                  tab: "img2img"
+                })) : createCommentVNode("", true),
+                createVNode(unref(_sfc_main$a), { tab: "img2img" })
               ]),
               _: 1
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(unref(_sfc_main$9), { generate }),
-                createVNode(unref(_sfc_main$a), {
+                createVNode(unref(_sfc_main$b), { generate }),
+                createVNode(unref(_sfc_main$c), {
                   "current-image": unref(global).state.img2img.currentImage,
                   images: unref(global).state.img2img.images,
                   data: unref(settings).data.settings.img2img,
                   onImageClicked: _cache[8] || (_cache[8] = ($event) => unref(global).state.img2img.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(unref(_sfc_main$b), {
+                createVNode(unref(_sfc_main$d), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.img2img.genData
                 }, null, 8, ["gen-data"])
@@ -763,7 +823,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-116492bf"]]);
+const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-bfd46a0a"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1339,7 +1399,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-const _withScopeId = (n) => (pushScopeId("data-v-6961892e"), n = n(), popScopeId(), n);
+const _withScopeId = (n) => (pushScopeId("data-v-1193df1f"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1375,6 +1435,10 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     const global = useState();
     const settings = useSettings();
     const messageHandler = useMessage();
+    const isSelectedModelSDXL = computed(() => {
+      var _a;
+      return ((_a = settings.data.settings.model) == null ? void 0 : _a.type) === "SDXL";
+    });
     const checkSeed = (seed) => {
       if (seed === -1) {
         seed = Math.floor(Math.random() * 999999999999);
@@ -1419,7 +1483,28 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
             }
           },
-          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path
+          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path,
+          flags: {
+            ...settings.data.settings.inpainting.highres.enabled ? {
+              highres_fix: {
+                mode: settings.data.settings.inpainting.highres.mode,
+                image_upscaler: settings.data.settings.inpainting.highres.image_upscaler,
+                scale: settings.data.settings.inpainting.highres.scale,
+                latent_scale_mode: settings.data.settings.inpainting.highres.latent_scale_mode,
+                strength: settings.data.settings.inpainting.highres.strength,
+                steps: settings.data.settings.inpainting.highres.steps,
+                antialiased: settings.data.settings.inpainting.highres.antialiased
+              }
+            } : {},
+            ...settings.data.settings.inpainting.upscale.enabled ? {
+              upscale: {
+                upscale_factor: settings.data.settings.inpainting.upscale.upscale_factor,
+                tile_size: settings.data.settings.inpainting.upscale.tile_size,
+                tile_padding: settings.data.settings.inpainting.upscale.tile_padding,
+                model: settings.data.settings.inpainting.upscale.model
+              }
+            } : {}
+          }
         })
       }).then((res) => {
         if (!res.ok) {
@@ -1825,20 +1910,25 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     })
                   ]),
                   _: 1
-                })
+                }),
+                !isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$9), {
+                  key: 0,
+                  tab: "inpainting"
+                })) : createCommentVNode("", true),
+                createVNode(unref(_sfc_main$a), { tab: "inpainting" })
               ]),
               _: 1
             }),
             createVNode(unref(NGi), null, {
               default: withCtx(() => [
-                createVNode(unref(_sfc_main$9), { generate }),
-                createVNode(unref(_sfc_main$a), {
+                createVNode(unref(_sfc_main$b), { generate }),
+                createVNode(unref(_sfc_main$c), {
                   "current-image": unref(global).state.inpainting.currentImage,
                   images: unref(global).state.inpainting.images,
                   data: unref(settings).data.settings.inpainting,
                   onImageClicked: _cache[13] || (_cache[13] = ($event) => unref(global).state.inpainting.currentImage = $event)
                 }, null, 8, ["current-image", "images", "data"]),
-                createVNode(unref(_sfc_main$b), {
+                createVNode(unref(_sfc_main$d), {
                   style: { "margin-top": "12px" },
                   "gen-data": unref(global).state.inpainting.genData
                 }, null, 8, ["gen-data"])
@@ -1852,7 +1942,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-6961892e"]]);
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-1193df1f"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

@@ -52,13 +52,16 @@
           :step="0.1"
         />
       </NFormItem>
+
       <SamplerPicker type="img2img" target="defaultSettings" />
+      <Upscale tab="img2img" target="defaultSettings" />
+      <HighResFix tab="img2img" target="defaultSettings" />
     </NForm>
   </NCard>
 </template>
 
 <script lang="ts" setup>
-import SamplerPicker from "@/components/generate/SamplerPicker.vue";
+import { HighResFix, SamplerPicker, Upscale } from "@/components/generate";
 import { useSettings } from "@/store/settings";
 import { NCard, NForm, NFormItem, NInput, NInputNumber } from "naive-ui";
 
