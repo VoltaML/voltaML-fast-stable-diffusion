@@ -97,8 +97,9 @@
           v-if="isSelectedModelSDXL"
         />
         <XLRefiner v-if="isSelectedModelSDXL" />
-        <HighResFix v-if="!isSelectedModelSDXL" />
         <Scalecrafter />
+        <HighResFix tab="txt2img" />
+        <Upscale tab="txt2img" />
       </NGi>
 
       <!-- Split -->
@@ -126,6 +127,7 @@
 <script setup lang="ts">
 import {
   BatchSizeInput,
+  CFGScale,
   DimensionsInput,
   GenerateSection,
   HighResFix,
@@ -133,11 +135,11 @@ import {
   OutputStats,
   Prompt,
   ResizeFromDimensionsInput,
-  SamplerPicker,
-  XLRefiner,
-  CFGScale,
   SAGInput,
   Scalecrafter,
+  SamplerPicker,
+  Upscale,
+  XLRefiner,
 } from "@/components";
 import { serverUrl } from "@/env";
 import {
@@ -230,18 +232,18 @@ const generate = () => {
               },
             }
           : {}),
-        ...(global.state.txt2img.highres
+        ...(settings.data.settings.txt2img.highres.enabled
           ? {
               highres_fix: {
-                mode: settings.data.settings.flags.highres.mode,
+                mode: settings.data.settings.txt2img.highres.mode,
                 image_upscaler:
-                  settings.data.settings.flags.highres.image_upscaler,
-                scale: settings.data.settings.flags.highres.scale,
+                  settings.data.settings.txt2img.highres.image_upscaler,
+                scale: settings.data.settings.txt2img.highres.scale,
                 latent_scale_mode:
-                  settings.data.settings.flags.highres.latent_scale_mode,
-                strength: settings.data.settings.flags.highres.strength,
-                steps: settings.data.settings.flags.highres.steps,
-                antialiased: settings.data.settings.flags.highres.antialiased,
+                  settings.data.settings.txt2img.highres.latent_scale_mode,
+                strength: settings.data.settings.txt2img.highres.strength,
+                steps: settings.data.settings.txt2img.highres.steps,
+                antialiased: settings.data.settings.txt2img.highres.antialiased,
               },
             }
           : global.state.txt2img.refiner
@@ -279,6 +281,18 @@ const generate = () => {
                     .unsafe_resolutions,
                 base: settings.data.settings.model?.type,
                 disperse: settings.defaultSettings.flags.scalecrafter.disperse,
+              },
+            }
+          : {}),
+        ...(settings.data.settings.txt2img.upscale.enabled
+          ? {
+              upscale: {
+                upscale_factor:
+                  settings.data.settings.txt2img.upscale.upscale_factor,
+                tile_size: settings.data.settings.txt2img.upscale.tile_size,
+                tile_padding:
+                  settings.data.settings.txt2img.upscale.tile_padding,
+                model: settings.data.settings.txt2img.upscale.model,
               },
             }
           : {}),

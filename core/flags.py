@@ -22,6 +22,8 @@ class Flag:
 class HighResFixFlag(Flag, DataClassJsonMixin):
     "Flag to fix high resolution images"
 
+    enabled: bool = False  # For storing in json
+
     scale: float = 2
     mode: Literal["latent", "image"] = "latent"
 
@@ -35,7 +37,6 @@ class HighResFixFlag(Flag, DataClassJsonMixin):
     # Img2img
     strength: float = 0.7
     steps: int = 50
-    antialiased: bool = False
 
 
 @dataclass
@@ -86,3 +87,15 @@ class SDXLRefinerFlag(Flag, DataClassJsonMixin):
     model: str = ""
     aesthetic_score: float = 6.0
     negative_aesthetic_score: float = 2.5
+
+
+@dataclass
+class UpscaleFlag(Flag, DataClassJsonMixin):
+    "Flag for upscaling"
+
+    enabled: bool = False  # For storing in json
+
+    upscale_factor: float = field(default=4)
+    tile_size: int = field(default=128)
+    tile_padding: int = field(default=10)
+    model: str = field(default="RealESRGAN_x4plus_anime_6B")

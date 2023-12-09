@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 import { d as defineComponent, u as useSettings, a as useState, c as computed, b as upscalerOptions, o as openBlock, e as createBlock, w as withCtx, f as createBaseVNode, g as createVNode, h as unref, N as NSpace, i as NSelect, j as createElementBlock, k as createTextVNode, l as NTooltip, m as createCommentVNode, n as NCard, p as useMessage, q as onUnmounted, r as NGi, s as NGrid, t as serverUrl } from "./index.js";
 import { _ as _sfc_main$b } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$c } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
@@ -6,11 +7,22 @@ import { N as NSwitch } from "./Switch.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
 import { _ as _sfc_main$6 } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+=======
+import { d as defineComponent, u as useSettings, a as useState, o as openBlock, c as createBlock, w as withCtx, b as createBaseVNode, e as createVNode, f as unref, g as createElementBlock, h as createCommentVNode, N as NCard, i as computed, j as NSpace, k as createTextVNode, l as NTooltip, m as NSelect, n as useMessage, p as onUnmounted, q as NGi, r as NGrid, s as serverUrl } from "./index.js";
+import { _ as _sfc_main$b } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
+import { _ as _sfc_main$c } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
+import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$7, c as _sfc_main$8, d as _sfc_main$d } from "./clock.js";
+import { _ as _sfc_main$4, a as _sfc_main$9, b as _sfc_main$a } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
+import { N as NSwitch } from "./Switch.js";
+import { N as NSlider } from "./Slider.js";
+import { N as NInputNumber } from "./InputNumber.js";
+>>>>>>> origin/experimental
 import { v as v4 } from "./v4.js";
 import "./SendOutputTo.vue_vue_type_script_setup_true_lang.js";
 import "./TrashBin.js";
 import "./DescriptionsItem.js";
 import "./Settings.js";
+<<<<<<< HEAD
 const _hoisted_1$4 = { class: "flex-container" };
 const _hoisted_2$4 = /* @__PURE__ */ createBaseVNode("div", { class: "slider-label" }, [
   /* @__PURE__ */ createBaseVNode("p", null, "Enabled")
@@ -198,6 +210,16 @@ const _hoisted_5$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label
 const _hoisted_6$3 = { class: "flex-container" };
 const _hoisted_7$3 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
 const _sfc_main$4 = /* @__PURE__ */ defineComponent({
+=======
+const _hoisted_1$2 = { class: "flex-container" };
+const _hoisted_2$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Enabled", -1);
+const _hoisted_3$2 = { key: 0 };
+const _hoisted_4$2 = { class: "flex-container" };
+const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Width", -1);
+const _hoisted_6$2 = { class: "flex-container" };
+const _hoisted_7$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
+const _sfc_main$3 = /* @__PURE__ */ defineComponent({
+>>>>>>> origin/experimental
   __name: "ResizeFromDimensionsInput",
   setup(__props) {
     const settings = useSettings();
@@ -586,15 +608,15 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 }
               }
             } : {},
-            ...global.state.txt2img.highres ? {
+            ...settings.data.settings.txt2img.highres.enabled ? {
               highres_fix: {
-                mode: settings.data.settings.flags.highres.mode,
-                image_upscaler: settings.data.settings.flags.highres.image_upscaler,
-                scale: settings.data.settings.flags.highres.scale,
-                latent_scale_mode: settings.data.settings.flags.highres.latent_scale_mode,
-                strength: settings.data.settings.flags.highres.strength,
-                steps: settings.data.settings.flags.highres.steps,
-                antialiased: settings.data.settings.flags.highres.antialiased
+                mode: settings.data.settings.txt2img.highres.mode,
+                image_upscaler: settings.data.settings.txt2img.highres.image_upscaler,
+                scale: settings.data.settings.txt2img.highres.scale,
+                latent_scale_mode: settings.data.settings.txt2img.highres.latent_scale_mode,
+                strength: settings.data.settings.txt2img.highres.strength,
+                steps: settings.data.settings.txt2img.highres.steps,
+                antialiased: settings.data.settings.txt2img.highres.antialiased
               }
             } : global.state.txt2img.refiner ? {
               refiner: {
@@ -605,6 +627,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 strength: settings.data.settings.flags.refiner.strength
               }
             } : {},
+<<<<<<< HEAD
             ...settings.defaultSettings.flags.deepshrink.enabled ? {
               deepshrink: {
                 early_out: settings.defaultSettings.flags.deepshrink.early_out,
@@ -621,6 +644,14 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 unsafe_resolutions: settings.defaultSettings.flags.scalecrafter.unsafe_resolutions,
                 base: (_b = settings.data.settings.model) == null ? void 0 : _b.type,
                 disperse: settings.defaultSettings.flags.scalecrafter.disperse
+=======
+            ...settings.data.settings.txt2img.upscale.enabled ? {
+              upscale: {
+                upscale_factor: settings.data.settings.txt2img.upscale.upscale_factor,
+                tile_size: settings.data.settings.txt2img.upscale.tile_size,
+                tile_padding: settings.data.settings.txt2img.upscale.tile_padding,
+                model: settings.data.settings.txt2img.upscale.model
+>>>>>>> origin/experimental
               }
             } : {}
           }
@@ -663,6 +694,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
         }, {
           default: withCtx(() => [
             createVNode(unref(NGi), null, {
+<<<<<<< HEAD
               default: withCtx(() => [
                 createVNode(unref(NCard), { title: "Settings" }, {
                   default: withCtx(() => [
@@ -762,6 +794,110 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                 !isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$5), { key: 2 })) : createCommentVNode("", true),
                 createVNode(unref(_sfc_main$2))
               ]),
+=======
+              default: withCtx(() => {
+                var _a;
+                return [
+                  createVNode(unref(NCard), { title: "Settings" }, {
+                    default: withCtx(() => [
+                      createVNode(unref(NSpace), {
+                        vertical: "",
+                        class: "left-container"
+                      }, {
+                        default: withCtx(() => [
+                          createVNode(unref(Prompt), { tab: "txt2img" }),
+                          createVNode(unref(_sfc_main$4), { type: "txt2img" }),
+                          createVNode(unref(_sfc_main$5), {
+                            "dimensions-object": unref(settings).data.settings.txt2img
+                          }, null, 8, ["dimensions-object"]),
+                          createBaseVNode("div", _hoisted_2, [
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                              trigger: withCtx(() => [
+                                _hoisted_3
+                              ]),
+                              default: withCtx(() => [
+                                createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
+                                _hoisted_4
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(NSlider), {
+                              value: unref(settings).data.settings.txt2img.steps,
+                              "onUpdate:value": _cache[0] || (_cache[0] = ($event) => unref(settings).data.settings.txt2img.steps = $event),
+                              min: 5,
+                              max: 300,
+                              style: { "margin-right": "12px" }
+                            }, null, 8, ["value"]),
+                            createVNode(unref(NInputNumber), {
+                              value: unref(settings).data.settings.txt2img.steps,
+                              "onUpdate:value": _cache[1] || (_cache[1] = ($event) => unref(settings).data.settings.txt2img.steps = $event),
+                              size: "small",
+                              style: { "min-width": "96px", "width": "96px" }
+                            }, null, 8, ["value"])
+                          ]),
+                          createVNode(unref(_sfc_main$6), { tab: "txt2img" }),
+                          createVNode(unref(_sfc_main$7), { tab: "txt2img" }),
+                          createBaseVNode("div", _hoisted_5, [
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                              trigger: withCtx(() => [
+                                _hoisted_6
+                              ]),
+                              default: withCtx(() => [
+                                createTextVNode(" Number of images to generate after each other. ")
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(NSlider), {
+                              value: unref(settings).data.settings.txt2img.batch_count,
+                              "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).data.settings.txt2img.batch_count = $event),
+                              min: 1,
+                              max: 9,
+                              style: { "margin-right": "12px" }
+                            }, null, 8, ["value"]),
+                            createVNode(unref(NInputNumber), {
+                              value: unref(settings).data.settings.txt2img.batch_count,
+                              "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.txt2img.batch_count = $event),
+                              size: "small",
+                              style: { "min-width": "96px", "width": "96px" }
+                            }, null, 8, ["value"])
+                          ]),
+                          createVNode(unref(_sfc_main$8), {
+                            "batch-size-object": unref(settings).data.settings.txt2img
+                          }, null, 8, ["batch-size-object"]),
+                          createBaseVNode("div", _hoisted_7, [
+                            createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
+                              trigger: withCtx(() => [
+                                _hoisted_8
+                              ]),
+                              default: withCtx(() => [
+                                createTextVNode(" Seed is a number that represents the starting canvas of your image. If you want to create the same image as your friend, you can use the same settings and seed to do so. "),
+                                _hoisted_9
+                              ]),
+                              _: 1
+                            }),
+                            createVNode(unref(NInputNumber), {
+                              value: unref(settings).data.settings.txt2img.seed,
+                              "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.txt2img.seed = $event),
+                              size: "small",
+                              style: { "flex-grow": "1" }
+                            }, null, 8, ["value"])
+                          ])
+                        ]),
+                        _: 1
+                      })
+                    ]),
+                    _: 1
+                  }),
+                  ((_a = unref(settings).data.settings.model) == null ? void 0 : _a.type) === "SDXL" ? (openBlock(), createBlock(unref(_sfc_main$3), {
+                    key: 0,
+                    "dimensions-object": unref(settings).data.settings.txt2img
+                  }, null, 8, ["dimensions-object"])) : createCommentVNode("", true),
+                  isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$2), { key: 1 })) : createCommentVNode("", true),
+                  createVNode(unref(_sfc_main$9), { tab: "txt2img" }),
+                  createVNode(unref(_sfc_main$a), { tab: "txt2img" })
+                ];
+              }),
+>>>>>>> origin/experimental
               _: 1
             }),
             createVNode(unref(NGi), null, {

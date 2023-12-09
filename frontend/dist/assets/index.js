@@ -40687,6 +40687,795 @@ var ControlNetType = /* @__PURE__ */ ((ControlNetType2) => {
   ControlNetType2["SEGMENTATION"] = "lllyasviel/sd-controlnet-seg";
   return ControlNetType2;
 })(ControlNetType || {});
+var _a;
+const isClient = typeof window !== "undefined";
+const isFunction = (val) => typeof val === "function";
+const isString = (val) => typeof val === "string";
+const noop = () => {
+};
+const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
+function resolveUnref(r) {
+  return typeof r === "function" ? r() : unref(r);
+}
+function identity(arg) {
+  return arg;
+}
+function tryOnScopeDispose(fn) {
+  if (getCurrentScope()) {
+    onScopeDispose(fn);
+    return true;
+  }
+  return false;
+}
+function resolveRef(r) {
+  return typeof r === "function" ? computed(r) : ref(r);
+}
+function useIntervalFn(cb, interval = 1e3, options = {}) {
+  const {
+    immediate = true,
+    immediateCallback = false
+  } = options;
+  let timer = null;
+  const isActive = ref(false);
+  function clean() {
+    if (timer) {
+      clearInterval(timer);
+      timer = null;
+    }
+  }
+  function pause() {
+    isActive.value = false;
+    clean();
+  }
+  function resume() {
+    const intervalValue = resolveUnref(interval);
+    if (intervalValue <= 0)
+      return;
+    isActive.value = true;
+    if (immediateCallback)
+      cb();
+    clean();
+    timer = setInterval(cb, intervalValue);
+  }
+  if (immediate && isClient)
+    resume();
+  if (isRef(interval) || isFunction(interval)) {
+    const stopWatch = watch(interval, () => {
+      if (isActive.value && isClient)
+        resume();
+    });
+    tryOnScopeDispose(stopWatch);
+  }
+  tryOnScopeDispose(pause);
+  return {
+    isActive,
+    pause,
+    resume
+  };
+}
+function unrefElement(elRef) {
+  var _a2;
+  const plain = resolveUnref(elRef);
+  return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
+}
+const defaultWindow = isClient ? window : void 0;
+function useEventListener(...args) {
+  let target;
+  let events2;
+  let listeners;
+  let options;
+  if (isString(args[0]) || Array.isArray(args[0])) {
+    [events2, listeners, options] = args;
+    target = defaultWindow;
+  } else {
+    [target, events2, listeners, options] = args;
+  }
+  if (!target)
+    return noop;
+  if (!Array.isArray(events2))
+    events2 = [events2];
+  if (!Array.isArray(listeners))
+    listeners = [listeners];
+  const cleanups = [];
+  const cleanup = () => {
+    cleanups.forEach((fn) => fn());
+    cleanups.length = 0;
+  };
+  const register = (el, event2, listener, options2) => {
+    el.addEventListener(event2, listener, options2);
+    return () => el.removeEventListener(event2, listener, options2);
+  };
+  const stopWatch = watch(() => [unrefElement(target), resolveUnref(options)], ([el, options2]) => {
+    cleanup();
+    if (!el)
+      return;
+    cleanups.push(...events2.flatMap((event2) => {
+      return listeners.map((listener) => register(el, event2, listener, options2));
+    }));
+  }, { immediate: true, flush: "post" });
+  const stop = () => {
+    stopWatch();
+    cleanup();
+  };
+  tryOnScopeDispose(stop);
+  return stop;
+}
+let _iOSWorkaround = false;
+function onClickOutside(target, handler, options = {}) {
+  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
+  if (!window2)
+    return;
+  if (isIOS && !_iOSWorkaround) {
+    _iOSWorkaround = true;
+    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop));
+  }
+  let shouldListen = true;
+  const shouldIgnore = (event2) => {
+    return ignore.some((target2) => {
+      if (typeof target2 === "string") {
+        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event2.target || event2.composedPath().includes(el));
+      } else {
+        const el = unrefElement(target2);
+        return el && (event2.target === el || event2.composedPath().includes(el));
+      }
+    });
+  };
+  const listener = (event2) => {
+    const el = unrefElement(target);
+    if (!el || el === event2.target || event2.composedPath().includes(el))
+      return;
+    if (event2.detail === 0)
+      shouldListen = !shouldIgnore(event2);
+    if (!shouldListen) {
+      shouldListen = true;
+      return;
+    }
+    handler(event2);
+  };
+  const cleanup = [
+    useEventListener(window2, "click", listener, { passive: true, capture }),
+    useEventListener(window2, "pointerdown", (e) => {
+      const el = unrefElement(target);
+      if (el)
+        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
+    }, { passive: true }),
+    detectIframe && useEventListener(window2, "blur", (event2) => {
+      var _a2;
+      const el = unrefElement(target);
+      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
+        handler(event2);
+    })
+  ].filter(Boolean);
+  const stop = () => cleanup.forEach((fn) => fn());
+  return stop;
+}
+const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
+const globalKey = "__vueuse_ssr_handlers__";
+_global[globalKey] = _global[globalKey] || {};
+var SwipeDirection;
+(function(SwipeDirection2) {
+  SwipeDirection2["UP"] = "UP";
+  SwipeDirection2["RIGHT"] = "RIGHT";
+  SwipeDirection2["DOWN"] = "DOWN";
+  SwipeDirection2["LEFT"] = "LEFT";
+  SwipeDirection2["NONE"] = "NONE";
+})(SwipeDirection || (SwipeDirection = {}));
+var __defProp2 = Object.defineProperty;
+var __getOwnPropSymbols = Object.getOwnPropertySymbols;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __propIsEnum = Object.prototype.propertyIsEnumerable;
+var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __spreadValues = (a, b) => {
+  for (var prop in b || (b = {}))
+    if (__hasOwnProp.call(b, prop))
+      __defNormalProp2(a, prop, b[prop]);
+  if (__getOwnPropSymbols)
+    for (var prop of __getOwnPropSymbols(b)) {
+      if (__propIsEnum.call(b, prop))
+        __defNormalProp2(a, prop, b[prop]);
+    }
+  return a;
+};
+const _TransitionPresets = {
+  easeInSine: [0.12, 0, 0.39, 0],
+  easeOutSine: [0.61, 1, 0.88, 1],
+  easeInOutSine: [0.37, 0, 0.63, 1],
+  easeInQuad: [0.11, 0, 0.5, 0],
+  easeOutQuad: [0.5, 1, 0.89, 1],
+  easeInOutQuad: [0.45, 0, 0.55, 1],
+  easeInCubic: [0.32, 0, 0.67, 0],
+  easeOutCubic: [0.33, 1, 0.68, 1],
+  easeInOutCubic: [0.65, 0, 0.35, 1],
+  easeInQuart: [0.5, 0, 0.75, 0],
+  easeOutQuart: [0.25, 1, 0.5, 1],
+  easeInOutQuart: [0.76, 0, 0.24, 1],
+  easeInQuint: [0.64, 0, 0.78, 0],
+  easeOutQuint: [0.22, 1, 0.36, 1],
+  easeInOutQuint: [0.83, 0, 0.17, 1],
+  easeInExpo: [0.7, 0, 0.84, 0],
+  easeOutExpo: [0.16, 1, 0.3, 1],
+  easeInOutExpo: [0.87, 0, 0.13, 1],
+  easeInCirc: [0.55, 0, 1, 0.45],
+  easeOutCirc: [0, 0.55, 0.45, 1],
+  easeInOutCirc: [0.85, 0, 0.15, 1],
+  easeInBack: [0.36, 0, 0.66, -0.56],
+  easeOutBack: [0.34, 1.56, 0.64, 1],
+  easeInOutBack: [0.68, -0.6, 0.32, 1.6]
+};
+__spreadValues({
+  linear: identity
+}, _TransitionPresets);
+const DEFAULT_PING_MESSAGE = "ping";
+function resolveNestedOptions(options) {
+  if (options === true)
+    return {};
+  return options;
+}
+function useWebSocket(url, options = {}) {
+  const {
+    onConnected,
+    onDisconnected,
+    onError,
+    onMessage,
+    immediate = true,
+    autoClose = true,
+    protocols = []
+  } = options;
+  const data = ref(null);
+  const status = ref("CLOSED");
+  const wsRef = ref();
+  const urlRef = resolveRef(url);
+  let heartbeatPause;
+  let heartbeatResume;
+  let explicitlyClosed = false;
+  let retried = 0;
+  let bufferedData = [];
+  let pongTimeoutWait;
+  const close = (code = 1e3, reason) => {
+    if (!wsRef.value)
+      return;
+    explicitlyClosed = true;
+    heartbeatPause == null ? void 0 : heartbeatPause();
+    wsRef.value.close(code, reason);
+  };
+  const _sendBuffer = () => {
+    if (bufferedData.length && wsRef.value && status.value === "OPEN") {
+      for (const buffer of bufferedData)
+        wsRef.value.send(buffer);
+      bufferedData = [];
+    }
+  };
+  const resetHeartbeat = () => {
+    clearTimeout(pongTimeoutWait);
+    pongTimeoutWait = void 0;
+  };
+  const send = (data2, useBuffer = true) => {
+    if (!wsRef.value || status.value !== "OPEN") {
+      if (useBuffer)
+        bufferedData.push(data2);
+      return false;
+    }
+    _sendBuffer();
+    wsRef.value.send(data2);
+    return true;
+  };
+  const _init = () => {
+    if (explicitlyClosed || typeof urlRef.value === "undefined")
+      return;
+    const ws = new WebSocket(urlRef.value, protocols);
+    wsRef.value = ws;
+    status.value = "CONNECTING";
+    ws.onopen = () => {
+      status.value = "OPEN";
+      onConnected == null ? void 0 : onConnected(ws);
+      heartbeatResume == null ? void 0 : heartbeatResume();
+      _sendBuffer();
+    };
+    ws.onclose = (ev) => {
+      status.value = "CLOSED";
+      wsRef.value = void 0;
+      onDisconnected == null ? void 0 : onDisconnected(ws, ev);
+      if (!explicitlyClosed && options.autoReconnect) {
+        const {
+          retries = -1,
+          delay = 1e3,
+          onFailed
+        } = resolveNestedOptions(options.autoReconnect);
+        retried += 1;
+        if (typeof retries === "number" && (retries < 0 || retried < retries))
+          setTimeout(_init, delay);
+        else if (typeof retries === "function" && retries())
+          setTimeout(_init, delay);
+        else
+          onFailed == null ? void 0 : onFailed();
+      }
+    };
+    ws.onerror = (e) => {
+      onError == null ? void 0 : onError(ws, e);
+    };
+    ws.onmessage = (e) => {
+      if (options.heartbeat) {
+        resetHeartbeat();
+        const {
+          message = DEFAULT_PING_MESSAGE
+        } = resolveNestedOptions(options.heartbeat);
+        if (e.data === message)
+          return;
+      }
+      data.value = e.data;
+      onMessage == null ? void 0 : onMessage(ws, e);
+    };
+  };
+  if (options.heartbeat) {
+    const {
+      message = DEFAULT_PING_MESSAGE,
+      interval = 1e3,
+      pongTimeout = 1e3
+    } = resolveNestedOptions(options.heartbeat);
+    const { pause, resume } = useIntervalFn(() => {
+      send(message, false);
+      if (pongTimeoutWait != null)
+        return;
+      pongTimeoutWait = setTimeout(() => {
+        close();
+      }, pongTimeout);
+    }, interval, { immediate: false });
+    heartbeatPause = pause;
+    heartbeatResume = resume;
+  }
+  if (autoClose) {
+    useEventListener(window, "beforeunload", () => close());
+    tryOnScopeDispose(close);
+  }
+  const open = () => {
+    close();
+    explicitlyClosed = false;
+    retried = 0;
+    _init();
+  };
+  if (immediate)
+    watch(urlRef, open, { immediate: true });
+  return {
+    data,
+    status,
+    close,
+    send,
+    open,
+    ws: wsRef
+  };
+}
+function processWebSocket(message, global2, notificationProvider) {
+  switch (message.type) {
+    case "test": {
+      break;
+    }
+    case "progress": {
+      global2.state.progress = message.data.progress;
+      break;
+    }
+    case "txt2img": {
+      global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "img2img": {
+      global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "inpainting": {
+      global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "controlnet": {
+      global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
+      global2.state.progress = message.data.progress;
+      global2.state.current_step = message.data.current_step;
+      global2.state.total_steps = message.data.total_steps;
+      break;
+    }
+    case "notification": {
+      console.log(message.data.message);
+      if (message.data.timeout === 0) {
+        message.data.timeout = null;
+      }
+      notificationProvider.create({
+        type: message.data.severity,
+        title: message.data.title,
+        content: message.data.message,
+        duration: message.data.timeout
+      });
+      break;
+    }
+    case "aitemplate_compile": {
+      global2.state.aitBuildStep = {
+        ...global2.state.aitBuildStep,
+        ...message.data
+      };
+      break;
+    }
+    case "onnx_compile": {
+      global2.state.onnxBuildStep = {
+        ...global2.state.onnxBuildStep,
+        ...message.data
+      };
+      break;
+    }
+    case "cluster_stats": {
+      global2.state.perf_drawer.gpus = message.data;
+      break;
+    }
+    case "token": {
+      if (message.data.huggingface === "missing") {
+        global2.state.secrets.huggingface = "missing";
+      }
+      break;
+    }
+    case "refresh_capabilities": {
+      global2.fetchCapabilites().then(() => {
+        console.log("Capabilities refreshed");
+      }).catch((error) => {
+        console.error(error);
+      });
+      break;
+    }
+    case "log": {
+      const messages = message.data.message.split("\n");
+      for (const msg2 of messages) {
+        global2.state.log_drawer.logs.splice(0, 0, msg2);
+        if (global2.state.log_drawer.logs.length > 500) {
+          global2.state.log_drawer.logs.pop();
+        }
+      }
+      break;
+    }
+    case "incorrect_settings_value": {
+      global2.state.settings_diff.default_value = message.data.default_value;
+      global2.state.settings_diff.current_value = message.data.current_value;
+      global2.state.settings_diff.key = message.data.key;
+      global2.state.settings_diff.active = true;
+      break;
+    }
+    default: {
+      console.log(message);
+    }
+  }
+}
+const useWebsocket = defineStore("websocket", () => {
+  const notificationProvider = useNotification();
+  const messageProvider = useMessage();
+  const global2 = useState2();
+  const onConnectedCallbacks = [];
+  const onDisconnectedCallbacks = [];
+  const onRefreshCallbacks = [];
+  const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
+    heartbeat: {
+      message: "ping",
+      interval: 1e3,
+      pongTimeout: 5e3
+    },
+    immediate: false,
+    onMessage: (ws, event2) => {
+      if (event2.data === "pong") {
+        return;
+      }
+      const data = JSON.parse(event2.data);
+      if (data.type === "refresh_models") {
+        onRefreshCallbacks.forEach((callback) => callback());
+        console.log("Models refreshed");
+        return;
+      }
+      processWebSocket(data, global2, notificationProvider);
+    },
+    onConnected: () => {
+      messageProvider.success("Connected to server");
+      onConnectedCallbacks.forEach((callback) => callback());
+    },
+    onDisconnected: () => {
+      onDisconnectedCallbacks.forEach((callback) => callback());
+    }
+  });
+  function ws_text() {
+    switch (readyState.value) {
+      case "CLOSED":
+        return "Closed";
+      case "CONNECTING":
+        return "Connecting";
+      case "OPEN":
+        return "Connected";
+    }
+  }
+  function get_color() {
+    switch (readyState.value) {
+      case "CLOSED":
+        return "error";
+      case "CONNECTING":
+        return "warning";
+      case "OPEN":
+        return "success";
+    }
+  }
+  const readyState = ref(websocket.status);
+  const loading = computed(() => readyState.value === "CONNECTING");
+  const text = computed(() => ws_text());
+  const color = computed(() => get_color());
+  return {
+    websocket,
+    readyState,
+    loading,
+    text,
+    ws_open: websocket.open,
+    color,
+    onConnectedCallbacks,
+    onDisconnectedCallbacks,
+    onRefreshCallbacks
+  };
+});
+const spaceRegex = new RegExp("[\\s,]+");
+const arrowKeys = [38, 40];
+let currentFocus = -1;
+function convertToTextString(str) {
+  const upper = str.charAt(0).toUpperCase() + str.slice(1);
+  return upper.replace(/_/g, " ");
+}
+function cloneObj(obj) {
+  return window.structuredClone(obj);
+}
+function addActive(x) {
+  if (!x)
+    return false;
+  removeActive(x);
+  if (currentFocus >= x.length) {
+    currentFocus = 0;
+  }
+  if (currentFocus < 0) {
+    currentFocus = x.length - 1;
+  }
+  x[currentFocus].classList.add("autocomplete-active");
+}
+function removeActive(x) {
+  for (let i = 0; i < x.length; i++) {
+    x[i].classList.remove("autocomplete-active");
+  }
+}
+function closeAllLists(elmnt, input) {
+  var _a2, _b;
+  const x = document.getElementsByClassName("autocomplete-items");
+  for (let i = 0; i < x.length; i++) {
+    if (elmnt != x[i] && elmnt != input) {
+      (_b = (_a2 = x[i]) == null ? void 0 : _a2.parentNode) == null ? void 0 : _b.removeChild(x[i]);
+    }
+  }
+}
+async function startWebsocket(messageProvider) {
+  const websocketState = useWebsocket();
+  const timeout = 1e3;
+  const controller = new AbortController();
+  const id = setTimeout(() => controller.abort(), timeout);
+  const response = await fetch(`${serverUrl}/api/test/alive`, {
+    signal: controller.signal
+  }).catch(() => {
+    messageProvider.error("Server is not responding");
+  });
+  clearTimeout(id);
+  if (response === void 0) {
+    return;
+  }
+  if (response.status !== 200) {
+    messageProvider.error("Server is not responding");
+    return;
+  }
+  console.log("Starting websocket");
+  websocketState.ws_open();
+}
+function getTextBoundaries(elem) {
+  if (elem === null) {
+    console.error("Element is null");
+    return [0, 0];
+  }
+  if (elem.tagName === "INPUT" && elem.type === "text" || elem.tagName === "TEXTAREA") {
+    return [
+      elem.selectionStart === null ? 0 : elem.selectionStart,
+      elem.selectionEnd === null ? 0 : elem.selectionEnd
+    ];
+  }
+  console.error("Element is not input");
+  return [0, 0];
+}
+function promptHandleKeyUp(e, data, key, globalState) {
+  var _a2, _b, _c, _d, _e;
+  if (e.key === "ArrowUp" && e.ctrlKey) {
+    const values = getTextBoundaries(
+      document.activeElement
+    );
+    const boundaryIndexStart = values[0];
+    const boundaryIndexEnd = values[1];
+    e.preventDefault();
+    const elem = document.activeElement;
+    const current_selection = elem.value.substring(
+      boundaryIndexStart,
+      boundaryIndexEnd
+    );
+    const regex = /\(([^:]+([:]?[\s]?)([\d.\d]+))\)/;
+    const matches = regex.exec(current_selection);
+    if (matches) {
+      if (matches) {
+        const value = parseFloat(matches[3]);
+        const new_value = (value + 0.1).toFixed(1);
+        const beforeString = elem.value.substring(0, boundaryIndexStart);
+        const afterString = elem.value.substring(boundaryIndexEnd);
+        const newString = `${beforeString}${current_selection.replace(
+          matches[3],
+          new_value
+        )}${afterString}`;
+        elem.value = newString;
+        data[key] = newString;
+        elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
+      }
+    } else if (boundaryIndexStart !== boundaryIndexEnd) {
+      const new_inner_string = `(${current_selection}:1.1)`;
+      const beforeString = elem.value.substring(0, boundaryIndexStart);
+      const afterString = elem.value.substring(boundaryIndexEnd);
+      elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
+      elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
+    } else {
+      console.log("No selection, cannot parse for weighting");
+    }
+  }
+  if (e.key === "ArrowDown" && e.ctrlKey) {
+    const values = getTextBoundaries(
+      document.activeElement
+    );
+    const boundaryIndexStart = values[0];
+    const boundaryIndexEnd = values[1];
+    e.preventDefault();
+    const elem = document.activeElement;
+    const current_selection = elem.value.substring(
+      boundaryIndexStart,
+      boundaryIndexEnd
+    );
+    const regex = /\(([^:]+([:]?[\s]?)([\d.\d]+))\)/;
+    const matches = regex.exec(current_selection);
+    if (matches) {
+      if (matches) {
+        const value = parseFloat(matches[3]);
+        const new_value = Math.max(value - 0.1, 0).toFixed(1);
+        const beforeString = elem.value.substring(0, boundaryIndexStart);
+        const afterString = elem.value.substring(boundaryIndexEnd);
+        const newString = `${beforeString}${current_selection.replace(
+          matches[3],
+          new_value
+        )}${afterString}`;
+        elem.value = newString;
+        data[key] = newString;
+        elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
+      }
+    } else if (boundaryIndexStart !== boundaryIndexEnd) {
+      const new_inner_string = `(${current_selection}:0.9)`;
+      const beforeString = elem.value.substring(0, boundaryIndexStart);
+      const afterString = elem.value.substring(boundaryIndexEnd);
+      elem.value = `${beforeString}${new_inner_string}${afterString}`;
+      data[key] = `${beforeString}${new_inner_string}${afterString}`;
+      elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
+    } else {
+      console.log("No selection, cannot parse for weighting");
+    }
+  }
+  const input = e.target;
+  if (input) {
+    const text = input.value;
+    const currentTokenStripped = (_a2 = text.split(",").pop()) == null ? void 0 : _a2.trim();
+    closeAllLists(void 0, input);
+    if (!currentTokenStripped) {
+      return false;
+    }
+    const toAppend = [];
+    for (let i = 0; i < globalState.state.autofill_special.length; i++) {
+      if (globalState.state.autofill_special[i].toLowerCase().includes(currentTokenStripped.toLowerCase())) {
+        const b = document.createElement("DIV");
+        b.innerText = globalState.state.autofill_special[i];
+        b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill_special[i] + "'>";
+        b.addEventListener("click", function() {
+          input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill_special[i];
+          data[key] = input.value;
+          closeAllLists(void 0, input);
+        });
+        toAppend.push(b);
+      }
+    }
+    const lowercaseStrippedToken = currentTokenStripped.toLowerCase();
+    if (lowercaseStrippedToken.length >= 3) {
+      for (let i = 0; i < globalState.state.autofill.length; i++) {
+        if (globalState.state.autofill[i].toLowerCase().includes(lowercaseStrippedToken)) {
+          if (toAppend.length >= 30) {
+            break;
+          }
+          const b = document.createElement("DIV");
+          b.innerText = globalState.state.autofill[i];
+          b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
+          b.addEventListener("click", function() {
+            input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
+            data[key] = input.value;
+            closeAllLists(void 0, input);
+          });
+          toAppend.push(b);
+        }
+      }
+    }
+    if (toAppend.length === 0) {
+      return false;
+    }
+    const div = document.createElement("DIV");
+    div.setAttribute("id", "autocomplete-list");
+    div.setAttribute("class", "autocomplete-items");
+    (_e = (_d = (_c = (_b = input.parentNode) == null ? void 0 : _b.parentNode) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.parentNode) == null ? void 0 : _e.appendChild(div);
+    for (let i = 0; i < toAppend.length; i++) {
+      div.appendChild(toAppend[i]);
+    }
+    onClickOutside(div, () => {
+      closeAllLists(void 0, input);
+    });
+    const autocompleteList = document.getElementById("autocomplete-list");
+    const x = autocompleteList == null ? void 0 : autocompleteList.getElementsByTagName("div");
+    if (e.key === "ArrowDown") {
+      currentFocus++;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "ArrowUp") {
+      currentFocus--;
+      addActive(x);
+      e.preventDefault();
+    } else if (e.key === "Enter" || e.key === "Tab") {
+      e.stopImmediatePropagation();
+      e.preventDefault();
+      if (currentFocus > -1) {
+        if (x)
+          x[currentFocus].click();
+      }
+    } else if (e.key === "Escape") {
+      closeAllLists(void 0, input);
+    }
+  }
+}
+function promptHandleKeyDown(e) {
+  if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
+    e.preventDefault();
+  }
+  if (document.getElementById("autocomplete-list")) {
+    if (e.key === "Enter" || e.key === "Tab" || e.key === "ArrowDown" || e.key === "ArrowUp") {
+      e.preventDefault();
+    }
+  }
+}
+function urlFromPath(path) {
+  const url = new URL(path, serverUrl);
+  return url.href;
+}
+const highresFixFlagDefault = {
+  enabled: false,
+  scale: 2,
+  mode: "image",
+  image_upscaler: "RealESRGAN_x4plus_anime_6B",
+  latent_scale_mode: "bislerp",
+  antialiased: false,
+  strength: 0.65,
+  steps: 50
+};
+const upscaleFlagDefault = {
+  enabled: false,
+  upscale_factor: 4,
+  tile_size: 128,
+  tile_padding: 10,
+  model: "RealESRGAN_x4plus_anime_6B"
+};
 const defaultSettings = {
   $schema: "./schema/ui_data/settings.json",
   backend: "PyTorch",
@@ -40697,15 +41486,6 @@ const defaultSettings = {
         width: 1024,
         height: 1024
       }
-    },
-    highres: {
-      image_upscaler: "RealESRGAN_x4plus_anime_6B",
-      mode: "latent",
-      scale: 2,
-      latent_scale_mode: "bislerp",
-      strength: 0.7,
-      steps: 50,
-      antialiased: false
     },
     refiner: {
       model: void 0,
@@ -40748,7 +41528,9 @@ const defaultSettings = {
     batch_size: 1,
     negative_prompt: "",
     self_attention_scale: 0,
-    sigmas: "automatic"
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault)
   },
   img2img: {
     width: 512,
@@ -40764,7 +41546,9 @@ const defaultSettings = {
     denoising_strength: 0.6,
     image: "",
     self_attention_scale: 0,
-    sigmas: "automatic"
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault)
   },
   inpainting: {
     prompt: "",
@@ -40780,7 +41564,9 @@ const defaultSettings = {
     batch_size: 1,
     sampler: 8,
     self_attention_scale: 0,
-    sigmas: "automatic"
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault)
   },
   controlnet: {
     prompt: "",
@@ -40801,7 +41587,9 @@ const defaultSettings = {
     save_preprocessed: false,
     return_preprocessed: true,
     self_attention_scale: 0,
-    sigmas: "automatic"
+    sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault)
   },
   upscale: {
     image: "",
@@ -41365,775 +42153,6 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-var _a;
-const isClient = typeof window !== "undefined";
-const isFunction = (val) => typeof val === "function";
-const isString = (val) => typeof val === "string";
-const noop = () => {
-};
-const isIOS = isClient && ((_a = window == null ? void 0 : window.navigator) == null ? void 0 : _a.userAgent) && /iP(ad|hone|od)/.test(window.navigator.userAgent);
-function resolveUnref(r) {
-  return typeof r === "function" ? r() : unref(r);
-}
-function identity(arg) {
-  return arg;
-}
-function tryOnScopeDispose(fn) {
-  if (getCurrentScope()) {
-    onScopeDispose(fn);
-    return true;
-  }
-  return false;
-}
-function resolveRef(r) {
-  return typeof r === "function" ? computed(r) : ref(r);
-}
-function useIntervalFn(cb, interval = 1e3, options = {}) {
-  const {
-    immediate = true,
-    immediateCallback = false
-  } = options;
-  let timer = null;
-  const isActive = ref(false);
-  function clean() {
-    if (timer) {
-      clearInterval(timer);
-      timer = null;
-    }
-  }
-  function pause() {
-    isActive.value = false;
-    clean();
-  }
-  function resume() {
-    const intervalValue = resolveUnref(interval);
-    if (intervalValue <= 0)
-      return;
-    isActive.value = true;
-    if (immediateCallback)
-      cb();
-    clean();
-    timer = setInterval(cb, intervalValue);
-  }
-  if (immediate && isClient)
-    resume();
-  if (isRef(interval) || isFunction(interval)) {
-    const stopWatch = watch(interval, () => {
-      if (isActive.value && isClient)
-        resume();
-    });
-    tryOnScopeDispose(stopWatch);
-  }
-  tryOnScopeDispose(pause);
-  return {
-    isActive,
-    pause,
-    resume
-  };
-}
-function unrefElement(elRef) {
-  var _a2;
-  const plain = resolveUnref(elRef);
-  return (_a2 = plain == null ? void 0 : plain.$el) != null ? _a2 : plain;
-}
-const defaultWindow = isClient ? window : void 0;
-function useEventListener(...args) {
-  let target;
-  let events2;
-  let listeners;
-  let options;
-  if (isString(args[0]) || Array.isArray(args[0])) {
-    [events2, listeners, options] = args;
-    target = defaultWindow;
-  } else {
-    [target, events2, listeners, options] = args;
-  }
-  if (!target)
-    return noop;
-  if (!Array.isArray(events2))
-    events2 = [events2];
-  if (!Array.isArray(listeners))
-    listeners = [listeners];
-  const cleanups = [];
-  const cleanup = () => {
-    cleanups.forEach((fn) => fn());
-    cleanups.length = 0;
-  };
-  const register = (el, event2, listener, options2) => {
-    el.addEventListener(event2, listener, options2);
-    return () => el.removeEventListener(event2, listener, options2);
-  };
-  const stopWatch = watch(() => [unrefElement(target), resolveUnref(options)], ([el, options2]) => {
-    cleanup();
-    if (!el)
-      return;
-    cleanups.push(...events2.flatMap((event2) => {
-      return listeners.map((listener) => register(el, event2, listener, options2));
-    }));
-  }, { immediate: true, flush: "post" });
-  const stop = () => {
-    stopWatch();
-    cleanup();
-  };
-  tryOnScopeDispose(stop);
-  return stop;
-}
-let _iOSWorkaround = false;
-function onClickOutside(target, handler, options = {}) {
-  const { window: window2 = defaultWindow, ignore = [], capture = true, detectIframe = false } = options;
-  if (!window2)
-    return;
-  if (isIOS && !_iOSWorkaround) {
-    _iOSWorkaround = true;
-    Array.from(window2.document.body.children).forEach((el) => el.addEventListener("click", noop));
-  }
-  let shouldListen = true;
-  const shouldIgnore = (event2) => {
-    return ignore.some((target2) => {
-      if (typeof target2 === "string") {
-        return Array.from(window2.document.querySelectorAll(target2)).some((el) => el === event2.target || event2.composedPath().includes(el));
-      } else {
-        const el = unrefElement(target2);
-        return el && (event2.target === el || event2.composedPath().includes(el));
-      }
-    });
-  };
-  const listener = (event2) => {
-    const el = unrefElement(target);
-    if (!el || el === event2.target || event2.composedPath().includes(el))
-      return;
-    if (event2.detail === 0)
-      shouldListen = !shouldIgnore(event2);
-    if (!shouldListen) {
-      shouldListen = true;
-      return;
-    }
-    handler(event2);
-  };
-  const cleanup = [
-    useEventListener(window2, "click", listener, { passive: true, capture }),
-    useEventListener(window2, "pointerdown", (e) => {
-      const el = unrefElement(target);
-      if (el)
-        shouldListen = !e.composedPath().includes(el) && !shouldIgnore(e);
-    }, { passive: true }),
-    detectIframe && useEventListener(window2, "blur", (event2) => {
-      var _a2;
-      const el = unrefElement(target);
-      if (((_a2 = window2.document.activeElement) == null ? void 0 : _a2.tagName) === "IFRAME" && !(el == null ? void 0 : el.contains(window2.document.activeElement)))
-        handler(event2);
-    })
-  ].filter(Boolean);
-  const stop = () => cleanup.forEach((fn) => fn());
-  return stop;
-}
-const _global = typeof globalThis !== "undefined" ? globalThis : typeof window !== "undefined" ? window : typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : {};
-const globalKey = "__vueuse_ssr_handlers__";
-_global[globalKey] = _global[globalKey] || {};
-var SwipeDirection;
-(function(SwipeDirection2) {
-  SwipeDirection2["UP"] = "UP";
-  SwipeDirection2["RIGHT"] = "RIGHT";
-  SwipeDirection2["DOWN"] = "DOWN";
-  SwipeDirection2["LEFT"] = "LEFT";
-  SwipeDirection2["NONE"] = "NONE";
-})(SwipeDirection || (SwipeDirection = {}));
-var __defProp2 = Object.defineProperty;
-var __getOwnPropSymbols = Object.getOwnPropertySymbols;
-var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __propIsEnum = Object.prototype.propertyIsEnumerable;
-var __defNormalProp2 = (obj, key, value) => key in obj ? __defProp2(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __spreadValues = (a, b) => {
-  for (var prop in b || (b = {}))
-    if (__hasOwnProp.call(b, prop))
-      __defNormalProp2(a, prop, b[prop]);
-  if (__getOwnPropSymbols)
-    for (var prop of __getOwnPropSymbols(b)) {
-      if (__propIsEnum.call(b, prop))
-        __defNormalProp2(a, prop, b[prop]);
-    }
-  return a;
-};
-const _TransitionPresets = {
-  easeInSine: [0.12, 0, 0.39, 0],
-  easeOutSine: [0.61, 1, 0.88, 1],
-  easeInOutSine: [0.37, 0, 0.63, 1],
-  easeInQuad: [0.11, 0, 0.5, 0],
-  easeOutQuad: [0.5, 1, 0.89, 1],
-  easeInOutQuad: [0.45, 0, 0.55, 1],
-  easeInCubic: [0.32, 0, 0.67, 0],
-  easeOutCubic: [0.33, 1, 0.68, 1],
-  easeInOutCubic: [0.65, 0, 0.35, 1],
-  easeInQuart: [0.5, 0, 0.75, 0],
-  easeOutQuart: [0.25, 1, 0.5, 1],
-  easeInOutQuart: [0.76, 0, 0.24, 1],
-  easeInQuint: [0.64, 0, 0.78, 0],
-  easeOutQuint: [0.22, 1, 0.36, 1],
-  easeInOutQuint: [0.83, 0, 0.17, 1],
-  easeInExpo: [0.7, 0, 0.84, 0],
-  easeOutExpo: [0.16, 1, 0.3, 1],
-  easeInOutExpo: [0.87, 0, 0.13, 1],
-  easeInCirc: [0.55, 0, 1, 0.45],
-  easeOutCirc: [0, 0.55, 0.45, 1],
-  easeInOutCirc: [0.85, 0, 0.15, 1],
-  easeInBack: [0.36, 0, 0.66, -0.56],
-  easeOutBack: [0.34, 1.56, 0.64, 1],
-  easeInOutBack: [0.68, -0.6, 0.32, 1.6]
-};
-__spreadValues({
-  linear: identity
-}, _TransitionPresets);
-const DEFAULT_PING_MESSAGE = "ping";
-function resolveNestedOptions(options) {
-  if (options === true)
-    return {};
-  return options;
-}
-function useWebSocket(url, options = {}) {
-  const {
-    onConnected,
-    onDisconnected,
-    onError,
-    onMessage,
-    immediate = true,
-    autoClose = true,
-    protocols = []
-  } = options;
-  const data = ref(null);
-  const status = ref("CLOSED");
-  const wsRef = ref();
-  const urlRef = resolveRef(url);
-  let heartbeatPause;
-  let heartbeatResume;
-  let explicitlyClosed = false;
-  let retried = 0;
-  let bufferedData = [];
-  let pongTimeoutWait;
-  const close = (code = 1e3, reason) => {
-    if (!wsRef.value)
-      return;
-    explicitlyClosed = true;
-    heartbeatPause == null ? void 0 : heartbeatPause();
-    wsRef.value.close(code, reason);
-  };
-  const _sendBuffer = () => {
-    if (bufferedData.length && wsRef.value && status.value === "OPEN") {
-      for (const buffer of bufferedData)
-        wsRef.value.send(buffer);
-      bufferedData = [];
-    }
-  };
-  const resetHeartbeat = () => {
-    clearTimeout(pongTimeoutWait);
-    pongTimeoutWait = void 0;
-  };
-  const send = (data2, useBuffer = true) => {
-    if (!wsRef.value || status.value !== "OPEN") {
-      if (useBuffer)
-        bufferedData.push(data2);
-      return false;
-    }
-    _sendBuffer();
-    wsRef.value.send(data2);
-    return true;
-  };
-  const _init = () => {
-    if (explicitlyClosed || typeof urlRef.value === "undefined")
-      return;
-    const ws = new WebSocket(urlRef.value, protocols);
-    wsRef.value = ws;
-    status.value = "CONNECTING";
-    ws.onopen = () => {
-      status.value = "OPEN";
-      onConnected == null ? void 0 : onConnected(ws);
-      heartbeatResume == null ? void 0 : heartbeatResume();
-      _sendBuffer();
-    };
-    ws.onclose = (ev) => {
-      status.value = "CLOSED";
-      wsRef.value = void 0;
-      onDisconnected == null ? void 0 : onDisconnected(ws, ev);
-      if (!explicitlyClosed && options.autoReconnect) {
-        const {
-          retries = -1,
-          delay = 1e3,
-          onFailed
-        } = resolveNestedOptions(options.autoReconnect);
-        retried += 1;
-        if (typeof retries === "number" && (retries < 0 || retried < retries))
-          setTimeout(_init, delay);
-        else if (typeof retries === "function" && retries())
-          setTimeout(_init, delay);
-        else
-          onFailed == null ? void 0 : onFailed();
-      }
-    };
-    ws.onerror = (e) => {
-      onError == null ? void 0 : onError(ws, e);
-    };
-    ws.onmessage = (e) => {
-      if (options.heartbeat) {
-        resetHeartbeat();
-        const {
-          message = DEFAULT_PING_MESSAGE
-        } = resolveNestedOptions(options.heartbeat);
-        if (e.data === message)
-          return;
-      }
-      data.value = e.data;
-      onMessage == null ? void 0 : onMessage(ws, e);
-    };
-  };
-  if (options.heartbeat) {
-    const {
-      message = DEFAULT_PING_MESSAGE,
-      interval = 1e3,
-      pongTimeout = 1e3
-    } = resolveNestedOptions(options.heartbeat);
-    const { pause, resume } = useIntervalFn(() => {
-      send(message, false);
-      if (pongTimeoutWait != null)
-        return;
-      pongTimeoutWait = setTimeout(() => {
-        close();
-      }, pongTimeout);
-    }, interval, { immediate: false });
-    heartbeatPause = pause;
-    heartbeatResume = resume;
-  }
-  if (autoClose) {
-    useEventListener(window, "beforeunload", () => close());
-    tryOnScopeDispose(close);
-  }
-  const open = () => {
-    close();
-    explicitlyClosed = false;
-    retried = 0;
-    _init();
-  };
-  if (immediate)
-    watch(urlRef, open, { immediate: true });
-  return {
-    data,
-    status,
-    close,
-    send,
-    open,
-    ws: wsRef
-  };
-}
-function processWebSocket(message, global2, notificationProvider) {
-  switch (message.type) {
-    case "test": {
-      break;
-    }
-    case "progress": {
-      global2.state.progress = message.data.progress;
-      break;
-    }
-    case "txt2img": {
-      global2.state.txt2img.currentImage = message.data.image ? message.data.image : global2.state.txt2img.currentImage;
-      global2.state.progress = message.data.progress;
-      global2.state.current_step = message.data.current_step;
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "img2img": {
-      global2.state.img2img.currentImage = message.data.image ? message.data.image : global2.state.img2img.currentImage;
-      global2.state.progress = message.data.progress;
-      global2.state.current_step = message.data.current_step;
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "inpainting": {
-      global2.state.inpainting.currentImage = message.data.image ? message.data.image : global2.state.inpainting.currentImage;
-      global2.state.progress = message.data.progress;
-      global2.state.current_step = message.data.current_step;
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "controlnet": {
-      global2.state.controlnet.currentImage = message.data.image ? message.data.image : global2.state.controlnet.currentImage;
-      global2.state.progress = message.data.progress;
-      global2.state.current_step = message.data.current_step;
-      global2.state.total_steps = message.data.total_steps;
-      break;
-    }
-    case "notification": {
-      console.log(message.data.message);
-      if (message.data.timeout === 0) {
-        message.data.timeout = null;
-      }
-      notificationProvider.create({
-        type: message.data.severity,
-        title: message.data.title,
-        content: message.data.message,
-        duration: message.data.timeout
-      });
-      break;
-    }
-    case "aitemplate_compile": {
-      global2.state.aitBuildStep = {
-        ...global2.state.aitBuildStep,
-        ...message.data
-      };
-      break;
-    }
-    case "onnx_compile": {
-      global2.state.onnxBuildStep = {
-        ...global2.state.onnxBuildStep,
-        ...message.data
-      };
-      break;
-    }
-    case "cluster_stats": {
-      global2.state.perf_drawer.gpus = message.data;
-      break;
-    }
-    case "token": {
-      if (message.data.huggingface === "missing") {
-        global2.state.secrets.huggingface = "missing";
-      }
-      break;
-    }
-    case "refresh_capabilities": {
-      global2.fetchCapabilites().then(() => {
-        console.log("Capabilities refreshed");
-      }).catch((error) => {
-        console.error(error);
-      });
-      break;
-    }
-    case "log": {
-      const messages = message.data.message.split("\n");
-      for (const msg2 of messages) {
-        global2.state.log_drawer.logs.splice(0, 0, msg2);
-        if (global2.state.log_drawer.logs.length > 500) {
-          global2.state.log_drawer.logs.pop();
-        }
-      }
-      break;
-    }
-    case "incorrect_settings_value": {
-      global2.state.settings_diff.default_value = message.data.default_value;
-      global2.state.settings_diff.current_value = message.data.current_value;
-      global2.state.settings_diff.key = message.data.key;
-      global2.state.settings_diff.active = true;
-      break;
-    }
-    default: {
-      console.log(message);
-    }
-  }
-}
-const useWebsocket = defineStore("websocket", () => {
-  const notificationProvider = useNotification();
-  const messageProvider = useMessage();
-  const global2 = useState2();
-  const onConnectedCallbacks = [];
-  const onDisconnectedCallbacks = [];
-  const onRefreshCallbacks = [];
-  const websocket = useWebSocket(`${webSocketUrl}/api/websockets/master`, {
-    heartbeat: {
-      message: "ping",
-      interval: 1e3,
-      pongTimeout: 5e3
-    },
-    immediate: false,
-    onMessage: (ws, event2) => {
-      if (event2.data === "pong") {
-        return;
-      }
-      const data = JSON.parse(event2.data);
-      if (data.type === "refresh_models") {
-        onRefreshCallbacks.forEach((callback) => callback());
-        console.log("Models refreshed");
-        return;
-      }
-      processWebSocket(data, global2, notificationProvider);
-    },
-    onConnected: () => {
-      messageProvider.success("Connected to server");
-      onConnectedCallbacks.forEach((callback) => callback());
-    },
-    onDisconnected: () => {
-      onDisconnectedCallbacks.forEach((callback) => callback());
-    }
-  });
-  function ws_text() {
-    switch (readyState.value) {
-      case "CLOSED":
-        return "Closed";
-      case "CONNECTING":
-        return "Connecting";
-      case "OPEN":
-        return "Connected";
-    }
-  }
-  function get_color() {
-    switch (readyState.value) {
-      case "CLOSED":
-        return "error";
-      case "CONNECTING":
-        return "warning";
-      case "OPEN":
-        return "success";
-    }
-  }
-  const readyState = ref(websocket.status);
-  const loading = computed(() => readyState.value === "CONNECTING");
-  const text = computed(() => ws_text());
-  const color = computed(() => get_color());
-  return {
-    websocket,
-    readyState,
-    loading,
-    text,
-    ws_open: websocket.open,
-    color,
-    onConnectedCallbacks,
-    onDisconnectedCallbacks,
-    onRefreshCallbacks
-  };
-});
-const spaceRegex = new RegExp("[\\s,]+");
-const arrowKeys = [38, 40];
-let currentFocus = -1;
-function convertToTextString(str) {
-  const upper = str.charAt(0).toUpperCase() + str.slice(1);
-  return upper.replace(/_/g, " ");
-}
-function addActive(x) {
-  if (!x)
-    return false;
-  removeActive(x);
-  if (currentFocus >= x.length) {
-    currentFocus = 0;
-  }
-  if (currentFocus < 0) {
-    currentFocus = x.length - 1;
-  }
-  x[currentFocus].classList.add("autocomplete-active");
-}
-function removeActive(x) {
-  for (let i = 0; i < x.length; i++) {
-    x[i].classList.remove("autocomplete-active");
-  }
-}
-function closeAllLists(elmnt, input) {
-  var _a2, _b;
-  const x = document.getElementsByClassName("autocomplete-items");
-  for (let i = 0; i < x.length; i++) {
-    if (elmnt != x[i] && elmnt != input) {
-      (_b = (_a2 = x[i]) == null ? void 0 : _a2.parentNode) == null ? void 0 : _b.removeChild(x[i]);
-    }
-  }
-}
-async function startWebsocket(messageProvider) {
-  const websocketState = useWebsocket();
-  const timeout = 1e3;
-  const controller = new AbortController();
-  const id = setTimeout(() => controller.abort(), timeout);
-  const response = await fetch(`${serverUrl}/api/test/alive`, {
-    signal: controller.signal
-  }).catch(() => {
-    messageProvider.error("Server is not responding");
-  });
-  clearTimeout(id);
-  if (response === void 0) {
-    return;
-  }
-  if (response.status !== 200) {
-    messageProvider.error("Server is not responding");
-    return;
-  }
-  console.log("Starting websocket");
-  websocketState.ws_open();
-}
-function getTextBoundaries(elem) {
-  if (elem === null) {
-    console.error("Element is null");
-    return [0, 0];
-  }
-  if (elem.tagName === "INPUT" && elem.type === "text" || elem.tagName === "TEXTAREA") {
-    return [
-      elem.selectionStart === null ? 0 : elem.selectionStart,
-      elem.selectionEnd === null ? 0 : elem.selectionEnd
-    ];
-  }
-  console.error("Element is not input");
-  return [0, 0];
-}
-function promptHandleKeyUp(e, data, key, globalState) {
-  var _a2, _b, _c, _d, _e;
-  if (e.key === "ArrowUp" && e.ctrlKey) {
-    const values = getTextBoundaries(
-      document.activeElement
-    );
-    const boundaryIndexStart = values[0];
-    const boundaryIndexEnd = values[1];
-    e.preventDefault();
-    const elem = document.activeElement;
-    const current_selection = elem.value.substring(
-      boundaryIndexStart,
-      boundaryIndexEnd
-    );
-    const regex = /\(([^:]+([:]?[\s]?)([\d.\d]+))\)/;
-    const matches = regex.exec(current_selection);
-    if (matches) {
-      if (matches) {
-        const value = parseFloat(matches[3]);
-        const new_value = (value + 0.1).toFixed(1);
-        const beforeString = elem.value.substring(0, boundaryIndexStart);
-        const afterString = elem.value.substring(boundaryIndexEnd);
-        const newString = `${beforeString}${current_selection.replace(
-          matches[3],
-          new_value
-        )}${afterString}`;
-        elem.value = newString;
-        data[key] = newString;
-        elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
-      }
-    } else if (boundaryIndexStart !== boundaryIndexEnd) {
-      const new_inner_string = `(${current_selection}:1.1)`;
-      const beforeString = elem.value.substring(0, boundaryIndexStart);
-      const afterString = elem.value.substring(boundaryIndexEnd);
-      elem.value = `${beforeString}${new_inner_string}${afterString}`;
-      data[key] = `${beforeString}${new_inner_string}${afterString}`;
-      elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
-    } else {
-      console.log("No selection, cannot parse for weighting");
-    }
-  }
-  if (e.key === "ArrowDown" && e.ctrlKey) {
-    const values = getTextBoundaries(
-      document.activeElement
-    );
-    const boundaryIndexStart = values[0];
-    const boundaryIndexEnd = values[1];
-    e.preventDefault();
-    const elem = document.activeElement;
-    const current_selection = elem.value.substring(
-      boundaryIndexStart,
-      boundaryIndexEnd
-    );
-    const regex = /\(([^:]+([:]?[\s]?)([\d.\d]+))\)/;
-    const matches = regex.exec(current_selection);
-    if (matches) {
-      if (matches) {
-        const value = parseFloat(matches[3]);
-        const new_value = Math.max(value - 0.1, 0).toFixed(1);
-        const beforeString = elem.value.substring(0, boundaryIndexStart);
-        const afterString = elem.value.substring(boundaryIndexEnd);
-        const newString = `${beforeString}${current_selection.replace(
-          matches[3],
-          new_value
-        )}${afterString}`;
-        elem.value = newString;
-        data[key] = newString;
-        elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd);
-      }
-    } else if (boundaryIndexStart !== boundaryIndexEnd) {
-      const new_inner_string = `(${current_selection}:0.9)`;
-      const beforeString = elem.value.substring(0, boundaryIndexStart);
-      const afterString = elem.value.substring(boundaryIndexEnd);
-      elem.value = `${beforeString}${new_inner_string}${afterString}`;
-      data[key] = `${beforeString}${new_inner_string}${afterString}`;
-      elem.setSelectionRange(boundaryIndexStart, boundaryIndexEnd + 6);
-    } else {
-      console.log("No selection, cannot parse for weighting");
-    }
-  }
-  const input = e.target;
-  if (input) {
-    const text = input.value;
-    const currentTokenStripped = (_a2 = text.split(",").pop()) == null ? void 0 : _a2.trim();
-    closeAllLists(void 0, input);
-    if (!currentTokenStripped) {
-      return false;
-    }
-    const toAppend = [];
-    for (let i = 0; i < globalState.state.autofill_special.length; i++) {
-      if (globalState.state.autofill_special[i].toLowerCase().includes(currentTokenStripped.toLowerCase())) {
-        const b = document.createElement("DIV");
-        b.innerText = globalState.state.autofill_special[i];
-        b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill_special[i] + "'>";
-        b.addEventListener("click", function() {
-          input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill_special[i];
-          data[key] = input.value;
-          closeAllLists(void 0, input);
-        });
-        toAppend.push(b);
-      }
-    }
-    const lowercaseStrippedToken = currentTokenStripped.toLowerCase();
-    if (lowercaseStrippedToken.length >= 3) {
-      for (let i = 0; i < globalState.state.autofill.length; i++) {
-        if (globalState.state.autofill[i].toLowerCase().includes(lowercaseStrippedToken)) {
-          if (toAppend.length >= 30) {
-            break;
-          }
-          const b = document.createElement("DIV");
-          b.innerText = globalState.state.autofill[i];
-          b.innerHTML += "<input type='hidden' value='" + globalState.state.autofill[i] + "'>";
-          b.addEventListener("click", function() {
-            input.value = text.substring(0, text.lastIndexOf(",") + 1) + globalState.state.autofill[i];
-            data[key] = input.value;
-            closeAllLists(void 0, input);
-          });
-          toAppend.push(b);
-        }
-      }
-    }
-    if (toAppend.length === 0) {
-      return false;
-    }
-    const div = document.createElement("DIV");
-    div.setAttribute("id", "autocomplete-list");
-    div.setAttribute("class", "autocomplete-items");
-    (_e = (_d = (_c = (_b = input.parentNode) == null ? void 0 : _b.parentNode) == null ? void 0 : _c.parentNode) == null ? void 0 : _d.parentNode) == null ? void 0 : _e.appendChild(div);
-    for (let i = 0; i < toAppend.length; i++) {
-      div.appendChild(toAppend[i]);
-    }
-    onClickOutside(div, () => {
-      closeAllLists(void 0, input);
-    });
-    const autocompleteList = document.getElementById("autocomplete-list");
-    const x = autocompleteList == null ? void 0 : autocompleteList.getElementsByTagName("div");
-    if (e.key === "ArrowDown") {
-      currentFocus++;
-      addActive(x);
-      e.preventDefault();
-    } else if (e.key === "ArrowUp") {
-      currentFocus--;
-      addActive(x);
-      e.preventDefault();
-    } else if (e.key === "Enter" || e.key === "Tab") {
-      e.stopImmediatePropagation();
-      e.preventDefault();
-      if (currentFocus > -1) {
-        if (x)
-          x[currentFocus].click();
-      }
-    } else if (e.key === "Escape") {
-      closeAllLists(void 0, input);
-    }
-  }
-}
-function promptHandleKeyDown(e) {
-  if (arrowKeys.includes(e.keyCode) && e.ctrlKey) {
-    e.preventDefault();
-  }
-  if (document.getElementById("autocomplete-list")) {
-    if (e.key === "Enter" || e.key === "Tab" || e.key === "ArrowDown" || e.key === "ArrowUp") {
-      e.preventDefault();
-    }
-  }
-}
-function urlFromPath(path) {
-  const url = new URL(path, serverUrl);
-  return url.href;
-}
 const _withScopeId = (n) => (pushScopeId("data-v-91ace41f"), n = n(), popScopeId(), n);
 const _hoisted_1$2 = { class: "top-bar" };
 const _hoisted_2$1 = { key: 0 };
@@ -43165,10 +43184,16 @@ const TopBar_vue_vue_type_style_index_0_scoped_91ace41f_lang = "";
 const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-91ace41f"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
+<<<<<<< HEAD
 const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
 const ControlNet_vue_vue_type_style_index_0_scoped_95a354be_lang = "";
 const Img2Img_vue_vue_type_style_index_0_scoped_4fae0a93_lang = "";
 const Inpainting_vue_vue_type_style_index_0_scoped_0d0f8c9e_lang = "";
+=======
+const ControlNet_vue_vue_type_style_index_0_scoped_97c56df6_lang = "";
+const Img2Img_vue_vue_type_style_index_0_scoped_bfd46a0a_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_1193df1f_lang = "";
+>>>>>>> origin/experimental
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_241a4664_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };
@@ -43457,17 +43482,21 @@ const router = createRouter({
     {
       path: "/",
       name: "home",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/txt2img",
       name: "txt2img",
-      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
+      component: () => __vitePreload(() => import("./TextToImageView.js"), true ? ["assets/TextToImageView.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/TrashBin.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/v4.js"] : void 0)
     },
     {
       path: "/img2img",
       name: "img2img",
+<<<<<<< HEAD
       component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
+=======
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
+>>>>>>> origin/experimental
     },
     {
       path: "/imageProcessing",
@@ -43502,7 +43531,7 @@ const router = createRouter({
     {
       path: "/settings",
       name: "settings",
-      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/InputNumber.js","assets/Slider.js","assets/Switch.js"] : void 0)
+      component: () => __vitePreload(() => import("./SettingsView.js"), true ? ["assets/SettingsView.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Slider.js","assets/InputNumber.js","assets/Settings.js"] : void 0)
     },
     {
       path: "/imageBrowser",
@@ -43535,20 +43564,20 @@ app.use(index, {
 app.mount("#app");
 export {
   createTmOptions as $,
-  NButton as A,
-  NIcon as B,
-  toDisplayString as C,
-  NTabPane as D,
-  NTabs as E,
+  NIcon as A,
+  toDisplayString as B,
+  NTabPane as C,
+  NTabs as D,
+  spaceRegex as E,
   Fragment as F,
-  spaceRegex as G,
-  promptHandleKeyUp as H,
-  promptHandleKeyDown as I,
-  NInput as J,
-  watch as K,
+  promptHandleKeyUp as G,
+  promptHandleKeyDown as H,
+  NInput as I,
+  watch as J,
+  upscalerOptions as K,
   renderList as L,
   NScrollbar as M,
-  NSpace as N,
+  NCard as N,
   replaceable as O,
   createInjectionKey as P,
   cB as Q,
@@ -43627,7 +43656,7 @@ export {
   getSlot$1 as ax,
   depx as ay,
   formatLength as az,
-  upscalerOptions as b,
+  createBaseVNode as b,
   VTarget as b$,
   NProgress as b0,
   NFadeInExpandTransition as b1,
@@ -43692,33 +43721,33 @@ export {
   color2Class as bx,
   rateLight as by,
   NTag as bz,
-  computed as c,
+  createBlock as c,
   VFollower as c0,
   sliderLight$1 as c1,
   isSlotEmpty as c2,
   switchLight$1 as c3,
   NResult as c4,
   defineComponent as d,
-  createBlock as e,
-  createBaseVNode as f,
-  createVNode as g,
-  unref as h,
-  NSelect as i,
-  createElementBlock as j,
+  createVNode as e,
+  unref as f,
+  createElementBlock as g,
+  createCommentVNode as h,
+  computed as i,
+  NSpace as j,
   createTextVNode as k,
   NTooltip as l,
-  createCommentVNode as m,
-  NCard as n,
+  NSelect as m,
+  useMessage as n,
   openBlock as o,
-  useMessage as p,
-  onUnmounted as q,
-  NGi as r,
-  NGrid as s,
-  serverUrl as t,
+  onUnmounted as p,
+  NGi as q,
+  NGrid as r,
+  serverUrl as s,
+  pushScopeId as t,
   useSettings as u,
-  pushScopeId as v,
+  popScopeId as v,
   withCtx as w,
-  popScopeId as x,
-  h as y,
-  ref as z
+  h as x,
+  ref as y,
+  NButton as z
 };

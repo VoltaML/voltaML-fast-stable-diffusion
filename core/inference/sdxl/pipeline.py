@@ -719,6 +719,10 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                 un = postprocess_kohya(un)  # type: ignore
 
             # 9. Post-processing
+            if output_type == "latent":
+                unload_all()
+                return latents, False
+
             converted_image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL

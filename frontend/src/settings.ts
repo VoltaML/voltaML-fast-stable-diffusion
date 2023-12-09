@@ -1,5 +1,6 @@
 import { ControlNetType, type ModelEntry } from "./core/interfaces";
 import { serverUrl } from "./env";
+import { cloneObj } from "./functions";
 
 export enum Sampler {
   DDIM = 1,
@@ -17,6 +18,50 @@ export enum Sampler {
   UniPCMultistep = 13,
   DPMSolverSDEScheduler = 14,
 }
+
+export interface HighResFixFlag {
+  enabled: boolean;
+  scale: number;
+  mode: "latent" | "image";
+  image_upscaler: string;
+  latent_scale_mode:
+    | "nearest"
+    | "area"
+    | "bilinear"
+    | "bislerp"
+    | "bicubic"
+    | "nearest-exact";
+  antialiased: boolean;
+  strength: number;
+  steps: number;
+}
+
+const highresFixFlagDefault: HighResFixFlag = {
+  enabled: false,
+  scale: 2,
+  mode: "image",
+  image_upscaler: "RealESRGAN_x4plus_anime_6B",
+  latent_scale_mode: "bislerp",
+  antialiased: false,
+  strength: 0.65,
+  steps: 50,
+};
+
+export interface UpscaleFlag {
+  enabled: boolean;
+  upscale_factor: number;
+  tile_size: number;
+  tile_padding: number;
+  model: string;
+}
+
+const upscaleFlagDefault: UpscaleFlag = {
+  enabled: false,
+  upscale_factor: 4,
+  tile_size: 128,
+  tile_padding: 10,
+  model: "RealESRGAN_x4plus_anime_6B",
+};
 
 export type SigmaType =
   | "automatic"
@@ -42,24 +87,6 @@ export interface ISettings {
         width: number;
         height: number;
       };
-    };
-    highres: {
-      scale: number;
-      mode: "latent" | "image";
-
-      image_upscaler: string;
-
-      latent_scale_mode:
-        | "nearest"
-        | "area"
-        | "bilinear"
-        | "bislerp"
-        | "bicubic"
-        | "nearest-exact";
-      antialiased: boolean;
-
-      strength: number;
-      steps: 50;
     };
     refiner: {
       model: string | undefined;
@@ -103,6 +130,8 @@ export interface ISettings {
     batch_size: number;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
   };
   img2img: {
     prompt: string;
@@ -119,6 +148,8 @@ export interface ISettings {
     image: string;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
   };
   inpainting: {
     prompt: string;
@@ -135,6 +166,8 @@ export interface ISettings {
     mask_image: string;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
   };
   controlnet: {
     prompt: string;
@@ -156,6 +189,8 @@ export interface ISettings {
     return_preprocessed: boolean;
     self_attention_scale: number;
     sigmas: SigmaType;
+    highres: HighResFixFlag;
+    upscale: UpscaleFlag;
   };
   upscale: {
     image: string;
@@ -292,15 +327,6 @@ export const defaultSettings: ISettings = {
         height: 1024,
       },
     },
-    highres: {
-      image_upscaler: "RealESRGAN_x4plus_anime_6B",
-      mode: "latent",
-      scale: 2,
-      latent_scale_mode: "bislerp",
-      strength: 0.7,
-      steps: 50,
-      antialiased: false,
-    },
     refiner: {
       model: undefined,
       aesthetic_score: 6.0,
@@ -343,6 +369,8 @@ export const defaultSettings: ISettings = {
     negative_prompt: "",
     self_attention_scale: 0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
   },
   img2img: {
     width: 512,
@@ -359,6 +387,8 @@ export const defaultSettings: ISettings = {
     image: "",
     self_attention_scale: 0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
   },
   inpainting: {
     prompt: "",
@@ -375,6 +405,8 @@ export const defaultSettings: ISettings = {
     sampler: Sampler.DPMSolverMultistep,
     self_attention_scale: 0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
   },
   controlnet: {
     prompt: "",
@@ -396,6 +428,8 @@ export const defaultSettings: ISettings = {
     return_preprocessed: true,
     self_attention_scale: 0.0,
     sigmas: "automatic",
+    highres: cloneObj(highresFixFlagDefault),
+    upscale: cloneObj(upscaleFlagDefault),
   },
   upscale: {
     image: "",
