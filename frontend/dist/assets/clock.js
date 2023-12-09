@@ -5,18 +5,11 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 import { N as NDescriptionsItem, a as NDescriptions } from "./DescriptionsItem.js";
-<<<<<<< HEAD
-import { d as defineComponent, o as openBlock, j as createElementBlock, f as createBaseVNode, e as createBlock, w as withCtx, g as createVNode, h as unref, k as createTextVNode, C as toDisplayString, n as NCard, m as createCommentVNode, u as useSettings, l as NTooltip, i as NSelect, F as Fragment, a as useState, c as computed, G as spaceRegex, B as NIcon, H as promptHandleKeyUp, I as promptHandleKeyDown, J as NInput, _ as _export_sfc, K as watch, z as ref, t as serverUrl } from "./index.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, c as createBlock, w as withCtx, e as createVNode, f as unref, j as createTextVNode, B as toDisplayString, N as NCard, h as createCommentVNode, u as useSettings, k as NTooltip, l as computed, m as NSelect, F as Fragment, a as useState, E as spaceRegex, A as NIcon, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
 import { N as NSlider } from "./Slider.js";
 import { N as NInputNumber } from "./InputNumber.js";
-=======
-import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, c as createBlock, w as withCtx, e as createVNode, f as unref, k as createTextVNode, B as toDisplayString, N as NCard, h as createCommentVNode, u as useSettings, l as NTooltip, i as computed, F as Fragment, a as useState, E as spaceRegex, A as NIcon, m as NSelect, G as promptHandleKeyUp, H as promptHandleKeyDown, I as NInput, _ as _export_sfc, J as watch, y as ref, s as serverUrl } from "./index.js";
-import { N as NSlider } from "./Slider.js";
-import { N as NInputNumber } from "./InputNumber.js";
-import { N as NForm, c as NFormItem } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
->>>>>>> origin/experimental
 import { N as NSwitch } from "./Switch.js";
-import { N as NForm, a as NFormItem } from "./SamplerPicker.vue_vue_type_script_setup_true_lang.js";
+import { N as NForm, c as NFormItem } from "./Upscale.vue_vue_type_script_setup_true_lang.js";
 const _hoisted_1$4 = {
   xmlns: "http://www.w3.org/2000/svg",
   "xmlns:xlink": "http://www.w3.org/1999/xlink",
@@ -229,7 +222,6 @@ const _hoisted_7 = {
   class: "flex-container"
 };
 const _hoisted_8 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Height", -1);
-<<<<<<< HEAD
 const _hoisted_9 = { key: 4 };
 const _hoisted_10 = { class: "flex-container" };
 const _hoisted_11 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Enable Deepshrink", -1);
@@ -251,10 +243,7 @@ const _hoisted_26 = { class: "flex-container" };
 const _hoisted_27 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Latent scaler", -1);
 const _hoisted_28 = { class: "flex-container" };
 const _hoisted_29 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Early out", -1);
-const _sfc_main$3 = /* @__PURE__ */ defineComponent({
-=======
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
->>>>>>> origin/experimental
   __name: "DimensionsInput",
   props: {
     dimensionsObject: {

@@ -1,4 +1,4 @@
-import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, a as useState, u as useSettings, n as useMessage, i as computed, p as onUnmounted, e as createVNode, w as withCtx, f as unref, q as NGi, N as NCard, j as NSpace, l as NTooltip, k as createTextVNode, m as NSelect, c as createBlock, h as createCommentVNode, r as NGrid, s as serverUrl, t as pushScopeId, v as popScopeId, _ as _export_sfc, x as h, y as ref, z as NButton, A as NIcon, B as toDisplayString, C as NTabPane, D as NTabs } from "./index.js";
+import { d as defineComponent, o as openBlock, g as createElementBlock, b as createBaseVNode, a as useState, u as useSettings, n as useMessage, l as computed, p as onUnmounted, e as createVNode, w as withCtx, f as unref, q as NGi, N as NCard, i as NSpace, k as NTooltip, j as createTextVNode, m as NSelect, c as createBlock, h as createCommentVNode, r as NGrid, s as serverUrl, t as pushScopeId, v as popScopeId, _ as _export_sfc, x as h, y as ref, z as NButton, A as NIcon, B as toDisplayString, C as NTabPane, D as NTabs } from "./index.js";
 import { B as BurnerClock, P as Prompt, _ as _sfc_main$5, a as _sfc_main$6, b as _sfc_main$7, c as _sfc_main$8, d as _sfc_main$d } from "./clock.js";
 import { _ as _sfc_main$b } from "./GenerateSection.vue_vue_type_script_setup_true_lang.js";
 import { _ as _sfc_main$c } from "./ImageOutput.vue_vue_type_script_setup_true_lang.js";
@@ -528,13 +528,8 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-<<<<<<< HEAD
-const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-95a354be"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-4fae0a93"), n = n(), popScopeId(), n);
-=======
 const ControlNet = /* @__PURE__ */ _export_sfc(_sfc_main$3, [["__scopeId", "data-v-97c56df6"]]);
-const _withScopeId$1 = (n) => (pushScopeId("data-v-bfd46a0a"), n = n(), popScopeId(), n);
->>>>>>> origin/experimental
+const _withScopeId$1 = (n) => (pushScopeId("data-v-8c5af50f"), n = n(), popScopeId(), n);
 const _hoisted_1$1 = { style: { "margin": "0 12px" } };
 const _hoisted_2$1 = { class: "flex-container" };
 const _hoisted_3$1 = /* @__PURE__ */ _withScopeId$1(() => /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1));
@@ -602,7 +597,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
             }
           },
-<<<<<<< HEAD
           ...settings.defaultSettings.flags.deepshrink.enabled ? {
             flags: {
               deepshrink: {
@@ -616,8 +610,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }
             }
           } : {},
-          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path
-=======
           model: (_a = settings.data.settings.model) == null ? void 0 : _a.path,
           flags: {
             ...settings.data.settings.img2img.highres.enabled ? {
@@ -640,7 +632,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
               }
             } : {}
           }
->>>>>>> origin/experimental
         })
       }).then((res) => {
         if (!res.ok) {
@@ -845,11 +836,7 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-<<<<<<< HEAD
-const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-4fae0a93"]]);
-=======
-const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-bfd46a0a"]]);
->>>>>>> origin/experimental
+const ImageToImage = /* @__PURE__ */ _export_sfc(_sfc_main$2, [["__scopeId", "data-v-8c5af50f"]]);
 var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
   name: "VueDrawingCanvas",
   props: {
@@ -1425,11 +1412,7 @@ var VueDrawingCanvas = /* @__PURE__ */ defineComponent({
     });
   }
 });
-<<<<<<< HEAD
-const _withScopeId = (n) => (pushScopeId("data-v-0d0f8c9e"), n = n(), popScopeId(), n);
-=======
-const _withScopeId = (n) => (pushScopeId("data-v-1193df1f"), n = n(), popScopeId(), n);
->>>>>>> origin/experimental
+const _withScopeId = (n) => (pushScopeId("data-v-124be5cd"), n = n(), popScopeId(), n);
 const _hoisted_1 = { style: { "margin": "0 12px" } };
 const _hoisted_2 = { style: { "display": "inline-flex", "align-items": "center" } };
 const _hoisted_3 = /* @__PURE__ */ _withScopeId(() => /* @__PURE__ */ createBaseVNode("svg", {
@@ -1513,7 +1496,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               prompt_to_prompt: settings.data.settings.api.prompt_to_prompt
             }
           },
-<<<<<<< HEAD
           ...settings.defaultSettings.flags.deepshrink.enabled ? {
             flags: {
               deepshrink: {
@@ -1527,8 +1509,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               }
             }
           } : {},
-          model: (_a = settings.data.settings.model) == null ? void 0 : _a.path
-=======
           model: (_a = settings.data.settings.model) == null ? void 0 : _a.path,
           flags: {
             ...settings.data.settings.inpainting.highres.enabled ? {
@@ -1551,7 +1531,6 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
               }
             } : {}
           }
->>>>>>> origin/experimental
         })
       }).then((res) => {
         if (!res.ok) {
@@ -1989,11 +1968,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
     };
   }
 });
-<<<<<<< HEAD
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-0d0f8c9e"]]);
-=======
-const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-1193df1f"]]);
->>>>>>> origin/experimental
+const Inpainting = /* @__PURE__ */ _export_sfc(_sfc_main$1, [["__scopeId", "data-v-124be5cd"]]);
 const _sfc_main = /* @__PURE__ */ defineComponent({
   __name: "Image2ImageView",
   setup(__props) {

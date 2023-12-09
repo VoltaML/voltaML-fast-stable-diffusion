@@ -43184,16 +43184,9 @@ const TopBar_vue_vue_type_style_index_0_scoped_91ace41f_lang = "";
 const TopBar = /* @__PURE__ */ _export_sfc(_sfc_main$4, [["__scopeId", "data-v-91ace41f"]]);
 const Prompt_vue_vue_type_style_index_0_lang = "";
 const Prompt_vue_vue_type_style_index_1_scoped_780680bc_lang = "";
-<<<<<<< HEAD
-const Upscale_vue_vue_type_style_index_0_scoped_5358ed01_lang = "";
-const ControlNet_vue_vue_type_style_index_0_scoped_95a354be_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_4fae0a93_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_0d0f8c9e_lang = "";
-=======
 const ControlNet_vue_vue_type_style_index_0_scoped_97c56df6_lang = "";
-const Img2Img_vue_vue_type_style_index_0_scoped_bfd46a0a_lang = "";
-const Inpainting_vue_vue_type_style_index_0_scoped_1193df1f_lang = "";
->>>>>>> origin/experimental
+const Img2Img_vue_vue_type_style_index_0_scoped_8c5af50f_lang = "";
+const Inpainting_vue_vue_type_style_index_0_scoped_124be5cd_lang = "";
 const CivitAIDownload_vue_vue_type_style_index_0_scoped_241a4664_lang = "";
 const HuggingfaceDownload_vue_vue_type_style_index_0_scoped_b405f046_lang = "";
 const _hoisted_1$1 = { style: { "margin": "16px 0" } };
@@ -43492,11 +43485,7 @@ const router = createRouter({
     {
       path: "/img2img",
       name: "img2img",
-<<<<<<< HEAD
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/SamplerPicker.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
-=======
-      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Switch.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
->>>>>>> origin/experimental
+      component: () => __vitePreload(() => import("./Image2ImageView.js"), true ? ["assets/Image2ImageView.js","assets/clock.js","assets/DescriptionsItem.js","assets/Slider.js","assets/InputNumber.js","assets/Switch.js","assets/Upscale.vue_vue_type_script_setup_true_lang.js","assets/Settings.js","assets/GenerateSection.vue_vue_type_script_setup_true_lang.js","assets/ImageOutput.vue_vue_type_script_setup_true_lang.js","assets/SendOutputTo.vue_vue_type_script_setup_true_lang.js","assets/TrashBin.js","assets/ImageUpload.js","assets/CloudUpload.js","assets/v4.js"] : void 0)
     },
     {
       path: "/imageProcessing",
@@ -43732,10 +43721,10 @@ export {
   unref as f,
   createElementBlock as g,
   createCommentVNode as h,
-  computed as i,
-  NSpace as j,
-  createTextVNode as k,
-  NTooltip as l,
+  NSpace as i,
+  createTextVNode as j,
+  NTooltip as k,
+  computed as l,
   NSelect as m,
   useMessage as n,
   openBlock as o,
