@@ -500,10 +500,7 @@ const _sfc_main$1 = /* @__PURE__ */ defineComponent({
                     "dimensions-object": unref(settings).data.settings.txt2img
                   }, null, 8, ["dimensions-object"])) : createCommentVNode("", true),
                   isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$2), { key: 1 })) : createCommentVNode("", true),
-                  !isSelectedModelSDXL.value ? (openBlock(), createBlock(unref(_sfc_main$9), {
-                    key: 2,
-                    tab: "txt2img"
-                  })) : createCommentVNode("", true),
+                  createVNode(unref(_sfc_main$9), { tab: "txt2img" }),
                   createVNode(unref(_sfc_main$a), { tab: "txt2img" })
                 ];
               }),

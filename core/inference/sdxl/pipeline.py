@@ -680,6 +680,10 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
                                 return None
 
             # 9. Post-processing
+            if output_type == "latent":
+                unload_all()
+                return latents, False
+
             converted_image = full_vae(latents, self.vae, height=height, width=width)  # type: ignore
 
             # 11. Convert to PIL
@@ -759,6 +763,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
         negative_aesthetic_score: float = 2.5,
         original_size: Optional[List[int]] = None,
         negative_prompt: Optional[str] = None,
+        height: int = 512,
+        width: int = 512,
         strength: float = 0.8,
         num_inference_steps: int = 50,
         guidance_scale: Optional[float] = 7.5,
@@ -781,6 +787,8 @@ class StableDiffusionXLLongPromptWeightingPipeline(StableDiffusionXLPipeline):
             prompt=prompt,
             seed=seed,
             negative_prompt=negative_prompt,
+            width=width,
+            height=height,
             image=image,
             num_inference_steps=num_inference_steps,  # type: ignore
             guidance_scale=guidance_scale,  # type: ignore

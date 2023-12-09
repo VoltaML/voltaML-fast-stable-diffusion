@@ -97,7 +97,7 @@
           v-if="settings.data.settings.model?.type === 'SDXL'"
         />
         <XLRefiner v-if="isSelectedModelSDXL" />
-        <HighResFix v-if="!isSelectedModelSDXL" tab="txt2img" />
+        <HighResFix tab="txt2img" />
         <Upscale tab="txt2img" />
       </NGi>
 

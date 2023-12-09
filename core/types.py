@@ -147,6 +147,7 @@ class ControlNetData:
     height: int = field(default=512)
     steps: int = field(default=25)
     guidance_scale: float = field(default=7)
+    self_attention_scale: float = field(default=0.0)
     sigmas: SigmaScheduler = field(default="automatic")
     seed: int = field(default=0)
     batch_size: int = field(default=1)
