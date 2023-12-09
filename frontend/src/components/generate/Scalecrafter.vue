@@ -45,69 +45,13 @@
           "
         />
       </div>
-
-      <!-- Negative aesthetic score -->
-      <div class="flex-container">
-        <NTooltip style="max-width: 600px">
-          <template #trigger>
-            <p class="slider-label">Negative Aesthetic Score</p>
-          </template>
-          Makes sense to keep this lower than aesthetic score.
-          <b class="highlight">Generally best to keep it around 3.</b>
-        </NTooltip>
-        <NSlider
-          v-model:value="
-            settings.data.settings.flags.refiner.negative_aesthetic_score
-          "
-          :min="0"
-          :max="10"
-          :step="0.5"
-          style="margin-right: 12px"
-        />
-        <NInputNumber
-          v-model:value="
-            settings.data.settings.flags.refiner.negative_aesthetic_score
-          "
-          :min="0"
-          :max="10"
-          :step="0.25"
-          size="small"
-          style="min-width: 96px; width: 96px"
-        />
-      </div>
-
-      <div class="flex-container">
-        <p class="slider-label">Strength</p>
-        <NSlider
-          v-model:value="settings.data.settings.flags.refiner.strength"
-          :min="0.1"
-          :max="0.9"
-          :step="0.05"
-          style="margin-right: 12px"
-        />
-        <NInputNumber
-          v-model:value="settings.data.settings.flags.refiner.strength"
-          size="small"
-          style="min-width: 96px; width: 96px"
-          :min="0.1"
-          :max="0.9"
-          :step="0.05"
-        />
-      </div>
     </NSpace>
   </NCard>
 </template>
 
 <script setup lang="ts">
 import { useSettings } from "@/store/settings";
-import {
-  NCard,
-  NInputNumber,
-  NSlider,
-  NSpace,
-  NSwitch,
-  NTooltip,
-} from "naive-ui";
+import { NCard, NSpace, NSwitch, NTooltip } from "naive-ui";
 
 const settings = useSettings();
 </script>

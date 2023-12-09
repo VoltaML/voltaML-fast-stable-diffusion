@@ -22,11 +22,11 @@ const _hoisted_4$4 = /* @__PURE__ */ createBaseVNode("div", { class: "slider-lab
 const _hoisted_5$4 = { key: 0 };
 const _hoisted_6$4 = { class: "flex-container" };
 const _hoisted_7$4 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Upscaler", -1);
-const _hoisted_8$3 = { key: 1 };
-const _hoisted_9$3 = { class: "flex-container" };
-const _hoisted_10$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Antialiased", -1);
-const _hoisted_11$2 = { class: "flex-container" };
-const _hoisted_12$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Latent Mode", -1);
+const _hoisted_8$2 = { key: 1 };
+const _hoisted_9$2 = { class: "flex-container" };
+const _hoisted_10$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Antialiased", -1);
+const _hoisted_11$1 = { class: "flex-container" };
+const _hoisted_12$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Latent Mode", -1);
 const _hoisted_13$1 = { class: "flex-container" };
 const _hoisted_14$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
 const _hoisted_15$1 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
@@ -98,16 +98,16 @@ const _sfc_main$5 = /* @__PURE__ */ defineComponent({
                     options: imageUpscalerOptions.value
                   }, null, 8, ["value", "options"])
                 ])
-              ])) : (openBlock(), createElementBlock("div", _hoisted_8$3, [
-                createBaseVNode("div", _hoisted_9$3, [
-                  _hoisted_10$2,
+              ])) : (openBlock(), createElementBlock("div", _hoisted_8$2, [
+                createBaseVNode("div", _hoisted_9$2, [
+                  _hoisted_10$1,
                   createVNode(unref(NSwitch), {
                     value: unref(settings).data.settings.flags.highres.antialiased,
                     "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.flags.highres.antialiased = $event)
                   }, null, 8, ["value"])
                 ]),
-                createBaseVNode("div", _hoisted_11$2, [
-                  _hoisted_12$2,
+                createBaseVNode("div", _hoisted_11$1, [
+                  _hoisted_12$1,
                   createVNode(unref(NSelect), {
                     value: unref(settings).data.settings.flags.highres.latent_scale_mode,
                     "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.flags.highres.latent_scale_mode = $event),
@@ -268,11 +268,11 @@ const _hoisted_4$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label
 const _hoisted_5$2 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, " Generally, the refiner that came with your model is bound to generate the best results. ", -1);
 const _hoisted_6$2 = { class: "flex-container" };
 const _hoisted_7$2 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Steps", -1);
-const _hoisted_8$2 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
-const _hoisted_9$2 = { class: "flex-container" };
-const _hoisted_10$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Aesthetic Score", -1);
-const _hoisted_11$1 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "Generally best to keep it around 6.", -1);
-const _hoisted_12$1 = { class: "flex-container" };
+const _hoisted_8$1 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "We recommend using 20-50 steps for most images.", -1);
+const _hoisted_9$1 = { class: "flex-container" };
+const _hoisted_10 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Aesthetic Score", -1);
+const _hoisted_11 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "Generally best to keep it around 6.", -1);
+const _hoisted_12 = { class: "flex-container" };
 const _hoisted_13 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Negative Aesthetic Score", -1);
 const _hoisted_14 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "Generally best to keep it around 3.", -1);
 const _hoisted_15 = { class: "flex-container" };
@@ -337,7 +337,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   ]),
                   default: withCtx(() => [
                     createTextVNode(" Number of steps to take in the diffusion process. Higher values will result in more detailed images but will take longer to generate. There is also a point of diminishing returns around 100 steps. "),
-                    _hoisted_8$2
+                    _hoisted_8$1
                   ]),
                   _: 1
                 }),
@@ -355,14 +355,14 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   style: { "min-width": "96px", "width": "96px" }
                 }, null, 8, ["value"])
               ]),
-              createBaseVNode("div", _hoisted_9$2, [
+              createBaseVNode("div", _hoisted_9$1, [
                 createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                   trigger: withCtx(() => [
-                    _hoisted_10$1
+                    _hoisted_10
                   ]),
                   default: withCtx(() => [
                     createTextVNode(' Generally higher numbers will produce "more professional" images. '),
-                    _hoisted_11$1
+                    _hoisted_11
                   ]),
                   _: 1
                 }),
@@ -384,7 +384,7 @@ const _sfc_main$3 = /* @__PURE__ */ defineComponent({
                   style: { "min-width": "96px", "width": "96px" }
                 }, null, 8, ["value"])
               ]),
-              createBaseVNode("div", _hoisted_12$1, [
+              createBaseVNode("div", _hoisted_12, [
                 createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
                   trigger: withCtx(() => [
                     _hoisted_13
@@ -451,11 +451,6 @@ const _hoisted_4$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label
 const _hoisted_5$1 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, " However, this comes at the cost of increased vram usage, generally in the range of 3-4x. ", -1);
 const _hoisted_6$1 = { class: "flex-container" };
 const _hoisted_7$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Unsafe resolutions", -1);
-const _hoisted_8$1 = { class: "flex-container" };
-const _hoisted_9$1 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Negative Aesthetic Score", -1);
-const _hoisted_10 = /* @__PURE__ */ createBaseVNode("b", { class: "highlight" }, "Generally best to keep it around 3.", -1);
-const _hoisted_11 = { class: "flex-container" };
-const _hoisted_12 = /* @__PURE__ */ createBaseVNode("p", { class: "slider-label" }, "Strength", -1);
 const _sfc_main$2 = /* @__PURE__ */ defineComponent({
   __name: "Scalecrafter",
   setup(__props) {
@@ -508,55 +503,6 @@ const _sfc_main$2 = /* @__PURE__ */ defineComponent({
                 createVNode(unref(NSwitch), {
                   value: unref(settings).defaultSettings.flags.scalecrafter.unsafe_resolutions,
                   "onUpdate:value": _cache[2] || (_cache[2] = ($event) => unref(settings).defaultSettings.flags.scalecrafter.unsafe_resolutions = $event)
-                }, null, 8, ["value"])
-              ]),
-              createBaseVNode("div", _hoisted_8$1, [
-                createVNode(unref(NTooltip), { style: { "max-width": "600px" } }, {
-                  trigger: withCtx(() => [
-                    _hoisted_9$1
-                  ]),
-                  default: withCtx(() => [
-                    createTextVNode(" Makes sense to keep this lower than aesthetic score. "),
-                    _hoisted_10
-                  ]),
-                  _: 1
-                }),
-                createVNode(unref(NSlider), {
-                  value: unref(settings).data.settings.flags.refiner.negative_aesthetic_score,
-                  "onUpdate:value": _cache[3] || (_cache[3] = ($event) => unref(settings).data.settings.flags.refiner.negative_aesthetic_score = $event),
-                  min: 0,
-                  max: 10,
-                  step: 0.5,
-                  style: { "margin-right": "12px" }
-                }, null, 8, ["value"]),
-                createVNode(unref(NInputNumber), {
-                  value: unref(settings).data.settings.flags.refiner.negative_aesthetic_score,
-                  "onUpdate:value": _cache[4] || (_cache[4] = ($event) => unref(settings).data.settings.flags.refiner.negative_aesthetic_score = $event),
-                  min: 0,
-                  max: 10,
-                  step: 0.25,
-                  size: "small",
-                  style: { "min-width": "96px", "width": "96px" }
-                }, null, 8, ["value"])
-              ]),
-              createBaseVNode("div", _hoisted_11, [
-                _hoisted_12,
-                createVNode(unref(NSlider), {
-                  value: unref(settings).data.settings.flags.refiner.strength,
-                  "onUpdate:value": _cache[5] || (_cache[5] = ($event) => unref(settings).data.settings.flags.refiner.strength = $event),
-                  min: 0.1,
-                  max: 0.9,
-                  step: 0.05,
-                  style: { "margin-right": "12px" }
-                }, null, 8, ["value"]),
-                createVNode(unref(NInputNumber), {
-                  value: unref(settings).data.settings.flags.refiner.strength,
-                  "onUpdate:value": _cache[6] || (_cache[6] = ($event) => unref(settings).data.settings.flags.refiner.strength = $event),
-                  size: "small",
-                  style: { "min-width": "96px", "width": "96px" },
-                  min: 0.1,
-                  max: 0.9,
-                  step: 0.05
                 }, null, 8, ["value"])
               ])
             ]),
